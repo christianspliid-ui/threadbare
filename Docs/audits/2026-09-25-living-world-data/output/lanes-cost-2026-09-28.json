@@ -1,0 +1,314 @@
+[
+  {
+    "arm": "baseline",
+    "seed": 42,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 94.6,
+    "ms21_150": 119.5,
+    "ms21_200": 130.2,
+    "meanOfReps21_200": 130.9,
+    "perRep21_200": [
+      130.1,
+      132.3,
+      130.2
+    ],
+    "perRep1_20": [
+      95.7,
+      94.6,
+      94.3
+    ],
+    "repSd21_200": 1,
+    "repRange21_200": [
+      130.1,
+      132.3
+    ],
+    "deltaSteadyMs": 0,
+    "deltaSteadyPct": 0,
+    "deltaWarmPct": 0,
+    "decidersStartEnd": [
+      20,
+      20
+    ],
+    "aliveMortalsEnd": 612,
+    "eventsEmitted": 15361,
+    "lever": {},
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": 0,
+        "armMs": 41.84
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": 0,
+        "armMs": 19.73
+      },
+      {
+        "phase": "economic_traits",
+        "deltaMs": 0,
+        "armMs": 18.85
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": 0,
+        "armMs": 8.78
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": 0,
+        "armMs": 6.05
+      },
+      {
+        "phase": "reputation_traits",
+        "deltaMs": 0,
+        "armMs": 5.2
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": 0,
+        "armMs": 4.75
+      },
+      {
+        "phase": "colocation_detection",
+        "deltaMs": 0,
+        "armMs": 2.93
+      }
+    ]
+  },
+  {
+    "arm": "baseline",
+    "seed": 99,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 130.6,
+    "ms21_150": 160.9,
+    "ms21_200": 173.8,
+    "meanOfReps21_200": 174.7,
+    "perRep21_200": [
+      178.1,
+      173.8,
+      172.4
+    ],
+    "perRep1_20": [
+      130.6,
+      134.1,
+      129.3
+    ],
+    "repSd21_200": 2.4,
+    "repRange21_200": [
+      172.4,
+      178.1
+    ],
+    "deltaSteadyMs": 0,
+    "deltaSteadyPct": 0,
+    "deltaWarmPct": 0,
+    "decidersStartEnd": [
+      23,
+      19
+    ],
+    "aliveMortalsEnd": 783,
+    "eventsEmitted": 18907,
+    "lever": {},
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": 0,
+        "armMs": 60.14
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": 0,
+        "armMs": 28.39
+      },
+      {
+        "phase": "economic_traits",
+        "deltaMs": 0,
+        "armMs": 28.01
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": 0,
+        "armMs": 8.8
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": 0,
+        "armMs": 6.49
+      },
+      {
+        "phase": "reputation_traits",
+        "deltaMs": 0,
+        "armMs": 6.37
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": 0,
+        "armMs": 5.89
+      },
+      {
+        "phase": "colocation_detection",
+        "deltaMs": 0,
+        "armMs": 3.58
+      }
+    ]
+  },
+  {
+    "arm": "lanes-off",
+    "seed": 42,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 94.9,
+    "ms21_150": 115,
+    "ms21_200": 127.9,
+    "meanOfReps21_200": 128,
+    "perRep21_200": [
+      127.9,
+      128.7,
+      127.3
+    ],
+    "perRep1_20": [
+      94.2,
+      97,
+      94.9
+    ],
+    "repSd21_200": 0.6,
+    "repRange21_200": [
+      127.3,
+      128.7
+    ],
+    "deltaSteadyMs": -2.2,
+    "deltaSteadyPct": -1.7,
+    "deltaWarmPct": 0.3,
+    "decidersStartEnd": [
+      20,
+      19
+    ],
+    "aliveMortalsEnd": 615,
+    "eventsEmitted": 15542,
+    "lever": {
+      "laneTraffic": 0
+    },
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": 1.18,
+        "armMs": 43.01
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": -0.79,
+        "armMs": 5.26
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": -0.5,
+        "armMs": 19.23
+      },
+      {
+        "phase": "economic_traits",
+        "deltaMs": -0.34,
+        "armMs": 18.51
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": -0.22,
+        "armMs": 8.56
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": -0.16,
+        "armMs": 4.59
+      },
+      {
+        "phase": "reputation_traits",
+        "deltaMs": -0.15,
+        "armMs": 5.04
+      },
+      {
+        "phase": "strategic_projects",
+        "deltaMs": -0.1,
+        "armMs": 0.58
+      }
+    ]
+  },
+  {
+    "arm": "lanes-off",
+    "seed": 99,
+    "reps": 3,
+    "estimator": "median across reps",
+    "ms1_20": 129.1,
+    "ms21_150": 162.9,
+    "ms21_200": 171.6,
+    "meanOfReps21_200": 171,
+    "perRep21_200": [
+      171.6,
+      173.8,
+      167.6
+    ],
+    "perRep1_20": [
+      128.8,
+      129.1,
+      129.3
+    ],
+    "repSd21_200": 2.6,
+    "repRange21_200": [
+      167.6,
+      173.8
+    ],
+    "deltaSteadyMs": -2.2,
+    "deltaSteadyPct": -1.3,
+    "deltaWarmPct": -1.2,
+    "decidersStartEnd": [
+      23,
+      20
+    ],
+    "aliveMortalsEnd": 787,
+    "eventsEmitted": 18768,
+    "lever": {
+      "laneTraffic": 0
+    },
+    "phasesMoved": [
+      {
+        "phase": "agent_decision",
+        "deltaMs": -1.65,
+        "armMs": 58.5
+      },
+      {
+        "phase": "unified_action_progress",
+        "deltaMs": -0.38,
+        "armMs": 8.42
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": -0.19,
+        "armMs": 6.3
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": 0.14,
+        "armMs": 28.53
+      },
+      {
+        "phase": "reputation_traits",
+        "deltaMs": 0.12,
+        "armMs": 6.5
+      },
+      {
+        "phase": "groups",
+        "deltaMs": 0.11,
+        "armMs": 0.8
+      },
+      {
+        "phase": "colocation_detection",
+        "deltaMs": 0.08,
+        "armMs": 3.66
+      },
+      {
+        "phase": "sphere_pressure",
+        "deltaMs": -0.08,
+        "armMs": 0.22
+      }
+    ]
+  }
+]

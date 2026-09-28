@@ -24,7 +24,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { ITEM_GEN_CORES } from '../../../data/item-generator-cores';
 import { buildItemWorldContext } from '../worldContext';
 import { reviewWorldContext } from '../reviewWorld';
-import { tryGenerate } from '../generateItem';
+import { tryGenerate, coreEligible } from '../generateItem';
 import { validateGeneratedItem } from '../validateGeneratedItem';
 import { readBack } from '../readBack';
 import { bandsForOrigin } from '../reviewBatch';
@@ -68,8 +68,23 @@ describe('the live world context dresses every found core (THR-1637)', () => {
     const failures: string[] = [];
     const fired = new Map<string, number>();
     let items = 0;
+    // A core this world cannot host (e.g. a faction-voiced core when none of the retained
+    // dead belonged to a faction) is the world's truth, not a generator defect — the same
+    // rule the header applies to the dead. Such a core is held to the review world instead,
+    // so a core that can never grow anywhere still fails here. Measured THR-1636: with
+    // standing trade lanes, seed 42 at t160 keeps no faction-member dead, and
+    // `oath_object` (all four lines voice a faction) has nothing to name.
+    const unhosted = new Set<string>();
+    const review = reviewWorldContext(null);
     for (const core of ITEM_GEN_CORES.filter(c => c.origins.includes('found'))) {
       for (const band of core.bands.filter(b => bandsForOrigin('found').includes(b))) {
+        const probe = { seedKey: `probe:${core.id}:${band}`, band, origin: 'found' as const, coreId: core.id };
+        if (!coreEligible(core, { ...probe, world })) {
+          unhosted.add(core.id);
+          const inReview = tryGenerate({ ...probe, world: review });
+          if (typeof inReview === 'string') failures.push(`${core.id} b${band}: grows in neither the live nor the review world (${inReview})`);
+          continue;
+        }
         for (let k = 0; k < KEYS_PER_BAND; k++) {
           const seedKey = `gen_item:${SEED}:found:live:${core.id}:${band}:${k}`;
           const r = tryGenerate({ seedKey, band, origin: 'found', world, coreId: core.id });
@@ -93,6 +108,9 @@ describe('the live world context dresses every found core (THR-1637)', () => {
     console.log(`[THR-1637] ${items} found items on the live context, ${failures.length} failures`);
     expect(failures).toEqual([]);
     const foundCores = ITEM_GEN_CORES.filter(c => c.origins.includes('found')).map(c => c.id);
-    expect(foundCores.filter(id => !fired.has(id))).toEqual([]);
+    if (unhosted.size) console.log(`[THR-1637] cores this live world cannot host (held to the review world): ${[...unhosted].join(', ')}`);
+    expect(foundCores.filter(id => !fired.has(id) && !unhosted.has(id))).toEqual([]);
+    // The world must still host most of the catalogue, or the context reader has regressed.
+    expect(unhosted.size).toBeLessThanOrEqual(Math.floor(foundCores.length / 4));
   });
 });

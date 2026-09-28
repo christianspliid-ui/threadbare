@@ -1433,9 +1433,29 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/armySupply.ts'],
     verifiedLive: {
       date: '2026-08-05',
+      // (THR-1636 note: routes now outlive tick 36 by standing-town traffic, so this
+      // row's route conduit is exercised for the whole run, not only a founder's window.)
       evidence:
         'THR-626: driven end-to-end in a real world, not a fixture. `--seed 42 --map medium`, tick 120: the one live army ("The Civic Guard — Host") resolves `supplyHostId: null` with larder 46/100 and tier `strained`; by tick 132 it is `starving` at 0/100 and the scan trace reads `army-supply scan: 1 armies, 1 cut off, 0 strained, 1 starving, 1 seeded`, planting `army.supply.siege_lifted` because that army is the attacker in an active siege. Browser-confirmed on the served bundle at 1920×1080: `__DEBUG.getArmies()` returns `supplyTier: "starving"`, `supply: 10`, `supplyHost: null`, with cohesion visibly dragged 90% → 47% by the coupled `unsupplied` attrition term. Values and the consequence, not just symbols.',
     },
+  },
+  {
+    id: 'blockade-suspends-lane-traffic',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A warlord who blockades a trade lane holds it rather than killing it: while the blockade stands the lane is suspended — no decay, volume sinking toward a trickle — and when the threat lifts it carries again. Without this read a blockade on a standing lane would be invisible to the lane rule (it would keep carrying at full traffic), and without the suspension a blockade would be an erasure the verb itself promises it is not ("suspended, not deleted"). The player reads it as the word "blockaded" on the lane in the hex tooltip.',
+    // THR-1636 S1. `blockadeRoute` stamps `blockadedBy` (+ `threatened`) on the
+    // `trades_with` edge; `laneTraffic` reads both and classes the lane `suspended`,
+    // which `phaseTradeRouteDecay` keeps fresh and never dissolves. `routeEvents`
+    // clears `threatened` after ROUTE_THREATENED_CLEAR_TICKS, which is what lifts it.
+    // Honest limit: 0 suspended lane-ticks in 300 ticks on seeds 42 and 99 (the A/B
+    // census, `readers/upkeep-ab.ts`) — the blockade verb did not land on a lane in
+    // those runs, so this row is proven by `phaseTradeRouteDecay.laneTraffic.test.ts`,
+    // not yet by a live world.
+    mechanism: { kind: 'edge-prop', symbols: ['blockadedBy'] },
+    writeSites: ['src/engine/strategicGraphOps.ts'],
+    readSites: ['src/engine/tradeRoute.ts'],
   },
   {
     id: 'economy-sustains-essence-sources',

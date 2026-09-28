@@ -1707,6 +1707,38 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1636: every trade lane with its traffic class this tick (carrying /
+     * suspended / idle), volume and freshness — the state the hex tooltip's
+     * "blockaded" / "fading" words read. Sorted by edge id.
+     */
+    getTradeLanes: async () => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return [];
+      const { laneTraffic, isLaneTrafficEnabled } = await import('./engine/tradeRoute');
+      const tick = state?.tick ?? 0;
+      const on = isLaneTrafficEnabled();
+      // Same read as the map adapter (tradeRouteMarkers.hexOf): coords present → a hex.
+      const hexOfNode = (n: { properties: Record<string, unknown> } | undefined) =>
+        n && n.properties.hexCol != null && n.properties.hexRow != null
+          ? { col: Number(n.properties.hexCol), row: Number(n.properties.hexRow) } : null;
+      return graph.getEdgesByType('trades_with')
+        .map(e => ({
+          edgeId: e.id,
+          source: graph.getNode(e.source)?.name ?? e.source,
+          target: graph.getNode(e.target)?.name ?? e.target,
+          sourceHex: hexOfNode(graph.getNode(e.source)),
+          targetHex: hexOfNode(graph.getNode(e.target)),
+          traffic: on ? laneTraffic(graph, e, tick) : ('carrying' as const),
+          volume: typeof e.properties.volume === 'number' ? e.properties.volume : 1,
+          lastTraded: typeof e.properties.lastTraded === 'number' ? e.properties.lastTraded : 0,
+          threatened: e.properties.threatened === true,
+          blockadedBy: typeof e.properties.blockadedBy === 'string' ? e.properties.blockadedBy : null,
+        }))
+        .sort((a, b) => a.edgeId.localeCompare(b.edgeId));
+    },
+
+    /**
      * THR-401: inspect a location's THR-401 properties (population health,
      * divine presence, active time-bounded flags). Accepts a location id,
      * id prefix, or partial name. Returns null if not found.

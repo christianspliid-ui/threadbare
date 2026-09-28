@@ -870,6 +870,27 @@ export interface DebugBridge {
   } | null>;
 
   /**
+   * THR-1636: every trade lane (`trades_with` edge) with its traffic class this
+   * tick — `carrying` (both towns stand; never decays), `suspended` (blockaded;
+   * never dissolves), `idle` (an end razed or gone, roads cursed; decays) — plus
+   * volume, `lastTraded`, threatened and blockader. Sorted by edge id. With the
+   * kill switch off every lane reads `carrying`.
+   */
+  getTradeLanes: () => Promise<Array<{
+    edgeId: string;
+    source: string;
+    target: string;
+    /** Endpoint hexes (null when an end carries no hex coords) — for hovering the tooltip. */
+    sourceHex: { col: number; row: number } | null;
+    targetHex: { col: number; row: number } | null;
+    traffic: 'carrying' | 'suspended' | 'idle';
+    volume: number;
+    lastTraded: number;
+    threatened: boolean;
+    blockadedBy: string | null;
+  }>>;
+
+  /**
    * THR-401: inspect a location's THR-401 properties (health, presence,
    * countdown flags). Accepts id, id prefix, or partial name. Returns null
    * if not found.
