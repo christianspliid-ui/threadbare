@@ -393,6 +393,16 @@ export interface EncounterAftermathChange {
    * chip keeps its label (NFP #6).
    */
   readonly deltaLabel?: string;
+  /**
+   * THR-1606 — whose state this change is, when it is not the action's actor.
+   *
+   * A player cast's graph-ops write to its *target*, not to the god who cast
+   * it; `snapshotTargetChanges` records those writes with this set to the
+   * target's id. Absent on every actor-side change (NFP #6). The receipt reads
+   * it to name who changed, and keeps a target-side change from promoting the
+   * receipt to its modal tier: the change rides the toast with a chip.
+   */
+  readonly subjectId?: string;
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────

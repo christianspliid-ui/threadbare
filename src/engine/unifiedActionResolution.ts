@@ -181,6 +181,7 @@ import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry } from './digestBuffer';
+import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
 import {
@@ -873,6 +874,16 @@ function snapshotEncounterResolutionContext(
     reputationTallies,
     clearanceGates,
   };
+}
+
+/**
+ * THR-1606 — the target a player cast writes to, when it is someone other than
+ * the caster. Undefined for every non-player action and for self-casts.
+ */
+function playerCastTargetId(action: UnifiedAction): string | undefined {
+  if (action.source !== 'player') return undefined;
+  if (!action.targetId || action.targetId === action.actorId) return undefined;
+  return action.targetId;
 }
 
 function appendAftermathChanges(
@@ -1576,6 +1587,10 @@ export function executeStepResult(
   }
   const events: TickEvent[] = [];
   const beforeSnapshot = snapshotEncounterResolutionContext(state, action);
+  // THR-1606: a player cast writes to its target, not its actor — read the target
+  // before this step's ops so the diff below can name what changed on them.
+  const castTargetId = playerCastTargetId(action);
+  const beforeTargetSnapshot = castTargetId ? snapshotCastTarget(state.graph, castTargetId) : undefined;
   const clearanceGateResult = applyClearanceGateStepOutcome(
     state.clearanceGateStates,
     action,
@@ -2687,6 +2702,24 @@ export function executeStepResult(
         ...derivedFields(sentence),
         polarity: 'info',
       });
+    }
+  }
+
+  if (beforeTargetSnapshot) {
+    try {
+      const targetNode = state.graph.getNode(beforeTargetSnapshot.targetId);
+      aftermathChanges.push(...snapshotTargetChanges(
+        beforeTargetSnapshot,
+        snapshotCastTarget(state.graph, beforeTargetSnapshot.targetId),
+        {
+          graph: state.graph,
+          idStem: `${action.actionId}:step:${action.currentStep}`,
+          targetName: targetNode?.name ?? beforeTargetSnapshot.targetId,
+        },
+      ));
+    } catch (err) {
+      // Fail-soft (NFP #4): the receipt proceeds without target changes.
+      console.warn('[unifiedActionResolution] snapshotTargetChanges failed:', err);
     }
   }
 
@@ -3869,6 +3902,30 @@ export function phaseUnifiedActionProgress(
         attachmentsLost: digestEntry.attachmentsLost,
       });
       appendDigestEntry(digestBuffer, digestEntry);
+    }
+
+    // ── THR-1606: the target's story remembers your hand ──
+    // A player cast that changed its target files a digest entry under the
+    // target's id, so `composeThreadStory(target)` tells it. Only a cast whose
+    // capture found a real target-side change files one (Law 56).
+    if (updatedAction.resolved && updatedAction.source === 'player' && updatedAction.targetId) {
+      const targetChanges = targetSideChanges(updatedAction.aftermathChanges);
+      if (targetChanges.length > 0) {
+        try {
+          appendDigestEntry(digestBuffer, castDigestEntry({
+            graph: state.graph,
+            targetId: updatedAction.targetId,
+            templateId: completing_action.templateId,
+            templateName: template.spellName ?? template.name ?? 'Unknown Action',
+            reach: template.reach ?? 'iron',
+            tick: state.tick,
+            success: isActionSuccess(updatedAction.outcome),
+            changes: targetChanges,
+          }));
+        } catch (err) {
+          console.warn('[unifiedActionResolution] cast digest on target failed:', err);
+        }
+      }
     }
 
     // Replace action in array

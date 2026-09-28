@@ -18,7 +18,18 @@ export function deriveNavigationTarget(event: TickEvent): NavigationTarget | und
   // Divine Receipt toast → open the receipt dialogue (THR-727). The receipt id equals
   // the event id by construction (see processPlayerReceipts).
   if (event.type === 'player_action_receipt') {
+    // THR-1606: a cast that changed its target names them as the event's world
+    // reference (the producer declares, Law 2) — the toast opens the mortal it
+    // touched, where the chip and the story line are (Law 1).
+    const target = event.refs?.find((r) => r.kind === 'agent');
+    if (target) return { kind: 'agent', agentId: target.id };
     return { kind: 'receipt', receiptId: event.id };
+  }
+  // THR-1606: a spine gift's placement line opens the place it raised a seat in.
+  // (The artifact line carries the bearer as `actorId`, which the default below opens.)
+  if (event.type === 'narrative') {
+    const place = event.refs?.find((r) => r.kind === 'location');
+    if (place) return { kind: 'location', locationNodeId: place.id };
   }
   // Encounter events → encounter navigation
   if (event.type.startsWith('encounter_') || event.type === 'agent_encounter') {

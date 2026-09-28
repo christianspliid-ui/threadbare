@@ -939,6 +939,21 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; What your hand did
+      <span class="lead">Added 2026-09-28 (THR-1606). After a cast the player sees who it touched and what changed: on the receipt, on the mortal&rsquo;s sheet, and in their story.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A player cast&rsquo;s writes on its target <span class="arrow">&#10230;</span> The receipt names them and links to them (<code>cast-target-changes-reach-receipt</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1606. The resolver&rsquo;s aftermath diff only ever read the actor &mdash; the god &mdash; so a cast&rsquo;s receipt said who cast it and nothing about the mortal. The step resolver now snapshots the target before and after its ops (<code>snapshotCastTarget</code> / <code>snapshotTargetChanges</code>) and records each real write as a change carrying <code>subjectId</code>. The receipt leads with it when its overview never names the target, stays a toast, and links the toast to the mortal. No write, no change (Law 56).</span></li>
+      <li class="live"><span class="flow">A cast that changed someone <span class="arrow">&#10230;</span> Their Story So Far (<code>player-cast-lands-in-target-story</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1606. Player casts were never digested at all. A cast that changed its target now files a notable digest entry under the target carrying <code>castLine</code>, which <code>composeThreadStory</code> tells verbatim &mdash; &ldquo;Your hand reached into their sleep&hellip;&rdquo; &mdash; and one such beat is enough to tell a story.</span></li>
+      <li class="live"><span class="flow">Live divine influences <span class="arrow">&#10230;</span> Chips on the mortal&rsquo;s thread detail and profile sheet (<code>active-influences-render-on-sheet</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1606. <code>card.activeEffects</code> was built for <code>AgentInfoCard</code>, which is mounted nowhere live. <code>ActiveEffectChips</code> now renders it under &ldquo;Under your hand&rdquo;: <em>Dreaming</em> / <em>Compelled</em>, sphere-tinted, with the pole and the time left on hover.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; The casts that changed nothing
       <span class="lead">Added 2026-09-27 (THR-1651). A dream or a compulsion now changes what the mortal chooses, and the receipt says which way.</span>
     </h2>

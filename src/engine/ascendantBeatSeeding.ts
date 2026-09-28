@@ -41,6 +41,7 @@ import { pickSphereFlavoredEffect } from './ascendantPrimitives';
 import { getAscendantPrimarySphere } from './ascendantExpression';
 import { getAgentLocationId } from './graphQueries';
 import { emitTrace } from './traceBuffer';
+import { fillReceiptSlots, GIFT_SEAT_PLACED_LINE, GIFT_ARTIFACT_PLACED_LINE } from '../data/receipt-content';
 
 /** Trace category for beat graph seeding (registered in TRACE_CATEGORIES). */
 export const BEAT_SEEDED_TRACE_CATEGORY = 'ascendant.beat.seeded' as const;
@@ -51,6 +52,23 @@ export interface BeatSeedResult {
   readonly seededNodeIds: readonly string[];
   /** Edge ids created (`thread` / `possesses` / `controls`). */
   readonly seededEdgeIds: readonly string[];
+  /**
+   * THR-1606 — what the player is told the gift did, and where. Present when the
+   * seed placed something a player can find (a seat in a settlement, an artifact
+   * on a bearer); `resolvePendingBeat` turns it into a chronicle line and a toast.
+   */
+  readonly placement?: BeatGiftPlacement;
+}
+
+/** A spine gift's visible placement (THR-1606). */
+export interface BeatGiftPlacement {
+  /** The node the gift placed — the seat's settlement, or the minted artifact. */
+  readonly placedNodeId: string;
+  /** Where it landed — the settlement (seat) or the bearer (artifact). */
+  readonly anchorId: string;
+  readonly anchorKind: 'location' | 'agent';
+  /** The line the player reads (`GIFT_SEAT_PLACED_LINE` / `GIFT_ARTIFACT_PLACED_LINE`). */
+  readonly line: string;
 }
 
 const EMPTY_SEED: BeatSeedResult = { seededNodeIds: [], seededEdgeIds: [] };
@@ -120,7 +138,17 @@ function seedHomeSeat(state: GameState, ascendantId: string, turn: number): Beat
   // setHomeSeat ensures a `controls` edge with this deterministic id (added when absent).
   const controlsEdgeId = `edge.seat.controls.${ascendantId}.${result.locationId}`;
   const seededEdgeIds = graph.getEdge(controlsEdgeId) ? [controlsEdgeId] : [];
-  return { seededNodeIds: [result.locationId], seededEdgeIds };
+  const place = graph.getNode(result.locationId)?.name ?? result.locationId;
+  return {
+    seededNodeIds: [result.locationId],
+    seededEdgeIds,
+    placement: {
+      placedNodeId: result.locationId,
+      anchorId: result.locationId,
+      anchorKind: 'location',
+      line: fillReceiptSlots(GIFT_SEAT_PLACED_LINE, { place }),
+    },
+  };
 }
 
 /**
@@ -179,8 +207,20 @@ function seedThreadedArtifact(state: GameState, ascendantId: string, turn: numbe
       properties: { modifiers: {}, tags: ['divine_artifact'] },
     });
     seededEdgeIds.push(possessEdgeId);
+    const bearer = graph.getNode(firstId)?.name ?? firstId;
+    return {
+      seededNodeIds: [artifactId],
+      seededEdgeIds,
+      placement: {
+        placedNodeId: artifactId,
+        anchorId: firstId,
+        anchorKind: 'agent',
+        line: fillReceiptSlots(GIFT_ARTIFACT_PLACED_LINE, { bearer, artifact: 'A Thing Left Behind' }),
+      },
+    };
   }
 
+  // No bearer yet: the artifact exists but nobody carries it, so there is nothing to show.
   return { seededNodeIds: [artifactId], seededEdgeIds };
 }
 

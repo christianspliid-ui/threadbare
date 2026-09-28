@@ -212,3 +212,60 @@ export const CAST_INFLUENCE_RECEIPT_LINES: Record<'dream' | 'persuade', Record<C
 export function fillCastInfluenceLine(line: string, target: string, pole: string): string {
   return line.split('{target}').join(target).split('{pole}').join(pole);
 }
+
+// ─── What your hand did — the target side (THR-1606) ───────────────────────────
+
+/**
+ * The chip noun an influence wears on the mortal it touches — sheet words, one per
+ * intervention type the casts write. An intervention type with no entry here keeps
+ * its older label (`agentDetail.INTERVENTION_LABELS`).
+ */
+export const INFLUENCE_CHIP_NOUNS: Readonly<Record<string, string>> = {
+  dream: 'Dreaming',
+  persuade: 'Compelled',
+};
+
+/**
+ * The chip's hover sentence: what the influence does and when it fades.
+ * `{pole}` is the value word the drift pushes toward; `{duration}` is a
+ * `durationLabel` reading (Law 13: never ticks).
+ */
+export const INFLUENCE_CHIP_HOVER = 'Your hand is on them: {pole} weighs more in their choices, fading in {duration}.';
+
+/** The receipt's change line for an influence that landed on the target. `{target}`, `{noun}`. */
+export const TARGET_INFLUENCE_CHANGE_TITLE = 'Your hand is on them';
+export const TARGET_INFLUENCE_CHANGE_DETAIL = '{target} is {noun}: {pole} weighs more in what they choose.';
+/** Same, for an influence that carries no value drift (the older intervention kinds). */
+export const TARGET_INFLUENCE_CHANGE_DETAIL_PLAIN = '{target} is {noun}.';
+
+/** The receipt's change line for a trait or condition the cast placed on / lifted from the target. */
+export const TARGET_TRAIT_GAINED_TITLE = 'They carry something new';
+export const TARGET_TRAIT_GAINED_DETAIL = '{target} now carries {trait}.';
+export const TARGET_TRAIT_LOST_TITLE = 'Something left them';
+export const TARGET_TRAIT_LOST_DETAIL = '{target} no longer carries {trait}.';
+
+/**
+ * The line the mortal's own Story So Far tells about the cast — past tense, the
+ * narrator speaking to the god. Keyed by intervention type; `default` covers any
+ * other cast that changed the target.
+ */
+export const CAST_DIGEST_LINES: Readonly<Record<string, string>> = {
+  dream: 'Your hand reached into their sleep, and they woke leaning a little further toward {pole}.',
+  persuade: 'Your will pressed on them, and they took the conviction for their own.',
+  default: 'Your hand touched their life, and it did not pass without a mark.',
+};
+
+/** Fill `{slot}` tokens from a map; unknown slots are left as written. */
+export function fillReceiptSlots(line: string, slots: Readonly<Record<string, string>>): string {
+  return line.replace(/\{(\w+)\}/g, (whole, key: string) => (key in slots ? slots[key] : whole));
+}
+
+// ─── Spine gift placement lines (THR-1606) ─────────────────────────────────────
+
+/** Chronicle-tier significance a spine gift's placement event carries (≥ the chronicle threshold). */
+export const GIFT_PLACEMENT_SIGNIFICANCE = 0.85;
+
+/** "Take the Seat" — `{place}` is the settlement the seat was raised in. */
+export const GIFT_SEAT_PLACED_LINE = 'A seat is raised for you in {place}.';
+/** "Leave Your Mark" — `{bearer}` carries `{artifact}`. */
+export const GIFT_ARTIFACT_PLACED_LINE = '{bearer} now carries {artifact}.';

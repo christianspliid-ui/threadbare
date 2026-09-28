@@ -1577,6 +1577,39 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/data/receipt-content.ts'],
   },
   {
+    id: 'cast-target-changes-reach-receipt',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The receipt names who a cast changed and how (THR-1606, extends `player-action-aftermath-read`). The step resolver snapshots a player cast\'s *target* before and after its ops (`snapshotCastTarget` / `snapshotTargetChanges`) and records each real write — a new divine influence, a trait placed or lifted — as an aftermath change carrying `subjectId`. The receipt leads with the first such change when its overview never names the target, keeps it on the toast tier with a chip, and declares the target as the event\'s world reference so the toast opens the mortal (Law 1). No change is produced for a write that did not happen (Law 56).',
+    ulTerms: ['Aftermath'],
+    mechanism: { kind: 'function', symbols: ['snapshotCastTarget', 'snapshotTargetChanges', 'targetSideChanges', 'subjectId'], module: 'src/engine/castTargetChanges.ts' },
+    writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/castTargetChanges.ts'],
+    readSites: ['src/engine/playerReceipts.ts', 'src/engine/notificationRouter.ts', 'src/debug-bridge.ts'],
+  },
+  {
+    id: 'player-cast-lands-in-target-story',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The mortal\'s story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target\'s id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all.',
+    ulTerms: ['Aftermath'],
+    mechanism: { kind: 'node-prop', symbols: ['digestBuffer', 'castLine', 'castDigestEntry', 'composeThreadStory'] },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/threadDigest.ts', 'src/components/Game/hooks/useThreadStorySoFar.ts', 'src/debug-bridge.ts'],
+  },
+  {
+    id: 'active-influences-render-on-sheet',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: NARRATIVE,
+    intent:
+      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen.',
+    ulTerms: ['AxiologicalProfile'],
+    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects', 'ActiveEffectChips'] },
+    writeSites: ['src/engine/graphOpExecutor.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/components/Game/ActiveEffectChips.tsx', 'src/components/Game/ThreadDetailView.tsx', 'src/components/Game/AgentProfileModal.tsx'],
+  },
+  {
     id: 'cast-influence-shifts-target-values',
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: ENCOUNTERS,
