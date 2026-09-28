@@ -141,6 +141,34 @@ export const PERSONAL_OFFER_CAP_RESERVE = 6;
  */
 export const SOCIAL_OFFER_CAP_RESERVE = 6;
 
+/**
+ * Cap stage free-slot fill: take one entry per template before any template
+ * gets a second slot (THR-1633 S1). Without it, one template registered at many
+ * locations can fill the free slots with copies of itself.
+ *
+ * `false` restores the pre-THR-1633 fill (NFP #6).
+ */
+export const CAP_FILL_DISTINCT_FIRST = true;
+
+/**
+ * Cap stage free-slot fill: start the walk at `hashString(agentId + ':' + tick)
+ * mod n` and wrap, instead of at index 0 (THR-1633 S1). The candidate list arrives
+ * in cache insertion order, so a head-first fill let registration order decide
+ * which writing is ever looked at — measured on main @ 3abbba8a, 67 · 68 templates
+ * per seed (42 · 99) died at the cap, unscored. A pure hash, not a PRNG draw, so
+ * no seeded stream shifts (NFP #3).
+ *
+ * `false` restores the head-first fill (NFP #6).
+ *
+ * **Ships OFF (THR-1633, 2026-09-28).** Measured on seeds 42 · 99, medium, 200 ticks
+ * (`readers/reach.ts`): rotation does its job — cap-first-gate templates 76 · 60 → 7 · 5 —
+ * but total firings fall 1,498 → 515 and `selected_not_spawned` rises 34 → 127, because
+ * a wider shortlist hands mortals encounters elsewhere that they choose and then lose
+ * on the way (the reroute defect THR-1639 fixes). Per-agent and slow (25-tick) offsets
+ * measured the same. Switch on once THR-1639 has landed, and re-measure.
+ */
+export const CAP_FILL_ROTATE = false;
+
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
 export const THREAT_FLOOR_FILTER = false;

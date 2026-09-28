@@ -15,7 +15,7 @@ import {
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
 } from '../encounterFilterPipeline';
-import { MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
+import { MAX_COMPLETIONS_PER_TEMPLATE, CAP_FILL_ROTATE } from '../../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -393,6 +393,95 @@ describe('capWithDiversity', () => {
     expect(social).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
     expect(new Set(social.map(e => e.templateId)).size).toBe(4);
   });
+
+  // ── Fair free-slot fill (THR-1633 S1) ─────────────────────────
+  //
+  // The cut these pin is positional: the fill walked from index 0 of a list in
+  // cache insertion order, so a template registered late was never looked at —
+  // 67 · 68 templates per seed died at the cap, unscored. The rotation ships off
+  // until THR-1639 lands (see CAP_FILL_ROTATE), so these pin the mechanism with
+  // the switches passed explicitly.
+  const FAIR = { distinctFirst: true, rotate: true } as const;
+
+  it('ships with the head-first fill while CAP_FILL_ROTATE is off', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 200 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
+    const expected = CAP_FILL_ROTATE
+      ? capWithDiversity(entries, 'agent-1', graph, 7, FAIR)
+      : entries.slice(0, MAX_SCORED_CANDIDATES);
+    expect(capWithDiversity(entries, 'agent-1', graph, 7).map(e => e.templateId))
+      .toEqual(expected.map(e => e.templateId));
+  });
+
+  it('lets a template placed last in a 200-entry list reach the shortlist within 40 ticks', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 200 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
+
+    const reachedOn: number[] = [];
+    for (let tick = 1; tick <= 40; tick++) {
+      const result = capWithDiversity(entries, 'agent-1', graph, tick, FAIR);
+      expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+      if (result.some(e => e.templateId === 'tmpl-199')) reachedOn.push(tick);
+    }
+    expect(reachedOn.length).toBeGreaterThan(0);
+  });
+
+  it('gives the same shortlist for the same agent and tick (pure hash, no PRNG)', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 200 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
+    const a = capWithDiversity(entries, 'agent-1', graph, 17, FAIR).map(e => e.templateId);
+    const b = capWithDiversity(entries, 'agent-1', graph, 17, FAIR).map(e => e.templateId);
+    expect(a).toEqual(b);
+    const c = capWithDiversity(entries, 'agent-1', graph, 18, FAIR).map(e => e.templateId);
+    expect(c).not.toEqual(a);
+  });
+
+  it('fills with distinct templates before giving any template a second slot', () => {
+    const graph = new WorldGraph();
+    // One template registered at 100 locations, then 30 others: the old fill
+    // spent every free slot on copies of the first.
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 100 }, (_, i) =>
+        makeEntry({ templateId: 'crowd', locationId: `loc-${i}`, encounterType: 'explore' })),
+      ...Array.from({ length: 30 }, (_, i) =>
+        makeEntry({ templateId: `other-${i}`, encounterType: 'explore' })),
+    ];
+    const result = capWithDiversity(entries, 'agent-1', graph, 5, FAIR);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    // All 31 distinct templates are on the shortlist; only the leftover slots repeat.
+    expect(new Set(result.map(e => e.templateId)).size).toBe(31);
+  });
+
+  it('keeps the head-first fill when no tick is given (old behaviour)', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 200 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result.map(e => e.templateId)).toEqual(
+      Array.from({ length: MAX_SCORED_CANDIDATES }, (_, i) => `tmpl-${i}`),
+    );
+  });
+
+  it('holds every reserve under a rotating fill', () => {
+    const graph = new WorldGraph();
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' })),
+      ...Array.from({ length: 30 }, (_, i) =>
+        makeEntry({ templateId: `social-${i}`, encounterType: 'explore', socialOffer: true })),
+      ...Array.from({ length: 10 }, (_, i) =>
+        makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
+    ];
+    for (let tick = 1; tick <= 20; tick++) {
+      const result = capWithDiversity(entries, 'agent-1', graph, tick, FAIR);
+      expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+      expect(result.filter(e => e.personallyOffered).length).toBeGreaterThanOrEqual(PERSONAL_OFFER_CAP_RESERVE);
+      expect(result.filter(e => e.socialOffer).length).toBeGreaterThanOrEqual(SOCIAL_OFFER_CAP_RESERVE);
+    }
+  });
 });
 
 // ─── Full Pipeline ──────────────────────────────────────────────
@@ -464,6 +553,19 @@ describe('runFilterPipeline', () => {
     expect(trace.afterThreat).toBeLessThanOrEqual(trace.afterPrerequisites);
     expect(trace.afterCap).toBeLessThanOrEqual(trace.afterThreat);
     expect(trace.summary).toContain('agent-1');
+    expect(trace.capCutTemplates).toBe(0);
+  });
+
+  it('counts the distinct templates the cap cut (THR-1633 S1)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 10 });
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
+
+    const entries = Array.from({ length: 60 }, (_, i) =>
+      makeEntry({ templateId: `t-${i}`, threatRating: 'moderate', reachPrimary: 'iron' as ReachDomain }));
+    const trace = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 3).trace;
+    // Every entry is its own template, so the templates cut equal the entries cut.
+    expect(trace.capCutTemplates).toBe(Math.max(0, trace.afterThreat - trace.afterCap));
   });
 
   it('stage 1 calls awareness + faction filters', () => {
