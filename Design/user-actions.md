@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 21:55 local (19:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: the ten most common encounters are finished**: each now has its own lines for succeeding at a cost and for crits, and deals a hand from your god's cards (step one of [THR-1634](https://linear.app/threadbare/issue/THR-1634)). Merged via [#2129](https://github.com/christianspliid-ui/threadbare/pull/2129), and live on the site.
 - **2026-09-28: the hover tooltip is readable again**: a region's name no longer draws on top of it ([THR-1665](https://linear.app/threadbare/issue/THR-1665)). Merged via [#2127](https://github.com/christianspliid-ui/threadbare/pull/2127), and live on the site.
 - **2026-09-28: spotlight mortals join guilds**: heroes who choose for themselves now join a guild when it suits their strengths ([THR-1640](https://linear.app/threadbare/issue/THR-1640)). Merged via [#2126](https://github.com/christianspliid-ui/threadbare/pull/2126), and live on the site.
 - **2026-09-28: trade lanes stay alive**: a lane now carries while both its towns stand and nothing blocks it, instead of every lane vanishing on day 36 (first step of [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636)). Merged via [#2125](https://github.com/christianspliid-ui/threadbare/pull/2125), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: a quiet first screen**: doom, rivals and omens stay hidden until you bond with The First ([THR-1648](https://linear.app/threadbare/issue/THR-1648)). Merged via [#2120](https://github.com/christianspliid-ui/threadbare/pull/2120), and live on the site.
 - **2026-09-28: the opening gifts wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647)). Merged via [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), live.
 - **2026-09-28: the world pauses for every moment and resumes where you left it**: the Chapter Ledger and doom popups stop time while you read, popups wait their turn, and play resumes as you left it (part of [the first ten minutes](https://linear.app/threadbare/issue/THR-1608)). Merged via [#2118](https://github.com/christianspliid-ui/threadbare/pull/2118), and live on the site.
-- **2026-09-28: the doom clock waits for The First**: the world can no longer end before your First has had a real journey ([THR-1646](https://linear.app/threadbare/issue/THR-1646)). Merged via [#2117](https://github.com/christianspliid-ui/threadbare/pull/2117), and live on the site.
 
 ---
 
