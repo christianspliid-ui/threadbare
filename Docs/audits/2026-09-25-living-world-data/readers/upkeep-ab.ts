@@ -1,7 +1,13 @@
 // Throwaway reader (THR-1636 S1): lane traffic A/B — `LANE_TRAFFIC_ENABLED` off vs on.
 // Read-only. One pass per seed per arm, medium map, unattended (no player, no First).
 // Usage: npx esbuild <this> --bundle --platform=node --format=esm --outfile=.cache/upkeep-ab.mjs
-//          --external:fs --external:path && node .cache/upkeep-ab.mjs [seeds=42,99] [ticks=300] [out]
+//          --external:fs --external:path && node .cache/upkeep-ab.mjs [seeds=42,99] [ticks=300] [out] [arms=off,on]
+// Run one arm per process (arms=off, then arms=on with a second out path) when comparing:
+// module-level state (event counters, caches) is not fully reset between arms in one process.
+//
+// Deaths are found by DIFFING the lane set each tick, never from the trace buffer: the
+// buffer is a rolling window, and on a busy tick the phase-6.62 dissolution trace can be
+// evicted before the tick ends (measured THR-1636: three traced deaths read as none).
 //
 // Per arm: worldgen lanes at t0 and which still stand at the end; every dissolution with
 // the state of its ends at death (the traced cause); lanes founded; lanes standing by
@@ -42,11 +48,11 @@ function runArm(seed: number, on: boolean) {
       traffic: laneTraffic(g(), e, t),
       src: g().getNode(e.source)?.properties.locationSubtype, dst: g().getNode(e.target)?.properties.locationSubtype,
       by: e.properties.establishedBy ?? null,
+      srcId: e.source, dstId: e.target,
     }]));
     state = runTick(state, [], rt);
     for (const tr of getTraces() as ReadonlyArray<Record<string, unknown>>) {
       const c = String(tr.category);
-      if (c === 'trade_route_dissolved') deaths.push({ tick: t, edge: tr.edgeId, lived: tr.totalTicksActive, ...before.get(String(tr.edgeId)) });
       if (c === 'trade_route_volume_change' && tr.cause === 'established') founded++;
       if (c === 'route_event_scan' && t > 36 && Number(tr.seedsPlanted ?? 0) > 0) { routeScansSeededAfter36++; routeSeedsAfter36 += Number(tr.seedsPlanted); }
       if (c === 'trade_route_upkeep') {
@@ -55,6 +61,14 @@ function runArm(seed: number, on: boolean) {
       }
     }
     clearTraces();
+    const nowIds = new Set(g().getEdgesByType('trades_with').map(e => e.id));
+    for (const [id, b] of before) if (!nowIds.has(id)) {
+      deaths.push({
+        tick: t, edge: id, ...b,
+        srcAfter: g().getNode(b.srcId)?.properties.locationSubtype ?? 'gone',
+        dstAfter: g().getNode(b.dstId)?.properties.locationSubtype ?? 'gone',
+      });
+    }
     if (t % 50 === 0) standing[t] = g().getEdgesByType('trades_with').length;
   }
   const endIds = new Set(g().getEdgesByType('trades_with').map(e => e.id));
@@ -79,12 +93,16 @@ function runArm(seed: number, on: boolean) {
   };
 }
 
+const arms = (process.argv[5] ?? 'off,on').split(',');
 for (const seed of seeds) {
-  const off = runArm(seed, false);
-  const on = runArm(seed, true);
-  out[seed] = { off, on };
-  console.log(`seed ${seed} OFF:`, JSON.stringify({ ...off, deaths: off.deaths.length }));
-  console.log(`seed ${seed} ON :`, JSON.stringify(on));
+  const rec: Record<string, unknown> = {};
+  for (const a of arms) {
+    const r = runArm(seed, a === 'on');
+    // A death's cause, read after the tick: what its ends had become.
+    rec[a] = r;
+    console.log(`seed ${seed} ${a.toUpperCase()}:`, JSON.stringify({ ...r, deaths: r.deaths.map(d => [d.tick, d.traffic, d.src, d.dst, d.srcAfter, d.dstAfter, d.by]) }));
+  }
+  out[seed] = rec;
 }
 setLaneTrafficEnabledOverride(null);
 const path = process.argv[4] ?? 'Docs/audits/2026-09-25-living-world-data/output/upkeep-ab-2026-09-28.json';

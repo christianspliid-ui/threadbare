@@ -2,312 +2,328 @@
   {
     "arm": "baseline",
     "seed": 42,
-    "reps": 3,
+    "reps": 5,
     "estimator": "median across reps",
-    "ms1_20": 94.6,
-    "ms21_150": 119.5,
-    "ms21_200": 130.2,
-    "meanOfReps21_200": 130.9,
+    "ms1_20": 105,
+    "ms21_150": 126.5,
+    "ms21_200": 138.6,
+    "meanOfReps21_200": 150.7,
     "perRep21_200": [
-      130.1,
-      132.3,
-      130.2
+      140.1,
+      138.3,
+      198.6,
+      138.6,
+      137.8
     ],
     "perRep1_20": [
-      95.7,
-      94.6,
-      94.3
+      105,
+      105,
+      108,
+      104.2,
+      104.3
     ],
-    "repSd21_200": 1,
+    "repSd21_200": 23.9,
     "repRange21_200": [
-      130.1,
-      132.3
+      137.8,
+      198.6
     ],
     "deltaSteadyMs": 0,
     "deltaSteadyPct": 0,
     "deltaWarmPct": 0,
     "decidersStartEnd": [
       20,
-      20
+      19
     ],
-    "aliveMortalsEnd": 612,
-    "eventsEmitted": 15361,
+    "aliveMortalsEnd": 621,
+    "eventsEmitted": 16190,
     "lever": {},
     "phasesMoved": [
       {
         "phase": "agent_decision",
         "deltaMs": 0,
-        "armMs": 41.84
+        "armMs": 44.47
       },
       {
         "phase": "delve_admission",
         "deltaMs": 0,
-        "armMs": 19.73
+        "armMs": 20.67
       },
       {
         "phase": "economic_traits",
         "deltaMs": 0,
-        "armMs": 18.85
+        "armMs": 20.11
       },
       {
         "phase": "unified_action_progress",
         "deltaMs": 0,
-        "armMs": 8.78
+        "armMs": 9.13
       },
       {
         "phase": "effect_tick",
         "deltaMs": 0,
-        "armMs": 6.05
+        "armMs": 5.91
       },
       {
         "phase": "reputation_traits",
         "deltaMs": 0,
-        "armMs": 5.2
+        "armMs": 5.53
       },
       {
         "phase": "faction_actions",
         "deltaMs": 0,
-        "armMs": 4.75
+        "armMs": 5.03
       },
       {
         "phase": "colocation_detection",
         "deltaMs": 0,
-        "armMs": 2.93
+        "armMs": 3.29
       }
     ]
   },
   {
     "arm": "baseline",
     "seed": 99,
-    "reps": 3,
+    "reps": 5,
     "estimator": "median across reps",
-    "ms1_20": 130.6,
-    "ms21_150": 160.9,
-    "ms21_200": 173.8,
-    "meanOfReps21_200": 174.7,
+    "ms1_20": 139.7,
+    "ms21_150": 174.4,
+    "ms21_200": 189.1,
+    "meanOfReps21_200": 210.8,
     "perRep21_200": [
-      178.1,
-      173.8,
-      172.4
+      188.6,
+      273.5,
+      214.1,
+      188.8,
+      189.1
     ],
     "perRep1_20": [
-      130.6,
-      134.1,
-      129.3
+      139.6,
+      144.6,
+      143.3,
+      139.3,
+      139.7
     ],
-    "repSd21_200": 2.4,
+    "repSd21_200": 32.8,
     "repRange21_200": [
-      172.4,
-      178.1
+      188.6,
+      273.5
     ],
     "deltaSteadyMs": 0,
     "deltaSteadyPct": 0,
     "deltaWarmPct": 0,
     "decidersStartEnd": [
       23,
-      19
+      18
     ],
-    "aliveMortalsEnd": 783,
-    "eventsEmitted": 18907,
+    "aliveMortalsEnd": 805,
+    "eventsEmitted": 20821,
     "lever": {},
     "phasesMoved": [
       {
         "phase": "agent_decision",
         "deltaMs": 0,
-        "armMs": 60.14
-      },
-      {
-        "phase": "delve_admission",
-        "deltaMs": 0,
-        "armMs": 28.39
+        "armMs": 68.43
       },
       {
         "phase": "economic_traits",
         "deltaMs": 0,
-        "armMs": 28.01
+        "armMs": 30.87
+      },
+      {
+        "phase": "delve_admission",
+        "deltaMs": 0,
+        "armMs": 29.74
       },
       {
         "phase": "unified_action_progress",
         "deltaMs": 0,
-        "armMs": 8.8
+        "armMs": 9.52
       },
       {
         "phase": "effect_tick",
         "deltaMs": 0,
-        "armMs": 6.49
+        "armMs": 8.05
       },
       {
         "phase": "reputation_traits",
         "deltaMs": 0,
-        "armMs": 6.37
+        "armMs": 7.26
       },
       {
         "phase": "faction_actions",
         "deltaMs": 0,
-        "armMs": 5.89
+        "armMs": 6.24
       },
       {
         "phase": "colocation_detection",
         "deltaMs": 0,
-        "armMs": 3.58
+        "armMs": 4.02
       }
     ]
   },
   {
     "arm": "lanes-off",
     "seed": 42,
-    "reps": 3,
+    "reps": 5,
     "estimator": "median across reps",
-    "ms1_20": 94.9,
-    "ms21_150": 115,
-    "ms21_200": 127.9,
-    "meanOfReps21_200": 128,
+    "ms1_20": 106,
+    "ms21_150": 121.9,
+    "ms21_200": 132.3,
+    "meanOfReps21_200": 149.5,
     "perRep21_200": [
-      127.9,
-      128.7,
-      127.3
+      131.9,
+      163.3,
+      189.5,
+      130.3,
+      132.3
     ],
     "perRep1_20": [
-      94.2,
-      97,
-      94.9
+      106,
+      104.5,
+      106.9,
+      104.1,
+      111.7
     ],
-    "repSd21_200": 0.6,
+    "repSd21_200": 23.5,
     "repRange21_200": [
-      127.3,
-      128.7
+      130.3,
+      189.5
     ],
-    "deltaSteadyMs": -2.2,
-    "deltaSteadyPct": -1.7,
-    "deltaWarmPct": 0.3,
+    "deltaSteadyMs": -6.4,
+    "deltaSteadyPct": -4.6,
+    "deltaWarmPct": 0.9,
     "decidersStartEnd": [
       20,
       19
     ],
-    "aliveMortalsEnd": 615,
-    "eventsEmitted": 15542,
+    "aliveMortalsEnd": 631,
+    "eventsEmitted": 15632,
     "lever": {
       "laneTraffic": 0
     },
     "phasesMoved": [
       {
-        "phase": "agent_decision",
-        "deltaMs": 1.18,
-        "armMs": 43.01
+        "phase": "unified_action_progress",
+        "deltaMs": -1.02,
+        "armMs": 8.11
       },
       {
-        "phase": "effect_tick",
-        "deltaMs": -0.79,
-        "armMs": 5.26
+        "phase": "agent_decision",
+        "deltaMs": -1,
+        "armMs": 43.47
       },
       {
         "phase": "delve_admission",
-        "deltaMs": -0.5,
-        "armMs": 19.23
+        "deltaMs": -0.92,
+        "armMs": 19.75
       },
       {
-        "phase": "economic_traits",
-        "deltaMs": -0.34,
-        "armMs": 18.51
+        "phase": "effect_tick",
+        "deltaMs": -0.43,
+        "armMs": 5.48
       },
       {
-        "phase": "unified_action_progress",
-        "deltaMs": -0.22,
-        "armMs": 8.56
+        "phase": "colocation_detection",
+        "deltaMs": -0.37,
+        "armMs": 2.92
       },
       {
-        "phase": "faction_actions",
-        "deltaMs": -0.16,
-        "armMs": 4.59
+        "phase": "groups",
+        "deltaMs": -0.23,
+        "armMs": 0.62
       },
       {
         "phase": "reputation_traits",
-        "deltaMs": -0.15,
-        "armMs": 5.04
+        "deltaMs": -0.13,
+        "armMs": 5.4
       },
       {
-        "phase": "strategic_projects",
+        "phase": "condition_decay",
         "deltaMs": -0.1,
-        "armMs": 0.58
+        "armMs": 0.44
       }
     ]
   },
   {
     "arm": "lanes-off",
     "seed": 99,
-    "reps": 3,
+    "reps": 5,
     "estimator": "median across reps",
-    "ms1_20": 129.1,
-    "ms21_150": 162.9,
-    "ms21_200": 171.6,
-    "meanOfReps21_200": 171,
+    "ms1_20": 139.9,
+    "ms21_150": 172.9,
+    "ms21_200": 185.9,
+    "meanOfReps21_200": 202.4,
     "perRep21_200": [
-      171.6,
-      173.8,
-      167.6
+      185.3,
+      269.7,
+      186.7,
+      184.5,
+      185.9
     ],
     "perRep1_20": [
-      128.8,
-      129.1,
-      129.3
+      139.9,
+      147.4,
+      140.2,
+      139.4,
+      139.2
     ],
-    "repSd21_200": 2.6,
+    "repSd21_200": 33.7,
     "repRange21_200": [
-      167.6,
-      173.8
+      184.5,
+      269.7
     ],
-    "deltaSteadyMs": -2.2,
-    "deltaSteadyPct": -1.3,
-    "deltaWarmPct": -1.2,
+    "deltaSteadyMs": -3.2,
+    "deltaSteadyPct": -1.7,
+    "deltaWarmPct": 0.2,
     "decidersStartEnd": [
       23,
       20
     ],
-    "aliveMortalsEnd": 787,
-    "eventsEmitted": 18768,
+    "aliveMortalsEnd": 797,
+    "eventsEmitted": 20472,
     "lever": {
       "laneTraffic": 0
     },
     "phasesMoved": [
       {
         "phase": "agent_decision",
-        "deltaMs": -1.65,
-        "armMs": 58.5
+        "deltaMs": -2.77,
+        "armMs": 65.66
       },
       {
-        "phase": "unified_action_progress",
-        "deltaMs": -0.38,
-        "armMs": 8.42
+        "phase": "economic_traits",
+        "deltaMs": -1.02,
+        "armMs": 29.86
       },
       {
         "phase": "effect_tick",
-        "deltaMs": -0.19,
-        "armMs": 6.3
+        "deltaMs": -0.47,
+        "armMs": 7.58
       },
       {
-        "phase": "delve_admission",
-        "deltaMs": 0.14,
-        "armMs": 28.53
-      },
-      {
-        "phase": "reputation_traits",
-        "deltaMs": 0.12,
-        "armMs": 6.5
+        "phase": "unified_action_progress",
+        "deltaMs": -0.42,
+        "armMs": 9.1
       },
       {
         "phase": "groups",
-        "deltaMs": 0.11,
-        "armMs": 0.8
+        "deltaMs": 0.39,
+        "armMs": 1.48
       },
       {
-        "phase": "colocation_detection",
+        "phase": "battle_tick",
+        "deltaMs": -0.08,
+        "armMs": 1.03
+      },
+      {
+        "phase": "strategic_projects",
         "deltaMs": 0.08,
-        "armMs": 3.66
+        "armMs": 1.07
       },
       {
         "phase": "sphere_pressure",
-        "deltaMs": -0.08,
-        "armMs": 0.22
+        "deltaMs": -0.07,
+        "armMs": 0.26
       }
     ]
   }
