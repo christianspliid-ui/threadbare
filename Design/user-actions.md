@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 17:57 local (15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 18:55 local (16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: faith and politics as world settings**: every culture gets its own Temple congregation and holy places, nearby wild towns read as its fringe, and town guilds are labelled ([THR-1632](https://linear.app/threadbare/issue/THR-1632)). Merged via [#2124](https://github.com/christianspliid-ui/threadbare/pull/2124), and live on the site; the on-screen step is [THR-1659](https://linear.app/threadbare/issue/THR-1659).
 - **2026-09-28: "who am I?" answered on screen**: the avatar's past-life name now reads as "your mortal shape" ([THR-1609](https://linear.app/threadbare/issue/THR-1609)). Merged via [#2123](https://github.com/christianspliid-ui/threadbare/pull/2123), and live on the site.
 - **2026-09-28: what you spend and risk, made readable**: a new player can see what an action costs and what it risks before choosing ([THR-1607](https://linear.app/threadbare/issue/THR-1607)). Merged via [#2122](https://github.com/christianspliid-ui/threadbare/pull/2122), and live on the site.
 - **2026-09-28: a quiet first screen**: doom, rivals and omens stay hidden until you bond with The First ([THR-1648](https://linear.app/threadbare/issue/THR-1648)). Merged via [#2120](https://github.com/christianspliid-ui/threadbare/pull/2120), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: you see what your hand did**: after a cast, the player now sees who it touched and what changed ([THR-1606](https://linear.app/threadbare/issue/THR-1606)). Merged via [#2116](https://github.com/christianspliid-ui/threadbare/pull/2116), and live on the site.
 - **2026-09-28: the meeting comes to you**: after Reach Down, Meet The First now opens at the nearest settlement, so a new player can no longer miss The First (first step of [the opening](https://linear.app/threadbare/issue/THR-1605)). Merged via [#2115](https://github.com/christianspliid-ui/threadbare/pull/2115), and live on the site.
 - **2026-09-28: every written encounter gets its turn**: each mortal's shortlist is filled fairly, and a mortal in a town sees what it can start there first ([let written encounters land](https://linear.app/threadbare/issue/THR-1633)). Merged via [#2114](https://github.com/christianspliid-ui/threadbare/pull/2114), and live on the site.
-- **2026-09-28: newcomers only join the deciding tier when your attention limit has room**, the second step of [notables and ties](https://linear.app/threadbare/issue/THR-1653). Merged via [#2112](https://github.com/christianspliid-ui/threadbare/pull/2112), and live on the site.
 
 ---
 
