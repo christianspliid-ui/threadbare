@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 13:55 local (11:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: a quiet first screen**: doom, rivals and omens stay hidden until you bond with The First ([THR-1648](https://linear.app/threadbare/issue/THR-1648)). Merged via [#2120](https://github.com/christianspliid-ui/threadbare/pull/2120), and live on the site.
 - **2026-09-28: the opening gifts wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647)). Merged via [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), live.
 - **2026-09-28: the world pauses for every moment and resumes where you left it**: the Chapter Ledger and doom popups stop time while you read, popups wait their turn, and play resumes as you left it (part of [the first ten minutes](https://linear.app/threadbare/issue/THR-1608)). Merged via [#2118](https://github.com/christianspliid-ui/threadbare/pull/2118), and live on the site.
 - **2026-09-28: the doom clock waits for The First**: the world can no longer end before your First has had a real journey ([THR-1646](https://linear.app/threadbare/issue/THR-1646)). Merged via [#2117](https://github.com/christianspliid-ui/threadbare/pull/2117), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: newcomers only join the deciding tier when your attention limit has room**, the second step of [notables and ties](https://linear.app/threadbare/issue/THR-1653). Merged via [#2112](https://github.com/christianspliid-ui/threadbare/pull/2112), and live on the site.
 - **2026-09-28: a journey keeps its goal**: a mortal walking to an encounter still arrives after a detour ([THR-1639](https://linear.app/threadbare/issue/THR-1639)). Merged via [#2111](https://github.com/christianspliid-ui/threadbare/pull/2111), and live on the site.
 - **2026-09-28: every reach now reads the town**: the rest of the culture and sphere lines for encounter openings are written ([THR-1638](https://linear.app/threadbare/issue/THR-1638)). Merged via [#2110](https://github.com/christianspliid-ui/threadbare/pull/2110), and live on the site.
-- **2026-09-28: new worlds start with a past**: founding ages, old wars and the dead, stored behind the scenes for now, the first step of [a world with a past](https://linear.app/threadbare/issue/THR-1631). Merged via [#2109](https://github.com/christianspliid-ui/threadbare/pull/2109), and live on the site.
 
 ---
 
