@@ -78,7 +78,7 @@ Four design rules: (1) Path over adjective. (2) Moral axis is structural — eac
 
 Locations hold **resource stocks** in named classes (staple / strategic / luxury / arcane), resolving to three tiers: **scarce · adequate · surplus**. Tier drives prosperity, and surfaces as a plain-prose **Livelihood** line — you read hunger or glut, never a number.
 
-Trade routes carry a **cargo manifest** naming what actually moves, derived from what each endpoint has spare and what it wants. Merchants prefer **complementary** partners — a surplus beside a shortage beats two towns with the same granary.
+Trade routes carry a **cargo manifest** naming what actually moves, derived from what each endpoint has spare and what it wants. Merchants prefer **complementary** partners — a surplus beside a shortage beats two towns with the same granary. A lane **lives while both its towns stand**; it dies only when a town is razed or its roads are cursed, and a blockade suspends it rather than killing it.
 
 Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine; **Reveal the Vein** (Eye / Matter) surfaces a new deposit; **Guide the Caravan** (Eye / Order) boosts and protects every road that feeds a settlement; **Sour the Mine** (Shadow / Entropy) pinches the non-staple wealth shut. All arrive as milestone unlocks, all land a beat later — you tilt the odds, you do not farm.
 

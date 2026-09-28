@@ -302,6 +302,7 @@
       <h3>Prosperity coupling <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>computeEquilibriumTarget</code> in <code>phaseProsperity.ts</code> adds <code>resourceBalance · RESOURCE_BALANCE_PROSPERITY_WEIGHT 0.15 · 100</code> (±15 max) to the settlement's equilibrium target, read via <code>readLocationResourceBalance</code>. It is an additive term <em>on top of</em> carrying capacity — capacity is the ceiling the land affords, the balance term is the surplus/scarcity nudge; they are distinct signals. Both <code>resourceBalance</code> and <code>resourceBalanceBonus</code> are attributable in the <code>prosperity_tick</code> trace breakdown.</li>
+        <li><strong>Trade lanes and livelihoods</strong> (THR-1636): the same pair balance that shapes a lane's cargo now sets how busy a standing lane settles — <code>laneTrafficLevel</code> in <code>tradeRoute.ts</code> reads <code>scoreRoutePairBalance</code> of the two towns, so complementary livelihoods run a busier road (up to volume 4) than two towns with the same granary (2). <code>phaseProsperity.ts</code> now exports <code>isLocationRoutesCursed</code> so the lane classifier reads the one cursed-roads predicate prosperity already uses. See settlements-economy-reference for the lane rule.</li>
       </ul>
 
       <h3>Chronicle — Famine &amp; Glut <span class="flag impl">IMPL</span></h3>

@@ -320,6 +320,7 @@ export function HexTooltip({
                   : ' — light trade'}
                 {route.carriesStaple ? ' ·staple' : ''}
                 {route.threatened ? ' ·threatened' : ''}
+                {route.traffic === 'suspended' ? ' ·blockaded' : route.traffic === 'idle' ? ' ·fading' : ''}
               </span>
             </div>
           ))}

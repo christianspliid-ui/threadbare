@@ -245,9 +245,10 @@ function computeCarryingCapacity(props: Record<string, unknown>): number {
 
 /**
  * THR-401: check whether a location currently has cursed roads — used to
- * zero out trade-route contributions while the curse is active.
+ * zero out trade-route contributions while the curse is active. Exported for
+ * the lane-traffic classifier (THR-1636), which reads the same predicate.
  */
-function isLocationRoutesCursed(props: Record<string, unknown> | undefined, currentTick: number): boolean {
+export function isLocationRoutesCursed(props: Record<string, unknown> | undefined, currentTick: number): boolean {
   const until = props?.routesCursedUntilTick;
   return typeof until === 'number' && currentTick < until;
 }

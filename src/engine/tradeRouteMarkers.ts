@@ -10,7 +10,7 @@
  * endpoints without hex coords are skipped; no routes → empty outputs.
  */
 import type { WorldGraph } from './graph';
-import { readTradeRouteProps } from './tradeRoute';
+import { readTradeRouteProps, laneTraffic, isLaneTrafficEnabled, type LaneTraffic } from './tradeRoute';
 
 export interface TradeRouteLine {
   id: string;
@@ -30,6 +30,12 @@ export interface RouteTooltipEntry {
   carriesStaple: boolean;
   threatened: boolean;
   volume: number;
+  /**
+   * The lane's traffic class this tick (THR-1636): `suspended` reads "blockaded",
+   * `idle` reads "fading" in the hex tooltip. With the kill switch off every lane
+   * reads `carrying`, so the tooltip says nothing new.
+   */
+  traffic: LaneTraffic;
 }
 
 function hexOf(graph: WorldGraph, locId: string): { col: number; row: number } | undefined {
@@ -63,9 +69,11 @@ export function buildTradeRouteLines(graph: WorldGraph): TradeRouteLine[] {
 
 /**
  * Tooltip index: "col,row" of each route endpoint → the routes touching that
- * hex, described from that endpoint's perspective.
+ * hex, described from that endpoint's perspective. `currentTick` feeds the
+ * lane-traffic class (cursed roads are time-bounded, THR-1636).
  */
-export function buildRouteTooltipsByHex(graph: WorldGraph): Map<string, RouteTooltipEntry[]> {
+export function buildRouteTooltipsByHex(graph: WorldGraph, currentTick = 0): Map<string, RouteTooltipEntry[]> {
+  const trafficOn = isLaneTrafficEnabled();
   const byHex = new Map<string, RouteTooltipEntry[]>();
   const push = (hex: { col: number; row: number }, entry: RouteTooltipEntry): void => {
     const key = `${hex.col},${hex.row}`;
@@ -84,6 +92,7 @@ export function buildRouteTooltipsByHex(graph: WorldGraph): Map<string, RouteToo
       carriesStaple: props.manifest.carriesStaple,
       threatened,
       volume: props.volume,
+      traffic: trafficOn ? laneTraffic(graph, edge, currentTick) : 'carrying' as LaneTraffic,
     };
     push(from, { ...base, otherName: graph.getNode(edge.target)?.name ?? 'a far market' });
     push(to, { ...base, otherName: graph.getNode(edge.source)?.name ?? 'a far market' });

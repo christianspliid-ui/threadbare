@@ -19,8 +19,13 @@
  */
 
 import type { ResourceInstance } from '../types/resource';
+import type { GraphEdge, GraphNode } from '../types/graph';
+import type { WorldGraph } from './graph';
 import { readResources } from './resourceEconomy';
 import { getResourceClass } from '../data/resource-classes';
+import { LOCATION_CLASSES } from '../data/world-objects';
+import { resolveToParentLocation } from './sublocationShape';
+import { isLocationRoutesCursed } from './phaseProsperity';
 
 // ─── Constants (System 2) ─────────────────────────────────────────────────
 
@@ -368,4 +373,116 @@ export function isRouteUnderFoundersGrace(
 ): boolean {
   if (!props.establishedBy) return false;
   return currentTick - props.established < TRADE_ROUTE_FOUNDING_GRACE_WINDOW;
+}
+
+// ─── Lane traffic (THR-1636 S1) ───────────────────────────────────────────
+// Design doc: Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md § S1.
+//
+// Before this, nothing ambient ever marked a lane as traded, so every seeded lane
+// (and every founded one, once its grace lapsed) decayed to nothing on tick 36.
+// A lane now lives while both of its towns stand and nothing blocks it: traffic is
+// route STATE, like the route events (`phases/routeEvents.ts`), and no caravan walks.
+// Cargo sets how busy a lane is, never whether it lives — seeded manifests are
+// mostly empty by tick 12, so a cargo-gated lane would die on day one.
+
+/** Kill switch. `false` restores the pre-THR-1636 behaviour exactly (no classification, no traffic step). */
+export const LANE_TRAFFIC_ENABLED = true;
+
+/**
+ * Measurement lever for the A/B census (`readers/upkeep.ts`) and tests: overrides
+ * `LANE_TRAFFIC_ENABLED` without editing it. `null` clears the override. Not a
+ * gameplay setting — nothing in the live game calls it.
+ */
+let laneTrafficOverride: boolean | null = null;
+export function setLaneTrafficEnabledOverride(value: boolean | null): void {
+  laneTrafficOverride = value;
+}
+/** The effective kill-switch state: the override when set, else `LANE_TRAFFIC_ENABLED`. */
+export function isLaneTrafficEnabled(): boolean {
+  return laneTrafficOverride ?? LANE_TRAFFIC_ENABLED;
+}
+/** Volume a standing lane settles at with nothing complementary to carry. */
+export const LANE_TRAFFIC_BASE_VOLUME = 2;
+/** Extra settle volume at full pair balance (`scoreRoutePairBalance` = 1). */
+export const LANE_TRAFFIC_CARGO_VOLUME = 2;
+/** Ceiling of ambient traffic. Anything above it is someone's work (up to `TRADE_ROUTE_MAX_VOLUME`). */
+export const LANE_TRAFFIC_MAX_VOLUME = 4;
+/** Settle volume lost while a lane is threatened (an ambush, not a blockade). */
+export const LANE_TRAFFIC_THREATENED_PENALTY = 1;
+/** One day: how often a lane's volume steps one toward its traffic level. */
+export const LANE_TRAFFIC_SETTLE_INTERVAL_TICKS = 12;
+
+/** A lane's state this tick. `carrying` lives, `suspended` waits out a blockade, `idle` decays. */
+export type LaneTraffic = 'carrying' | 'suspended' | 'idle';
+
+/** The subtypes the Location class registry calls settlements — a lane end must be one to carry. */
+const STANDING_SETTLEMENT_SUBTYPES: ReadonlySet<string> = new Set(LOCATION_CLASSES.settlement ?? []);
+
+/**
+ * The settlement a lane end stands for, or undefined when it is not a standing one.
+ * A Place resolves up to its Location; a razed town reads `ruins`, so it falls out.
+ */
+function standingSettlementOf(graph: WorldGraph, endId: string): GraphNode | undefined {
+  const settlement = resolveToParentLocation(graph, graph.getNode(endId));
+  if (!settlement) return undefined;
+  const subtype = settlement.properties.locationSubtype;
+  return typeof subtype === 'string' && STANDING_SETTLEMENT_SUBTYPES.has(subtype) ? settlement : undefined;
+}
+
+/**
+ * Class one `trades_with` edge for this tick. Pure + deterministic; reads only.
+ *
+ * - `suspended` — `blockadedBy` is set and `threatened` still holds (the blockade verb's
+ *   "suspended, not deleted"). Checked first: a blockade suspends even a lane whose
+ *   roads are cursed, because the blockader is holding it, not neglecting it.
+ * - `carrying` — both ends resolve to standing settlements and neither end's roads
+ *   are cursed (`isLocationRoutesCursed`, the prosperity phase's own predicate).
+ * - `idle` — anything else: an end razed, gone or demoted out of the settlement class,
+ *   roads cursed. The existing staleness rule decays it.
+ *
+ * Fail-soft: a missing end or a throw reads `idle`, which is today's behaviour.
+ */
+export function laneTraffic(graph: WorldGraph, edge: GraphEdge, currentTick: number): LaneTraffic {
+  try {
+    const props = edge.properties as Record<string, unknown>;
+    if (props.threatened === true && typeof props.blockadedBy === 'string' && props.blockadedBy.length > 0) {
+      return 'suspended';
+    }
+    const source = standingSettlementOf(graph, edge.source);
+    const target = standingSettlementOf(graph, edge.target);
+    if (!source || !target) return 'idle';
+    if (isLocationRoutesCursed(source.properties, currentTick)) return 'idle';
+    if (isLocationRoutesCursed(target.properties, currentTick)) return 'idle';
+    return 'carrying';
+  } catch {
+    return 'idle';
+  }
+}
+
+/**
+ * The volume a carrying lane settles toward:
+ * `clamp(BASE + round(balance × CARGO) − (threatened ? PENALTY : 0), 1, MAX)`.
+ * `balance` is the live `scoreRoutePairBalance` of the lane's two ends; a throw on
+ * odd resource data reads 0 (fail-soft), so the lane settles at the base volume.
+ */
+export function laneTrafficLevel(
+  sourceProps: Record<string, unknown>,
+  targetProps: Record<string, unknown>,
+  threatened: boolean,
+): number {
+  let balance = 0;
+  try {
+    balance = scoreRoutePairBalance(sourceProps, targetProps);
+  } catch {
+    balance = 0;
+  }
+  const raw = LANE_TRAFFIC_BASE_VOLUME
+    + Math.round(balance * LANE_TRAFFIC_CARGO_VOLUME)
+    - (threatened ? LANE_TRAFFIC_THREATENED_PENALTY : 0);
+  return Math.max(1, Math.min(LANE_TRAFFIC_MAX_VOLUME, raw));
+}
+
+/** Whether `tick` is a lane-traffic settle tick (once a day). */
+export function isLaneSettleTick(tick: number): boolean {
+  return tick % LANE_TRAFFIC_SETTLE_INTERVAL_TICKS === 0;
 }

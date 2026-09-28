@@ -23,7 +23,9 @@
 //                 with occurred_at + participated_in, plus 10 dead notables
 //   all         — notables2 + ties3x + history
 //   placebo     — one disconnected event node: the trajectory-noise control
+//   lanes-off   — THR-1636: lane traffic kill switch off (today's t36 lane deaths); baseline is lanes on
 import { appendFileSync } from 'fs';
+import { setLaneTrafficEnabledOverride } from '../../../../src/engine/tradeRoute';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../../../src/engine/gameInit';
 import type { MapSizePreset } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
@@ -278,6 +280,7 @@ if (doN) Object.assign(lever, seedNotables(state, doN, rng));
 if (arm === 'history' || arm === 'all') Object.assign(lever, seedHistory(state, rng));
 // placebo: one disconnected, unreadable node — measures whether *any* graph write
 // perturbs the simulation trajectory (the trajectory-noise control).
+if (arm === 'lanes-off') { setLaneTrafficEnabledOverride(false); lever.laneTraffic = 0; }
 if (arm === 'placebo') { state.graph.addNode({ id: 'thr1592_placebo', type: 'event', name: 'placebo', properties: { eventType: 'thr1592_placebo', tick: -1 } }); lever.placeboNodes = 1; }
 touchStructure(runtime); touchWorld(runtime);
 const atStart = censusDeciders(state);

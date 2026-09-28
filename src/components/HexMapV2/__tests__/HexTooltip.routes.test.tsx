@@ -15,7 +15,7 @@ const base = {
 
 const route = (over: Partial<RouteTooltipEntry> = {}): RouteTooltipEntry => ({
   otherName: 'Thornhaven', goods: ['gemstones', 'grain'],
-  carriesStaple: true, threatened: false, volume: 2, ...over,
+  carriesStaple: true, threatened: false, volume: 2, traffic: 'carrying', ...over,
 });
 
 describe('HexTooltip trade routes (THR-670)', () => {
@@ -41,5 +41,16 @@ describe('HexTooltip trade routes (THR-670)', () => {
     unmount();
     render(<HexTooltip {...base} />);
     expect(screen.queryByText(/light trade/)).toBeNull();
+  });
+
+  it('names a blockaded lane and a fading lane in words (THR-1636)', () => {
+    render(<HexTooltip {...base} tradeRoutes={[
+      route({ otherName: 'A', threatened: true, traffic: 'suspended' }),
+      route({ otherName: 'B', traffic: 'idle' }),
+      route({ otherName: 'C' }),
+    ]} />);
+    expect(screen.getByText(/A — .*·blockaded/)).toBeTruthy();
+    expect(screen.getByText(/B — .*·fading/)).toBeTruthy();
+    expect(screen.getByText(/C — /).textContent).not.toMatch(/blockaded|fading/);
   });
 });

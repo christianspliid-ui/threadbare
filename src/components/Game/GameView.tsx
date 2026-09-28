@@ -1172,8 +1172,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, runtime.worldVersion],
   );
   const routeTooltipsByHex = useMemo(
-    () => buildRouteTooltipsByHex(gameState.graph),
-    [gameState.graph, runtime.worldVersion],
+    () => buildRouteTooltipsByHex(gameState.graph, gameState.tick),
+    [gameState.graph, gameState.tick, runtime.worldVersion],
   );
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──

@@ -9,6 +9,13 @@
  * rule for its first TRADE_ROUTE_FOUNDING_GRACE_WINDOW ticks — see THR-1320 and the
  * constant's own note. After the window lapses it decays on exactly the old terms.
  *
+ * Lane traffic (THR-1636 S1) runs first: a lane whose two ends are standing
+ * settlements with uncursed roads is `carrying` and is marked traded every tick; a
+ * blockaded lane is `suspended` and likewise never decays. Once a day volume steps
+ * one toward the lane's traffic level (or toward 1 while suspended). Only an `idle`
+ * lane — an end razed or gone, roads cursed — reaches the staleness rule below.
+ * See `laneTraffic` in tradeRoute.ts and Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md.
+ *
  * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
  * System 2 — Trade Routes & Agreements
  * NFP priorities: Tunability, Inspectability, Determinism, Fail-soft
@@ -21,6 +28,11 @@ import {
   readTradeRouteProps,
   isRouteStale,
   isRouteUnderFoundersGrace,
+  isLaneTrafficEnabled,
+  laneTraffic,
+  laneTrafficLevel,
+  isLaneSettleTick,
+  type LaneTraffic,
 } from './tradeRoute';
 import { SHOCK_TRADE_ROUTE_LOST } from './phaseProsperity';
 import { emitTrace } from './traceBuffer';
@@ -86,6 +98,13 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
   // Collect all trades_with edges
   const tradeEdges = graph.getEdgesByType('trades_with');
 
+  // Lane-traffic tallies for the once-a-day aggregate trace (THR-1636).
+  const trafficOn = isLaneTrafficEnabled();
+  const settleTick = isLaneSettleTick(tick);
+  const trafficCounts: Record<LaneTraffic, number> = { carrying: 0, suspended: 0, idle: 0 };
+  let steppedUp = 0;
+  let steppedDown = 0;
+
   for (const edge of tradeEdges) {
     // Fail-soft: verify both endpoints exist
     const sourceNode = graph.getNode(edge.source);
@@ -107,6 +126,44 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
     }
 
     const props = readTradeRouteProps(edge.properties as Record<string, unknown>);
+
+    // Lane traffic (THR-1636 S1): a lane whose towns stand is traded on by the
+    // world itself, and a blockaded one waits. Both are marked traded this tick so
+    // the staleness rule below never reaches them; only an `idle` lane falls
+    // through to today's decay. The kill switch skips this block entirely.
+    if (trafficOn) {
+      const traffic = laneTraffic(graph, edge, tick);
+      trafficCounts[traffic] += 1;
+      if (traffic !== 'idle') {
+        const edgeProps = edge.properties as Record<string, unknown>;
+        edgeProps.lastTraded = tick;
+        if (settleTick) {
+          const level = traffic === 'carrying'
+            ? laneTrafficLevel(sourceNode.properties, targetNode.properties, props.threatened)
+            : 1;
+          const previousVolume = props.volume;
+          const newVolume = previousVolume < level ? previousVolume + 1
+            : previousVolume > level ? previousVolume - 1
+            : previousVolume;
+          if (newVolume !== previousVolume) {
+            edgeProps.volume = newVolume;
+            if (newVolume > previousVolume) steppedUp += 1; else steppedDown += 1;
+            emitTrace({
+              tick,
+              category: 'trade_route_volume_change',
+              summary: `Trade route ${edge.id}: volume ${previousVolume} → ${newVolume} (traffic, ${traffic}, level ${level})`,
+              edgeId: edge.id,
+              sourceId: edge.source,
+              targetId: edge.target,
+              previousVolume,
+              newVolume,
+              cause: 'traffic',
+            });
+          }
+        }
+        continue;
+      }
+    }
 
     // A founded route stands out its founder's warranty before the freshness rule
     // applies to it at all (THR-1320). Nothing in the strategic path refreshes
@@ -214,6 +271,20 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
         cause: 'decayed',
       });
     }
+  }
+
+  // One aggregate upkeep trace per settle tick — the web at a glance (THR-1636).
+  if (trafficOn && settleTick && tradeEdges.length > 0) {
+    emitTrace({
+      tick,
+      category: 'trade_route_upkeep',
+      summary: `Trade lanes: ${trafficCounts.carrying} carrying, ${trafficCounts.suspended} suspended, ${trafficCounts.idle} idle (volume ↑${steppedUp} ↓${steppedDown})`,
+      carrying: trafficCounts.carrying,
+      suspended: trafficCounts.suspended,
+      idle: trafficCounts.idle,
+      steppedUp,
+      steppedDown,
+    });
   }
 
   // Return accumulated events, chronicle entries, and prosperity shocks

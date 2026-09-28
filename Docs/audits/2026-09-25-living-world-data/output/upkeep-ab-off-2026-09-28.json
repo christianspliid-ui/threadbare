@@ -1,0 +1,250 @@
+{
+ "42": {
+  "off": {
+   "worldgenLanes": 6,
+   "worldgenStandingAtEnd": 0,
+   "lanesStandingAtEnd": 0,
+   "founded": 0,
+   "standing": {
+    "50": 0,
+    "100": 1,
+    "150": 0,
+    "200": 1,
+    "250": 0,
+    "300": 0
+   },
+   "deaths": [
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_4_loc_15_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "city",
+     "by": "worldgen",
+     "srcId": "loc_4",
+     "dstId": "loc_15",
+     "srcAfter": "capital",
+     "dstAfter": "city"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_4_loc_32_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_4",
+     "dstId": "loc_32",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_9_loc_10_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_9",
+     "dstId": "loc_10",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_9_loc_19_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_9",
+     "dstId": "loc_19",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_1_loc_7_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "city",
+     "by": "worldgen",
+     "srcId": "loc_1",
+     "dstId": "loc_7",
+     "srcAfter": "capital",
+     "dstAfter": "city"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_1_loc_13_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_1",
+     "dstId": "loc_13",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 129,
+     "edge": "trades_with_loc_28_loc_6_93",
+     "traffic": "carrying",
+     "src": "hamlet",
+     "dst": "town",
+     "by": "ind_11",
+     "srcId": "loc_28",
+     "dstId": "loc_6",
+     "srcAfter": "hamlet",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 224,
+     "edge": "trades_with_loc_27_loc_9_188",
+     "traffic": "carrying",
+     "src": "hamlet",
+     "dst": "capital",
+     "by": "ind_11",
+     "srcId": "loc_27",
+     "dstId": "loc_9",
+     "srcAfter": "hamlet",
+     "dstAfter": "capital"
+    }
+   ],
+   "volumesAtEnd": [],
+   "upkeep": {
+    "carrying": 0,
+    "suspended": 0,
+    "idle": 0,
+    "steppedUp": 0,
+    "steppedDown": 0,
+    "traces": 0
+   },
+   "routeScansSeededAfter36": 0,
+   "routeSeedsAfter36": 0,
+   "settlements": 38,
+   "prosperitySum": 822,
+   "prosperityMean": 21.632,
+   "prosperityMax": 45.07,
+   "wallMs": 47723
+  }
+ },
+ "99": {
+  "off": {
+   "worldgenLanes": 6,
+   "worldgenStandingAtEnd": 0,
+   "lanesStandingAtEnd": 0,
+   "founded": 0,
+   "standing": {
+    "50": 0,
+    "100": 0,
+    "150": 0,
+    "200": 0,
+    "250": 0,
+    "300": 0
+   },
+   "deaths": [
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_8_loc_10_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "city",
+     "by": "worldgen",
+     "srcId": "loc_8",
+     "dstId": "loc_10",
+     "srcAfter": "capital",
+     "dstAfter": "city"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_8_loc_28_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "hamlet",
+     "by": "worldgen",
+     "srcId": "loc_8",
+     "dstId": "loc_28",
+     "srcAfter": "capital",
+     "dstAfter": "hamlet"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_16_loc_92_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_16",
+     "dstId": "loc_92",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_16_loc_99_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "hamlet",
+     "by": "worldgen",
+     "srcId": "loc_16",
+     "dstId": "loc_99",
+     "srcAfter": "capital",
+     "dstAfter": "hamlet"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_27_loc_37_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "town",
+     "by": "worldgen",
+     "srcId": "loc_27",
+     "dstId": "loc_37",
+     "srcAfter": "capital",
+     "dstAfter": "town"
+    },
+    {
+     "tick": 36,
+     "edge": "trades_with_loc_27_loc_42_0",
+     "traffic": "carrying",
+     "src": "capital",
+     "dst": "city",
+     "by": "worldgen",
+     "srcId": "loc_27",
+     "dstId": "loc_42",
+     "srcAfter": "capital",
+     "dstAfter": "city"
+    },
+    {
+     "tick": 148,
+     "edge": "trades_with_loc_62_loc_5_112",
+     "traffic": "carrying",
+     "src": "hamlet",
+     "dst": "town",
+     "by": "ind_7",
+     "srcId": "loc_62",
+     "dstId": "loc_5",
+     "srcAfter": "hamlet",
+     "dstAfter": "town"
+    }
+   ],
+   "volumesAtEnd": [],
+   "upkeep": {
+    "carrying": 0,
+    "suspended": 0,
+    "idle": 0,
+    "steppedUp": 0,
+    "steppedDown": 0,
+    "traces": 0
+   },
+   "routeScansSeededAfter36": 0,
+   "routeSeedsAfter36": 0,
+   "settlements": 55,
+   "prosperitySum": 1195.8,
+   "prosperityMean": 21.741,
+   "prosperityMax": 58.75,
+   "wallMs": 69510
+  }
+ }
+}
