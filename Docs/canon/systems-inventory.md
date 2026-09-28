@@ -355,7 +355,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `phases` (27) | `phases/ambitionProgress.ts`, `phases/armySupply.ts`, `phases/clueDecay.ts`, `phases/clueRumors.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/plantedCompulsionDecay.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-1506`, `THR-238`, `THR-430`, `THR-432`, `THR-527`, `THR-530`, `THR-539`, `THR-542`, `THR-544`, `THR-559`, `THR-561`, `THR-615`, `THR-617`, `THR-626`, `THR-669`, `THR-686`, `THR-815`, `THR-886` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
-| `player` (3) | `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts` | `THR-1581`, `THR-727`, `THR-739`, `THR-998` |
+| `player` (4) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts` | `THR-1581`, `THR-1647`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `premonition` (2) | `premonitionActions.ts`, `premonitionCompulsion.ts` | — |
 | `profile` (1) | `profileGenerator.ts` | `THR-872` |
@@ -429,4 +429,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 613 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 614 modules._

@@ -50,6 +50,7 @@ import type { CourtPosition } from '../types/influence';
 import type { GraphEdge } from '../types/graph';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
+import { recordPlayerAct } from './playerActs';
 
 /**
  * Court positions whose thread confers default-follow.
@@ -176,7 +177,7 @@ export function followAgent(
   state: GameState,
   agentId: string,
   source: FollowChangeSource = 'arc_panel',
-): Pick<GameState, 'followedAgentIds' | 'mutedAgentIds'> {
+): Pick<GameState, 'followedAgentIds' | 'mutedAgentIds' | 'playerActCount'> {
   const explicit = state.followedAgentIds ?? [];
   const muted = state.mutedAgentIds ?? [];
   const alreadyExplicit = explicit.includes(agentId);
@@ -197,6 +198,9 @@ export function followAgent(
   return {
     followedAgentIds: alreadyExplicit ? explicit : [...explicit, agentId],
     mutedAgentIds: wasMuted ? muted.filter(id => id !== agentId) : muted,
+    // A player's Follow is a player act — it paces the opening's spine gifts
+    // (THR-1647). Init seeding and debug/URL levers are not the player acting.
+    ...(source === 'arc_panel' || source === 'encounter_ui' ? recordPlayerAct(state) : {}),
   };
 }
 

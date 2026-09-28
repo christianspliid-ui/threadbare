@@ -2052,7 +2052,16 @@ export interface DebugBridge {
    *    (`doomWokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND`); `null` while the clock sleeps.
    *  - `doomCurrentTick` — `doomClock.currentTick`; stays `0` until the bond.
    *
-   *  The spine gift gates (S4) extend the object later.
+   *  - `playerActCount` — THR-1647 (S4): the player's own acts so far (casts, avatar move
+   *    commands, Follows); `0` on a world that predates the field.
+   *  - `nextSpineBeat` — the spine gift the director will offer next; `null` once the spine
+   *    is exhausted.
+   *  - `spineGateBlockedBy` — why that gift is held: `min_turn` (its authored turn has not
+   *    come), `first_not_bonded`, `min_gap` (`BEAT_MIN_GAP` since the last gift),
+   *    `awaiting_player_act` (no act since the last gift and `SPINE_IDLE_FALLBACK_TICKS`
+   *    not yet run). `null` when it may be offered now, or when the spine is exhausted.
+   *    A gift already pending on screen is not "held" — read `getAscendantBeats()`.
+   *
    *  Resolves `{ error }` with no live game state.
    *
    *  **Async** (`await` it). */
@@ -2067,6 +2076,9 @@ export interface DebugBridge {
       doomWokeAtTick: number | null;
       doomFloorMetAtTick: number | null;
       doomCurrentTick: number;
+      playerActCount: number;
+      nextSpineBeat: string | null;
+      spineGateBlockedBy: 'min_turn' | 'first_not_bonded' | 'min_gap' | 'awaiting_player_act' | null;
     }
   >;
 

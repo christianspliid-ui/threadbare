@@ -2655,7 +2655,9 @@ if (import.meta.env.DEV) {
       const { isFirstBonded, isMeetTheFirstAvailable } = await import('./engine/meetingEncounter');
       const { ASCENDANT_SPINE } = await import('./data/ascendant-beat-content');
       const { resolveDoomWokeAtTick, doomFloorMetAtTick } = await import('./engine/doomClock');
+      const { spineGateBlockedBy } = await import('./engine/ascendantBeat');
       const openingBeatId = ASCENDANT_SPINE[0].beatId;
+      const beats = state.ascendantBeats;
       return {
         firstBonded: isFirstBonded(state.graph, state.ascendantId),
         meetTheFirstAvailable: isMeetTheFirstAvailable(state.graph, state.ascendantId, state.tick),
@@ -2668,6 +2670,12 @@ if (import.meta.env.DEV) {
         doomWokeAtTick: resolveDoomWokeAtTick(state.doomClock),
         doomFloorMetAtTick: doomFloorMetAtTick(state.doomClock),
         doomCurrentTick: state.doomClock?.currentTick ?? 0,
+        // THR-1647 (S4): the spine gifts wait for the player.
+        playerActCount: state.playerActCount ?? 0,
+        nextSpineBeat: beats && beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length
+          ? ASCENDANT_SPINE[beats.spineCursor].beatId
+          : null,
+        spineGateBlockedBy: spineGateBlockedBy(state),
       };
     },
 

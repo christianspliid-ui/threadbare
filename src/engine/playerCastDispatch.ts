@@ -38,6 +38,7 @@ import type {
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { applyAscendantBuffs } from './ascendantBuffs';
 import { tierScaledEssenceCost } from './targetTierScaling';
+import { recordPlayerAct } from './playerActs';
 import { appendEvent } from './encounterTimeline';
 import { touchWorld } from './simulationRuntime';
 import { mulberry32 } from '../lib/prng';
@@ -216,6 +217,8 @@ export function commitPlayerCast(
     ...prev,
     essencePool,
     unifiedActions: [...(prev.unifiedActions ?? []), cast.action],
+    // A committed cast is a player act — it paces the opening's spine gifts (THR-1647).
+    ...recordPlayerAct(prev),
   };
   if (!event) return next;
 

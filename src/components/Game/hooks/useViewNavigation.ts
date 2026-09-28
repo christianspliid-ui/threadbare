@@ -3,6 +3,7 @@ import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
+import { recordPlayerAct } from '../../../engine/playerActs';
 import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
 
@@ -155,7 +156,8 @@ export function useViewNavigation({
       if (pathFound) {
         // Force re-render so route visualization appears — visibility recalc
         // happens later when the avatar actually moves during tick processing.
-        setGameState(prev => ({ ...prev }));
+        // A move command is a player act — it paces the spine gifts (THR-1647).
+        setGameState(prev => ({ ...prev, ...recordPlayerAct(prev) }));
         // Auto-unpause so the game runs while the ascendant travels to the target
         setRunning?.(true);
       }

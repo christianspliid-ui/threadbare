@@ -175,4 +175,11 @@ export interface AscendantBeatState {
   readonly history: readonly BeatRecord[];
   /** Turn the last beat was offered (cadence gate). */
   readonly lastBeatTurn: number;
+  /** Tick the last spine beat resolved (THR-1647 S4). Absent → derived from `history`. */
+  readonly lastSpineResolvedTick?: number;
+  /** `GameState.playerActCount` when the last spine beat resolved (THR-1647 S4). Absent → 0. */
+  readonly playerActCountAtLastSpine?: number;
+  /** Dedup key (`beatId|reason`) of the last `beat.spine_deferred` trace, so a held gift
+   *  traces once per reason rather than every tick (THR-1647 S4). */
+  readonly lastSpineDeferralKey?: string;
 }
