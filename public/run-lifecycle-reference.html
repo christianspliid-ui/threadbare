@@ -179,6 +179,7 @@
   <section class="section">
     <h2>What a run is<span class="lead">A single playthrough is the life of one god over one world, beginning to end.</span></h2>
     <p>You are an <span class="term">Ascendant</span> — a mortal who climbed the long ladder, transcended, and now looks down at a world still full of mortals on it. You are not the protagonist and you never will be. The protagonists are the mortals below; the whole game lives in the gap between what they choose and what you can lean them toward.</p>
+    <p>The world you look down on is not blank. It starts with its peoples and their Realms, a faith for every people — a Temple congregation at each capital, with pilgrim roads leading to it — holy places on every people's ground, and wild country that nobody holds. How much of each a world starts with is a set of named world settings (THR-1632), so a different scenario is a change of numbers, not of rules.</p>
     <p>A run carries you from the moment you <span class="term">remember who you were</span>, through your first threads and the middle game, to a <span class="term">Twilight</span> that ends the world one way or another. Every run asks a single question and answers it in the story you leave behind: <em>what kind of god are you?</em></p>
   </section>
 
@@ -294,6 +295,11 @@
         <li>The domain boundary is a permanent set-membership filter, not an aspiration: <code>getTargetActionSlots()</code> applies the <code>requiresReach</code> gate (THR-503) so action cards for out-of-domain Reaches never surface. Capability grows within a domain; the pair itself does not change mid-run.</li>
         <li>A mortal's seeded capability is a different scale from yours and now has one named ceiling: <code>generateDomainCapabilities</code> (<code>src/engine/worldSeed.ts</code>) rolls each of the eight Reaches at 10–40 on the <strong>raw 0–100</strong> scale and boosts one or two of them, clamped at <code>CAPABILITY_MAX</code> — a constant since THR-1440 rather than a literal, because the completion rider that grows a mortal's Reach when they finish an undertaking must clamp at the same ceiling the seeder does. Only spotlight individuals and factions carry <code>domainCapabilities</code> at all; the wider NPC population does not, and finishing work does not mint it for them.</li>
         <li>Deep drill-down: <a href="action-catalog.html">Action Catalog</a> (real availability buckets) and the divine-actions manual page (W4).</li>
+      </ul>
+
+      <h3>The world a run starts in — the scenario block <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>initializeGameState(…, doomArchetype?, scenario?: Partial&lt;WorldScenario&gt;)</code> resolves the block once (<code>resolveWorldScenario</code>, clamped, warns once), passes the wilderness counts into <code>generateWorld</code> → the province pass, and the whole block into <code>seedWorld</code>. Stored on <code>GameState.worldScenario</code>; read by <code>window.__DEBUG.getWorldScenario()</code>. Absent → <code>DEFAULT_WORLD_SCENARIO</code>; every knob at <code>WORLD_SCENARIO_TODAY</code> reproduces the pre-THR-1632 world. A URL/CLI scenario picker is a follow-on, not built.</li>
       </ul>
 
       <h3>Run end, Twilight &amp; metaprogression <span class="flag design">DESIGN</span></h3>

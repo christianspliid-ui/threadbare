@@ -158,7 +158,7 @@ describe('Temple congregations (S1b)', () => {
       const member = g.getIncomingEdges(c.id, 'member_of')[0]?.source;
       if (!member) continue;
       expect(resolveFactionNodeId(g, TEMPLE_OF_SPHERES_DEF_ID, member)).toBe(c.id);
-      const result = applyFactionReputationGain(g, member, TEMPLE_OF_SPHERES_DEF_ID, 0.01, 1, 'encounter');
+      const result = applyFactionReputationGain(g, member, TEMPLE_OF_SPHERES_DEF_ID, 0.01, 1, 'encounter_aftermath');
       expect(result.reason).toBeUndefined();
       checked++;
     }

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 138 |
+| 🟢 LIVE | 139 |
 | 🟠 PARTIAL | 2 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 50 |
-| **Total** | **197** |
+| **Total** | **199** |
 
 ## Contracts by producing subsystem
 
@@ -132,7 +132,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Diagnostics & Incident Capture
 
@@ -240,6 +240,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🔴 LEAKED | THR-1659 |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
@@ -331,6 +332,7 @@ remediation ticket or the build fails.
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-dead-stay-dead` | The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target. | node-prop: `deceased` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `seeded-pilgrim-route-pools-pilgrimage` | Every culture's capital is a pilgrim's destination from the first tick: its congregation consecrated a route there at worldgen, so the pilgrimage encounter can happen at a capital — a town that could never host it by subtype. | edge: `sacred_route`, `sacredRouteDestinationTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `getPlacePast` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1656 |
@@ -944,6 +946,18 @@ exit
 - **Other hits:** `src/engine/groups/bandOpposition.ts`
 - **Verdict:** Verified 2026-07-25: The gate is enforced on BOTH paths a template reaches an agent by. generateUnifiedCandidates already gated group-exclusive content on minGroupMembers (THR-74); the location-cache path (getEncountersByLocationType → encounterCache → encounterFilterPipeline) had NO actor-affinity stage at all, measured at implementation time: getEncountersByLocationType("ruins") returned 7 group-exclusive templates — including THR-74's shipped sunken_vault/broken_span/hollow_watch — with nothing downstream reading actorAffinities, so party-exclusive delves were reachable by solo agents in contradiction of their authoring contract. filterByPrerequisites (stage 3, the pipeline's documented prerequisites stage) now enforces both minGroupMembers and requiresOpposingBand. Locked by src/engine/groups/__tests__/confrontationContent.test.ts (27 tests), which asserts both gates on both paths and pins the solo-agent case that was previously open. Re-verified 2026-07-27 under THR-811: the stage-3 gate only ever saw the templates its lookup could resolve, and `getAnyEncounterById` missed 43 of the 213 cache-registrable ids, so on that id set both gates passed unchecked regardless of authoring. The loop now resolves via getUnifiedTemplateById (0 unresolvable), and the swept `withGroupAffinity` copy is what the gate reads — pinned, along with the polarity check that no template becomes NEWLY group-exclusive, by src/engine/__tests__/prerequisiteTemplateResolution.test.ts.
 
+### `congregation-sphere-reaches-faction-page` — 🔴 LEAKED
+
+- **Intent:** Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number.
+- **Producer → Consumer:** Factions & Succession → Factions & Succession
+- **UL terms:** *Congregation*, *Sphere*, *Faction*
+- **Module:** `src/data/world-scenario.ts`
+- **Production hits:** 4 total — 1 write, 0 read, 3 unclassified
+- **Write sites:** `src/engine/worldSeed.ts`
+- **Read sites:** —
+- **Other hits:** `src/data/world-scenario.ts`, `src/engine/worldScenarioCensus.ts`, `src/types/trace.ts`
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'veneratedSphere' src/components/Game/FactionSheet.tsx before treating this as a leak.
+
 ### `content-objects-registry` — 🟢 LIVE
 
 - **Intent:** Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485).
@@ -1005,9 +1019,9 @@ exit
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
 
-- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs.
+- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too.
 - **Producer → Consumer:** Culture → Encounters & Dilemmas
-- **UL terms:** *Culture*, *Location*
+- **UL terms:** *Culture*, *Location*, *Fringe*
 - **Module:** `src/engine/openingColoration.ts`
 - **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
 - **Write sites:** `src/engine/cultureGenerator.ts`, `src/engine/worldSeed.ts`
@@ -2147,10 +2161,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 116 total — 1 write, 1 read, 114 unclassified
+- **Production hits:** 117 total — 1 write, 1 read, 115 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +109 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +110 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2232,15 +2246,27 @@ exit
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
 
+### `seeded-pilgrim-route-pools-pilgrimage` — 🟢 LIVE
+
+- **Intent:** Every culture's capital is a pilgrim's destination from the first tick: its congregation consecrated a route there at worldgen, so the pilgrimage encounter can happen at a capital — a town that could never host it by subtype.
+- **Producer → Consumer:** World Generation, Terrain & Places → Encounters & Dilemmas
+- **UL terms:** *Congregation*, *Location*, *Encounter*
+- **Module:** `src/engine/encounterCache.ts`
+- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/worldSeed.ts`
+- **Read sites:** `src/engine/encounterCache.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts` +4 more
+- **Verdict:** Verified 2026-09-28: THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-"today" setting).
+
 ### `seeded-ties-never-graduate` — 🟢 LIVE
 
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 95 total — 1 write, 1 read, 93 unclassified
+- **Production hits:** 96 total — 1 write, 1 read, 94 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +88 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +89 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2248,10 +2274,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 379 total — 1 write, 1 read, 377 unclassified
+- **Production hits:** 380 total — 1 write, 1 read, 378 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +372 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +373 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE

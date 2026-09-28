@@ -91,7 +91,9 @@ export function setCommander(
         source: actorId,
         target: groupId,
         type: 'member_of',
-        properties: { joinedTick: tick, role: 'leader' },
+        // `rank: 0` completes the schema-required trio, as `groupFormation` writes it —
+        // missing until a seeded run first reached a non-member claim (THR-1632 surfaced it).
+        properties: { joinedTick: tick, role: 'leader', rank: 0 },
       });
     }
 

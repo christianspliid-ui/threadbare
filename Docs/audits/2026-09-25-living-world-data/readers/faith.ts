@@ -7,6 +7,7 @@
 //     --format=esm --outfile=.cache/faith.mjs --external:fs --external:path
 //   node .cache/faith.mjs [seeds=42,99] [ticks=0] [today|default]
 //
+// A 5th argument is a JSON partial scenario laid over the mode (ablation).
 // `today` builds the world with WORLD_SCENARIO_TODAY — every knob at the value that
 // reproduces the world before the block existed (the "before" column). With ticks > 0
 // it also advances the world and reports steady-state ms/tick (after 5 warm-up ticks)
@@ -19,12 +20,15 @@ import { createSimulationRuntime } from '../../../../src/engine/simulationRuntim
 import { resetReputationTraitInit } from '../../../../src/engine/phaseReputationTraits';
 import { selectWorldScenarioCensus } from '../../../../src/engine/worldScenarioCensus';
 import { EncounterCacheManager } from '../../../../src/engine/encounterCache';
+import { resolveToParentLocation } from '../../../../src/engine/sublocationShape';
 import { WORLD_SCENARIO_TODAY } from '../../../../src/data/world-scenario';
 import type { GameState } from '../../../../src/types/gameState';
 
 const seeds = (process.argv[2] ?? '42,99').split(',').map(Number);
 const TICKS = Number(process.argv[3] ?? 0);
 const MODE = process.argv[4] === 'today' ? 'today' : 'default';
+// Optional 5th arg: a JSON partial WorldScenario laid over the mode, for ablating one knob.
+const OVERRIDE = process.argv[5] ? JSON.parse(process.argv[5]) as Record<string, unknown> : {};
 const WARMUP = 5;
 const PILGRIMAGE = 'encounter.pilgrimage_trial';
 
@@ -37,7 +41,7 @@ for (const seed of seeds) {
   const pr = MAP_SIZE_PRESETS.medium;
   let { state } = initializeGameState(
     generateArchetypes(4, seed)[0], 'C', createBalancedCosmology(), seed, pr.cols, pr.rows,
-    undefined, MODE === 'today' ? WORLD_SCENARIO_TODAY : undefined,
+    undefined, { ...(MODE === 'today' ? WORLD_SCENARIO_TODAY : {}), ...OVERRIDE },
   ) as { state: GameState };
   const g = state.graph;
   const census = selectWorldScenarioCensus(g);
@@ -88,13 +92,18 @@ for (const seed of seeds) {
       const ms = Date.now() - s;
       if (i >= WARMUP) { steadyMs += ms; steadyTicks++; }
       for (const a of state.unifiedActions ?? []) {
-        const ua = a as unknown as { id?: string; templateId?: string; locationId?: string; targetLocationId?: string };
-        if (!ua.templateId) continue;
-        const key = `${ua.id ?? ''}:${ua.templateId}`;
+        if (!a.templateId) continue;
+        const key = `${a.actionId}:${a.templateId}`;
         if (!encounterCounts[key]) encounterCounts[key] = 0;
-        if (ua.templateId === PILGRIMAGE) {
+        if (a.templateId === PILGRIMAGE) {
           pilgrimageActions.add(key);
-          const loc = ua.locationId ?? ua.targetLocationId;
+          // Where it happens: the target if it is a place, else where the actor stands.
+          const g2 = state.graph;
+          const target = g2.getNode(a.targetId);
+          const here = target?.type === 'location'
+            ? target
+            : g2.getNode(g2.getOutgoingEdges(a.actorId, 'located_at')[0]?.target ?? '');
+          const loc = resolveToParentLocation(g2, here)?.id;
           if (loc && capitalSet.has(loc)) pilgrimageAtCapital.add(key);
         }
       }

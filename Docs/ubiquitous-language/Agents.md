@@ -130,6 +130,31 @@ Approved by Christian in attended chat, 2026-09-11 (THR-1453), shipped with THR-
 
 ---
 
+### Congregation
+
+**Aliases:** chapter (code word only — engine comments, `factionMembership.ts`)
+**Also see:** `[[Faction]]`, `[[Realm]]`, `[[Fringe]]`, `[[Sphere]]`
+**Status:** canonical
+
+One instance of the **Temple of the Spheres** belonging to one living culture: seated at that culture's capital, with its halls only on that culture's heartland, venerating the sphere its people venerated first at worldgen (`veneratedSphere`), and named *The {culture} Congregation of the Spheres*. It belongs to its culture by a `belongs_to` edge. A congregation is a Faction, not a new kind — every congregation shares the `temple_of_spheres` definition, so every Temple content line reads every congregation, and a Temple reputation effect lands on the actor's own congregation. Seeded by the world scenario block (`templeCongregationsPerCulture`, `src/data/world-scenario.ts`); at 0 the world has one world-wide Temple instead.
+
+**Never *chapter* on a player surface** — the glossary uses *chapter* for the encounter reading unit. The code word survives in engine comments for multi-instance factions in general.
+
+Seated by delegation 2026-09-28 ([THR-1661](https://linear.app/threadbare/issue/THR-1661)); shipped with THR-1632.
+
+---
+
+### Fringe
+
+**Also see:** `[[Realm]]`, `[[Congregation]]`, `[[Location]]`
+**Status:** canonical
+
+A settlement **outside every culture's heartland** (the culture's provinces) that carries the nearest culture within reach — a weaker, current-only culture link (`belongs_to` with `fringe: true`, half strength, no historical layer). Its mortals are born to that culture and its encounter openings can read that culture's custom, but **it is not territory**: Realm holding, settlement promotion and the map's borders never follow a fringe link. Ruins, lairs and wonders never take one. On a player surface the culture reads *{culture} fringe*, never as full membership and never as a number.
+
+Seated by delegation 2026-09-28 ([THR-1661](https://linear.app/threadbare/issue/THR-1661)); shipped with THR-1632.
+
+---
+
 ### Monster
 
 **Aliases:** lair beast, named elite, `isMonsterElite`

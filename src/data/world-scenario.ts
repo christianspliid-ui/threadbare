@@ -46,7 +46,13 @@ export const DEFAULT_WORLD_SCENARIO: Readonly<WorldScenario> = Object.freeze({
   holyPlacesMinPerCulture: 2,
   wildernessProvinceCount: WILDERNESS_PROVINCE_COUNT,
   cornerWildernessCount: CORNER_WILDERNESS_COUNT,
-  cultureFringeMaxHexes: 8,
+  // The plan opened at 8 (the freehold reach) as a starting guess. Measured 2026-09-28 on
+  // seed 99 / medium, 200 ticks, paired same-session runs: 8 hexes cost +17% steady-state
+  // tick time over the all-"today" world, 4 hexes +10.3% (the plan's +10% line; fringe
+  // off entirely is ~+10%, so the rest is congregations and holy places). Seed 42 swings
+  // ±20% run to run on unchanged code and shows no reliable difference. THR-1632 kill
+  // criterion: lower the reach first.
+  cultureFringeMaxHexes: 4,
   seedCongregationPilgrimRoutes: true,
   labelSettlementGuilds: true,
 });
