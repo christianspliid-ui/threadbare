@@ -1486,6 +1486,20 @@ Three things follow with no authoring:
 
 **Where to find the implementation:** `generateFactionLifecycleCandidates` / `computeGuildFit` in `src/engine/factionQuestGeneration.ts`, `computeGuildFitBonus` in `src/engine/encounterScoring.ts`, `processResolvedFactionLifecycleAction` in `src/engine/factionOutcome.ts` (called from the orchestrator's newly-resolved transition), `src/engine/guildJoinFunnel.ts`. Plan: `Docs/plans/2026-09-27-thr-1633-written-encounters-land.md` § S3.
 
+### Capability 33: The Kind of Encounter as a Tag — and Where Guild Scenes and Wonders Land (THR-1641)
+
+**What it does:** three things an author can now lean on.
+
+1. **`encounterType` is a tag.** A raw encounter entry's `encounterType` (`explore`, `assist`, `duel`, `lead`, `build`, `trade`, `steal`, `create`, `acquire`, `hire`) now survives conversion onto the template and is *projected* as a tag (`#explore`, `#trade`, …) by the encounter kind's `tagFields` column, so `effectiveTags` and every `{ kind: 'encounter_template', tags: [...] }` query see it. **Never author these by hand** — set `encounterType` on the raw entry and the tag follows. The words are seated on the `family` axis in `src/data/content-tags.ts`. The place-trait table (`LOCATION_TRAIT_ENCOUNTER_BONUS`) keys on them: a *welcoming* town leans toward `#trade` and `#assist`, *lawless* toward `#steal` and `#duel`, *blood-soaked* toward `#duel` and `#lead`, and thin-veiled or haunted ground toward `#explore` and `#anomaly`. Every table tag must have at least `LOCATION_TRAIT_TAG_MIN_BEARERS` (5) drawable bearers — a row keyed on a tag nothing wears moves nothing, and a test fails it.
+2. **A guild's social scenes reach its members.** List a guild's `<prefix>.social.*` templates in its definition's `socialTemplateIds`; two members who meet are offered one of them in the reserved faction slot (rotated per tick by `FACTION_SOCIAL_SLOT_ROTATE`, so the whole list gets used, not only its first entry). A template matches if its `locationSubtypes` names the settlement's type **or** the Place the mortals stand in (`tavern`, `barracks`, …). `guildSocialTemplates.test.ts` fails an id that resolves to nothing, and a `.social.` template no guild lists.
+3. **A wonder gets a slot.** `encounter.anomaly.*` templates are registered in the encounter cache (`CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS`) and keep one shortlist slot (`ANOMALY_SITE_CAP_RESERVE`) when the wonder is within `ANOMALY_SITE_MAX_HEX_DISTANCE` (1) of the deciding mortal. A new anomaly template must be listed there, and carries `tags: ['#anomaly']`.
+
+**Why you want it:** a place's character now pulls the kinds of story that fit it without anyone hand-tagging hundreds of templates, and guild membership now changes what a mortal does on an evening in town.
+
+**How to tell whether yours landed.** `npm run census:location-traits` — a row reads MOVES when its tags' share at marked places beats unmarked ones. `readers/reach.ts 42,99 200` lists each template's first gate, including guild `.social.` and `encounter.anomaly.*` templates.
+
+**Where to find the implementation:** `tagFields` in `src/data/content-objects.ts` and `projectedTags` in `src/data/contentEntryTags.ts`; `getSharedFactionSocialTemplates` in `src/engine/socialEncounterGeneration.ts`; Phase 1f of `capWithDiversity` in `src/engine/encounterFilterPipeline.ts`. Plan: `Docs/plans/2026-09-27-thr-1633-written-encounters-land.md` § S4.
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write

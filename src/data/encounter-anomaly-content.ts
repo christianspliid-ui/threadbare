@@ -193,6 +193,10 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     locationSubtypes: ['crystal_cavern'],
     // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
     tags: ['#anomaly'],
+    // THR-1641 / THR-1526: now on the board (cache-registered) and also its own seed
+    // target (`singing_dark_seed_return` invites a return visit). The opening stands
+    // alone — a first visit and a return read the same — so it stays drawable.
+    drawable: true,
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'energy',
