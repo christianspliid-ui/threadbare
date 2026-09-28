@@ -20,9 +20,13 @@ import {
   UNIFIED_ACTION_TEMPLATES,
 } from '../../data/unified-action-templates';
 import { generateUnifiedCandidates } from '../unifiedCandidates';
+import { ANOMALY_ENCOUNTER_TEMPLATES } from '../../data/encounter-anomaly-content';
 
 /** Scales `generateUnifiedCandidates` skips outright — the reason these needed rescuing. */
 const ARRAY_PATH_SKIPPED_SCALES = new Set(['regional', 'cosmic']);
+
+/** THR-1641 — local-scale family registered here because no other path reaches it. */
+const ANOMALY_PREFIX = 'encounter.anomaly.';
 
 function addLocation(graph: WorldGraph, id: string, locationType: string): void {
   graph.addNode({
@@ -47,11 +51,12 @@ describe('THR-779 — regional cache registration', () => {
     expect(unresolved).toEqual([]);
   });
 
-  it('registers exactly the 17 templates carrying the WIRE verdict', () => {
-    expect(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS).toHaveLength(17);
+  it('registers exactly the 17 WIRE-verdict templates plus the 10 anomaly templates', () => {
+    // THR-779's 17, plus THR-1641's ten `encounter.anomaly.*` (one per anomaly subtype).
+    expect(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS).toHaveLength(27);
     // No duplicates — a repeated id would double-register the template at every
     // matching location and skew scoring.
-    expect(new Set(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS).size).toBe(17);
+    expect(new Set(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS).size).toBe(27);
   });
 
   it('declares locationSubtypes on every registered template', () => {
@@ -68,7 +73,12 @@ describe('THR-779 — regional cache registration', () => {
   it('only registers templates the array-scored path actually skips', () => {
     // Registering a `local`-scale template here would double-register it: once through
     // generateUnifiedCandidates and again through the cache.
+    // THR-1641 exemption: the anomaly templates are `local`, but the array-scored path
+    // (`phaseIdleSelection`) is imported by the orchestrator and never called, so no
+    // second source exists for them. The exemption is by prefix, so a local template of
+    // any other family still fails here.
     const wrongScale = CACHE_REGISTERED_REGIONAL_TEMPLATES
+      .filter(t => !t.id.startsWith(ANOMALY_PREFIX))
       .filter(t => !ARRAY_PATH_SKIPPED_SCALES.has(t.scale))
       .map(t => `${t.id} (${t.scale})`);
     expect(wrongScale).toEqual([]);
@@ -83,7 +93,7 @@ describe('THR-779 — regional cache registration', () => {
     expect(notMortal).toEqual([]);
   });
 
-  it('produces cache entries at a matching location for all 17', () => {
+  it('produces cache entries at a matching location for all 27', () => {
     // The non-vacuous proof: drive the real cache builder over one location per declared
     // subtype and assert every registered template lands in the cache.
     const subtypes = new Set<string>();
@@ -122,6 +132,16 @@ describe('THR-779 — regional cache registration', () => {
 
     const cachedIds = cache.getAllEntries().map(e => e.templateId);
     expect(cachedIds).not.toContain('bf.elite.engineer_wonder');
+  });
+
+  it('registers every anomaly template, and each carries #anomaly (THR-1641)', () => {
+    // Membership predicate, not a count: a new anomaly template that is not listed here
+    // would be orphaned exactly as the ten were.
+    const registered = new Set<string>(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS);
+    const unlisted = ANOMALY_ENCOUNTER_TEMPLATES.map(t => t.id).filter(id => !registered.has(id));
+    expect(unlisted).toEqual([]);
+    const untagged = ANOMALY_ENCOUNTER_TEMPLATES.filter(t => !t.tags?.includes('#anomaly')).map(t => t.id);
+    expect(untagged).toEqual([]);
   });
 
   it('leaves the array-scored path unchanged for regional templates', () => {

@@ -5512,6 +5512,69 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).',
     },
   },
+  {
+    id: 'guild-social-templates-reach-shared-members',
+    producerSystem: FACTIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Two members of the same guild who meet are offered that guild\'s own social scenes — the Arcane Circle\'s lecture, the Mercenary Company\'s sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there.',
+    ulTerms: ['Faction', 'Encounter'],
+    // Keyed on the definition's id list: `socialTemplateIds` names the templates, and the
+    // social generator resolves them through the unified registry for any two mortals
+    // whose `member_of` edges share a `factionDefId`.
+    mechanism: {
+      kind: 'function',
+      symbols: ['getSharedFactionSocialTemplates', 'socialTemplateIds'],
+      module: 'src/engine/socialEncounterGeneration.ts',
+    },
+    writeSites: [
+      'src/data/arcane-circle-definition.ts',
+      'src/data/builders-fellowship-definition.ts',
+      'src/data/civic-guard-definition.ts',
+      'src/data/faction-definitions.ts',
+      'src/data/holy-order-dawn-definition.ts',
+      'src/data/lorekeepers-covenant-definition.ts',
+      'src/data/mercenary-company-definition.ts',
+      'src/data/merchant-consortium-definition.ts',
+      'src/data/rangers-brotherhood-definition.ts',
+      'src/data/temple-of-spheres-definition.ts',
+      'src/data/thieves-guild-definition.ts',
+      'src/data/underking-court-definition.ts',
+    ],
+    readSites: ['src/engine/socialEncounterGeneration.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1641. Before: 39 guild `.social.` templates, 0 fired — the lookup read `FACTION_ENCOUNTER_TEMPLATES` (only the Adventurers\' six) and ten of eleven definitions listed ids no file defines. After (ids repaired, resolved through `getUnifiedTemplateById`, the reserved slot rotated by `FACTION_SOCIAL_SLOT_ROTATE`): `readers/reach.ts 42,99 200` fired 18 distinct guild `.social.` templates (gate ≥ 10) — without the rotation 9, each the first entry in its guild\'s list. Unit: `guildSocialTemplates.test.ts` (6), both directions of the id contract.',
+    },
+  },
+  {
+    id: 'location-trait-tags-have-bearers',
+    producerSystem: TRAITS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Every word the place-trait table keys on is carried by enough encounters that a marked town really does draw different stories — a welcoming town more trade and help, blood-soaked ground more duels — instead of a row whose tags nothing wears.',
+    ulTerms: ['Location Trait', 'Encounter'],
+    // The table's keys are read through `effectiveTags`; the encounter kind now projects
+    // the raw entries' `encounterType` (`tagFields`), which is what gives the rekeyed
+    // rows (`#assist`, `#steal`, `#duel`, `#explore`, `#lead`) their bearers.
+    mechanism: {
+      kind: 'function',
+      symbols: ['LOCATION_TRAIT_ENCOUNTER_BONUS', 'locationTraitBonusFor', 'templateEffectiveTags', 'tagFields'],
+      module: 'src/engine/locationTraitBonus.ts',
+    },
+    writeSites: [
+      'src/data/location-trait-constants.ts',
+      'src/data/content-objects.ts',
+      'src/data/contentEntryTags.ts',
+    ],
+    readSites: ['src/engine/locationTraitBonus.ts', 'src/engine/encounterScoring.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1641. Before: 9 of the table\'s tags (plus `#loss`, `#fear`) had 0 drawable bearers; `npm run census:location-traits` read FLAT for blood-soaked (seed 42) and welcoming + blood-soaked (seed 99). After the rekey: every table tag has ≥ `LOCATION_TRAIT_TAG_MIN_BEARERS` (5) drawable bearers (lowest `#thieves_errand` 5, `#steal` 9); census reads MOVES for blood-soaked on seed 42 (`#duel` 14.4% at marked places vs 4.9% unmarked) and welcoming on seed 99 (`#heart` 32.8% vs 21.6%). Unit: `locationTraitBonus.test.ts` bearer-floor test.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

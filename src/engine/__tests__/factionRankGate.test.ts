@@ -229,9 +229,13 @@ describe('THR-805 authored rank data', () => {
     expect(tierIndexFor('bf.elite.engineer_wonder')).toBe(2);
   });
 
-  it('the 5 non-guild regional templates carry no meta, so the gate never touches them', () => {
+  it('the 5 non-guild regional templates (and the 10 anomaly templates) carry no meta, so the gate never touches them', () => {
+    // THR-1641 added the ten `encounter.anomaly.*`; they are nobody's guild work.
     const ungated = CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS
-      .filter(id => !FACTION_ENCOUNTER_META.has(id));
+      .filter(id => !FACTION_ENCOUNTER_META.has(id))
+      .filter(id => !id.startsWith('encounter.anomaly.'));
+    expect(CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS
+      .filter(id => id.startsWith('encounter.anomaly.') && FACTION_ENCOUNTER_META.has(id))).toEqual([]);
     expect(ungated.slice().sort()).toEqual([
       'fa.alliance_ceremony',
       'fa.bounty_hunt',

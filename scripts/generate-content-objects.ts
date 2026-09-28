@@ -143,7 +143,11 @@ const catalogsText = (k: KindView): string =>
 const axesText = (k: KindView): string => (k.requiredAxes.length ? k.requiredAxes.map(a => `\`${a}\``).join(', ') : '_(slice 2)_');
 
 const projectionsText = (k: KindView): string => {
-  const entries = Object.entries(k.projections);
+  const entries: Array<[string, string | undefined]> = [
+    ...Object.entries(k.projections),
+    // THR-1641: axis-free tag fields — the vocabulary seats each resulting tag.
+    ...(k.tagFields ?? []).map((f): [string, string] => ['tag', f]),
+  ];
   return entries.length ? entries.map(([axis, field]) => `${axis} ← \`${field}\``).join(', ') : '—';
 };
 
@@ -241,7 +245,8 @@ function esc(s: string): string {
 
 function renderHtml(views: readonly KindView[], drift: Drift): string {
   const rows = views.map(v => `<tr class="badge-${v.badge}"><td><code>${esc(v.id)}</code></td><td><strong>${esc(v.gameWord)}</strong></td><td>${v.count}</td><td>${esc(v.perCatalog.map(c => `${c.key.split('#')[1]} (${c.claimed}/${c.total})`).join(' · '))}</td><td>${v.instantiatesAs ? `<code>${esc(v.instantiatesAs)}</code>` : '—'}</td><td>${esc(surfaceText(v))}</td><td>${v.gate ? `<code>${esc(v.gate)}</code>` : '—'}</td><td>${esc(v.owningSystem)}</td><td>${BADGE_LABEL[v.badge]}</td></tr>`).join('\n');
-  const prefixRows = views.map(v => `<tr><td><code>${esc(v.id)}</code></td><td>${v.idPrefixes.map(p => `<code>${esc(p)}</code>`).join(' ')}</td></tr>`).join('\n');
+  // THR-1641: the projection column (axis ← field, plus axis-free `tagFields`) rides the prefix table.
+  const prefixRows = views.map(v => `<tr><td><code>${esc(v.id)}</code></td><td>${v.idPrefixes.map(p => `<code>${esc(p)}</code>`).join(' ')}</td><td>${esc(projectionsText(v).replace(/`/g, ''))}</td></tr>`).join('\n');
   const notes = views.map(v => `<li><strong>${esc(v.gameWord)}</strong> <code>${esc(v.id)}</code> — ${esc(v.note)}</li>`).join('\n');
   const shared = Object.entries(SHARED_ID_PREFIXES).map(([p, r]) => `<li><code>${esc(p)}</code> — ${esc(r)}</li>`).join('\n');
   const driftList = [...drift.unclaimed.map(d => `UNCLAIMED ${d}`), ...drift.emptyKinds.map(d => `EMPTY ${d}`)];
@@ -288,7 +293,7 @@ ${rows}
 <h2>Id prefixes</h2>
 <p class="lede">Prefixes are claimed for <strong>totality</strong>, not ownership: every id in a kind's catalogs starts with one of them. Exclusivity sits on the catalog export.</p>
 <div class="wrap"><table>
-<thead><tr><th>Kind</th><th>Prefixes</th></tr></thead>
+<thead><tr><th>Kind</th><th>Prefixes</th><th>Tags projected from</th></tr></thead>
 <tbody>
 ${prefixRows}
 </tbody></table></div>

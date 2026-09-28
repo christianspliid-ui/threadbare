@@ -16,7 +16,13 @@ import {
   SOCIAL_OFFER_CAP_RESERVE,
   JOURNEY_GOAL_CAP_RESERVE,
 } from '../encounterFilterPipeline';
-import { MAX_COMPLETIONS_PER_TEMPLATE, CAP_FILL_ROTATE } from '../../data/agent-behavior-constants';
+import {
+  MAX_COMPLETIONS_PER_TEMPLATE,
+  CAP_FILL_ROTATE,
+  ANOMALY_SITE_CAP_RESERVE,
+  ANOMALY_SITE_MAX_HEX_DISTANCE,
+  ANOMALY_SITE_TEMPLATE_PREFIX,
+} from '../../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -427,6 +433,44 @@ describe('capWithDiversity', () => {
     expect(result.filter(e => e.journeyGoal)).toHaveLength(JOURNEY_GOAL_CAP_RESERVE);
     expect(result.filter(e => e.personallyOffered)).toHaveLength(PERSONAL_OFFER_CAP_RESERVE);
     expect(result.filter(e => e.socialOffer)).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
+  });
+
+  // ── Anomaly-site reserve (THR-1641) ───────────────────────────
+  //
+  // An anomaly place stands on an empty wilderness hex, so the own-hex-first fill never
+  // reaches it and the cap cut the ten anomaly templates on ~99% of boards. One slot is
+  // kept for a wonder within ANOMALY_SITE_MAX_HEX_DISTANCE of the deciding mortal.
+  function anomalyBoard(siteCol: number): { graph: WorldGraph; entries: EncounterCacheEntry[] } {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc-home', type: 'location', name: 'Home', properties: { locationType: 'town', hexCol: 5, hexRow: 5 } });
+    graph.addNode({ id: 'loc-far', type: 'location', name: 'Far', properties: { locationType: 'town', hexCol: 20, hexRow: 20 } });
+    graph.addNode({ id: 'loc-site', type: 'location', name: 'Site', properties: { locationType: 'gem_deposit', hexCol: siteCol, hexRow: 5 } });
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, locationId: i % 2 ? 'loc-home' : 'loc-far', encounterType: 'explore' })),
+      makeEntry({ templateId: `${ANOMALY_SITE_TEMPLATE_PREFIX}gleaming_vein`, locationId: 'loc-site', encounterType: 'explore' }),
+    ];
+    return { graph, entries };
+  }
+
+  it('keeps a nearby anomaly site buried at the tail of a full board', () => {
+    const { graph, entries } = anomalyBoard(5 + ANOMALY_SITE_MAX_HEX_DISTANCE);
+    const result = capWithDiversity(entries, 'agent-1', graph, 3, undefined, 'loc-home');
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.templateId.startsWith(ANOMALY_SITE_TEMPLATE_PREFIX))).toHaveLength(ANOMALY_SITE_CAP_RESERVE);
+  });
+
+  it('does not reserve a site beyond ANOMALY_SITE_MAX_HEX_DISTANCE, nor without a location', () => {
+    const far = anomalyBoard(5 + ANOMALY_SITE_MAX_HEX_DISTANCE + 3);
+    // Tick chosen so the rotating fill does not land on the tail entry by chance: assert
+    // over several ticks that the far site is never *reserved* (it may still be filled).
+    const hits = [1, 2, 3, 4, 5].filter(t =>
+      capWithDiversity(far.entries, 'agent-1', far.graph, t, { distinctFirst: false, rotate: false }, 'loc-home')
+        .some(e => e.templateId.startsWith(ANOMALY_SITE_TEMPLATE_PREFIX)));
+    expect(hits).toEqual([]);
+    const near = anomalyBoard(5);
+    const noLoc = capWithDiversity(near.entries, 'agent-1', near.graph, 3, { distinctFirst: false, rotate: false });
+    expect(noLoc.some(e => e.templateId.startsWith(ANOMALY_SITE_TEMPLATE_PREFIX))).toBe(false);
   });
 
   // ── Fair free-slot fill (THR-1633 S1) ─────────────────────────

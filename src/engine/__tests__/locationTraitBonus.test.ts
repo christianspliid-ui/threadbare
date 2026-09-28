@@ -23,14 +23,19 @@ import {
   LOCATION_TRAIT_ENCOUNTER_BONUS,
   LOCATION_TRAIT_ENCOUNTER_BONUS_CAP,
   LOCATION_TRAIT_IDS,
+  LOCATION_TRAIT_TAG_MIN_BEARERS,
 } from '../../data/location-trait-constants';
+import { CONTENT_OBJECT_KINDS } from '../../data/content-objects';
 import {
   computeLocationTraitBonus,
   locationTraitBonusFor,
   locationTraitIdsAt,
   templateEffectiveTags,
 } from '../locationTraitBonus';
-import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import {
+  LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
+  UNIFIED_ACTION_TEMPLATES,
+} from '../../data/unified-action-templates';
 
 /** A shipped encounter template whose projected reach tag is `#gold` — a Welcoming row. */
 const GOLD_TEMPLATE = UNIFIED_ACTION_TEMPLATES.find(
@@ -60,6 +65,29 @@ describe('LOCATION_TRAIT_ENCOUNTER_BONUS — the table is spelled in the vocabul
         expect(bonus).toBeLessThanOrEqual(LOCATION_TRAIT_ENCOUNTER_BONUS_CAP);
       }
     }
+  });
+
+  it('every tag has at least LOCATION_TRAIT_TAG_MIN_BEARERS drawable bearers (THR-1641)', () => {
+    // The row-level check below lets a row keep dead tags beside one live one — which is
+    // how nine of the table's tags sat on zero bearers. This pins every tag, not every row.
+    const kind = CONTENT_OBJECT_KINDS.find(k => k.id === 'encounter_template')!;
+    const bearers = new Map<string, number>();
+    const seen = new Set<string>();
+    for (const t of [...UNIFIED_ACTION_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES]) {
+      if (seen.has(t.id)) continue;
+      seen.add(t.id);
+      if (!kind.idPrefixes.some(p => t.id.startsWith(p)) || t.drawable === false) continue;
+      for (const tag of templateEffectiveTags(t.id)) bearers.set(tag, (bearers.get(tag) ?? 0) + 1);
+    }
+    const thin: string[] = [];
+    for (const [traitId, row] of Object.entries(LOCATION_TRAIT_ENCOUNTER_BONUS)) {
+      for (const tag of Object.keys(row)) {
+        const n = bearers.get(tag) ?? 0;
+        if (n < LOCATION_TRAIT_TAG_MIN_BEARERS) thin.push(`${traitId} ${tag}: ${n}`);
+      }
+    }
+    expect(thin, 'bonus-table tags below the bearer floor').toEqual([]);
+    expect(LOCATION_TRAIT_TAG_MIN_BEARERS).toBe(5);
   });
 
   it('every row names at least one tag the shipped corpus carries — else the term is a silent zero', () => {

@@ -156,6 +156,34 @@ export const SOCIAL_OFFER_CAP_RESERVE = 6;
 export const JOURNEY_GOAL_CAP_RESERVE = 1;
 
 /**
+ * Shortlist slots kept for an anomaly place's encounter (`encounter.anomaly.*`,
+ * THR-1641). Anomaly places sit on otherwise-empty wilderness hexes, so no mortal ever
+ * stands on one's own hex and the own-hex-first fill never reaches it: after the ten
+ * templates were registered in the cache, seeds 42 + 99 at 200 ticks cut them at the
+ * cap on ~99% of the boards that could see them (one fired). One slot lets a mortal
+ * who can see a wonder at least weigh it; scoring still decides. `0` turns it off.
+ * @range 0–2
+ */
+export const ANOMALY_SITE_CAP_RESERVE = 1;
+
+/**
+ * How far (in hexes) an anomaly place may be from the deciding mortal and still claim
+ * the reserve (THR-1641). Measured with `readers/reach.ts`, 200 ticks, firings summed
+ * over seeds (42 + 99 · 7 + 11), against `main` (1,831 · 2,138):
+ *   - unbounded: 1,621 · — firings, 6 anomaly templates fired
+ *   - 2: 1,661 · 1,906 firings, 6 · 5 anomaly templates fired
+ *   - 1: 1,925 · 2,141 firings, 2 · 2 anomaly templates fired
+ * The cost at 2 is not the walk: a trace of seed 42 shows 32 of 34 anomaly journeys
+ * *arrive*, and then the mortal re-decides and leaves without starting the encounter it
+ * came for. Until that arrival defect is fixed (TODO(THR-1668)), 1 keeps the world's
+ * firing rate level with `main`. @range 0–3
+ */
+export const ANOMALY_SITE_MAX_HEX_DISTANCE = 1;
+
+/** Template-id prefix the anomaly-site reserve keys on (THR-1641). */
+export const ANOMALY_SITE_TEMPLATE_PREFIX = 'encounter.anomaly.';
+
+/**
  * Cap stage free-slot fill: take one entry per template before any template
  * gets a second slot (THR-1633 S1). Without it, one template registered at many
  * locations can fill the free slots with copies of itself.
@@ -445,6 +473,17 @@ export const STRANGER_CURIOSITY_BONUS = 0.15;
 /** Maximum social encounter templates generated per target agent.
  * @range 1–5 */
 export const MAX_SOCIAL_CANDIDATES_PER_AGENT = 3;
+
+/**
+ * Rotate which of a guild's `.social.` templates takes the reserved faction slot
+ * (THR-1641). The slot is one wide and used to take the *first* listed template every
+ * time, so two guildmates only ever met over the first entry of their guild's list —
+ * measured on seeds 42 + 99 at 200 ticks, 9 of 39 guild `.social.` templates fired,
+ * every one of them first in its list. The rotation starts at
+ * `hashString(agentId:targetAgentId:tick) mod n` — a pure hash, not a PRNG draw, so no
+ * seeded stream shifts. `false` restores the head-of-list pick (NFP #6).
+ */
+export const FACTION_SOCIAL_SLOT_ROTATE = true;
 
 /** Maximum adjacency hops for "visible" agents in social encounter scanning.
  * @range 1–4 */

@@ -118,7 +118,7 @@ export const LOREKEEPERS_COVENANT_DEFINITION: FactionDefinition = {
     'lk.elite.forbidden_archive', 'lk.elite.ancient_truth',
   ],
   socialTemplateIds: [
-    'lk.social.reading_circle', 'lk.social.academic_debate', 'lk.social.knowledge_exchange',
+    'lk.social.lecture_hall', 'lk.social.debate_forum', 'lk.social.manuscript_exchange',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

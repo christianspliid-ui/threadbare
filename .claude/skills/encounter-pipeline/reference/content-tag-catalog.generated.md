@@ -2,7 +2,7 @@
 
 # Content tag catalog
 
-The closed vocabulary an author may hang on a piece of content — 159 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
+The closed vocabulary an author may hang on a piece of content — 168 tags across 5 axes. A tag not on this page is not a tag: `contentTags.test.ts` fails any catalog entry carrying a spelling that is not seated in `src/data/content-tags.ts`, and the attachment gate (`npm run check:attachment -- --all`) fails it by name before the test does.
 
 **Reading the counts.** *Bearers* is how many entries of each kind **author** the tag. *Matched* is how many a query would actually hit, which is higher wherever the kind projects the axis from a typed field (an encounter's `reach`, a power's `sphereAffinity`) — projection beats authoring, so a projected tag is never written by hand.
 
@@ -90,7 +90,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 
 What class of story-object it belongs to, and what walk of life it comes from. Authored, and the widest axis by design.
 
-**114 tags.**
+**123 tags.**
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
@@ -98,7 +98,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#trinket` | Small and slight — worth more as a token than as a thing. | agreement 3 | 3 |  |
 | `#legendary` | Known by name across the world, and not by many hands. | legendary 3 · item 1 | 4 |  |
 | `#consumable` | Used once and gone. | item 6 | 6 |  |
-| `#anomaly` | Left behind by something the world does not explain. | item 10 · power 8 · condition 6 | 24 |  |
+| `#anomaly` | Left behind by something the world does not explain. | encounter 10 · item 10 · power 8 · condition 6 | 34 |  |
 | `#ancient` | From before the present order — older than the people who use it. | item 24 · condition 2 · power 2 | 28 |  |
 | `#creation` | Made deliberately, by a hand that meant it. | legendary 2 · item 1 | 3 |  |
 | `#bestowed` | Given by a god rather than found or made. | power 12 | 12 |  |
@@ -126,7 +126,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#survival` | Of staying alive where staying alive is the work. | item 10 · power 2 | 12 |  |
 | `#stealth` | Of going unseen and unheard. | item 6 · trait 3 · power 2 | 11 |  |
 | `#social` | Of people and standing — it works through others. | condition 5 · item 5 · trait 3 · power 2 | 15 |  |
-| `#trade` | Of buying and selling. | item 5 · condition 1 · trait 1 | 7 |  |
+| `#trade` | Of buying and selling. | item 5 · condition 1 · trait 1 | 23 |  |
 | `#commercial` | Of the counting-house — contracts, ledgers, and terms. | item 3 | 3 |  |
 | `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 | 10 |  |
 | `#discovery` | Of finding what nobody had found. | item 5 | 5 |  |
@@ -162,6 +162,15 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#threshold_errand` | Work at a crossing place, where the road or the world changes hands. | encounter 2 | 2 |  |
 | `#broker_errand` | Work arranged by someone who trades in arrangements rather than goods. | encounter 1 | 1 |  |
 | `#craft_commission` | A piece of work ordered from a maker, and answerable to whoever ordered it. | encounter 1 | 1 |  |
+| `#explore` | A going-out to find what is there — a ruin, a road, a rumour. | — | 41 |  |
+| `#assist` | A hand lent to someone who needs one, for thanks or for pay. | — | 20 |  |
+| `#duel` | A contest of arms, one against one or side against side. | — | 23 |  |
+| `#lead` | Others to be taken somewhere — rallied, organised, or talked round. | — | 17 |  |
+| `#build` | Something to be raised or mended where people will use it. | — | 21 |  |
+| `#steal` | Something to be taken that its keeper means to keep. | — | 9 |  |
+| `#create` | A made thing, worked from nothing by skill or by art. | — | 15 |  |
+| `#acquire` | A thing to be got hold of, by whatever means will get it. | — | 14 |  |
+| `#hire` | Hands to be taken on, or a contract to be taken up. | — | 10 |  |
 | `#core` | A Core trait — where a mortal sits on one of the five continua that make up character. | trait 10 | 10 |  |
 | `#personality` | An emergent personality trait — a reach leaning hardened into a way of choosing. | trait 16 | 16 |  |
 | `#mastery` | A mastery — competence earned by doing a thing until the world noticed. | trait 9 | 9 |  |

@@ -170,8 +170,16 @@ describe('content tag vocabulary — the seating rule held', () => {
     // Derived and polarity axes are seated by the cosmology, not by bearer count.
     const authoredAxisTags = CONTENT_TAGS.filter(d => d.axis === 'form' || d.axis === 'family');
     const bearers = new Map<string, number>();
-    for (const { entry } of CORPUS) {
+    for (const { kindId, entry } of CORPUS) {
       for (const t of authoredTags(entry)) bearers.set(t, (bearers.get(t) ?? 0) + 1);
+      // THR-1641: a family word a kind's `tagFields` projects (`#explore`, …) is borne
+      // through the typed field, never authored — its bearer is still a bearer.
+      const kind = CONTENT_OBJECT_KINDS.find(k => k.id === kindId);
+      if (kind?.tagFields?.length) {
+        for (const t of projectedTags(kind.id, entry)) {
+          if (!authoredTags(entry).includes(t)) bearers.set(t, (bearers.get(t) ?? 0) + 1);
+        }
+      }
     }
     // No allowlist. There used to be a reader-only set here — six `family` tags seated
     // for `tagFilters` query sites that wanted content nobody had authored. THR-1496

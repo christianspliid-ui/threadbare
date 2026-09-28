@@ -119,7 +119,7 @@ export const UNDERKING_COURT_DEFINITION: FactionDefinition = {
     'uk.elite.seize_territory', 'uk.elite.puppet_ruler',
   ],
   socialTemplateIds: [
-    'uk.social.back_room_deal', 'uk.social.loyalty_test', 'uk.social.feast_of_spoils',
+    'uk.social.gambling_den', 'uk.social.black_market', 'uk.social.whisper_network',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

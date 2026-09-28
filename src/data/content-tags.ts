@@ -316,6 +316,22 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   T('#threshold_errand', 'family', 'Work at a crossing place, where the road or the world changes hands.', ['encounter_template']),
   T('#broker_errand', 'family', 'Work arranged by someone who trades in arrangements rather than goods.', ['encounter_template']),
   T('#craft_commission', 'family', 'A piece of work ordered from a maker, and answerable to whoever ordered it.', ['encounter_template']),
+
+  // THR-1641 — the kind of encounter, *projected* from the raw entry's `encounterType`
+  // by the encounter kind's `tagFields` column, never authored. About 220 templates
+  // carry one, which is what gives the place-trait bonus rows tags with bearers
+  // (before this, nine of the table's tags had none). `#trade` is the tenth word and is
+  // already seated above as a walk of life, unscoped; its meaning is the same. The
+  // eleventh spelling, `threaten`, has one bearer and no reader, so it is not seated.
+  T('#explore', 'family', 'A going-out to find what is there — a ruin, a road, a rumour.', ['encounter_template']),
+  T('#assist', 'family', 'A hand lent to someone who needs one, for thanks or for pay.', ['encounter_template']),
+  T('#duel', 'family', 'A contest of arms, one against one or side against side.', ['encounter_template']),
+  T('#lead', 'family', 'Others to be taken somewhere — rallied, organised, or talked round.', ['encounter_template']),
+  T('#build', 'family', 'Something to be raised or mended where people will use it.', ['encounter_template']),
+  T('#steal', 'family', 'Something to be taken that its keeper means to keep.', ['encounter_template']),
+  T('#create', 'family', 'A made thing, worked from nothing by skill or by art.', ['encounter_template']),
+  T('#acquire', 'family', 'A thing to be got hold of, by whatever means will get it.', ['encounter_template']),
+  T('#hire', 'family', 'Hands to be taken on, or a contract to be taken up.', ['encounter_template']),
 ];
 
 /**

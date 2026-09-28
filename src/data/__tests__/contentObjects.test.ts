@@ -245,7 +245,12 @@ describe('content-object registry — internal consistency', () => {
     // reads as "no tags authored" rather than "the field is wrong".
     const empty: string[] = [];
     for (const kind of CONTENT_OBJECT_KINDS) {
-      for (const [axis, field] of Object.entries(kind.projections)) {
+      const fields: Array<[string, string]> = [
+        ...Object.entries(kind.projections).filter((p): p is [string, string] => p[1] !== undefined),
+        // THR-1641: an axis-free tag field makes the same promise.
+        ...(kind.tagFields ?? []).map(f => ['tagFields', f] as [string, string]),
+      ];
+      for (const [axis, field] of fields) {
         // `ContentCatalogEntry` narrows to `{ id }` on purpose — the catalogs have no
         // other field in common — so reading a projection field means widening back to
         // the untyped bag the real entries are. Through `unknown`, because the two

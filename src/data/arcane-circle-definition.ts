@@ -108,7 +108,7 @@ export const ARCANE_CIRCLE_DEFINITION: FactionDefinition = {
     'ac.elite.arcane_discovery', 'ac.elite.seal_rift',
   ],
   socialTemplateIds: [
-    'ac.social.lecture', 'ac.social.magical_debate', 'ac.social.shared_research',
+    'ac.social.lecture_hall', 'ac.social.spell_exchange', 'ac.social.library_browse',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

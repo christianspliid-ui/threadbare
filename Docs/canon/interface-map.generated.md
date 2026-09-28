@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 141 |
+| 🟢 LIVE | 143 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 51 |
-| **Total** | **202** |
+| **Total** | **204** |
 
 ## Contracts by producing subsystem
 
@@ -246,6 +246,7 @@ remediation ticket or the build fails.
 | `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🔴 LEAKED | THR-1659 |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
 
@@ -275,6 +276,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `duel-victor-mercy-decides-loser-fate` | When one mortal beats another in a duel, the victor's own mercy or ruthlessness decides whether the loser walks away scarred or is finished — the god's hand weighs in only when the victor is the god's own mortal, and a loser who yielded or fled is never killed. | function: `decideBeatenDuellist`, `readLiveAxisLean`, `mercy_ruthlessness`, `opponentEnding` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `location-trait-tags-have-bearers` | Every word the place-trait table keys on is carried by enough encounters that a marked town really does draw different stories — a welcoming town more trade and help, blood-soaked ground more duels — instead of a row whose tags nothing wears. | function: `LOCATION_TRAIT_ENCOUNTER_BONUS`, `locationTraitBonusFor`, `templateEffectiveTags`, `tagFields` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `location-traits-shift-encounter-pool` | A place earns a trait from what the world already measures about it — long prosperity, long unrest, lingering magic, the dead — and the encounters that gather there follow the trait, so a marked town tells different stories from an unmarked one without anyone authoring the town. | function: `phaseLocationTraits`, `describeLocationTraits`, `computeLocationTraitBonus`, `LOCATION_TRAIT_ENCOUNTER_BONUS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-predicate-resolution` | A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking. | function: `resolveTraitPredicate`, `collectBearerTraitRefs`, `bearerMatchesPredicate` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Undertakings | 🔴 LEAKED | THR-800 |
@@ -1272,10 +1274,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
+- **Production hits:** 14 total — 1 write, 3 read, 10 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +4 more
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +5 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
@@ -1598,6 +1600,18 @@ exit
 - **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-constants.ts` +17 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too. THR-1155 slice 3 rerouted which faction the gate asks about: the meta row may now be CLASS-SCOPED (factionClass: 'realm'), because a Realm is minted per world as realm.<cultureId> and no static factionDefId can name one — so realm.* court work resolved nothing and the REALM_RANK_LADDER it guards could never be climbed. Both this gate and the sibling join-prerequisite gate now read the faction through resolveMetaFactionDefId (src/engine/factionMetaScope.ts): the Realm the agent has standing with, else the Realm holding the ground the encounter sits on, the latter asked of the map (getLocationHolder) so it can never return the guild or monster faction that holds a town. The ~150 authored rows carry no factionClass and the resolver returns their id untouched, so guild behaviour is unchanged by construction; the one new negative is this gate closing on a class-scoped row that resolves to nothing, which is the direction a gate may fail. Guarded by a shape tripwire (src/data/__tests__/faction-encounter-meta.readsites.test.ts), because a re-introduced direct read of meta.factionDefId would pass every behavioural test in the repo — guild rows resolve to themselves either way, and a realm row read directly resolves to nothing, so the symptom is a court that quietly stops paying standing rather than an exception.
 
+### `guild-social-templates-reach-shared-members` — 🟢 LIVE
+
+- **Intent:** Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there.
+- **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
+- **UL terms:** *Faction*, *Encounter*
+- **Module:** `src/engine/socialEncounterGeneration.ts`
+- **Production hits:** 20 total — 12 write, 1 read, 7 unclassified
+- **Write sites:** `src/data/arcane-circle-definition.ts`, `src/data/builders-fellowship-definition.ts`, `src/data/civic-guard-definition.ts`, `src/data/faction-definitions.ts`, `src/data/holy-order-dawn-definition.ts` +7 more
+- **Read sites:** `src/engine/socialEncounterGeneration.ts`
+- **Other hits:** `src/data/monster-faction-definitions.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/courtStrategicPack.ts`, `src/engine/strategicGraphOps.ts` +2 more
+- **Verdict:** Verified 2026-09-28: THR-1641. Before: 39 guild `.social.` templates, 0 fired — the lookup read `FACTION_ENCOUNTER_TEMPLATES` (only the Adventurers' six) and ten of eleven definitions listed ids no file defines. After (ids repaired, resolved through `getUnifiedTemplateById`, the reserved slot rotated by `FACTION_SOCIAL_SLOT_ROTATE`): `readers/reach.ts 42,99 200` fired 18 distinct guild `.social.` templates (gate ≥ 10) — without the rotation 9, each the first entry in its guild's list. Unit: `guildSocialTemplates.test.ts` (6), both directions of the id contract.
+
 ### `held-town-affinity-on-the-board` — 🟢 LIVE
 
 - **Intent:** A keeper’s work leans toward what they hold (THR-1448). `computeTemperamentWeight` gains one additive term keyed on the *candidate’s object* — `1` on a Location the actor holds through an active stance, `HELD_REALM_AFFINITY_SHARE` on the Realm’s other holdings, `0` elsewhere — so it discriminates by construction rather than paying every candidate (THR-1301). Carried on `boardTop[].heldTownAffinity` so the census can measure its spread.
@@ -1761,6 +1775,18 @@ exit
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
 - **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `location-trait-tags-have-bearers` — 🟢 LIVE
+
+- **Intent:** Every word the place-trait table keys on is carried by enough encounters that a marked town really does draw different stories — a welcoming town more trade and help, blood-soaked ground more duels — instead of a row whose tags nothing wears.
+- **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
+- **UL terms:** *Location Trait*, *Encounter*
+- **Module:** `src/engine/locationTraitBonus.ts`
+- **Production hits:** 5 total — 3 write, 1 read, 1 unclassified
+- **Write sites:** `src/data/content-objects.ts`, `src/data/contentEntryTags.ts`, `src/data/location-trait-constants.ts`
+- **Read sites:** `src/engine/locationTraitBonus.ts`
+- **Other hits:** `src/data/content-tags.ts`
+- **Verdict:** Verified 2026-09-28: THR-1641. Before: 9 of the table's tags (plus `#loss`, `#fear`) had 0 drawable bearers; `npm run census:location-traits` read FLAT for blood-soaked (seed 42) and welcoming + blood-soaked (seed 99). After the rekey: every table tag has ≥ `LOCATION_TRAIT_TAG_MIN_BEARERS` (5) drawable bearers (lowest `#thieves_errand` 5, `#steal` 9); census reads MOVES for blood-soaked on seed 42 (`#duel` 14.4% at marked places vs 4.9% unmarked) and welcoming on seed 99 (`#heart` 32.8% vs 21.6%). Unit: `locationTraitBonus.test.ts` bearer-floor test.
 
 ### `location-traits-shift-encounter-pool` — 🟢 LIVE
 
@@ -2241,10 +2267,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 20 total — 1 write, 3 read, 16 unclassified
+- **Production hits:** 23 total — 1 write, 3 read, 19 unclassified
 - **Write sites:** `src/data/encounters/vertical-slice.ts`
 - **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +11 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +14 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
 ### `seeded-dead-stay-dead` — 🟢 LIVE

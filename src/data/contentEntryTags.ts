@@ -64,7 +64,9 @@ export function projectedTags(kindId: ContentObjectKindId, entry: ContentCatalog
   if (!kind) return [];
   const bag = entry.properties ?? (entry as unknown as Record<string, unknown>);
   const out: string[] = [];
-  for (const field of Object.values(kind.projections)) {
+  // THR-1641: `tagFields` project exactly like an axis field; only the contract test
+  // tells the two apart (a `tagFields` value claims no axis).
+  for (const field of [...Object.values(kind.projections), ...(kind.tagFields ?? [])]) {
     if (!field) continue;
     const value = (bag as Record<string, unknown>)[field] ?? (entry as unknown as Record<string, unknown>)[field];
     if (typeof value !== 'string' || value.length === 0) continue;

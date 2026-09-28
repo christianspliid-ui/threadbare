@@ -50,6 +50,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['gem_deposit'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'matter',
@@ -189,6 +191,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['crystal_cavern'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
+    // THR-1641 / THR-1526: now on the board (cache-registered) and also its own seed
+    // target (`singing_dark_seed_return` invites a return visit). The opening stands
+    // alone — a first visit and a return read the same — so it stays drawable.
+    drawable: true,
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'energy',
@@ -331,6 +339,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['golden_grove'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'life',
@@ -462,6 +472,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['herb_garden'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'life',
@@ -583,6 +595,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['ancient_vault'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'time',
@@ -733,6 +747,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['sunken_treasury'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'entropy',
@@ -872,6 +888,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['fossil_bed'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'time',
@@ -1001,6 +1019,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['iron_seep'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'force',
@@ -1159,6 +1179,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['pearl_shoal'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'spirit',
@@ -1287,6 +1309,8 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['glowcap_hollow'],
+    // THR-1641: authored so the place-trait bonus rows (veilThin, haunted) reach it.
+    tags: ['#anomaly'],
     apCost: 1,
     actorAffinities: ['individual'],
     sphereAffinity: 'mind',

@@ -118,7 +118,7 @@ export const RANGERS_BROTHERHOOD_DEFINITION: FactionDefinition = {
     'rb.elite.legendary_hunt', 'rb.elite.wilderness_stronghold',
   ],
   socialTemplateIds: [
-    'rb.social.campfire_tales', 'rb.social.tracking_lessons', 'rb.social.survival_training',
+    'rb.social.campfire_tales', 'rb.social.tracking_lesson', 'rb.social.equipment_trade',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

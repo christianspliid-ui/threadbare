@@ -108,7 +108,7 @@ export const MERCHANT_CONSORTIUM_DEFINITION: FactionDefinition = {
     'mct.elite.trade_empire', 'mct.elite.royal_charter',
   ],
   socialTemplateIds: [
-    'mct.social.auction', 'mct.social.feast', 'mct.social.investment_club',
+    'mct.social.wine_tasting', 'mct.social.ledger_review', 'mct.social.guild_feast',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

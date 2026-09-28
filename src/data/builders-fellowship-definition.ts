@@ -113,7 +113,7 @@ export const BUILDERS_FELLOWSHIP_DEFINITION: FactionDefinition = {
     'bf.elite.build_wonder', 'bf.elite.master_project',
   ],
   socialTemplateIds: [
-    'bf.social.workshop_tour', 'bf.social.craft_competition', 'bf.social.blueprint_review',
+    'bf.social.workshop_tour', 'bf.social.guild_feast', 'bf.social.material_trade',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

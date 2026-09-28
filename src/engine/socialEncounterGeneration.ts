@@ -52,7 +52,8 @@ import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
-import { FACTION_ENCOUNTER_TEMPLATES } from '../data/faction-encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { hashString } from './factionAmbitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
@@ -90,6 +91,7 @@ import {
   STRANGER_CURIOSITY_THRESHOLD,
   STRANGER_CURIOSITY_BONUS,
   MAX_SOCIAL_CANDIDATES_PER_AGENT,
+  FACTION_SOCIAL_SLOT_ROTATE,
   VISIBLE_AGENT_MAX_HOPS,
   TAVERN_SOCIAL_ENCOUNTER_BOOST,
   TAVERN_COLOCATION_PARENT,
@@ -144,6 +146,8 @@ export function generateSocialCandidates(
   agentId: string,
   agentLocationId: string,
   distanceMatrix: DistanceMatrix,
+  /** Current tick — seeds the guild-slot rotation (THR-1641). Absent reads as 0. */
+  tick?: number,
 ): EncounterCacheEntry[] {
   // Fail-soft: missing agent node
   if (!graph.getNode(agentId)) return [];
@@ -244,8 +248,14 @@ export function generateSocialCandidates(
       : [];
 
     // Add faction-scoped social templates if agents share a faction (TB-062)
+    // THR-1641: the Place's own subtype too, bare and prefixed — the guild templates
+    // author `tavern` / `barracks`, the node carries `sublocation-type.tavern`.
+    const placeTypeId = locationNode.properties.sublocationTypeId as string | undefined;
+    const placeSubtypes: string[] = placeTypeId
+      ? [placeTypeId, placeTypeId.replace(/^sublocation-type\./, '')]
+      : [];
     const factionTemplates = getSharedFactionSocialTemplates(
-      graph, agentId, targetAgentId, locationType,
+      graph, agentId, targetAgentId, locationType, placeSubtypes,
     );
 
     // Slot priority: faction (reserved) → unified tavern → extra (secret-discovery)
@@ -253,7 +263,15 @@ export function generateSocialCandidates(
     const factionSlots = Math.min(factionTemplates.length, RESERVED_FACTION_SOCIAL_SLOTS);
     const slotsAfterFaction = Math.max(0, MAX_SOCIAL_CANDIDATES_PER_AGENT - factionSlots);
 
-    const selectedFaction = factionTemplates.slice(0, factionSlots);
+    // THR-1641: rotate the reserved slot across the guild's list, else only its first
+    // entry is ever offered. Pure hash of (agent, target, tick) — no PRNG draw.
+    const factionOffset = FACTION_SOCIAL_SLOT_ROTATE && factionTemplates.length > factionSlots
+      ? (hashString(`${agentId}:${targetAgentId}:${tick ?? 0}`) >>> 0) % factionTemplates.length
+      : 0;
+    const selectedFaction = [
+      ...factionTemplates.slice(factionOffset),
+      ...factionTemplates.slice(0, factionOffset),
+    ].slice(0, factionSlots);
 
     // Unified tavern templates fill next when at a tavern (highest priority for
     // location-specific encounters — THR-101).
@@ -614,12 +632,23 @@ function findVisibleAgents(
  * Returns templates from all shared factions' socialTemplateIds that match the location type.
  *
  * TB-062: Faction Social Encounters
+ *
+ * THR-1641 — ids resolve through the unified registry (`getUnifiedTemplateById`).
+ * This used to look them up in `FACTION_ENCOUNTER_TEMPLATES`, which holds only the
+ * Adventurers' Guild's six `ag.social.*`; the other guilds' 33 `.social.` templates
+ * live in their own content files and are registered only in the unified registry, so
+ * no guild but the Adventurers' ever offered one. A template matches when its
+ * `locationSubtypes` names the settlement's `locationType` **or** one of
+ * `placeSubtypes` — the Place the target stands in (`tavern`, `barracks`, …), which the
+ * parent-type walk in the caller otherwise hides. Seed-only sequels (`drawable: false`)
+ * are never offered.
  */
 export function getSharedFactionSocialTemplates(
   graph: WorldGraph,
   agentId: string,
   targetAgentId: string,
   locationType: string,
+  placeSubtypes: readonly string[] = [],
 ): UnifiedActionTemplate[] {
   const agentFactions = getFactionMembershipEdges(graph, agentId);
   const targetFactions = getFactionMembershipEdges(graph, targetAgentId);
@@ -654,8 +683,12 @@ export function getSharedFactionSocialTemplates(
       if (templateIdSet.has(templateId)) continue;
       templateIdSet.add(templateId);
 
-      const tmpl = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === templateId);
-      if (tmpl && (tmpl.locationSubtypes?.includes(locationType as never) ?? false)) {
+      // Fail-soft: an id that resolves to nothing is skipped (the contract test in
+      // guildSocialTemplates.test.ts fails it in CI so it cannot ship).
+      const tmpl = getUnifiedTemplateById(templateId);
+      if (!tmpl || tmpl.drawable === false) continue;
+      const subtypes = (tmpl.locationSubtypes ?? []) as readonly string[];
+      if (subtypes.includes(locationType) || placeSubtypes.some(s => subtypes.includes(s))) {
         templates.push(tmpl);
       }
     }

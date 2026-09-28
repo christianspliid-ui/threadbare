@@ -2392,6 +2392,17 @@ export interface UnifiedActionTemplate {
    * that does not author it reads exactly as it did before (NFP #6).
    */
   readonly tags?: readonly ContentTag[];
+  /**
+   * The authored kind of encounter — `explore`, `assist`, `duel`, `trade`, … — as the
+   * raw entry wrote it (THR-1641). The four raw-entry converters used to spend it on
+   * `crudType` and drop it, so the word was lost at conversion. It is kept here so the
+   * encounter kind can *project* it as a tag (`#explore`, `#trade`, …) through
+   * `effectiveTags`, which is what gives the place-trait bonus rows tags with bearers.
+   *
+   * Never authored by hand on a direct template: it is a passthrough from the raw
+   * entry shapes only. Absent on every direct template, which projects nothing.
+   */
+  readonly encounterType?: string;
 
   // Scale & Priority
   readonly scale: ActionScale;

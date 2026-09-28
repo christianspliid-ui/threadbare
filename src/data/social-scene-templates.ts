@@ -120,6 +120,8 @@ function toSocialTemplate(e: SocialEntry): UnifiedActionTemplate {
     name: e.name,
     reach: e.reachPrimary as import('../types/traits').ReachDomain,
     crudType: toCrudType(e.encounterType),
+    // THR-1641: passthrough — projected as a tag by the encounter kind.
+    encounterType: e.encounterType,
     scale: 'local',
     steps: e.steps.map((step, index) => {
       const dur = step.duration ?? 1;
