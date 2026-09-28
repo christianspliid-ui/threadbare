@@ -11,7 +11,13 @@
  * Systems audit: Docs/plans/encounters/flawed-steel-systems.md
  */
 
-import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
+import type {
+  UnifiedActionTemplate,
+  ActionStep,
+  ActionStepBranch,
+  AftermathVariant,
+  EncounterAftermathChange,
+} from '../../types/unifiedAction';
 import type {
   EncounterSupportBundle,
   EncounterSupportActorSpec,
@@ -121,6 +127,10 @@ const step0TheReckoning: ActionStep = {
     'flaw, and how many of those blades had already failed in hands that trusted them.',
   successAfterimage: 'The god perceived the threads of the forge and chose how to pull.',
   failureAfterimage: 'The god perceived the threads of the forge but could not find purchase.',
+  // THR-1634 S1: the rest of the ladder, written to Doctrine v2 narrator mode.
+  successAtCostAfterimage: 'The god chose how to pull, but only after {cast:torve_ashgrip}\'s patience had worn another hour thinner.',
+  criticalSuccessAfterimage: 'The god saw every thread of the forge at once, including how many flawed blades had already gone out into the world, and chose how to pull.',
+  criticalFailureAfterimage: 'The god reached for the forge too hard. {cast:maren_ironhewn} felt the pull, turned from the shed door, and was afraid of it.',
 };
 
 /**
@@ -177,6 +187,8 @@ const step1ForgeTheTruth: ActionStep = {
   },
   successAfterimage: '{cast:maren_ironhewn} faced the Greycloaks with a full accounting. The truth was painful, but {cast:torve_ashgrip} respected the honesty.',
   failureAfterimage: '{cast:maren_ironhewn} tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
+  // THR-1634 S1.
+  successAtCostAfterimage: '{cast:maren_ironhewn} gave the full accounting and {cast:torve_ashgrip} accepted it, on harder terms: the replacements come free, and the forge works a month without pay.',
   criticalSuccessAfterimage: 'The accounting is so complete, so unflinching, that {cast:torve_ashgrip} stands and offers her own hand first. The Greycloaks leave as something better than satisfied — as people who will speak the forge\'s name with respect in other towns.',
   criticalFailureAfterimage: 'The whole truth, spoken aloud, is worse than anyone braced for. {cast:torve_ashgrip}\'s respect curdles into something colder, and a contract that might have survived a lie does not survive the sum of it. The forge keeps its honesty and loses everything else.',
 };
@@ -239,6 +251,8 @@ const step1TemperTheNarrative: ActionStep = {
   },
   successAfterimage: 'The managed truth held. {cast:torve_ashgrip} accepted the framing and the forge survived without burning the relationship.',
   failureAfterimage: '{cast:torve_ashgrip} saw through the managed truth. The attempted deception stung worse than the original fraud.',
+  // THR-1634 S1.
+  successAtCostAfterimage: 'The managed truth held, but {cast:torve_ashgrip} asked for a lower rate on every future contract as the price of believing it.',
   criticalSuccessAfterimage: 'The managed truth does not merely hold — {cast:torve_ashgrip} leaves believing the forge did her a favor by catching the flaw at all. The concealment seals so cleanly that even {cast:maren_ironhewn} half-believes the kinder version of events.',
   criticalFailureAfterimage: '{cast:torve_ashgrip} sees through it at the worst moment — mid-handshake — and understands she has been handled. A single fraud she might have forgiven. Being taken for a fool she will not, and she says so where the whole settlement can hear.',
 };
@@ -287,6 +301,8 @@ const step1KeepYourHandFolded: ActionStep = {
   },
   successAfterimage: 'The settlement resolved its own crisis — messily, but without divine interference.',
   failureAfterimage: 'Without divine guidance, the negotiation collapsed into recrimination and armed tension.',
+  // THR-1634 S1.
+  successAtCostAfterimage: 'The settlement resolved its own crisis, but the shouting at the gate cost {cast:maren_ironhewn} her seat among the guild elders.',
   criticalSuccessAfterimage: 'Left alone, the settlement surprises itself. {cast:maren_ironhewn} finds words no god put in her mouth, and the reckoning she builds without help is rougher and truer than any a god could have shaped. It belongs to them entirely.',
   criticalFailureAfterimage: 'Without a hand on the scales, the worst nerve in the room wins. Old grievances the crisis had nothing to do with come loose, and by nightfall the forge is not the only thing in the settlement that has gone cold.',
 };
@@ -602,7 +618,93 @@ const WITHDRAWN_AFTERMATH = {
   ],
 } as const;
 
+// ─── Band endings (THR-1634 S1) ──────────────────────────────────
+//
+// Every arm is `fail_action`, so each path can end on `failure` and
+// `critical_failure` (`reachableLosingBandsOnPath`), and each variant's base
+// ending is written in the success register. These overrides re-tell how the
+// ending landed on a loss. They reuse only chips the variant already carries,
+// dropping the ones a loss makes untrue (UI Law 56: no chip without a write
+// behind it), and add no effect.
 
+/** The subset of a variant's own chips, by id — never a new chip. */
+function keepChanges(
+  variant: { readonly changes: readonly EncounterAftermathChange[] },
+  ids: readonly string[],
+): readonly EncounterAftermathChange[] {
+  return variant.changes.filter((change) => ids.includes(change.id));
+}
+
+const FORGE_TRUTH_ENDINGS: AftermathVariant = {
+  ...FORGE_TRUTH_AFTERMATH,
+  byOutcome: {
+    failure: {
+      overview:
+        'The accounting did not save the contract. {cast:torve_ashgrip} heard the whole truth and judged it ' +
+        'worse than the flaw itself. The Greycloaks took the forge\'s finished stock as payment and marched ' +
+        'out the next morning. {cast:dalla} went with them under guard, to work off her debt in their train. ' +
+        '{cast:maren_ironhewn} relit the forge two days later with empty racks. The guild elders began their ' +
+        'audit of every apprentice in the district, and no one argued about the cost this time.',
+      changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
+    },
+    critical_failure: {
+      overview:
+        'The truth broke the forge\'s name with every company that heard it. {cast:torve_ashgrip} seized the ' +
+        'finished stock, called {cast:maren_ironhewn} a fraud at the gate, and carried the story to the next ' +
+        'three towns on her road. {cast:dalla} left in chains. The guild ordered its audit that same night and ' +
+        'began with {cast:maren_ironhewn}\'s own racks.',
+      changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
+    },
+  },
+};
+
+// The managed truth's base chips all say the concealment held, and its two
+// reactions both keep it. On a loss it did not hold, so the losing bands carry
+// no chip and no reaction rather than a false one.
+const TEMPER_NARRATIVE_ENDINGS: AftermathVariant = {
+  ...TEMPER_NARRATIVE_AFTERMATH,
+  byOutcome: {
+    failure: {
+      overview:
+        '{cast:torve_ashgrip} saw through the managed truth and said so at the gate. The Greycloaks took the ' +
+        'replacements they were owed and cancelled every future contract with the forge. {cast:dalla} left the ' +
+        'settlement that night, without a reference. {cast:maren_ironhewn} relit the forge, but the settlement ' +
+        'now knows she tried to hide how many blades were flawed.',
+      changes: [],
+      reactions: [],
+    },
+    critical_failure: {
+      overview:
+        '{cast:torve_ashgrip} caught the lie mid-handshake and told the whole settlement what the forge had ' +
+        'tried to hide. The Greycloaks took every blade on the racks and left word in each town on their road ' +
+        'that {cast:maren_ironhewn}\'s stamp cannot be trusted. {cast:dalla} ran before the guild could send for ' +
+        'her. The forge stood cold for a week, and fewer customers came back when it relit.',
+      changes: [],
+      reactions: [],
+    },
+  },
+};
+
+const WITHDRAWN_ENDINGS: AftermathVariant = {
+  ...WITHDRAWN_AFTERMATH,
+  byOutcome: {
+    failure: {
+      overview:
+        'The settlement did not manage it. The talk at the gate turned to shouting, and the militia watched ' +
+        'from the walls while {cast:maren_ironhewn} and {cast:torve_ashgrip} traded accusations. The Greycloaks ' +
+        'left with less than they were owed and a promise never to buy here again. {cast:dalla} was expelled by ' +
+        'the guild elders that evening. The forge relit the next day to a quieter street.',
+    },
+    critical_failure: {
+      overview:
+        'By nightfall the settlement had turned on itself. The quarrel at the gate spread to the guild hall, ' +
+        'where the elders argued in public about who had trained {cast:dalla} and who had vouched for her. ' +
+        '{cast:torve_ashgrip} left with a partial accounting and no replacements. {cast:dalla} was expelled in a ' +
+        'closed session that leaked within the hour. The forge relit, but half the settlement no longer buys ' +
+        'from it.',
+    },
+  },
+};
 
 const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
 const DEFAULT_FORECAST_FACTORS = ['The threads are shifting.'] as const;
@@ -922,11 +1024,11 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      forge_the_truth: FORGE_TRUTH_AFTERMATH,
-      temper_the_narrative: TEMPER_NARRATIVE_AFTERMATH,
-      keep_your_hand_folded: WITHDRAWN_AFTERMATH,
+      forge_the_truth: FORGE_TRUTH_ENDINGS,
+      temper_the_narrative: TEMPER_NARRATIVE_ENDINGS,
+      keep_your_hand_folded: WITHDRAWN_ENDINGS,
     },
-    fallback: { ...FORGE_TRUTH_AFTERMATH },
+    fallback: { ...FORGE_TRUTH_ENDINGS },
   },
 });
 

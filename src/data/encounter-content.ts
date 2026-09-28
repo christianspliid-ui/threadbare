@@ -12,6 +12,7 @@ import type { LocationSubtype } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
+import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -250,6 +251,14 @@ type EncounterEntry = {
     purposeLine?: string;
     factorLines?: readonly import('../types/unifiedAction').StepFactorLine[];
     nudges?: readonly import('../types/unifiedAction').StepNudge[];
+    /**
+     * THR-1634 (E1): the deal declaration (THR-1247). Same trap as the five
+     * fields above: a `deal` authored here was dropped by the converter below,
+     * silently, so a legacy entry could not ask the god's Repertoire for a
+     * hand. Optional and absent from every entry that does not author it, so
+     * the conversion stays byte-identical for those (NFP #6).
+     */
+    deal?: import('../types/unifiedAction').StepDealDeclaration;
     onSuccess: {
       narrative: string;
       rewardPool?: import('../types/attachments').RewardPoolRecipe;
@@ -336,6 +345,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         purposeLine: step.purposeLine,
         factorLines: step.factorLines,
         nudges: step.nudges,
+        // THR-1634 (E1): the deal passthrough. Undefined ⇒ no dealing, as before.
+        deal: step.deal,
       };
     }),
     apCost: 1,
@@ -2902,6 +2913,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 2,
         narrative: 'The market runs on habit. {actor} finds a post by the cloth-seller where two lanes cross, and watches which purses ride loose and which ride under a hand.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} marks the wool-buyer, but a stallholder has watched {them} watching the crowd all morning and will know {their} face again.',
+        criticalSuccessAfterimage: '{actor} marks the wool-buyer and learns his whole round: the stalls he pays at, and that he never checks the purse between them.',
+        criticalFailureAfterimage: 'A market warden notices {actor} idling at the crossing and walks {them} out of the market. The wardens know {their} face now.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'insight'] },
         onSuccess: {
           narrative: 'A wool-buyer counts coin twice and puts it away once. {actor} marks the pocket, and the shoulder that guards it.',
           reputationDelta: 0.05,
@@ -2918,6 +2934,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
         narrative: '{actor} needs to arrive at the wool-buyer\'s elbow without appearing to have crossed the square to get there. The trick is to be carried, not to walk.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} reaches the right elbow, but only by shouldering through the dye argument. Two of the arguers remember who pushed past them.',
+        criticalSuccessAfterimage: '{actor} arrives as part of the dye argument, and the wool-buyer turns to join it. His purse side is open to {actor}.',
+        criticalFailureAfterimage: 'The wool-buyer sees {actor} coming and calls for the warden. {actor} has to leave the market with the warden a few steps behind.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'social'] },
         onSuccess: {
           narrative: '{actor} joins a knot of people arguing over dye prices and steps out of it at the right elbow. Nobody notices an arrival that came with a crowd.',
           reputationDelta: 0.08,
@@ -2935,6 +2956,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'The purse sits four inches down, and the cloth is stiff enough to hold its shape once the weight is gone. {actor} has the length of one transaction to work in.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} gets the purse, but the cloth tears as it comes free. The wool-buyer feels it at once, and {actor} has to run with the lane shouting behind {them}.',
+        criticalSuccessAfterimage: '{actor} takes the purse and leaves a pebble of the same weight in its place. The wool-buyer does not know he was robbed until he pays for supper.',
+        criticalFailureAfterimage: 'The wool-buyer catches {actor}\'s wrist and holds on until the wardens arrive. {actor} spends the night in the market lockup.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'shadow', 'peril'] },
         onSuccess: {
           narrative: 'Two fingers, a wrist turn, and the weight is gone before the cloth remembers it. {actor} is three stalls away before the wool-buyer reaches for coin that is no longer there.',
           reputationDelta: 0.15,
@@ -7521,6 +7547,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} approaches with goods to trade — a skill, a trinket, a day of labor. The art of exchange begins.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The trader takes the offer, but only after {actor} adds a day of work to it. {actor} pays more than the goods are worth.',
+        criticalSuccessAfterimage: 'The trader wants what {actor} brought more than {actor} guessed, and says so. {actor} sets the price for the rest of the trade.',
+        criticalFailureAfterimage: 'The offer insults the trader. {actor} is told not to come back to this stall.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
         onSuccess: {
           narrative: 'A nod, a handshake. What {actor} carried in is worth what {they} walk{s} out with. Fair dealing.',
           reputationDelta: 0.02,
@@ -7537,6 +7568,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Trust is the final currency. {actor} meets the trader\'s eyes, each measuring the other\'s intent.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The deal closes, but the trader keeps back part of what was promised. {actor} takes the short measure rather than lose the trade.',
+        criticalSuccessAfterimage: 'The deal closes, and the trader asks {actor} to come back next season. {actor} leaves with the goods and a standing welcome.',
+        criticalFailureAfterimage: 'At the last word the trader accuses {actor} of cheating, loud enough for the next stalls to hear. The deal is off, and the story spreads through the market.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: 'The exchange is done. Both parties walk away satisfied — rare enough to be worth remembering.',
           reputationDelta: 0.03,
@@ -7571,6 +7607,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} lays out every coin, every scrap of value. The arithmetic of survival.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The count comes out right, but it takes the whole day. {actor} loses a day\'s work to the ledger.',
+        criticalSuccessAfterimage: '{actor} finds a debt owed to {them} that {they} had forgotten. The holdings are larger than {actor} thought.',
+        criticalFailureAfterimage: 'The count shows a real loss: coin {actor} was sure of is gone. {actor} cannot say when it went.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'craft'] },
         onSuccess: {
           narrative: 'The accounting is done. {actor} knows exactly what {they} hold{s} — and what it can buy.',
           reputationDelta: 0.02,
@@ -7587,6 +7628,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Knowing what {they} hold{s} matters less than knowing what {they} need{s}. {actor} weighs priorities with care.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'A plan forms, but it needs {actor} to sell a tool {they} would rather keep. {actor} marks it for sale.',
+        criticalSuccessAfterimage: '{actor} spots a purchase that will pay for itself twice over this season. The plan is simple and sound.',
+        criticalFailureAfterimage: '{actor} commits to the wrong purchase. The coin is spent before the mistake is plain.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: 'A clear plan forms — what to buy, what to save, what to trade. {actor} is ready for the next exchange.',
           reputationDelta: 0.03,
@@ -8198,6 +8244,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Every place has stories. {actor} sits among the people who know this land and lets them talk.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The locals talk, but only after {actor} buys the room a round. {actor} leaves with the stories and a lighter purse.',
+        criticalSuccessAfterimage: 'An old woman takes a liking to {actor} and tells the story the others will not: a name, and where that person is buried.',
+        criticalFailureAfterimage: '{actor} asks one question too many. The locals decide {actor} is a spy, and the keeper asks {them} to leave.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: 'Words flow freely. {actor} earns a fragment of history — a name, a warning, a half-remembered song.',
           reputationDelta: 0.02,
@@ -8214,6 +8265,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Details fade fast. {actor} fixes the tales in mind — names, places, the shape of truth beneath the telling.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} keeps the story but mixes up two of the names. {actor} will have to ask again before trusting it.',
+        criticalSuccessAfterimage: '{actor} keeps every name and place, and notices where two of the tellings disagree. The disagreement is the useful part.',
+        criticalFailureAfterimage: '{actor} remembers the story wrong and repeats it in the next village. The people there know the true version and laugh at {actor}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: 'The story takes root. {actor} carries knowledge of what came before, which is worth more than coin.',
           reputationDelta: 0.03,
@@ -8251,6 +8307,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Someone nearby is struggling — exhaustion, grief, or the accumulated weight of days without rest. {actor} draws near.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The weary one accepts the comfort and then talks until dark. {actor} loses the evening to it.',
+        criticalSuccessAfterimage: 'The weary one accepts the comfort and tells {actor} their name and their trouble. {actor} has a friend in this place now.',
+        criticalFailureAfterimage: 'The weary one takes the help as pity and shouts at {actor} in front of the other travelers. {actor} is marked as a meddler here.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
           narrative: 'A word, a steady hand, a moment of presence. {actor} eases a burden that was not {their} own.',
           reputationDelta: 0.02,
@@ -8267,6 +8328,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Comfort is not enough. {actor} offers what can be used — food, warmth, an hour of undivided attention.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The weary one recovers on {actor}\'s own food. {actor} goes hungry that night.',
+        criticalSuccessAfterimage: 'The weary one recovers and presses a keepsake into {actor}\'s hand as thanks. {actor} is remembered well here.',
+        criticalFailureAfterimage: 'The food {actor} shares has turned. The weary one is sicker by morning, and their family blames {actor}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'presence'] },
         onSuccess: {
           narrative: 'Color returns to a drawn face. The weary one nods, once, and that is thanks enough.',
           reputationDelta: 0.03,
@@ -8307,6 +8373,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // enforced at zero in outcome prose) on untokened lines — fixed here per the
         // batch-5 rule that a template being authored gets its whole prose read.
         narrative: '{actor} climbs to the highest ground within an hour\'s walk and sits down to look properly. Paths, water, smoke, and where the shadows fall at this hour.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} maps the land, but the climb down in poor light costs {them} a twisted ankle.',
+        criticalSuccessAfterimage: '{actor} spots a pass through the hills that the road does not use. It will cut a day off the next journey.',
+        criticalFailureAfterimage: '{actor} misreads the ground and takes the wrong path down. {actor} spends the night lost in the scrub.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'journey'] },
         onSuccess: {
           narrative: 'Patterns emerge — trade routes, game trails, places where the land folds inward. {actor} maps it all.',
           reputationDelta: 0.02,
@@ -8323,6 +8394,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'The visible terrain tells one story. {actor} sits still long enough to hear the other one — where the birds will not settle, where the frost holds past noon.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} learns where the ley line runs, but sitting on it leaves {their} hands numb for a day.',
+        criticalSuccessAfterimage: '{actor} finds where the ley line crosses the stream. Few people know that spot, and {actor} does now.',
+        criticalFailureAfterimage: '{actor} disturbs the place instead of reading it. The birds leave the trees at once, and the local herders blame {actor} for the bad omen.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'wild'] },
         onSuccess: {
           narrative: 'The land whispers back. {actor} feels the pull of ley and root — this place has secrets worth knowing.',
           reputationDelta: 0.03,
@@ -8361,6 +8437,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101 (batch 13, scholarship slice).
         narrative: 'Old stones carry old marks — trade signs, boundary cuts, warnings weathered down to a suggestion. {actor} works along the wall with a thumb.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds the marks, but has to scrape off moss to read them. Part of the inscription comes away with the moss.',
+        criticalSuccessAfterimage: '{actor} finds a second set of marks under the first. The stone was cut twice, by two different hands.',
+        criticalFailureAfterimage: '{actor} pries at a loose stone to see behind it, and that part of the wall falls. The marks on it break in the fall.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: '{actor} finds what time almost erased — scratches in rock, paint faded to ghosts. Something was written here.',
           reputationDelta: 0.02,
@@ -8377,6 +8458,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'The letters mean little on their own. {actor} works out who cut them, and what such a person would have needed to say in a place like this.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} reads the markings, but only after paying a local elder for the old words. The meaning is clear, and the purse is lighter.',
+        criticalSuccessAfterimage: 'The marks are a miner\'s claim, and the claim was never worked. {actor} knows where the vein is.',
+        criticalFailureAfterimage: '{actor} reads the markings wrong and tells the village they are a curse. The village believes {them}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'craft'] },
         onSuccess: {
           narrative: 'The markings resolve — a trader\'s waypoint, a miner\'s claim, a warning from another age. Knowledge earned.',
           reputationDelta: 0.03,
@@ -8516,6 +8602,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations have moved since the last clear night, and moved exactly as far as they should have.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} reads the omen, but only by staying out through the cold night. {actor} is worn out the next day.',
+        criticalSuccessAfterimage: '{actor} reads two omens in the same stretch of sky, and they agree. The sign is certain.',
+        criticalFailureAfterimage: '{actor} reads a warning of death in the stars and cannot put it aside. {actor} is shaken for days.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: 'The stars speak to those who know how to listen. {actor} reads an omen — faint, but unmistakable.',
           reputationDelta: 0.02,
@@ -8532,6 +8623,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'An omen means little until it is read against what is already known. {actor} sets the two side by side and looks for the place they disagree.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} works out the omen\'s meaning, but it points at a person {actor} cares for. {actor} carries that worry now.',
+        criticalSuccessAfterimage: 'The omen names a day and a place. {actor} knows where to be when it comes true.',
+        criticalFailureAfterimage: '{actor} reads the omen as good news and tells others. It was a warning, and they will remember who told them otherwise.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: 'The pattern resolves. {actor} glimpses a thread of fate — where it leads, only time will tell.',
           reputationDelta: 0.03,
@@ -10436,6 +10532,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE - 5,
         duration: 1,
         narrative: 'Travelers stop here, and travelers carry goods worth wanting. {actor} must make an approach that reads as neither threat nor desperation.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The travelers agree to trade, but only after {actor} shares {their} meal with the whole party.',
+        criticalSuccessAfterimage: 'The travelers know {actor}\'s name from the road and greet {them} as a friend. They open their packs before being asked.',
+        criticalFailureAfterimage: '{actor} comes on too eager, and the travelers take {them} for a thief. Their guard draws a knife and stands between {actor} and the packs.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: '{actor} opens the exchange with easy confidence. The travelers are interested.',
           reputationDelta: 0.03,
@@ -10454,6 +10555,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Both parties have what the other wants. The question is who blinks first on the price.',
         criticalSuccessAfterimage: '{actor} closes the deal and walks away with more than was on the table — a traveler, impressed, lets slip where the good roads lead and who to name at the far end of them. The goods were never the real prize.',
         criticalFailureAfterimage: 'The deal collapses, and it collapses with an insult {actor} did not intend. The travelers move on and carry the story down every road they take. Some doors close a week\'s walk away before {actor} ever knocks.',
+        // THR-1634 S1: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The deal closes on the travelers\' terms. {actor} gets what {they} came for and pays a third more than it is worth.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'journey'] },
         onSuccess: {
           narrative: '{actor} closes the deal at favorable terms. Both parties leave satisfied.',
           reputationDelta: 0.08,
