@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: the hover tooltip is readable again**: a region's name no longer draws on top of it ([THR-1665](https://linear.app/threadbare/issue/THR-1665)). Merged via [#2127](https://github.com/christianspliid-ui/threadbare/pull/2127), and live on the site.
+- **2026-09-28: spotlight mortals join guilds**: heroes who choose for themselves now join a guild when it suits their strengths ([THR-1640](https://linear.app/threadbare/issue/THR-1640)). Merged via [#2126](https://github.com/christianspliid-ui/threadbare/pull/2126), and live on the site.
 - **2026-09-28: trade lanes stay alive**: a lane now carries while both its towns stand and nothing blocks it, instead of every lane vanishing on day 36 (first step of [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636)). Merged via [#2125](https://github.com/christianspliid-ui/threadbare/pull/2125), and live on the site.
 - **2026-09-28: faith and politics as world settings**: every culture gets its own Temple congregation and holy places, nearby wild towns read as its fringe, and town guilds are labelled ([THR-1632](https://linear.app/threadbare/issue/THR-1632)). Merged via [#2124](https://github.com/christianspliid-ui/threadbare/pull/2124), and live on the site; the on-screen step is [THR-1659](https://linear.app/threadbare/issue/THR-1659).
 - **2026-09-28: "who am I?" answered on screen**: the avatar's past-life name now reads as "your mortal shape" ([THR-1609](https://linear.app/threadbare/issue/THR-1609)). Merged via [#2123](https://github.com/christianspliid-ui/threadbare/pull/2123), and live on the site.
@@ -39,8 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: the opening gifts wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647)). Merged via [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), live.
 - **2026-09-28: the world pauses for every moment and resumes where you left it**: the Chapter Ledger and doom popups stop time while you read, popups wait their turn, and play resumes as you left it (part of [the first ten minutes](https://linear.app/threadbare/issue/THR-1608)). Merged via [#2118](https://github.com/christianspliid-ui/threadbare/pull/2118), and live on the site.
 - **2026-09-28: the doom clock waits for The First**: the world can no longer end before your First has had a real journey ([THR-1646](https://linear.app/threadbare/issue/THR-1646)). Merged via [#2117](https://github.com/christianspliid-ui/threadbare/pull/2117), and live on the site.
-- **2026-09-28: you see what your hand did**: after a cast, the player now sees who it touched and what changed ([THR-1606](https://linear.app/threadbare/issue/THR-1606)). Merged via [#2116](https://github.com/christianspliid-ui/threadbare/pull/2116), and live on the site.
-- **2026-09-28: the meeting comes to you**: after Reach Down, Meet The First now opens at the nearest settlement, so a new player can no longer miss The First (first step of [the opening](https://linear.app/threadbare/issue/THR-1605)). Merged via [#2115](https://github.com/christianspliid-ui/threadbare/pull/2115), and live on the site.
 
 ---
 
