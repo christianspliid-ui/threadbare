@@ -29,7 +29,7 @@ import { getLocationNodes, isPlaceNode, resolveToParentLocation } from '../sublo
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { isAgentGone } from '../groups/groupQueries';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
-import { readPlantedAppointment, isAppointmentFavour } from '../appointments';
+import { readPlantedAppointment, isAppointmentFavour, readRegimeMemo } from '../appointments';
 import { getAgentDetail } from '../agentDetail';
 import { initMovementState } from '../movementExecution';
 import { SLICE_TEMPLATE_IDS } from '../../data/encounters/vertical-slice';
@@ -258,15 +258,15 @@ describe('THR-1479 — an appointment on a generated small world', () => {
 });
 
 /**
- * THR-1669 — the board's outvote stands for the length of the journey. Two arms on
- * identical worlds (same seed, same plant), driven to the same `departing` tick; each
- * then puts the mortal on the same encounter journey away from the place. The only
+ * THR-1669 — the board's outvote stands for the length of the journey. Two arms,
+ * each driven to a `departing` tick; each then puts the mortal on an encounter
+ * journey away from the place. The only
  * difference is the mark the full decision writes when it chooses a journey while
  * the promise is departing. Unmarked (a journey begun before the regime turned) is
  * re-routed to the promise — the THR-1479 behaviour, kept. Marked is left to run.
  */
 describe('THR-1669 — a journey the board chose while departing is not turned back', () => {
-  function driveToDeparting(): { state: GameState; runtime: SimulationRuntime; actorId: string; placeId: string; seedId: string } {
+  function driveToDeparting(): { state: GameState; runtime: SimulationRuntime; actorId: string; placeId: string; seedId: string; dueTick: number } {
     let { state, runtime } = world();
     const { actorId, placeId, travel } = pickMortalAndPlace(state);
     state = wardAgainstDeath(state, actorId);
@@ -281,7 +281,7 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
         && (t as TraceEntry & { agentId: string }).agentId === actorId
         && (t as TraceEntry & { regime: string }).regime === 'departing')) break;
     }
-    return { state, runtime, actorId, placeId, seedId: seed.seedId };
+    return { state, runtime, actorId, placeId, seedId: seed.seedId, dueTick };
   }
 
   /** Put the mortal on an encounter journey to a Location that is not the place. */
@@ -302,15 +302,46 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
     throw new Error('no second destination for the mortal — the fixture is wrong, not the engine');
   }
 
+  /** Free to reach the moving-agent path this tick: no running action, no active encounter. */
+  function isFree(s: GameState, actorId: string): boolean {
+    return !s.unifiedActions.some(a => a.actorId === actorId && !a.resolved)
+      && !s.encounterProgress.some(e => e.actorId === actorId && e.status === 'active');
+  }
+
+  function isDeparting(s: GameState, actorId: string, seedId: string): boolean {
+    const memo = readRegimeMemo(s.graph.getNode(actorId));
+    return memo?.seedId === seedId && memo.regime === 'departing';
+  }
+
+  /**
+   * The live world is not a fixture: the mortal may be mid-action, or slide back to
+   * `leaning` as its standing shifts. So the arm is attempted on each tick where the
+   * mortal is free and departing going in, and only a tick that was *still* departing
+   * coming out counts — the memo is written on change, so it names the regime the
+   * decision phase actually ran under.
+   */
   function journeyAfterOneTick(mark: 'marked' | 'unmarked'): { destinationId: string | undefined; target: string | undefined; awayId: string; turnedBack: boolean } {
     enableTracing();
     try {
-      const { state: s0, runtime, actorId, placeId, seedId } = driveToDeparting();
-      const awayId = sendAway(s0, actorId, placeId, mark === 'marked' ? seedId : undefined);
-      const s1 = runTick(s0, [], runtime);
-      const ms = s1.graph.getNode(actorId)?.properties.movementState as { destinationId?: string; targetEncounterId?: string } | undefined;
-      const turnedBack = (s1.recentEvents ?? []).some(e => e.id === `appointment_reroute_${actorId}_${s0.tick}`);
-      return { destinationId: ms?.destinationId, target: ms?.targetEncounterId, awayId, turnedBack };
+      let { state, runtime, actorId, placeId, seedId, dueTick } = driveToDeparting();
+      while (state.tick < dueTick) {
+        if (!isDeparting(state, actorId, seedId) || !isFree(state, actorId)) {
+          state = runTick(state, [], runtime);
+          clearTraces();
+          continue;
+        }
+        const before = state.tick;
+        const awayId = sendAway(state, actorId, placeId, mark === 'marked' ? seedId : undefined);
+        state = runTick(state, [], runtime);
+        clearTraces();
+        if (!isDeparting(state, actorId, seedId)) continue;
+        const ms = state.graph.getNode(actorId)?.properties.movementState as { destinationId?: string; targetEncounterId?: string } | undefined;
+        // The id carries the tick the phase ran on, which is past `before`.
+        const rerouteId = `appointment_reroute_${actorId}_`;
+        const turnedBack = (state.recentEvents ?? []).some(e => e.id.startsWith(rerouteId) && Number(e.id.slice(rerouteId.length)) > before);
+        return { destinationId: ms?.destinationId, target: ms?.targetEncounterId, awayId, turnedBack };
+      }
+      throw new Error('the mortal was never free and departing through a whole tick before the due tick — the fixture is wrong, not the engine');
     } finally {
       clearTraces();
       disableTracing();

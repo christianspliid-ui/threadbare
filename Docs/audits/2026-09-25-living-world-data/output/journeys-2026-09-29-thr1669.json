@@ -1,0 +1,97 @@
+{
+  "ticket": "THR-1669",
+  "date": "2026-09-29",
+  "note": "Same session. base = this branch with the one-line rule disabled (outvoteStands=false), behaviourally main; fix = the branch. Seed 99 medium 200 ticks. The 41-trip ind_1 loop recorded on THR-1669 does not reproduce on current main at seed 99 in either arm; the regression arms in appointment-generatedWorld.test.ts prove the mechanism. Appointment census (check:content-model-census --seed 99 --ticks 200) identical in both arms: 6 planted, 1 kept, 1 missed (unreachable 1).",
+  "base": {
+    "99": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 71,
+      "startedTargetShare": 0.69,
+      "tally": {
+        "departs": 95,
+        "arrive_without_target": 86,
+        "started_target": 49,
+        "departed_elsewhere": 7,
+        "started_other": 12,
+        "nothing": 3
+      },
+      "anomaly": {
+        "departs": 12,
+        "started_target": 6,
+        "departed_elsewhere": 5,
+        "nothing": 1
+      },
+      "goal": {
+        "started_target:kept": 49,
+        "departed_elsewhere:kept": 7,
+        "started_other:kept": 11,
+        "started_other:no_decide": 1,
+        "nothing:no_decide": 3
+      },
+      "boardGoal": {
+        "goal_won_board": 52,
+        "lost_to_encounter": 17
+      },
+      "fate": {
+        "other:arrived_on_target": 60,
+        "anomaly:arrived_on_target": 12,
+        "other:arrived_no_target": 19
+      },
+      "targetlessArrivalsByAgent": {
+        "ind_10": 4,
+        "born_lc_1": 4,
+        "ind_9": 4,
+        "ind_4": 3,
+        "ind_14": 3
+      },
+      "firings": 965
+    }
+  },
+  "fix": {
+    "99": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 71,
+      "startedTargetShare": 0.69,
+      "tally": {
+        "departs": 95,
+        "arrive_without_target": 86,
+        "started_target": 49,
+        "departed_elsewhere": 7,
+        "started_other": 12,
+        "nothing": 3
+      },
+      "anomaly": {
+        "departs": 12,
+        "started_target": 6,
+        "departed_elsewhere": 5,
+        "nothing": 1
+      },
+      "goal": {
+        "started_target:kept": 49,
+        "departed_elsewhere:kept": 7,
+        "started_other:kept": 11,
+        "started_other:no_decide": 1,
+        "nothing:no_decide": 3
+      },
+      "boardGoal": {
+        "goal_won_board": 52,
+        "lost_to_encounter": 17
+      },
+      "fate": {
+        "other:arrived_on_target": 60,
+        "anomaly:arrived_on_target": 12,
+        "other:arrived_no_target": 19
+      },
+      "targetlessArrivalsByAgent": {
+        "ind_10": 4,
+        "born_lc_1": 4,
+        "ind_9": 4,
+        "ind_4": 3,
+        "ind_14": 3
+      },
+      "firings": 965
+    }
+  }
+}
