@@ -77,6 +77,7 @@ export {
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
+  JOURNEY_GOAL_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -87,6 +88,7 @@ import {
   OUTGROWTH_FILTER_ENABLED,
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
+  JOURNEY_GOAL_CAP_RESERVE,
   CAP_FILL_DISTINCT_FIRST,
   CAP_FILL_ROTATE,
 } from '../data/agent-behavior-constants';
@@ -799,6 +801,26 @@ export function capWithDiversity(
         seenTemplates.add(entry.templateId);
         added++;
       }
+    }
+  }
+
+  // Phase 1e: preserve the encounter a mortal just walked to (THR-1639).
+  //
+  // `phaseAgentDecision` flags the arrival goal with `journeyGoal`; without this slot the
+  // cap cut it on ~1 arrival in 3 (seed 42 / medium), so a journey ended with its reason
+  // gone and the mortal re-decided from a board that did not contain it. Ordered last so
+  // no earlier guarantee is weakened; scoring still decides whether the goal wins.
+  const journeyReserved = reserved.filter(e => e.journeyGoal).length;
+  if (journeyReserved < JOURNEY_GOAL_CAP_RESERVE) {
+    let needed = JOURNEY_GOAL_CAP_RESERVE - journeyReserved;
+    for (const entry of entries) {
+      if (needed <= 0) break;
+      if (!entry.journeyGoal) continue;
+      const key = `${entry.templateId}:${entry.locationId}`;
+      if (reservedKeys.has(key)) continue;
+      reserved.push(entry);
+      reservedKeys.add(key);
+      needed--;
     }
   }
 

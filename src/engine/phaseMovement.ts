@@ -431,6 +431,10 @@ export function phaseMovement(state: GameState): Partial<GameState> {
                   lastDecisionTick: state.tick,
                   movementHistory: result.updatedState.movementHistory,
                   motivationPull: newCandidates[0].motivationPull,
+                  // THR-1639: keep the encounter that pulled this reroute as the goal
+                  // (empty when the pull was the P0 drift heuristic). GUARD 5 in the
+                  // decision phase treats an id that no longer resolves as drift.
+                  targetEncounterId: newCandidates[0].bestTemplateId || undefined,
                   // Preserve current road traversal state
                   currentHexPosition: result.updatedState.currentHexPosition,
                   roadHexQueue: result.updatedState.roadHexQueue,

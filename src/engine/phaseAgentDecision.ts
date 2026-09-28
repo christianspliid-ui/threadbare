@@ -52,6 +52,7 @@ import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
 import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
   REROUTE_SCORE_MULTIPLIER,
+  ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
   DECISION_REEVALUATION_TICKS,
   APPOINTMENT_JOURNEY_PULL,
   APPOINTMENT_OVERRUN_DISCOUNT,
@@ -660,6 +661,8 @@ export function phaseAgentDecision(
             if (profiling) awarenessMs += performance.now() - awStart1;
             let bestAltScore = 0;
             let bestAltLocationId: string | null = null;
+            let bestAltTemplateId: string | undefined;
+            let bestAltSublocationId: string | undefined;
 
             for (const entry of rerouteEntries) {
               if (entry.locationId === movementState.destinationId) continue; // Skip current destination
@@ -668,6 +671,8 @@ export function phaseAgentDecision(
               if (entryScore > bestAltScore) {
                 bestAltScore = entryScore;
                 bestAltLocationId = entry.locationId;
+                bestAltTemplateId = entry.templateId;
+                bestAltSublocationId = entry.sublocationId ?? undefined;
               }
             }
 
@@ -718,6 +723,11 @@ export function phaseAgentDecision(
                   lastDecisionTick: state.tick,
                   movementHistory: movementState.movementHistory,
                   motivationPull: bestAltScore,
+                  // THR-1639: the reroute was to an encounter — keep it as the goal,
+                  // so arrival (lair check, sublocation entry) and the next re-check
+                  // know what the mortal came for. GUARD 5 treats a vanished id as drift.
+                  targetEncounterId: bestAltTemplateId,
+                  targetSublocationId: bestAltSublocationId,
                   // Preserve current road traversal state — agent keeps walking
                   currentHexPosition: movementState.currentHexPosition,
                   roadHexQueue: movementState.roadHexQueue,
@@ -844,9 +854,31 @@ export function phaseAgentDecision(
 
       // Merge static cache entries with dynamic social + faction + lifecycle entries
       const dynamicEntries = [...socialEntries, ...factionEntries, ...lifecycleEntries];
-      const mergedEntries = dynamicEntries.length > 0
+      const unflaggedEntries = dynamicEntries.length > 0
         ? [...nearbyEntries, ...dynamicEntries]
         : nearbyEntries;
+
+      // THR-1639: a finished journey that still names its encounter flags that
+      // entry (on a copy — cache entries are shared) so the cap stage keeps a slot
+      // for it. Prefer the entry at the journey's destination; one entry only.
+      const arrivedState = (graph.getNode(agentId)?.properties?.movementState ?? actor.properties?.movementState) as MovementState | undefined;
+      const journeyGoalId = arrivedState?.targetEncounterId && (arrivedState.movementQueue?.length ?? 0) === 0
+        ? arrivedState.targetEncounterId
+        : undefined;
+      let mergedEntries = unflaggedEntries;
+      if (journeyGoalId) {
+        let goalIndex = -1;
+        for (let i = 0; i < unflaggedEntries.length; i++) {
+          const e = unflaggedEntries[i];
+          if (e.templateId !== journeyGoalId) continue;
+          if (goalIndex < 0) goalIndex = i;
+          if (e.locationId === arrivedState?.destinationId) { goalIndex = i; break; }
+        }
+        if (goalIndex >= 0) {
+          mergedEntries = unflaggedEntries.slice();
+          mergedEntries[goalIndex] = { ...unflaggedEntries[goalIndex], journeyGoal: true };
+        }
+      }
 
       // Run filter pipeline (hex-distance awareness with edge hex bonus)
       const filterResult = runFilterPipeline(
@@ -939,6 +971,31 @@ export function phaseAgentDecision(
 
       // Emit scoring trace
       emitTrace(decision.trace as TraceEntry);
+
+      // ── THR-1639: a journey keeps its goal on arrival ─────────────────
+      // A finished journey (empty queue) that still names the encounter it was
+      // walking to gets one committed decision: that encounter scores
+      // ARRIVAL_GOAL_COMMITMENT_MULTIPLIER × its board score, and the goal is then
+      // consumed so the bias never outlives the arrival. Ineligible on arrival →
+      // the goal is dropped and the board decides as before (fail-soft).
+      let arrivalGoal: 'kept' | 'dropped' | undefined;
+      if (journeyGoalId && arrivedState) {
+        const goalId = journeyGoalId;
+        const commit = (list: ScoredCandidate[]): ScoredCandidate[] => list
+          .map(c => (c.entry.templateId === goalId ? { ...c, finalScore: c.finalScore * ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } : c))
+          .sort((a, b) => b.finalScore - a.finalScore);
+        const goalOnBoard = decision.rankedCandidates.some(c => c.entry.templateId === goalId);
+        if (goalOnBoard) {
+          decision.rankedCandidates = commit(decision.rankedCandidates);
+          decision.topCandidates = commit(decision.topCandidates);
+          const top = decision.rankedCandidates[0] ?? null;
+          if (top && top.finalScore >= IDLE_SCORE_THRESHOLD) decision.selected = top;
+        }
+        arrivalGoal = goalOnBoard ? 'kept' : 'dropped';
+        // Consumed in place: later writes in this iteration spread the actor's
+        // properties snapshot, which shares this movementState object.
+        arrivedState.targetEncounterId = undefined;
+      }
 
       // ── THR-1479: the regime — discount, drop, and the journey ─────────
       // Runs *before* the board, never inside `scoreUnifiedBoard` (THR-1448 is
@@ -1527,6 +1584,7 @@ export function phaseAgentDecision(
           travelCost: selCandidate?.travelCost ?? 0,
           completionProb: selCandidate?.completionProb ?? 0,
           desireMultiplier: selCandidate?.desireMultiplier,
+          ...(arrivalGoal ? { journeyGoal: arrivalGoal } : {}),
         });
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
@@ -1833,6 +1891,22 @@ export function phaseAgentDecision(
             // Attach encounter targeting fields
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
+            // THR-1639: record the pull that chose this journey. The reroute check
+            // (GUARD 3) compares alternatives against `motivationPull ?? 0`, so an
+            // unset pull meant any entry elsewhere won at the first re-check and the
+            // mortal abandoned the encounter it set out for.
+            //
+            // The pull is recorded on the axis GUARD 3 scores alternatives on — the
+            // cache entry's `questPriority` — not the candidate's `finalScore`. The
+            // two scales differ by ~10× (finalScore ~0.1–1.4, questPriority 1–9), and
+            // recording finalScore made a low-scoring pick lose to any default-priority
+            // entry at the next re-check: measured on seed 11, The First ping-ponged
+            // between two towns for 77 ticks without an encounter. The finalScore
+            // stays on the DECIDE timeline event. Fail-soft: a non-finite priority
+            // leaves the pull unset (today's behaviour).
+            if (Number.isFinite(sel.entry.questPriority)) {
+              movState.motivationPull = sel.entry.questPriority;
+            }
 
             // Reset idle counter on any non-idle decision (queue_movement)
             graph.updateNode(agentId, {
