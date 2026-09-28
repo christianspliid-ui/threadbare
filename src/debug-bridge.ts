@@ -362,6 +362,12 @@ if (import.meta.env.DEV) {
       const { describeActiveInfluences } = await import('./engine/castInfluenceDrift');
       return { agentId: node.id, name: node.name, influences: describeActiveInfluences(state.graph, node.id, state.tick) };
     },
+    getLastCastConsequence: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { describeLastCastConsequence } = await import('./engine/castTargetChanges');
+      return describeLastCastConsequence(state);
+    },
     getCalling: async (agentRef: string) => {
       const state = _gameStateProvider?.();
       if (!state) return null;

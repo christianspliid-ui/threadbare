@@ -104,6 +104,7 @@ export type TraceCategory =
   | 'core_personality'
   | 'reaction_selected'
   | 'player_receipt'
+  | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -887,6 +888,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reaction_selected',
   // Divine Receipt — player action resolution feedback (THR-727)
   'player_receipt',
+  'receipt.target_changes', 'beat.gift_placed',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
   // Reach signature: Veil / Rend the Gate (THR-551)
@@ -4363,6 +4365,8 @@ export type TraceEntry =
   | ControlReleaseTrace
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
+  | ReceiptTargetChangesTrace
+  | BeatGiftPlacedTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
   // Agent residence (THR-822)
@@ -4607,6 +4611,29 @@ export interface PlayerReceiptTrace extends TraceBase {
    * of casts, fall back to the frame line and file the authoring as content work").
    */
   toastOverviewUsed?: boolean;
+}
+
+/**
+ * Trace: a player cast's receipt captured changes on its target (THR-1606) —
+ * the influence, trait or condition the cast wrote onto the mortal it touched.
+ */
+export interface ReceiptTargetChangesTrace extends TraceBase {
+  category: 'receipt.target_changes';
+  templateId: string;
+  targetId: string;
+  changeKinds: string[];
+}
+
+/**
+ * Trace: a spine gift placed something in the world (THR-1606) — Take the
+ * Seat raised a seat in a settlement, Leave Your Mark gave a bearer an artifact.
+ */
+export interface BeatGiftPlacedTrace extends TraceBase {
+  category: 'beat.gift_placed';
+  beatId: string;
+  placedNodeId: string;
+  /** The settlement (seat) or the bearer (artifact). */
+  anchorId: string;
 }
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */

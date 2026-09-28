@@ -224,6 +224,8 @@ function buildEmptyLine(agentId: string, agentName: string, tick: number): strin
 }
 
 function buildBeatLine(beat: SelectedBeat, agentName: string, graph: WorldGraph): string {
+  // THR-1606: a cast filed on this mortal tells its own line, verbatim.
+  if (beat.entry.castLine) return beat.entry.castLine;
   const reach = beat.entry.reachPrimary ?? 'iron';
   const outcome = beat.entry.success ? 'success' : 'failure';
   const templateKey = `${beat.role}_${reach}_${outcome}` as const;
@@ -268,13 +270,18 @@ export function composeThreadStory(
   let beatLines: string[] = [];
   let isEmpty = false;
 
-  if (beats.length < STORY_DIGEST_MIN_BEATS) {
+  // THR-1606: a beat carrying the god's own cast is always worth telling — one
+  // is enough, or the player's first dream on a mortal never reaches their story.
+  const hasCastBeat = beats.some((b) => b.entry.castLine);
+  if (beats.length < STORY_DIGEST_MIN_BEATS && !hasCastBeat) {
     beatLines = [buildEmptyLine(agentId, agentName, currentTick)];
     isEmpty = true;
   } else {
     beatLines = beats.map((beat, i) => {
       const prefix = buildTransitionPrefix(beat.role, i, beat.entry.tick);
       const line = buildBeatLine(beat, agentName, graph);
+      // A cast line opens with "Your hand…"; after a transition ("Later,") it continues the sentence.
+      if (prefix && beat.entry.castLine) return prefix + line.charAt(0).toLowerCase() + line.slice(1);
       return prefix + line;
     });
   }

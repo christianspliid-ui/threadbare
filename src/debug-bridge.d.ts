@@ -1512,6 +1512,21 @@ export interface DebugBridge {
       durationLabel: string;
     }>;
   } | null>;
+  /**
+   * THR-1606: the newest player cast's consequence — who it touched, what the
+   * receipt's toast said, every change it carried (`subject` is the target's id
+   * for a change written on the target, the actor's otherwise; `word` is the
+   * chip noun or the change title), and whether the cast was filed on the
+   * target's own digest so their Story So Far tells it. `null` before any cast.
+   */
+  getLastCastConsequence(): Promise<{
+    templateId: string;
+    targetId: string | null;
+    targetName: string | null;
+    toastMessage: string | null;
+    changes: Array<{ kind: string; subject: string; word: string }>;
+    digestFiledOnTarget: boolean;
+  } | null>;
   getCalling(agentRef: string): Promise<{
     agentId: string;
     title: string | null;

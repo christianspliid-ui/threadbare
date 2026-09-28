@@ -24,6 +24,7 @@ import { resolveEntityVisual } from '../shared/entityVisualResolver';
 import type { KnowledgeLevel } from '../../types/familiarity';
 import { getSphereColor } from '../../data/sphereIcons';
 import { ChapterLedger } from './ChapterLedger';
+import { ActiveEffectChips, UNDER_YOUR_HAND_HEADING } from './ActiveEffectChips';
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
 
@@ -211,6 +212,13 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
                 {card.primarySphere}
               </span>
             </Tooltip>
+          </div>
+        )}
+
+        {/* THR-1606: what your hand is doing to this mortal — visible on every tab */}
+        {card.activeEffects && card.activeEffects.length > 0 && (
+          <div className="pt-3">
+            <ActiveEffectChips effects={card.activeEffects} heading={UNDER_YOUR_HAND_HEADING} />
           </div>
         )}
       </div>

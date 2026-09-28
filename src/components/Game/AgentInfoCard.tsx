@@ -6,11 +6,12 @@ import type { ReachDomain } from '../../types/traits';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
 import { ReachIcon } from '../icons';
 import { Tooltip } from '../shared/Tooltip';
+import { ActiveEffectChips } from './ActiveEffectChips';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
 import { getSphereColor } from '../../data/sphereIcons';
 import { BACKSTORY_CONSTANTS } from '../../types/prose';
-import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
+import { elapsedLabel } from '../../engine/aftermathWords';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
@@ -161,84 +162,8 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
           )}
         </div>
 
-        {/* Active Effects (divine influences & court position) */}
-        {card.activeEffects && card.activeEffects.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {card.activeEffects.map((effect, idx) => {
-              const sphereColor = effect.sphere ? getSphereColor(effect.sphere) : 'var(--accent-gold)';
-              const isCourtPosition = effect.type === 'scry_court';
-              const strengthPct = effect.strength != null ? Math.round(effect.strength * 100) : null;
-
-              return (
-                <Tooltip
-                  key={idx}
-                  label={effect.label}
-                  desc={
-                    isCourtPosition
-                      ? 'Court position in your divine Scry'
-                      : // THR-1423: `4 ticks remaining` is a raw magnitude (Law 13) in an engine
-                        // unit the player never sees named anywhere else (Law 14). `durationLabel`
-                        // is the sanctioned reading and spells its count out.
-                        //
-                        // `ticksRemaining` is optional on `ActiveEffect` — a permanent effect
-                        // carries none. The old string interpolated that straight through as
-                        // `undefined ticks remaining`; the clause is now dropped entirely rather
-                        // than reading a missing term as a present one (NFP #4).
-                        //
-                        // THR-1424 settles the other half. Law 15 ruling (2026-09-10): a unitless
-                        // proportion is DROPPED, not translated — its reading is whatever the
-                        // surface already renders non-numerically. Here that is the strength bar
-                        // below, so `${strengthPct}% strength` leaves the tooltip entirely. No
-                        // word ladder: the Law 13 amendment of 2026-08-12 is explicit that an
-                        // adverb is the wrong answer to "how much?" (`grew steadily`), so banding
-                        // this would re-derive the very turn that amendment exists to forbid.
-                        effect.ticksRemaining != null
-                          ? `${durationLabel(effect.ticksRemaining)} remaining`
-                          : undefined
-                  }
-                >
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full cursor-help"
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      backgroundColor: `color-mix(in srgb, ${sphereColor} 15%, transparent)`,
-                      border: `1px solid color-mix(in srgb, ${sphereColor} 40%, transparent)`,
-                      color: sphereColor,
-                    }}
-                  >
-                    {isCourtPosition ? '♛' : '◈'}
-                    <span>{effect.label}</span>
-                    {!isCourtPosition && strengthPct != null && (
-                      <span
-                        style={{
-                          width: '1.5rem',
-                          height: '3px',
-                          borderRadius: '2px',
-                          backgroundColor: `color-mix(in srgb, ${sphereColor} 25%, transparent)`,
-                          display: 'inline-block',
-                          position: 'relative',
-                          verticalAlign: 'middle',
-                        }}
-                      >
-                        <span
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            height: '100%',
-                            width: `${strengthPct}%`,
-                            borderRadius: '2px',
-                            backgroundColor: sphereColor,
-                          }}
-                        />
-                      </span>
-                    )}
-                  </span>
-                </Tooltip>
-              );
-            })}
-          </div>
-        )}
+        {/* Active Effects (divine influences & court position) — one renderer, THR-1606 */}
+        <ActiveEffectChips effects={card.activeEffects} />
 
         {/* Agent summary prose (Recognised+) */}
         {agentProse && card.knowledgeLevel !== 'stranger' && (

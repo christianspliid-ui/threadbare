@@ -57,6 +57,12 @@ export interface DigestEntry {
   isDormantAgent: boolean;
   /** Whether the source of this entry is an agent or a location encounter. */
   sourceType: 'agent' | 'location';
+  /**
+   * THR-1606 — the god's cast, filed on the mortal it touched. When present the
+   * Story So Far tells this line verbatim instead of a reach/outcome beat, and a
+   * single such beat is enough to tell a story (your hand is never dead air).
+   */
+  castLine?: string;
 }
 
 // ─── Thread Tugs ─────────────────────────────────────────────────────

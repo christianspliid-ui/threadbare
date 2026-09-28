@@ -72,6 +72,7 @@ import {
 } from '../data/receipt-content';
 import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
 import type { DivineInfluenceEntry } from '../types/dream';
+import { targetSideChanges } from './castTargetChanges';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
 
@@ -154,7 +155,9 @@ function decidePresentation(
 ): 'modal' | 'toast' {
   if (templateSteps >= RECEIPT_MODAL_MIN_STEPS) return 'modal';
   if (rarityTier >= RECEIPT_MODAL_RARITY_FLOOR) return 'modal';
-  if (changes.some((c) => RECEIPT_MODAL_CHANGE_KINDS.includes(c.kind))) return 'modal';
+  // THR-1606: a change on the cast's *target* rides the toast with a chip; only
+  // the actor-side world-shifting kinds promote the receipt to its dialogue.
+  if (changes.some((c) => c.subjectId === undefined && RECEIPT_MODAL_CHANGE_KINDS.includes(c.kind))) return 'modal';
   if (reactionCount > 0) return 'modal';
   return 'toast';
 }
@@ -351,8 +354,17 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
     // the bare-name sentence survives, and only when the resolver wrote no overview
     // at all.
     const templateWord = template.spellName ?? template.name;
+    // THR-1606: when the cast changed its target and the resolver's overview never
+    // names them (it is actor-centric — "‹God› completed …"), the receipt leads with
+    // the first target-side change instead, so the toast says who and what.
+    const firstTargetChange = targetSideChanges(changes)[0];
+    const targetLedOverview =
+      firstTargetChange && targetNode && !(summary?.overview ?? '').includes(targetName)
+        ? firstTargetChange.detail
+        : undefined;
     const rawOverview =
       castInfluenceReceiptLine(state, action, template, band, targetName) ??
+      targetLedOverview ??
       summary?.overview ??
       `Your ${templateWord} ${outcomeBandWord(band)}.`;
     // THR-1050 — the overview and every reaction label/intent share one context,
@@ -421,6 +433,21 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       });
     }
 
+    // THR-1606: who the cast changed. A receipt with any target-side change names
+    // the target as the event's world reference, so the toast links to them (Law 1).
+    const targetChanges = targetSideChanges(changes);
+    const linksToTarget = targetChanges.length > 0 && !!targetNode;
+    if (linksToTarget) {
+      emitTrace({
+        tick: state.tick,
+        category: 'receipt.target_changes',
+        templateId: action.templateId,
+        targetId: action.targetId,
+        changeKinds: targetChanges.map((c) => c.kind),
+        summary: `receipt: ${template.name} changed ${targetName} (${targetChanges.length} change${targetChanges.length === 1 ? '' : 's'})`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+
     const significance =
       presentation === 'modal' ? RECEIPT_EVENT_SIGNIFICANCE_MODAL : RECEIPT_EVENT_SIGNIFICANCE_TOAST;
     const event: TickEvent = {
@@ -441,6 +468,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       sphere: template.sphereAffinity,
       band,
       actorId: action.actorId,
+      ...(linksToTarget ? { refs: [{ kind: 'agent' as const, id: action.targetId, name: targetName }] } : {}),
       // Toast tier surfaces as a completion toast; modal tier has no toast (the modal is
       // the surface) but still lands in the chronicle via its significance.
       ...(presentation === 'toast' ? { notification: { channel: 'toast' as const } } : {}),

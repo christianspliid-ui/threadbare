@@ -20,7 +20,9 @@
  * error so the tick loop can never crash here.
  */
 
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
+import { MAX_RECENT_EVENTS } from '../types/gameState';
+import { GIFT_PLACEMENT_SIGNIFICANCE } from '../data/receipt-content';
 import type {
   AscendantBeatState,
   BeatDefinition,
@@ -855,7 +857,9 @@ export function resolvePendingBeat(
     // `seedsGraph` tag (THR-520, plan §4.1). Mutates `state.graph` in place (shared
     // mutable world graph) and reports the touched node ids for the BeatRecord. Beats
     // without the tag — the pre-THR-520 contract — seed nothing here.
-    const seededNodeIds = def.seedsGraph ? seedBeatGraph(state, def, turn).seededNodeIds : [];
+    const seedResult = def.seedsGraph ? seedBeatGraph(state, def, turn) : undefined;
+    const seededNodeIds = seedResult?.seededNodeIds ?? [];
+    if (seededNodeIds.length > 0 && opts.runtime) touchWorld(opts.runtime);
 
     // Run the matched content template's aftermath (THR-522): the richer resolve contract
     // where a beat template carries `unlock_action` / `encounter_seed` / structural graph-op
@@ -864,6 +868,37 @@ export function resolvePendingBeat(
     // `templateProvider` are supplied (the UI/debug path) and the template declares aftermath
     // reactions; every shipping beat declares none, so the grant-only fallback stands.
     let workingState: GameState = { ...state, unlockedActionIds: nextUnlocked };
+
+    // THR-1606: a spine gift that placed something says so — a chronicle-tier line
+    // with a toast naming the place or the bearer, linked to it. Before this, the
+    // seat and the artifact mutated the graph with no event, so the gift was silent.
+    const placement = seedResult?.placement;
+    if (placement) {
+      const giftEvent: TickEvent = {
+        id: `beat_gift_${pending.beatId}_${turn}`,
+        tick: turn,
+        type: 'narrative',
+        message: placement.line,
+        significance: GIFT_PLACEMENT_SIGNIFICANCE,
+        notification: { channel: 'toast' },
+        ...(placement.anchorKind === 'agent'
+          ? { actorId: placement.anchorId }
+          : { refs: [{ kind: 'location' as const, id: placement.anchorId }] }),
+      };
+      workingState = {
+        ...workingState,
+        tickEvents: [...(workingState.tickEvents ?? []), giftEvent],
+        recentEvents: [...(workingState.recentEvents ?? []), giftEvent].slice(-MAX_RECENT_EVENTS),
+      };
+      emitTrace({
+        tick: turn,
+        category: 'beat.gift_placed',
+        beatId: pending.beatId,
+        placedNodeId: placement.placedNodeId,
+        anchorId: placement.anchorId,
+        summary: `beat.gift_placed: ${pending.beatId} → ${placement.line}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
     const contentTemplate = def.templateId && opts.templateProvider
       ? opts.templateProvider(def.templateId)
       : undefined;

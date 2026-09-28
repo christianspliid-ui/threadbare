@@ -40,6 +40,8 @@ import { getOriginVignetteById } from '../data/origin-vignettes';
 import { getAxisByReach, getAxisById } from '../types/axisRegistry';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
+import { durationLabel } from './aftermathWords';
+import { influenceChipNoun, influenceChipHover } from './castTargetChanges';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
 import {
   getAgentLocationId,
@@ -392,6 +394,11 @@ export interface ActiveEffect {
   strength?: number;
   /** Ticks remaining before expiry */
   ticksRemaining?: number;
+  /**
+   * THR-1606 — the effect on hover, in words: what the influence does to the
+   * mortal and when it fades. Absent when the influence carries no value drift.
+   */
+  hover?: string;
 }
 
 // ─── Familiarity-gated Info Card (Tier 2) ──────────────────────────
@@ -1823,12 +1830,18 @@ export function getAgentInfoCard(
 
     const ticksRemaining = Math.max(0, (influence.tickApplied + influence.maxDuration) - tick);
 
+    // THR-1606: the chip wears its sheet noun (Dreaming / Compelled) and carries
+    // what it does on hover — each chip is one real `divineInfluences` entry (Law 56).
+    const hover = influenceChipHover(influence, durationLabel(ticksRemaining));
     activeEffects.push({
       type: influence.interventionType,
-      label: INTERVENTION_LABELS[influence.interventionType] ?? influence.interventionType,
+      label: influenceChipNoun(influence.interventionType)
+        ?? INTERVENTION_LABELS[influence.interventionType]
+        ?? influence.interventionType,
       sphere: influence.sphere,
       strength,
       ticksRemaining,
+      ...(hover ? { hover } : {}),
     });
   }
 

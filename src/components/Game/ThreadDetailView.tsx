@@ -14,6 +14,7 @@ import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
 import { queryDigest } from '../../engine/digestBuffer';
 import { RecentActivityLog } from './RecentActivityLog';
 import { StorySoFarPanel } from './StorySoFarPanel';
+import { ActiveEffectChips, UNDER_YOUR_HAND_HEADING } from './ActiveEffectChips';
 import { useThreadStorySoFar } from './hooks/useThreadStorySoFar';
 import { STORY_SO_FAR_DIGEST_ENABLED } from '../../data/attention-constants';
 import {
@@ -741,6 +742,13 @@ function AgentDetailBody({
             runtime={runtime}
             tick={currentTick}
           />
+        )}
+
+        {/* THR-1606: what your hand is doing to this mortal (one chip per live influence) */}
+        {agentInfoCard?.activeEffects && agentInfoCard.activeEffects.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <ActiveEffectChips effects={agentInfoCard.activeEffects} heading={UNDER_YOUR_HAND_HEADING} />
+          </div>
         )}
 
         {/* Story so far / Recent Activity Log — background encounter digest for this agent */}
