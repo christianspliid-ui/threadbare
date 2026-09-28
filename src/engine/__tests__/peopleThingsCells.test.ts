@@ -71,9 +71,9 @@ function ambitionsOf(state: GameState, actorId: string): string[] {
     .filter((id): id is string => typeof id === 'string');
 }
 
-function boardFor(state: GameState, actorId: string, ambitions: string[]) {
+function boardFor(state: GameState, actorId: string, ambitions: string[], tick = state.tick) {
   return generateStrategicCandidates(
-    state.graph, actorId, ambitions, undefined, state.tick, mulberry32(7), undefined, 'cells',
+    state.graph, actorId, ambitions, undefined, tick, mulberry32(7), undefined, 'cells',
   );
 }
 
@@ -178,16 +178,23 @@ describe('the ownership band on a generated world', () => {
       .filter(n => n.properties.actorType === 'individual' && ambitionsOf(s, n.id).length > 0)
       .slice(0, 40);
 
+    // Each board is read over one rotation cycle, not one tick: `rotateForTick` walks a
+    // different slice of the list each tick, so a single-tick census reported a walked cell
+    // as unwalked whenever an unrelated world change moved the sample (THR-1633 — the
+    // encounter shortlist fill shifted who pursues what by tick 30). Same remedy as the
+    // claim case above (THR-1439).
     const seen = new Map<string, Set<string>>();
     for (const actor of actors) {
-      const board = boardFor(s, actor.id, ['ambition_conquer_territory', 'ambition_found_dynasty', 'ambition_seek_revenge']);
-      for (const c of board.candidates) {
-        if (!seen.has(c.templateId)) seen.set(c.templateId, new Set());
-        seen.get(c.templateId)!.add('offered');
-      }
-      for (const r of board.rejections) {
-        if (!seen.has(r.templateId)) seen.set(r.templateId, new Set());
-        seen.get(r.templateId)!.add(r.reason.split(':').slice(0, 2).join(':'));
+      for (let k = 0; k < ROTATION_CYCLE_TICKS; k++) {
+        const board = boardFor(s, actor.id, ['ambition_conquer_territory', 'ambition_found_dynasty', 'ambition_seek_revenge'], s.tick + k);
+        for (const c of board.candidates) {
+          if (!seen.has(c.templateId)) seen.set(c.templateId, new Set());
+          seen.get(c.templateId)!.add('offered');
+        }
+        for (const r of board.rejections) {
+          if (!seen.has(r.templateId)) seen.set(r.templateId, new Set());
+          seen.get(r.templateId)!.add(r.reason.split(':').slice(0, 2).join(':'));
+        }
       }
     }
 
@@ -199,5 +206,5 @@ describe('the ownership band on a generated world', () => {
     for (const cell of NEW_CELLS) {
       expect(report[cell], `${cell} was neither offered nor refused — nothing walks it`).not.toEqual([]);
     }
-  });
+  }, FRESH_WORLD_CASE_TIMEOUT_MS);
 });

@@ -864,9 +864,9 @@ export function capWithDiversity(
       for (let step = 0; step < n && filled.length < limit; step++) {
         const entry = entries[(start + step) % n];
         if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
+        if (!accept(entry)) continue;
         const key = `${entry.templateId}:${entry.locationId}`;
         if (reservedKeys.has(key)) continue;
-        if (!accept(entry)) continue;
         filled.push(entry);
         reservedKeys.add(key);
         seenTemplates.add(entry.templateId);

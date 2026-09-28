@@ -5075,11 +5075,16 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'function',
-      symbols: ['capWithDiversity', 'CAP_FILL_ROTATE', 'CAP_FILL_LOCAL_SLOTS', 'capCutTemplates'],
+      symbols: ['capWithDiversity', 'runFilterPipeline', 'CAP_FILL_ROTATE', 'CAP_FILL_LOCAL_SLOTS', 'capCutTemplates'],
       module: 'src/engine/encounterFilterPipeline.ts',
     },
     writeSites: ['src/engine/encounterFilterPipeline.ts'],
     readSites: ['src/engine/phaseAgentDecision.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'Docs/audits/2026-09-25-living-world-data/readers/reach.ts 42,99 200 (medium), old fill → rotation with CAP_FILL_LOCAL_SLOTS 30, same tree (main @ 1ad1b776): cap-first-gate templates 75 · 63 → 16 · 15, drawable templates fired 127 → 164, total firings 1,552 → 1,855, top-10 share 0.269 → 0.236. Rotation alone gave 12 · 4 / 117 / 676 / 0.284: it spent the free slots on other hexes, so start_local decisions fell 549 → 225 on seed 42. readers/attended.ts 42,99 150: The First\'s longest gap between encounters 25 · 30 (ceiling 30). Pinned by the capWithDiversity fair-fill and own-hex tests in encounterFilterPipeline.test.ts.',
+    },
   },
   // -- Encounters -> Movement: a journey keeps its goal (THR-1639) --------------
   // The failure this row exists to make impossible: a mortal chose an encounter in

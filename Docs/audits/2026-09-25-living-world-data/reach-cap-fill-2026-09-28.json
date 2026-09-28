@@ -1,0 +1,199 @@
+{
+ "reader": "readers/reach.ts 42,99 200",
+ "map": "medium",
+ "base": "main @ 1ad1b776",
+ "ticket": "THR-1633",
+ "arms": [
+  {
+   "arm": "old fill (rotate off, no local pass)",
+   "perSeed": {
+    "42": {
+     "firings": 717,
+     "capFirstGate": 75,
+     "selectedNotSpawned": 17,
+     "outscored": 40
+    },
+    "99": {
+     "firings": 835,
+     "capFirstGate": 63,
+     "selectedNotSpawned": 18,
+     "outscored": 37
+    }
+   },
+   "totalFirings": 1552,
+   "drawableFired": 127,
+   "drawable": 514,
+   "top10Share": 0.269
+  },
+  {
+   "arm": "rotation only",
+   "perSeed": {
+    "42": {
+     "firings": 286,
+     "capFirstGate": 12,
+     "selectedNotSpawned": 62,
+     "outscored": 61
+    },
+    "99": {
+     "firings": 390,
+     "capFirstGate": 4,
+     "selectedNotSpawned": 61,
+     "outscored": 66
+    }
+   },
+   "totalFirings": 676,
+   "drawableFired": 117,
+   "drawable": 514,
+   "top10Share": 0.284
+  },
+  {
+   "arm": "rotation + local 10",
+   "perSeed": {
+    "42": {
+     "firings": 426,
+     "capFirstGate": 3,
+     "selectedNotSpawned": 48,
+     "outscored": 78
+    },
+    "99": {
+     "firings": 442,
+     "capFirstGate": 2,
+     "selectedNotSpawned": 63,
+     "outscored": 63
+    }
+   },
+   "totalFirings": 868,
+   "drawableFired": 128,
+   "drawable": 514,
+   "top10Share": 0.245
+  },
+  {
+   "arm": "rotation + local 20",
+   "perSeed": {
+    "42": {
+     "firings": 578,
+     "capFirstGate": 3,
+     "selectedNotSpawned": 40,
+     "outscored": 54
+    },
+    "99": {
+     "firings": 507,
+     "capFirstGate": 1,
+     "selectedNotSpawned": 49,
+     "outscored": 58
+    }
+   },
+   "totalFirings": 1085,
+   "drawableFired": 147,
+   "drawable": 514,
+   "top10Share": 0.256
+  },
+  {
+   "arm": "rotation + local 25",
+   "perSeed": {
+    "42": {
+     "firings": 698,
+     "capFirstGate": 14,
+     "selectedNotSpawned": 23,
+     "outscored": 65
+    },
+    "99": {
+     "firings": 647,
+     "capFirstGate": 5,
+     "selectedNotSpawned": 50,
+     "outscored": 48
+    }
+   },
+   "totalFirings": 1345,
+   "drawableFired": 149,
+   "drawable": 514,
+   "top10Share": 0.241
+  },
+  {
+   "arm": "rotation + local 30 (shipped)",
+   "perSeed": {
+    "42": {
+     "firings": 937,
+     "capFirstGate": 16,
+     "selectedNotSpawned": 20,
+     "outscored": 65
+    },
+    "99": {
+     "firings": 918,
+     "capFirstGate": 15,
+     "selectedNotSpawned": 25,
+     "outscored": 61
+    }
+   },
+   "totalFirings": 1855,
+   "drawableFired": 164,
+   "drawable": 514,
+   "top10Share": 0.236
+  },
+  {
+   "arm": "rotation + local 35",
+   "perSeed": {
+    "42": {
+     "firings": 987,
+     "capFirstGate": 32,
+     "selectedNotSpawned": 19,
+     "outscored": 37
+    },
+    "99": {
+     "firings": 1025,
+     "capFirstGate": 7,
+     "selectedNotSpawned": 20,
+     "outscored": 75
+    }
+   },
+   "totalFirings": 2012,
+   "drawableFired": 158,
+   "drawable": 514,
+   "top10Share": 0.24
+  },
+  {
+   "arm": "rotation + local 40",
+   "perSeed": {
+    "42": {
+     "firings": 987,
+     "capFirstGate": 32,
+     "selectedNotSpawned": 19,
+     "outscored": 37
+    },
+    "99": {
+     "firings": 1025,
+     "capFirstGate": 7,
+     "selectedNotSpawned": 20,
+     "outscored": 75
+    }
+   },
+   "totalFirings": 2012,
+   "drawableFired": 158,
+   "drawable": 514,
+   "top10Share": 0.24
+  }
+ ],
+ "decisions_seed42_200t": {
+  "old fill": {
+   "start_local": 549,
+   "queue_movement": 187,
+   "travelShare": 0.322
+  },
+  "rotation only": {
+   "start_local": 225,
+   "queue_movement": 200,
+   "travelShare": 0.445
+  }
+ },
+ "attended_first_longest_gap": {
+  "before (main)": {
+   "42": 25,
+   "99": 21
+  },
+  "shipped": {
+   "42": 25,
+   "99": 30
+  },
+  "ceiling": 30
+ }
+}
