@@ -1410,6 +1410,23 @@ export interface DebugBridge {
   /** @internal GameView registers its fog toggle callback here */
   _registerFogToggle(fn: (enabled?: boolean) => boolean): void;
 
+  // ── The world's past (THR-1631 S1) ────────────────────────────────────────
+  /**
+   * The past worldgen wrote (`src/engine/worldPast.ts`), read back through
+   * `readWorldPast` — the same pure selector the S2 chronicle section and place
+   * lines read. **Unfogged**: every specific is present whether or not the player
+   * has seen its hex. Resolves `null` before a world exists.
+   *
+   * Shape: `elderAge.empires[]` (each dead empire's ruin counts), `elderAge.war?`
+   * (the two empires, their battlefield ids, `yearsAgo`, `pastName`), `settling[]`
+   * (Realm seats with `founderId` first, then oldest), `livingMemory[]` (each war's
+   * Realms, winner, loser, burned town, fallen commander ids, `yearsAgo`), and
+   * `wonders[]` (finder and holder ids).
+   *
+   * Async — `await` it.
+   */
+  getWorldPast(): Promise<import('./types/worldPast').WorldPastView | null>;
+
   // ── Follow affordance (THR-1299) ──────────────────────────────────────────
   /**
    * Who the player is watching, as the three terms that decide it.

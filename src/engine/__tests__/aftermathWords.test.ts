@@ -32,6 +32,7 @@ import {
   type DerivedChange,
   OUTCOME_PHRASES,
   outcomePhrase,
+  pastSpanLabel,
   resetOutcomeWarnings,
 } from '../aftermathWords';
 import type { UnifiedActionOutcome } from '../../types/unifiedAction';
@@ -451,5 +452,26 @@ describe('action outcome vocabulary (THR-1035)', () => {
       warn.mockRestore();
       resetOutcomeWarnings();
     }
+  });
+});
+
+describe('pastSpanLabel — the world’s past in words (THR-1631)', () => {
+  it('reads years, then decades, then rounded centuries, and never a numeral', () => {
+    const cases: Array<[number, string]> = [
+      [0, 'less than a year'],
+      [1, 'one year'],
+      [9, 'nine years'],
+      [10, 'a decade'],
+      [94, 'nine decades'],
+      [95, 'about a century'],
+      [456, 'about five centuries'],
+      [1000, 'many centuries'],
+    ];
+    for (const [years, label] of cases) {
+      expect(pastSpanLabel(years)).toBe(label);
+      expect(containsNumeral(pastSpanLabel(years))).toBe(false);
+    }
+    for (let y = 0; y <= 1200; y++) expect(containsNumeral(pastSpanLabel(y))).toBe(false);
+    expect(pastSpanLabel(Number.NaN)).toBe('less than a year');
   });
 });

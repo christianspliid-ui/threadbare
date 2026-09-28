@@ -4316,6 +4316,8 @@ export type TraceEntry =
   | OutcomeBandProseSelectedTrace
   // Opening coloration line (THR-1635)
   | OpeningColorationBoundTrace
+  // The worldgen past (THR-1631)
+  | WorldPastSeededTrace
   // Interaction-gated camera centering (THR-463)
   | CameraCenterTrace
   // Aspect apex milestone (THR-479)
@@ -5725,6 +5727,24 @@ export interface OpeningColorationBoundTrace extends TraceBase {
   variant?: number;
   dominantSphere?: string;
   sphereShare?: number;
+}
+
+/**
+ * Trace: the worldgen past pass ran (THR-1631 S1) — what it wrote and every miss by id.
+ * Exactly one per world, at tick 0; nothing while tracing is disabled.
+ */
+export interface WorldPastSeededTrace extends TraceBase {
+  category: 'world_past_seeded';
+  events: { elderWar: 0 | 1; livingWars: number };
+  foundedSettlements: number;
+  dead: { founder: number; fallen_commander: number; wonder_finder: number };
+  descent: { mortals: number; candidates: number; byCulture: Record<string, number> };
+  misses: {
+    elderWar?: 'fewer_than_two_empires_with_battlefields';
+    warsWithoutBurnedTown: string[];
+    realmPairsAvailable: number;
+  };
+  durationMs: number;
 }
 
 /** Trace: camera center decision for interaction-gated follow mode (THR-463). */

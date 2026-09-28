@@ -43,6 +43,7 @@ import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenera
 import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
 import { seedLatentEssenceSources } from './essenceSourceSeeding';
+import { seedWorldPast, formatWorldPastSummary } from './worldPast';
 import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
@@ -239,6 +240,18 @@ export function initializeGameState(
   {
     const latentSourceRng = mulberry32(seed + LATENT_SOURCE_SEED_OFFSET);
     seedLatentEssenceSources(graph, latentSourceRng);
+  }
+
+  // ── The past (THR-1631 S1) ──────────────────────────────────────────
+  // After every other worldgen draw, on its own stream (`WORLDGEN_PAST_PRIME`), so no
+  // existing node moves. It reads empires, ruins, settlements, wonders, Realms and
+  // protagonists, which all exist by now; it cannot live in `seedLivingWorld` because
+  // ruins are seeded after `seedWorld` returns. Fail-soft: a throw costs the past only.
+  try {
+    const past = seedWorldPast(graph, seed, { tiles });
+    if (past) console.log(formatWorldPastSummary(past));
+  } catch (err) {
+    console.warn('[worldgen] past pass failed; the world starts with no past', err);
   }
 
   // Ensure starting location exists — pick a habitable tile near center
