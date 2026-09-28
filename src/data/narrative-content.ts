@@ -7,7 +7,7 @@
  * ═══════════════════════════════════════════════════════════════════
  *
  * Sections:
- * 1. SPHERE_VOCABULARY — adjectives, verbs, nouns for each of 8 Creation Spheres
+ * 1. SPHERE_VOCABULARY — adjectives, verbs, nouns for all 12 Spheres (Foundation + Creation)
  * 2. ROUTINE_TEMPLATES — 23 event-type templates for Tier 1 prose (80+ templates total)
  * 3. NOTABLE_TEMPLATES — 23 event-type templates for Tier 2 prose with personality
  * 4. LIFECYCLE_TEMPLATES — 3 lifecycle events with 11 templates total
@@ -72,6 +72,28 @@ export const SPHERE_VOCABULARY: Record<SphereName, SphereVocabulary> = {
     adjectives: ['corroding', 'consuming', 'inevitable', 'dissolving', 'chaotic', 'hollow', 'terminal', 'fraying', 'spent', 'irreversible'],
     verbs: ['crumbled', 'consumed', 'unraveled', 'corroded', 'scattered', 'erased', 'devoured', 'hollowed', 'dismantled', 'extinguished'],
     nouns: ['ash', 'ruin', 'void', 'silence', 'dust', 'wreckage', 'remnant', 'absence', 'entropy', 'nothing'],
+  },
+  // The four Foundation spheres (THR-1635, ported verbatim from the THR-1599 prototype).
+  // Before these, `pickSphereWord` fell back to ['unknown'] for them (narrative.ts).
+  chaos: {
+    adjectives: ['unbound', 'reckless', 'shifting', 'lawless', 'feral', 'jagged', 'roiling', 'wayward', 'restless', 'unruly'],
+    verbs: ['broke loose', 'scattered', 'upended', 'unravelled', 'splintered', 'overturned', 'ran wild', 'tore free', 'spilled', 'defied'],
+    nouns: ['upheaval', 'riot', 'breach', 'storm', 'whim', 'rupture', 'uproar', 'wildness', 'fracture', 'tumult'],
+  },
+  order: {
+    adjectives: ['lawful', 'measured', 'exact', 'ranked', 'sworn', 'orderly', 'fixed', 'binding', 'ruled', 'unbending'],
+    verbs: ['decreed', 'ranked', 'bound', 'codified', 'ruled', 'aligned', 'sealed', 'ordained', 'arranged', 'enforced'],
+    nouns: ['law', 'ledger', 'oath', 'decree', 'rank', 'pattern', 'charter', 'statute', 'measure', 'hierarchy'],
+  },
+  light: {
+    adjectives: ['bright', 'revealing', 'open', 'radiant', 'plain', 'clear', 'searing', 'unhidden', 'dawnlit', 'witnessed'],
+    verbs: ['revealed', 'exposed', 'lit', 'uncovered', 'proclaimed', 'dawned', 'illuminated', 'showed', 'witnessed', 'laid bare'],
+    nouns: ['dawn', 'witness', 'beacon', 'truth', 'glare', 'lantern', 'daylight', 'proof', 'testimony', 'signal'],
+  },
+  darkness: {
+    adjectives: ['hidden', 'veiled', 'secret', 'sworn-silent', 'shrouded', 'closed', 'lightless', 'unspoken', 'buried', 'guarded'],
+    verbs: ['concealed', 'buried', 'hid', 'veiled', 'silenced', 'shrouded', 'withheld', 'swallowed', 'masked', 'kept'],
+    nouns: ['secret', 'shadow', 'silence', 'vault', 'oath', 'cellar', 'mask', 'night', 'hiding place', 'confidence'],
   },
 };
 

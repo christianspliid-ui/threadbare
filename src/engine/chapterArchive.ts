@@ -164,6 +164,15 @@ export function buildChapterRecord(
       undefined,
       state,
       state.tick,
+      {
+        // THR-1635 — the chapter snapshots step prose "as the player read it", so it
+        // threads what the live renderers thread: the template's fragment tables (the
+        // `{frag:*}` slots, including the opening envelope) and its reach (the
+        // `{frag:place_fact}` coloration line). Without them every slot stripped here.
+        contextFragments: template.contextFragments,
+        contextFragmentTemplateId: template.id,
+        templateReach: template.reach,
+      },
     );
 
     const openingProse = enrichProse(template.narrativeTemplates?.initiation ?? '', ctx);

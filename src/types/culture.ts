@@ -68,6 +68,13 @@ export interface CultureIdentity {
   formativeTraitSeedIds: string[];
   behavioralTraitSeedIds: string[];
   readonly reachPreferences: Record<ReachDomain, number>;
+  /**
+   * Which variant of its foundation's culture customs this culture reads (THR-1635) —
+   * its ordinal among the world's same-foundation cultures, modulo
+   * `CULTURE_CUSTOM_VARIANTS`. Stamped once at worldgen by `stampCultureCustomVariants`;
+   * absent on older saves, where `readCultureCustomVariant` derives the same ordinal.
+   */
+  customVariant?: number;
 }
 
 /**

@@ -40,6 +40,7 @@ import { PROVINCE_ROLE_CAPITAL, PROVINCE_ROLE_HEARTLAND } from './worldgen/types
 import type { WorldGraph } from './graph';
 import type { FundamentState } from '../types/worldSoul';
 import { generateCultureFlag } from './cultureFlag';
+import { CULTURE_CUSTOM_VARIANTS } from '../data/culture-sphere-lines';
 
 /** Merge arrays and deduplicate */
 function mergeUnique(...arrays: string[][]): string[] {
@@ -508,6 +509,65 @@ export function registerPregenCultures(
     cultureIds.push(pc.id);
   }
   return cultureIds;
+}
+
+// ─── Culture custom variant stamp (THR-1635) ──────────────────────
+
+/**
+ * Ordinal of each culture among the world's cultures of the same foundation, cultures
+ * sorted by node id. Shared by the worldgen stamp and the read-time fallback, so a save
+ * written before the stamp existed derives exactly the number a fresh world would write.
+ */
+function foundationOrdinals(graph: WorldGraph): Map<string, number> {
+  const byFoundation = new Map<string, string[]>();
+  for (const node of graph.getNodesByType('actor')) {
+    if (node.properties.actorType !== 'culture') continue;
+    const foundation = (node.properties.cultureIdentity as CultureIdentity | undefined)?.foundationBias;
+    if (!foundation) continue;
+    const ids = byFoundation.get(foundation) ?? [];
+    ids.push(node.id);
+    byFoundation.set(foundation, ids);
+  }
+  const ordinals = new Map<string, number>();
+  for (const ids of byFoundation.values()) {
+    [...ids].sort().forEach((id, ordinal) => ordinals.set(id, ordinal));
+  }
+  return ordinals;
+}
+
+/**
+ * Stamp every culture with `cultureIdentity.customVariant` — its ordinal among the
+ * world's same-foundation cultures, modulo {@link CULTURE_CUSTOM_VARIANTS} (THR-1635).
+ *
+ * The opening coloration line picks a culture custom by foundation × reach; two cultures
+ * of one foundation (seed 99 has two light cultures) would otherwise read the same custom
+ * side by side. The stamp gives each its own variant. Historical cultures are stamped too:
+ * nobody reads theirs, and stamping them is cheaper than a special case.
+ *
+ * Called once in `worldSeed.ts` after both culture paths. An ordinal, not a roll — no PRNG
+ * stream is consumed, so worldgen stream order is untouched (NFP #3). Writes a new identity
+ * object rather than mutating the one the pregen culture list may share (NFP #6).
+ */
+export function stampCultureCustomVariants(graph: WorldGraph): void {
+  const ordinals = foundationOrdinals(graph);
+  for (const [cultureId, ordinal] of ordinals) {
+    const node = graph.getNode(cultureId);
+    const identity = node?.properties.cultureIdentity as CultureIdentity | undefined;
+    if (!node || !identity) continue;
+    node.properties.cultureIdentity = { ...identity, customVariant: ordinal % CULTURE_CUSTOM_VARIANTS };
+  }
+}
+
+/**
+ * A culture's custom variant: the worldgen stamp when present, else the same ordinal
+ * derived at read time (a save written before THR-1635). Undefined for a non-culture node.
+ */
+export function readCultureCustomVariant(graph: WorldGraph, cultureId: string): number | undefined {
+  const identity = graph.getNode(cultureId)?.properties.cultureIdentity as CultureIdentity | undefined;
+  if (!identity) return undefined;
+  if (typeof identity.customVariant === 'number') return identity.customVariant;
+  const ordinal = foundationOrdinals(graph).get(cultureId);
+  return ordinal === undefined ? undefined : ordinal % CULTURE_CUSTOM_VARIANTS;
 }
 
 // ─── Main Culture Generator (legacy — used when no pregen available) ──

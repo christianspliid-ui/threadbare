@@ -97,6 +97,7 @@ import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
 import { buildSeedPlanterIndex, cacheFedTemplateIds, seedOnlyWarnings } from '../src/engine/seedOnlySequels';
 import { getAllStrategicTemplates } from '../src/engine/strategicActionCandidates';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
+import { COLORATION_FRAGMENT_SLOT } from '../src/engine/fragmentResolution';
 
 // ─── Args ────────────────────────────────────────────────────────────
 
@@ -182,7 +183,14 @@ const NAMESPACED_TOKENS: ReadonlySet<string> = new Set([
 
 function tokenProblems(template: UnifiedActionTemplate): readonly string[] {
   const problems: string[] = [];
-  const declaredSlots = new Set((template.contextFragments ?? []).map(set => set.slot));
+  // The coloration compile pass (THR-1635) writes the reserved `{frag:place_fact}`
+  // into step 0 of every encounter-shaped template. The enricher fills it from the
+  // scene's town and place, never from `contextFragments`, so it is declared by
+  // construction rather than by the template.
+  const declaredSlots = new Set([
+    COLORATION_FRAGMENT_SLOT,
+    ...(template.contextFragments ?? []).map(set => set.slot),
+  ]);
 
   for (const { text, where } of authoredProse(template)) {
     for (const match of text.matchAll(/\{([^}]*)\}/gu)) {

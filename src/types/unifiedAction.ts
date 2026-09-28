@@ -2340,8 +2340,11 @@ export const EMPTY_AFTERMATH_VARIANT: AftermathVariant = Object.freeze({
 export interface ContextFragmentSet {
   /** Slot name referenced from prose as `{frag:<slot>}`, e.g. 'opening'. */
   readonly slot: string;
-  /** Identity axis this slot varies on — see `SURFACE_FRAGMENT_AXES`. */
-  readonly axis: 'place' | 'counterpartRole' | 'setting';
+  /** Axis this slot varies on — an identity axis (`SURFACE_FRAGMENT_AXES`), or a
+   * coloration axis (`COLORATION_FRAGMENT_AXES`, THR-1635). Coloration sets are built at
+   * render time from the shared culture/sphere tables; a template that *authors* one is
+   * reported by surface enumeration, since v1 keeps those tables the only source. */
+  readonly axis: 'place' | 'counterpartRole' | 'setting' | 'foundation' | 'sphere';
   /** axisValue -> authored prose. MUST contain the `'*'` default key. */
   readonly variants: Readonly<Record<string, string>>;
 }

@@ -304,7 +304,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
-| `fragment` (1) | `fragmentResolution.ts` | `THR-475`, `THR-573`, `THR-884` |
+| `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-786`, `THR-822` |
 | `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
@@ -345,6 +345,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666`, `THR-667`, `THR-727` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
 | `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1248`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
+| `opening` (1) | `openingColoration.ts` | `THR-1635` |
 | `orchestrator` (5) | `orchestrator.ts`, `orchestrator/phaseAscendantHandFilter.ts`, `orchestrator/phaseChoiceResolution.ts`, `orchestrator/phaseDetectionPressure.ts`, `orchestrator/phaseDriftDecay.ts` | `THR-1183`, `THR-528` |
 | `outcome` (1) | `outcomeConsequences.ts` | `Phase 6` |
 | `pacing` (1) | `pacingGovernor.ts` | — |
@@ -428,4 +429,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 199 engine domains · 610 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 611 modules._

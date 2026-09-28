@@ -138,6 +138,7 @@ const PROGRESSION = 'Ascendant Beats & Progression';
 const OMENS = 'Omens & Atmospheric Pressure';
 const DIAGNOSTICS = 'Diagnostics & Incident Capture';
 const WORLDGEN = 'World Generation, Terrain & Places';
+const CULTURE = 'Culture';
 
 export const CONTRACTS: readonly Contract[] = [
   // -- World Generation -> the map (THR-1155) -------------------------------
@@ -5084,6 +5085,58 @@ export const CONTRACTS: readonly Contract[] = [
       reason:
         'Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Switch CAP_FILL_ROTATE on after THR-1639 and re-measure.',
       deferralTicket: 'THR-1633',
+    },
+  },
+  // -- Culture & Spheres -> the encounter opening (THR-1635) ------------------
+  // The failure these rows exist to make impossible: cultures and sphere affinities are
+  // generated for every world and the prose an encounter opens with read neither, so a
+  // scene in a town of open witnesses read the same as one in a town of sworn silence.
+  // Both rows are keyed on the scene's TOWN (Location tier), never the actor's own
+  // culture — a stranger reads the town's custom; `{culture}` is the actor's.
+  {
+    id: 'culture-custom-reaches-encounter-opening',
+    producerSystem: CULTURE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs.",
+    ulTerms: ['Culture', 'Location'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['customVariant', 'stampCultureCustomVariants', 'readCultureCustomVariant', 'resolveOpeningColoration'],
+      module: 'src/engine/openingColoration.ts',
+    },
+    writeSites: ['src/engine/cultureGenerator.ts', 'src/engine/worldSeed.ts'],
+    readSites: [
+      'src/engine/openingColoration.ts',
+      'src/engine/fragmentResolution.ts',
+      'src/engine/proseEnrichment.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-27',
+      evidence:
+        "THR-1635 slice 1. Asserted on GENERATED medium worlds, never a fixture (`src/data/__tests__/openingColoration-corpus.test.ts`): on seeds 42 and 99 step 0 of all 528 guarded templates renders through `enrichProse` at a culture-bearing town with no raw token, and 248 of them carry a culture line (the iron/stone/eye reaches slice 1 authors); the census matches the plan's re-measure (40 / 60 culture-bearing Locations) within ±10% and no two living same-foundation cultures share a stamp. The corpus guard proves every eligible template carries exactly one `{frag:place_fact}` (798 entries, 528 ids). Unit tests (`src/engine/__tests__/openingColoration.test.ts`) cover every reason code, culture-first precedence, the stamp ordinal with two same-foundation cultures, and the pre-stamp read-time fallback. Headless: a 30-tick seed-42 CLI run emits `opening_coloration_bound` traces including `culture.light.eye`.",
+    },
+  },
+  {
+    id: 'place-sphere-reaches-encounter-opening',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon.",
+    ulTerms: ['Sphere', 'Location'],
+    mechanism: {
+      kind: 'node-prop',
+      // Producer: worldgen seeds each location's `sphereAffinity`; consumers: the
+      // coloration gatherer reads it and the resolver keys its sphere table on it.
+      symbols: ['seedLocationSphereAffinity', 'getNodeSphereAffinity', 'sphereShareOf', 'SPHERE_FACTS'],
+      module: 'src/engine/openingColoration.ts',
+    },
+    writeSites: ['src/engine/sphereAffinity.ts'],
+    readSites: ['src/engine/openingColoration.ts', 'src/engine/fragmentResolution.ts'],
+    verifiedLive: {
+      date: '2026-09-27',
+      evidence:
+        "THR-1635 slice 1. Same generated-world leak guard: at a strong-sphere place with no culture (dominant share ≥ `SPHERE_FACT_MIN_SHARE` 0.55), 248 of 528 guarded templates render a sphere line on each of seeds 42 and 99, with no raw token; the census counts strong-sphere Locations within ±10% of the re-measure (35 / 24). `colorationLineProblems` holds every line to one sentence of ≤ 28 words, the {actor}/{demonym}/{place} token set, and the sphere-jargon ban. Headless: the 30-tick seed-42 CLI run emits `sphere.life.iron` / `sphere.life.stone` resolutions.",
     },
   },
 ];

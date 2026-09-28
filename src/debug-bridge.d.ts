@@ -1355,6 +1355,33 @@ export interface DebugBridge {
     | { matchedId: string; matchedName: string; error: string }
     | { error: string }
   >;
+  /**
+   * The one stated fact an encounter opening would add at a place (THR-1635) — the town
+   * culture's custom or the place's dominant-sphere fact — per reach. Read-only.
+   *
+   * `locationId` defaults to the hero's current location; a Place resolves up to its
+   * town (Location tier) for the culture, and reads its own sphere first. `reach` narrows
+   * `perReach` to that one reach. Each `perReach` entry says which table fired (`kind`),
+   * why (`reason`: `culture`, `sphere`, `no_place`, `no_culture`, `unknown_foundation`,
+   * `culture_cell_unauthored`, `sphere_below_share`, `sphere_cell_unauthored`,
+   * `no_reach`), and the `line` with `{demonym}`/`{place}` filled and `{actor}` still a
+   * token — `''` when `kind` is `'none'`.
+   */
+  getOpeningColoration: (locationId?: string, reach?: string) => Promise<
+    | import('./engine/openingColoration').OpeningColorationReadout
+    | { error: string }
+  >;
+  /**
+   * World-wide census of the coloration line's inputs (THR-1635): place-tier Locations
+   * with a current culture, with a dominant sphere at or above `SPHERE_FACT_MIN_SHARE`
+   * (0.55), both, and neither; each living culture's foundation and `customVariant`
+   * stamp; and `sharedStamps` — same-foundation cultures that read the same customs
+   * (empty while a world has three or fewer per foundation). Read-only.
+   */
+  getColorationCensus: () => Promise<
+    | import('./engine/openingColoration').ColorationCensus
+    | { error: string }
+  >;
   /** List the god's active sustained controls ("covenants", THR-613 §5.A). Read-only. */
   listControlEffects: () =>
     | {

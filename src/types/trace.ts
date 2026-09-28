@@ -347,6 +347,8 @@ export type TraceCategory =
   | 'doom_milestone'
   // Outcome band prose selection (THR-460)
   | 'outcome_band_prose_selected'
+  // Opening coloration line (THR-1635)
+  | 'opening_coloration_bound'
   // Cool-failure story-artifact guarantee (THR-571 C1)
   | 'outcome_story_artifact'
   // Interaction-gated camera centering (THR-463)
@@ -843,6 +845,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'doom_milestone',
   // Outcome band prose selection (THR-460)
   'outcome_band_prose_selected',
+  // Opening coloration line (THR-1635)
+  'opening_coloration_bound',
   // Cool-failure story-artifact guarantee (THR-571 C1)
   'outcome_story_artifact',
   // Interaction-gated camera centering (THR-463)
@@ -4310,6 +4314,8 @@ export type TraceEntry =
   | MilestoneTriggeredTrace
   // Outcome band prose selection (THR-460)
   | OutcomeBandProseSelectedTrace
+  // Opening coloration line (THR-1635)
+  | OpeningColorationBoundTrace
   // Interaction-gated camera centering (THR-463)
   | CameraCenterTrace
   // Aspect apex milestone (THR-479)
@@ -5697,6 +5703,28 @@ export interface OutcomeBandProseSelectedTrace extends TraceBase {
   phraseId: string;
   /** Which placeholder table was used. */
   phraseTable: 'outcome_phrase' | 'q_flavor';
+}
+
+/**
+ * Trace: enrichProse resolved the reserved `{frag:place_fact}` slot (THR-1635) — which
+ * culture custom or sphere fact an encounter opening stated, or why it stated none.
+ * One per enrichProse call that carries the slot; nothing while tracing is disabled.
+ */
+export interface OpeningColorationBoundTrace extends TraceBase {
+  category: 'opening_coloration_bound';
+  agentId: string;
+  templateId: string;
+  reach: string | null;
+  placeLocationId: string | null;
+  kind: 'culture' | 'sphere' | 'none';
+  /** 'culture', 'sphere', 'no_place', 'no_culture', 'unknown_foundation',
+   *  'culture_cell_unauthored', 'sphere_below_share', 'sphere_cell_unauthored', 'no_reach'. */
+  reason: string;
+  foundation?: string;
+  cultureId?: string;
+  variant?: number;
+  dominantSphere?: string;
+  sphereShare?: number;
 }
 
 /** Trace: camera center decision for interaction-gated follow mode (THR-463). */

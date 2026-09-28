@@ -2262,6 +2262,7 @@ export function executeStepResult(
           // prose binds to the scene's place/counterpart axes at render time.
           contextFragments: template.contextFragments,
           contextFragmentTemplateId: template.id,
+          templateReach: template.reach, // THR-1635 — the {frag:place_fact} line
           // THR-1516 — the template id keys `{sphere_flavor}`'s approach lookup.
           templateId: template.id,
         },

@@ -2894,3 +2894,14 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/npcGraduation.ts` (origin filter) | `phaseNpcGraduation` | — | — | existing `npc_graduated` event | — |
 
 **Wired and asserted:** `seededTies-generatedWorld.test.ts` (heavy) reads medium worlds on seeds 42 and 99. Every hero has kin, every seeded tie is mutual, a seeded kin raises `protect_the_home`'s score, and a dead hero's grievance lands on their kin. `seededTies-streamIntact.test.ts` (heavy) proves the legacy pass's draws are kept. `npcGraduation.test.ts` pins that worldgen ties do not count toward graduation and earned ties do.
+
+## Culture and spheres showing through — the opening place fact (THR-1635)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/cultureGenerator.ts` (`stampCultureCustomVariants`, `readCultureCustomVariant`) | worldgen (`worldSeed.ts`, after both culture paths) | — | graph: `cultureIdentity.customVariant` on culture nodes | none (one-shot, inspectable on the node) | `getColorationCensus()` |
+| `engine/fragmentResolution.ts` (`compileOpeningColoration`) | module load, at the catalog assembly points (`ENCOUNTER_TEMPLATES`, `getAnyEncounterById` pools, `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`, encounter-shaped `UNIFIED_ACTION_TEMPLATES`) | CMS `PackageBlocks` shows the `{frag:place_fact}` chip | — | — | corpus guard `openingColoration-corpus.test.ts` |
+| `engine/openingColoration.ts` (new) + `resolveOpeningColoration` | render time, via `enrichProse` (four stage adapters, `unifiedActionResolution` step record, `chapterArchive`), each threading `templateReach` | encounter stage opening prose; frozen step records; chapter replay | `NarrativeContext.templateReach` / `placeColoration` | `opening_coloration_bound` (one per resolution, with `reason`) | `getOpeningColoration()`, Fragments tab reserved-slot row |
+| `data/narrative-content.ts` (`SPHERE_VOCABULARY` +4) | tick narrative events | event feed prose | — | — | — |
+
+**Wired and asserted:** the corpus guard (798 entries / 528 ids carry exactly one token), the generated-world leak guard (seeds 42 and 99, both line kinds fire, no raw token), and a 30-tick seed-42 CLI run emitting `opening_coloration_bound` with culture and sphere lines. Browser: *Master the Local Craft* at a Darkness town renders the custom in the opening.

@@ -31,9 +31,14 @@ describe('narrative type definitions', () => {
     expect(NARRATIVE_TIERS).toEqual(['routine', 'notable', 'chronicle']);
   });
 
-  it('exports sphere vocabulary for all 8 spheres', () => {
+  // THR-1635: the four Foundation spheres joined the eight Creation spheres, so
+  // `pickSphereWord` no longer falls back to ['unknown'] for chaos/order/light/darkness.
+  it('exports sphere vocabulary for all 12 spheres', () => {
     const spheres = Object.keys(SPHERE_VOCABULARY);
-    expect(spheres.length).toBe(8);
+    expect(spheres.length).toBe(12);
+    for (const sphere of ['chaos', 'order', 'light', 'darkness'] as const) {
+      expect(pickSphereWord(sphere, 'nouns', 7)).not.toBe('unknown');
+    }
     for (const sphere of spheres) {
       const vocab = SPHERE_VOCABULARY[sphere as keyof typeof SPHERE_VOCABULARY];
       expect(vocab.adjectives.length).toBeGreaterThanOrEqual(3);

@@ -578,6 +578,7 @@ export function buildNudgePhaseModel(
         supportBindings: activeAction.supportBindings,
         contextFragments: template.contextFragments,
         contextFragmentTemplateId: template.id,
+        templateReach: template.reach, // THR-1635 — the {frag:place_fact} line
       },
     );
   const enrich = (text: string): string => enrichProse(text, ctx, { runtime: args.runtime });

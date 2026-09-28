@@ -679,6 +679,44 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * The coloration line an encounter opening would state at a place (THR-1635), per
+     * reach. `locationId` defaults to where the hero stands; `reach` narrows to one reach.
+     * Read-only — the same gatherer the prose path uses, so this cannot disagree with it.
+     */
+    getOpeningColoration: async (locationId?: string, reach?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { describeOpeningColoration } = await import('./engine/openingColoration');
+      const { getAgentLocation } = await import('./engine/graphQueries');
+      const { REACH_DOMAINS } = await import('./types/traits');
+      let target = locationId ?? null;
+      if (!target) {
+        const hero = await resolveAgentNode('@hero');
+        target = hero ? (getAgentLocation(state.graph, hero.id)?.id ?? null) : null;
+      }
+      if (!target) return { error: 'no location given and the hero stands nowhere' };
+      if (reach && !REACH_DOMAINS.includes(reach as never)) return { error: `unknown reach "${reach}"` };
+      return describeOpeningColoration(
+        state.graph,
+        target,
+        reach ? [reach as import('./types/traits').ReachDomain] : REACH_DOMAINS,
+      );
+    },
+
+    /**
+     * Place-tier census of the coloration line's inputs (THR-1635): Locations with a
+     * current culture, with a dominant sphere at or above `SPHERE_FACT_MIN_SHARE`, both,
+     * neither; the living cultures with their foundation and variant stamp; and any
+     * same-foundation cultures that share a stamp. Read-only.
+     */
+    getColorationCensus: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { buildColorationCensus } = await import('./engine/openingColoration');
+      return buildColorationCensus(state.graph);
+    },
+
+    /**
      * List the god's active sustained controls ("covenants", THR-613 §5.A): the
      * effectIds, target, and per-tick cost/income the Covenants panel renders. Includes
      * any ids already queued for release this tick (`pendingReleases`). Read-only.

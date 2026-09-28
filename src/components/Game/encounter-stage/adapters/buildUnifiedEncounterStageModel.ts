@@ -881,6 +881,7 @@ export function buildUnifiedEncounterStageModel(
       // not enough if the surface that shows it cannot resolve the token.
       contextFragments: args.template.contextFragments,
       contextFragmentTemplateId: args.template.id,
+      templateReach: args.template.reach, // THR-1635 — the {frag:place_fact} line
     },
   );
 

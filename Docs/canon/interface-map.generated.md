@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 132 |
+| 🟢 LIVE | 134 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 41 |
-| **Total** | **182** |
+| **Total** | **184** |
 
 ## Contracts by producing subsystem
 
@@ -126,6 +126,12 @@ remediation ticket or the build fails.
 | `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
 | `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `sunder-window-amplifies-company-decay` | A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it. | function: `isGroupSundered` | Companies & Group Travel | 🟢 LIVE | — |
+
+### Culture
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Diagnostics & Incident Capture
 
@@ -275,6 +281,7 @@ remediation ticket or the build fails.
 | `capability-thresholds-read-the-reach-share` | Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time. | function: `computeReachShare`, `computeReachShares`, `REACH_SHARE_FULL_RAW`, `meetsJoinPrerequisites` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
+| `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ### Strategic Projects & Control
@@ -955,6 +962,18 @@ exit
 - **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +3 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
+### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
+
+- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs.
+- **Producer → Consumer:** Culture → Encounters & Dilemmas
+- **UL terms:** *Culture*, *Location*
+- **Module:** `src/engine/openingColoration.ts`
+- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
+- **Write sites:** `src/engine/cultureGenerator.ts`, `src/engine/worldSeed.ts`
+- **Read sites:** `src/engine/fragmentResolution.ts`, `src/engine/openingColoration.ts`, `src/engine/proseEnrichment.ts`
+- **Other hits:** `src/data/culture-sphere-lines.ts`, `src/types/culture.ts`
+- **Verdict:** Verified 2026-09-27: THR-1635 slice 1. Asserted on GENERATED medium worlds, never a fixture (`src/data/__tests__/openingColoration-corpus.test.ts`): on seeds 42 and 99 step 0 of all 528 guarded templates renders through `enrichProse` at a culture-bearing town with no raw token, and 248 of them carry a culture line (the iron/stone/eye reaches slice 1 authors); the census matches the plan's re-measure (40 / 60 culture-bearing Locations) within ±10% and no two living same-foundation cultures share a stamp. The corpus guard proves every eligible template carries exactly one `{frag:place_fact}` (798 entries, 528 ids). Unit tests (`src/engine/__tests__/openingColoration.test.ts`) cover every reason code, culture-first precedence, the stamp ordinal with two same-foundation cultures, and the pre-stamp read-time fallback. Headless: a 30-tick seed-42 CLI run emits `opening_coloration_bound` traces including `culture.light.eye`.
+
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
 
 - **Intent:** One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349).
@@ -1447,10 +1466,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 72 total — 1 write, 2 read, 69 unclassified
+- **Production hits:** 73 total — 1 write, 2 read, 70 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx` +64 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx` +65 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1799,11 +1818,23 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 28 total — 3 write, 1 read, 24 unclassified
+- **Production hits:** 29 total — 3 write, 1 read, 25 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +19 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +20 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
+
+### `place-sphere-reaches-encounter-opening` — 🟢 LIVE
+
+- **Intent:** Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon.
+- **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
+- **UL terms:** *Sphere*, *Location*
+- **Module:** `src/engine/openingColoration.ts`
+- **Production hits:** 12 total — 1 write, 2 read, 9 unclassified
+- **Write sites:** `src/engine/sphereAffinity.ts`
+- **Read sites:** `src/engine/fragmentResolution.ts`, `src/engine/openingColoration.ts`
+- **Other hits:** `src/data/content-eval/doctrineV2Checks.ts`, `src/data/culture-sphere-lines.ts`, `src/engine/encounterScoring.ts`, `src/engine/essenceSourceSeeding.ts`, `src/engine/gameInit.ts` +4 more
+- **Verdict:** Verified 2026-09-27: THR-1635 slice 1. Same generated-world leak guard: at a strong-sphere place with no culture (dominant share ≥ `SPHERE_FACT_MIN_SHARE` 0.55), 248 of 528 guarded templates render a sphere line on each of seeds 42 and 99, with no raw token; the census counts strong-sphere Locations within ±10% of the re-measure (35 / 24). `colorationLineProblems` holds every line to one sentence of ≤ 28 words, the {actor}/{demonym}/{place} token set, and the sphere-jargon ban. Headless: the 30-tick seed-42 CLI run emits `sphere.life.iron` / `sphere.life.stone` resolutions.
 
 ### `planner-forecast-equals-roll` — 🟢 LIVE
 
@@ -2061,10 +2092,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 90 total — 1 write, 1 read, 88 unclassified
+- **Production hits:** 91 total — 1 write, 1 read, 89 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +83 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +84 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
