@@ -6,6 +6,13 @@
  * by Vite, so the entire module becomes dead code in prod builds.
  */
 if (import.meta.env.DEV) {
+  /** `getInterruptState()` shape (THR-1608) — mirrors `DebugInterruptState` in debug-bridge.d.ts. */
+  interface DebugInterruptState {
+    open: string[];
+    wasRunningBeforeInterrupt: boolean | null;
+    queuedPopups: number;
+    running: boolean;
+  }
   interface SceneSnapshot {
     hexCount: number;
     agentsVisible: number;
@@ -135,6 +142,7 @@ if (import.meta.env.DEV) {
   let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
+  let _interruptStateProvider: (() => DebugInterruptState) | null = null;
   let _refRouterOpen:
     | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
     | null = null;
@@ -1085,6 +1093,8 @@ if (import.meta.env.DEV) {
     getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,
     getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
     getOpenModals: async () => _openModalsProvider?.() ?? [],
+    getInterruptState: async () => _interruptStateProvider?.()
+      ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false },
     getActiveUIState: async () => {
       const openModals = _openModalsProvider?.() ?? [];
       const uiState = _activeUIStateProvider?.() ?? getEmptyActiveUIState();
@@ -1099,6 +1109,7 @@ if (import.meta.env.DEV) {
     _registerViewportForHex: (fn: (col: number, row: number) => ViewportHexProjection | null) => { _viewportForHex = fn; },
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
+    _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
 
     // ── The ref router (THR-1490) ───────────────────────────────────────────
     /**

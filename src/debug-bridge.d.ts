@@ -235,6 +235,18 @@ export interface DebugViewportProjection {
   visible: boolean;
 }
 
+/** `getInterruptState()` (THR-1608) — the Stellaris clock's registry, as data. */
+export interface DebugInterruptState {
+  /** Interrupt ids open right now, from the registry. */
+  open: string[];
+  /** Clock state before the current run of interrupts; `null` when none is open. */
+  wasRunningBeforeInterrupt: boolean | null;
+  /** Popup-channel notifications waiting their turn. */
+  queuedPopups: number;
+  /** The clock right now. */
+  running: boolean;
+}
+
 export interface DebugActiveUIState {
   view: string;
   selectedAgentId: string | null;
@@ -1610,6 +1622,22 @@ export interface DebugBridge {
   getHexAtViewport(x: number, y: number): { col: number; row: number } | null;
   /** Names of currently-open modal/overlay components in GameView. */
   getOpenModals(): Promise<string[]>;
+  /**
+   * The Stellaris clock (THR-1608, plan `2026-09-27-thr-1605-the-opening.md` § S3).
+   * What stops the world right now, and what the clock returns to when it closes.
+   *
+   * - `open` — interrupt ids from the registry (`src/components/Game/interruptRegistry.ts`),
+   *   the same resolution the auto-pause reads. Empty means the clock is free.
+   * - `wasRunningBeforeInterrupt` — the clock state recorded when the first interrupt of
+   *   the current run opened; the state restored when the last one closes. `null` while
+   *   nothing is open. A player who paused stays paused (`false`).
+   * - `queuedPopups` — popup-channel notifications (doom stages, the Unmaking, mandate
+   *   failure) waiting their turn behind another interrupt, or behind the one showing.
+   * - `running` — the clock right now.
+   *
+   * Async. Returns the empty shape before GameView mounts.
+   */
+  getInterruptState(): Promise<DebugInterruptState>;
   /** Snapshot of current high-level UI state for test assertions. */
   getActiveUIState(): Promise<DebugActiveUIState>;
   /** Returns recent UI tick-events where event.tick > provided tick. */
@@ -1622,6 +1650,8 @@ export interface DebugBridge {
   _registerHexAtViewport(fn: (x: number, y: number) => { col: number; row: number } | null): void;
   /** @internal GameView registers open-modal provider here */
   _registerOpenModalsProvider(fn: () => string[]): void;
+  /** @internal GameView registers the interrupt-state provider here (THR-1608) */
+  _registerInterruptStateProvider(fn: () => DebugInterruptState): void;
   /**
    * Both surface records the ref router dispatches on (THR-1490, THR-1491).
    *

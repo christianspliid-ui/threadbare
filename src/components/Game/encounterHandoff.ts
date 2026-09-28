@@ -13,8 +13,9 @@
  * NFP #4 (fail-soft): missing trace category or null target id is logged and ignored;
  *   the handoff still returns timing data so the UI can still complete its transition.
  *
- * Note: world-freeze (turn-based contract) is already enforced by the central
- * interrupt auto-pause in GameView (`useInterruptAutoPause`), which calls
+ * Note: world-freeze (the Stellaris clock — time stops for every moment) is already
+ * enforced by the central interrupt auto-pause in GameView (`useInterruptAutoPause`,
+ * reading `interruptRegistry.ts`), which calls
  * `setRunning(false)` whenever the encounter modal mounts. This module does not
  * duplicate that behavior — it only sets spotlight + emits trace + surfaces timing.
  */
