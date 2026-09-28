@@ -31,6 +31,7 @@ import { isAgentGone } from '../groups/groupQueries';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 import { readPlantedAppointment, isAppointmentFavour } from '../appointments';
 import { getAgentDetail } from '../agentDetail';
+import { initMovementState } from '../movementExecution';
 import { SLICE_TEMPLATE_IDS } from '../../data/encounters/vertical-slice';
 import { APPOINTMENT_WINDOW_TICKS, APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS } from '../../data/movement-content';
 import type { GameState } from '../../types/gameState';
@@ -253,5 +254,79 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       clearTraces();
       disableTracing();
     }
+  });
+});
+
+/**
+ * THR-1669 — the board's outvote stands for the length of the journey. Two arms on
+ * identical worlds (same seed, same plant), driven to the same `departing` tick; each
+ * then puts the mortal on the same encounter journey away from the place. The only
+ * difference is the mark the full decision writes when it chooses a journey while
+ * the promise is departing. Unmarked (a journey begun before the regime turned) is
+ * re-routed to the promise — the THR-1479 behaviour, kept. Marked is left to run.
+ */
+describe('THR-1669 — a journey the board chose while departing is not turned back', () => {
+  function driveToDeparting(): { state: GameState; runtime: SimulationRuntime; actorId: string; placeId: string; seedId: string } {
+    let { state, runtime } = world();
+    const { actorId, placeId, travel } = pickMortalAndPlace(state);
+    state = wardAgainstDeath(state, actorId);
+    state = plantAppointment(state, runtime, actorId, placeId, Math.ceil(travel) + SLACK_BEYOND_TRAVEL);
+    const seed = state.pendingEncounterSeeds!.find(x => x.targetAgentId === actorId && readPlantedAppointment(x))!;
+    const dueTick = readPlantedAppointment(seed)!.dueTick;
+    clearTraces();
+    const sink: TraceEntry[] = [];
+    while (state.tick < dueTick) {
+      state = tickAndHarvest(state, runtime, sink);
+      if (sink.some(t => t.category === 'appointment_regime'
+        && (t as TraceEntry & { agentId: string }).agentId === actorId
+        && (t as TraceEntry & { regime: string }).regime === 'departing')) break;
+    }
+    return { state, runtime, actorId, placeId, seedId: seed.seedId };
+  }
+
+  /** Put the mortal on an encounter journey to a Location that is not the place. */
+  function sendAway(state: GameState, actorId: string, placeId: string, mark: string | undefined): string {
+    const fromId = standsAt(state, actorId)!;
+    for (const loc of getLocationNodes(state.graph)) {
+      if (loc.id === fromId || loc.id === placeId) continue;
+      const path = findShortestPath(state.graph, actorId, fromId, loc.id);
+      if (!path || path.path.length < 2) continue;
+      const ms = initMovementState(loc.id, path.path, 1, state.tick, undefined, fromId);
+      ms.targetEncounterId = SLICE_TEMPLATE_IDS.crossroads;
+      ms.motivationPull = 99;
+      if (mark) ms.appointmentOutvoteSeedId = mark;
+      const actor = state.graph.getNode(actorId)!;
+      state.graph.updateNode(actorId, { properties: { ...actor.properties, movementState: ms } });
+      return loc.id;
+    }
+    throw new Error('no second destination for the mortal — the fixture is wrong, not the engine');
+  }
+
+  function journeyAfterOneTick(mark: 'marked' | 'unmarked'): { destinationId: string | undefined; target: string | undefined; awayId: string; turnedBack: boolean } {
+    enableTracing();
+    try {
+      const { state: s0, runtime, actorId, placeId, seedId } = driveToDeparting();
+      const awayId = sendAway(s0, actorId, placeId, mark === 'marked' ? seedId : undefined);
+      const s1 = runTick(s0, [], runtime);
+      const ms = s1.graph.getNode(actorId)?.properties.movementState as { destinationId?: string; targetEncounterId?: string } | undefined;
+      const turnedBack = (s1.recentEvents ?? []).some(e => e.id === `appointment_reroute_${actorId}_${s0.tick}`);
+      return { destinationId: ms?.destinationId, target: ms?.targetEncounterId, awayId, turnedBack };
+    } finally {
+      clearTraces();
+      disableTracing();
+    }
+  }
+
+  it('unmarked: the promise turns the mortal back (THR-1479 kept)', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
+    const r = journeyAfterOneTick('unmarked');
+    expect(r.turnedBack, 'the control arm was not re-routed — the world never reached departing, so the marked arm proves nothing').toBe(true);
+    expect(r.target).toBeUndefined();
+  });
+
+  it('marked: the outvote stands — same journey, same goal, no turn back', { timeout: MULTI_TICK_TIMEOUT_MS }, () => {
+    const r = journeyAfterOneTick('marked');
+    expect(r.turnedBack).toBe(false);
+    expect(r.target).toBe(SLICE_TEMPLATE_IDS.crossroads);
+    expect(r.destinationId).toBe(r.awayId);
   });
 });
