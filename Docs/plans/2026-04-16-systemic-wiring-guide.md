@@ -1459,6 +1459,23 @@ Slice 1 authored iron, stone and eye (all four foundations; life, matter, darkne
 
 **Where to find the implementation:** `compileOpeningColoration` / `resolveOpeningColoration` in `src/engine/fragmentResolution.ts`, the place gatherer in `src/engine/openingColoration.ts`, the stamp `stampCultureCustomVariants` in `src/engine/cultureGenerator.ts`. Plan: `Docs/plans/2026-09-27-thr-1635-culture-sphere-openings.md`.
 
+### Capability 31: Target-Side Consequences — a Cast Names Who It Changed (THR-1606)
+
+**What it does:** when a **player** cast resolves a step, the resolver snapshots the cast's *target* before and after the step's graph-ops and records every real write on them as an `EncounterAftermathChange` with the new optional field **`subjectId`** set to the target. Today that covers a new `divineInfluences` entry (the chip noun — *Dreaming*, *Compelled* — from `INFLUENCE_CHIP_NOUNS`) and a `has_trait` edge placed or lifted.
+
+Three things follow with no authoring:
+- The receipt leads with the first target-side change when its overview never names the target, stays on the toast tier, and the toast opens the mortal (the event declares the target in `refs`).
+- A notable digest entry carrying `castLine` is filed under the target, so their Story So Far tells it (`CAST_DIGEST_LINES`, keyed by intervention type, with a `default`).
+- The mortal's sheet and thread detail show each live influence as a chip under *Under your hand*, with its effect on hover.
+
+**Why you want it:** a new divine verb that writes to its target gets its receipt, its story line and its chip for free, as long as its op actually writes. A verb whose op writes nothing gets none of them (Law 56). If your verb writes an influence of a new intervention type, add its chip noun to `INFLUENCE_CHIP_NOUNS` and its story line to `CAST_DIGEST_LINES`; without them it falls back to the raw type and the `default` line.
+
+**How to tell whether yours landed.** `await window.__DEBUG.getLastCastConsequence()` lists the changes with their `subject`, the toast sentence, and `digestFiledOnTarget`. Traces `receipt.target_changes`. Headless: `cast <template> <agent>`, `tick 5`, then `eval state.digestBuffer.filter(e => e.castLine)`.
+
+**Spine gifts too:** `seedBeatGraph` returns a `placement` for Take the Seat and Leave Your Mark, and `resolvePendingBeat` turns it into a chronicle-tier toast linked to the place or the bearer (`beat.gift_placed` trace).
+
+**Where to find the implementation:** `src/engine/castTargetChanges.ts`, the snapshot pair in `executeStepResult` and the digest write in `src/engine/unifiedActionResolution.ts`, `src/engine/playerReceipts.ts`, `src/components/Game/ActiveEffectChips.tsx`. Plan: `Docs/plans/2026-09-27-thr-1606-what-your-hand-did.md` § B1.
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write
