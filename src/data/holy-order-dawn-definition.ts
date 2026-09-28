@@ -119,7 +119,7 @@ export const HOLY_ORDER_DAWN_DEFINITION: FactionDefinition = {
     'hod.elite.divine_crusade', 'hod.elite.cleanse_corruption',
   ],
   socialTemplateIds: [
-    'hod.social.vigil', 'hod.social.oath_ceremony', 'hod.social.war_council',
+    'hod.social.dawn_prayer', 'hod.social.blessing_ceremony', 'hod.social.tend_wounded',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

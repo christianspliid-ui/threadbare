@@ -52,7 +52,7 @@ import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
 import { SOCIAL_SCENE_TEMPLATES } from '../data/social-scene-templates';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../data/tavern-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../data/secret-encounter-content';
-import { FACTION_ENCOUNTER_TEMPLATES } from '../data/faction-encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
@@ -244,8 +244,14 @@ export function generateSocialCandidates(
       : [];
 
     // Add faction-scoped social templates if agents share a faction (TB-062)
+    // THR-1641: the Place's own subtype too, bare and prefixed — the guild templates
+    // author `tavern` / `barracks`, the node carries `sublocation-type.tavern`.
+    const placeTypeId = locationNode.properties.sublocationTypeId as string | undefined;
+    const placeSubtypes: string[] = placeTypeId
+      ? [placeTypeId, placeTypeId.replace(/^sublocation-type\./, '')]
+      : [];
     const factionTemplates = getSharedFactionSocialTemplates(
-      graph, agentId, targetAgentId, locationType,
+      graph, agentId, targetAgentId, locationType, placeSubtypes,
     );
 
     // Slot priority: faction (reserved) → unified tavern → extra (secret-discovery)
@@ -614,12 +620,23 @@ function findVisibleAgents(
  * Returns templates from all shared factions' socialTemplateIds that match the location type.
  *
  * TB-062: Faction Social Encounters
+ *
+ * THR-1641 — ids resolve through the unified registry (`getUnifiedTemplateById`).
+ * This used to look them up in `FACTION_ENCOUNTER_TEMPLATES`, which holds only the
+ * Adventurers' Guild's six `ag.social.*`; the other guilds' 33 `.social.` templates
+ * live in their own content files and are registered only in the unified registry, so
+ * no guild but the Adventurers' ever offered one. A template matches when its
+ * `locationSubtypes` names the settlement's `locationType` **or** one of
+ * `placeSubtypes` — the Place the target stands in (`tavern`, `barracks`, …), which the
+ * parent-type walk in the caller otherwise hides. Seed-only sequels (`drawable: false`)
+ * are never offered.
  */
 export function getSharedFactionSocialTemplates(
   graph: WorldGraph,
   agentId: string,
   targetAgentId: string,
   locationType: string,
+  placeSubtypes: readonly string[] = [],
 ): UnifiedActionTemplate[] {
   const agentFactions = getFactionMembershipEdges(graph, agentId);
   const targetFactions = getFactionMembershipEdges(graph, targetAgentId);
@@ -654,8 +671,12 @@ export function getSharedFactionSocialTemplates(
       if (templateIdSet.has(templateId)) continue;
       templateIdSet.add(templateId);
 
-      const tmpl = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === templateId);
-      if (tmpl && (tmpl.locationSubtypes?.includes(locationType as never) ?? false)) {
+      // Fail-soft: an id that resolves to nothing is skipped (the contract test in
+      // guildSocialTemplates.test.ts fails it in CI so it cannot ship).
+      const tmpl = getUnifiedTemplateById(templateId);
+      if (!tmpl || tmpl.drawable === false) continue;
+      const subtypes = (tmpl.locationSubtypes ?? []) as readonly string[];
+      if (subtypes.includes(locationType) || placeSubtypes.some(s => subtypes.includes(s))) {
         templates.push(tmpl);
       }
     }

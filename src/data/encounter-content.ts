@@ -319,6 +319,9 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     name: e.name,
     reach: normalizeReach(e.reachPrimary),
     crudType: toCrudType(e.encounterType),
+    // THR-1641: passthrough — projected as a tag by the encounter kind. The allowlist
+    // used to spend it on `crudType` and drop it.
+    encounterType: e.encounterType,
     scale: 'local',
     steps: e.steps.map((step, index) => {
       const dur = step.duration ?? 1;

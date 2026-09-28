@@ -118,7 +118,7 @@ export const CIVIC_GUARD_DEFINITION: FactionDefinition = {
     'cg.elite.crime_lord_takedown', 'cg.elite.defend_siege',
   ],
   socialTemplateIds: [
-    'cg.social.guard_mess', 'cg.social.drill_practice', 'cg.social.law_discussion',
+    'cg.social.training_yard', 'cg.social.barracks_meal', 'cg.social.citizen_petition',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

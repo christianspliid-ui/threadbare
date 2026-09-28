@@ -166,52 +166,65 @@ export const LOCATION_TRAIT_ENCOUNTER_BONUS_CAP = 0.15;
  * THR-800 named. A new family joins by carrying its tag; nothing here is edited.
  * Every key must be seated in `CONTENT_TAGS` — `locationTraitBonus.test.ts` fails a
  * spelling that is not.
+ *
+ * **Every key must also have bearers** (THR-1641): at least
+ * {@link LOCATION_TRAIT_TAG_MIN_BEARERS} drawable encounter templates carry it, pinned
+ * by `locationTraitBonus.test.ts`. Before THR-1641 nine of the table's tags (`#social`,
+ * `#commercial`, `#stealth`, `#arcane`, `#mystical`, `#supernatural`, `#fate`, plus
+ * `#loss` and `#fear`) had no drawable bearer, so whole rows moved nothing. The rows
+ * were rekeyed onto the kind-of-encounter words the encounter kind now projects from
+ * `encounterType` (`#assist`, `#steal`, `#duel`, `#explore`, `#lead`) rather than
+ * hand-tagging hundreds of templates. `#delve` (4 drawable bearers) fell under the
+ * floor, so haunted ground takes `#explore` in its place.
  */
 export const LOCATION_TRAIT_ENCOUNTER_BONUS: Readonly<
   Record<string, Readonly<Record<string, number>>>
 > = {
   // A welcoming town throws its doors open: markets, common rooms, company.
   [LOCATION_TRAIT_IDS.welcoming]: {
-    '#gold': 0.08,
+    '#gold': 0.06,
     '#heart': 0.08,
-    '#social': 0.10,
     '#trade': 0.10,
-    '#commercial': 0.08,
+    '#assist': 0.08,
     '#tavern_night': 0.10,
   },
   // A lawless town is where the quiet work and the loud work both get done.
   [LOCATION_TRAIT_IDS.lawless]: {
-    '#shadow': 0.10,
-    '#iron': 0.06,
-    '#stealth': 0.10,
-    '#combat': 0.08,
+    '#shadow': 0.08,
+    '#iron': 0.04,
+    '#steal': 0.10,
+    '#duel': 0.06,
     '#thieves_errand': 0.12,
   },
   // Where the veil is thin, the learned and the curious gather.
   [LOCATION_TRAIT_IDS.veilThin]: {
     '#veil': 0.10,
     '#star': 0.05,
-    '#arcane': 0.10,
+    '#explore': 0.06,
     '#anomaly': 0.10,
-    '#mystical': 0.08,
   },
-  // Haunted ground draws the uncanny stories — and the ones that go down into it.
+  // Haunted ground draws the uncanny stories — and the ones that go looking into it.
   [LOCATION_TRAIT_IDS.haunted]: {
     '#veil': 0.08,
-    '#shadow': 0.08,
-    '#supernatural': 0.12,
+    '#shadow': 0.06,
     '#anomaly': 0.10,
-    '#fate': 0.08,
-    '#delve': 0.06,
+    '#explore': 0.04,
   },
-  // Blood-soaked ground draws the stories of violence, loss and fear (THR-1528).
+  // Blood-soaked ground draws the stories of violence and of those who lead into it (THR-1528).
   [LOCATION_TRAIT_IDS.bloodSoaked]: {
-    '#combat': 0.10,
-    '#loss': 0.08,
-    '#fear': 0.06,
-    '#iron': 0.05,
+    '#duel': 0.10,
+    '#iron': 0.06,
+    '#lead': 0.05,
   },
 };
+
+/**
+ * Floor of drawable encounter templates every {@link LOCATION_TRAIT_ENCOUNTER_BONUS}
+ * tag must have (THR-1641). A tag under it is a row that moves (nearly) nothing — the
+ * silent zero the table had for nine tags before this floor existed. Test-side: read
+ * by `locationTraitBonus.test.ts` only.
+ */
+export const LOCATION_TRAIT_TAG_MIN_BEARERS = 5;
 
 // ─── Chronicle ──────────────────────────────────────────────────────────────
 

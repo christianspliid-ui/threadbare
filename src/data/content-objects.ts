@@ -104,6 +104,18 @@ export interface ContentObjectKind {
    * double-authored (slice 2's projection rule). Field name per axis.
    */
   readonly projections: Readonly<Partial<Record<ContentTagAxis, string>>>;
+  /**
+   * Typed fields whose value projects as a tag on **no fixed axis** (THR-1641) — the
+   * vocabulary seats each resulting tag on whatever axis its meaning belongs to.
+   *
+   * Kept apart from {@link projections} on purpose: a `projections` axis claims the
+   * whole axis for the field, so the contract test fails any authored tag on it that
+   * the field does not produce. The encounter's `encounterType` words (`#explore`,
+   * `#trade`, …) sit on the `family` axis beside authored families like
+   * `#circle_errand`; declaring `family` a projected axis would fail every one of those.
+   * Omitted means none.
+   */
+  readonly tagFields?: readonly string[];
   /** The world object an entry becomes when granted, or null for content never instantiated. */
   readonly instantiatesAs: WorldObjectKindId | null;
   /** The machine gate that validates this kind (`npm run <script>`), or null while none exists. */
@@ -179,6 +191,9 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     ],
     requiredAxes: [],
     projections: { reach: 'reach', sphere: 'sphereAffinity' },
+    // THR-1641: the raw entries' kind-of-encounter word, so the place-trait bonus rows
+    // key on tags ~220 templates carry instead of on hand-authored tags almost none do.
+    tagFields: ['encounterType'],
     instantiatesAs: 'encounter_template',
     gate: 'check:encounter',
     owningSystem: 'Encounters & Dilemmas',

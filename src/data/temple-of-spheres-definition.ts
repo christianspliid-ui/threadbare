@@ -118,7 +118,7 @@ export const TEMPLE_OF_SPHERES_DEFINITION: FactionDefinition = {
     'ts.elite.divine_revelation', 'ts.elite.miracle_working',
   ],
   socialTemplateIds: [
-    'ts.social.prayer_circle', 'ts.social.theological_debate', 'ts.social.alms_giving',
+    'ts.social.evening_prayer', 'ts.social.theological_debate', 'ts.social.alms_giving',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },

@@ -5831,7 +5831,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
  * verdict **WIRE** — the regional-scale tail of guild rank progression (`*.senior.*` /
  * `*.elite.*`), the three regional `fa.*` faction set-pieces, and the two regional
  * `monster.encounter.*` templates. The other 44 orphans carry the **DELETE** verdict and
- * are removed in WS5's kill batch (THR-778), not here.
+ * are removed in WS5's kill batch (THR-778), not here. Plus (THR-1641) every
+ * `encounter.anomaly.*` template: local scale, but reached by no other path, since no
+ * encounter-cache array holds them and the array-scored path is no longer called.
  *
  * Guild-rank gating **is** now applied to the 12 guild ids below (THR-805), but not here
  * — the gate lives in `filterByPrerequisites` and is keyed on each template's authored
@@ -5872,6 +5874,20 @@ export const CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS: readonly string[] = [
   // Monster set-pieces
   'monster.encounter.horde_raid',
   'monster.encounter.lair_defense',
+  // Anomaly places (THR-1641). `local` scale, but orphaned all the same: the cache's
+  // subtype lookup reads `ENCOUNTER_TEMPLATES` only, and the array-scored path that
+  // would take a local template (`phaseIdleSelection`) is no longer called by the
+  // orchestrator. One template per anomaly subtype, each keyed to that subtype alone.
+  'encounter.anomaly.gleaming_vein',
+  'encounter.anomaly.singing_dark',
+  'encounter.anomaly.sap_of_ages',
+  'encounter.anomaly.wild_apothecary',
+  'encounter.anomaly.sealed_chamber',
+  'encounter.anomaly.drowned_hoard',
+  'encounter.anomaly.bones_old_world',
+  'encounter.anomaly.fallen_star',
+  'encounter.anomaly.moons_tears',
+  'encounter.anomaly.dreaming_light',
 ];
 
 /**

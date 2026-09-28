@@ -1352,6 +1352,8 @@ function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
     intrinsicTier: intrinsicTierForRarity(rarityTier),
     reach: template.reachPrimary,
     crudType: encounterTypeToCrud(template.encounterType),
+    // THR-1641: passthrough — projected as a tag by the encounter kind.
+    encounterType: template.encounterType,
     scale: 'local',
     steps,
     apCost: 1,

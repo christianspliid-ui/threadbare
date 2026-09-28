@@ -108,7 +108,7 @@ export const THIEVES_GUILD_DEFINITION: FactionDefinition = {
     'tg.elite.grand_heist', 'tg.elite.guild_war',
   ],
   socialTemplateIds: [
-    'tg.social.dice_game', 'tg.social.trade_rumors', 'tg.social.plan_job',
+    'tg.social.dice_game', 'tg.social.fence_deal', 'tg.social.rumor_trade',
   ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },
