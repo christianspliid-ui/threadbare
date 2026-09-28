@@ -947,6 +947,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; A fair shortlist, held back
+      <span class="lead">Added 2026-09-28 (THR-1633 S1). The shortlist can look at every surviving template, not only the ones the cache registered first. It ships switched off until the journey fix lands.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="partial"><span class="flow">Encounters &amp; Dilemmas <span class="arrow">&#10230;</span> Encounters &amp; Dilemmas &mdash; every template that survives the filters has a fair chance at a shortlist slot (<code>shortlist-reaches-every-template</code>)</span><span class="chip partial">PARTIAL</span>
+        <span class="note">THR-1633. <code>capWithDiversity</code>&rsquo;s free-slot fill walked the candidate list from index 0, in cache insertion order, so registration order decided which writing was ever looked at: 76 &middot; 60 templates per seed (42 &middot; 99) had the cap as their first gate. The fill can now take distinct templates first (<code>CAP_FILL_DISTINCT_FIRST</code>, on) and start at a per-(agent, tick) hash offset (<code>CAP_FILL_ROTATE</code>, <strong>off</strong>). The <code>encounter_filter</code> trace counts the templates the cap cuts (<code>capCutTemplates</code>). Turned on, rotation cleared the cap (7 &middot; 5) but cut firings 1,498 &rarr; 515. Mortals chose encounters elsewhere and lost them on the way (<code>selected_not_spawned</code> 34 &rarr; 127), which is the reroute defect THR-1639 fixes. Rotation switches on after that fix.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; People who start tied to each other
       <span class="lead">Added 2026-09-28 (THR-1630). Every named hero begins with a kin, a friend and a rival among their neighbours, and the systems that read ties by their basis can see them.</span>
     </h2>
