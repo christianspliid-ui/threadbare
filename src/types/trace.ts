@@ -2991,6 +2991,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     forecastFit?: number;
     /** THR-1582 — where the entry's forecast sat against the mortal's window. */
     forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
+    arrivalCommitment?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;

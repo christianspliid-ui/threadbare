@@ -186,8 +186,18 @@ export const REROUTE_SCORE_MULTIPLIER = 1.5;
  * the way it came without attempting what it set out for — measured on seed 42,
  * The First spent 30 ticks on a round trip with no encounter at either end.
  * 1.0 disables the commitment. The goal is consumed by that one decision either way.
+ *
+ * THR-1668: applied where the decision is made — the unified board
+ * (`scoreUnifiedBoard`'s `arrivalGoal`), which ranks encounters on
+ * `valuePerTick × desire × fit` and never read the `finalScore` the first version
+ * scaled; `phaseAgentDecision` still scales `finalScore` for the legacy pick.
+ * Measured with `readers/journeys.ts` (arrivals that start their goal within 2 ticks,
+ * 200 ticks): `main` 19.6% · 21.4% (seeds 42 · 99); at the board, 1.5 → 50%,
+ * 2 → 62%, 2.5 → 79% · 79%, 3 → 78% · 77%. 2.5 is where the share stops rising; what
+ * still wins is a board that has genuinely moved (the arrival forecast sits far
+ * outside the mortal's window). @range 1–4
  */
-export const ARRIVAL_GOAL_COMMITMENT_MULTIPLIER = 1.5;
+export const ARRIVAL_GOAL_COMMITMENT_MULTIPLIER = 2.5;
 
 /**
  * Maximum tick distance to consider for movement candidates.

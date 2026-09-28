@@ -173,10 +173,17 @@ export const ANOMALY_SITE_CAP_RESERVE = 1;
  *   - unbounded: 1,621 · — firings, 6 anomaly templates fired
  *   - 2: 1,661 · 1,906 firings, 6 · 5 anomaly templates fired
  *   - 1: 1,925 · 2,141 firings, 2 · 2 anomaly templates fired
- * The cost at 2 is not the walk: a trace of seed 42 shows 32 of 34 anomaly journeys
- * *arrive*, and then the mortal re-decides and leaves without starting the encounter it
- * came for. Until that arrival defect is fixed (TODO(THR-1668)), 1 keeps the world's
- * firing rate level with `main`. @range 0–3
+ * The cost at 2 was then the arrival: 32 of 34 anomaly journeys *arrived*, and the
+ * mortal re-decided and left without starting the encounter it came for.
+ *
+ * THR-1668 fixed the arrival (the commitment now acts on the unified board). Re-measured
+ * in one session against `main` (1,925 · 2,141):
+ *   - 1 + fix: 1,879 · 2,288 firings, 4 · 3 anomaly templates fired
+ *   - 2 + fix: 1,713 · 2,015 firings, 7 · 6 anomaly templates fired
+ * The cost at 2 is now the walk itself — more mortals making two-hex trips, and those
+ * trips now land — not wasted arrivals. At 1 the fix already clears the ≥ 3 anomaly
+ * templates bar with firings level with `main` (+2.5% over the four seeds), so 1 stays.
+ * @range 0–3
  */
 export const ANOMALY_SITE_MAX_HEX_DISTANCE = 1;
 
