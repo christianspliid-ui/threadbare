@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: the doom clock waits for The First**: the world can no longer end before your First has had a real journey ([THR-1646](https://linear.app/threadbare/issue/THR-1646)). Merged via [#2117](https://github.com/christianspliid-ui/threadbare/pull/2117), and live on the site.
 - **2026-09-28: you see what your hand did**: after a cast, the player now sees who it touched and what changed ([THR-1606](https://linear.app/threadbare/issue/THR-1606)). Merged via [#2116](https://github.com/christianspliid-ui/threadbare/pull/2116), and live on the site.
 - **2026-09-28: the meeting comes to you**: after Reach Down, Meet The First now opens at the nearest settlement, so a new player can no longer miss The First (first step of [the opening](https://linear.app/threadbare/issue/THR-1605)). Merged via [#2115](https://github.com/christianspliid-ui/threadbare/pull/2115), and live on the site.
 - **2026-09-28: every written encounter gets its turn**: each mortal's shortlist is filled fairly, and a mortal in a town sees what it can start there first ([let written encounters land](https://linear.app/threadbare/issue/THR-1633)). Merged via [#2114](https://github.com/christianspliid-ui/threadbare/pull/2114), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: new worlds start with a past**: founding ages, old wars and the dead, stored behind the scenes for now, the first step of [a world with a past](https://linear.app/threadbare/issue/THR-1631). Merged via [#2109](https://github.com/christianspliid-ui/threadbare/pull/2109), and live on the site.
 - **2026-09-28: encounter openings now carry the town's culture**: one plain sentence on how a settlement handles this kind of trouble, or what its ruling sphere does to it ([THR-1635](https://linear.app/threadbare/issue/THR-1635)). Merged via [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091), and live on the site.
 - **2026-09-28: named heroes now start tied to each other**: each begins with kin, a friend and a rival among their neighbours, the first step of [notables and ties](https://linear.app/threadbare/issue/THR-1630). Merged via [#2106](https://github.com/christianspliid-ui/threadbare/pull/2106).
-- **2026-09-27: the world reads bigger.** Your avatar now sees two hexes, and the camera can zoom out to the whole map ([THR-1649](https://linear.app/threadbare/issue/THR-1649)). Merged via [#2105](https://github.com/christianspliid-ui/threadbare/pull/2105), and live on the site.
 
 ---
 
