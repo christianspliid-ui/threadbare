@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-28 05:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-28: every reach now reads the town**: the rest of the culture and sphere lines for encounter openings are written ([THR-1638](https://linear.app/threadbare/issue/THR-1638)). Merged via [#2110](https://github.com/christianspliid-ui/threadbare/pull/2110), and live on the site.
+- **2026-09-28: new worlds start with a past**: founding ages, old wars and the dead, stored behind the scenes for now, the first step of [a world with a past](https://linear.app/threadbare/issue/THR-1631). Merged via [#2109](https://github.com/christianspliid-ui/threadbare/pull/2109), and live on the site.
 - **2026-09-28: encounter openings now carry the town's culture**: one plain sentence on how a settlement handles this kind of trouble, or what its ruling sphere does to it ([THR-1635](https://linear.app/threadbare/issue/THR-1635)). Merged via [#2091](https://github.com/christianspliid-ui/threadbare/pull/2091), and live on the site.
 - **2026-09-28: named heroes now start tied to each other**: each begins with kin, a friend and a rival among their neighbours, the first step of [notables and ties](https://linear.app/threadbare/issue/THR-1630). Merged via [#2106](https://github.com/christianspliid-ui/threadbare/pull/2106).
 - **2026-09-27: the world reads bigger.** Your avatar now sees two hexes, and the camera can zoom out to the whole map ([THR-1649](https://linear.app/threadbare/issue/THR-1649)). Merged via [#2105](https://github.com/christianspliid-ui/threadbare/pull/2105), and live on the site.
@@ -39,8 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-27: a Vision now plays its scene** on The First instead of resolving silently ([THR-1650](https://linear.app/threadbare/issue/THR-1650)). Merged via [#2100](https://github.com/christianspliid-ui/threadbare/pull/2100), and live on the site.
 - **2026-09-27: the ascendant’s essence is now kept in one place**, so the essence bar reads the same number that Stillness and upkeep spend ([THR-1645](https://linear.app/threadbare/issue/THR-1645)). Merged via [#2099](https://github.com/christianspliid-ui/threadbare/pull/2099), and live on the site.
 - **2026-09-27: a mortal you thread with the Agent Thread card is now actually watched**, instead of vanishing from view ([THR-1643](https://linear.app/threadbare/issue/THR-1643)). Merged via [#2098](https://github.com/christianspliid-ui/threadbare/pull/2098), and live on the site.
-- **2026-09-27: a new cycle now starts with a fresh Doom clock** instead of inheriting the old one ([THR-1642](https://linear.app/threadbare/issue/THR-1642)). Merged via [#2096](https://github.com/christianspliid-ui/threadbare/pull/2096), and live on the site.
-- **2026-09-27: found items now take their stories from your actual world**: a relic or trophy draws on the world's own dead heroes, disasters and monsters ([THR-1637](https://linear.app/threadbare/issue/THR-1637)). Merged via [#2095](https://github.com/christianspliid-ui/threadbare/pull/2095), and live on the site.
 
 ---
 
