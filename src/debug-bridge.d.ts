@@ -1992,6 +1992,30 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-1605 — The opening: has the player met The First, and where did the meeting happen.
+   *
+   *  - `firstBonded` — the ascendant holds a `thread` edge at `the_first` (`isFirstBonded`).
+   *  - `openingBeatResolved` — spine Beat 0 ("Reach Down") is in the beat history; the
+   *    meeting auto-trigger waits on it. `true` when the world has no beat state at all.
+   *  - `meetingAutoTriggered` — the one-shot auto-trigger has fired.
+   *  - `meetingLocationId` — the settlement `pickMeetingLocation` chose (or the avatar's own
+   *    location on the fallback path); `null` until the trigger fires, then stays set.
+   *
+   *  S1 fields only; later opening slices (doom wake, spine gift gates) extend the object.
+   *  Resolves `{ error }` with no live game state.
+   *
+   *  **Async** (`await` it). */
+  getOpeningState: () => Promise<
+    | { error: string }
+    | {
+      firstBonded: boolean;
+      meetTheFirstAvailable: boolean;
+      openingBeatResolved: boolean;
+      meetingAutoTriggered: boolean;
+      meetingLocationId: string | null;
+    }
+  >;
+
   /** THR-1030 — What the `?outcome=<band>` review pin actually produced.
    *
    *  Resolves `null` when no pin is armed. `{ ..., status: 'pending' }` means a pin is

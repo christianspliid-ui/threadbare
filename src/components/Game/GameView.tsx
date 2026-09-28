@@ -189,7 +189,7 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
@@ -222,7 +222,7 @@ import {
 } from '../../engine/deliveryBeatAdapter';
 import { selectDefaultBeatChoice } from './beatDismissal';
 import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal';
-import { isSpineBeatId } from '../../data/ascendant-beat-content';
+import { ASCENDANT_SPINE, isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
@@ -305,6 +305,9 @@ interface GameViewProps {
   /** Leave this world for the title screen (THR-1604). Settings offers it only when wired. */
   onExitToTitle?: () => void;
 }
+
+/** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
+const OPENING_SPINE_BEAT_ID = ASCENDANT_SPINE[0].beatId;
 
 function formatJourneyPhaseLabel(
   phase: ThreadEdgeProperties['storyPhase'] | undefined,
@@ -4066,32 +4069,58 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
-  // ── Auto-trigger Meet The First early in the game ──
-  // The meeting encounter generates candidates from scratch — it doesn't
-  // need pre-existing agents at the location. Fire as soon as the avatar
-  // is at any location and Meet The First is available.
+  // ── Auto-trigger Meet The First right after "Reach Down" (THR-1605 S1) ──
+  // The meeting comes to the player: it opens at the settlement nearest the
+  // avatar (`pickMeetingLocation`) as soon as the spine opening beat resolves,
+  // with no avatar movement and no wait on the world. The god senses the souls
+  // from a height and the candidates are born at the meeting location, so the
+  // avatar need not stand there — and the dilemmas' settlement prose stays true.
+  // Before S1 this waited for the avatar to walk into a settlement, which a
+  // first-time player starting at the Sacred Grove shrine never did (0 of 3
+  // round-1 cold testers met a mortal).
+  const openingBeatResolved = useMemo(() => {
+    const beats = gameState.ascendantBeats;
+    // No beat state (old save / fixture) → no opening beat to wait for.
+    if (!beats) return true;
+    return beats.history.some(r => r.beatId === OPENING_SPINE_BEAT_ID);
+  // History is append-only, so its length is a sufficient change signal even if
+  // a resolver ever mutated the beat state in place.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.ascendantBeats, gameState.ascendantBeats?.history.length]);
+
   useEffect(() => {
-    if (gameState.tick < 2) return; // let the world settle
     if (gameState.meetTheFirstAutoTriggered) return;
     if (meetingState) return;
     if (!meetTheFirstAvailable) return;
+    // `MeetTheFirstFlow` mounts only with an identity. Without one, spending the
+    // one-shot flag would open a flow that never renders.
+    if (!ascendantIdentity) return;
+    if (!openingBeatResolved) return;
 
-    // Find avatar's current location — must be a place where people live
-    // (dilemmas describe merchants, guards, children, councils — needs a settlement)
-    if (!avatarNodeId) return;
-    const avatarLocEdge = gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at')[0];
-    if (!avatarLocEdge) return;
-    const locationId = avatarLocEdge.target;
-    const locNode = gameState.graph.getNode(locationId);
-    if (!locNode) return;
-    const subtype = locNode.properties.locationSubtype as string | undefined;
-    if (!subtype || !MEETING_SETTLED_LOCATION_SUBTYPES.includes(subtype)) return;
+    const pick = pickMeetingLocation(gameState.graph, gameState.ascendantId);
+    const fallbackId = avatarNodeId
+      ? gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at')[0]?.target
+      : undefined;
+    const locationId = pick?.locationId ?? fallbackId;
+    if (!locationId) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;
+    gameState.meetingLocationId = locationId;
+    emitTrace({
+      tick: gameState.tick,
+      category: 'meeting.location_picked',
+      locationId,
+      hexDistance: pick?.hexDistance ?? -1,
+      cultured: pick?.cultured ?? false,
+      fallback: !pick,
+      summary: pick
+        ? `meeting.location_picked: ${locationId} (${pick.hexDistance} hexes${pick.cultured ? ', cultured' : ''})`
+        : `meeting.location_picked: ${locationId} (fallback — no settlement on the map)`,
+    });
     handleStartMeeting(locationId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState.tick, meetTheFirstAvailable, meetingState, gameState.meetTheFirstAutoTriggered]);
+  }, [gameState.tick, meetTheFirstAvailable, meetingState, gameState.meetTheFirstAutoTriggered, openingBeatResolved, ascendantIdentity]);
 
   // Inject Meet The First card into non-agent slots when on a location view
   const enrichedNonAgentSlots = useMemo(() => {

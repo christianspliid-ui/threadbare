@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 41 |
-| **Total** | **188** |
+| 🔵 UNVERIFIED-OK | 42 |
+| **Total** | **189** |
 
 ## Contracts by producing subsystem
 
@@ -194,6 +194,7 @@ remediation ticket or the build fails.
 | `fights-leave-a-record-on-the-ground` | A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark. | function: `fightRecordBranch`, `recordFightFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent`, `plantAppointmentPromise` | Secrets & Favors | 🟢 LIVE | — |
@@ -1675,6 +1676,18 @@ exit
 - **Read sites:** `src/engine/mandateMilestoneProse.ts`, `src/engine/phaseMandate.ts`
 - **Other hits:** `src/data/mandate-loader.ts`
 - **Verdict:** Verified 2026-09-12: THR-1198 closed the producer half. The fork was ruled for remembrance, so the prose is now keyed to the two ids a live game mints — remembrance.{hunger} (identity path) and remembrance.{primary}_{secondary}, the latter resolved through the primary sphere family because its own key space is 132 ordered pairs. Live CLI proof, seed 42 / map medium, tick 75: mandate_milestone_prose trace reads `Mandate "Chaos Ascendancy" narrates its setup_to_escalation beat from authored prose (remembrance.sphere.chaos.setup_to_escalation)` — authored: true, the branch that had never fired. The 48 template strings and generateMandate were retired in the same change rather than left as data with no reader.
+
+### `meeting-bond-writes-the-first` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *The First*
+- **Module:** `src/engine/meetingEncounter.ts`
+- **Production hits:** 33 total — 1 write, 1 read, 31 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/attentionTier.ts`
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/ScryOverlay.tsx` +26 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
 

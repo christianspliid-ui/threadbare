@@ -25,6 +25,14 @@ import type { HungerId, ResonanceTag } from './hunger';
 /** Number of candidates shown in Step 1 */
 export const MEETING_CANDIDATE_COUNT = 3;
 
+/**
+ * Hexes within which `pickMeetingLocation` prefers a settlement carrying a current
+ * culture over a nearer one without (THR-1605 S1). The meeting reads the culture
+ * for candidate names and prose, so a cultured town a little further off makes a
+ * better first meeting than an unnamed outpost next door.
+ */
+export const MEETING_CULTURED_PREFERENCE_RADIUS = 6;
+
 /** Min dilemmas per meeting encounter */
 export const MEETING_DILEMMA_COUNT_MIN = 2;
 
