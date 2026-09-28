@@ -1,0 +1,185 @@
+attended-view firing census — medium, 150 ticks, seeds 42,99
+
+════════ ATTENDED ════════
+seed 42: 725 firings (unifiedActions + encounterProgress), 31640 ms; unresolved UA at end 17; encounterProgress at end 0
+  threads at t150: Kael Thornweaver (the_first)
+  court positions ever held (agent-ticks): the_first 1 agent(s)
+seed 99: 817 firings (unifiedActions + encounterProgress), 48089 ms; unresolved UA at end 18; encounterProgress at end 0
+  threads at t150: Kael Thornweaver (the_first)
+  court positions ever held (agent-ticks): the_first 1 agent(s)
+
+Firings by court position (highest of actor/target) / effective attention tier × path  [UA = state.unifiedActions, EP = state.encounterProgress; social = social-generator pools]
+                               UA:board       UA:social    total
+  the_first/shaping                  44               0       44
+  the_first/story_beat                1               0        1
+  unthreaded/(unset)                156               0      156
+  unthreaded/invisible             1320              21     1341
+  total                            1521              21     1542
+
+Firings by content pool × seed  [board = cache/registry path; tavern/secret/faction_social/social_scene/social = socialEncounterGeneration pools; borderland/npc named separately]
+                                  42              99    total
+  board                          720             801     1521
+  faction_social                   0               8        8
+  social                           5               8       13
+  total                          725             817     1542
+
+Bands × (threaded? : tier)
+                    threaded:attended-tierunthreaded:(unset)unthreaded:invisible    total
+  (unresolved)                     1               4              34       39
+  contested_lost                   0               2              13       15
+  contested_won                    0               0               4        4
+  critical_failure                 1               5              65       71
+  critical_success                 2              14              98      114
+  failure                         12              29             389      430
+  success                         16              53             476      545
+  success_at_cost                 13              49             262      324
+  total                           45             156            1341     1542
+
+Encounter firings by template intrinsic tier × seed
+                                  42              99    total
+  background                     609             624     1233
+  shaping                         86             152      238
+  story_beat                      30              41       71
+  total                          725             817     1542
+
+§2 restated (encounter-kind firings, both seeds): firings 1542; top-10 23.5%; distinct fired 185; drawable fired 183 of 514 (audit denominator 514); at-cost 324 of 1503 resolutions (21.6%); nudge-hand 111 (7.2%); at-cost prose authored on 8.0% of firings
+  seed 42: firings 725; top-10 26.5%; distinct fired 125; drawable fired 124 of 514 (audit denominator 514); at-cost 158 of 706 resolutions (22.4%); nudge-hand 36 (5.0%); at-cost prose authored on 5.7% of firings
+  seed 99: firings 817; top-10 21.4%; distinct fired 169; drawable fired 167 of 514 (audit denominator 514); at-cost 166 of 797 resolutions (20.8%); nudge-hand 75 (9.2%); at-cost prose authored on 10.2% of firings
+  First + retinue only: firings 45; top-10 66.7%; distinct fired 25; drawable fired 25 of 514 (audit denominator 514); at-cost 13 of 44 resolutions (29.5%); nudge-hand 4 (8.9%); at-cost prose authored on 8.9% of firings
+
+Top 20 encounter templates (both seeds) — top-10 share 38.6%
+    47  encounter.barter_supplies
+    39  encounter.decipher_old_markings
+    37  encounter.tend_the_weary
+    37  encounter.commune_with_stars
+    36  encounter.barter_with_travelers
+    36  encounter.local_tales
+    34  crafting.quest.flawed_steel
+    33  encounter.study_surroundings
+    33  encounter.pickpocket
+    30  encounter.assess_holdings
+    27  encounter.forage_provisions
+    25  encounter.festival_of_spheres
+    25  encounter.rest_and_recover
+    25  encounter.forage_the_land
+    24  encounter.investigate_anomaly
+    22  encounter.dead_drop
+    22  encounter.shadow_in_the_night
+    21  encounter.trace_ley_lines
+    21  encounter.vault_heist
+    21  encounter.tribute_exchange
+
+The First + retinue: 45 firings, 25 distinct templates, top-10 share 77.8%; bands {"success":16,"failure":12,"critical_failure":1,"success_at_cost":13,"critical_success":2,"(unresolved)":1}
+     7  encounter.barter_with_travelers
+     4  encounter.guild_aid
+     3  crafting.quest.flawed_steel
+     3  encounter.aid_refugees
+     3  encounter.barter_survival
+     2  encounter.merchants_gambit
+     2  encounter.vault_heist
+     2  encounter.forbidden_tome
+     2  encounter.shadow_in_the_night
+     2  encounter.offer_small_prayer  [nudge hand]
+     1  encounter.healers_oath
+     1  encounter.decipher_old_markings
+     1  encounter.council_mediation
+     1  encounter.knowledge_test
+     1  encounter.rest_and_recover
+
+All threaded (any court position): 45 firings, 25 distinct
+
+Longest run of the same template to the same mortal (consecutive firings by that actor):
+  seed 99  3×  encounter_route_embargo  actor npc_164  t43–t64  (of 14 firings by that actor)
+  seed 42  2×  ts.quest.heal_the_sick  actor ind_9  t104–t106  (of 25 firings by that actor)
+  seed 99  2×  army.supply.siege_lifted  actor ind_3  t74–t82  (of 31 firings by that actor)
+  seed 99  2×  mct.quest.negotiate_contract  actor ind_11  t28–t48  (of 28 firings by that actor)
+  seed 99  2×  army.supply.forage  actor ind_16  t66–t70  (of 35 firings by that actor)
+  seed 99  2×  army.supply.forage  actor ind_13  t131–t134  (of 29 firings by that actor)
+  seed 42  1×  encounter.festival_of_spheres  actor ind_1  t1–t1  (of 12 firings by that actor)
+  seed 42  1×  encounter.shore_up_shelter  actor ind_2  t1–t1  (of 28 firings by that actor)
+  seed 42  1×  encounter.rest_and_recover  actor ind_3  t1–t1  (of 46 firings by that actor)
+  seed 42  1×  encounter.bandit_ambush  actor ind_4  t1–t1  (of 32 firings by that actor)
+  The First (seed 42): 1×  encounter.healers_oath  t1–t1  (of 29)
+  The First (seed 99): 1×  encounter.guild_aid  t16–t16  (of 16)
+
+════════ UNATTENDED ════════
+seed 42: 688 firings (unifiedActions + encounterProgress), 30709 ms; unresolved UA at end 17; encounterProgress at end 0
+  threads at t150: (none)
+  court positions ever held (agent-ticks): (none)
+seed 99: 653 firings (unifiedActions + encounterProgress), 39193 ms; unresolved UA at end 14; encounterProgress at end 0
+  threads at t150: (none)
+  court positions ever held (agent-ticks): (none)
+
+Firings by court position (highest of actor/target) / effective attention tier × path  [UA = state.unifiedActions, EP = state.encounterProgress; social = social-generator pools]
+                               UA:board       UA:social    total
+  unthreaded/(unset)                134               1      135
+  unthreaded/invisible             1188              18     1206
+  total                            1322              19     1341
+
+Firings by content pool × seed  [board = cache/registry path; tavern/secret/faction_social/social_scene/social = socialEncounterGeneration pools; borderland/npc named separately]
+                                  42              99    total
+  board                          682             640     1322
+  faction_social                   0               4        4
+  social                           6               9       15
+  total                          688             653     1341
+
+Bands × (threaded? : tier)
+                    unthreaded:(unset)unthreaded:invisible    total
+  (unresolved)                     3              35       38
+  contested_lost                   0               2        2
+  critical_failure                12              52       64
+  critical_success                 5              89       94
+  failure                         38             335      373
+  success                         30             433      463
+  success_at_cost                 47             260      307
+  total                          135            1206     1341
+
+Encounter firings by template intrinsic tier × seed
+                                  42              99    total
+  background                     573             538     1111
+  shaping                         74              85      159
+  story_beat                      41              30       71
+  total                          688             653     1341
+
+§2 restated (encounter-kind firings, both seeds): firings 1341; top-10 24.4%; distinct fired 154; drawable fired 153 of 514 (audit denominator 514); at-cost 307 of 1303 resolutions (23.6%); nudge-hand 93 (6.9%); at-cost prose authored on 7.9% of firings
+  seed 42: firings 688; top-10 24.9%; distinct fired 111; drawable fired 110 of 514 (audit denominator 514); at-cost 162 of 669 resolutions (24.2%); nudge-hand 37 (5.4%); at-cost prose authored on 6.3% of firings
+  seed 99: firings 653; top-10 25.6%; distinct fired 136; drawable fired 136 of 514 (audit denominator 514); at-cost 145 of 634 resolutions (22.9%); nudge-hand 56 (8.6%); at-cost prose authored on 9.6% of firings
+  First + retinue only: firings 0; top-10 —; distinct fired 0; drawable fired 0 of 514 (audit denominator 514); at-cost 0 of 0 resolutions (—); nudge-hand 0 (—); at-cost prose authored on — of firings
+
+Top 20 encounter templates (both seeds) — top-10 share 41.0%
+    43  encounter.barter_supplies
+    38  encounter.study_surroundings
+    34  encounter.decipher_old_markings
+    34  encounter.tend_the_weary
+    34  encounter.commune_with_stars
+    32  encounter.forage_provisions
+    31  encounter.local_tales
+    28  encounter.rest_and_recover
+    27  encounter.forage_the_land
+    26  encounter.assess_holdings
+    26  encounter.pickpocket
+    24  encounter.master_craftsman_challenge
+    23  encounter.festival_of_spheres
+    23  encounter.trace_ley_lines
+    22  encounter.listen_for_rumors
+    22  encounter.investigate_anomaly
+    22  encounter.steal_secrets
+    22  crafting.quest.flawed_steel
+    20  encounter.barter_with_travelers
+    19  encounter.offer_small_prayer  [nudge hand]
+
+The First + retinue: 0 firings, 0 distinct templates, top-10 share —; bands {}
+
+All threaded (any court position): 0 firings, 0 distinct
+
+Longest run of the same template to the same mortal (consecutive firings by that actor):
+  seed 42  3×  army.supply.siege_lifted  actor ind_0  t130–t138  (of 35 firings by that actor)
+  seed 42  2×  army.supply.siege_lifted  actor ind_5  t83–t86  (of 41 firings by that actor)
+  seed 99  2×  army.supply.siege_lifted  actor agent_garrison_culture_0  t114–t134  (of 35 firings by that actor)
+  seed 99  2×  army.supply.forage  actor ind_2  t87–t90  (of 37 firings by that actor)
+  seed 99  2×  encounter_route_embargo  actor npc_162  t44–t51  (of 15 firings by that actor)
+  seed 99  2×  army.supply.siege_lifted  actor npc_24  t82–t90  (of 5 firings by that actor)
+  seed 42  1×  encounter.festival_of_spheres  actor ind_1  t1–t1  (of 16 firings by that actor)
+  seed 42  1×  encounter.shore_up_shelter  actor ind_2  t1–t1  (of 30 firings by that actor)
+  seed 42  1×  encounter.rest_and_recover  actor ind_3  t1–t1  (of 37 firings by that actor)
+  seed 42  1×  encounter.bandit_ambush  actor ind_4  t1–t1  (of 36 firings by that actor)

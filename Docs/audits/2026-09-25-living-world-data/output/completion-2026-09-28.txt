@@ -1,0 +1,187 @@
+completion join — Docs/audits/2026-09-25-living-world-data/output/attended-medium-2026-09-28.json; 1542 attended encounter firings, 324 at-cost; 185 templates
+rank firings first atCost cum% | steps sac cs cf nudge deal | aftermath bands | pending | id
+  1   47   0   6   3.0 | 2 0 0 0 0 0 | - | P | encounter.barter_supplies
+  2   39   1   5   5.6 | 2 0 0 0 0 0 | - | P | encounter.decipher_old_markings
+  3   37   0   4   8.0 | 2 0 0 0 0 0 | - | P | encounter.commune_with_stars
+  4   37   1   5  10.4 | 2 0 0 0 0 0 | - | P | encounter.tend_the_weary
+  5   36   7   6  12.7 | 2 0 1 1 0 0 | - | P | encounter.barter_with_travelers
+  6   36   0  15  15.0 | 2 0 0 0 0 0 | - | P | encounter.local_tales
+  7   34   3   1  17.3 | 5 0 4 4 0 0 | 4v [] |   | crafting.quest.flawed_steel
+  8   33   0   3  19.4 | 3 0 0 0 0 0 | - | P | encounter.pickpocket
+  9   33   0   8  21.5 | 2 0 0 0 0 0 | - | P | encounter.study_surroundings
+ 10   30   0   5  23.5 | 2 0 0 0 0 0 | - | P | encounter.assess_holdings
+ 11   27   0   5  25.2 | 2 0 0 0 0 0 | - | P | encounter.forage_provisions
+ 12   25   0   6  26.8 | 2 0 0 0 0 0 | - | P | encounter.festival_of_spheres
+ 13   25   0   4  28.5 | 2 0 0 0 0 0 | - | P | encounter.forage_the_land
+ 14   25   1   5  30.1 | 2 0 0 0 0 0 | - | P | encounter.rest_and_recover
+ 15   24   0   4  31.6 | 2 0 0 0 0 0 | - | P | encounter.investigate_anomaly
+ 16   22   0   4  33.1 | 3 0 0 0 0 0 | - | P | encounter.dead_drop
+ 17   22   2   4  34.5 | 2 0 1 1 0 0 | - | P | encounter.shadow_in_the_night
+ 18   21   0   5  35.9 | 2 0 0 0 0 0 | - | P | encounter.trace_ley_lines
+ 19   21   0   3  37.2 | 3 0 0 0 0 0 | - | P | encounter.tribute_exchange
+ 20   21   2   4  38.6 | 3 0 0 0 0 0 | - | P | encounter.vault_heist
+ 21   20   2   5  39.9 | 2 2 2 2 2 0 | 1v [critical_failure,critical_success,success] |   | encounter.offer_small_prayer
+ 22   20   0   2  41.2 | 2 0 0 0 0 0 | - | P | encounter.shore_up_shelter
+ 23   19   0   5  42.4 | 2 0 0 0 0 0 | - | P | encounter.listen_for_rumors
+ 24   19   0   4  43.6 | 2 0 0 0 0 0 | - | P | encounter.local_gossip
+ 25   19   0   4  44.9 | 2 0 1 1 0 0 | - | P | encounter.master_craftsman_challenge
+ 26   19   2   2  46.1 | 3 0 0 0 0 0 | - | P | encounter.merchants_gambit
+ 27   19   0   4  47.3 | 3 0 0 0 0 0 | - | P | encounter.smuggle_goods
+ 28   19   0   1  48.6 | 2 0 0 0 0 0 | - | P | encounter.trade_caravan_escort
+ 29   18   0   4  49.7 | 3 0 0 0 0 0 | - | P | encounter.steal_secrets
+ 30   18   0   3  50.9 | 4 0 3 3 0 0 | 3v [] |   | stone.permanence.mason_lord_wall
+ 31   17   0   3  52.0 | 2 0 1 1 0 0 | - | P | encounter.guild_initiation_trial
+ 32   17   0   4  53.1 | 3 0 0 0 0 0 | - | P | encounter.honor_duel
+ 33   16   0   2  54.2 | 2 0 0 0 0 0 | - | P | encounter.patrol_perimeter
+ 34   16   0   7  55.2 | 4 0 3 3 0 0 | 3v [] |   | star.turning.comet_omen
+ 35   15   0   0  56.2 | 2 0 0 0 0 0 | 1v [] |   | encounter_route_embargo
+ 36   15   0   3  57.1 | 3 0 0 0 0 0 | - | P | encounter.case_the_joint
+ 37   15   1   4  58.1 | 3 0 0 0 0 0 | - | P | encounter.knowledge_test
+ 38   15   0   3  59.1 | 3 0 0 0 0 0 | - | P | encounter.recruit_militia
+ 39   15   0   1  60.1 | 2 2 2 2 2 0 | 1v [critical_failure,critical_success,success] |   | encounter.scout_the_perimeter
+ 40   15   0   6  61.0 | 3 0 0 0 0 0 | - | P | encounter.trial_by_combat
+ 41   14   3   4  61.9 | 3 0 0 0 0 0 | - | P | encounter.barter_survival
+ 42   14   0   2  62.8 | 3 0 0 0 0 0 | - | P | encounter.court_noble
+ 43   14   0   3  63.7 | 2 0 0 0 0 0 | - | P | encounter.rally_the_locals
+ 44   13   0   2  64.6 | 2 0 1 1 0 0 | - | P | encounter.mend_equipment
+ 45   13   0   3  65.4 | 3 0 0 0 0 0 | - | P | encounter.raise_monument
+ 46   13   1   3  66.3 | 4 4 4 4 2 0 | 3v [critical_failure,critical_success,failure,success_at_cost] |   | encounter.slice.swindled_family
+ 47   13   0   3  67.1 | 3 0 1 1 0 0 | - | P | encounter.tavern_brawl
+ 48   13   0   4  68.0 | 2 2 2 2 2 0 | 1v [critical_failure,critical_success,success_at_cost] |   | encounter.ward_the_camp
+ 49   13   0   4  68.8 | 2 1 1 1 0 0 | 1v [] |   | social.investigate_reputation
+ 50   13   1   7  69.6 | 4 0 0 0 0 0 | 3v [] |   | veil.truth.page_beneath_saint
+ 51   12   0   2  70.4 | 3 0 0 0 0 0 | - | P | encounter.compose_saga
+ 52   12   0   1  71.2 | 2 0 0 0 0 0 | - | P | encounter.night_watch
+ 53   12   0   4  72.0 | 2 0 1 1 0 0 | - | P | encounter.plague_outbreak
+ 54   11   1   2  72.7 | 2 0 1 1 0 0 | - | P | encounter.confront_the_unknown
+ 55   11   0   6  73.4 | 2 2 2 2 2 0 | 1v [critical_failure,critical_success,success] |   | encounter.rest_and_reflect
+ 56   11   0   8  74.1 | 2 0 0 0 0 0 | 1v [] |   | mct.quest.market_survey
+ 57    9   3   0  74.7 | 3 0 0 0 0 0 | - | P | encounter.aid_refugees
+ 58    9   4   2  75.3 | 3 0 0 0 0 0 | - | P | encounter.guild_aid
+ 59    9   0   3  75.9 | 3 0 0 0 0 0 | - | P | encounter.shadow_hunt
+ 60    9   0   1  76.5 | 4 4 4 4 1 0 | 3v [critical_failure,critical_success,failure,success_at_cost] |   | encounter.slice.bargain_at_crossroads
+ 61    9   1   0  77.0 | 2 2 2 2 2 0 | 1v [critical_failure,critical_success,failure,success_at_cost] |   | encounter.tend_to_wounds
+ 62    9   0   0  77.6 | 1 0 0 0 0 0 | 1v [] |   | hod.join
+ 63    9   0   3  78.2 | 2 0 0 0 0 0 | 1v [] |   | ts.quest.heal_the_sick
+ 64    8   0   0  78.7 | 2 0 0 0 0 0 | 1v [] |   | army.supply.siege_lifted
+ 65    8   0   1  79.2 | 2 0 1 1 0 0 | - | P | encounter.arcane_resonance_study
+ 66    8   2   6  79.8 | 3 0 0 0 0 0 | - | P | encounter.forbidden_tome
+ 67    8   0   1  80.3 | 2 0 0 0 0 0 | - | P | encounter.negotiate_dispute
+ 68    7   0   2  80.7 | 2 0 0 0 0 0 | 1v [] |   | bf.quest.craft_commission
+ 69    7   1   2  81.2 | 3 0 0 0 0 0 | - | P | encounter.council_mediation
+ 70    7   1   1  81.6 | 2 0 0 0 0 0 | - | P | encounter.defend_against_predators
+ 71    7   0   0  82.1 | 2 0 1 1 0 0 | - | P | encounter.master_local_craft
+ 72    7   0   1  82.6 | 3 0 0 0 0 0 | - | P | encounter.rally_faithful
+ 73    7   0   1  83.0 | 2 2 2 2 2 0 | 1v [critical_success,failure,success_at_cost] |   | encounter.sharpen_blades
+ 74    7   0   0  83.5 | 2 0 0 0 0 0 | 1v [] |   | lk.quest.interview_elder
+ 75    7   0   2  83.9 | 2 0 0 0 0 0 | 1v [] |   | ts.join
+ 76    7   0   3  84.4 | 2 0 0 0 0 0 | 1v [] |   | ts.quest.tend_shrine
+ 77    6   0   3  84.8 | 2 0 0 0 0 0 | 1v [] |   | army.supply.forage
+ 78    6   0   1  85.1 | 2 0 0 0 0 0 | 1v [] |   | cg.quest.break_up_brawl
+ 79    6   0   2  85.5 | 3 0 0 0 0 0 | - | P | encounter.guild_negotiation
+ 80    6   1   1  85.9 | 3 0 0 0 0 0 | - | P | encounter.harvest_bounty
+ 81    6   0   3  86.3 | 2 0 0 0 0 0 | 1v [] |   | lk.join
+ 82    6   0   4  86.7 | 2 0 0 0 0 0 | 1v [] |   | mct.quest.negotiate_contract
+ 83    5   0   2  87.0 | 2 0 0 0 0 0 | 1v [] |   | ag.join
+ 84    5   0   1  87.4 | 2 0 0 0 0 0 | 1v [] |   | bf.quest.lay_foundation
+ 85    5   0   0  87.7 | 3 0 0 0 0 0 | - | P | encounter.political_intrigue
+ 86    5   1   1  88.0 | 3 0 1 1 0 0 | - | P | encounter.weave_political_alliance
+ 87    5   0   0  88.3 | 1 0 0 0 0 0 | 1v [] |   | mct.join
+ 88    4   0   0  88.6 | 3 0 0 0 0 0 | - | P | encounter.hedge_remedy
+ 89    4   0   1  88.8 | 3 0 0 0 0 0 | - | P | encounter.negotiate_passage
+ 90    4   0   2  89.1 | 3 0 0 0 0 0 | - | P | encounter.shadow_ambush
+ 91    4   0   0  89.4 | 2 0 0 0 0 0 | 1v [] |   | lk.quest.catalogue_ruins
+ 92    4   0   2  89.6 | 2 0 0 0 0 0 | 1v [] |   | lk.quest.map_ley_lines
+ 93    4   0   1  89.9 | 3 0 0 0 0 0 | 1v [] |   | ts.senior.sphere_communion
+ 94    3   0   2  90.1 | 2 0 0 0 0 0 | 1v [] |   | army.threshold.mutiny
+ 95    3   0   0  90.3 | 2 0 0 0 0 0 | 1v [] |   | bf.quest.forge_tools
+ 96    3   0   0  90.5 | 1 0 0 0 0 0 | 1v [] |   | cg.join
+ 97    3   0   0  90.7 | 3 0 0 0 0 0 | - | P | encounter.caravan_deal
+ 98    3   0   0  90.9 | 3 0 0 0 0 0 | - | P | encounter.faction_unification
+ 99    3   0   0  91.1 | 2 2 2 2 2 2 | 1v [critical_failure,failure,success,success_at_cost] |   | encounter.realm.crowns_reckoning
+100    3   0   0  91.2 | 2 2 2 2 1 2 | 1v [critical_failure,failure,success,success_at_cost] |   | encounter.realm.tithe_demanded
+101    3   0   0  91.4 | 2 0 0 0 0 0 | - | P | encounter.sacred_text_study
+102    3   0   1  91.6 | 4 4 4 4 1 0 | 3v [critical_failure,critical_success,failure,success_at_cost] |   | encounter.slice.swindler_found
+103    3   0   1  91.8 | 2 0 0 0 0 0 | 1v [] |   | lk.quest.recover_tome
+104    3   0   1  92.0 | 2 0 0 0 0 0 | 1v [] |   | lk.quest.translate_text
+105    3   0   2  92.2 | 2 0 0 0 0 0 | 1v [] |   | mct.quest.appraise_goods
+106    3   0   3  92.4 | 2 0 0 0 0 0 | 1v [] |   | mct.quest.caravan_escort
+107    3   0   2  92.6 | 2 0 0 0 0 0 | 1v [] |   | tg.quest.blackmail_ledger
+108    3   0   0  92.8 | 2 0 0 0 0 0 | 1v [] |   | ts.quest.copy_scriptures
+109    3   0   0  93.0 | 2 0 0 0 0 0 | 1v [] |   | ts.quest.meditate_on_spheres
+110    3   0   0  93.2 | 2 0 0 0 0 0 | 1v [] |   | uk.quest.pickpocket_run
+111    2   0   0  93.3 | 1 0 0 0 0 0 | 1v [] |   | ac.join
+112    2   0   0  93.5 | 2 0 0 0 0 0 | 1v [] |   | ag.quest.wilderness_survey
+113    2   0   0  93.6 | 2 0 0 0 0 0 | 1v [] |   | bf.quest.repair_wall
+114    2   0   1  93.7 | 2 0 0 0 0 0 | 1v [] |   | bf.quest.survey_site
+115    2   0   2  93.8 | 2 0 0 0 0 0 | 1v [] |   | cg.quest.investigate_disturbance
+116    2   0   1  94.0 | 2 0 0 0 0 0 | 1v [] |   | cg.quest.wall_patrol
+117    2   0   1  94.1 | 3 0 0 0 0 0 | - | P | encounter.blessing_of_passage
+118    2   0   1  94.2 | 3 0 0 0 0 0 | - | P | encounter.brew_potion
+119    2   0   1  94.4 | 2 0 0 0 0 0 | - | P | encounter.hermits_wisdom
+120    2   0   0  94.5 | 3 0 0 0 0 0 | - | P | encounter.hire_guide
+121    2   0   1  94.6 | 3 0 0 0 0 0 | - | P | encounter.mend_fishing_nets
+122    2   0   1  94.7 | 2 2 2 2 2 2 | 1v [critical_failure,failure,success,success_at_cost] |   | encounter.realm.border_levy
+123    2   0   0  94.9 | 2 2 2 2 2 2 | 1v [critical_failure,failure,success,success_at_cost] |   | encounter.realm.court_summons
+124    2   1   1  95.0 | 3 0 0 0 0 0 | - | P | encounter.relic_hunt
+125    2   0   0  95.1 | 3 0 0 0 0 0 | - | P | encounter.starborn_vigil
+126    2   0   1  95.3 | 3 0 0 0 0 0 | - | P | encounter.trial_of_flame
+127    2   0   2  95.4 | 4 0 3 3 0 0 | 3v [] |   | eye.reckoning.verdict_that_burns
+128    2   0   1  95.5 | 3 0 0 0 0 0 | 1v [] |   | mc.elite.siege_contract
+129    2   0   0  95.7 | 3 0 0 0 0 0 | 1v [] |   | mc.elite.war_council
+130    2   0   0  95.8 | 2 0 0 0 0 0 | 1v [] |   | mc.quest.collect_bounty
+131    2   0   1  95.9 | 2 0 0 0 0 0 | 1v [] |   | mc.quest.patrol
+132    2   0   0  96.0 | 2 0 0 0 0 0 | 1v [] |   | mc.senior.extraction_op
+133    2   0   2  96.2 | 2 0 0 0 0 0 | 1v [] |   | mct.quest.settle_dispute
+134    2   0   0  96.3 | 4 0 0 0 0 0 | 3v [] |   | reputation.stone.the_jury_of_the_ruined
+135    2   0   0  96.4 | 2 0 0 0 0 0 | 1v [] |   | tg.quest.case_the_mark
+136    2   0   1  96.6 | 3 0 0 0 0 0 | 1v [] |   | ts.elite.sphere_convergence
+137    2   0   0  96.7 | 1 0 0 0 0 0 | 1v [] |   | uk.join
+138    2   0   1  96.8 | 2 0 0 0 0 0 | 1v [] |   | uk.quest.blackmail_mark
+139    2   0   2  97.0 | 2 0 0 0 0 0 | 1v [] |   | uk.quest.fence_goods
+140    2   0   1  97.1 | 2 0 0 0 0 0 | 1v [] |   | uk.quest.protection_racket
+141    1   0   0  97.1 | 2 0 0 0 0 0 | 1v [] |   | ag.social.sparring
+142    1   0   0  97.2 | 3 0 0 0 0 0 | - | P | encounter.arcane_duel
+143    1   0   1  97.3 | 2 0 0 0 0 0 | - | P | encounter.bandit_ambush
+144    1   0   0  97.3 | 2 0 0 0 0 0 | - | P | encounter.beast_hunt
+145    1   0   0  97.4 | 3 0 0 0 0 0 | - | P | encounter.broken_span
+146    1   0   0  97.5 | 3 0 0 0 0 0 | - | P | encounter.craft_talisman
+147    1   0   0  97.5 | 3 0 0 0 0 0 | - | P | encounter.deep_descent
+148    1   0   1  97.6 | 3 0 0 0 0 0 | - | P | encounter.delve_into_depths
+149    1   0   0  97.7 | 3 0 0 0 0 0 | - | P | encounter.dig_a_well
+150    1   0   0  97.7 | 2 0 1 1 0 0 | - | P | encounter.dragons_challenge
+151    1   0   0  97.8 | 3 0 0 0 0 0 | - | P | encounter.drill_the_watch
+152    1   0   0  97.9 | 3 0 1 1 0 0 | - | P | encounter.grand_tournament
+153    1   1   0  97.9 | 3 0 0 0 0 0 | - | P | encounter.healers_oath
+154    1   0   0  98.0 | 2 0 0 0 0 0 | - | P | encounter.labor_dispute
+155    1   0   0  98.1 | 3 0 0 0 0 0 | - | P | encounter.library_expansion
+156    1   0   0  98.1 | 3 0 0 0 0 0 | - | P | encounter.mystic_trade
+157    1   0   1  98.2 | 2 0 0 0 0 0 | - | P | encounter.pilgrimage_trial
+158    1   0   0  98.2 | 3 0 0 0 0 0 | - | P | encounter.rare_material
+159    1   0   0  98.3 | 2 0 0 0 0 0 | - | P | encounter.restless_spirits
+160    1   0   0  98.4 | 3 3 3 3 3 0 | 1v [critical_failure,critical_success,failure,success_at_cost] |   | encounter.shrine_offering
+161    1   0   0  98.4 | 3 0 0 0 0 0 | - | P | encounter.spar_with_a_stranger
+162    1   0   0  98.5 | 3 0 0 0 0 0 | - | P | encounter.spell_bargain
+163    1   1   0  98.6 | 3 0 0 0 0 0 | - | P | encounter.the_haggle
+164    1   0   0  98.6 | 2 0 0 0 0 0 | - | P | encounter.the_loan
+165    1   0   0  98.7 | 3 0 0 0 0 0 | - | P | encounter.the_rich_vein
+166    1   0   0  98.8 | 2 0 0 0 0 0 | - | P | encounter.toll_bridge
+167    1   0   0  98.8 | 2 0 0 0 0 0 | 1v [critical_failure,failure,success] |   | hod.quest.purify_shrine
+168    1   0   0  98.9 | 1 0 0 0 0 0 | 1v [] |   | hunt.trail_cold
+169    1   0   1  99.0 | 3 0 0 0 0 0 | 1v [] |   | lk.senior.decipher_prophecy
+170    1   0   1  99.0 | 2 0 0 0 0 0 | 1v [] |   | lk.senior.excavate_archive
+171    1   0   0  99.1 | 2 0 0 0 0 0 | 1v [] |   | mc.quest.guard_caravan
+172    1   0   0  99.2 | 2 0 0 0 0 0 | 1v [] |   | mc.quest.siege_work
+173    1   0   1  99.2 | 3 0 0 0 0 0 | 1v [] |   | mc.senior.field_command
+174    1   0   1  99.3 | 2 0 0 0 0 0 | 1v [] |   | mc.senior.hostile_negotiation
+175    1   0   0  99.4 | 4 0 0 0 0 0 | 3v [] |   | reputation.eye.the_blinded_oracle
+176    1   0   1  99.4 | 4 0 3 3 0 0 | 3v [] |   | reputation.eye.the_oracle_consulted
+177    1   0   0  99.5 | 4 0 0 0 0 0 | 3v [] |   | reputation.gold.the_unmarked_crossing
+178    1   0   1  99.5 | 4 0 0 0 0 0 | 3v [] |   | reputation.shadow.the_infiltrators_approach
+179    1   0   0  99.6 | 4 0 0 0 0 0 | 3v [] |   | reputation.star.the_star_pilgrim
+180    1   0   0  99.7 | 4 0 0 0 0 0 | 3v [] |   | reputation.stone.the_stones_judgement
+181    1   0   1  99.7 | 4 0 0 0 0 0 | 3v [] |   | reputation.veil.the_silent_chamber
+182    1   0   0  99.8 | 1 0 0 0 0 0 | 1v [] |   | tg.join
+183    1   0   0  99.9 | 2 0 0 0 0 0 | 1v [] |   | tg.quest.warehouse_raid
+184    1   0   0  99.9 | 3 0 0 0 0 0 | 1v [] |   | uk.elite.shadow_coup
+185    1   0   0 100.0 | 2 0 0 0 0 0 | 1v [] |   | uk.senior.corrupt_official
