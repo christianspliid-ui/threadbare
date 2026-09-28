@@ -159,8 +159,15 @@ export const CAP_FILL_DISTINCT_FIRST = true;
  * no seeded stream shifts (NFP #3).
  *
  * `false` restores the head-first fill (NFP #6).
+ *
+ * **Ships OFF (THR-1633, 2026-09-28).** Measured on seeds 42 · 99, medium, 200 ticks
+ * (`readers/reach.ts`): rotation does its job — cap-first-gate templates 76 · 60 → 7 · 5 —
+ * but total firings fall 1,498 → 515 and `selected_not_spawned` rises 34 → 127, because
+ * a wider shortlist hands mortals encounters elsewhere that they choose and then lose
+ * on the way (the reroute defect THR-1639 fixes). Per-agent and slow (25-tick) offsets
+ * measured the same. Switch on once THR-1639 has landed, and re-measure.
  */
-export const CAP_FILL_ROTATE = true;
+export const CAP_FILL_ROTATE = false;
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */

@@ -674,18 +674,28 @@ export function filterByThreat(
 
 // ─── Stage 5: Performance Cap with Diversity ────────────────────
 
+/** How the cap stage fills its free slots (THR-1633 S1). */
+export interface CapFillOptions {
+  /** One entry per template before any repeats. */
+  distinctFirst: boolean;
+  /** Start at a per-(agent, tick) hash offset instead of index 0. */
+  rotate: boolean;
+}
+
 /**
  * Cap entries at MAX_SCORED_CANDIDATES while preserving at least
  * MIN_DIVERSITY_SLOTS per encounter type.
  *
  * `tick` seeds the free-slot fill's rotating start (THR-1633 S1); omitted → the
- * fill starts at index 0, the old behaviour.
+ * fill starts at index 0, the old behaviour. `fill` defaults to the tuning constants;
+ * tests pass it explicitly to pin the mechanism whatever the shipped switch says.
  */
 export function capWithDiversity(
   entries: readonly EncounterCacheEntry[],
   agentId: string,
   _graph: WorldGraph,
   tick?: number,
+  fill: CapFillOptions = { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE },
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
     return [...entries];
@@ -804,25 +814,25 @@ export function capWithDiversity(
   // starts at a per-(agent, tick) offset and wraps, and its first pass takes one entry
   // per template. Reserves above are untouched; scoring still decides the pick.
   const n = entries.length;
-  const start = CAP_FILL_ROTATE && tick !== undefined && agentId
+  const start = fill.rotate && tick !== undefined && agentId
     ? (hashString(`${agentId}:${tick}`) >>> 0) % n
     : 0;
   const seenTemplates = new Set(reserved.map(e => e.templateId));
-  const fill: EncounterCacheEntry[] = [];
-  const passes = CAP_FILL_DISTINCT_FIRST ? [true, false] : [false];
+  const filled: EncounterCacheEntry[] = [];
+  const passes = fill.distinctFirst ? [true, false] : [false];
   for (const distinctOnly of passes) {
-    for (let step = 0; step < n && fill.length < remaining; step++) {
+    for (let step = 0; step < n && filled.length < remaining; step++) {
       const entry = entries[(start + step) % n];
       if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
       const key = `${entry.templateId}:${entry.locationId}`;
       if (reservedKeys.has(key)) continue;
-      fill.push(entry);
+      filled.push(entry);
       reservedKeys.add(key);
       seenTemplates.add(entry.templateId);
     }
   }
 
-  return [...reserved, ...fill];
+  return [...reserved, ...filled];
 }
 
 // ─── Main Pipeline ──────────────────────────────────────────────

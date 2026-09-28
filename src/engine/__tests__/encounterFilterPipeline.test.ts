@@ -15,7 +15,7 @@ import {
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
 } from '../encounterFilterPipeline';
-import { MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
+import { MAX_COMPLETIONS_PER_TEMPLATE, CAP_FILL_ROTATE } from '../../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -398,7 +398,21 @@ describe('capWithDiversity', () => {
   //
   // The cut these pin is positional: the fill walked from index 0 of a list in
   // cache insertion order, so a template registered late was never looked at —
-  // 67 · 68 templates per seed died at the cap, unscored.
+  // 67 · 68 templates per seed died at the cap, unscored. The rotation ships off
+  // until THR-1639 lands (see CAP_FILL_ROTATE), so these pin the mechanism with
+  // the switches passed explicitly.
+  const FAIR = { distinctFirst: true, rotate: true } as const;
+
+  it('ships with the head-first fill while CAP_FILL_ROTATE is off', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 200 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
+    const expected = CAP_FILL_ROTATE
+      ? capWithDiversity(entries, 'agent-1', graph, 7, FAIR)
+      : entries.slice(0, MAX_SCORED_CANDIDATES);
+    expect(capWithDiversity(entries, 'agent-1', graph, 7).map(e => e.templateId))
+      .toEqual(expected.map(e => e.templateId));
+  });
 
   it('lets a template placed last in a 200-entry list reach the shortlist within 40 ticks', () => {
     const graph = new WorldGraph();
@@ -407,7 +421,7 @@ describe('capWithDiversity', () => {
 
     const reachedOn: number[] = [];
     for (let tick = 1; tick <= 40; tick++) {
-      const result = capWithDiversity(entries, 'agent-1', graph, tick);
+      const result = capWithDiversity(entries, 'agent-1', graph, tick, FAIR);
       expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
       if (result.some(e => e.templateId === 'tmpl-199')) reachedOn.push(tick);
     }
@@ -418,10 +432,10 @@ describe('capWithDiversity', () => {
     const graph = new WorldGraph();
     const entries = Array.from({ length: 200 }, (_, i) =>
       makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
-    const a = capWithDiversity(entries, 'agent-1', graph, 17).map(e => e.templateId);
-    const b = capWithDiversity(entries, 'agent-1', graph, 17).map(e => e.templateId);
+    const a = capWithDiversity(entries, 'agent-1', graph, 17, FAIR).map(e => e.templateId);
+    const b = capWithDiversity(entries, 'agent-1', graph, 17, FAIR).map(e => e.templateId);
     expect(a).toEqual(b);
-    const c = capWithDiversity(entries, 'agent-1', graph, 18).map(e => e.templateId);
+    const c = capWithDiversity(entries, 'agent-1', graph, 18, FAIR).map(e => e.templateId);
     expect(c).not.toEqual(a);
   });
 
@@ -435,7 +449,7 @@ describe('capWithDiversity', () => {
       ...Array.from({ length: 30 }, (_, i) =>
         makeEntry({ templateId: `other-${i}`, encounterType: 'explore' })),
     ];
-    const result = capWithDiversity(entries, 'agent-1', graph, 5);
+    const result = capWithDiversity(entries, 'agent-1', graph, 5, FAIR);
     expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
     // All 31 distinct templates are on the shortlist; only the leftover slots repeat.
     expect(new Set(result.map(e => e.templateId)).size).toBe(31);
@@ -462,7 +476,7 @@ describe('capWithDiversity', () => {
         makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
     ];
     for (let tick = 1; tick <= 20; tick++) {
-      const result = capWithDiversity(entries, 'agent-1', graph, tick);
+      const result = capWithDiversity(entries, 'agent-1', graph, tick, FAIR);
       expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
       expect(result.filter(e => e.personallyOffered).length).toBeGreaterThanOrEqual(PERSONAL_OFFER_CAP_RESERVE);
       expect(result.filter(e => e.socialOffer).length).toBeGreaterThanOrEqual(SOCIAL_OFFER_CAP_RESERVE);
