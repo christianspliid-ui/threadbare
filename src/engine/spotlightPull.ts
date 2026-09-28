@@ -49,7 +49,7 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SpotlightTier } from '../types/npc';
-import type { SpotlightPullRefusal, SpotlightPullTrace } from '../types/trace';
+import type { SpotlightAdmitVia, SpotlightPullRefusal, SpotlightPullTrace } from '../types/trace';
 import type { StrategicProjectRuntime } from '../types/strategicAction';
 import { hydrateToTier, demoteToTier } from './npcGraduation';
 // From the leaf module, not `strategicKindReachability`: that module imports the
@@ -83,6 +83,10 @@ export const SPOTLIGHT_PULL_TEMPLATE_ID_KEY = 'spotlightPullTemplateId';
 /** Last refusal, so the ledger can name who was left silenced and why. */
 export const SPOTLIGHT_PULL_REFUSED_REASON_KEY = 'spotlightPullRefusedReason';
 export const SPOTLIGHT_PULL_REFUSED_TICK_KEY = 'spotlightPullRefusedTick';
+/** Which door the last refusal came through (THR-1653) — absent on pre-THR-1653 nodes ⇒ ambition. */
+export const SPOTLIGHT_PULL_REFUSED_VIA_KEY = 'spotlightPullRefusedVia';
+/** Which door admitted the mortal (THR-1653) — absent on pre-THR-1653 nodes ⇒ ambition. */
+export const SPOTLIGHT_PULL_VIA_KEY = 'spotlightPullVia';
 /**
  * Written at encounter resolution (`unifiedActionResolution`) on the actor and the
  * bound cast — the tick the player could last have seen this mortal in a scene. A
@@ -168,13 +172,33 @@ export type SpotlightPullResult =
       readonly reason: SpotlightPullRefusal | 'not_applicable';
     };
 
+/**
+ * The admission itself, shared by both doors (THR-1653). `demotedReason` names the
+ * class that stepped back; absent for a net-additive overflow admission.
+ */
+export type SpotlightAdmitResult =
+  | {
+      readonly admitted: true;
+      readonly fromTier: 'ambient' | 'notable';
+      readonly demotedId: string | null;
+      readonly demotedReason?: SpotlightDemotionReason;
+    }
+  | { readonly admitted: false; readonly reason: SpotlightPullRefusal };
+
 export interface SpotlightLedger {
-  readonly pulled: ReadonlyArray<{ id: string; templateId: string; tick: number; demotedId: string | null }>;
+  /** `reason` is the door (THR-1653): `'ambition'` for a pull, `'graduation'` for a notable's graduation. */
+  readonly pulled: ReadonlyArray<{
+    id: string;
+    templateId: string;
+    tick: number;
+    demotedId: string | null;
+    reason: SpotlightAdmitVia;
+  }>;
   /** Outstanding net-additive pulls still in the spotlight — what `budget` counts. */
   readonly overflow: number;
   /** How many net-additive pulls this world may hold at once — the share of its deciding population, capped. */
   readonly overflowAllowance: number;
-  readonly refused: ReadonlyArray<{ id: string; reason: SpotlightPullRefusal; tick: number }>;
+  readonly refused: ReadonlyArray<{ id: string; reason: SpotlightPullRefusal; tick: number; via: SpotlightAdmitVia }>;
   /** Builders who stepped back unwatched (THR-1523) — the census's kill-criterion input. */
   readonly unwatchedDemotions: ReadonlyArray<{ agentId: string; tick: number; unwatchedTicks: number }>;
 }
@@ -511,18 +535,139 @@ function refuse(
   templateId: string,
   tick: number,
   reason: SpotlightPullRefusal,
-): SpotlightPullResult {
+  via: SpotlightAdmitVia = 'ambition',
+): { readonly pulled: false; readonly reason: SpotlightPullRefusal } {
   graph.updateNode(actorId, {
-    properties: { [SPOTLIGHT_PULL_REFUSED_REASON_KEY]: reason, [SPOTLIGHT_PULL_REFUSED_TICK_KEY]: tick },
+    properties: {
+      [SPOTLIGHT_PULL_REFUSED_REASON_KEY]: reason,
+      [SPOTLIGHT_PULL_REFUSED_TICK_KEY]: tick,
+      [SPOTLIGHT_PULL_REFUSED_VIA_KEY]: via,
+    },
   });
-  record(graph, tick, p => p.refused.push({ agentId: actorId, templateId, reason }));
+  // `via` rides the trace only for graduation — absent reads as an ambition pull.
+  record(graph, tick, p =>
+    p.refused.push({ agentId: actorId, templateId, reason, ...(via === 'graduation' ? { via } : {}) }),
+  );
   return { pulled: false, reason };
+}
+
+export interface SpotlightAdmitOptions extends SpotlightPullOptions {
+  /** The ambition template behind an ambition pull; `''` (the default) for graduation. */
+  readonly templateId?: string;
+}
+
+/**
+ * Admit a mortal below the spotlight into it through the one attention budget
+ * (THR-1348), whichever door they came through (THR-1653): swap with the best
+ * demotion candidate if there is one, else admit as overflow while
+ * `countOverflowPulls < overflowAllowance`, else refuse with `'budget'`.
+ *
+ * Both doors stamp the same pull mark, so a graduate is protected from the swap
+ * exactly as a pulled mortal is, and an overflow graduate counts against the same
+ * allowance. The caller owns its own preconditions (the ambition's strategic profile,
+ * the graduation thresholds) and its own chronicle line; this writes the ledger, the
+ * trace, the promotion and the demotion. Never throws on a missing or non-individual
+ * actor — that is a `no_capability_path` refusal (NFP #4).
+ */
+export function admitToSpotlight(
+  graph: WorldGraph,
+  actorId: string,
+  tick: number,
+  via: SpotlightAdmitVia,
+  options: SpotlightAdmitOptions = {},
+): SpotlightAdmitResult {
+  const templateId = options.templateId ?? '';
+  const node = graph.getNode(actorId);
+  if (!node || node.properties.actorType !== 'individual') {
+    return { admitted: false, reason: refuse(graph, actorId, templateId, tick, 'no_capability_path', via).reason };
+  }
+  const current = (node.properties.spotlightTier as SpotlightTier | undefined) ?? 'spotlight';
+  // Already deciding: nothing to admit. Both callers check the tier first; this is the
+  // fail-soft floor, untraced and unstamped.
+  if (current === 'spotlight') return { admitted: false, reason: 'already_pulled' };
+  const fromTier = current;
+
+  const candidates = rankedDemotionCandidates(graph, tick, {
+    busyActorIds: options.busyActorIds,
+    exclude: new Set([actorId]),
+    followedAgentIds: options.followedAgentIds,
+    projects: options.projects,
+    unwatchedBuildersEnabled: options.unwatchedBuildersEnabled,
+  });
+  const chosen = candidates[0];
+  const demotedId = chosen?.node.id ?? null;
+  if (demotedId === null && countOverflowPulls(graph) >= overflowAllowance(graph)) {
+    return { admitted: false, reason: refuse(graph, actorId, templateId, tick, 'budget', via).reason };
+  }
+
+  // The mark first, then the promotion: a throw between the two leaves a mortal
+  // marked and un-promoted (visible in the ledger) rather than pullable twice.
+  graph.updateNode(actorId, {
+    properties: {
+      [SPOTLIGHT_PULLED_TICK_KEY]: tick,
+      [SPOTLIGHT_PULL_DEMOTED_ID_KEY]: demotedId,
+      [SPOTLIGHT_PULL_TEMPLATE_ID_KEY]: templateId,
+      [SPOTLIGHT_PULL_VIA_KEY]: via,
+      // A graduate refused on earlier ticks is admitted now: the ledger's refused list
+      // names who is *still* left out, not who once was.
+      [SPOTLIGHT_PULL_REFUSED_REASON_KEY]: undefined,
+      [SPOTLIGHT_PULL_REFUSED_TICK_KEY]: undefined,
+      [SPOTLIGHT_PULL_REFUSED_VIA_KEY]: undefined,
+    },
+  });
+
+  const rng = options.rng ?? deriveSpotlightPullRng(options.seed, tick, actorId);
+  hydrateToTier(graph, actorId, 'spotlight', rng);
+
+  if (!hasCapabilityPath(graph.getNode(actorId))) {
+    // A pulled mortal with nothing to generate candidates from would sit in the loop
+    // failing every reach floor silently — the lair-elite defect in another coat.
+    // Revert the tier, demote nobody, and clear the mark so the refusal reads true.
+    graph.updateNode(actorId, {
+      properties: {
+        spotlightTier: fromTier,
+        [SPOTLIGHT_PULLED_TICK_KEY]: undefined,
+        [SPOTLIGHT_PULL_DEMOTED_ID_KEY]: undefined,
+        [SPOTLIGHT_PULL_TEMPLATE_ID_KEY]: undefined,
+        [SPOTLIGHT_PULL_VIA_KEY]: undefined,
+      },
+    });
+    return { admitted: false, reason: refuse(graph, actorId, templateId, tick, 'no_capability_path', via).reason };
+  }
+
+  if (demotedId !== null) {
+    demoteToTier(graph, demotedId, 'notable');
+    // Guard 5's count and the ledger's evidence. The builder keeps their ambition —
+    // nothing is deleted — and no chronicle line is written: nobody was watching.
+    if (chosen?.reason === 'unwatched_builder') {
+      graph.updateNode(demotedId, {
+        properties: {
+          [SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY]: tick,
+          [SPOTLIGHT_UNWATCHED_DEMOTED_TICKS_KEY]: chosen.unwatchedTicks ?? 0,
+        },
+      });
+    }
+  }
+
+  record(graph, tick, p =>
+    p.pulled.push({
+      agentId: actorId,
+      templateId,
+      ...(via === 'graduation' ? { via } : {}),
+      fromTier,
+      demotedId,
+      ...(chosen ? { demotedReason: chosen.reason } : {}),
+      ...(chosen?.reason === 'unwatched_builder' ? { demotedUnwatchedTicks: chosen.unwatchedTicks } : {}),
+    }),
+  );
+  return { admitted: true, fromTier, demotedId, ...(chosen ? { demotedReason: chosen.reason } : {}) };
 }
 
 /**
  * Pull an ambition holder into the spotlight if the ambition is strategic and the
  * holder sits below the tier. Called from `assignAmbitionToActor` after the
- * `pursues` edge is written; never from the decision loop, never per tick.
+ * `pursues` edge is written; never from the decision loop, never per tick. The
+ * budget itself is `admitToSpotlight`, shared with graduation (THR-1653).
  */
 export function pullHolderIntoSpotlight(
   graph: WorldGraph,
@@ -545,60 +690,8 @@ export function pullHolderIntoSpotlight(
     return refuse(graph, actorId, templateId, tick, 'already_pulled');
   }
 
-  const candidates = rankedDemotionCandidates(graph, tick, {
-    busyActorIds: options.busyActorIds,
-    exclude: new Set([actorId]),
-    followedAgentIds: options.followedAgentIds,
-    projects: options.projects,
-    unwatchedBuildersEnabled: options.unwatchedBuildersEnabled,
-  });
-  const chosen = candidates[0];
-  const demotedId = chosen?.node.id ?? null;
-  if (demotedId === null && countOverflowPulls(graph) >= overflowAllowance(graph)) {
-    return refuse(graph, actorId, templateId, tick, 'budget');
-  }
-
-  // The mark first, then the promotion: a throw between the two leaves a mortal
-  // marked and un-promoted (visible in the ledger) rather than pullable twice.
-  graph.updateNode(actorId, {
-    properties: {
-      [SPOTLIGHT_PULLED_TICK_KEY]: tick,
-      [SPOTLIGHT_PULL_DEMOTED_ID_KEY]: demotedId,
-      [SPOTLIGHT_PULL_TEMPLATE_ID_KEY]: templateId,
-    },
-  });
-
-  const rng = options.rng ?? deriveSpotlightPullRng(options.seed, tick, actorId);
-  hydrateToTier(graph, actorId, 'spotlight', rng);
-
-  if (!hasCapabilityPath(graph.getNode(actorId))) {
-    // A pulled mortal with nothing to generate candidates from would sit in the loop
-    // failing every reach floor silently — the lair-elite defect in another coat.
-    // Revert the tier, demote nobody, and clear the mark so the refusal reads true.
-    graph.updateNode(actorId, {
-      properties: {
-        spotlightTier: fromTier,
-        [SPOTLIGHT_PULLED_TICK_KEY]: undefined,
-        [SPOTLIGHT_PULL_DEMOTED_ID_KEY]: undefined,
-        [SPOTLIGHT_PULL_TEMPLATE_ID_KEY]: undefined,
-      },
-    });
-    return refuse(graph, actorId, templateId, tick, 'no_capability_path');
-  }
-
-  if (demotedId !== null) {
-    demoteToTier(graph, demotedId, 'notable');
-    // Guard 5's count and the ledger's evidence. The builder keeps their ambition —
-    // nothing is deleted — and no chronicle line is written: nobody was watching.
-    if (chosen?.reason === 'unwatched_builder') {
-      graph.updateNode(demotedId, {
-        properties: {
-          [SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY]: tick,
-          [SPOTLIGHT_UNWATCHED_DEMOTED_TICKS_KEY]: chosen.unwatchedTicks ?? 0,
-        },
-      });
-    }
-  }
+  const admit = admitToSpotlight(graph, actorId, tick, 'ambition', { ...options, templateId });
+  if (!admit.admitted) return { pulled: false, reason: admit.reason };
 
   const name = graph.getNode(actorId)?.name ?? actorId;
   const ambitionName = template.displayName ?? templateId;
@@ -610,18 +703,7 @@ export function pullHolderIntoSpotlight(
     significance: SPOTLIGHT_PULL_EVENT_SIGNIFICANCE,
     actorId,
   };
-
-  record(graph, tick, p =>
-    p.pulled.push({
-      agentId: actorId,
-      templateId,
-      fromTier,
-      demotedId,
-      ...(chosen ? { demotedReason: chosen.reason } : {}),
-      ...(chosen?.reason === 'unwatched_builder' ? { demotedUnwatchedTicks: chosen.unwatchedTicks } : {}),
-    }),
-  );
-  return { pulled: true, fromTier, demotedId, event };
+  return { pulled: true, fromTier: admit.fromTier, demotedId: admit.demotedId, event };
 }
 
 // ─── Witness ───────────────────────────────────────────────────────
@@ -647,8 +729,9 @@ export function markWitnessed(graph: WorldGraph, tick: number, ids: Iterable<str
 
 /** Everything the pull wrote on the graph — the census's and the debug bridge's read. */
 export function readSpotlightLedger(graph: WorldGraph): SpotlightLedger {
-  const pulled: Array<{ id: string; templateId: string; tick: number; demotedId: string | null }> = [];
-  const refused: Array<{ id: string; reason: SpotlightPullRefusal; tick: number }> = [];
+  const pulled: Array<{ id: string; templateId: string; tick: number; demotedId: string | null; reason: SpotlightAdmitVia }> = [];
+  const refused: Array<{ id: string; reason: SpotlightPullRefusal; tick: number; via: SpotlightAdmitVia }> = [];
+  const viaOf = (v: unknown): SpotlightAdmitVia => (v === 'graduation' ? 'graduation' : 'ambition');
   const unwatchedDemotions: Array<{ agentId: string; tick: number; unwatchedTicks: number }> = [];
   for (const node of graph.getNodesByType('actor')) {
     const unwatchedTick = node.properties[SPOTLIGHT_UNWATCHED_DEMOTED_TICK_KEY];
@@ -663,6 +746,7 @@ export function readSpotlightLedger(graph: WorldGraph): SpotlightLedger {
         templateId: String(node.properties[SPOTLIGHT_PULL_TEMPLATE_ID_KEY] ?? ''),
         tick: pulledTick,
         demotedId: (node.properties[SPOTLIGHT_PULL_DEMOTED_ID_KEY] as string | null | undefined) ?? null,
+        reason: viaOf(node.properties[SPOTLIGHT_PULL_VIA_KEY]),
       });
     }
     const reason = node.properties[SPOTLIGHT_PULL_REFUSED_REASON_KEY];
@@ -671,6 +755,7 @@ export function readSpotlightLedger(graph: WorldGraph): SpotlightLedger {
         id: node.id,
         reason: reason as SpotlightPullRefusal,
         tick: (node.properties[SPOTLIGHT_PULL_REFUSED_TICK_KEY] as number | undefined) ?? 0,
+        via: viaOf(node.properties[SPOTLIGHT_PULL_REFUSED_VIA_KEY]),
       });
     }
   }

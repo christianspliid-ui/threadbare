@@ -51,7 +51,7 @@ describe('a holder with no capability path', () => {
 
     const ledger = readSpotlightLedger(g);
     expect(ledger.pulled).toEqual([]);
-    expect(ledger.refused).toEqual([{ id: 'h', reason: 'no_capability_path', tick: 4 }]);
+    expect(ledger.refused).toEqual([{ id: 'h', reason: 'no_capability_path', tick: 4, via: 'ambition' }]);
     flushSpotlightPullTrace();
     const trace = getTraces().find(t => t.category === 'spotlight_pull') as unknown as SpotlightPullTrace;
     expect(trace.refused[0].reason).toBe('no_capability_path');

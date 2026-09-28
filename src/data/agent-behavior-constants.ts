@@ -674,6 +674,15 @@ export const AGENT_COUNT_FALLBACK = { min: 8, max: 12 };
  * @range boolean */
 export const SPOTLIGHT_AMBITION_PULL_ENABLED = true;
 
+/** Graduation joins the one attention budget (THR-1653, plan THR-1630 § S3). When true, a
+ * notable who crosses `SPOTLIGHT_THRESHOLD` with enough earned ties is admitted through
+ * `admitToSpotlight` — swap with a demotion candidate, else overflow, else refused
+ * `budget` and left notable to be re-tested next tick. False restores the unbudgeted
+ * promotion (spotlight grew 19 → 47 in 200 ticks on seed 42 that way) for comparison runs,
+ * and is the plan's fallback if the reach re-measure regresses.
+ * @range boolean */
+export const NOTABLE_GRADUATION_BUDGETED = true;
+
 /** Ceiling on outstanding net-additive pulls allowed when no demotion candidate exists —
  * a pulled mortal whose `spotlightPullDemotedId` is null and who is still in the
  * spotlight. Past the allowance the pull is refused with reason `budget` and the holder

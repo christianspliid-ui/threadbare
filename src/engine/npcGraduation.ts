@@ -21,6 +21,10 @@ import type { AxiologicalProfile } from '../types/agent';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { isMonster } from './monsters/isMonster';
+// A call-time cycle (spotlightPull imports hydrateToTier / demoteToTier from here); neither
+// module touches the other's exports at load, so the ring is inert.
+import { admitToSpotlight, collectBusyActorIds } from './spotlightPull';
+import { NOTABLE_GRADUATION_BUDGETED } from '../data/agent-behavior-constants';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
 
@@ -368,12 +372,22 @@ export function demoteToTier(
  * Returns NpcGraduatedEvent[] for each promotion that occurred this tick.
  * Newly promoted actors are not re-evaluated in the same tick.
  */
-export function phaseNpcGraduation(state: GameState): NpcGraduatedEvent[] {
+export function phaseNpcGraduation(
+  state: GameState,
+  options: { budgeted?: boolean } = {},
+): NpcGraduatedEvent[] {
   const events: NpcGraduatedEvent[] = [];
+  const budgeted = options.budgeted ?? NOTABLE_GRADUATION_BUDGETED;
 
   const actorNodes = state.graph.getNodesByType('actor');
+  // THR-1653: built once, only if some notable qualifies — graduation is rare.
+  let busyActorIds: Set<string> | null = null;
+  // A mortal stepped back by this tick's admissions is not re-tested this tick: the
+  // snapshot above would otherwise read them as notable and swap them straight back.
+  const steppedBack = new Set<string>();
 
   for (const actor of actorNodes) {
+    if (steppedBack.has(actor.id)) continue;
     const tier = actor.properties.spotlightTier as SpotlightTier | undefined;
     // Skip spotlight agents and legacy nodes
     if (tier === undefined || tier === 'spotlight') continue;
@@ -414,8 +428,28 @@ export function phaseNpcGraduation(state: GameState): NpcGraduatedEvent[] {
       const edgeCount = outEdges.length + inEdges.length;
 
       if (edgeCount >= NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES) {
-        // Promote notable → spotlight
-        hydrateToTier(state.graph, actor.id, 'spotlight', rng);
+        // Promote notable → spotlight. THR-1653: through the one attention budget
+        // (THR-1348) — swap, else overflow, else refused `budget` and left notable to be
+        // re-tested next tick. Nothing is lost by a refusal.
+        let demotedNote = '';
+        if (budgeted) {
+          busyActorIds ??= collectBusyActorIds(state);
+          const admit = admitToSpotlight(state.graph, actor.id, state.tick, 'graduation', {
+            rng,
+            busyActorIds,
+            followedAgentIds: state.followedAgentIds ?? [],
+            projects: state.strategicState?.projects ?? [],
+          });
+          if (!admit.admitted) continue;
+          if (admit.demotedId !== null) {
+            steppedBack.add(admit.demotedId);
+            demotedNote = `; ${admit.demotedId} stepped back (${admit.demotedReason ?? 'swap'})`;
+          } else {
+            demotedNote = '; overflow';
+          }
+        } else {
+          hydrateToTier(state.graph, actor.id, 'spotlight', rng);
+        }
 
         events.push({
           type: 'npc_graduated',
@@ -427,7 +461,7 @@ export function phaseNpcGraduation(state: GameState): NpcGraduatedEvent[] {
           fromTier: 'notable',
           toTier: 'spotlight',
           trigger: 'threshold',
-          reason: `importance ${importance} >= ${NPC_CONSTANTS.SPOTLIGHT_THRESHOLD}, edges ${edgeCount} >= ${NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES}`,
+          reason: `importance ${importance} >= ${NPC_CONSTANTS.SPOTLIGHT_THRESHOLD}, edges ${edgeCount} >= ${NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES}${demotedNote}`,
           importance,
         });
       }

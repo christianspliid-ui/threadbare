@@ -200,7 +200,7 @@ describe('pullHolderIntoSpotlight — the swap', () => {
     expect(tierOf(g, 's2')).toBe('spotlight');
 
     const ledger = readSpotlightLedger(g);
-    expect(ledger.refused).toEqual([{ id: 'h', reason: 'already_pulled', tick: 2 }]);
+    expect(ledger.refused).toEqual([{ id: 'h', reason: 'already_pulled', tick: 2, via: 'ambition' }]);
     flushSpotlightPullTrace();
     // Two aggregates: tick 1 (the pull) and tick 2 (the refusal) — one per tick, never per pull.
     const traces = getTraces().filter(t => t.category === 'spotlight_pull') as unknown as SpotlightPullTrace[];
@@ -244,7 +244,7 @@ describe('pullHolderIntoSpotlight — the swap', () => {
     expect(ledger.overflow).toBe(SPOTLIGHT_AMBITION_PULL_MAX);
     expect(ledger.overflowAllowance).toBe(SPOTLIGHT_AMBITION_PULL_MAX);
     expect(ledger.pulled.map(p => p.id)).toEqual(holders.slice(0, SPOTLIGHT_AMBITION_PULL_MAX));
-    expect(ledger.refused).toEqual([{ id: holders[SPOTLIGHT_AMBITION_PULL_MAX], reason: 'budget', tick: 10 + SPOTLIGHT_AMBITION_PULL_MAX }]);
+    expect(ledger.refused).toEqual([{ id: holders[SPOTLIGHT_AMBITION_PULL_MAX], reason: 'budget', tick: 10 + SPOTLIGHT_AMBITION_PULL_MAX, via: 'ambition' }]);
   });
 
   it('the allowance scales with the deciding population: a small world gets fewer net-additive pulls than the ceiling, an empty one none', () => {

@@ -44,7 +44,7 @@ describe('SPOTLIGHT_AMBITION_PULL_ENABLED = false', () => {
     expect(g.getNode('h')!.properties[SPOTLIGHT_PULLED_TICK_KEY]).toBeUndefined();
     expect(g.getNode('s')!.properties.spotlightTier).toBe('spotlight');
 
-    expect(readSpotlightLedger(g).refused).toEqual([{ id: 'h', reason: 'disabled', tick: 9 }]);
+    expect(readSpotlightLedger(g).refused).toEqual([{ id: 'h', reason: 'disabled', tick: 9, via: 'ambition' }]);
     flushSpotlightPullTrace();
     const trace = getTraces().find(t => t.category === 'spotlight_pull') as unknown as SpotlightPullTrace;
     expect(trace.refused).toEqual([{ agentId: 'h', templateId: STRATEGIC, reason: 'disabled' }]);
