@@ -141,6 +141,27 @@ export const PERSONAL_OFFER_CAP_RESERVE = 6;
  */
 export const SOCIAL_OFFER_CAP_RESERVE = 6;
 
+/**
+ * Cap stage free-slot fill: take one entry per template before any template
+ * gets a second slot (THR-1633 S1). Without it, one template registered at many
+ * locations can fill the free slots with copies of itself.
+ *
+ * `false` restores the pre-THR-1633 fill (NFP #6).
+ */
+export const CAP_FILL_DISTINCT_FIRST = true;
+
+/**
+ * Cap stage free-slot fill: start the walk at `hashString(agentId + ':' + tick)
+ * mod n` and wrap, instead of at index 0 (THR-1633 S1). The candidate list arrives
+ * in cache insertion order, so a head-first fill let registration order decide
+ * which writing is ever looked at — measured on main @ 3abbba8a, 67 · 68 templates
+ * per seed (42 · 99) died at the cap, unscored. A pure hash, not a PRNG draw, so
+ * no seeded stream shifts (NFP #3).
+ *
+ * `false` restores the head-first fill (NFP #6).
+ */
+export const CAP_FILL_ROTATE = true;
+
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
 export const THREAT_FLOOR_FILTER = false;

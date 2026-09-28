@@ -1806,6 +1806,8 @@ export interface FilterPipelineTrace extends TraceBase {
   afterPrerequisites: number;
   afterThreat: number;
   afterCap: number;
+  /** Distinct templates entering the cap stage minus distinct templates leaving it (THR-1633 S1). Optional: traces from before THR-1633 lack it. */
+  capCutTemplates?: number;
 }
 
 /** Trace: agent movement transition or decision */
