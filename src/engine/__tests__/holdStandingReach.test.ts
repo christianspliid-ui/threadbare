@@ -99,9 +99,16 @@ function pickKeeperOnRealmGround(s: GameState, runtime: SimulationRuntime): { ke
   throw new Error('no mortal standing at an unheld town on a Realm\'s ground in the small world — the fixture is wrong, not the engine');
 }
 
-function anotherMortal(s: GameState, notId: string): string {
+/**
+ * A mortal who holds no town of their own. The world makes its own claims as it
+ * runs, so "the first other individual" can itself be a keeper — THR-1639 shifted
+ * the seed's trajectory and ind_1 claimed loc_3 at tick 14, which read as the
+ * stranger being supplied keeper rows. `holds` excludes anyone with a standing.
+ */
+function anotherMortal(s: GameState, notId: string, holds: (id: string) => boolean = () => false): string {
   for (const m of s.graph.getNodesByType('actor')) {
     if (m.properties.actorType !== 'individual' || isAgentGone(m) || m.id === notId || m.id === s.ascendantId) continue;
+    if (holds(m.id)) continue;
     return m.id;
   }
   throw new Error('no second mortal');
@@ -194,7 +201,7 @@ describe('THR-1448 — a held town is a faction position, on a generated world',
     expect(supplied).toContain(RECKONING);
     for (const court of COURT) expect(supplied, `${court} at subject`).toContain(court);
 
-    const stranger = anotherMortal(state, keeper);
+    const stranger = anotherMortal(state, keeper, id => reader().standingFor(id) !== null);
     const strangerSupplied = generateFactionQuestCandidates(state.graph, stranger, town, state.tick, reader()).map(c => c.templateId);
     expect(strangerSupplied).not.toContain(PETITION);
     expect(strangerSupplied).not.toContain(RECKONING);

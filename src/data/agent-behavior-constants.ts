@@ -142,6 +142,20 @@ export const PERSONAL_OFFER_CAP_RESERVE = 6;
 export const SOCIAL_OFFER_CAP_RESERVE = 6;
 
 /**
+ * Cap-stage slots reserved for the encounter a mortal just walked to (THR-1639).
+ *
+ * A mortal that queues a journey toward an encounter carries it as
+ * `movementState.targetEncounterId`. On arrival the board is rebuilt from ~11,000
+ * nearby entries, and the 40-slot cap cut the very encounter the trip was for —
+ * measured on seed 42 / medium, 14 of 41 arrivals in 60 ticks lost their goal
+ * here, and The First walked 30 ticks there and back with no encounter at either
+ * end. One slot is enough: the goal is one template, and scoring still decides.
+ *
+ * @range 0–2 (0 disables the reserve)
+ */
+export const JOURNEY_GOAL_CAP_RESERVE = 1;
+
+/**
  * Cap stage free-slot fill: take one entry per template before any template
  * gets a second slot (THR-1633 S1). Without it, one template registered at many
  * locations can fill the free slots with copies of itself.

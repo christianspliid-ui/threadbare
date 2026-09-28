@@ -137,6 +137,12 @@ export interface EncounterCacheEntry {
    * quests out of their reserve. Optional and falsy by default.
    */
   socialOffer?: boolean;
+  /**
+   * True on the cache entry a mortal travelled to reach, set per decision by
+   * `phaseAgentDecision` on a copy of the shared entry (THR-1639). Claims a
+   * JOURNEY_GOAL_CAP_RESERVE slot at the cap stage. Optional and falsy by default.
+   */
+  journeyGoal?: boolean;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;

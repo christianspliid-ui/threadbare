@@ -179,6 +179,17 @@ export const MIN_ROAD_HEX_COST = 0.25;
 export const REROUTE_SCORE_MULTIPLIER = 1.5;
 
 /**
+ * THR-1639: on the first decision after a journey ends, the encounter the mortal
+ * travelled for scores this many times its board score. The board is re-scored on
+ * arrival (novelty, desire and distance all moved during the walk), and without a
+ * commitment a close runner-up elsewhere won often enough that a mortal walked back
+ * the way it came without attempting what it set out for — measured on seed 42,
+ * The First spent 30 ticks on a round trip with no encounter at either end.
+ * 1.0 disables the commitment. The goal is consumed by that one decision either way.
+ */
+export const ARRIVAL_GOAL_COMMITMENT_MULTIPLIER = 1.5;
+
+/**
  * Maximum tick distance to consider for movement candidates.
  * Locations further than this are not evaluated as destinations.
  */

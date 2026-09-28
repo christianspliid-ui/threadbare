@@ -14,6 +14,7 @@ import {
   MIN_DIVERSITY_SLOTS,
   PERSONAL_OFFER_CAP_RESERVE,
   SOCIAL_OFFER_CAP_RESERVE,
+  JOURNEY_GOAL_CAP_RESERVE,
 } from '../encounterFilterPipeline';
 import { MAX_COMPLETIONS_PER_TEMPLATE, CAP_FILL_ROTATE } from '../../data/agent-behavior-constants';
 
@@ -392,6 +393,40 @@ describe('capWithDiversity', () => {
     const social = capWithDiversity(entries, 'agent-1', graph).filter(e => e.socialOffer);
     expect(social).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
     expect(new Set(social.map(e => e.templateId)).size).toBe(4);
+  });
+
+  // ── Journey goal reserve (THR-1639) ───────────────────────────
+  //
+  // A mortal that walked to an encounter must find it on the board on arrival.
+  // Measured before the reserve: the 40-slot cut dropped it on ~1 arrival in 3.
+
+  it('keeps the arrival goal buried deep in the head of a full board', () => {
+    const graph = new WorldGraph();
+    const entries: EncounterCacheEntry[] = Array.from({ length: 500 }, (_, i) =>
+      makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' }));
+    entries[400] = { ...entries[400], templateId: 'goal', journeyGoal: true };
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.journeyGoal).map(e => e.templateId)).toEqual(['goal']);
+  });
+
+  it('holds the faction and social reserves alongside the goal', () => {
+    const graph = new WorldGraph();
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore', journeyGoal: i === 499 })),
+      ...Array.from({ length: 30 }, (_, i) =>
+        makeEntry({ templateId: `social-${i}`, encounterType: 'explore', socialOffer: true })),
+      ...Array.from({ length: 10 }, (_, i) =>
+        makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
+    ];
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.journeyGoal)).toHaveLength(JOURNEY_GOAL_CAP_RESERVE);
+    expect(result.filter(e => e.personallyOffered)).toHaveLength(PERSONAL_OFFER_CAP_RESERVE);
+    expect(result.filter(e => e.socialOffer)).toHaveLength(SOCIAL_OFFER_CAP_RESERVE);
   });
 
   // ── Fair free-slot fill (THR-1633 S1) ─────────────────────────
