@@ -433,12 +433,11 @@ describe('capWithDiversity', () => {
   //
   // The cut these pin is positional: the fill walked from index 0 of a list in
   // cache insertion order, so a template registered late was never looked at —
-  // 67 · 68 templates per seed died at the cap, unscored. The rotation ships off
-  // until THR-1639 lands (see CAP_FILL_ROTATE), so these pin the mechanism with
-  // the switches passed explicitly.
+  // 67 · 68 templates per seed died at the cap, unscored. These pin the mechanism
+  // with the switches passed explicitly, whatever the shipped constants say.
   const FAIR = { distinctFirst: true, rotate: true } as const;
 
-  it('ships with the head-first fill while CAP_FILL_ROTATE is off', () => {
+  it('ships the rotating fill (CAP_FILL_ROTATE) — no location given, no local pass', () => {
     const graph = new WorldGraph();
     const entries = Array.from({ length: 200 }, (_, i) =>
       makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }));
@@ -516,6 +515,52 @@ describe('capWithDiversity', () => {
       expect(result.filter(e => e.personallyOffered).length).toBeGreaterThanOrEqual(PERSONAL_OFFER_CAP_RESERVE);
       expect(result.filter(e => e.socialOffer).length).toBeGreaterThanOrEqual(SOCIAL_OFFER_CAP_RESERVE);
     }
+  });
+
+  // ── Own hex first (THR-1633) ──────────────────────────────────
+  //
+  // Rotation alone spent the free slots on other hexes, so a mortal standing in a
+  // town lost the encounters it could start there: start_local fell 549 → 225 and
+  // firings 717 → 286 on seed 42. The local pass offers the agent's hex first.
+  function hexGraph(): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'agent-1', type: 'actor', name: 'A', properties: {} });
+    graph.addNode({ id: 'home', type: 'location', name: 'Home', properties: { hexCol: 3, hexRow: 3 } });
+    graph.addNode({ id: 'home-inn', type: 'location', name: 'Inn', properties: { parentLocationId: 'home' } });
+    graph.addNode({ id: 'far', type: 'location', name: 'Far', properties: { hexCol: 9, hexRow: 9 } });
+    return graph;
+  }
+  const farAndLocal = (): EncounterCacheEntry[] => [
+    ...Array.from({ length: 300 }, (_, i) =>
+      makeEntry({ templateId: `far-${i}`, locationId: 'far', encounterType: 'explore' })),
+    ...Array.from({ length: 8 }, (_, i) =>
+      makeEntry({ templateId: `home-${i}`, locationId: i % 2 ? 'home-inn' : 'home', encounterType: 'explore' })),
+  ];
+
+  it('offers every template on the agent\'s own hex before the rotating fill', () => {
+    const graph = hexGraph();
+    for (let tick = 1; tick <= 20; tick++) {
+      const result = capWithDiversity(farAndLocal(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30 }, 'home');
+      expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+      // Sublocations on the hex count as local — hex distance 0 is what start_local needs.
+      expect(result.filter(e => e.templateId.startsWith('home-'))).toHaveLength(8);
+    }
+  });
+
+  it('bounds the local pass at localSlots, leaving the rest to rotation', () => {
+    const graph = hexGraph();
+    const result = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 3 }, 'home');
+    // Only 3 local slots are guaranteed; the other 5 local entries compete in the
+    // rotating fill with 300 far entries, so most miss the shortlist.
+    expect(result.filter(e => e.templateId.startsWith('home-')).length).toBeLessThan(8);
+    expect(result.filter(e => e.templateId.startsWith('home-')).length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('skips the local pass when the agent location is unknown (fail-soft)', () => {
+    const graph = hexGraph();
+    const withPass = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30 }, 'nowhere');
+    const without = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 0 }, 'home');
+    expect(withPass.map(e => e.templateId)).toEqual(without.map(e => e.templateId));
   });
 });
 

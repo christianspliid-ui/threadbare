@@ -174,14 +174,34 @@ export const CAP_FILL_DISTINCT_FIRST = true;
  *
  * `false` restores the head-first fill (NFP #6).
  *
- * **Ships OFF (THR-1633, 2026-09-28).** Measured on seeds 42 · 99, medium, 200 ticks
- * (`readers/reach.ts`): rotation does its job — cap-first-gate templates 76 · 60 → 7 · 5 —
- * but total firings fall 1,498 → 515 and `selected_not_spawned` rises 34 → 127, because
- * a wider shortlist hands mortals encounters elsewhere that they choose and then lose
- * on the way (the reroute defect THR-1639 fixes). Per-agent and slow (25-tick) offsets
- * measured the same. Switch on once THR-1639 has landed, and re-measure.
+ * **On, with the local pass (THR-1633, 2026-09-28).** Rotation alone cleared the cap
+ * (cap-first-gate templates 75 · 63 → 12 · 4, seeds 42 · 99, medium, 200 ticks,
+ * `readers/reach.ts`) but cut total firings 1,552 → 676 even after THR-1639: it spent
+ * the free slots on other hexes, so stationary mortals lost what they could start in
+ * place (`start_local` 549 → 225 on seed 42). With `CAP_FILL_LOCAL_SLOTS` = 30 the
+ * same reader gives firings 1,855, drawable templates fired 127 → 164, top-10 share
+ * 0.269 → 0.236, cap-first-gate 16 · 15.
  */
-export const CAP_FILL_ROTATE = false;
+export const CAP_FILL_ROTATE = true;
+
+/**
+ * Cap stage free-slot fill: offer up to this many free slots to entries on the
+ * agent's own hex before the rotating fill takes the rest (THR-1633). Hex distance 0
+ * is what `start_local` needs, so these are the encounters a mortal can begin where
+ * it stands. Without the pass, rotation spent nearly every free slot on other hexes.
+ *
+ * The pass takes one entry per template, in the same rotated order; repeats go to
+ * the general fill. `0` disables it (the pre-THR-1633 fill never had it).
+ *
+ * Sweep on seeds 42 · 99, medium, 200 ticks (`readers/reach.ts`, rotation on) —
+ * firings / drawable fired / cap-first-gate: 10 → 868 / 128 / 3 · 2; 20 → 1,085 /
+ * 147 / 3 · 1; 25 → 1,345 / 149 / 14 · 5; **30 → 1,855 / 164 / 16 · 15**;
+ * 35 and 40 → 2,012 / 158 / 32 · 7 (the free slots run out near 35). Rotation off
+ * (the old fill): 1,552 / 127 / 75 · 63. Lower trades firings for a fairer cap.
+ *
+ * @range 0–40 (bounded by the free slots left after the reserves)
+ */
+export const CAP_FILL_LOCAL_SLOTS = 30;
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
