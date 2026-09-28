@@ -7550,7 +7550,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The trader takes the offer, but only after {actor} adds a day of work to it. {actor} pays more than the goods are worth.',
         criticalSuccessAfterimage: 'The trader wants what {actor} brought more than {actor} guessed, and says so. {actor} sets the price for the rest of the trade.',
-        criticalFailureAfterimage: 'The offer insults the trader. {actor} is told not to come back to this stall.',
+        criticalFailureAfterimage: 'The offer insults the trader, who ends the talk and turns to the next customer.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
         onSuccess: {
           narrative: 'A nod, a handshake. What {actor} carried in is worth what {they} walk{s} out with. Fair dealing.',
@@ -7570,7 +7570,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Trust is the final currency. {actor} meets the trader\'s eyes, each measuring the other\'s intent.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The deal closes, but the trader keeps back part of what was promised. {actor} takes the short measure rather than lose the trade.',
-        criticalSuccessAfterimage: 'The deal closes, and the trader asks {actor} to come back next season. {actor} leaves with the goods and a standing welcome.',
+        criticalSuccessAfterimage: 'The deal closes, and the trader adds a second sack of meal at no charge.',
         criticalFailureAfterimage: 'At the last word the trader accuses {actor} of cheating, loud enough for the next stalls to hear. The deal is off, and the story spreads through the market.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
@@ -7609,8 +7609,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: '{actor} lays out every coin, every scrap of value. The arithmetic of survival.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The count comes out right, but it takes the whole day. {actor} loses a day\'s work to the ledger.',
-        criticalSuccessAfterimage: '{actor} finds a debt owed to {them} that {they} had forgotten. The holdings are larger than {actor} thought.',
-        criticalFailureAfterimage: 'The count shows a real loss: coin {actor} was sure of is gone. {actor} cannot say when it went.',
+        criticalSuccessAfterimage: '{actor} finds three coins sewn into the lining of an old coat. The holdings are larger than {actor} thought.',
+        criticalFailureAfterimage: 'The count shows a real loss: coin {actor} was sure of is gone. {actor} traces it to the last market and knows who short-changed {them}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'craft'] },
         onSuccess: {
           narrative: 'The accounting is done. {actor} knows exactly what {they} hold{s} — and what it can buy.',
@@ -7630,7 +7630,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Knowing what {they} hold{s} matters less than knowing what {they} need{s}. {actor} weighs priorities with care.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'A plan forms, but it needs {actor} to sell a tool {they} would rather keep. {actor} marks it for sale.',
-        criticalSuccessAfterimage: '{actor} spots a purchase that will pay for itself twice over this season. The plan is simple and sound.',
+        criticalSuccessAfterimage: '{actor} learns that the smith sells cheaper the day after market. {actor} plans the purchase for then.',
         criticalFailureAfterimage: '{actor} commits to the wrong purchase. The coin is spent before the mistake is plain.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
@@ -8309,7 +8309,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Someone nearby is struggling — exhaustion, grief, or the accumulated weight of days without rest. {actor} draws near.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The weary one accepts the comfort and then talks until dark. {actor} loses the evening to it.',
-        criticalSuccessAfterimage: 'The weary one accepts the comfort and tells {actor} their name and their trouble. {actor} has a friend in this place now.',
+        criticalSuccessAfterimage: 'The weary one accepts the comfort, gives {actor} their name, and says how far they have walked and why.',
         criticalFailureAfterimage: 'The weary one takes the help as pity and shouts at {actor} in front of the other travelers. {actor} is marked as a meddler here.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
@@ -8330,7 +8330,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Comfort is not enough. {actor} offers what can be used — food, warmth, an hour of undivided attention.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The weary one recovers on {actor}\'s own food. {actor} goes hungry that night.',
-        criticalSuccessAfterimage: 'The weary one recovers and presses a keepsake into {actor}\'s hand as thanks. {actor} is remembered well here.',
+        criticalSuccessAfterimage: 'The weary one recovers and presses a carved bone keepsake into {actor}\'s hand as thanks.',
         criticalFailureAfterimage: 'The food {actor} shares has turned. The weary one is sicker by morning, and their family blames {actor}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'presence'] },
         onSuccess: {
@@ -8604,7 +8604,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations have moved since the last clear night, and moved exactly as far as they should have.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} reads the omen, but only by staying out through the cold night. {actor} is worn out the next day.',
-        criticalSuccessAfterimage: '{actor} reads two omens in the same stretch of sky, and they agree. The sign is certain.',
+        criticalSuccessAfterimage: '{actor} reads the omen and sees the same sign repeated low in the east. It concerns this place and this season.',
         criticalFailureAfterimage: '{actor} reads a warning of death in the stars and cannot put it aside. {actor} is shaken for days.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
@@ -8624,8 +8624,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'An omen means little until it is read against what is already known. {actor} sets the two side by side and looks for the place they disagree.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} works out the omen\'s meaning, but it points at a person {actor} cares for. {actor} carries that worry now.',
-        criticalSuccessAfterimage: 'The omen names a day and a place. {actor} knows where to be when it comes true.',
+        successAtCostAfterimage: '{actor} works out the omen\'s meaning, but it takes until dawn, and {actor} sleeps through the next day\'s work.',
+        criticalSuccessAfterimage: 'The omen names its danger plainly: an early frost. {actor} can warn the farmers before it comes.',
         criticalFailureAfterimage: '{actor} reads the omen as good news and tells others. It was a warning, and they will remember who told them otherwise.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
@@ -10534,7 +10534,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'Travelers stop here, and travelers carry goods worth wanting. {actor} must make an approach that reads as neither threat nor desperation.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The travelers agree to trade, but only after {actor} shares {their} meal with the whole party.',
-        criticalSuccessAfterimage: 'The travelers know {actor}\'s name from the road and greet {them} as a friend. They open their packs before being asked.',
+        criticalSuccessAfterimage: 'The travelers like {actor}\'s manner at once and open their packs before being asked.',
         criticalFailureAfterimage: '{actor} comes on too eager, and the travelers take {them} for a thief. Their guard draws a knife and stands between {actor} and the packs.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {

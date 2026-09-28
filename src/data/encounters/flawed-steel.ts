@@ -128,7 +128,7 @@ const step0TheReckoning: ActionStep = {
   successAfterimage: 'The god perceived the threads of the forge and chose how to pull.',
   failureAfterimage: 'The god perceived the threads of the forge but could not find purchase.',
   // THR-1634 S1: the rest of the ladder, written to Doctrine v2 narrator mode.
-  successAtCostAfterimage: 'The god chose how to pull, but only after {cast:torve_ashgrip}\'s patience had worn another hour thinner.',
+  successAtCostAfterimage: 'The god chose how to pull, but {cast:torve_ashgrip} waited another hour at the gate and grew angrier for it.',
   criticalSuccessAfterimage: 'The god saw every thread of the forge at once, including how many flawed blades had already gone out into the world, and chose how to pull.',
   criticalFailureAfterimage: 'The god reached for the forge too hard. {cast:maren_ironhewn} felt the pull, turned from the shed door, and was afraid of it.',
 };
@@ -644,12 +644,12 @@ const FORGE_TRUTH_ENDINGS: AftermathVariant = {
         'worse than the flaw itself. The Greycloaks took the forge\'s finished stock as payment and marched ' +
         'out the next morning. {cast:dalla} went with them under guard, to work off her debt in their train. ' +
         '{cast:maren_ironhewn} relit the forge two days later with empty racks. The guild elders began their ' +
-        'audit of every apprentice in the district, and no one argued about the cost this time.',
+        'audit of every apprentice in the district, and paid for it without argument.',
       changes: keepChanges(FORGE_TRUTH_AFTERMATH, ['truth_dalla_exiled', 'truth_guild_audit']),
     },
     critical_failure: {
       overview:
-        'The truth broke the forge\'s name with every company that heard it. {cast:torve_ashgrip} seized the ' +
+        'No company that heard the truth would buy from the forge again. {cast:torve_ashgrip} seized the ' +
         'finished stock, called {cast:maren_ironhewn} a fraud at the gate, and carried the story to the next ' +
         'three towns on her road. {cast:dalla} left in chains. The guild ordered its audit that same night and ' +
         'began with {cast:maren_ironhewn}\'s own racks.',
@@ -693,7 +693,7 @@ const WITHDRAWN_ENDINGS: AftermathVariant = {
         'The settlement did not manage it. The talk at the gate turned to shouting, and the militia watched ' +
         'from the walls while {cast:maren_ironhewn} and {cast:torve_ashgrip} traded accusations. The Greycloaks ' +
         'left with less than they were owed and a promise never to buy here again. {cast:dalla} was expelled by ' +
-        'the guild elders that evening. The forge relit the next day to a quieter street.',
+        'the guild elders that evening. The forge relit the next day, and fewer customers came.',
     },
     critical_failure: {
       overview:
