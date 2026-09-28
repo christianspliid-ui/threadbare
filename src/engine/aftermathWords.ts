@@ -329,6 +329,34 @@ export function elapsedLabel(ticks: number): string {
   return durationLabel(t);
 }
 
+/** Years from which `pastSpanLabel` reads in decades (THR-1631). */
+export const PAST_SPAN_DECADE_FROM_YEARS = 10;
+/** Years from which `pastSpanLabel` reads in rounded centuries (THR-1631). */
+export const PAST_SPAN_CENTURY_FROM_YEARS = 95;
+
+/**
+ * How long ago something in the world's past happened, in years (THR-1631 S1f) — the
+ * years-scale sibling of `elapsedLabel`, which stops at weeks.
+ *
+ * One unit per reading, and always inside `countWord`, so no numeral escapes (Laws 13/14):
+ * under ten years reads in years ("four years"), then decades ("two decades"), then rounded
+ * centuries ("about four centuries" — "about" marks the rounding). Past nine centuries the
+ * ladder has no word left and reads "many centuries". "Founded 456 years ago" becomes
+ * "Founded about five centuries ago".
+ */
+export function pastSpanLabel(years: number): string {
+  const y = Number.isFinite(years) ? Math.max(0, Math.round(years)) : 0;
+  if (y < 1) return 'less than a year';
+  if (y < PAST_SPAN_DECADE_FROM_YEARS) return `${countWord(y)} year${y === 1 ? '' : 's'}`;
+  if (y < PAST_SPAN_CENTURY_FROM_YEARS) {
+    const decades = Math.max(1, Math.round(y / 10));
+    return decades === 1 ? 'a decade' : `${countWord(decades)} decades`;
+  }
+  const centuries = Math.max(1, Math.round(y / 100));
+  if (centuries > 9) return 'many centuries';
+  return centuries === 1 ? 'about a century' : `about ${countWord(centuries)} centuries`;
+}
+
 // ─── Condition effect readings ───────────────────────────────────────
 
 /**

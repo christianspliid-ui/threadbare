@@ -32,8 +32,9 @@ export function hexKey(col: number, row: number): HexKey {
  * preserving determinism.
  */
 export function buildHexActorIndex(graph: WorldGraph): HexActorIndex {
+  // The living only (THR-1631): a retained dead mortal keeps its `locationId`.
   const actors = graph.getNodesByType('actor')
-    .filter(a => a.properties?.actorType === 'individual');
+    .filter(a => a.properties?.actorType === 'individual' && a.properties?.deceased !== true);
 
   const byHex = new Map<HexKey, string[]>();
   let unresolvedCount = 0;

@@ -306,12 +306,12 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
 | `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
-| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-786`, `THR-822` |
+| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-1631`, `THR-786`, `THR-822` |
 | `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (1) | `guildSeeding.ts` | — |
-| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-188` |
+| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `hold` (1) | `holdStanding.ts` | `THR-1211`, `THR-1448` |
@@ -423,10 +423,10 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `visibility` (1) | `visibility.ts` | — |
 | `wealth` (1) | `wealth.ts` | — |
 | `wheel` (1) | `wheel.ts` | — |
-| `world` (4) | `worldGenData.ts`, `worldRefResolver.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212` |
+| `world` (5) | `worldGenData.ts`, `worldPast.ts`, `worldRefResolver.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212`, `THR-1631` |
 | `worldgen` (15) | `worldgen/WorldGenPipeline.ts`, `worldgen/constants.ts`, `worldgen/passes/pass00-grid.ts`, `worldgen/passes/pass01-provinces.ts`, `worldgen/passes/pass02-elevation.ts`, `worldgen/passes/pass03-coastline.ts`, `worldgen/passes/pass04-climate.ts`, `worldgen/passes/pass05-hydrology.ts`, `worldgen/passes/pass06-tempReassess.ts`, `worldgen/passes/pass07-biome.ts`, `worldgen/passes/pass07b-cultureTerrainNudge.ts`, `worldgen/passes/pass08-smoothing.ts`, `worldgen/passes/pass09-validation.ts`, `worldgen/passes/pass10-fantasyOverlay.ts`, `worldgen/types.ts` | `Phase 3` |
 | `yield` (1) | `yieldOps.ts` | `THR-1428`, `THR-1439` |
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 611 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 612 modules._

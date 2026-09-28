@@ -286,6 +286,18 @@ if (import.meta.env.DEV) {
      * to the default-followed court positions, so it answers for agents threaded
      * long after init — which every agent is.
      */
+    // ── The world's past (THR-1631 S1) ───────────────────────────────────
+    /**
+     * The past worldgen wrote, read back through the same pure selector S2's surfaces
+     * use — unfogged. `null` before a world exists. **Async**: `await` it.
+     */
+    getWorldPast: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readWorldPast } = await import('./engine/worldPast');
+      return readWorldPast(state.graph);
+    },
+
     getFollowedAgents: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { explicit: [], threaded: [], muted: [] };

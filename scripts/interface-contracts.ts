@@ -5139,6 +5139,79 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1635 slice 1. Same generated-world leak guard: at a strong-sphere place with no culture (dominant share ≥ `SPHERE_FACT_MIN_SHARE` 0.55), 248 of 528 guarded templates render a sphere line on each of seeds 42 and 99, with no raw token; the census counts strong-sphere Locations within ±10% of the re-measure (35 / 24). `colorationLineProblems` holds every line to one sentence of ≤ 28 words, the {actor}/{demonym}/{place} token set, and the sphere-jargon ban. Headless: the 30-tick seed-42 CLI run emits `sphere.life.iron` / `sphere.life.stone` resolutions.",
     },
   },
+  // -- World Generation -> the world's past (THR-1631 S1) ---------------------
+  // Audit-on-touch for worldgen's past pass. What these rows make impossible: worldgen
+  // placed dead empires and ~100 of their ruins and said nothing about them, and the
+  // one reader of descent (`clueLifecycle`) had no writer. The past is graph only —
+  // events, retained dead, existing edges, two properties — never `chronicleEntries`.
+  {
+    id: 'world-past-reaches-the-chronicle',
+    producerSystem: WORLDGEN,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties.',
+    ulTerms: ['Location', 'Realm'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['seedWorldPast', 'readWorldPast', 'getPlacePast'],
+      module: 'src/engine/worldPast.ts',
+    },
+    writeSites: ['src/engine/worldPast.ts', 'src/engine/gameInit.ts'],
+    readSites: ['src/debug-bridge.ts'],
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'Producer half shipped (THR-1631 S1): `seedWorldPast` runs in `initializeGameState` and `readWorldPast` / `getPlacePast` read it back, exposed as `window.__DEBUG.getWorldPast()`. The player-facing readers — the pinned chronicle section and the settlement, ruin and dead-person lines — are S2.',
+      deferralTicket: 'THR-1656',
+    },
+  },
+  {
+    id: 'world-past-descent-feeds-clue-scoring',
+    producerSystem: WORLDGEN,
+    consumerSystem: RUINS,
+    intent:
+      "About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it.",
+    ulTerms: ['Location'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['backstoryStrata', 'WorldPastDescentStratum'],
+      module: 'src/engine/worldPast.ts',
+    },
+    writeSites: ['src/engine/worldPast.ts'],
+    readSites: ['src/engine/ruins/clueLifecycle.ts'],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1631 S1. The reader existed with no writer (an inline cast at `clueLifecycle.ts:120`, now typed `WorldPastDescentStratum`). On generated medium worlds the pass writes descent on 120 / 480 living mortals (seed 42) and 136 / 624 (seed 99), 25–26% of those on old land (`readers/past.ts`). `worldPast.test.ts` deletes the sibling `originCultureId` from a descended mortal on a generated small world and still reads `cultureBackstoryTieBonus > 0` from `selectClueRecipient` for the stratum\'s culture, and 0 for another.',
+    },
+  },
+  {
+    id: 'seeded-dead-stay-dead',
+    producerSystem: WORLDGEN,
+    consumerSystem: AMBITIONS,
+    intent:
+      'The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target.',
+    ulTerms: ['Location'],
+    mechanism: {
+      kind: 'node-prop',
+      // What crosses the boundary is the death flag itself: the readers check `deceased`,
+      // the same field the run-time dead carry, never the seeded-only `pastOrigin`.
+      symbols: ['deceased'],
+      module: 'src/engine/worldPast.ts',
+    },
+    writeSites: ['src/engine/worldPast.ts'],
+    readSites: [
+      'src/engine/graphQueries.ts',
+      'src/engine/hexActorIndex.ts',
+      'src/engine/phases/routeEvents.ts',
+      'src/engine/hexZoom.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

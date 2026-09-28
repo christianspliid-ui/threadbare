@@ -41,6 +41,7 @@ import {
   CLUE_LEAD_STRENGTH_BY_PRECISION,
 } from './constants';
 import { hexDistance } from '../../lib/hexMath';
+import type { WorldPastDescentStratum } from '../../types/worldPast';
 
 /** The `magnitude` a `knows_clue_of` edge carries for a given precision (THR-1506). */
 export function clueLeadStrength(precision: CluePrecision): number {
@@ -117,7 +118,8 @@ function agentTiesToCulture(agentId: string, cultureId: string, graph: WorldGrap
   if (!node) return false;
   const props = node.properties as Record<string, unknown>;
   if (props.originCultureId === cultureId) return true;
-  const strata = props.backstoryStrata as Array<{ cultureId?: string }> | undefined;
+  // Written by the worldgen past pass (THR-1631 S1e), the first producer of this field.
+  const strata = props.backstoryStrata as ReadonlyArray<Partial<WorldPastDescentStratum>> | undefined;
   return strata?.some(s => s.cultureId === cultureId) ?? false;
 }
 

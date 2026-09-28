@@ -17,9 +17,14 @@ import { isGroupMembershipTarget } from './groupShape';
 
 // ─── Location ────────────────────────────────────────────────────
 
-/** Get all individual agents at a location (via incoming located_at edges).
+/** Get all living individual agents at a location (via incoming located_at edges).
  *  Pass `spotlightTier` to restrict results to a specific tier.
- *  Missing `spotlightTier` on a node defaults to 'spotlight' for backward compat. */
+ *  Missing `spotlightTier` on a node defaults to 'spotlight' for backward compat.
+ *
+ *  The dead are not residents (THR-1631): a retained dead mortal keeps its
+ *  `located_at` edge where it lies, so without this check it was counted by the
+ *  birth-density gate, heard rumours and joined mentorship and strategic pools.
+ *  Inlined rather than `isAgentGone`, to keep graphQueries off the groups import. */
 export function getAgentsAtLocation(
   graph: WorldGraph,
   locationId: string,
@@ -29,6 +34,7 @@ export function getAgentsAtLocation(
     .map(e => graph.getNode(e.source))
     .filter((n): n is GraphNode => {
       if (!n || n.properties.actorType !== 'individual') return false;
+      if (n.properties.deceased === true) return false;
       if (spotlightTier === undefined) return true;
       const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
       return tier === spotlightTier;

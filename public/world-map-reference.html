@@ -335,7 +335,7 @@
 
       <h3>Per-tick hex→actor index <span class="flag impl">IMPL</span></h3>
       <ul>
-        <li><code>buildHexActorIndex(graph)</code> (<code>hexActorIndex.ts</code>, THR-188) builds a pure, module-state-free <code>Map&lt;"col,row", string[]&gt;</code> of the <code>individual</code> actors on each hex, resolving each actor's <code>locationId</code> (up through <code>parentLocationId</code> for sublocations) to hex coordinates. Unresolvable actors fall to <code>unresolvedCount</code> for a fail-soft trace. Iteration follows stable insertion order for determinism. <code>getActorsOnHex(index, col, row)</code> reads a bucket.</li>
+        <li><code>buildHexActorIndex(graph)</code> (<code>hexActorIndex.ts</code>, THR-188) builds a pure, module-state-free <code>Map&lt;"col,row", string[]&gt;</code> of the living <code>individual</code> actors on each hex (a retained dead mortal keeps its <code>locationId</code> where it lies and is skipped — THR-1631), resolving each actor's <code>locationId</code> (up through <code>parentLocationId</code> for sublocations) to hex coordinates. Unresolvable actors fall to <code>unresolvedCount</code> for a fail-soft trace. Iteration follows stable insertion order for determinism. <code>getActorsOnHex(index, col, row)</code> reads a bucket.</li>
       </ul>
 
       <h3>Tick placement <span class="flag impl">IMPL</span></h3>
