@@ -9,6 +9,7 @@ import { VALUE_PAIRS } from '../../types/agent';
 import { REACH_DOMAINS } from '../../types/traits';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
 import type { GameState } from '../../types/gameState';
+import { readSpotlightLedger, resetSpotlightPullTrace } from '../spotlightPull';
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
 
@@ -431,7 +432,90 @@ describe('phaseNpcGraduation — seeded ties (THR-1630)', () => {
 
   it('still counts ties earned in play', () => {
     const graph = notableWithTies(undefined);
-    phaseNpcGraduation(makeState(graph));
+    // Unbudgeted: this world has no decider to swap with, and the edge count is the subject.
+    phaseNpcGraduation(makeState(graph), { budgeted: false });
     expect(graph.getNode('npc_n')!.properties.spotlightTier).toBe('spotlight');
+  });
+});
+
+// ─── THR-1653: graduation goes through the attention budget ──────────────────
+
+describe('phaseNpcGraduation — the attention budget (THR-1653)', () => {
+  /** A notable who qualifies on importance and earned ties; the ties are ambient (not deciders). */
+  function qualifyingNotable(graph: WorldGraph, id: string): void {
+    makeNotableNpc(graph, id);
+    graph.getNode(id)!.properties.importance = NPC_CONSTANTS.SPOTLIGHT_THRESHOLD;
+    for (let i = 0; i < NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES; i++) {
+      makeAmbientNpc(graph, `${id}_tie${i}`);
+      graph.addEdge({
+        id: `${id}_rel${i}`, source: id, target: `${id}_tie${i}`, type: 'relates_to',
+        properties: { strength: 0.5, polarity: 1 },
+      });
+    }
+  }
+  function stateAt(graph: WorldGraph, tick: number): GameState {
+    return { ...makeState(graph), tick, followedAgentIds: [], unifiedActions: [] } as unknown as GameState;
+  }
+
+  it('swaps with a demotion candidate: the deciding count holds, the ledger names the door', () => {
+    resetSpotlightPullTrace();
+    const graph = new WorldGraph();
+    makeSpotlightAgent(graph, 'sp_a');
+    qualifyingNotable(graph, 'npc_g');
+
+    const events = phaseNpcGraduation(stateAt(graph, 5));
+
+    expect(events).toHaveLength(1);
+    expect(graph.getNode('npc_g')!.properties.spotlightTier).toBe('spotlight');
+    expect(graph.getNode('sp_a')!.properties.spotlightTier).toBe('notable');
+    const ledger = readSpotlightLedger(graph);
+    expect(ledger.pulled).toEqual([{ id: 'npc_g', templateId: '', tick: 5, demotedId: 'sp_a', reason: 'graduation' }]);
+    expect(ledger.refused).toEqual([]);
+  });
+
+  it('does not re-test a mortal stepped back by the same tick of admissions', () => {
+    resetSpotlightPullTrace();
+    const graph = new WorldGraph();
+    qualifyingNotable(graph, 'npc_g');
+    // A decider who would qualify the moment they step back — iterated after npc_g.
+    makeSpotlightAgent(graph, 'sp_z');
+    graph.getNode('sp_z')!.properties.importance = NPC_CONSTANTS.SPOTLIGHT_THRESHOLD;
+    for (let i = 0; i < NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES; i++) {
+      graph.addEdge({ id: `z_rel${i}`, source: 'sp_z', target: `npc_g_tie${i}`, type: 'relates_to', properties: {} });
+    }
+
+    const events = phaseNpcGraduation(stateAt(graph, 5));
+
+    expect(events.map(e => e.actorId)).toEqual(['npc_g']);
+    expect(graph.getNode('sp_z')!.properties.spotlightTier).toBe('notable');
+  });
+
+  it('refuses with budget when nobody may step back and no overflow remains, then admits on a later tick', () => {
+    resetSpotlightPullTrace();
+    const graph = new WorldGraph();
+    qualifyingNotable(graph, 'npc_g');
+
+    expect(phaseNpcGraduation(stateAt(graph, 5))).toEqual([]);
+    expect(graph.getNode('npc_g')!.properties.spotlightTier).toBe('notable');
+    expect(readSpotlightLedger(graph).refused).toEqual([{ id: 'npc_g', reason: 'budget', tick: 5, via: 'graduation' }]);
+
+    // A decider appears; the refused graduate is re-tested and admitted, and the
+    // ledger stops naming them as left out.
+    makeSpotlightAgent(graph, 'sp_a');
+    expect(phaseNpcGraduation(stateAt(graph, 6))).toHaveLength(1);
+    expect(graph.getNode('npc_g')!.properties.spotlightTier).toBe('spotlight');
+    expect(readSpotlightLedger(graph).refused).toEqual([]);
+  });
+
+  it('flag off restores the unbudgeted promotion', () => {
+    const graph = new WorldGraph();
+    makeSpotlightAgent(graph, 'sp_a');
+    qualifyingNotable(graph, 'npc_g');
+
+    phaseNpcGraduation(stateAt(graph, 5), { budgeted: false });
+
+    expect(graph.getNode('npc_g')!.properties.spotlightTier).toBe('spotlight');
+    expect(graph.getNode('sp_a')!.properties.spotlightTier).toBe('spotlight');
+    expect(readSpotlightLedger(graph).pulled).toEqual([]);
   });
 });

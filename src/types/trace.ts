@@ -2515,6 +2515,12 @@ export interface AmbitionDisplacedTrace extends TraceBase {
 export type SpotlightPullRefusal = 'budget' | 'no_capability_path' | 'already_pulled' | 'disabled';
 
 /**
+ * The two doors into the spotlight that share the THR-1348 budget (THR-1653): an
+ * ambition's pull at assignment, and a notable's graduation in `phaseNpcGraduation`.
+ */
+export type SpotlightAdmitVia = 'ambition' | 'graduation';
+
+/**
  * Trace: attention follows ambition (THR-1348) — one aggregate per tick in which at
  * least one pull ran or was refused. A strategic-profiled ambition assigned to a
  * mortal below the spotlight pulls the holder up through `hydrateToTier` and, to hold
@@ -2528,7 +2534,10 @@ export interface SpotlightPullTrace extends TraceBase {
   category: 'spotlight_pull';
   pulled: ReadonlyArray<{
     agentId: string;
+    /** The ambition template; `''` for a graduation admission. */
     templateId: string;
+    /** Which door admitted them (THR-1653): an ambition's pull, or graduation. Absent ⇒ `'ambition'`. */
+    via?: SpotlightAdmitVia;
     fromTier: 'ambient' | 'notable';
     /** The spotlight mortal that stepped back, or null for a net-additive overflow pull. */
     demotedId: string | null;
@@ -2537,7 +2546,7 @@ export interface SpotlightPullTrace extends TraceBase {
     /** For an unwatched builder: ticks since their last activity when they stepped back. */
     demotedUnwatchedTicks?: number;
   }>;
-  refused: ReadonlyArray<{ agentId: string; templateId: string; reason: SpotlightPullRefusal }>;
+  refused: ReadonlyArray<{ agentId: string; templateId: string; reason: SpotlightPullRefusal; via?: SpotlightAdmitVia }>;
   /** The deciding population (`isAutonomousDecisionActor`) after this tick's pulls. */
   autonomousAfter: number;
 }
