@@ -321,6 +321,8 @@ export type TraceCategory =
   | 'faction_surface_doubter'
   // Off-screen guild work for ambient members (THR-815)
   | 'faction_member_work'
+  // A spotlight mortal's guild join resolved (THR-1640)
+  | 'guild_join_resolved'
   // Schism — deferred faction-split divine action (THR-430)
   | 'schism_planted'
   | 'schism_resolved'
@@ -806,6 +808,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_surface_doubter',
   // Off-screen guild work for ambient members (THR-815)
   'faction_member_work',
+  // A spotlight mortal's guild join resolved (THR-1640)
+  'guild_join_resolved',
   // Schism — deferred faction-split divine action (THR-430)
   'schism_planted',
   'schism_resolved',
@@ -2902,6 +2906,29 @@ export interface CallingChangeTrace extends TraceBase {
  * that?" and "why did it idle?" are answerable from the trace alone (NFP #2).
  * Read by `window.__DEBUG.getEngagementVerdicts`.
  */
+/**
+ * Trace: a guild join resolved on the live unified-action path (THR-1640). One per
+ * resolved join. Names the band, whether it landed (a success-family band), and
+ * whether a `member_of` edge was written — so "why did a chosen join not become a
+ * membership?" is answerable from the trace alone (NFP #2). Read by
+ * `window.__DEBUG.getGuildJoinFunnel`.
+ */
+export interface GuildJoinResolvedTrace extends TraceBase {
+  category: 'guild_join_resolved';
+  agentId: string;
+  templateId: string;
+  /** The definition the join is about, or null when the meta did not resolve. */
+  factionDefId: string | null;
+  /** The resolved band, e.g. `success_at_cost`. */
+  outcome: string;
+  /** True when the band is in `FACTION_LIFECYCLE_SUCCESS_BANDS`. */
+  landed: boolean;
+  /** True when a `member_of` edge was written this resolution. */
+  joined: boolean;
+  /** Why no membership, when `joined` is false. */
+  reason: 'joined' | 'band_not_landed' | 'already_member' | 'no_faction_node' | 'unresolved_meta';
+}
+
 export interface EngagementDecisionTrace extends TraceBase {
   category: 'engagement_decision';
   agentId: string;
@@ -4346,6 +4373,8 @@ export type TraceEntry =
   | FactionSurfaceDoubterTrace
   // Off-screen guild work for ambient members (THR-815)
   | FactionMemberWorkTrace
+  // A spotlight mortal's guild join resolved (THR-1640)
+  | GuildJoinResolvedTrace
   // Schism — deferred faction-split divine action (THR-430)
   | SchismPlantedTrace
   | SchismResolvedTrace

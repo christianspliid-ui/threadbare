@@ -211,7 +211,7 @@ import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { applySecretsFavorsFromResolvedAction } from './secretsFromResolution';
-import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
+import { processFactionOutcome, processResolvedFactionLifecycleAction, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
 import { recordReward, clearRewardHistory } from './rewardHistory';
@@ -3975,6 +3975,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         applySecretsFavorsFromResolvedAction(s, a, runtime);
       } catch {
         // fail-soft: a secret that cannot be born must not stop the tick
+      }
+      // THR-1640: the live join/promotion hook. The legacy call in
+      // phaseEncounterProgressionV2 walks the same empty `encounterProgress`, so a
+      // join that resolved in a success band never became a membership.
+      try {
+        const lifecycleRng = mulberry32(s.seed + s.tick * 43 + hashString(a.actorId));
+        const lifecycleEvents = processResolvedFactionLifecycleAction(s.graph, a, s.tick, lifecycleRng);
+        if (lifecycleEvents.length > 0) s = { ...s, tickEvents: [...s.tickEvents, ...lifecycleEvents] };
+      } catch {
+        // fail-soft: a join that cannot be recorded must not stop the tick
       }
     }
     s = {

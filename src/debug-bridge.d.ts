@@ -1033,6 +1033,19 @@ export interface DebugBridge {
    */
   getEngagementVerdicts: (agentQuery?: string, limit?: number) => Promise<ReadonlyArray<TraceEntry>>;
   /**
+   * The guild-join funnel (THR-1640) — how spotlight mortals get from a guild hall to
+   * a membership. `reached` counts `engagement_decision` traces whose top entries
+   * held a `.join`, `chosen` those where the join won; `resolvedByOutcome` and
+   * `notJoinedByReason` read `guild_join_resolved` (reasons: `band_not_landed` ·
+   * `already_member` · `no_faction_node` · `unresolved_meta`); `joined` counts joins
+   * that wrote a `member_of` edge. Those four count the trace ring's window only.
+   * `coverage` is exact: distinct non-Realm, non-monster guilds in which a spotlight
+   * mortal holds a membership now, with `coverageMet` against `coverageMin`
+   * (`GUILD_SPOTLIGHT_COVERAGE_MIN`). Returns `null` with no game state; the trace
+   * counts are 0 until `enableTracing()` has run across some ticks.
+   */
+  getGuildJoinFunnel: () => Promise<import('./engine/guildJoinFunnel').GuildJoinFunnel | null>;
+  /**
    * Every reader that ran at an undertaking cell completion (THR-1428) — writes *and*
    * refusals: a survey of somewhere already known traces `refused: 'already_known'`,
    * which is a different fact from a reader that never fired. Optionally narrowed to

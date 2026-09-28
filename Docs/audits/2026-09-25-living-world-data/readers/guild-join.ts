@@ -26,6 +26,10 @@ import { enableTracing, getTraces, clearTraces } from '../../../../src/engine/tr
 const seeds = (process.argv[2] ?? '42,99').split(',').map(Number);
 const TICKS = Number(process.argv[3] ?? 200);
 const SAMPLE_EVERY = 10;
+// PROBE=0 skips the per-sample hall probe. The probe calls runFilterPipeline, which
+// writes engine state, so the probed world is not the unprobed one (THR-1640 measured
+// 2 vs 7 joins on seed 99). Gate numbers come from PROBE=0.
+const PROBE = process.env.PROBE !== '0';
 const inc = (m: Record<string, number>, k: string, n = 1) => { m[k] = (m[k] ?? 0) + n; };
 
 const out: any = { seeds, ticks: TICKS, every: SAMPLE_EVERY, perSeed: {} };
@@ -39,6 +43,8 @@ for (const seed of seeds) {
   const hallsPerLoc: Record<string, number> = {};
   const joinFired: Record<string, number> = {};
   const seenUA = new Set<string>();
+  const resolvedUA = new Set<string>();
+  const joinResolved: Record<string, number> = {};
   const boardJoin: any[] = [];
   for (let t = 0; t <= TICKS; t++) {
     if (t > 0) state = runTick(state, [], runtime);
@@ -52,13 +58,24 @@ for (const seed of seeds) {
     }
     clearTraces();
     for (const ua of (state.unifiedActions ?? []) as any[]) {
-      if (seenUA.has(ua.id)) continue; seenUA.add(ua.id);
+      // A UnifiedAction is keyed `actionId`; it has no `id` (THR-1640 fixed this reader,
+      // which keyed on `id` and so counted only the first action it ever saw).
+      const uaKey: string = ua.actionId ?? ua.id;
+      // THR-1640 — the fate of every `.join` once it resolves: its band, and whether the
+      // mortal holds a membership of that guild on the tick it resolved.
+      if (ua.resolved && typeof ua.templateId === 'string' && ua.templateId.endsWith('.join') && !resolvedUA.has(uaKey)) {
+        resolvedUA.add(uaKey);
+        const defs = new Set(getFactionMembershipEdges(g, ua.actorId).map((e: any) => e.properties?.factionDefId));
+        const member = [...defs].some((d: any) => typeof d === 'string' && getFactionDefinition(d)?.joinEncounterTemplateId === ua.templateId);
+        inc(joinResolved, `${ua.outcome ?? '?'}|${member ? 'member' : 'no_member'}`);
+      }
+      if (seenUA.has(uaKey)) continue; seenUA.add(uaKey);
       if (typeof ua.templateId === 'string' && ua.templateId.endsWith('.join')) {
         const actor = g.getNode(ua.actorId);
         inc(joinFired, `${ua.templateId}|${actor && isAutonomousDecisionActor(actor) ? 'decider' : 'other'}`);
       }
     }
-    if (t % SAMPLE_EVERY !== 0) continue;
+    if (!PROBE || t % SAMPLE_EVERY !== 0) continue;
     const deciders = g.getNodesByType('actor').filter((n: any) => isAutonomousDecisionActor(n));
     for (const d of deciders) {
       inc(tally, 'samples');
@@ -94,13 +111,14 @@ for (const seed of seeds) {
   }
   const g = state.graph;
   const deciderGuild: Record<string, number> = {};
-  for (const d of g.getNodesByType('actor').filter((n: any) => isAutonomousDecisionActor(n))) {
+  const decidersAtEnd = g.getNodesByType('actor').filter((n: any) => isAutonomousDecisionActor(n));
+  for (const d of decidersAtEnd) {
     for (const e of getFactionMembershipEdges(g, d.id) as any[]) {
       const defId = e.properties?.factionDefId ?? '?';
       if (!String(defId).startsWith('realm')) inc(deciderGuild, defId);
     }
   }
-  out.perSeed[seed] = { boardJoinSample: boardJoin.slice(0, 12), tally, hallsPerLoc, joinFired, deciderGuildMembershipsAtEnd: deciderGuild };
+  out.perSeed[seed] = { boardJoinSample: boardJoin.slice(0, 12), tally, hallsPerLoc, joinFired, joinResolved, deciderGuildMembershipsAtEnd: deciderGuild, guildsCovered: Object.keys(deciderGuild).length, decidersAtEnd: decidersAtEnd.length };
   console.error(`[guild-join] seed ${seed} done`);
 }
 console.log(JSON.stringify(out, null, 2));
