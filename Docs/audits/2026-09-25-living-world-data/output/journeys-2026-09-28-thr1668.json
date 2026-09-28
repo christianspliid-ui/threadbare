@@ -1,0 +1,159 @@
+{
+  "measuredOn": "THR-1668, 2026-09-28, medium, 200 ticks, unattended; main = origin/main @ 7e1abaff, after = ARRIVAL_GOAL_COMMITMENT_MULTIPLIER 2.5 on the unified board, ANOMALY_SITE_MAX_HEX_DISTANCE 1",
+  "main": {
+    "42": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 51,
+      "startedTargetShare": 0.196,
+      "tally": {
+        "departs": 53,
+        "arrive_without_target": 137,
+        "departed_elsewhere": 13,
+        "started_target": 10,
+        "started_other": 27,
+        "nothing": 1
+      },
+      "anomaly": {
+        "departs": 5,
+        "departed_elsewhere": 5
+      },
+      "goal": {
+        "departed_elsewhere:kept": 13,
+        "started_target:kept": 10,
+        "started_other:kept": 26,
+        "nothing:kept": 1,
+        "started_other:no_decide": 1
+      },
+      "boardGoal": {},
+      "fate": {
+        "anomaly:arrived_on_target": 5,
+        "other:arrived_on_target": 46,
+        "other:arrived_no_target": 1
+      },
+      "targetlessArrivalsByAgent": {
+        "agent_mc_cmdr_0": 1
+      },
+      "firings": 980
+    },
+    "99": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 70,
+      "startedTargetShare": 0.214,
+      "tally": {
+        "departs": 76,
+        "arrive_without_target": 26,
+        "started_target": 15,
+        "started_other": 42,
+        "departed_elsewhere": 11,
+        "nothing": 2
+      },
+      "anomaly": {
+        "departs": 8,
+        "departed_elsewhere": 7,
+        "started_target": 1
+      },
+      "goal": {
+        "started_target:kept": 14,
+        "started_other:kept": 39,
+        "departed_elsewhere:kept": 11,
+        "started_other:no_goal_flag": 2,
+        "started_other:no_decide": 1,
+        "nothing:no_decide": 2,
+        "started_target:no_decide": 1
+      },
+      "boardGoal": {},
+      "fate": {
+        "other:arrived_on_target": 62,
+        "anomaly:arrived_on_target": 8
+      },
+      "targetlessArrivalsByAgent": {},
+      "firings": 945
+    }
+  },
+  "after": {
+    "42": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 53,
+      "startedTargetShare": 0.792,
+      "tally": {
+        "departs": 63,
+        "arrive_without_target": 141,
+        "departed_elsewhere": 3,
+        "started_target": 42,
+        "started_other": 8
+      },
+      "anomaly": {
+        "departs": 8,
+        "departed_elsewhere": 3,
+        "started_target": 5
+      },
+      "goal": {
+        "departed_elsewhere:kept": 3,
+        "started_target:kept": 42,
+        "started_other:kept": 7,
+        "started_other:no_decide": 1
+      },
+      "boardGoal": {
+        "lost_to_encounter": 10,
+        "goal_won_board": 42
+      },
+      "fate": {
+        "anomaly:arrived_on_target": 8,
+        "other:arrived_on_target": 46,
+        "other:arrived_no_target": 5
+      },
+      "targetlessArrivalsByAgent": {
+        "agent_mc_cmdr_0": 3,
+        "ind_0": 1,
+        "ind_3": 1
+      },
+      "firings": 965
+    },
+    "99": {
+      "ticks": 200,
+      "arrivalWindow": 2,
+      "arrivalsJudged": 70,
+      "startedTargetShare": 0.786,
+      "tally": {
+        "departs": 85,
+        "arrive_without_target": 100,
+        "started_target": 55,
+        "departed_elsewhere": 1,
+        "started_other": 13,
+        "nothing": 1
+      },
+      "anomaly": {
+        "departs": 9,
+        "started_target": 8,
+        "departed_elsewhere": 1
+      },
+      "goal": {
+        "started_target:kept": 55,
+        "departed_elsewhere:kept": 1,
+        "started_other:kept": 13,
+        "nothing:no_decide": 1
+      },
+      "boardGoal": {
+        "goal_won_board": 55,
+        "lost_to_encounter": 15,
+        "lost_to_strategic_action": 1
+      },
+      "fate": {
+        "other:arrived_on_target": 62,
+        "anomaly:arrived_on_target": 9,
+        "other:arrived_no_target": 12
+      },
+      "targetlessArrivalsByAgent": {
+        "ind_4": 4,
+        "ind_3": 3,
+        "ind_7": 2,
+        "ind_9": 2,
+        "ind_0": 1
+      },
+      "firings": 914
+    }
+  }
+}

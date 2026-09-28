@@ -1722,11 +1722,11 @@ exit
 - **Intent:** A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board.
 - **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
 - **UL terms:** *Encounter*
-- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
+- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/phaseMovement.ts`
-- **Read sites:** `src/engine/encounterFilterPipeline.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`
 - **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +4 more
-- **Verdict:** Verified 2026-09-28: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
+- **Verdict:** Verified 2026-09-28: THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
 
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
 

@@ -5204,11 +5204,13 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['targetEncounterId', 'motivationPull', 'journeyGoal', 'JOURNEY_GOAL_CAP_RESERVE', 'ARRIVAL_GOAL_COMMITMENT_MULTIPLIER'],
     },
     writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/phaseMovement.ts'],
-    readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/encounterFilterPipeline.ts'],
+    // THR-1668: the arrival commitment is read by the unified board (`arrivalGoal`),
+    // which is where the live decision is made.
+    readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/encounterFilterPipeline.ts', 'src/engine/decisionBoard.ts'],
     verifiedLive: {
       date: '2026-09-28',
       evidence:
-        'scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First\'s longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan\'s first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.',
+        'THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First\'s longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan\'s first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.',
     },
   },
   // -- Culture & Spheres -> the encounter opening (THR-1635) ------------------
