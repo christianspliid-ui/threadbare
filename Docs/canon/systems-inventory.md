@@ -22,8 +22,6 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
-| Doom Clock & Journey | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | The run's master clock; journey beats fire at thresholds. |
-| Mandate | mandate, divine mandate, objective | `mandate` | The god's standing objective and its checkpoints. |
 | Diagnostics & Incident Capture | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included. |
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
 | Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
@@ -39,8 +37,8 @@ names like `TB-073`) a premise might use.
 | **War, Armies & Battles** | 🟢 ACTIVE | war, warfare, army, armies, battle, siege, warband, conflict, invasion, cohesion, campaign | `army`, `battle` | `2.352`, `2.355`, `2.356`, `2.357` |
 | **Factions & Succession** | 🟢 ACTIVE | faction, guild, order, succession, rank, schism | `faction`, `chosenfactionpowers`, `schism` | `6.55`, `6.56` |
 | **Rival Gods & Schemes** | 🟢 ACTIVE | rival, rivals, scheme, pantheon, antagonist | `rival` | `3` |
-| **Doom Clock & Journey** | 🟠 DORMANT | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
-| **Mandate** | 🟠 DORMANT | mandate, divine mandate, objective | `mandate` | `mandate` |
+| **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
+| **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
 | **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
 | **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma`, `fights` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
@@ -431,4 +429,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (5 dormant) · 102 tick phases · 200 engine domains · 613 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 613 modules._
