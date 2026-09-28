@@ -327,7 +327,8 @@ function printAgents(): void {
 /**
  * `spotlight` — attention follows ambition (THR-1348). The ledger the pull writes on
  * actor nodes: who was pulled into the deciding tier, by which ambition, whom they
- * displaced, and who was refused and why. Sibling of `agents`.
+ * displaced, and who was refused and why. Sibling of `agents`. THR-1653: graduation
+ * shares the budget, so each line names its door — an ambition's id, or `graduation`.
  */
 function printSpotlight(): void {
   const ledger = readSpotlightLedger(state.graph);
@@ -337,13 +338,13 @@ function printSpotlight(): void {
   console.log(`  deciding mortals now: ${deciding} · swapped ${swaps} · net-additive ${ledger.pulled.length - swaps} · overflow outstanding ${ledger.overflow} of ${ledger.overflowAllowance} allowed`);
   const nameOf = (id: string) => state.graph.getNode(id)?.name ?? id;
   for (const p of ledger.pulled) {
-    console.log(`  ${dim(`t${String(p.tick).padStart(4)}`)}  ${BOLD}${nameOf(p.id)}${RESET} ${dim(p.id)}  ← ${p.templateId}` +
+    console.log(`  ${dim(`t${String(p.tick).padStart(4)}`)}  ${BOLD}${nameOf(p.id)}${RESET} ${dim(p.id)}  ← ${p.reason === 'graduation' ? 'graduation' : p.templateId}` +
       (p.demotedId ? `  displaced ${nameOf(p.demotedId)} ${dim(p.demotedId)}` : `  ${dim('(net-additive)')}`));
   }
   if (ledger.refused.length > 0) {
     console.log(`  ${BOLD}refused${RESET} (${ledger.refused.length})`);
     for (const r of ledger.refused) {
-      console.log(`  ${dim(`t${String(r.tick).padStart(4)}`)}  ${nameOf(r.id)} ${dim(r.id)}  ${r.reason}`);
+      console.log(`  ${dim(`t${String(r.tick).padStart(4)}`)}  ${nameOf(r.id)} ${dim(r.id)}  ${r.reason}${r.via === 'graduation' ? dim(' (graduation)') : ''}`);
     }
   }
   // THR-1523 — builders who stepped back unwatched, and how long nobody had watched them.

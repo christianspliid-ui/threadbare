@@ -1568,10 +1568,13 @@ export interface DebugBridge {
   /**
    * Attention follows ambition (THR-1348) — the spotlight-pull ledger read off the
    * actor nodes: `pulled` (who was pulled into the spotlight, by which ambition, at
-   * which tick, and whom they displaced — `demotedId: null` for a net-additive pull),
+   * which tick, and whom they displaced — `demotedId: null` for a net-additive pull;
+   * `reason` names the door, `'ambition'` or `'graduation'` (THR-1653: a notable's
+   * graduation goes through the same budget, with `templateId: ''`),
    * `overflow` (outstanding net-additive pulls) against `overflowAllowance` (the share of
    * the deciding population this world may add, capped by `SPOTLIGHT_AMBITION_PULL_MAX`), and `refused` (the last refusal per mortal: `budget`, `no_capability_path`,
-   * `already_pulled`, `disabled`), and `unwatchedDemotions` (THR-1523 — the builders who
+   * `already_pulled`, `disabled`; `via` names the door, so a graduate left notable by
+   * `budget` reads `via: 'graduation'` and is re-tested next tick), and `unwatchedDemotions` (THR-1523 — the builders who
    * stepped back for a pull after going unwatched: `{ agentId, tick, unwatchedTicks }`,
    * where `unwatchedTicks` is how long they had gone with no witnessed scene and no
    * undertaking progress). Empty ledger, never null, when no game is loaded.

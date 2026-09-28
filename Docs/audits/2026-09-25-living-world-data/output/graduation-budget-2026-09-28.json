@@ -1,0 +1,142 @@
+{
+ "on": {
+  "budgeted": true,
+  "ticks": 200,
+  "seeds": {
+   "42": {
+    "t0Deciders": 20,
+    "tNDeciders": 19,
+    "deciderCurveEvery25": [
+     20,
+     22,
+     22,
+     21,
+     21,
+     20,
+     19,
+     19,
+     19
+    ],
+    "invariant": {
+     "bound": 24,
+     "holds": true,
+     "allowance": 1,
+     "threaded": 0,
+     "pulled": 3
+    },
+    "notablesT0": 0,
+    "notablesTN": 70,
+    "admissions": {
+     "ambition": 3,
+     "graduation": 0
+    },
+    "graduationEventsToSpotlight": 0,
+    "graduationRefusedStillOut": {},
+    "overflow": 2,
+    "msPerTick": 154.4
+   },
+   "99": {
+    "t0Deciders": 23,
+    "tNDeciders": 20,
+    "deciderCurveEvery25": [
+     23,
+     25,
+     24,
+     24,
+     24,
+     23,
+     22,
+     21,
+     20
+    ],
+    "invariant": {
+     "bound": 28,
+     "holds": true,
+     "allowance": 1,
+     "threaded": 0,
+     "pulled": 4
+    },
+    "notablesT0": 0,
+    "notablesTN": 46,
+    "admissions": {
+     "ambition": 4,
+     "graduation": 0
+    },
+    "graduationEventsToSpotlight": 0,
+    "graduationRefusedStillOut": {},
+    "overflow": 1,
+    "msPerTick": 239.7
+   }
+  }
+ },
+ "off": {
+  "budgeted": false,
+  "ticks": 200,
+  "seeds": {
+   "42": {
+    "t0Deciders": 20,
+    "tNDeciders": 19,
+    "deciderCurveEvery25": [
+     20,
+     22,
+     22,
+     21,
+     21,
+     20,
+     19,
+     19,
+     19
+    ],
+    "invariant": {
+     "bound": 24,
+     "holds": true,
+     "allowance": 1,
+     "threaded": 0,
+     "pulled": 3
+    },
+    "notablesT0": 0,
+    "notablesTN": 70,
+    "admissions": {
+     "ambition": 3,
+     "graduation": 0
+    },
+    "graduationEventsToSpotlight": 0,
+    "graduationRefusedStillOut": {},
+    "overflow": 2,
+    "msPerTick": 153.7
+   },
+   "99": {
+    "t0Deciders": 23,
+    "tNDeciders": 20,
+    "deciderCurveEvery25": [
+     23,
+     25,
+     24,
+     24,
+     24,
+     23,
+     22,
+     21,
+     20
+    ],
+    "invariant": {
+     "bound": 28,
+     "holds": true,
+     "allowance": 1,
+     "threaded": 0,
+     "pulled": 4
+    },
+    "notablesT0": 0,
+    "notablesTN": 46,
+    "admissions": {
+     "ambition": 4,
+     "graduation": 0
+    },
+    "graduationEventsToSpotlight": 0,
+    "graduationRefusedStillOut": {},
+    "overflow": 1,
+    "msPerTick": 237.5
+   }
+  }
+ }
+}
