@@ -5062,7 +5062,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/strategicActionLifecycle.ts'],
   },
 
-  // ── Encounters & Dilemmas: the shortlist (THR-1633 S1) ────────────────────
+  // ── Encounters & Dilemmas: the shortlist (THR-1633 S1; LIVE 2026-09-28) ───
   // Audit-on-touch: the first row for the cap stage. The cut it guards against is
   // positional — the free-slot fill walked a list in cache insertion order from
   // index 0, so registration order, not scoring, decided which writing was looked at.
@@ -5071,20 +5071,19 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
     intent:
-      'Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in.',
+      'Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. What the mortal can start on its own hex is offered first, so a fair fill does not strand it away from the work where it stands.',
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'function',
-      symbols: ['capWithDiversity', 'CAP_FILL_ROTATE', 'capCutTemplates'],
+      symbols: ['capWithDiversity', 'runFilterPipeline', 'CAP_FILL_ROTATE', 'CAP_FILL_LOCAL_SLOTS', 'capCutTemplates'],
       module: 'src/engine/encounterFilterPipeline.ts',
     },
     writeSites: ['src/engine/encounterFilterPipeline.ts'],
     readSites: ['src/engine/phaseAgentDecision.ts'],
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Mechanism, switches and the capCutTemplates trace shipped; the rotating fill ships OFF. Measured on seeds 42 · 99 (readers/reach.ts, 200 ticks): rotation cuts cap-first-gate templates 76 · 60 → 7 · 5 but total firings fall 1,498 → 515, because mortals then choose encounters elsewhere and lose them on the way (selected_not_spawned 34 → 127) — the reroute defect THR-1639 fixes. Distinct-first alone is byte-identical to the old fill. Re-measured after THR-1639 (2026-09-28, same reader): with the journey fix in, rotation still cuts total firings 1,552 → 676 and raises selected_not_spawned 17 · 18 → 62 · 61, so the rotation loss is not the reroute defect alone — CAP_FILL_ROTATE stays off pending THR-1633.',
-      deferralTicket: 'THR-1633',
+    verifiedLive: {
+      date: '2026-09-28',
+      evidence:
+        'Docs/audits/2026-09-25-living-world-data/readers/reach.ts 42,99 200 (medium), old fill → rotation with CAP_FILL_LOCAL_SLOTS 30, same tree (main @ 1ad1b776): cap-first-gate templates 75 · 63 → 16 · 15, drawable templates fired 127 → 164, total firings 1,552 → 1,855, top-10 share 0.269 → 0.236. Rotation alone gave 12 · 4 / 117 / 676 / 0.284: it spent the free slots on other hexes, so start_local decisions fell 549 → 225 on seed 42. readers/attended.ts 42,99 150: The First\'s longest gap between encounters 25 · 30 (ceiling 30). Pinned by the capWithDiversity fair-fill and own-hex tests in encounterFilterPipeline.test.ts.',
     },
   },
   // -- Encounters -> Movement: a journey keeps its goal (THR-1639) --------------

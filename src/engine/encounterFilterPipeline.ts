@@ -36,7 +36,8 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
 import type { FilterPipelineTrace } from '../types/trace';
 import type { ThreatRating } from '../types/encounter';
-import { filterByAwareness } from './encounterAwareness';
+import { filterByAwareness, resolveLocationToHex } from './encounterAwareness';
+import { hexDistance } from '../lib/hexMath';
 import { brokenGateActive } from './brokenState';
 import { getFactionAwarenessEntries } from './factionAwareness';
 import { isEncounterVisibleToAgent } from './questVisibility';
@@ -91,6 +92,7 @@ import {
   JOURNEY_GOAL_CAP_RESERVE,
   CAP_FILL_DISTINCT_FIRST,
   CAP_FILL_ROTATE,
+  CAP_FILL_LOCAL_SLOTS,
 } from '../data/agent-behavior-constants';
 import { hashString } from './factionAmbitions';
 
@@ -682,6 +684,11 @@ export interface CapFillOptions {
   distinctFirst: boolean;
   /** Start at a per-(agent, tick) hash offset instead of index 0. */
   rotate: boolean;
+  /**
+   * Free slots offered first to entries on the agent's own hex (THR-1633). Absent
+   * or 0 → no local pass. Needs `agentLocationId`; without it the pass is skipped.
+   */
+  localSlots?: number;
 }
 
 /**
@@ -691,13 +698,19 @@ export interface CapFillOptions {
  * `tick` seeds the free-slot fill's rotating start (THR-1633 S1); omitted → the
  * fill starts at index 0, the old behaviour. `fill` defaults to the tuning constants;
  * tests pass it explicitly to pin the mechanism whatever the shipped switch says.
+ * `agentLocationId` lets the fill offer the agent's own hex first (`fill.localSlots`).
  */
 export function capWithDiversity(
   entries: readonly EncounterCacheEntry[],
   agentId: string,
-  _graph: WorldGraph,
+  graph: WorldGraph,
   tick?: number,
-  fill: CapFillOptions = { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE },
+  fill: CapFillOptions = {
+    distinctFirst: CAP_FILL_DISTINCT_FIRST,
+    rotate: CAP_FILL_ROTATE,
+    localSlots: CAP_FILL_LOCAL_SLOTS,
+  },
+  agentLocationId?: string,
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
     return [...entries];
@@ -842,17 +855,45 @@ export function capWithDiversity(
   const seenTemplates = new Set(reserved.map(e => e.templateId));
   const filled: EncounterCacheEntry[] = [];
   const passes = fill.distinctFirst ? [true, false] : [false];
-  for (const distinctOnly of passes) {
-    for (let step = 0; step < n && filled.length < remaining; step++) {
-      const entry = entries[(start + step) % n];
-      if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
-      const key = `${entry.templateId}:${entry.locationId}`;
-      if (reservedKeys.has(key)) continue;
-      filled.push(entry);
-      reservedKeys.add(key);
-      seenTemplates.add(entry.templateId);
+  const walk = (
+    limit: number,
+    accept: (entry: EncounterCacheEntry) => boolean,
+    walkPasses: readonly boolean[] = passes,
+  ): void => {
+    for (const distinctOnly of walkPasses) {
+      for (let step = 0; step < n && filled.length < limit; step++) {
+        const entry = entries[(start + step) % n];
+        if (distinctOnly && seenTemplates.has(entry.templateId)) continue;
+        if (!accept(entry)) continue;
+        const key = `${entry.templateId}:${entry.locationId}`;
+        if (reservedKeys.has(key)) continue;
+        filled.push(entry);
+        reservedKeys.add(key);
+        seenTemplates.add(entry.templateId);
+      }
     }
+  };
+
+  // THR-1633: what a mortal can start where it stands comes first. A rotating fill
+  // over a list of ~thousands spent nearly every free slot on other hexes, so a
+  // stationary mortal lost the encounters it could begin in place: measured on seed
+  // 42 / medium, start_local decisions fell 549 → 225 and firings 717 → 286 with
+  // rotation alone. The local pass rotates too, so local variety is not head-first.
+  const localSlots = Math.min(remaining, Math.max(0, fill.localSlots ?? 0));
+  const agentHex = localSlots > 0 && agentLocationId ? resolveLocationToHex(graph, agentLocationId) : null;
+  if (agentHex) {
+    const onHex = new Map<string, boolean>();
+    walk(localSlots, entry => {
+      let local = onHex.get(entry.locationId);
+      if (local === undefined) {
+        const hex = resolveLocationToHex(graph, entry.locationId);
+        local = !!hex && hexDistance(hex, agentHex) === 0;
+        onHex.set(entry.locationId, local);
+      }
+      return local;
+    }, [true]);
   }
+  walk(remaining, () => true);
 
   return [...reserved, ...filled];
 }
@@ -950,7 +991,7 @@ export function runFilterPipeline(
   // Stage 5: Performance Cap
   const beforeCap = current;
   try {
-    current = capWithDiversity(current, agentId, graph, tick);
+    current = capWithDiversity(current, agentId, graph, tick, undefined, agentLocationId);
   } catch {
     // Keep previous stage's output
   }

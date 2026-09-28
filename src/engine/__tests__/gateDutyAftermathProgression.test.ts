@@ -178,6 +178,14 @@ function getOpenNotification(state: GameState, stepIndex?: number) {
   );
 }
 
+/**
+ * This arm drives `runTick` several times, so it carries its own ceiling (THR-1517).
+ * Measured 2026-09-28: 1.2 s alone, 3.2–3.7 s under the full `npm test` lane on
+ * `main`, 5.5 s there once the THR-1633 shortlist fill landed — against vitest's
+ * 5 s default. The ceiling is ~5× the worst lane figure.
+ */
+const MULTI_TICK_TIMEOUT_MS = 30_000;
+
 describe('Gate Duty aftermath progression', () => {
   it('keeps the sim ticking after the encounter resolves and an aftermath reaction is applied', () => {
     resetDecisionCache();
@@ -270,5 +278,5 @@ describe('Gate Duty aftermath progression', () => {
 
     expect(next.tick).toBe(tickBefore + 1);
     expect(next.phase).toBe('playing');
-  });
+  }, MULTI_TICK_TIMEOUT_MS);
 });
