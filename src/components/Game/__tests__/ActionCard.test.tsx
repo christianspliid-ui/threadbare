@@ -322,7 +322,11 @@ describe('ActionCard — THR-1464: the chip row wraps instead of overlapping', (
     // so without this the price would pack to the left when it wraps.
     const { container } = render(<ActionCard slot={twoChipSlot} onClick={vi.fn()} />);
     const cost = container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement;
-    const rightGroup = cost.parentElement as HTMLElement;
+    // The price sits inside its registry tooltip (THR-1607), so the right-hand
+    // group is the chip-row child that contains it, not its direct parent.
+    const row = chipRow(container);
+    let rightGroup = cost.parentElement as HTMLElement;
+    while (rightGroup.parentElement !== row) rightGroup = rightGroup.parentElement as HTMLElement;
     expect(rightGroup.style.marginLeft).toBe('auto');
     expect(rightGroup.style.flexShrink).toBe('0');
   });

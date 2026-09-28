@@ -25,6 +25,10 @@ import type { AscendantArchetype } from '../../../../types/influence';
 import type { SphereName } from '../../../../types';
 import { SPHERE_NAMES } from '../../../../types';
 import type { ForecastTier } from '../../../../types/resolution';
+import { TOOLTIP_SHOW_DELAY } from '../../../../types/tooltip';
+import { ActionCard } from '../../ActionCard';
+import { getEssencePreviewSphere } from '../essenceDisplay';
+import type { WheelSlot } from '../../../../engine/wheel';
 
 const FORECAST_TIERS: readonly ForecastTier[] = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'];
 
@@ -178,5 +182,65 @@ describe('EssenceBlock', () => {
     expect(screen.getByTestId('essence-row-chaos').getAttribute('data-previewed')).toBe('true');
     act(() => { setEssencePreviewSphere(null); });
     expect(screen.queryByTestId('essence-row-chaos')).toBeNull();
+  });
+});
+
+describe('the cast card — cost, forecast and the hover preview', () => {
+  const castSlot: WheelSlot = {
+    id: 'target_action_divine.dream',
+    templateId: 'divine.dream',
+    label: 'Dream',
+    type: 'target_action',
+    angleDeg: 0,
+    available: true,
+    lockedReason: null,
+    essenceCost: 3,
+    sphere: 'mind',
+    interventionType: null,
+    rangeStatus: 'in_range',
+    hexDistance: 1,
+    description: '',
+    effectsLine: 'They dream of who they are.',
+    crudType: 'update',
+    reach: 'eye',
+    scale: 'local',
+    scaleWord: 'Local',
+    forecastTier: 'doomed',
+  } as WheelSlot;
+
+  function hoverAndSettle(target: HTMLElement): void {
+    fireEvent.pointerEnter(target);
+    act(() => { vi.advanceTimersByTime(TOOLTIP_SHOW_DELAY); });
+  }
+
+  it('the price carries the card-cost tooltip', () => {
+    vi.useFakeTimers();
+    const { container } = render(<ActionCard slot={castSlot} onClick={vi.fn()} />);
+    hoverAndSettle(container.querySelector('[data-testid^="action-card-cost-"]') as HTMLElement);
+    expect(screen.getByRole('tooltip').textContent).toContain(resolveTooltip('ui.card.cost')!.label);
+    vi.useRealTimers();
+  });
+
+  it('a doomed cast explains that it still lands', () => {
+    vi.useFakeTimers();
+    const { container } = render(<ActionCard slot={castSlot} onClick={vi.fn()} />);
+    hoverAndSettle(container.querySelector('[data-forecast-tier="doomed"]') as HTMLElement);
+    expect(screen.getByRole('tooltip').textContent).toContain('It will land, but crooked');
+    vi.useRealTimers();
+  });
+
+  it('hovering a live card previews its sphere; leaving clears it', () => {
+    const { container } = render(<ActionCard slot={castSlot} onClick={vi.fn()} />);
+    const card = container.firstElementChild!.firstElementChild as HTMLElement;
+    fireEvent.mouseEnter(card);
+    expect(getEssencePreviewSphere()).toBe('mind');
+    fireEvent.mouseLeave(card);
+    expect(getEssencePreviewSphere()).toBeNull();
+  });
+
+  it('a display-only card never previews', () => {
+    const { container } = render(<ActionCard slot={castSlot} onClick={vi.fn()} interactive={false} />);
+    fireEvent.mouseEnter(container.firstElementChild!.firstElementChild as HTMLElement);
+    expect(getEssencePreviewSphere()).toBeNull();
   });
 });

@@ -1611,6 +1611,16 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/agentDetail.ts', 'src/components/Game/ActiveEffectChips.tsx', 'src/components/Game/ThreadDetailView.tsx', 'src/components/Game/AgentProfileModal.tsx'],
   },
   {
+    id: 'essence-spend-moves-the-bar',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast\'s price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.',
+    mechanism: { kind: 'node-prop', symbols: ['essencePool', 'selectEssenceRows'] },
+    writeSites: ['src/engine/playerCastDispatch.ts'],
+    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/components/Game/ascendant-bar/AscendantBar.tsx'],
+  },
+  {
     id: 'cast-influence-shifts-target-values',
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: ENCOUNTERS,

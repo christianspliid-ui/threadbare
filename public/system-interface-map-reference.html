@@ -947,6 +947,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; A readable spend
+      <span class="lead">Added 2026-09-28 (THR-1607). A cast visibly takes a bite out of the essence pool it drew from, and the pools stay where they were.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A cast&rsquo;s essence price <span class="arrow">&#10230;</span> The essence row on the ascendant bar (<code>essence-spend-moves-the-bar</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1607 (Law 47). <code>commitPlayerCast</code> always deducted from <code>essencePool[sphere]</code>, but the bar filled against <code>/10</code> while pools start at fifty, so every row sat full and no spend moved one; rows also re-sorted by level, so a spend reordered the list. <code>selectEssenceRows</code> now fixes the order (identity spheres, then canonical), <code>EssenceBlock</code> fills against <code>ESSENCE_BAR_CEILING</code> (the starting pool), prints the whole-number balance, flashes a delta cluster after a spend, and folds the four Foundation spheres under <em>Elder powers</em>. Proved on <code>?view=game&amp;seeded&amp;size=medium</code>: a Dream on Kael took Mind from 38 to 37 and the bar from 76% to 74%, with the order unchanged.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; What your hand did
       <span class="lead">Added 2026-09-28 (THR-1606). After a cast the player sees who it touched and what changed: on the receipt, on the mortal&rsquo;s sheet, and in their story.</span>
     </h2>
