@@ -107,6 +107,7 @@ import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplate
 import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger, countThreadedChapters } from './ChapterLedger';
+import { useFirstScreenReveal, unreadChapterCount } from './GameView/firstScreenReveal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ChoiceSetModal } from './ChoiceSetModal';
@@ -338,6 +339,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [lastReadThreadsTick, setLastReadThreadsTick] = useState(0);
   // THR-603: Chapter Ledger overlay open/close.
   const [chapterLedgerOpen, setChapterLedgerOpen] = useState(false);
+  // THR-1648 (S5): the launcher badge counts chapters that appeared since the
+  // ledger was last opened, not the running total. UI-local; resets on reload.
+  const [chapterLedgerSeenCount, setChapterLedgerSeenCount] = useState(0);
+  const chapterLedgerButtonRef = useRef<HTMLButtonElement>(null);
+  const chapterLedgerWasOpenRef = useRef(false);
+  useEffect(() => {
+    const wasOpen = chapterLedgerWasOpenRef.current;
+    chapterLedgerWasOpenRef.current = chapterLedgerOpen;
+    if (!wasOpen || chapterLedgerOpen) return;
+    // THR-1648 (S5): the dialog hands focus back to its invoker (Law 50), which
+    // for the ledger is the launcher — so the next Enter reopened it. Return
+    // focus to the game surface instead. The dialog's cleanup runs before this
+    // effect in the same commit; the frame delay covers any later restore.
+    const frame = requestAnimationFrame(() => {
+      const btn = chapterLedgerButtonRef.current;
+      if (btn && document.activeElement === btn) btn.blur();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [chapterLedgerOpen]);
 
   // ── Last viewed tick tracking (drives "new" badges on digest entries) ──
   const { markViewed, getLastViewedTick } = useLastViewedTick();
@@ -1776,6 +1796,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!firstJourneyStatus) return undefined;
     return formatJourneyPhaseLabel(firstJourneyStatus.phase, firstJourneyStatus.active);
   }, [firstJourneyStatus]);
+
+  // THR-1648 (S5): doom, mandate, notables, rivals and omens stay off the first
+  // screen until the bond with The First (Law 53 — the HUD is a budget).
+  const firstScreenReveal = useFirstScreenReveal(gameState);
 
   // ── Non-agent target context (hex-zoom and location views) ──
   const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
@@ -4723,6 +4747,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleToggleIncludeWorld={incidentCapture.toggleIncludeWorld}
         handleSaveSnapshot={incidentCapture.captureSnapshot}
         {...(onExitToTitle ? { onExitToTitle } : {})}
+        reveal={firstScreenReveal}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -4743,6 +4768,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // bar afterwards open the one sheet. A second attachment surface for the
           // same concept class is what Law 3 exists to prevent.
           onOpenAttachment={setAttachmentSheetId}
+          showMandate={firstScreenReveal.mandate}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
           onReleaseControl={(effectId) =>
@@ -5218,8 +5244,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 />
                 {/* THR-603: open the Chapter Ledger — every encounter, always readable */}
                 <button
+                  ref={chapterLedgerButtonRef}
                   type="button"
-                  onClick={() => setChapterLedgerOpen(true)}
+                  data-testid="chapter-ledger-launcher"
+                  onClick={() => {
+                    setChapterLedgerSeenCount(countThreadedChapters(gameState));
+                    setChapterLedgerOpen(true);
+                  }}
                   style={{
                     marginTop: 'var(--panel-padding)',
                     width: '100%',
@@ -5238,10 +5269,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   aria-label="Open the Chapter Ledger"
                 >
                   📖 Chapter Ledger
-                  <span style={{ color: 'var(--text-tertiary, #6a6255)', fontSize: 'var(--text-xs)' }}>
+                  <span
+                    data-testid="chapter-ledger-unread"
+                    style={{ color: 'var(--text-tertiary, #6a6255)', fontSize: 'var(--text-xs)' }}
+                    title="New chapters since you last opened the ledger"
+                  >
                     {/* THR-1604: counts what the ledger lists by default (threaded
-                        chapters), not every encounter the world has archived. */}
-                    {countThreadedChapters(gameState)}
+                        chapters), not every encounter the world has archived.
+                        THR-1648: only the ones not yet seen. */}
+                    {unreadChapterCount(countThreadedChapters(gameState), chapterLedgerSeenCount)}
                   </span>
                 </button>
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
@@ -5353,7 +5389,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         <ChapterLedger
           gameState={gameState}
           runtime={runtime}
-          onClose={() => setChapterLedgerOpen(false)}
+          onClose={() => {
+            setChapterLedgerSeenCount(countThreadedChapters(gameState));
+            setChapterLedgerOpen(false);
+          }}
           // THR-1500 — the ledger is an archive of *other* people's chapters, so
           // the entity link almost never names the selected mortal. With the bare
           // opener it showed whoever happened to be selected, under the named
