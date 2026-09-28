@@ -212,7 +212,19 @@ function buildActivityTokens(args: Args): Set<string> | null {
 
   const tokens = new Set<string>();
   const add = (raw: string) => { for (const tok of raw.toLowerCase().split(/[^a-z0-9]+/)) if (tok) tokens.add(tok); };
-  let state = initial;
+  // THR-1646: the doom clock sleeps until The First is bonded, and a headless world
+  // never bonds one — so the census would read Doom and everything paced by it as
+  // DORMANT. The inventory measures a game in play, so the census clock is awake
+  // from tick 0, exactly as every census before THR-1646 ran. It is also held at
+  // the pre-THR-1646 length: at 1080 ticks the first Mandate checkpoint (40% of
+  // doom progress) lands at tick 432, past the census window, and a system paced
+  // by doom would read DORMANT for being slow rather than for being unwired.
+  const CENSUS_DOOM_TICKS = 200;
+  let state = {
+    ...initial,
+    doomClock: { ...initial.doomClock, totalTicks: CENSUS_DOOM_TICKS, wokeAtTick: 0 },
+    doomDefinition: { ...initial.doomDefinition, totalTicks: CENSUS_DOOM_TICKS },
+  };
   for (let i = 0; i < args.ticks; i++) {
     state = runTick(state, [], runtime);
     for (const t of getTraces()) add(t.category);         // drain per tick — survives ring eviction

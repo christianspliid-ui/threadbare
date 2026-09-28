@@ -9,6 +9,8 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
 import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
+import { isFirstBonded } from './meetingEncounter';
+import { DOOM_WAKES_FALLBACK_LINE, DOOM_WAKES_LINES } from '../data/doom-wake-lines';
 import { evaluateIdentityMilestones } from './doomIdentityMilestones';
 import { processEffectEvent, applyEffectEventResult, shouldExecuteReactive } from './effects/effectEvents';
 import { applyExecutionResult } from './effects/effectEventDispatch';
@@ -303,6 +305,35 @@ function fireDoomThresholdEffects(
 export function phaseDoom(state: GameState): Partial<GameState> {
   const oldStage = state.doomClock.currentStage;
 
+  // THR-1646 (opening plan S2): the Unmaking does not start counting until The
+  // First is bonded. A fresh clock carries `wokeAtTick: null`; the first tick the
+  // bond exists records the wake and the clock advances from that tick on. Only
+  // `null` sleeps — a clock without the field predates the wake and runs as it
+  // always did. Once set, `wokeAtTick` never unsets: a First who dies later does
+  // not put the doom back to sleep.
+  let doomClockIn = state.doomClock;
+  const wakeEvents: TickEvent[] = [];
+  if (doomClockIn.wokeAtTick === null) {
+    if (!isFirstBonded(state.graph, state.ascendantId)) return {};
+    doomClockIn = { ...doomClockIn, wokeAtTick: state.tick };
+    const archetype = state.doomDefinition.archetype;
+    const line = DOOM_WAKES_LINES[archetype] ?? DOOM_WAKES_FALLBACK_LINE;
+    wakeEvents.push({
+      id: nextEventId(state.tick),
+      tick: state.tick,
+      type: 'narrative',
+      message: line,
+      significance: 0.8,
+      notification: { channel: 'toast' },
+    });
+    emitTrace({
+      category: 'doom.wake',
+      tick: state.tick,
+      archetype,
+      summary: `doom.wake: the ${archetype} clock wakes at tick ${state.tick} — The First is bonded`,
+    });
+  }
+
   // THR-1241: this was a hand-rolled scan over `modify_rules` that predated the
   // shared reader. It saw only attachment-declared overrides — an executor-
   // persisted `doom_rate_multiplier` (stage 2) was invisible to it — and it folded
@@ -324,13 +355,13 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   }
 
   const clockForAdvance = doomRateMultiplier !== 1.0
-    ? { ...state.doomClock, tickModifier: state.doomClock.tickModifier * doomRateMultiplier }
-    : state.doomClock;
+    ? { ...doomClockIn, tickModifier: doomClockIn.tickModifier * doomRateMultiplier }
+    : doomClockIn;
 
   const newDoom = advanceDoomClock(clockForAdvance);
   evaluateIdentityMilestones(state, newDoom.progress);
   const newStage = newDoom.currentStage;
-  const events: TickEvent[] = [];
+  const events: TickEvent[] = [...wakeEvents];
   const pressures: SpherePressureEvent[] = [...(state.pendingSpherePressures ?? [])];
   const prosperityShocks: ProsperityShock[] = [...(state.prosperityShocks ?? [])];
   const hexMutations: HexMutation[] = [...(state.pendingHexMutations ?? [])];

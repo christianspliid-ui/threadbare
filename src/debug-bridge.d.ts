@@ -2016,7 +2016,13 @@ export interface DebugBridge {
    *  - `meetingLocationId` — the settlement `pickMeetingLocation` chose (or the avatar's own
    *    location on the fallback path); `null` until the trigger fires, then stays set.
    *
-   *  S1 fields only; later opening slices (doom wake, spine gift gates) extend the object.
+   *  - `doomWokeAtTick` — THR-1646 (S2): the tick the doom clock woke at the bond; `null`
+   *    while it sleeps. A clock that predates the field reads `0`.
+   *  - `doomFloorMetAtTick` — the first tick the Unmaking may begin
+   *    (`doomWokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND`); `null` while the clock sleeps.
+   *  - `doomCurrentTick` — `doomClock.currentTick`; stays `0` until the bond.
+   *
+   *  The spine gift gates (S4) extend the object later.
    *  Resolves `{ error }` with no live game state.
    *
    *  **Async** (`await` it). */
@@ -2028,6 +2034,9 @@ export interface DebugBridge {
       openingBeatResolved: boolean;
       meetingAutoTriggered: boolean;
       meetingLocationId: string | null;
+      doomWokeAtTick: number | null;
+      doomFloorMetAtTick: number | null;
+      doomCurrentTick: number;
     }
   >;
 

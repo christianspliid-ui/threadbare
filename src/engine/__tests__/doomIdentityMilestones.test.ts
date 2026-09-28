@@ -6,7 +6,9 @@
  * when doom progress crosses the first threshold (0.10) for all 7 archetypes.
  *
  * Test invariants:
- *   - DEFAULT_DOOM_TICKS = 200, tickModifier = 1.0
+ *   - The clock is pinned to 200 ticks, awake from tick 0 (`pinClock`, THR-1646:
+ *     the default is now 1080 and a generated world's clock sleeps until the bond),
+ *     tickModifier = 1.0
  *   - At tick 20: progress = 20/200 = 0.10 — first milestone threshold
  *   - At tick 30: progress = 30/200 = 0.15 — first milestone triggered, second not
  */
@@ -18,6 +20,7 @@ import { generateArchetypes } from '../ascendant';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
 import { DOOM_CLOCK_ARCHETYPES } from '../../types/doomClock';
 import type { DoomClockArchetype } from '../../types/doomClock';
+import type { GameState } from '../../types/gameState';
 
 const SEED = 42;
 const TICKS = 30;
@@ -25,6 +28,16 @@ const MILESTONE_SMOKE_TIMEOUT_MS = 15_000;
 const { cols, rows } = MAP_SIZE_PRESETS['small'];
 
 const ascendantArchetype = generateArchetypes(4, SEED)[0];
+
+/** The 200-tick clock these invariants were written against, awake from tick 0. */
+const PINNED_DOOM_TICKS = 200;
+function pinClock(state: GameState): GameState {
+  return {
+    ...state,
+    doomClock: { ...state.doomClock, totalTicks: PINNED_DOOM_TICKS, wokeAtTick: 0 },
+    doomDefinition: { ...state.doomDefinition, totalTicks: PINNED_DOOM_TICKS },
+  };
+}
 const cosmology = createBalancedCosmology();
 
 describe('evaluateIdentityMilestones', () => {
@@ -42,6 +55,7 @@ describe('evaluateIdentityMilestones', () => {
     let { state } = initializeGameState(
       ascendantArchetype, 'Test-Runner', cosmology, SEED, cols, rows, archetype,
     );
+    state = pinClock(state);
 
     // The trace buffer is a 2000-entry ring that evicts the oldest entry per emit, and
     // a 30-tick run at the seeded protagonist count THR-1437 raised emits well past
@@ -82,6 +96,7 @@ describe('evaluateIdentityMilestones', () => {
     let { state } = initializeGameState(
       ascendantArchetype, 'Test-Runner', cosmology, SEED, cols, rows, 'breach',
     );
+    state = pinClock(state);
 
     for (let t = 0; t < TICKS; t++) {
       state = runTick(state);

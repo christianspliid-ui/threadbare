@@ -39,6 +39,7 @@ import {
   getOmenTemplateById,
 } from '../data/omenTemplates';
 import { emitTrace } from './traceBuffer';
+import { resolveDoomWokeAtTick } from './doomClock';
 import { appendRecentEvent } from './encounterAftermath';
 import { isUndertakingOutcomeEventId } from './grievance/undertakingOutcomeNode';
 import { isFollowed } from './followedAgents';
@@ -47,7 +48,11 @@ import type { WorldGraph } from './graph';
 
 // ─── Tunable Constants (NFP #1) ──────────────────────────────────
 
-/** Earliest tick an omen can first activate */
+/**
+ * Ticks after the doom clock wakes at the bond before an omen can first activate.
+ * THR-1646: measured from `doomClock.wokeAtTick`, not tick 0 — no omens while the
+ * doom sleeps. A clock without the field (old save) reads as woken at tick 0.
+ */
 export const OMEN_FIRST_ACTIVATION_TICK = 3;
 /** Minimum selection score for the secondary slot to activate */
 export const OMEN_SECONDARY_THRESHOLD = 0.4;
@@ -536,7 +541,8 @@ export function castUndertakingPortent(state: GameState, rng: () => number): Por
  *    outcome becomes an emitted omen
  */
 export function phaseOmenAgenda(state: GameState): Partial<GameState> {
-  if (state.tick < OMEN_FIRST_ACTIVATION_TICK) return {};
+  const doomWokeAt = resolveDoomWokeAtTick(state.doomClock);
+  if (doomWokeAt === null || state.tick - doomWokeAt < OMEN_FIRST_ACTIVATION_TICK) return {};
 
   const rng = mulberry32(state.seed + state.tick * 59);
   const tick = state.tick;

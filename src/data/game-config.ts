@@ -27,9 +27,33 @@ import type { OmenCategory } from '../types/omen';
  *   Medium ~80–120  ticks  (balanced, allows planning)
  *   Long   ~150–200 ticks  (epic scope, multiple escalation cycles)
  *
- * Current default: 200 (Long tier).
+ * Current default: 1080 — three in-world years at 12 ticks a day (THR-1646).
+ * It was 200, which ended a round-1 cold tester's world in Summer Year 1 about
+ * ten real minutes in. At the observed ~3 s/tick, 1080 ticks is ~54 real minutes.
+ * The clock only counts from the bond with The First (`DoomClockState.wokeAtTick`).
  */
-export const DEFAULT_DOOM_TICKS = 200;
+export const DEFAULT_DOOM_TICKS = 1080;
+
+/**
+ * THR-1646 — the floor under the Unmaking. `phaseDoomExpiry` will not move the
+ * game to `twilight` until this many ticks have run since the doom clock woke at
+ * the bond, whatever accelerated the clock (`doom_rate_multiplier`, nudge doom
+ * costs, `doom_micro_tick`). An expired clock holds at Culmination until then.
+ * 720 ticks = two in-world years, room for one threaded mortal's whole journey.
+ */
+export const DOOM_MIN_RUN_TICKS_AFTER_BOND = 720;
+
+/**
+ * THR-1646 — rivals take no action for this many ticks after the doom clock
+ * wakes at the bond (four in-world days), and none at all before it wakes.
+ */
+export const RIVAL_GRACE_TICKS_AFTER_BOND = 48;
+
+/** THR-1646 — ticks between a rival's action decisions, before jitter (was inline `8`). */
+export const RIVAL_ACTION_INTERVAL_BASE = 8;
+
+/** THR-1646 — exclusive upper bound of the `floor(rng * N)` interval jitter (was inline `5`). */
+export const RIVAL_ACTION_INTERVAL_JITTER = 5;
 
 /**
  * Journey pacing is intentionally aligned to the doom chapters:

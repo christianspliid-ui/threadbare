@@ -2632,8 +2632,8 @@ if (import.meta.env.DEV) {
     /**
      * THR-1605 — the opening: has the player met The First, and where.
      *
-     * S1 fields only; later slices of the opening plan (doom wake, spine gift
-     * gates) extend this object. `meetingLocationId` is set the moment the
+     * S1 fields plus the S2 doom wake (THR-1646); the spine gift gates (S4)
+     * extend this object later. `meetingLocationId` is set the moment the
      * auto-trigger fires and stays set after the bond.
      *
      * **Async** (`await` it) — the engine helper is pulled in on call.
@@ -2643,6 +2643,7 @@ if (import.meta.env.DEV) {
       if (!state) return { error: 'no live game state' };
       const { isFirstBonded, isMeetTheFirstAvailable } = await import('./engine/meetingEncounter');
       const { ASCENDANT_SPINE } = await import('./data/ascendant-beat-content');
+      const { resolveDoomWokeAtTick, doomFloorMetAtTick } = await import('./engine/doomClock');
       const openingBeatId = ASCENDANT_SPINE[0].beatId;
       return {
         firstBonded: isFirstBonded(state.graph, state.ascendantId),
@@ -2652,6 +2653,10 @@ if (import.meta.env.DEV) {
           : true,
         meetingAutoTriggered: state.meetTheFirstAutoTriggered === true,
         meetingLocationId: state.meetingLocationId ?? null,
+        // THR-1646 (S2): the doom clock sleeps until the bond.
+        doomWokeAtTick: resolveDoomWokeAtTick(state.doomClock),
+        doomFloorMetAtTick: doomFloorMetAtTick(state.doomClock),
+        doomCurrentTick: state.doomClock?.currentTick ?? 0,
       };
     },
 

@@ -139,6 +139,7 @@ const OMENS = 'Omens & Atmospheric Pressure';
 const DIAGNOSTICS = 'Diagnostics & Incident Capture';
 const WORLDGEN = 'World Generation, Terrain & Places';
 const CULTURE = 'Culture';
+const DOOM = 'Doom Clock & Journey';
 
 export const CONTRACTS: readonly Contract[] = [
   // -- World Generation -> the map (THR-1155) -------------------------------
@@ -5292,6 +5293,59 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: ['src/engine/meetingEncounter.ts'],
     readSites: ['src/engine/attentionTier.ts'],
+  },
+  // -- The opening S2: the doom clock waits for The First (THR-1646) --------
+  // Audit-on-touch rows for Doom Clock & Journey. The failure these exist to
+  // prevent: a round-1 cold tester's world ended in Summer Year 1, ten real
+  // minutes in, before they had met anyone. The clock now sleeps until the bond,
+  // and the Unmaking has a floor measured from the wake.
+  {
+    id: 'first-bond-wakes-doom',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: DOOM,
+    intent:
+      'The Unmaking starts counting when you first reach down: the doom clock does not move until The First is bonded, and the tick it wakes is recorded as the start of the run.',
+    ulTerms: ['The First', 'Doom Clock'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['isFirstBonded'],
+      module: 'src/engine/meetingEncounter.ts',
+    },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/phaseDoom.ts'],
+  },
+  {
+    id: 'doom-floor-holds-unmaking',
+    producerSystem: DOOM,
+    consumerSystem: DOOM,
+    intent:
+      'No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond.',
+    ulTerms: ['Doom Clock', 'The First'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['wokeAtTick', 'doomFloorMetAtTick', 'DOOM_MIN_RUN_TICKS_AFTER_BOND'],
+      module: 'src/engine/doomClock.ts',
+    },
+    writeSites: ['src/engine/phaseDoom.ts', 'src/engine/doomClock.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+  },
+  {
+    id: 'doom-progress-paces-first-journey',
+    producerSystem: DOOM,
+    consumerSystem: DOOM,
+    intent:
+      'The First\x27s hero\x27s journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run.',
+    ulTerms: ['Doom Clock', 'The First'],
+    // Keyed on the state field: `phaseDoom` writes `doomClock` (its `progress`),
+    // and `phaseJourneyBeat` reads `state.doomClock` to place the beat thresholds
+    // (`getJourneyPhase`). The journey never reads the tick, only the fraction.
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['doomClock'],
+      module: 'src/engine/journeyEngine.ts',
+    },
+    writeSites: ['src/engine/phaseDoom.ts'],
+    readSites: ['src/engine/journeyEngine.ts'],
   },
 ];
 

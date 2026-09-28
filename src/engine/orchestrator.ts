@@ -74,6 +74,12 @@ import {
 import { pickWithRepetitionGuard } from './proseSelection';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
 import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEnabled } from './traceBuffer';
+import { doomFloorMetAtTick, isRivalGraceActive, resolveDoomWokeAtTick } from './doomClock';
+import {
+  RIVAL_ACTION_INTERVAL_BASE,
+  RIVAL_ACTION_INTERVAL_JITTER,
+  RIVAL_GRACE_TICKS_AFTER_BOND,
+} from '../data/game-config';
 import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
 import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
@@ -2035,6 +2041,23 @@ function buildSchemeSummaries(
 }
 
 export function phaseRivalActions(state: GameState): Partial<GameState> {
+  // THR-1646 (opening plan S2): rivals hold their hand until the doom clock wakes
+  // at the bond, and for RIVAL_GRACE_TICKS_AFTER_BOND ticks after — the player
+  // meets their First before anyone moves against them.
+  if (isRivalGraceActive(state.doomClock, state.tick)) {
+    if (!state.doomClock || state.doomClock.rivalGraceTraced) return {};
+    const wokeAt = resolveDoomWokeAtTick(state.doomClock);
+    const graceEndsAtTick = wokeAt === null ? null : wokeAt + RIVAL_GRACE_TICKS_AFTER_BOND;
+    emitTrace({
+      category: 'rival.grace_hold',
+      tick: state.tick,
+      graceEndsAtTick,
+      summary: graceEndsAtTick === null
+        ? 'rival.grace_hold: rivals wait — the doom clock is asleep until The First is bonded'
+        : `rival.grace_hold: rivals wait until tick ${graceEndsAtTick}`,
+    });
+    return { doomClock: { ...state.doomClock, rivalGraceTraced: true } };
+  }
   const rng = mulberry32(state.seed + state.tick * 37);
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
@@ -2403,7 +2426,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
     // ── 2. Action decision every ~10 ticks: launch a scheme or probe ──
     const ticksSince = (rivalState.ticksSinceAction ?? 0) + 1;
     rivalState = { ...rivalState, ticksSinceAction: ticksSince };
-    if (ticksSince >= 8 + Math.floor(rng() * 5)) {
+    if (ticksSince >= RIVAL_ACTION_INTERVAL_BASE + Math.floor(rng() * RIVAL_ACTION_INTERVAL_JITTER)) {
       rivalState = { ...rivalState, ticksSinceAction: 0 };
       const decision = selectRivalScheme(
         rival,
@@ -2711,6 +2734,25 @@ export function phaseInfluenceTierPromotion(
 
 export function phaseDoomExpiry(state: GameState): Partial<GameState> {
   if (state.doomClock.expired && state.phase === 'playing') {
+    // THR-1646 (opening plan S2): no world ends before its First has had a life.
+    // The floor counts from the bond (`wokeAtTick`), so it holds against every
+    // accelerator — `doom_rate_multiplier`, nudge doom costs, `doom_micro_tick`.
+    // While it holds, the clock sits expired at Culmination; nothing else changes.
+    const floorMetAt = doomFloorMetAtTick(state.doomClock);
+    if (floorMetAt === null || state.tick < floorMetAt) {
+      if (state.doomClock.expiryHeldTraced) return {};
+      const wokeAt = resolveDoomWokeAtTick(state.doomClock);
+      emitTrace({
+        category: 'doom.expiry_held',
+        tick: state.tick,
+        wokeAtTick: wokeAt ?? -1,
+        floorMetAtTick: floorMetAt ?? -1,
+        summary: floorMetAt === null
+          ? 'doom.expiry_held: the clock expired while still asleep — the Unmaking waits for the bond'
+          : `doom.expiry_held: the clock expired at tick ${state.tick}; the Unmaking waits until tick ${floorMetAt}`,
+      });
+      return { doomClock: { ...state.doomClock, expiryHeldTraced: true } };
+    }
     return {
       phase: 'twilight' as const,
       tickEvents: [...state.tickEvents, {

@@ -21,7 +21,8 @@ describe('GameState types', () => {
   });
 
   it('exports DEFAULT_DOOM_TICKS constant', () => {
-    expect(DEFAULT_DOOM_TICKS).toBe(200);
+    // THR-1646: 200 → 1080 (three in-world years; the clock counts from the bond).
+    expect(DEFAULT_DOOM_TICKS).toBe(1080);
   });
 
   it('exports all 7 doom archetypes', () => {

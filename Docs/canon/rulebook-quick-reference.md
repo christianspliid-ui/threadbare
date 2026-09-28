@@ -110,7 +110,7 @@ A heavy enough harm may take a full mortal's **secondary** want — the vendetta
 
 ## The Clocks and the Ending
 
-Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. It sleeps until you bond The First, and it cannot end the world before a floor of time after the bond [DESIGN — the opening plan, S2]. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
+Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. It sleeps until you bond The First, and it cannot end the world before a floor of time after the bond [IMPL — THR-1646, the opening plan S2]. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
 
 Either clock ending triggers the **Twilight Phase**: the run's closing chapter, harvested into Echoes (Legacy / Monument / Relic) that feed the **World-Soul** and shape the next cycle.
 

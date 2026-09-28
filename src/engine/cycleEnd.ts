@@ -258,7 +258,13 @@ export function transitionToNewCycle(
   // `phaseDoomExpiry` and cycle 2 harvested TWILIGHT_TICKS later. The next cycle
   // keeps the same doom archetype and stage definitions (a World-Soul redraw is
   // future design); only the clock and its fired-milestone bookkeeping reset.
-  const doomClock = createDoomClockState(doomArch, DEFAULT_DOOM_TICKS);
+  // THR-1646: the new cycle's clock wakes at cycle start (tick 0 below), not at a
+  // bond. The bond-wake exists to protect the opening; a later cycle has no
+  // opening, and a First who survived is already bonded — left asleep, the clock
+  // would wait for a bond that already exists. A cycle whose First died must not
+  // sleep forever either, so the wake is unconditional here. The Unmaking floor
+  // and the rival grace window still count from this wake.
+  const doomClock = { ...createDoomClockState(doomArch, DEFAULT_DOOM_TICKS), wokeAtTick: 0 };
   const doomDefinition = { ...state.doomDefinition, totalTicks: DEFAULT_DOOM_TICKS };
   // Identity milestones carry a runtime `triggered` flag; left set, the new
   // cycle's milestones would never fire. Copy rather than mutate — the matrix

@@ -4,6 +4,7 @@ import { routeNotifications } from '../notificationRouter';
 import type { GameState } from '../../types/gameState';
 import type { NotificationState } from '../../types/notification';
 import { WorldGraph } from '../graph';
+import { DOOM_MIN_RUN_TICKS_AFTER_BOND } from '../../data/game-config';
 
 function emptyNotificationState(): NotificationState {
   return { toasts: [], alerts: [], popupQueue: [] };
@@ -95,7 +96,9 @@ describe('notification integration', () => {
     const graph = new WorldGraph();
     const state = {
       graph,
-      tick: 200,
+      // THR-1646: the Unmaking waits for the floor after the bond. This clock
+      // predates the wake field (reads as woken at tick 0), so expiry fires at the floor.
+      tick: DOOM_MIN_RUN_TICKS_AFTER_BOND,
       tickEvents: [],
       phase: 'playing',
       doomClock: {

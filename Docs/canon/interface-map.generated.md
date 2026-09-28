@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 45 |
-| **Total** | **192** |
+| 🔵 UNVERIFIED-OK | 48 |
+| **Total** | **195** |
 
 ## Contracts by producing subsystem
 
@@ -143,6 +143,13 @@ remediation ticket or the build fails.
 | `tick-health-to-incident-bundle` | When the world looks wrong, the engine has already written down what it caught — so the player can hand that record to someone who can read it, instead of describing a screenshot. | function: `getHealthLog`, `getCrashLog`, `getLatestReport`, `exportDiagnostics` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `trace-ring-to-incident-bundle` | Traces are the causal trail — the one record that answers *why* rather than *what* — so a player who armed recording before the trouble can hand that trail over. | function: `getTraces`, `isTracingEnabled`, `enableTracing`, `disableTracing` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 
+### Doom Clock & Journey
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `doom-floor-holds-unmaking` | No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond. | state-field: `wokeAtTick`, `doomFloorMetAtTick`, `DOOM_MIN_RUN_TICKS_AFTER_BOND` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+| `doom-progress-paces-first-journey` | The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run. | state-field: `doomClock` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
+
 ### Effects & Conditions
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
@@ -193,6 +200,7 @@ remediation ticket or the build fails.
 | `fight-writes-opponent-clock` | Every blow a fighter lands fills the opponent's clock, and the next fight reads where it was left — a monster worn down by one hero is closer to falling for the next, recovering only with time. | node-prop: `advanceFightClock`, `monsterState`, `FIGHT_CLOCK_MAILBOX_PROP` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `fight-yield-humiliates-at-home` | Yielding to another person costs a mortal face with their home settlement; yielding to a beast costs nothing, because there is nobody to tell. | edge-prop: `reputation_with`, `applyReputationWithDelta`, `fight_humiliation` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `fights-leave-a-record-on-the-ground` | A fight where blows were actually exchanged leaves its history on the ground it was fought on, so a lair where the beast is fought again and again reads Blood-soaked, and a mortal who fled at the sight of the beast leaves no mark. | function: `fightRecordBranch`, `recordFightFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
+| `first-bond-wakes-doom` | The Unmaking starts counting when you first reach down: the doom clock does not move until The First is bonded, and the tick it wakes is recorded as the start of the run. | function: `isFirstBonded` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -1039,6 +1047,30 @@ exit
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-eval/undertakingPackage.ts` +11 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
 
+### `doom-floor-holds-unmaking` — 🔵 UNVERIFIED-OK
+
+- **Intent:** No world ends before its First has had a life: however fast the clock is pushed, the Unmaking cannot begin until a floor of ticks has passed since the doom woke at the bond.
+- **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
+- **UL terms:** *Doom Clock*, *The First*
+- **Module:** `src/engine/doomClock.ts`
+- **Production hits:** 9 total — 2 write, 1 read, 6 unclassified
+- **Write sites:** `src/engine/doomClock.ts`, `src/engine/phaseDoom.ts`
+- **Read sites:** `src/engine/orchestrator.ts`
+- **Other hits:** `src/data/game-config.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/phaseOmenAgenda.ts`, `src/types/doomClock.ts` +1 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `doom-progress-paces-first-journey` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The First's hero's journey moves with the doom clock: its phases are fractions of doom progress, so a longer clock that starts at the bond stretches the whole call-to-return arc inside every run.
+- **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
+- **UL terms:** *Doom Clock*, *The First*
+- **Module:** `src/engine/journeyEngine.ts`
+- **Production hits:** 40 total — 1 write, 1 read, 38 unclassified
+- **Write sites:** `src/engine/phaseDoom.ts`
+- **Read sites:** `src/engine/journeyEngine.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +33 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
 
 - **Intent:** A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later.
@@ -1421,6 +1453,18 @@ exit
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/battleRecord.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/phaseLocationTraits.ts`
 - **Verdict:** Verified 2026-09-27: THR-1574. Unit (src/engine/fights/__tests__/fightRecord.test.ts, 15 arms, driven through the real onFightEnded with the shipped branches): the branch is first in FIGHT_END_BRANCHES; a fight with an exchange writes one fight_fought record at the outer-tier Location (a fighter in a Place is remembered at its lair) with lastFightTick stamped and participated_in from fighter and opponent; a duel writes one record, not two; no_opponent, opponent_gone and a zero-clash rout write none (traced no_exchanges), while a rout after a real clash does; a failed write is caught and traced and the later branches still run; three records inside the window reach BLOOD_SOAKED_ENTER and one does not. Live: seed 42 medium CLI, three spawn fights at Ardenmor Keep (t7, t14, t17) read bloodshed 1.02 and minted Blood-soaked at t17; one fight read 0.34 and minted nothing.
 
+### `first-bond-wakes-doom` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The Unmaking starts counting when you first reach down: the doom clock does not move until The First is bonded, and the tick it wakes is recorded as the start of the run.
+- **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
+- **UL terms:** *The First*, *Doom Clock*
+- **Module:** `src/engine/meetingEncounter.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/phaseDoom.ts`
+- **Other hits:** `src/debug-bridge.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
 
 - **Intent:** What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word.
@@ -1497,10 +1541,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 73 total — 1 write, 2 read, 70 unclassified
+- **Production hits:** 74 total — 1 write, 2 read, 71 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx` +65 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx` +66 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
