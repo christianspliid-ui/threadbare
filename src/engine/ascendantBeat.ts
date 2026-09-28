@@ -897,7 +897,7 @@ export function resolvePendingBeat(
         placedNodeId: placement.placedNodeId,
         anchorId: placement.anchorId,
         summary: `beat.gift_placed: ${pending.beatId} → ${placement.line}`,
-      } as unknown as Parameters<typeof emitTrace>[0]);
+      });
     }
     const contentTemplate = def.templateId && opts.templateProvider
       ? opts.templateProvider(def.templateId)

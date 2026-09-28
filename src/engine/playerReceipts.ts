@@ -445,7 +445,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
         targetId: action.targetId,
         changeKinds: targetChanges.map((c) => c.kind),
         summary: `receipt: ${template.name} changed ${targetName} (${targetChanges.length} change${targetChanges.length === 1 ? '' : 's'})`,
-      } as unknown as Parameters<typeof emitTrace>[0]);
+      });
     }
 
     const significance =
