@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 140 |
+| 🟢 LIVE | 141 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 51 |
-| **Total** | **201** |
+| **Total** | **202** |
 
 ## Contracts by producing subsystem
 
@@ -216,6 +216,7 @@ remediation ticket or the build fails.
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts. | function: `processPlayerReceipts`, `aftermathSummary`, `receiptToastSentence` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed. | node-prop: `playerActionReceipts`, `resolvedBands` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-cast-lands-in-target-story` | The mortal's story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target's id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all. | node-prop: `digestBuffer`, `castLine`, `castDigestEntry`, `composeThreadStory` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `raw-entry-deal-reaches-template` | A deal declared on a legacy encounter entry arrives on the shipped step, so the everyday encounters the player meets most can offer the god's own hand, not only the handful of direct-authored templates. | function: `toUnifiedTemplate`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -2041,6 +2042,18 @@ exit
 - **Other hits:** `src/data/action-technical-effects.ts`, `src/data/nudge-constants.ts`, `src/engine/brokenState.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/graphOp.ts`
 - **Verdict:** Pinned by badgeOverride: Read sites are wired and tested, but gated behind BROKEN_GATE_ENABLED = false until WS5 authors the rebuild encounters. Erosion scaling + brokenSince bookkeeping are live; candidacy exclusion + broken_drift are not.
 
+### `raw-entry-deal-reaches-template` — 🟢 LIVE
+
+- **Intent:** A deal declared on a legacy encounter entry arrives on the shipped step, so the everyday encounters the player meets most can offer the god's own hand, not only the handful of direct-authored templates.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
+- **Module:** `src/data/encounter-content.ts`
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Write sites:** `src/data/encounter-content.ts`
+- **Read sites:** `src/engine/encounters/dealHand.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`
+- **Verdict:** Verified 2026-09-28: THR-1634 S1. `src/data/__tests__/firedTemplateCompletion.test.ts` reads the shipped `encounter.barter_supplies` through `getUnifiedTemplateById` and finds both declarations on its steps, and finds none on `encounter.mend_equipment`, which declares none. In a browser on local dev at 1920×1080, `?view=game&seeded&size=medium&spawn=encounter.barter_with_travelers` opened the stage with a four-card hand, every card marked "From your repertoire". Dealing is pure: `readers/reach.ts 42,99 200` printed byte-identical output with the passthrough on and off, and `readers/attended.ts 42,99 150` gave the same 1,542 firing rows, outcomes included.
+
 ### `realm-holdings-to-political-map` — 🟢 LIVE
 
 - **Intent:** The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth.
@@ -2057,10 +2070,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 319 total — 1 write, 1 read, 317 unclassified
+- **Production hits:** 320 total — 1 write, 1 read, 318 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +312 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +313 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
