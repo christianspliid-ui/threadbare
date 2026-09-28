@@ -1,0 +1,1997 @@
+{
+ "42": {
+  "wgLanes": [
+   {
+    "id": "trades_with_loc_4_loc_15_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_4_loc_32_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_9_loc_10_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_9_loc_19_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_7_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_13_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   }
+  ],
+  "laneGoneAt": {
+   "trades_with_loc_4_loc_15_0": 36,
+   "trades_with_loc_4_loc_32_0": 36,
+   "trades_with_loc_9_loc_10_0": 36,
+   "trades_with_loc_9_loc_19_0": 36,
+   "trades_with_loc_1_loc_7_0": 36,
+   "trades_with_loc_1_loc_13_0": 36
+  },
+  "dissolved": [
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_4_loc_15_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_4_loc_32_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_9_loc_10_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_9_loc_19_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_1_loc_7_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_1_loc_13_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 205,
+    "edgeId": "trades_with_loc_8_loc_15_169",
+    "establishedTick": 169,
+    "totalTicksActive": 36
+   }
+  ],
+  "snaps": {
+   "0": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 0,
+     "owns": 5
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {},
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 489,
+    "withCulture": 244,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 20,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 4,
+    "maxTierHist": {
+     "1": 1,
+     "6": 1,
+     "8": 2,
+     "9": 5,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "1": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 0,
+     "owns": 5
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {},
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 489,
+    "withCulture": 244,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 20,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 4,
+    "maxTierHist": {
+     "1": 1,
+     "6": 1,
+     "8": 2,
+     "9": 5,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "20": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 3,
+     "owns": 5
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {
+     "vague": 3
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 498,
+    "withCulture": 245,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 5,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "6": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "36": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 1,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 3,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 3
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 506,
+    "withCulture": 247,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 9,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "37": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 1,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 3,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 3
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 506,
+    "withCulture": 247,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 9,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "38": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 1,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 3,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 3
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 506,
+    "withCulture": 247,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 9,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "40": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 1,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 4,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 4
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 508,
+    "withCulture": 248,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8,
+     "npc_# | role=brewer | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 8,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "60": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 2,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 169,
+     "knows_clue_of": 4,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 4
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 536,
+    "withCulture": 255,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "ind_# | role=- | -": 10,
+     "elite_lair_#_# | role=- | -": 10,
+     "npc_# | role=scout | -": 9,
+     "npc_# | role=priest | -": 8
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 8,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 6,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 3
+    }
+   },
+   "100": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 2,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 170,
+     "knows_clue_of": 4,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 4
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 568,
+    "withCulture": 263,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "born_lc_# | role=- | -": 14,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "elite_lair_#_# | role=- | -": 10,
+     "ind_# | role=- | -": 9,
+     "npc_# | role=scout | -": 9
+    },
+    "deciders": 20,
+    "mentorCapable": 17,
+    "mentorWithApprentice": 11,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "8": 1,
+     "9": 5,
+     "10": 10
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 4
+    }
+   },
+   "150": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 171,
+     "knows_clue_of": 4,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 4
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 598,
+    "withCulture": 269,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 25,
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "elite_lair_#_# | role=- | -": 10,
+     "ind_# | role=- | -": 9
+    },
+    "deciders": 20,
+    "mentorCapable": 17,
+    "mentorWithApprentice": 12,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "7": 1,
+     "9": 4,
+     "10": 12
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 5
+    }
+   },
+   "200": {
+    "edges": {
+     "trades_with": 1,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 5,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 173,
+     "knows_clue_of": 6,
+     "owns": 6
+    },
+    "lanesBy": {
+     "mortal": 1
+    },
+    "routeIdentities": 1,
+    "routeOwned": 1,
+    "routeIdLive": 1,
+    "clues": {
+     "vague": 6
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 626,
+    "withCulture": 278,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 35,
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "elite_lair_#_# | role=- | -": 10,
+     "ind_# | role=- | -": 9
+    },
+    "deciders": 20,
+    "mentorCapable": 17,
+    "mentorWithApprentice": 13,
+    "maxTierHist": {
+     "1": 1,
+     "4": 1,
+     "5": 1,
+     "7": 1,
+     "9": 3,
+     "10": 13
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 7
+    }
+   },
+   "250": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 2,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 7,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 173,
+     "knows_clue_of": 2,
+     "owns": 5
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 2
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 656,
+    "withCulture": 285,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 49,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 22,
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "elite_lair_#_# | role=- | -": 10,
+     "ind_# | role=- | -": 9
+    },
+    "deciders": 20,
+    "mentorCapable": 16,
+    "mentorWithApprentice": 10,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "5": 1,
+     "7": 1,
+     "9": 3,
+     "10": 12
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 7
+    }
+   },
+   "300": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 2,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 7,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 173,
+     "knows_clue_of": 7,
+     "owns": 6
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 7
+    },
+    "elderRuins": 103,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 676,
+    "withCulture": 295,
+    "noCultureButHomeCulture": 61,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 56,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 23,
+     "npc_# | role=innkeeper | -": 20,
+     "npc_# | role=entertainer | -": 19,
+     "npc_# | role=guard | -": 18,
+     "npc_# | role=broker | -": 16,
+     "npc_# | role=elder | -": 15,
+     "npc_# | role=commander | -": 12,
+     "npc_# | role=healer | -": 11,
+     "npc_# | role=quartermaster | -": 11,
+     "elite_lair_#_# | role=- | -": 10,
+     "ind_# | role=- | -": 9
+    },
+    "deciders": 20,
+    "mentorCapable": 16,
+    "mentorWithApprentice": 10,
+    "maxTierHist": {
+     "1": 1,
+     "4": 2,
+     "5": 1,
+     "7": 1,
+     "9": 4,
+     "10": 11
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 166,
+     "mint": 7
+    }
+   }
+  },
+  "traceCounts": {
+   "ruins.density_seeded": 1,
+   "undertaking_cell_unreachable": 30,
+   "unreachable::no_owned_object": 14,
+   "unreachable::no_object_exists": 16,
+   "faction_succession": 153,
+   "ruins.clue_receiver_selected": 34,
+   "ruins.clue_discovered": 34,
+   "ruins.clue_rumor_sweep": 30,
+   "ruins.clue_suppressed_no_eligible_recipient": 11,
+   "ruins.quest_hook_issued": 6,
+   "ruins.quest_hook_suppressed": 30,
+   "trade_route_dissolved": 7,
+   "ruins.clue_decayed": 27,
+   "reputation_with_changed": 6,
+   "reputation_with_pruned": 2
+  },
+  "repCauses": {
+   "strat_cell.use.standing_npc_280_147": 1,
+   "strat_cell.use.standing_npc_281_206": 1,
+   "strat_cell.use.agreement_ind_4_209": 1,
+   "strat_cell.use.agreement_ind_4_240": 1,
+   "strat_cell.use.standing_npc_280_273": 1,
+   "strat_cell.use.standing_npc_281_274": 1
+  },
+  "successionOutcomes": {
+   "snapshot_bootstrapped": 83,
+   "peaceful_overtake": 66,
+   "natural_succession": 4
+  },
+  "projectsByTemplate": {
+   "cell.create.companion": {
+    "started": 1,
+    "completed": 0,
+    "failed": 1,
+    "active": 0
+   },
+   "cell.create.route": {
+    "started": 1,
+    "completed": 1,
+    "failed": 0,
+    "active": 0
+   },
+   "cell.control_claim.route": {
+    "started": 1,
+    "completed": 1,
+    "failed": 0,
+    "active": 0
+   }
+  },
+  "unkFirstSeen": {},
+  "unkSample": {}
+ },
+ "99": {
+  "wgLanes": [
+   {
+    "id": "trades_with_loc_8_loc_10_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_8_loc_28_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_16_loc_92_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_16_loc_99_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_27_loc_37_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   },
+   {
+    "id": "trades_with_loc_27_loc_42_0",
+    "by": "worldgen",
+    "vol": 1,
+    "lastTraded": 0,
+    "establishedTick": 0
+   }
+  ],
+  "laneGoneAt": {
+   "trades_with_loc_8_loc_10_0": 36,
+   "trades_with_loc_8_loc_28_0": 36,
+   "trades_with_loc_16_loc_92_0": 36,
+   "trades_with_loc_16_loc_99_0": 36,
+   "trades_with_loc_27_loc_37_0": 36,
+   "trades_with_loc_27_loc_42_0": 36
+  },
+  "dissolved": [
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_8_loc_10_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_8_loc_28_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_16_loc_92_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_16_loc_99_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_27_loc_37_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 36,
+    "edgeId": "trades_with_loc_27_loc_42_0",
+    "establishedTick": 0,
+    "totalTicksActive": 36
+   },
+   {
+    "tick": 114,
+    "edgeId": "trades_with_loc_1_loc_7_78",
+    "establishedTick": 78,
+    "totalTicksActive": 36
+   }
+  ],
+  "snaps": {
+   "0": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 0,
+     "owns": 8
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {},
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 633,
+    "withCulture": 334,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11,
+     "npc_# | role=guard_captain | -": 11
+    },
+    "deciders": 23,
+    "mentorCapable": 22,
+    "mentorWithApprentice": 10,
+    "maxTierHist": {
+     "1": 1,
+     "9": 7,
+     "10": 15
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "1": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 0,
+     "owns": 8
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {},
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 635,
+    "withCulture": 334,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11,
+     "npc_# | role=guard_captain | -": 11
+    },
+    "deciders": 24,
+    "mentorCapable": 22,
+    "mentorWithApprentice": 10,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "9": 7,
+     "10": 15
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "20": {
+    "edges": {
+     "trades_with": 6,
+     "reputation_with": 0,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 0,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 5,
+     "owns": 8
+    },
+    "lanesBy": {
+     "worldgen": 6
+    },
+    "routeIdentities": 6,
+    "routeOwned": 0,
+    "routeIdLive": 6,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 651,
+    "withCulture": 341,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11,
+     "npc_# | role=guard_captain | -": 11
+    },
+    "deciders": 25,
+    "mentorCapable": 22,
+    "mentorWithApprentice": 9,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 6,
+     "10": 16
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "36": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 5,
+     "owns": 7
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 660,
+    "withCulture": 344,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "born_lc_# | role=- | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 24,
+    "mentorCapable": 21,
+    "mentorWithApprentice": 11,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 16
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "37": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 5,
+     "owns": 7
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 661,
+    "withCulture": 345,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "born_lc_# | role=- | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 24,
+    "mentorCapable": 21,
+    "mentorWithApprentice": 12,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 16
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "38": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 5,
+     "owns": 7
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 662,
+    "withCulture": 345,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "born_lc_# | role=- | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 24,
+    "mentorCapable": 21,
+    "mentorWithApprentice": 14,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 16
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "40": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 1,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 195,
+     "knows_clue_of": 6,
+     "owns": 7
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 6
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 665,
+    "withCulture": 345,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "born_lc_# | role=- | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 24,
+    "mentorCapable": 21,
+    "mentorWithApprentice": 12,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 16
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 3
+    }
+   },
+   "60": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 3,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 3,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 196,
+     "knows_clue_of": 2,
+     "owns": 6
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 2
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 687,
+    "withCulture": 352,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "born_lc_# | role=- | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 23,
+    "mentorCapable": 20,
+    "mentorWithApprentice": 14,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 15
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 4
+    }
+   },
+   "100": {
+    "edges": {
+     "trades_with": 1,
+     "reputation_with": 6,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 4,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 198,
+     "knows_clue_of": 7,
+     "owns": 6
+    },
+    "lanesBy": {
+     "mortal": 1
+    },
+    "routeIdentities": 1,
+    "routeOwned": 0,
+    "routeIdLive": 1,
+    "clues": {
+     "vague": 7
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 714,
+    "withCulture": 364,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 26,
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 22,
+    "mentorCapable": 19,
+    "mentorWithApprentice": 15,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 5,
+     "10": 14
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 6
+    }
+   },
+   "150": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 7,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 4,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 199,
+     "knows_clue_of": 6,
+     "owns": 6
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 6
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 761,
+    "withCulture": 386,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 43,
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 21,
+    "mentorCapable": 18,
+    "mentorWithApprentice": 16,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 4,
+     "10": 14
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 7
+    }
+   },
+   "200": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 5,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 5,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 199,
+     "knows_clue_of": 5,
+     "owns": 6
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 792,
+    "withCulture": 399,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 57,
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12,
+     "npc_# | role=merchant | -": 11
+    },
+    "deciders": 21,
+    "mentorCapable": 18,
+    "mentorWithApprentice": 13,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "4": 1,
+     "9": 4,
+     "10": 14
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 7
+    }
+   },
+   "250": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 2,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 7,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 199,
+     "knows_clue_of": 5,
+     "owns": 9
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 5
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 830,
+    "withCulture": 415,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 73,
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12
+    },
+    "deciders": 21,
+    "mentorCapable": 18,
+    "mentorWithApprentice": 11,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "5": 1,
+     "9": 4,
+     "10": 14
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 7
+    }
+   },
+   "300": {
+    "edges": {
+     "trades_with": 0,
+     "reputation_with": 3,
+     "accompanies": 0,
+     "mentors": 0,
+     "leads": 0,
+     "will_succeed": 7,
+     "sacred_route": 0,
+     "knows_spell": 0,
+     "holds_place_of_power": 0,
+     "constructed_by": 199,
+     "knows_clue_of": 3,
+     "owns": 8
+    },
+    "lanesBy": {},
+    "routeIdentities": 0,
+    "routeOwned": 0,
+    "routeIdLive": 0,
+    "clues": {
+     "vague": 3
+    },
+    "elderRuins": 88,
+    "locatedHolders": 0,
+    "locatedOnHex": 0,
+    "spellDefs": 5,
+    "wieldedSpells": 0,
+    "companions": 0,
+    "activeDelves": 0,
+    "delveQueue": 0,
+    "echoStates": 0,
+    "mortals": 868,
+    "withCulture": 433,
+    "noCultureButHomeCulture": 77,
+    "noCultureShapes": {
+     "born_lc_# | role=- | -": 87,
+     "npc_# | role=innkeeper | -": 23,
+     "npc_# | role=entertainer | -": 22,
+     "npc_# | role=guard | -": 21,
+     "npc_# | role=commander | -": 20,
+     "elite_lair_adj_#_#_#_#_# | role=- | -": 18,
+     "npc_# | role=quartermaster | -": 17,
+     "npc_# | role=scout | -": 17,
+     "npc_# | role=healer | -": 15,
+     "npc_# | role=elder | -": 14,
+     "npc_# | role=priest | -": 13,
+     "npc_# | role=broker | -": 12
+    },
+    "deciders": 21,
+    "mentorCapable": 18,
+    "mentorWithApprentice": 17,
+    "maxTierHist": {
+     "1": 1,
+     "3": 1,
+     "5": 1,
+     "9": 4,
+     "10": 14
+    },
+    "subtypelessLocations": 0,
+    "constructedBySrc": {
+     "worldSeed": 192,
+     "mint": 7
+    }
+   }
+  },
+  "traceCounts": {
+   "ruins.density_seeded": 1,
+   "undertaking_cell_unreachable": 31,
+   "unreachable::no_object_exists": 16,
+   "unreachable::no_owned_object": 15,
+   "faction_succession": 166,
+   "ruins.clue_suppressed_no_eligible_recipient": 20,
+   "ruins.clue_receiver_selected": 38,
+   "ruins.clue_discovered": 38,
+   "ruins.clue_rumor_sweep": 30,
+   "ruins.quest_hook_issued": 9,
+   "ruins.quest_hook_suppressed": 33,
+   "reputation_with_changed": 11,
+   "trade_route_dissolved": 7,
+   "ruins.clue_decayed": 35,
+   "reputation_with_pruned": 7
+  },
+  "repCauses": {
+   "proj_cell.change_raise.standing_ind_7_2": 1,
+   "proj_cell.change_raise.standing_ind_3_15": 1,
+   "proj_cell.change_raise.standing_ind_7_38": 1,
+   "proj_cell.change_raise.standing_ind_3_58": 1,
+   "proj_cell.change_raise.standing_ind_3_77": 1,
+   "proj_cell.change_raise.standing_ind_7_67": 1,
+   "encounter_aftermath": 1,
+   "proj_cell.change_raise.standing_ind_3_96": 1,
+   "proj_cell.change_raise.standing_ind_3_168": 1,
+   "proj_cell.change_raise.standing_ind_9_162": 1,
+   "proj_cell.change_raise.standing_ind_7_261": 1
+  },
+  "successionOutcomes": {
+   "snapshot_bootstrapped": 86,
+   "peaceful_overtake": 75,
+   "natural_succession": 5
+  },
+  "projectsByTemplate": {
+   "cell.change_raise.standing": {
+    "started": 15,
+    "completed": 10,
+    "failed": 3,
+    "active": 2
+   },
+   "cell.create.faction": {
+    "started": 3,
+    "completed": 2,
+    "failed": 1,
+    "active": 0
+   },
+   "cell.create.route": {
+    "started": 1,
+    "completed": 1,
+    "failed": 0,
+    "active": 0
+   },
+   "cell.control_claim.route": {
+    "started": 1,
+    "completed": 1,
+    "failed": 0,
+    "active": 0
+   }
+  },
+  "unkFirstSeen": {},
+  "unkSample": {}
+ }
+}
