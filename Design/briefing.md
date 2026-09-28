@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-28 23:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-29 00:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,7 +27,10 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 jobs ready to build, 1 being built.** New this hour: the last step of [let written encounters land](https://linear.app/threadbare/issue/THR-1641) merged ([#2130](https://github.com/christianspliid-ui/threadbare/pull/2130)) and is live. Its follow-up, [a mortal who walks to a remote encounter starts it on arrival](https://linear.app/threadbare/issue/THR-1668), is built and waiting on its checks ([#2131](https://github.com/christianspliid-ui/threadbare/pull/2131)); it merges by itself on green. That build filed its own follow-up: [a mortal with a promise to keep stops turning back from every journey](https://linear.app/threadbare/issue/THR-1669).
+**Healthy: 7 jobs ready to build, none being built right now.** The builder picks up the next one at the top of the hour. New this hour, both merged and live:
+
+- [A mortal who walks to a remote encounter starts it on arrival](https://linear.app/threadbare/issue/THR-1668) ([#2131](https://github.com/christianspliid-ui/threadbare/pull/2131)).
+- [A mortal with a promise to keep stops turning back from every journey](https://linear.app/threadbare/issue/THR-1669) ([#2132](https://github.com/christianspliid-ui/threadbare/pull/2132)).
 
 - **The living world, next up:** [one notable in every settlement](https://linear.app/threadbare/issue/THR-1654), [the player meets the past](https://linear.app/threadbare/issue/THR-1656), [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [the player sees faith and fringe](https://linear.app/threadbare/issue/THR-1659), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), and [finish the encounters, step two](https://linear.app/threadbare/issue/THR-1666). The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation.
 - **Faith and politics is not ready for you to look at yet.** The world now has it, but nothing on screen shows it until [THR-1659](https://linear.app/threadbare/issue/THR-1659) ships.
@@ -35,11 +38,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **The slow simulation tests that run after each merge went red after [#2130](https://github.com/christianspliid-ui/threadbare/pull/2130) merged:** one test, `doomIdentityMilestones` ("milestone flag persists — no re-emission"), fails ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36483596627)). The run before it was green. It does not block merges; a builder owes a fix. Not yours.
-- **The home checkout is now 75 commits behind `main`**, stuck for about 16 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
+- **The home checkout is now 83 commits behind `main`**, stuck for about 17 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - Game speed: 92 ms per tick, within range of the weekly median (78).
-  - The live site is up to date (7e1abaff, the last encounter-landing step).
-  - Automated checks and the three background jobs are running; the one open pull request ([#2131](https://github.com/christianspliid-ui/threadbare/pull/2131)) will merge on green.
+  - The slow simulation tests are green again: the one failure from last hour cleared on the next two merges ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36493339045)).
+  - Game speed: 90 ms per tick, within range of the weekly median (78).
+  - The live site is up to date (1200a6f7, the promise-keeping fix).
+  - Automated checks and the three background jobs are running; no pull requests are waiting.
   - All ten scheduled lanes are on time. The worktree cleaner reports five old worktrees awaiting its own decision.

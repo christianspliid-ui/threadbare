@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-28 23:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-29 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-29: a promise outlasts the journey**: a mortal heading off to keep a promise no longer turns back at every step ([THR-1669](https://linear.app/threadbare/issue/THR-1669)). Merged via [#2132](https://github.com/christianspliid-ui/threadbare/pull/2132), and live on the site.
+- **2026-09-28: walking to an encounter starts it**: a mortal who travels to a remote encounter now begins it on arrival ([THR-1668](https://linear.app/threadbare/issue/THR-1668)). Merged via [#2131](https://github.com/christianspliid-ui/threadbare/pull/2131), and live on the site.
 - **2026-09-28: written encounters land**: guild social scenes, anomaly places and place-trait bonuses now reach play (last step of [THR-1641](https://linear.app/threadbare/issue/THR-1641)). Merged via [#2130](https://github.com/christianspliid-ui/threadbare/pull/2130), and live on the site.
 - **2026-09-28: the ten most common encounters are finished**: each now has its own lines for succeeding at a cost and for crits, and deals a hand from your god's cards (step one of [THR-1634](https://linear.app/threadbare/issue/THR-1634)). Merged via [#2129](https://github.com/christianspliid-ui/threadbare/pull/2129), and live on the site.
 - **2026-09-28: the hover tooltip is readable again**: a region's name no longer draws on top of it ([THR-1665](https://linear.app/threadbare/issue/THR-1665)). Merged via [#2127](https://github.com/christianspliid-ui/threadbare/pull/2127), and live on the site.
@@ -39,8 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: faith and politics as world settings**: every culture gets its own Temple congregation and holy places, nearby wild towns read as its fringe, and town guilds are labelled ([THR-1632](https://linear.app/threadbare/issue/THR-1632)). Merged via [#2124](https://github.com/christianspliid-ui/threadbare/pull/2124), and live on the site; the on-screen step is [THR-1659](https://linear.app/threadbare/issue/THR-1659).
 - **2026-09-28: "who am I?" answered on screen**: the avatar's past-life name now reads as "your mortal shape" ([THR-1609](https://linear.app/threadbare/issue/THR-1609)). Merged via [#2123](https://github.com/christianspliid-ui/threadbare/pull/2123), and live on the site.
 - **2026-09-28: what you spend and risk, made readable**: a new player can see what an action costs and what it risks before choosing ([THR-1607](https://linear.app/threadbare/issue/THR-1607)). Merged via [#2122](https://github.com/christianspliid-ui/threadbare/pull/2122), and live on the site.
-- **2026-09-28: a quiet first screen**: doom, rivals and omens stay hidden until you bond with The First ([THR-1648](https://linear.app/threadbare/issue/THR-1648)). Merged via [#2120](https://github.com/christianspliid-ui/threadbare/pull/2120), and live on the site.
-- **2026-09-28: the opening gifts wait for the player**: one gift per thing you do, not a pile of popups before you have acted ([THR-1647](https://linear.app/threadbare/issue/THR-1647)). Merged via [#2119](https://github.com/christianspliid-ui/threadbare/pull/2119), live.
 
 ---
 
