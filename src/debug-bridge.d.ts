@@ -1479,8 +1479,8 @@ export interface DebugBridge {
    *
    * Async — `await` it.
    */
-  getWorldPast(): Promise<import('./types/worldPast').WorldPastView | null>;
-  getWorldPast(opts: { fogged: true }): Promise<
+  getWorldPast(opts?: { fogged?: boolean }): Promise<
+    | import('./types/worldPast').WorldPastView
     | (import('./types/worldPast').WorldPastPlayerView & {
         lines: Array<{ group: string; count: number; lines: string[] }>;
       })

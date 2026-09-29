@@ -51,7 +51,7 @@ export const CHRONICLE_PAST_SETTLING_ROWS = 10;
 export const EMPIRE_LINES: readonly string[] = [
   '{empire} left {kinds} behind.',
   '{empire} is gone. It left {kinds}.',
-  'Of {empire}, only {kinds} remain.',
+  'Of {empire}, {kinds} remain.',
 ];
 
 /** The elder war: `{war}` (its generated name), `{empireA}`, `{empireB}`, `{ago}`. */

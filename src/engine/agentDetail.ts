@@ -1317,8 +1317,6 @@ const DEATH_CAUSE_WORDS: Readonly<Record<string, string>> = {
   commission: 'slain',
   band: 'fell in a fight',
   lifecycle: 'died',
-  // THR-1656 — a fallen commander the past pass seeded.
-  battle: 'fell in battle',
   // THR-1538 — a fight is a public deed; the sheet names the victor (see `killerIsKnown`).
   fight: 'slain',
   // THR-1566 — a commander who fell when their army broke.

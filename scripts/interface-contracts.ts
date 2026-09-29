@@ -5343,7 +5343,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: WORLDGEN,
     consumerSystem: NARRATIVE,
     intent:
-      'The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on a dead person's sheet read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties.',
+      'The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties.',
     ulTerms: ['Location', 'Realm'],
     mechanism: {
       kind: 'function',
