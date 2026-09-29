@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 148 |
+| 🟢 LIVE | 149 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
+| 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
@@ -244,7 +244,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🔴 LEAKED | THR-1659 |
+| `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🟢 LIVE | — |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -966,17 +966,17 @@ exit
 - **Other hits:** `src/engine/groups/bandOpposition.ts`
 - **Verdict:** Verified 2026-07-25: The gate is enforced on BOTH paths a template reaches an agent by. generateUnifiedCandidates already gated group-exclusive content on minGroupMembers (THR-74); the location-cache path (getEncountersByLocationType → encounterCache → encounterFilterPipeline) had NO actor-affinity stage at all, measured at implementation time: getEncountersByLocationType("ruins") returned 7 group-exclusive templates — including THR-74's shipped sunken_vault/broken_span/hollow_watch — with nothing downstream reading actorAffinities, so party-exclusive delves were reachable by solo agents in contradiction of their authoring contract. filterByPrerequisites (stage 3, the pipeline's documented prerequisites stage) now enforces both minGroupMembers and requiresOpposingBand. Locked by src/engine/groups/__tests__/confrontationContent.test.ts (27 tests), which asserts both gates on both paths and pins the solo-agent case that was previously open. Re-verified 2026-07-27 under THR-811: the stage-3 gate only ever saw the templates its lookup could resolve, and `getAnyEncounterById` missed 43 of the 213 cache-registrable ids, so on that id set both gates passed unchecked regardless of authoring. The loop now resolves via getUnifiedTemplateById (0 unresolvable), and the swept `withGroupAffinity` copy is what the gate reads — pinned, along with the polarity check that no template becomes NEWLY group-exclusive, by src/engine/__tests__/prerequisiteTemplateResolution.test.ts.
 
-### `congregation-sphere-reaches-faction-page` — 🔴 LEAKED
+### `congregation-sphere-reaches-faction-page` — 🟢 LIVE
 
 - **Intent:** Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number.
 - **Producer → Consumer:** Factions & Succession → Factions & Succession
 - **UL terms:** *Congregation*, *Sphere*, *Faction*
 - **Module:** `src/data/world-scenario.ts`
-- **Production hits:** 4 total — 1 write, 0 read, 3 unclassified
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/worldSeed.ts`
-- **Read sites:** —
+- **Read sites:** `src/components/Game/FactionSheet.tsx`
 - **Other hits:** `src/data/world-scenario.ts`, `src/engine/worldScenarioCensus.ts`, `src/types/trace.ts`
-- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'veneratedSphere' src/components/Game/FactionSheet.tsx before treating this as a leak.
+- **Verdict:** Verified 2026-09-29: THR-1659 (S2). Browser, 1920×1080, `?view=game&seeded&size=medium&nofog`: `getWorldScenario().congregations` lists three congregations (spirit / darkness / entropy); `openRef('faction', 'faction_def_temple_of_spheres_0', 'sheet')` renders `[data-testid=faction-venerates-line]` = "Venerates Spirit." under the kind chip. A labelled town guild's chip reads `guild` (capitalised by CSS), with no venerates line. Unit tests: `src/components/Game/__tests__/FaithAndFringe.thr1659.test.tsx`.
 
 ### `content-objects-registry` — 🟢 LIVE
 
@@ -2353,10 +2353,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 102 total — 1 write, 1 read, 100 unclassified
+- **Production hits:** 104 total — 1 write, 1 read, 102 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +95 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +97 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE

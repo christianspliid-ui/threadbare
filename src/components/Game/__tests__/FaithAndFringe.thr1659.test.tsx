@@ -34,7 +34,7 @@ function factionGraph(properties: Record<string, unknown>): WorldGraph {
 /** One hex holding two settlements, each linked to the same culture. */
 function hexGraph(fringeFlags: [boolean, boolean]): WorldGraph {
   const graph = new WorldGraph();
-  graph.addNode({ id: 'culture_0', type: 'culture', name: 'Varn', properties: {} } as never);
+  graph.addNode({ id: 'culture_0', type: 'actor', name: 'Varn', properties: { actorType: 'culture' } } as never);
   fringeFlags.forEach((fringe, i) => {
     graph.addNode({
       id: `loc_${i}`, type: 'location', name: `Town ${i}`,
@@ -117,7 +117,7 @@ describe('hex culture panel — a fringe settlement reads as fringe (THR-1659)',
     const cultures = getHexCultures(hexGraph([true, true]), 2, 3);
     render(
       <HexSidebar
-        terrain="plains"
+        terrain="grassland"
         hexCol={2}
         hexRow={3}
         sphereInfluence={null}
