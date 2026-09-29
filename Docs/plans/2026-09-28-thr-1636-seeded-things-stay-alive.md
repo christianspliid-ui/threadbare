@@ -30,6 +30,7 @@ This is carve-up plan 7 of 7 from that map. Its sibling plans seed people, ties,
 3. **A blockade suspends a lane, and neglect is what kills it** (§ S1). A blockaded lane does not decay while the blockade holds, as the blockade verb's own comment already promises (*"suspended, not deleted"*, `undertaking-objects.ts:1384`). A lane dies when one of its towns stops being a standing settlement, or when its roads are cursed.
 4. **The clue climb follows the hunt's shape** (§ S2, S3). A survey of a ruin you hold a lead on arranges a visit, an appointment at the ruin, exactly as a hunt arranges the confront at the den ([THR-1560](https://linear.app/threadbare/issue/THR-1560)). The visit's own dice decide whether the lead becomes `located`.
 5. **Leads lean toward the mortals who can act on them** (§ S2). Rumours still reach anyone in the settlement, but a deciding mortal who is present is weighted up.
+6. **After S2: the decider share is reported, not gated** (§ Re-plan after S2, added 2026-09-29). The 30% target was a stand-in for "a decider surveys the ruin they hold a lead on", which S2 achieved. Lead hand-off waits for evidence that S3 starves.
 
 ## Re-measured on current `main` (2026-09-28, `50cc9bc2`)
 
@@ -132,6 +133,7 @@ Traffic only ever steps volume toward the level, one per `LANE_TRAFFIC_SETTLE_IN
    - `delayTicks: CLUE_LEAD_VISIT_DELAY_TICKS`, `pullMult: CLUE_LEAD_VISIT_PULL_MULT`, `requirePlace: true`
    - **new optional field** `siteClasses: ['ruin', 'wonder']` on `UndertakingAppointmentPayoff`, so the visit is arranged only when the surveyed site is surveyable (`isSurveyableSite`). A survey of a town arranges nothing, exactly as today.
    - The visit is arranged whenever the survey left the surveyor holding a `narrowed` lead on the site. The planter, `maybePlantAppointmentPayoff` (`strategicActionLifecycle.ts:2272`), is unconditional on outcome today. The condition reads the survey's op results through its existing `ops` parameter, plus `siteClasses` against the site.
+   - **One pending visit per holder per ruin** (added 2026-09-29, § Re-plan after S2). If the surveyor's lead on the site already carries `pendingVisitDueTick`, the planter plants nothing. The survey still refreshes the lead. Without this, the tick-keyed seed id would plant a duplicate visit on every repeat survey. A test pins it.
 2. **A pending visit pauses lead decay.** The payoff stamps `pendingVisitDueTick` on the holder's lead edge. `phaseClueDecay` skips a lead while `tick <= pendingVisitDueTick + CLUE_LEAD_VISIT_GRACE_TICKS`, so a 48-tick journey does not outlive a 40-tick lead. The visit's resolution clears the stamp either way.
 3. **The visit's band sets the lead.** The kept template carries a new aftermath effect, `sharpen_clue`, sibling to `spawn_clue`. It acts on the actor's own unconsumed lead on the encounter's site (the appointment's `resolutionLocationId`), never by Narrative Gravity. The band maps through `CLUE_VISIT_PRECISION_BY_BAND`:
 
@@ -272,8 +274,36 @@ S1 is independent of S2 and S3. S3 needs S2 (a survey must reach a ruin before i
 ## Kill criteria
 
 - **S1:** if the A/B census shows lanes standing at t300 beyond seeded + founded, or a prosperity runaway on lane-dense capitals, lower `LANE_TRAFFIC_MAX_VOLUME` first. If that fails, ship with `LANE_TRAFFIC_ENABLED = false` and reopen the design on the ticket.
-- **S2:** if the decider share of leads stays under 30% after tuning `CLUE_BIAS_DECIDER`, or the budget line breaks, stop before S3 and re-plan (the next lever is lead hand-off).
-- **S3:** if no seed produces a `located` lead and a delve in 300 ticks after tuning `CLUE_LEAD_VISIT_PULL_MULT`, report the starving rung and re-plan. Never widen the dice to force it.
+- **S2:** ~~if the decider share of leads stays under 30% after tuning `CLUE_BIAS_DECIDER`, or the budget line breaks, stop before S3 and re-plan (the next lever is lead hand-off).~~ **Fired and re-planned 2026-09-29, see § Re-plan after S2.** The criterion now reads: if a seed has no survey that leaves a lead holder with a `narrowed` lead on a ruin in 300 ticks, or the budget line breaks, stop before S3 and re-plan.
+- **S3:** if no seed produces a `located` lead and a delve in 300 ticks after tuning `CLUE_LEAD_VISIT_PULL_MULT`, report the starving rung and re-plan. Never widen the dice to force it. If the rung that starves is the supply of visits (fewer than 2 visits arranged on a seed), the next lever is lead hand-off (§ Re-plan after S2), not a bigger decider weight.
+
+## Re-plan after S2 (2026-09-29, THR-1675)
+
+*Lane decision 6, design lane run 2026-09-29c, under delegation (process.md rule 4). Veto in chat.*
+
+**What fired.** S2 shipped (PR #2140). Two of its three measurements passed. The third, the decider share of new leads, reached 13% and 14% against a 30% target. The executor then set `CLUE_BIAS_DECIDER` to 50 as a diagnostic. At that weight a decider wins every rumour draw they take part in, and the share still topped out at 27% (8/30) and 23% (9/39). About 20 deciders live among 550–750 individuals, so only about a quarter of rumour pools contain one. The weight is saturated. The pool is the limit.
+
+**Decision: re-baseline (option c), and unblock S3 now.** The 30% share was a stand-in for the thing S3 actually needs: a mortal who can act, holding a lead, surveying the ruin. That now happens. Measured from `output/upkeep-2026-09-29-thr1663.json` (seeds 42 · 99, 300 ticks):
+
+| | seed 42 | seed 99 |
+|---|---|---|
+| Ruin surveys, by band | 6, all `success` | 3, all `success` |
+| Survey writes at `narrowed` (`undertaking_survey:narrowed`; the sharpen path emits the same trace) | 6 = 1 fresh + 2 `vague→narrowed` + 3 `narrowed→narrowed` | 3 = 1 + 1 + 1 |
+| Distinct surveyor–ruin pairs that first reached `narrowed` | **3** | **2** |
+| Rumour-sourced leads held by deciders (`clueHolderTier`, rumour/library/spy only; survey leads are decider-held by construction) | 4 of 32 (13%) | 5 of 36 (14%) |
+
+Survey `success` writes `narrowed` (`OBSERVE_CLUE_PRECISION_BY_BAND`, `strategic-action-constants.ts:1442-1446`). Only deciders survey (`phaseAgentDecision.ts` gates undertakings on `isAutonomousDecisionActor`). S3's visit is arranged whenever a survey leaves its surveyor holding a `narrowed` lead on a ruin (§ S3.1). So on these seeds S3 would arrange **3 and 2 distinct visits** in 300 ticks before S3 adds any pull of its own. The repeat surveys (`narrowed→narrowed`, 3 · 1) are deciders going back to a ruin they already hold a lead on. That is the climb stalling at the rung S3 exists to lift. Seed 99's supply is thin: it sits exactly at the S3 kill line below. That is why lead hand-off is named and specified here rather than dropped.
+
+**One S3 refinement this makes necessary.** The planter's seed id is keyed by tick (`strategicActionLifecycle.ts:2283`). As S3.1 is written, a repeat survey would plant a second visit for the same holder and ruin. The hunt avoids this with a hunt-specific refusal (`monsters/hunts.ts`), which the survey row does not inherit. **S3.1 therefore adds: a survey whose surveyor already has a pending visit to that ruin (`pendingVisitDueTick` set on the lead) plants nothing new.** It only refreshes the lead, as the sharpen already does. One pending visit per holder per ruin.
+
+**Why not the other two options now.**
+
+- **(a) Lead hand-off**, where an ambient holder passes a lead to a decider they share a settlement or a tie with. It is a new mechanism with its own budget cost, and it feeds a rung that is not starving. It stays the named next lever. It is built only if S3's census shows the visit supply starving (fewer than 2 visits arranged on a seed; see § Kill criteria, S3).
+- **(b) A wider rumour pool for deciders**, where a decider within N hexes can overhear. It breaks the settlement-scoped rumour model the rest of the ruins system reads. It also adds a hex scan to every rumour sweep (`CLUE_RUMOR_INTERVAL_TICKS`, every 10 ticks), in the ruins system whose cost THR-1592 is trying to slim down. Rejected.
+
+**What this does not change.** `CLUE_BIAS_DECIDER` stays at 4.0 as shipped. Most rumours still land on ordinary folk and fade. That is the world working as written: gossip is common, and a mortal who acts on it is rare. No constant or template changes. The only S3 change is the one-pending-visit rule above, which is also written into § S3.1.
+
+**Would change the call.** An S3 census showing fewer than 2 visits arranged on a seed, or Christian saying leads should mostly reach the people who can use them. Either brings lead hand-off forward.
 
 ## Three-pillar check
 
@@ -308,7 +338,7 @@ S1 is independent of S2 and S3. S3 needs S2 (a survey must reach a ruin before i
 
 - [ ] **S1:** `readers/upkeep.ts` 42,99 300 with `LANE_TRAFFIC_ENABLED` on shows every worldgen lane standing at t300 unless a traced cause (razed end, cursed roads) killed it, and a same-run arm with it off reproduces today's t36 deaths. Lanes standing at t300 ≤ lanes seeded + lanes founded. The seed 42 settlement prosperity delta (on vs off) at t300 is reported in the PR.
 - [ ] **S1:** a route-event trace (`route_event_scan` with `seedsPlanted > 0`) appears after t36 on at least one seed.
-- [ ] **S2:** the decider share of newly minted leads is ≥ 30% on each seed (today 15% · 5%). At least one `cell.observe.location` survey targets a ruin on each seed. `narrowed` leads appear.
+- [x] **S2** (re-baselined 2026-09-29, § Re-plan after S2): at least one `cell.observe.location` survey targets a ruin on each seed, and it leaves its surveyor holding a `narrowed` lead. Shipped in PR #2140: 6 · 3 successful ruin surveys, 3 · 2 distinct surveyor–ruin pairs at `narrowed`. The decider share of leads (13% · 14%) is reported, not gated. ~~The decider share of newly minted leads is ≥ 30% on each seed.~~
 - [ ] **S3:** at least one `located` lead and one `ruins.delve_admitted` on each seed in 300 ticks. If a seed shows none, the PR reports which rung starved (survey, visit kept or missed, band) from the traces. Both templates open from `?view=game&seeded&size=medium&spawn=ruins.lead.visit` and `…spawn=ruins.lead.cold`, and `?outcome=` shows every band.
 - [ ] **Budget (S1 and S2 PRs):** the THR-1592 harness (`readers/liveness-cost.ts`), baseline vs change, medium, seeds 42 and 99, median of ≥ 3 interleaved runs: steady-state (t21–200) within +10%, and deciders at t200 within +10%.
 - [ ] `npm test`, `npm run check:typecheck`, `npx vite build`, `npm run test:heavy` (engine files touched), and a 30-tick CLI smoke pass. Browser-verify four-part evidence for the tooltip (S1) and the visit encounter (S3).
@@ -355,3 +385,9 @@ S1 is independent of S2 and S3. S3 needs S2 (a survey must reach a ruin before i
 ### Vision audit
 
 **PASS.** No contradictions. The north star is confirmed (the visit's dice decide, the god acts upstream). The core loop is extended (the visit arrives through the ordinary appointment → encounter → aftermath path). Non-negotiables confirmed: god, not protagonist; graph-only extensions. The systemic-versus-authored tension is balanced, with a systemic lane rule and two authored ruin encounters. The taste profile holds: words, not numbers, on the tooltip.
+
+### Re-plan after S2 (2026-09-29): gates
+
+**Intent-judge: Revise → Allow** (fable, cold context, 2026-09-29). Run 1 found that the visit estimate was an upper bound, since the sharpen path emits the same trace (distinct pairs are 3 · 2, not 6 · 3). It also found the holder-share denominator mislabelled, the option-(b) cost wording wrong, and a duplicate-visit hole in S3.1 (tick-keyed seed id). All four were fixed. Run 2 re-verified every changed claim, including that only deciders survey (`phaseAgentDecision.ts:523`), and found no Christian-reserved fork.
+
+**Forked audit: skipped, with rationale.** The re-plan changes one measurement target and adds one refusal rule to S3.1. No engine system, content item or UI surface is added or removed, so the NFP, three-pillar and Vision verdicts above stand unchanged. The new refusal is additive and fail-soft: with no pending visit, the planter behaves as written.
