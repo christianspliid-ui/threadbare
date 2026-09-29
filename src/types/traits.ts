@@ -14,8 +14,12 @@ import type { ContentCensusTag } from './contentCensus';
  * mortal *learned* rather than one a god gave. Both are trait nodes, so `use × Power`
  * reads them through one shape; the subcategory is what tells a study apart from a gift.
  * One shared definition node per spell (THR-1395), per-bearer state on the edge.
+ *
+ * `innate_power` is the third class (THR-1671): a power that is anatomy, stamped on a
+ * lair's elite at `createNamedElite` — one shared `power.innate.<family>` node per
+ * monster family. Not the `innate` category, which is a worldgen-minted trait.
  */
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed' | 'spell' | 'temper';
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'personality' | 'core' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed' | 'spell' | 'temper' | 'innate_power';
 
 // ─── Reputation Trait Effects (parseable payload) ──────────────────
 

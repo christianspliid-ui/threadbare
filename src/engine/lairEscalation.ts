@@ -31,6 +31,7 @@ import { pickCulturalName } from '../data/culture-name-pools';
 import { generateLairName } from './naming/lairNames';
 import { resolveLairClearing } from './lairClearing';
 import { hardenMonsterCard, mintMonsterCard } from './monsters/monsterCard';
+import { stampInnatePower } from './monsters/innatePower';
 import { touchStructure, type SimulationRuntime } from './simulationRuntime';
 import type { WorldGraph } from './graph';
 
@@ -248,7 +249,11 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
 
   // THR-1544 — the monster card and its temper edge. Every elite is minted with one,
   // so no reader ever meets an elite without a card.
-  mintMonsterCard(graph, eliteId, lairNode, tick);
+  const card = mintMonsterCard(graph, eliteId, lairNode, tick);
+
+  // THR-1671 — and the power it is born with: its family's Innate Power, one
+  // `has_trait` edge to the shared definition. The card names the family.
+  stampInnatePower(graph, eliteId, card?.family, tick);
 
   return eliteId;
 }

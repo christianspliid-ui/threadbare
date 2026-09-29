@@ -160,6 +160,8 @@ export type TraceCategory =
   | 'effect.teleported'
   // The step cast (THR-1670)
   | 'spell.cast_decided'
+  // Innate powers (THR-1671)
+  | 'power.innate_stamped'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -658,6 +660,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'spell.backlash',
   'effect.teleported',
   'spell.cast_decided',
+  'power.innate_stamped',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2812,6 +2815,18 @@ export interface SpellCastDecidedTrace extends TraceBase {
   declinedReason?: string;
 }
 
+/**
+ * Trace: a lair's elite was minted with its family's innate power (THR-1671).
+ * `stamped: false` when the family was unknown or the definition would not resolve.
+ */
+export interface PowerInnateStampedTrace extends TraceBase {
+  category: 'power.innate_stamped';
+  eliteId: string;
+  family: string;
+  powerId: string;
+  stamped: boolean;
+}
+
 /** Trace: a `teleport` / `forced_move` moved a mortal (THR-1571). */
 export interface EffectTeleportedTrace extends TraceBase {
   category: 'effect.teleported';
@@ -4317,6 +4332,7 @@ export type TraceEntry =
   | SpellCastResolvedTrace
   | SpellBacklashTrace
   | SpellCastDecidedTrace
+  | PowerInnateStampedTrace
   | EffectTeleportedTrace
   | ConditionInflictedTrace
   | UndertakingCheckpointTrace

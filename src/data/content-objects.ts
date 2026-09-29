@@ -334,20 +334,22 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
     id: 'power_template',
     gameWord: 'Power',
     ulTerm: 'Traits.md#power',
-    idPrefixes: ['reward_', 'anomaly_', 'spell_'],
+    idPrefixes: ['reward_', 'anomaly_', 'spell_', 'power.innate.'],
     catalogs: [
       { module: 'data/reward-attachment-catalog', export: 'REWARD_BESTOWED_POWERS' },
       { module: 'data/anomaly-reward-catalog', export: 'ANOMALY_BESTOWED_POWERS' },
       { module: 'data/spell-templates', export: 'SPELL_TEMPLATES' },
+      // THR-1671 — the innate class: one power per monster family, stamped at mint.
+      { module: 'data/innate-powers', export: 'INNATE_POWER_DEFINITIONS' },
     ],
-    // All 25 entries carry one.
+    // Every entry carries one (the innate class wears `#supernatural` / `#combat`).
     requiredAxes: ['family'],
     projections: { sphere: 'sphereAffinity' },
     instantiatesAs: 'power',
     gate: 'check:attachment',
     owningSystem: 'Attachments, Items & Possessions',
     status: 'live',
-    note: 'A god\'s gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind, per THR-1429. The bestowed half is `trait` definition nodes in the reward catalogs; the spell half is `SpellTemplate` literals seeded into the same node shape. Two catalog shapes, one kind, because what a query asks for is "a power", never "a power in the literal form of a trait node".',
+    note: 'A god\'s gift (`bestowed`), a spell a mortal learned (`spell`), and a power a monster is born with (`innate_power`, THR-1671) — three classes of one kind, per THR-1429. The innate half is eight `trait` definition nodes, one per monster family, stamped on a lair\'s elite at `createNamedElite`. The bestowed half is `trait` definition nodes in the reward catalogs; the spell half is `SpellTemplate` literals seeded into the same node shape. Two catalog shapes, one kind, because what a query asks for is "a power", never "a power in the literal form of a trait node".',
   }),
   K({
     id: 'trait_template',

@@ -38,6 +38,7 @@ import { AMBITION_TEMPLATES, GRIEVANCE_AMBITION_TEMPLATES, EVENT_MINTED_AMBITION
 import { OMEN_TEMPLATES } from './omenTemplates';
 import { NUDGE_CARD_LIBRARY } from './nudge-card-library';
 import { SPELL_TEMPLATES } from './spell-templates';
+import { INNATE_POWER_DEFINITIONS } from './innate-powers';
 import { CORE_TRAIT_DEFINITIONS } from './core-trait-content';
 import { PERSONALITY_TRAIT_DEFINITIONS } from './personality-trait-content';
 import { MASTERY_TRAIT_DEFINITIONS } from './mastery-trait-content';
@@ -97,6 +98,8 @@ export const CONTENT_CATALOGS: Readonly<Record<string, readonly ContentCatalogEn
   'data/omenTemplates#OMEN_TEMPLATES': OMEN_TEMPLATES,
   'data/nudge-card-library#NUDGE_CARD_LIBRARY': NUDGE_CARD_LIBRARY,
   'data/spell-templates#SPELL_TEMPLATES': SPELL_TEMPLATES,
+  // THR-1671 — the Power kind's innate class.
+  'data/innate-powers#INNATE_POWER_DEFINITIONS': INNATE_POWER_DEFINITIONS,
   // THR-1520 — the six trait content files.
   'data/core-trait-content#CORE_TRAIT_DEFINITIONS': CORE_TRAIT_DEFINITIONS,
   'data/personality-trait-content#PERSONALITY_TRAIT_DEFINITIONS': PERSONALITY_TRAIT_DEFINITIONS,

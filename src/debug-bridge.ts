@@ -1585,7 +1585,9 @@ if (import.meta.env.DEV) {
         return {
           id: nodeId,
           name: n?.name ?? nodeId,
-          powerClass: (n?.properties.subcategory as string) === 'spell' ? 'spell' as const : 'bestowal' as const,
+          powerClass: (n?.properties.subcategory as string) === 'spell' ? 'spell' as const
+            : (n?.properties.subcategory as string) === 'innate_power' ? 'innate' as const
+            : 'bestowal' as const,
           spellTemplateId: (n?.properties.spellTemplateId as string | undefined) ?? null,
           tradition: (n?.properties.sphereAffinity as string | undefined) ?? null,
         };
@@ -1594,7 +1596,7 @@ if (import.meta.env.DEV) {
       const wielded = graph.getOutgoingEdges(match.id, 'has_trait')
         .filter(e => {
           const sub = graph.getNode(e.target)?.properties.subcategory;
-          return sub === 'spell' || sub === 'bestowed';
+          return sub === 'spell' || sub === 'bestowed' || sub === 'innate_power';
         })
         .map(e => describe(e.target));
       const wieldedIds = new Set(wielded.map(w => w.id));
@@ -2796,7 +2798,11 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return [];
       const g = state.graph;
-      const isSpell = (id: string) => g.getNode(id)?.properties.subcategory === 'spell';
+      // THR-1671: a monster's innate power is a carried Power too, so its bearers list here.
+      const isSpell = (id: string) => {
+        const sub = g.getNode(id)?.properties.subcategory;
+        return sub === 'spell' || sub === 'innate_power';
+      };
       const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string }> = [];
       for (const actor of g.getNodesByType('actor')) {
         const wieldedEdges = g.getOutgoingEdges(actor.id, 'has_trait').filter(e => isSpell(e.target));

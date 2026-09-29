@@ -16,6 +16,7 @@ import {
   REWARD_BESTOWED_POWERS,
 } from '../data/reward-attachment-catalog';
 import { allSpellDefinitionNodes, SPELL_TEMPLATES, spellDefinitionNodeId } from '../data/spell-templates';
+import { INNATE_POWER_DEFINITIONS } from '../data/innate-powers';
 import { allStrainConditionNodes } from '../data/strain-conditions';
 import {
   SEEDED_SPELLS_PER_CASTER,
@@ -67,6 +68,11 @@ export function seedAttachments(graph: WorldGraph): void {
   // one per Reach, beside the spells that land them.
   for (const node of allStrainConditionNodes()) {
     if (!graph.getNode(node.id)) graph.addNode(node);
+  }
+  // The Power kind's innate class (THR-1671): eight shared definitions, one per
+  // monster family. Nobody bears one until a lair mints its elite (`createNamedElite`).
+  for (const node of INNATE_POWER_DEFINITIONS) {
+    if (!graph.getNode(node.id)) graph.addNode({ ...node, properties: { ...node.properties } });
   }
 
   // ── Add anomaly reward catalog (unowned, used by anomaly discovery rewards) ──

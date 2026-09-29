@@ -28,6 +28,7 @@ const SUBCATEGORY_GLYPHS: Record<string, string> = {
 
   // Other categories
   bestowed_power: '\u27E1',   // ⟡ White concave-sided diamond
+  innate_power: '✵',     // ✵ Eight-pointed pinwheel star (THR-1671)
   pact: '\u260D',             // ☍ Opposition
   oath: '\u260D',             // ☍ Opposition (alias)
   debt: '\u2696',             // ⚖ Scales

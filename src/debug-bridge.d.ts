@@ -142,7 +142,8 @@ export interface DebugPlayerReceiptsResult {
 export interface DebugPower {
   id: string;
   name: string;
-  powerClass: 'spell' | 'bestowal';
+  /** `innate` (THR-1671): a power a monster was born with, `power.innate.<family>`. */
+  powerClass: 'spell' | 'bestowal' | 'innate';
   /** The spell template behind a `spell`-class power; `null` for a bestowal. */
   spellTemplateId: string | null;
   /** The sphere shelf it came from; `null` when it declares none. */
@@ -2189,7 +2190,9 @@ export interface DebugBridge {
    *  pulled in on call. An unawaited call logs a Promise, not the verdict. */
   /** THR-1571 — every mortal who knows or wields a spell. `source` is the first
    *  edge's (`'seeded'` for worldgen's seeded knowing, `'learn_spell'` for study).
-   *  Spell ids are definition-node ids (`power.spell.<templateId>`). Synchronous. */
+   *  Spell ids are definition-node ids (`power.spell.<templateId>`). THR-1671: a lair's
+   *  elite lists here too, wielding `power.innate.<family>` with `source: 'innate'`.
+   *  Synchronous. */
   getSpellHolders: () => ReadonlyArray<{
     readonly actorId: string;
     readonly name: string;

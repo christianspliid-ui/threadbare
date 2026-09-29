@@ -71,7 +71,7 @@ export interface AttachmentFullEntry extends AttachmentSummary {
    * Which class of Power this is — a spell the mortal learned, or a bestowal a god
    * gave. Absent on everything that is not a Power. The sheet says the word.
    */
-  powerClass?: 'spell' | 'bestowal';
+  powerClass?: 'spell' | 'bestowal' | 'innate';
   /** A power whose bearer is under a seal: it is theirs, and it will not answer. */
   sealed?: boolean;
   /** How a condition came to be worn — somebody's doing, and which kind of doing. */
@@ -315,6 +315,29 @@ export function getAgentAttachments(
         // Read off the bearer, never off the shared definition node — the same reason
         // `isSpellSuppressedFor` exists (a spell node is shared by every wielder).
         sealed: spellsSealed,
+        active: edge.properties.active !== false,
+        inactiveReason: edge.properties.inactiveReason as string | undefined,
+      });
+    }
+
+    // ─── Innate Powers: has_trait edges to an `innate_power`-class Power (THR-1671)
+    //
+    // A monster's anatomy — its family's power, stamped when it was minted. Same
+    // strand as the other Powers, with its own class word; permanent, so no countdown.
+    if (category === 'innate_power') {
+      powers.push({
+        id: node.id,
+        name: node.name,
+        subcategory: 'innate_power',
+        tier: (traitProps.tier as AttachmentTier) ?? 1,
+        mechanicalSummary: (traitProps.mechanicalSummary as string) ?? node.name,
+        ticksRemaining: null,
+        totalTicks: undefined,
+        tags: (traitProps.tags as string[]) ?? [],
+        flavorText: (traitProps.description as string | undefined) ?? (traitProps.flavorText as string | undefined),
+        source: edge.properties.source as string | undefined,
+        slotTag: 'innate_power',
+        powerClass: 'innate',
         active: edge.properties.active !== false,
         inactiveReason: edge.properties.inactiveReason as string | undefined,
       });
