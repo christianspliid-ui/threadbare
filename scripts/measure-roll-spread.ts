@@ -14,12 +14,16 @@
  *   4. content coverage per proficiency band — drawable encounter templates,
  *      undertaking cells and monster families whose at-par proficiency (the demanded
  *      difficulty after the scale offset) falls in each band. This is the brief for
- *      the higher-difficulty content authored after S4.
+ *      the higher-difficulty content authored after S4. THR-1627 bands content by
+ *      **window fit** (the capability that *chooses* it, demanded + `windowFitGap()`)
+ *      and keeps the at-par row; it adds the **everyday settlement board** by band ×
+ *      primary reach, the scoreboard the content-above-novice tickets re-read.
  *
  * Changes no behaviour. The raw score is read directly through the trace's `reach`
  * (added by this ticket) instead of inverting the capability sigmoid.
  *
  * Usage: npm run measure:roll-spread [-- --seeds 42,99 --ticks 300 --map medium]
+ *        npm run measure:roll-spread -- --coverage-only   (static tables only, no worlds)
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -37,9 +41,16 @@ import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
 import { MONSTER_FAMILIES } from '../src/data/monster-families';
 import { FIGHT_RATING_DIFFICULTY, FIGHT_STEP_SCALE } from '../src/data/fight-constants';
-import { PROFICIENCY_BANDS, proficiencyBandFor, isSuccessFamily, demandedDifficultyOf } from '../src/engine/kpi/engagementKpi';
+import { PROFICIENCY_BANDS, proficiencyBandFor, windowFitBandFor, windowFitGap, isSuccessFamily, demandedDifficultyOf } from '../src/engine/kpi/engagementKpi';
 import type { ProficiencyBand } from '../src/engine/kpi/engagementKpi';
-import { KPI_FLOOR_PINNED_MAX } from '../src/engine/kpi/kpiConstants';
+import {
+  KPI_FLOOR_PINNED_MAX,
+  EVERYDAY_FLOOR_BY_BAND,
+  EVERYDAY_SETTLEMENT_SUBTYPES,
+  EVERYDAY_MAX_RARITY_TIER,
+  EVERYDAY_EXCLUDED_ID_PREFIXES,
+} from '../src/engine/kpi/kpiConstants';
+import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
 import type { ResolutionInputTrace } from '../src/types/trace';
 import type { ActionScale } from '../src/types/unifiedAction';
 
@@ -53,6 +64,8 @@ function argValue(flag: string): string | undefined {
 const SEEDS = (argValue('--seeds') ?? '42,99').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 const TICKS = parseInt(argValue('--ticks') ?? '300', 10);
 const MAP: MapSizePreset = (argValue('--map') ?? 'medium') as MapSizePreset;
+/** THR-1627: skip the worlds and print only the seed-independent coverage tables. */
+const COVERAGE_ONLY = process.argv.includes('--coverage-only');
 
 /** A roll is floor-pinned when its P sits on its scale's floor to within this. */
 const FLOOR_PIN_EPSILON = 0.0005;
@@ -162,51 +175,126 @@ function emptyBandCounts(): Record<ProficiencyBand, number> {
   return { novice: 0, journeyman: 0, expert: 0, master: 0 };
 }
 
+/**
+ * The everyday settlement board (THR-1627 D3): encounter templates a mortal meets
+ * where it stands — drawable by the board, drawable at a settlement subtype (or
+ * ungated), rarity ≤ `EVERYDAY_MAX_RARITY_TIER`, and not one of the situational
+ * families (guild rungs, armies, monsters, fights, confront).
+ */
+function isEverydayTemplate(tmpl: UnifiedActionTemplate): boolean {
+  if (tmpl.drawable === false) return false;
+  if ((tmpl.rarityTier ?? 1) > EVERYDAY_MAX_RARITY_TIER) return false;
+  if (tmpl.requiresOpposingBand || tmpl.requiresLiveMonster) return false;
+  if (EVERYDAY_EXCLUDED_ID_PREFIXES.some(p => tmpl.id.startsWith(p))) return false;
+  const subtypes = tmpl.locationSubtypes;
+  if (subtypes && subtypes.length > 0 && !subtypes.some(s => EVERYDAY_SETTLEMENT_SUBTYPES.includes(s))) return false;
+  return true;
+}
+
+/** The most common reach across a template's rolled steps (`?` when none carries one). */
+function primaryReachOf(steps: ReadonlyArray<object>): string {
+  const counts = new Map<string, number>();
+  for (const st of steps) {
+    const s = st as { reach?: unknown; difficulty?: unknown };
+    if (typeof s.difficulty !== 'number' || typeof s.reach !== 'string') continue;
+    counts.set(s.reach, (counts.get(s.reach) ?? 0) + 1);
+  }
+  let best = '?';
+  let bestN = 0;
+  for (const [reach, n] of counts) {
+    if (n > bestN) { best = reach; bestN = n; }
+  }
+  return best;
+}
+
 function coverage(): void {
-  console.log('\n=== Content coverage per proficiency band (at-par proficiency = demanded difficulty after scale offset) ===');
+  const gap = windowFitGap();
+  console.log(`\n=== Content coverage per proficiency band (THR-1627 D2: window fit = demanded + ${gap.toFixed(3)}; at-par row kept for the THR-1578 baseline) ===`);
   const rows: Array<[string, Record<ProficiencyBand, number>, number]> = [];
 
   const encounters = emptyBandCounts();
+  const encountersAtPar = emptyBandCounts();
   let encounterTotal = 0;
+  const everyday = emptyBandCounts();
+  const everydayByReach = new Map<string, Record<ProficiencyBand, number>>();
   for (const tmpl of UNIFIED_ACTION_TEMPLATES) {
     if (!isEncounterAction(tmpl.id)) continue;
     const demanded = demandedDifficultyOf(tmpl.steps ?? [], tmpl.scale);
     if (!Number.isFinite(demanded)) continue;
-    encounters[proficiencyBandFor(demanded)]++;
+    const band = windowFitBandFor(demanded);
+    encounters[band]++;
+    encountersAtPar[proficiencyBandFor(demanded)]++;
     encounterTotal++;
+    if (!isEverydayTemplate(tmpl)) continue;
+    everyday[band]++;
+    const reach = primaryReachOf(tmpl.steps ?? []);
+    const byReach = everydayByReach.get(reach) ?? emptyBandCounts();
+    byReach[band]++;
+    everydayByReach.set(reach, byReach);
   }
   rows.push(['encounter templates', encounters, encounterTotal]);
+  rows.push(['  (at par)', encountersAtPar, encounterTotal]);
 
   const cells = emptyBandCounts();
+  const cellsAtPar = emptyBandCounts();
   let cellTotal = 0;
   for (const cell of UNDERTAKING_CELL_TEMPLATES) {
     const d = (cell as { checkpointDifficulty?: number }).checkpointDifficulty;
     if (typeof d !== 'number') continue;
     // Checkpoints pass no scale, so they resolve at the regional default (offset 0).
-    cells[proficiencyBandFor(d + SCALE_DIFFICULTY_OFFSETS.regional)]++;
+    const demanded = d + SCALE_DIFFICULTY_OFFSETS.regional;
+    cells[windowFitBandFor(demanded)]++;
+    cellsAtPar[proficiencyBandFor(demanded)]++;
     cellTotal++;
   }
   rows.push(['undertaking cells', cells, cellTotal]);
+  rows.push(['  (at par)', cellsAtPar, cellTotal]);
 
   const monsters = emptyBandCounts();
+  const monstersAtPar = emptyBandCounts();
   let monsterTotal = 0;
   for (const fam of Object.values(MONSTER_FAMILIES)) {
     const demanded = (FIGHT_RATING_DIFFICULTY[fam.dread] + FIGHT_RATING_DIFFICULTY[fam.might]) / 2
       + SCALE_DIFFICULTY_OFFSETS[FIGHT_STEP_SCALE];
-    monsters[proficiencyBandFor(demanded)]++;
+    monsters[windowFitBandFor(demanded)]++;
+    monstersAtPar[proficiencyBandFor(demanded)]++;
     monsterTotal++;
   }
   rows.push(['monster families', monsters, monsterTotal]);
+  rows.push(['  (at par)', monstersAtPar, monsterTotal]);
 
   console.log(`  ${'content'.padEnd(20)} ${PROFICIENCY_BANDS.map(b => b.padStart(14)).join('')}   total`);
   for (const [name, counts, total] of rows) {
     console.log(`  ${name.padEnd(20)} ${PROFICIENCY_BANDS.map(b => `${counts[b]} (${pct(counts[b], total).trim()})`.padStart(14)).join('')}   ${total}`);
   }
+
+  // The brief's scoreboard (THR-1627 D3/D4): everyday settlement board by window-fit
+  // band × primary reach. A cell under its band's floor is marked `<`.
+  const everydayTotal = PROFICIENCY_BANDS.reduce((s, b) => s + everyday[b], 0);
+  console.log(`\n=== Everyday settlement board by window-fit band × primary reach (${everydayTotal} templates; floors ${JSON.stringify(EVERYDAY_FLOOR_BY_BAND)}) ===`);
+  console.log(`  ${'reach'.padEnd(8)} ${PROFICIENCY_BANDS.map(b => b.padStart(12)).join('')}`);
+  const floorOf = (b: ProficiencyBand): number => (b === 'novice' ? 0 : EVERYDAY_FLOOR_BY_BAND[b]);
+  const reaches = [...everydayByReach.keys()].sort();
+  for (const reach of reaches) {
+    const counts = everydayByReach.get(reach)!;
+    const cells = PROFICIENCY_BANDS.map(b => `${counts[b]}${counts[b] < floorOf(b) ? '<' : ' '}`.padStart(12));
+    console.log(`  ${reach.padEnd(8)} ${cells.join('')}`);
+  }
+  console.log(`  ${'total'.padEnd(8)} ${PROFICIENCY_BANDS.map(b => `${everyday[b]} `.padStart(12)).join('')}`);
+  const short = PROFICIENCY_BANDS.filter(b => b !== 'novice').map(b => {
+    const under = reaches.filter(r => r !== '?' && everydayByReach.get(r)![b] < floorOf(b)).length;
+    return `${b} ${under} reach(es) under floor`;
+  });
+  console.log(`  ${short.join(' · ')}`);
 }
 
 // ─── Main ────────────────────────────────────────────────────────
 
 console.log('THR-1578 — roll-spread gauge');
+if (COVERAGE_ONLY) {
+  coverage();
+  process.exit(0);
+}
 console.log(`seeds=${SEEDS.join(',')} map=${MAP} ticks=${TICKS}`);
 
 const all: Roll[] = [];

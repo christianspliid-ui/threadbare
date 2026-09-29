@@ -232,7 +232,10 @@ const MATRIX: readonly Row[] = [
 /**
  * The pinned tuple. Captured on `main` @ a803d13a, before the extraction; re-pinned
  * by THR-1581 (dice re-fit) with the `roll` column verified unchanged on all 32 rows —
- * only `probability`, `capability` and the bands they decide moved. Row names
+ * only `probability`, `capability` and the bands they decide moved. Re-pinned again
+ * by THR-1627 (local scale offset −0.10 → 0): the `roll` column verified unchanged on
+ * all 32 rows; the 19 local rows off the probability clamp lost 0.125 of
+ * probability (0.10 × ODDS_GAIN), and three of them changed band. Row names
  * describe the band each row was chosen to hit before the re-fit.
  */
 type Golden = Record<string, {
@@ -334,29 +337,29 @@ describe('THR-1292 slice 2 — step resolution golden fixtures', () => {
 
 const GOLDEN: Golden = {
   'mortal/easy/local/s1': {
-    outcome: 'success', rawOutcome: 'success',
-    probability: 0.77664, roll: 63, capability: 0.401312,
+    outcome: 'near_miss', rawOutcome: 'success',
+    probability: 0.65164, roll: 63, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/easy/local/s2': {
-    outcome: 'near_miss', rawOutcome: 'success',
-    probability: 0.77664, roll: 74, capability: 0.401312,
+    outcome: 'failure', rawOutcome: 'failure',
+    probability: 0.65164, roll: 74, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/mid/local/s3': {
     outcome: 'failure', rawOutcome: 'failure',
-    probability: 0.40164, roll: 73, capability: 0.401312,
+    probability: 0.27664, roll: 73, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/mid/local/s4': {
     outcome: 'failure', rawOutcome: 'failure',
-    probability: 0.40164, roll: 93, capability: 0.401312,
+    probability: 0.27664, roll: 93, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
@@ -426,7 +429,7 @@ const GOLDEN: Golden = {
   },
   'mortal/funded/mid/s13': {
     outcome: 'failure', rawOutcome: 'failure',
-    probability: 0.287532, roll: 57, capability: 0.310026,
+    probability: 0.162532, roll: 57, capability: 0.310026,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
@@ -461,98 +464,98 @@ const GOLDEN: Golden = {
   },
   'mortal/crit-success/s21': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 44, capability: 0.401312,
+    probability: 0.27664, roll: 44, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/crit-success/s65': {
     outcome: 'critical_success', rawOutcome: 'critical_success',
-    probability: 0.40164, roll: 11, capability: 0.401312,
+    probability: 0.27664, roll: 11, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/crit-failure/s67': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 99, capability: 0.401312,
+    probability: 0.27664, roll: 99, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/crit-failure/s143': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 88, capability: 0.401312,
+    probability: 0.27664, roll: 88, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/near-miss/s1': {
     outcome: 'failure', rawOutcome: 'failure',
-    probability: 0.40164, roll: 63, capability: 0.401312,
+    probability: 0.27664, roll: 63, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'mortal/near-miss/s22': {
     outcome: 'failure', rawOutcome: 'failure',
-    probability: 0.40164, roll: 63, capability: 0.401312,
+    probability: 0.27664, roll: 63, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'push/funded/s21': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.289344, roll: 44, capability: 0.231475,
+    probability: 0.164344, roll: 44, capability: 0.231475,
     pushAttempted: true, pushCost: 0.05,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'push/unfunded/s21': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.189344, roll: 44, capability: 0.231475,
+    probability: 0.064344, roll: 44, capability: 0.231475,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'push/funded/s67': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.289344, roll: 99, capability: 0.231475,
+    probability: 0.164344, roll: 99, capability: 0.231475,
     pushAttempted: true, pushCost: 0.05,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'push/below-gate/s21': {
-    outcome: 'critical_success', rawOutcome: 'critical_success',
-    probability: 0.501844, roll: 44, capability: 0.231475,
+    outcome: 'critical_failure', rawOutcome: 'critical_failure',
+    probability: 0.376844, roll: 44, capability: 0.231475,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'resist/downgrades/s67': {
     outcome: 'failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 99, capability: 0.401312,
+    probability: 0.27664, roll: 99, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: true, resistSucceeded: true, resistCost: 0.03,
     preResistOutcome: 'critical_failure', opCount: 1,
   },
   'resist/downgrades/s143': {
     outcome: 'failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 88, capability: 0.401312,
+    probability: 0.27664, roll: 88, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: true, resistSucceeded: true, resistCost: 0.03,
     preResistOutcome: 'critical_failure', opCount: 1,
   },
   'resist/check-fails/s142': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 66, capability: 0.401312,
+    probability: 0.27664, roll: 66, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: true, resistSucceeded: false, resistCost: 0.03,
     preResistOutcome: 'critical_failure', opCount: 1,
   },
   'resist/unfunded/s67': {
     outcome: 'critical_failure', rawOutcome: 'critical_failure',
-    probability: 0.40164, roll: 99, capability: 0.401312,
+    probability: 0.27664, roll: 99, capability: 0.401312,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,

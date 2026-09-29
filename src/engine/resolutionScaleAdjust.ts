@@ -8,7 +8,7 @@
  * ─── Constants (NFP #1: Tunability) ─────────────────────────────────
  * | Name                              | Default                                        | Purpose                                 |
  * |-----------------------------------|------------------------------------------------|-----------------------------------------|
- * | SCALE_DIFFICULTY_OFFSETS          | {personal:−0.20, local:−0.10, regional:0, cosmic:+0.10} | Per-scale additive difficulty bias |
+ * | SCALE_DIFFICULTY_OFFSETS          | {personal:−0.20, local:0 (THR-1627; was −0.10), regional:0, cosmic:+0.10} | Per-scale additive difficulty bias |
  * | MIN_PROBABILITY_BY_SCALE          | all PROBABILITY_FLOOR (THR-1581; was 0.70/0.65/0.20/0.05) | Per-scale floor, retired by value |
  * | SCALE_FLOOR_DIFFICULTY_CAP_ENABLED | false (THR-1581)                              | Difficulty cap encoding the old formula — off |
  * | CRIT_FAILURE_SEVERITY_BY_SCALE    | {personal:'minor', local:'minor', regional:'standard', cosmic:'severe'} | Crit-fail consequence tier by scale (THR-571 E2) |
@@ -30,13 +30,19 @@ import type { ComplicationSeverity } from '../types/complication';
  * Additive offset applied to difficulty at the caller boundary.
  * Negative = easier (lowers difficulty), positive = harder.
  *
- * Rationale: personal/local-scale content should feel achievable for
- * capable actors (~50% success on personal, ~35% on local). Regional
- * is the neutral baseline. Cosmic-scale should feel earned.
+ * Regional is the neutral baseline. Cosmic-scale should feel earned.
+ *
+ * THR-1627 (plan `Docs/plans/2026-09-29-thr-1627-content-above-novice.md`,
+ * ruling D1): **local is 0** (was −0.10). A step's difficulty is the proficiency
+ * it demands (THR-1577), so a local step now rolls against the number its author
+ * wrote — and the difficulty word the player reads (which reads the authored
+ * number) names the difficulty the dice use. 98% of rolls are local; the
+ * five-seed sweep put local 0 inside every gate and in-window share highest.
+ * `personal` and `cosmic` are unmeasured (<1.5% of rolls) and left as they were.
  */
 export const SCALE_DIFFICULTY_OFFSETS: Record<ActionScale, number> = {
   personal: -0.20,
-  local:    -0.10,
+  local:     0.00,
   regional:  0.00,
   cosmic:   +0.10,
 };

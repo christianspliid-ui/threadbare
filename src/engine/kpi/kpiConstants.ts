@@ -127,6 +127,35 @@ export const KPI_IN_WINDOW_MIN = 0.60;
 export const KPI_IDLE_RATE_DELTA_MAX = 0.05;
 /** Max mean |planner step P − resolver step P| on the parity sample (S2). */
 export const KPI_FORECAST_PARITY_MAX = 0.02;
+// ─── THR-1627: the everyday settlement board (plan 2026-09-29-thr-1627-content-above-novice § D3/D4) ───
+// KPI-internal labels, like the band names: they name a measurement in
+// `measure:roll-spread` and in authoring guidance, never a player-facing thing.
+/**
+ * Per-reach floor of everyday encounters a band needs before its authoring ticket
+ * may close as not needed (the brief's stop rule). Novice has no floor — it is the
+ * catalogue's bulk. Floors shrink with the band's share of engagements.
+ */
+export const EVERYDAY_FLOOR_BY_BAND: Readonly<Record<'journeyman' | 'expert' | 'master', number>> = {
+  journeyman: 3,
+  expert: 2,
+  master: 1,
+};
+/** Location subtypes that count as "where mortals stand" for the everyday board. */
+export const EVERYDAY_SETTLEMENT_SUBTYPES: readonly string[] = ['hamlet', 'village', 'town', 'city', 'capital'];
+/** Rarer templates are story beats, not everyday content. */
+export const EVERYDAY_MAX_RARITY_TIER = 2;
+/**
+ * Template-id prefixes of the situational families the everyday board excludes:
+ * guilds (every `mc.*` / `ag.*` rung, social and join, the guild trial, the band's
+ * defence), armies, monsters, hunts and fights, and the confront family (the
+ * brainstorm companion's list). They fire when their situation exists — a
+ * membership, a war, a beast — not where mortals stand.
+ */
+export const EVERYDAY_EXCLUDED_ID_PREFIXES: readonly string[] = [
+  'mc.', 'ag.', 'encounter.guild_', 'encounter.band_',
+  'army.', 'monster.', 'fight.', 'encounter.hunt.', 'confront_',
+];
+
 /**
  * Memory bound on the runtime's resolved-engagement log. A 300-tick medium world
  * resolves a few thousand; the band totals stay lifetime past the bound, only the
