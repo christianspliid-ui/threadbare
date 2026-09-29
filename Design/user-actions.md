@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-29 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-29 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-29: six everyday encounters for journeymen**: the first batch of mid-skill town encounters ([THR-1676](https://linear.app/threadbare/issue/THR-1676)). Merged via [#2150](https://github.com/christianspliid-ui/threadbare/pull/2150), and live on the site.
 - **2026-09-29: The First no longer walks back for the same encounter**: on arrival, a journey now takes the encounter that is here instead of turning round for its twin ([THR-1674](https://linear.app/threadbare/issue/THR-1674)). Merged via [#2148](https://github.com/christianspliid-ui/threadbare/pull/2148), and live on the site.
 - **2026-09-29: monsters are born with a power**: each of the eight monster families now starts with one power of its kind, such as a beast's thick hide or a wraith that is half there (step three of [the power runtime](https://linear.app/threadbare/issue/THR-1671)). Merged via [#2147](https://github.com/christianspliid-ui/threadbare/pull/2147), and live on the site.
 - **2026-09-29: the next ten most-played encounters are finished**: at-cost and critical lines and a dealt hand (step three of [finish the encounters](https://linear.app/threadbare/issue/THR-1667)). Merged via [#2146](https://github.com/christianspliid-ui/threadbare/pull/2146), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-29: a lead is a reason to look**: a mortal who hears of a ruin can now go and find it, and then delve it (step two of [THR-1636](https://linear.app/threadbare/issue/THR-1636)). Merged via [#2140](https://github.com/christianspliid-ui/threadbare/pull/2140), and live on the site.
 - **2026-09-29: the words "lead" and "delve" are in the glossary** ([THR-1662](https://linear.app/threadbare/issue/THR-1662)). Merged via [#2141](https://github.com/christianspliid-ui/threadbare/pull/2141).
 - **2026-09-29: the player sees faith and fringe**: congregations and a culture's fringe towns now show on screen, so faith and politics is live end to end ([THR-1659](https://linear.app/threadbare/issue/THR-1659)). Merged via [#2139](https://github.com/christianspliid-ui/threadbare/pull/2139), and live on the site.
-- **2026-09-29: the past feeds ambitions**: the world's history now gives mortals things to want ([THR-1657](https://linear.app/threadbare/issue/THR-1657)). Merged via [#2138](https://github.com/christianspliid-ui/threadbare/pull/2138), and live on the site.
 
 ---
 

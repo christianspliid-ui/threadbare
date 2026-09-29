@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-29 16:56 local (14:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-29 17:55 local (15:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,8 +18,8 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Decided for you
 
-- [Re-plan the lead climb's first rung](https://linear.app/threadbare/issue/THR-1675/re-plan-the-lead-climbs-first-rung-deciders-are-too-rare-in-rumour): **the "30% of rumours reach a decision-maker" target is dropped, and the visit to the ruin goes ahead now.** Someone who can act already surveys the ruin they heard about on both test worlds. Most rumours land on ordinary folk and fade, which is how gossip works. If too few mortals end up going to ruins, the next lever is letting ordinary folk pass a rumour on to a decision-maker they know. A mortal can also have only one visit to a given ruin pending at a time. Plan: [seeded things that stay alive, § Re-plan after S2](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md). *— from tb-design-lane* (veto window closes around 14:55 tomorrow; a veto stops [the ruin visit](https://linear.app/threadbare/issue/THR-1664) at pickup)
-- [Journeymen and experts have almost nothing to attempt](https://linear.app/threadbare/issue/THR-1627): **step one is built and live** ([#2143](https://github.com/christianspliid-ui/threadbare/pull/2143)). Calls made:
+- [Re-plan the lead climb's first rung](https://linear.app/threadbare/issue/THR-1675/re-plan-the-lead-climbs-first-rung-deciders-are-too-rare-in-rumour): **the "30% of rumours reach a decision-maker" target is dropped, and the visit to the ruin goes ahead now.** Someone who can act already surveys the ruin they heard about on both test worlds. Most rumours land on ordinary folk and fade, which is how gossip works. If too few mortals end up going to ruins, the next lever is letting ordinary folk pass a rumour on to a decision-maker they know. A mortal can also have only one visit to a given ruin pending at a time. Plan: [seeded things that stay alive, § Re-plan after S2](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md). *— from tb-design-lane* (veto window closes around 14:55 tomorrow. The visit is already built and waiting in [pull request #2151](https://github.com/christianspliid-ui/threadbare/pull/2151), so a veto now means undoing it.)
+- [Journeymen and experts have almost nothing to attempt](https://linear.app/threadbare/issue/THR-1627): **step one is built and live** ([#2143](https://github.com/christianspliid-ui/threadbare/pull/2143)), and the first six journeyman encounters are live too ([#2150](https://github.com/christianspliid-ui/threadbare/pull/2150)). Calls made:
   - The hidden discount on everyday rolls goes, so success falls from about 71% to about 62%, inside your 50–65% band.
   - The new content is ordinary town life, not more ruins.
   - Each Reach gets three journeyman encounters, two expert and one master. Journeymen come first, and the writing stops early if it already works.
@@ -48,19 +48,15 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: 2 jobs ready to build, 1 being built.**
 
-- **Almost done:** [six everyday encounters for journeymen](https://linear.app/threadbare/issue/THR-1676). They are written and waiting in [pull request #2150](https://github.com/christianspliid-ui/threadbare/pull/2150), which merges on its own once the checks pass. You will be asked to sample 2 of the 6 once it is live.
-- **Ready next:** [the visit to the ruin](https://linear.app/threadbare/issue/THR-1664), where a mortal who surveys a ruin goes there and the dice decide whether they learn where it lies. Also ready: [two expert-level monsters](https://linear.app/threadbare/issue/THR-1682).
+- **Just landed:** [six everyday encounters for journeymen](https://linear.app/threadbare/issue/THR-1676) are live ([#2150](https://github.com/christianspliid-ui/threadbare/pull/2150)). The 2-of-6 sample ask comes with the factory's batch report, not from this brief.
+- **Almost done:** [the visit to the ruin](https://linear.app/threadbare/issue/THR-1664), where a mortal who surveys a ruin goes there and the dice decide whether they learn where it lies. It is built and waiting in [pull request #2151](https://github.com/christianspliid-ui/threadbare/pull/2151), which merges on its own once the checks pass.
+- **Ready next:** [the second batch of journeyman encounters](https://linear.app/threadbare/issue/THR-1677), which also checks whether journeymen now attempt harder things, and [two expert-level monsters](https://linear.app/threadbare/issue/THR-1682).
 - **Spells are not ready for you to look at yet.** All three steps of the power runtime are live, but the spell generator ([THR-1572](https://linear.app/threadbare/issue/THR-1572)) has not been designed, so each caster still holds only one starting spell. A curse that lands still changes nothing except the step's odds ([THR-1683](https://linear.app/threadbare/issue/THR-1683)).
 - **The fight system is live but not ready for you to review.** There is no one-click link that opens a fight the way the encounter links above do.
 
 ## Health
 
-- **The slow simulation tests failed on the latest `main`** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36571041959)). They also went fail, pass, fail across the last three runs, which looks like a flaky test rather than a broken game. This is a builder's job.
+- **The slow simulation tests failed again on the latest `main`** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/36587462008)). That is two failures in a row now, after a fail, pass, fail pattern earlier today. It may be a flaky test or a real break; a builder needs to look. This is a builder's job.
 - **A third of the factions can no longer reach their senior and elite jobs in a long game.** The orchestrator's check this morning went from pass to fail. This is a builder's job. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-29c.md).
-- **The home checkout is 153 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
-- **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
-- **Everything else is green:**
-  - The live site is up to date. Only docs changed after e9510efe.
-  - Game speed is 89 ms per tick, 11% over the weekly median of 80. That is within normal.
-  - The one open pull request (#2150) will merge on green, and all ten scheduled lanes are on time.
-  - The worktree cleaner has five old worktrees waiting on its own decision.
+- **The home checkout is 158 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
+- Lane-silence check: the 13.6-hour quiet from Tuesday 22 September evening to Wednesday morning was overnight, so it is declined under your "overnight quiet is normal" ruling.
