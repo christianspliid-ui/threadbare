@@ -12,6 +12,7 @@
 import React, { useState } from 'react';
 import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
+import { formatHexCultureName } from '../../data/world-scenario';
 import type { HexRegionData } from '../../engine/hexRegion';
 import { getSphereColor } from '../../data/sphereIcons';
 import { areaFeatureWord, areaSizeWord } from '../../data/geo-word-bands';
@@ -333,7 +334,10 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               {dominantCulture && (
                 <div>
                   <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Culture: </span>
-                  {dominantCulture.cultureName}
+                  {/* THR-1659 — a fringe settlement reads "Varn fringe", never a strength (Law 13). */}
+                  <span data-testid="hex-sidebar-culture" data-fringe={dominantCulture.fringe ? 'true' : undefined}>
+                    {formatHexCultureName(dominantCulture)}
+                  </span>
                 </div>
               )}
               {dominantFaction && (

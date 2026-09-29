@@ -151,6 +151,13 @@ export interface HexCultureSummary {
   dominantSpheres: SphereName[];
   foundationBias: string;
   strength: number; // average cultural strength across locations
+  /**
+   * THR-1659 — true when every link to this culture in the hex is a fringe link
+   * (`fringe: true` on the `belongs_to` edge, written at worldgen by THR-1632 S1).
+   * The panel then reads "Varn fringe" rather than full membership (Law 13: a word,
+   * never the strength number behind it). One heartland link in the hex makes it false.
+   */
+  fringe?: boolean;
 }
 
 /**
@@ -160,7 +167,7 @@ export interface HexCultureSummary {
  */
 export function getHexCultures(graph: WorldGraph, col: number, row: number): HexCultureSummary[] {
   const locations = getLocationsInHex(graph, col, row);
-  const cultureMap = new Map<string, { node: GraphNode; strengths: number[] }>();
+  const cultureMap = new Map<string, { node: GraphNode; strengths: number[]; allFringe: boolean }>();
 
   for (const loc of locations) {
     const edges = graph.getOutgoingEdges(loc.id, 'belongs_to');
@@ -171,16 +178,18 @@ export function getHexCultures(graph: WorldGraph, col: number, row: number): Hex
       if (!cultureNode) continue;
       const existing = cultureMap.get(cultureNode.id);
       const strength = (props.culturalStrength as number) ?? 0.5;
+      const isFringe = props.fringe === true;
       if (existing) {
         existing.strengths.push(strength);
+        existing.allFringe = existing.allFringe && isFringe;
       } else {
-        cultureMap.set(cultureNode.id, { node: cultureNode, strengths: [strength] });
+        cultureMap.set(cultureNode.id, { node: cultureNode, strengths: [strength], allFringe: isFringe });
       }
     }
   }
 
   const summaries: HexCultureSummary[] = [];
-  for (const [id, { node, strengths }] of cultureMap) {
+  for (const [id, { node, strengths, allFringe }] of cultureMap) {
     const identity = (node.properties as Record<string, unknown>).cultureIdentity as
       { veneratedSpheres?: SphereName[]; foundationBias?: string } | undefined;
     const avgStrength = strengths.reduce((a, b) => a + b, 0) / strengths.length;
@@ -190,6 +199,7 @@ export function getHexCultures(graph: WorldGraph, col: number, row: number): Hex
       dominantSpheres: identity?.veneratedSpheres ?? [],
       foundationBias: identity?.foundationBias ?? 'unknown',
       strength: avgStrength,
+      fringe: allFringe,
     });
   }
 

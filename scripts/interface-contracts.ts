@@ -5333,8 +5333,7 @@ export const CONTRACTS: readonly Contract[] = [
   },
   // -- World scenario -> faith at game start (THR-1632) -------------------------
   // A Temple congregation carries the sphere its culture venerated at worldgen. The
-  // write needs a reader: the faction page line ships in S2 (THR-1659), so the row is
-  // registered now and classifies LEAKED-with-ticket until that slice lands.
+  // write's reader is the faction page line "Venerates Light." (S2, THR-1659).
   {
     id: 'congregation-sphere-reaches-faction-page',
     producerSystem: FACTIONS,
@@ -5349,7 +5348,11 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: ['src/engine/worldSeed.ts'],
     readSites: ['src/components/Game/FactionSheet.tsx'],
-    deferralTicket: 'THR-1659',
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        "THR-1659 (S2). Browser, 1920×1080, `?view=game&seeded&size=medium&nofog`: `getWorldScenario().congregations` lists three congregations (spirit / darkness / entropy); `openRef('faction', 'faction_def_temple_of_spheres_0', 'sheet')` renders `[data-testid=faction-venerates-line]` = \"Venerates Spirit.\" under the kind chip. A labelled town guild's chip reads `guild` (capitalised by CSS), with no venerates line. Unit tests: `src/components/Game/__tests__/FaithAndFringe.thr1659.test.tsx`.",
+    },
   },
   // -- World scenario -> the pilgrimage pool (THR-1632) ------------------------
   // `sacred_route`'s only writer was a legacy strategic template never offered under

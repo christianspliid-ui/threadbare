@@ -17,6 +17,7 @@ import type { FactionActionRecord } from '../../types/factionAction';
 import { getReputationWord } from '../../data/domain-words';
 import { getWealthTier } from '../../engine/wealth';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
+import { formatCongregationSphereLine } from '../../data/world-scenario';
 import { durationLabel } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
@@ -113,6 +114,14 @@ export const FactionSheet = React.memo(function FactionSheet({
   // is still a guild.
   const isRealm = factionNode?.properties?.factionClass === REALM_FACTION_CLASS;
   const kindWord = isRealm ? REALM_HEADWORD : factionType;
+
+  // THR-1659 — a Temple congregation names the sphere its people venerate, in one line
+  // under its kind ("Venerates Light."). `veneratedSphere` is stamped at worldgen by
+  // THR-1632 S1; a congregation of a sphereless culture carries `null` and shows nothing.
+  const veneratedSphere = factionNode?.properties?.veneratedSphere;
+  const venerationLine = typeof veneratedSphere === 'string' && veneratedSphere.length > 0
+    ? formatCongregationSphereLine(veneratedSphere)
+    : null;
 
   // A Realm's court sits in one town — the `role: 'seat'` edge the projection and the
   // conquest re-stamp both read. Shown only for a Realm: a guild's hall is already the
@@ -269,6 +278,15 @@ export const FactionSheet = React.memo(function FactionSheet({
               </button>
             )}
           </div>
+
+          {venerationLine && (
+            <p
+              data-testid="faction-venerates-line"
+              style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}
+            >
+              {venerationLine}
+            </p>
+          )}
 
           {summary && (
             <>

@@ -37,6 +37,7 @@ import { renderProseWithIPK } from '../ProseKeyword';
 import type { RarityTier } from '../../types/rarity';
 import type { CultureIdentity } from '../../types/culture';
 import { composeCultureMores } from '../../engine/cultureMores';
+import { formatHexCultureName } from '../../data/world-scenario';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -472,7 +473,7 @@ export const HexChronicle = memo(function HexChronicle({
   const heroSubtitle = useMemo(() => {
     const parts: string[] = [];
     parts.push(`${terrainLabel} at ${hexCol}, ${hexRow}`);
-    if (dominantCulture) parts.push(dominantCulture.cultureName.replace(/_/g, ' '));
+    if (dominantCulture) parts.push(formatHexCultureName(dominantCulture).replace(/_/g, ' '));
     if (dominantFaction) parts.push(dominantFaction.factionName.replace(/_/g, ' '));
     return parts.join(' · ');
   }, [terrainLabel, hexCol, hexRow, dominantCulture, dominantFaction]);
