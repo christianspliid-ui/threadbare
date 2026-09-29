@@ -776,3 +776,39 @@ Something the world lends a fighter, read once when a fight starts and carried a
 **Not a graph Edge.** THR-1532 called these "edges from the world"; the code term is *advantage* because **Edge** is the canonical word for a graph relationship. The advantages are *read from* edges (`hostile_to`, `knows_secret_of`, `owes_favor`, `member_of`), and a spent one leaves its edge in place — the favour marked redeemed, the secret marked revealed. Reading is pure (the forecast reads it freely); only the fight handler spends.
 
 Code anchors: `src/engine/fights/fightAdvantages.ts` (`readFightAdvantages`), `src/engine/fights/fightAllies.ts` (`getCompanyMembersAtHex`), `src/data/fight-constants.ts`.
+
+---
+
+### Lead
+
+**Aliases:** clue (code word), `knows_clue_of` (edge), has heard of it / has a lead on it / knows where it lies (its three sheet phrasings)
+**Also see:** `[[Clue]]`, `[[Delve]]`, `[[Edge]]`
+**Status:** canonical — seated by delegation 2026-09-29 (THR-1662)
+
+What a mortal knows about where a ruin or wonder lies — a `knows_clue_of` edge from the knower to the site, carrying a **precision** with three rungs (`CluePrecision`): *vague* (sheet: "has heard of it"), *narrowed* ("has a lead on it"), *located* ("knows where it lies"). A lead arrives by rumour, research, a map, a god's whisper or an encounter's outcome; a survey of the site leaves one banded by how well it went (`OBSERVE_CLUE_PRECISION_BY_BAND` — only a critical success locates), and a survey of a site the mortal already holds a lead on **sharpens** it a rung instead of refusing (THR-1663). A lead left unworked **goes stale**: `phaseClueDecay` prunes it after a precision-scaled age (`CLUE_MAX_AGE_TICKS_VAGUE` / `_NARROWED` / `_LOCATED`). A lead that goes **cold** because the mortal missed the visit it arranged is THR-1664's, not yet shipped. The climb is *hear → survey → visit → delve*; only a *located* lead admits a [[Delve]].
+
+Player surfaces say **lead**, never *clue*.
+
+Code anchors: `src/types/knowledge.ts` (`KnowsClueOfEdgeProperties`, `CluePrecision`), `src/engine/ruins/clueLifecycle.ts`, `src/engine/phases/clueDecay.ts`, `src/engine/agentDetail.ts` (sheet phrasing).
+
+---
+
+### Clue
+
+**Aliases:** `knows_clue_of`, `ClueSource`, `CluePrecision`
+**Also see:** `[[Lead]]`
+**Status:** canonical — seated by delegation 2026-09-29 (THR-1662)
+
+The **code word** for a [[Lead]]: the `knows_clue_of` edge, its types, its traces (`ruins.clue_sharpened`, `Clue discovered: …`) and its constants (`CLUE_*`). Reserve *clue* for code, traces and engine docs; every player surface — sheet, chip, prose, rulebook — says **lead**. Not the rulebook's "every primitive is clickable" sense of an arbitrary in-encounter hint.
+
+---
+
+### Delve
+
+**Aliases:** delve admission, `ruins.delve_admitted`
+**Also see:** `[[Lead]]`, `[[Encounter]]`, `[[Company]]`
+**Status:** canonical — seated by delegation 2026-09-29 (THR-1662)
+
+An expedition into a ruin, admitted by `phaseDelveAdmission` when a mortal holding a **located** [[Lead]] stands on the ruin's hex; admission consumes the lead. Elder ruins and ruined settlements (after `RUINED_SETTLEMENT_DELVE_DECAY_TICKS`) both admit delves. Delve families are group-eligible — a [[Company]] may take one a lone mortal cannot. Discovery through delving is the third breadth path for the Ascendant's cards (rulebook §4).
+
+Code anchors: `src/engine/phases/delveAdmission.ts`, `src/engine/ruins/delveTypes.ts`, `src/engine/ruins/delveVariant.ts`.
