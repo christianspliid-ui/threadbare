@@ -1,0 +1,773 @@
+{
+  "slug": "pilots-reckoning",
+  "doc": [
+    "The Run the Pilot Refused — slot 1 of the journeyman-everyday-1 batch (THR-1676).",
+    "",
+    "Brief: `Docs/plans/encounters/journeyman-everyday-1-brief.md`.",
+    "",
+    "plotHookRolled: hook.mentors_test, hook.apotheosis, hook.haunted_relic",
+    "plotHookTaken:  hook.mentors_test — the house's own pilot sets no test on purpose,",
+    "                but rides on the last wagon and watches the stranger's reckoning",
+    "                without helping. The apotheosis and haunted-relic hooks fought the",
+    "                everyday register the brief binds and were not blended in.",
+    "",
+    "Rolled constraints (brief, binding): reach star · steps star 0.40 -> star 0.45 (amended from 0.48: open-draw cap NUDGE_OFF_REACH_MAX_DIFFICULTY) ·",
+    "settings urban · shape opt-in complication · consequence hand relationship +",
+    "membership (swap → story_seed) · p3Shape mystery · opposition the mortal's own trait · disposition",
+    "friendly · agentRole trespasser · scale region · rarityTier 2 · scale local.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      Yes: `{actor}` is in `{location}` when a merchant house's",
+    "                     factor comes looking for a star-reader.",
+    "  2 P2 events?       The house steers its wagons by the stars at night; its last",
+    "                     two runs came in two days late; the drivers swear they held",
+    "                     the course; the house's pilot has refused the next run.",
+    "  3 P3 one stake?    Mystery, as the brief declared: the runs go wrong and nobody",
+    "                     can say why. The money is stated plainly — a season's goods",
+    "                     loaded and a buyer waiting.",
+    "  4 ≤80 words?       Opening (14) + step-0 spine (66) = 80.",
+    "  5 Read aloud?      Every sentence is a report. No interior sensation.",
+    "  6 Stated, never encoded? The delay, the refusal and the stake are stated.",
+    "  7 Every sentence works? Each states the challenge, the test or the outcome.",
+    "  8 Nothing unintroduced? The tables, the late runs, the pilot and the factor",
+    "                     all appear in the spine before a card or chip names them.",
+    "  9 One named person? Beat 1 `{cast:factor}`; beat 2 `{cast:pilot}` (lead",
+    "                     path) or `{cast:factor}` again (decline path).",
+    " 10 Stake in a sentence? 'Why do the house's night runs come in late, and will",
+    "                     the mortal put their own name to the next one?'",
+    " 11 Cards verb+noun, spell-style? Yes; four specials, no word of a card's name",
+    "                     repeated in its effect line, no digits.",
+    " 12 Opening per class? `urban`, the only declared class.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            A merchant house's night runs keep coming in late, its own",
+    "                  pilot will not lead the next one, and the house asks the",
+    "                  agent to read its star tables.",
+    "  Whose problem?  The agent's: the reckoning is asked of them, and the choice",
+    "                  to put their own name on the run is theirs alone.",
+    "  Reach = theme?  Star both steps. Step 0 is *about* reading a course off the",
+    "                  sky and a table; step 1 (lead path) is *about* steering by it",
+    "                  through the stretch where the last runs went wrong.",
+    "  Shape           Opt-in Complication. Step 0 (star 0.40) is the reckoning every",
+    "                  mortal makes. Then an agent-decided fork on `courage_prudence`",
+    "                  (Vanguard `positive` / Watcher `negative`): the Vanguard leads",
+    "                  the run (star 0.45, the test engaged); the Watcher hands the",
+    "                  tables back (star 0.20 — the cheap exit: a small loss of face",
+    "                  with the factor, written as a `bond_change`). The two step-0",
+    "                  specials carry opposite pole leans so the god has a lever on",
+    "                  the decision without picking it.",
+    "  Opposition      The mortal's own trait: the fork reads their courage/prudence,",
+    "                  and a Proud mortal (`trait.core.core_humility.vice`) checks",
+    "                  the house's tables worse (trait variant, negative).",
+    "  Consequence hand (binding, THR-1145): `relationship` + `membership`,",
+    "                  recorded swap `membership` → `story_seed` (see `consequenceSwap`).",
+    "                  `relationship` — `bond_change` on `$cast:factor`, both",
+    "                  directions: the factor's regard rises on a run brought home",
+    "                  and falls on a late or declined one.",
+    "                  `story_seed` — `encounter_seed` literal",
+    "                  (`encounter.caravan_deal`, delay 30) on the lead step's success",
+    "                  side: word of the run reaches a caravan master who needs a route read.",
+    "                  Critic swap (Pass 2): the draft's `#consortium_errand` query",
+    "                  named the Merchant Consortium's rank-gated errands, whose prose",
+    "                  asserts the mortal was sent by the consortium (rule 31) and",
+    "                  whose party is not this house. The Caravan Deal is ungated",
+    "                  everyday trade with a star step, and a literal seed always lands.",
+    "                  Extra: `intelligence` (trade_route) on the same success side —",
+    "                  a pilot who brought the wagons through knows which star the house's",
+    "                  tables have wrong.",
+    "  Cool failure?   Nobody is hurt or jailed. The run comes in late, the buyer",
+    "                  goes elsewhere, the goods sell at a loss, and the factor's",
+    "                  regard falls (`bond_change` on `$cast:factor`).",
+    "  Trait hooks     Gate: none (everyday by construction). Variant: Proud -0.04,",
+    "                  Humble +0.04. Trait-only nudge: none (the specials cap is",
+    "                  spent on the pole-lean pair). Trait fragment: none.",
+    "  Systems quota   cast + rewards + seeds + reputation — four.",
+    "",
+    "─── Measurement note ────────────────────────────────────────────────",
+    "  The fork step carries no top-level `difficulty`, so `measure:roll-spread`",
+    "  reads step 0 only (mean 0.40, window fit 0.54 — journeyman, star). The lead",
+    "  path's authored 0.45 is the brief's second step, rolled only by mortals who",
+    "  engage."
+  ],
+  "template": {
+    "id": "encounter.town.pilots_reckoning",
+    "rarityTier": 2,
+    "intrinsicTier": "background",
+    "name": "The Run the Pilot Refused",
+    "reach": "star",
+    "consequenceSwap": {
+      "from": "membership",
+      "to": "story_seed",
+      "reason": "The merchant house is a cast counterparty, not a body the mortal can join: nothing in the scene offers membership, and a join would bind a stranger to a house whose tables they read once. What the fiction carries forward is the house coming back for the next run — a planted scene, not an enrolment."
+    },
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "courage_prudence"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} is in {location} when a merchant house's factor comes looking for a star-reader."
+    },
+    "steps": [
+      {
+        "reach": "star",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.4,
+        "purposeLine": "Check the star tables",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "The house steers its wagons across open country by the stars. Its last two night runs came in two days late, though the drivers swear they held the course. Its own pilot will not lead the next run until the fault is found. {cast:factor} has a season's goods loaded and a buyer waiting, and asks {actor} to check the star tables and lead tonight's run.",
+        "successAfterimage": "They found the star the tables had wrong and marked it in the margin.",
+        "failureAfterimage": "The tables checked clean against the night sky, and the fault stayed hidden.",
+        "successAtCostAfterimage": "They found the wrong star, and the checking took the whole night.",
+        "criticalSuccessAfterimage": "They found the wrong star, the copy it came from, and the year it was copied.",
+        "criticalFailureAfterimage": "They passed the tables as sound, and the factor wrote that down.",
+        "deal": {
+          "count": 4,
+          "tags": [
+            "lore",
+            "insight"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "reckoning.sharpen_memory",
+            "name": "Sharpen Memory",
+            "sphere": "time",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.memory",
+            "poleLean": {
+              "axis": "courage_prudence",
+              "toward": "negative"
+            },
+            "effectLine": "Bring past attempts back to mind at once, so the pattern in their failures stands out. It argues for caution.",
+            "bandProse": {
+              "critical_success": "Both delayed trips lined up in memory, and the same bad stretch sat in each.",
+              "success": "The two delayed trips matched at the same stretch of country.",
+              "near_miss": "The pattern showed, and it showed late in the night.",
+              "failure": "Both delayed trips came back to mind, and neither explained the other."
+            }
+          },
+          {
+            "id": "reckoning.clear_the_sky",
+            "name": "Clear The Sky",
+            "sphere": "light",
+            "essenceCost": 2,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.light",
+            "poleLean": {
+              "axis": "courage_prudence",
+              "toward": "positive"
+            },
+            "effectLine": "Thin the cloud overhead tonight, so every star can be checked by eye. A bright night argues for going.",
+            "bandProse": {
+              "success_at_cost": "The cloud thinned slowly, one star at a time, until dawn.",
+              "failure": "The night came up bright and plain, and the tables still looked right.",
+              "critical_failure": "Every star stood bright overhead, and each one matched the tables."
+            }
+          }
+        ]
+      },
+      {
+        "branchOnStep": 0,
+        "decidedBy": {
+          "axis": "courage_prudence"
+        },
+        "variants": {
+          "positive": {
+            "reach": "star",
+            "duration": {
+              "min": 2,
+              "max": 3
+            },
+            "difficulty": 0.45,
+            "purposeLine": "Lead the night run",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} takes the run the house's pilot refused. The wagons leave {location} at dusk on {actor}'s reckoning. {cast:pilot} rides on the last wagon to watch, and offers no help. The stretch where the last two runs went wrong comes after midnight.",
+            "successAfterimage": "The wagons came in on the morning they were due.",
+            "failureAfterimage": "The wagons came in two days late, like the runs before them.",
+            "successAtCostAfterimage": "The wagons made the date, and the lead wagon limped the last miles.",
+            "criticalSuccessAfterimage": "The wagons came in a day early, and the pilot asked to see the reckoning.",
+            "criticalFailureAfterimage": "The wagons spent two nights lost in open country before they found the road.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "intelligence",
+                  "category": "trade_route",
+                  "label": "The house's night road",
+                  "detail": "Which star the house's tables have copied wrong, and where it turns a night run off course.",
+                  "reliability": 0.85,
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "encounter_seed",
+                  "templateId": "encounter.caravan_deal",
+                  "targetAgentId": "$actor",
+                  "delayTicks": 30,
+                  "priority": 0.8,
+                  "seedLabel": "Word of the run reaches a caravan master who needs a route read."
+                },
+                {
+                  "kind": "bond_change",
+                  "withAgentId": "$cast:factor",
+                  "sentimentDelta": 0.15,
+                  "trustDelta": 0.1
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "bond_change",
+                  "withAgentId": "$cast:factor",
+                  "sentimentDelta": -0.15
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "journey",
+                "lore",
+                "peril"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "reckoning.hold_the_bearing",
+                "name": "Hold The Bearing",
+                "sphere": "order",
+                "essenceCost": 2,
+                "forecastDelta": 0.12,
+                "imageTag": "generic.focus",
+                "effectLine": "Keep the traveller true to the chosen heading through dark country, where a small drift grows large.",
+                "bandProse": {
+                  "success": "The lead wagon kept its line through the bad stretch without a single turn.",
+                  "failure": "The lead wagon kept its line perfectly, and the line itself was wrong.",
+                  "critical_failure": "The wagons kept a steady line all night, straight into open country."
+                }
+              },
+              {
+                "id": "reckoning.loosen_a_tongue",
+                "name": "Loosen A Tongue",
+                "sphere": "mind",
+                "essenceCost": 1,
+                "forecastDelta": 0.07,
+                "imageTag": "generic.rumor",
+                "effectLine": "Tempt a silent watcher to speak once, at the moment a warning is needed.",
+                "bandProse": {
+                  "critical_success": "The watcher on the last wagon called the turn a breath before it was needed.",
+                  "success_at_cost": "The watcher called the turn, and a wagon cracked a wheel taking it.",
+                  "near_miss": "The watcher called the turn late, and the wagons took it wide.",
+                  "failure": "The watcher on the last wagon kept silent through the turn."
+                }
+              }
+            ]
+          },
+          "negative": {
+            "reach": "star",
+            "duration": {
+              "min": 1,
+              "max": 1
+            },
+            "difficulty": 0.2,
+            "purposeLine": "Hand the tables back",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} will not lead the run. {actor} hands the star tables back to {cast:factor} with the reckoning written in the margin. The factor needs a pilot by dusk, and has only the margin notes to go on.",
+            "successAfterimage": "The factor took the tables back and thanked them for the reading.",
+            "failureAfterimage": "The factor took the tables back without a word of thanks.",
+            "successAtCostAfterimage": "The factor paid for the reading, and paid less than was offered.",
+            "criticalSuccessAfterimage": "The factor read the margin twice and sent the tables to the house's pilot.",
+            "criticalFailureAfterimage": "The factor called the reckoning a guess in front of the drivers.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "bond_change",
+                  "withAgentId": "$cast:factor",
+                  "sentimentDelta": -0.05
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "bond_change",
+                  "withAgentId": "$cast:factor",
+                  "sentimentDelta": -0.12
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "social",
+                "presence"
+              ]
+            }
+          }
+        },
+        "fallback": {
+          "reach": "star",
+          "duration": {
+            "min": 1,
+            "max": 1
+          },
+          "difficulty": 0.2,
+          "purposeLine": "Hand the tables back",
+          "onSuccess": [],
+          "onFailure": [],
+          "failBehavior": "fail_action",
+          "narrativeTemplate": "{actor} will not lead the run. {actor} hands the star tables back to {cast:factor} with the reckoning written in the margin. The factor needs a pilot by dusk, and has only the margin notes to go on.",
+          "successAfterimage": "The factor took the tables back and thanked them for the reading.",
+          "failureAfterimage": "The factor took the tables back without a word of thanks.",
+          "successAtCostAfterimage": "The factor paid for the reading, and paid less than was offered.",
+          "criticalSuccessAfterimage": "The factor read the margin twice and sent the tables to the house's pilot.",
+          "criticalFailureAfterimage": "The factor called the reckoning a guess in front of the drivers.",
+          "successMetadata": {
+            "effects": [
+              {
+                "kind": "bond_change",
+                "withAgentId": "$cast:factor",
+                "sentimentDelta": -0.05
+              }
+            ]
+          },
+          "failureMetadata": {
+            "effects": [
+              {
+                "kind": "bond_change",
+                "withAgentId": "$cast:factor",
+                "sentimentDelta": -0.12
+              }
+            ]
+          },
+          "deal": {
+            "count": 4,
+            "tags": [
+              "social",
+              "presence"
+            ]
+          }
+        }
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_humility.vice",
+        "forecastDelta": -0.04,
+        "factorLine": "Being Proud, they trust their own figures over the house's tables."
+      },
+      {
+        "traitId": "trait.core.core_humility.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Humble, they check the house's tables twice before trusting them."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "factor",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "merchant",
+          "trader"
+        ],
+        "supportRole": "house_factor",
+        "spawnNpcRole": "merchant",
+        "spawnName": "Idris Vell"
+      },
+      {
+        "kind": "actor",
+        "key": "pilot",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "lookout",
+          "trader"
+        ],
+        "supportRole": "house_pilot",
+        "spawnNpcRole": "trader",
+        "spawnName": "Maren Holt"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A merchant house's night runs keep coming in two days late, and its own pilot will not lead the next one. The factor wants the star tables checked before dusk.",
+      "success": "The house's star tables were read, and the house has its answer before dusk.",
+      "failure": "The house lost days and money on the night road, and the factor knows who read the tables."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {
+        "positive": {
+          "overview": "The wagons are in, and the house knows how its night road went this time.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "The fault was one star, copied wrong in the house's tables years ago, and {actor} steered around it. The goods sold before any rival's reached the market. {cast:factor} told every house in {location} who had read the road.",
+              "changes": [
+                {
+                  "id": "reckoning.crit.route_known",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Wrong Star",
+                  "detail": "{actor} holds an intelligence record on the house's night route.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.crit.next_run",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "The Next Run",
+                  "detail": "Merchant work will come looking for {actor} again.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.crit.factor_trusts",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Factor's Trust",
+                  "detail": "{cast:factor} trusts {actor}'s reckoning now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The fault was one star copied wrong in the house's tables, and {actor} steered around it. The season's goods sold at the agreed price.",
+              "changes": [
+                {
+                  "id": "reckoning.success.route_known",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Wrong Star",
+                  "detail": "{actor} holds an intelligence record on the house's night route.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.success.next_run",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "The Next Run",
+                  "detail": "Merchant work will come looking for {actor} again.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.success.factor_trusts",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Factor's Trust",
+                  "detail": "{cast:factor} trusts {actor}'s reckoning now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "{actor} found the wrong star late, after the wagons had already drifted toward rough ground. The house paid for a new wheel and a crate of spoiled cloth.",
+              "changes": [
+                {
+                  "id": "reckoning.cost.route_known",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Wrong Star",
+                  "detail": "{actor} holds an intelligence record on the house's night route.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.cost.next_run",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "The Next Run",
+                  "detail": "Merchant work will come looking for {actor} again.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "reckoning.cost.factor_trusts",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Factor's Trust",
+                  "detail": "{cast:factor} trusts {actor}'s reckoning now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "The buyer had already bought from another house. {cast:factor} sold the season's goods at a loss and paid the drivers out of the difference.",
+              "changes": [
+                {
+                  "id": "reckoning.failure.factor_cools",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The Factor's Regard",
+                  "causeClause": "The run bore their name",
+                  "detail": "{cast:factor} thinks less of {actor}'s reckoning now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "Half the load came in spoiled, and the buyer was long gone. {cast:pilot} rode in on the last wagon and told the factor to burn the tables.",
+              "changes": [
+                {
+                  "id": "reckoning.critfail.factor_cools",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The Factor's Regard",
+                  "causeClause": "The run bore their name",
+                  "detail": "{cast:factor} thinks less of {actor}'s reckoning now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "negative": {
+          "overview": "{actor} gave the house a reading and kept out of the wagons. {cast:factor} has the star tables back with the margin written on, and still has no pilot for tonight.",
+          "changes": [
+            {
+              "id": "reckoning.decline.small_loss",
+              "kind": "reputation",
+              "category": "scar",
+              "direction": "loss",
+              "polarity": "loss",
+              "title": "Declined The Run",
+              "detail": "{cast:factor} thinks a little less of {actor}.",
+              "stateNoun": {
+                "text": "reputation with {target}",
+                "entityId": "$cast:factor",
+                "visualKind": "agent",
+                "tooltipId": "ui.reputation_with"
+              },
+              "concepts": [
+                {
+                  "text": "thinks a little less of",
+                  "tooltipId": "ui.standing"
+                }
+              ]
+            }
+          ],
+          "byOutcome": {
+            "success": {
+              "overview": "{actor} gave the house a reading and kept out of the wagons. {cast:factor} took the tables back politely and went to find a driver willing to lead on the margin notes."
+            },
+            "failure": {
+              "overview": "{actor} handed back the tables and kept out of the wagons. {cast:factor} did not trust the margin notes, paid a stranger to lead the run, and counted the reading as money wasted.",
+              "changes": [
+                {
+                  "id": "reckoning.decline.failure.regard_falls",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "A Reading Refused",
+                  "detail": "{cast:factor}'s regard for {actor} fell.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "regard",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{actor} handed back the tables and kept out of the wagons. {cast:factor} paid a stranger to lead the run, and the whole yard heard why before dusk.",
+              "changes": [
+                {
+                  "id": "reckoning.decline.critfail.regard_falls",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "A Reading Refused",
+                  "causeClause": "Called a guesser in public",
+                  "detail": "{cast:factor}'s regard for {actor} fell hard.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:factor",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "regard",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "fallback": {
+        "overview": "The house's wagons have gone out, and the star tables are back in the factor's hands.",
+        "changes": [],
+        "byOutcome": {
+          "success": {
+            "overview": "The house has its reading, and the factor has the tables back before dusk."
+          },
+          "failure": {
+            "overview": "The house lost days and money on the night road, and the factor knows who read the tables."
+          },
+          "critical_failure": {
+            "overview": "The house's run went badly wrong, and the factor said in the yard who had read the tables."
+          }
+        }
+      }
+    },
+    "description": "An opt-in star reckoning: check a merchant house's star tables after two late night runs, then lead the next run on that reckoning (a Vanguard) or hand the tables back (a Watcher). The lead path wires knowledge and a caravan-deal sequel on success."
+  }
+}

@@ -18,7 +18,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
-import { runTick, resetEventCounter } from '../orchestrator';
+import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
+import { resetReputationTraitInit } from '../phaseReputationTraits';
 import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
@@ -51,7 +52,12 @@ const MULTI_TICK_TIMEOUT_MS = 60_000;
 const SLACK_BEYOND_TRAVEL = 30;
 
 function world(): { state: GameState; runtime: SimulationRuntime } {
+  // THR-1676: every arm builds the same world. Resetting only the event counter let
+  // module state from the previous arm leak in: the unmarked arm departed at tick 26 and
+  // the marked arm at 38, slid back to `leaning`, and never departed again before due.
   resetEventCounter();
+  resetDecisionCache();
+  resetReputationTraitInit();
   const runtime = createSimulationRuntime();
   const preset = MAP_SIZE_PRESETS.small;
   const archetype = generateArchetypes(4, SEED)[0];

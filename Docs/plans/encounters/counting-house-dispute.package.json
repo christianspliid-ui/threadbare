@@ -1,0 +1,1010 @@
+{
+  "slug": "counting-house-dispute",
+  "doc": [
+    "The Counting-House Dispute — slot 4 of batch journeyman-everyday-1 (THR-1676).",
+    "Two merchant houses owe a founder the balance on the town's new weighing",
+    "scales, and each house's books say the other owes it. Both have agreed to let",
+    "the agent read the books and rule. The mortal decides which house to rule for;",
+    "the god only leans.",
+    "",
+    "Brief: `Docs/plans/encounters/journeyman-everyday-1-brief.md` (slot 4, binding).",
+    "",
+    "Rolled constraints (approved brief): plotHookRolled: hook.shifting_shape,",
+    "hook.masterwork_completion, hook.desperate_escort · plotHookTaken:",
+    "hook.masterwork_completion (the debt is the unpaid balance on a finished",
+    "masterwork the whole market came to see) · reach gold · setting rolled sacred →",
+    "urban · shape single_test → fork on step 2 decided by the mortal · p3Shape",
+    "opportunity · opposition law (motive: duty — the contract's letter) ·",
+    "disposition neutral · agentRole judge asked to rule · scale personal ·",
+    "consequenceDraw: knowledge + secret · rarityTier 2 · scale local.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            Two houses dispute a founder's unpaid balance, and the agent",
+    "                  has been asked to rule from the books.",
+    "  Title           The Counting-House Dispute — states the crux.",
+    "  Whose problem?  The agent's: they are the arbiter, the fee and the favour are",
+    "                  theirs to win, and a ruling that does not hold goes to the",
+    "                  magistrate with their name on it.",
+    "  Reach = theme?  Step 0 tests Gold (0.42) and is about reading two ledgers true.",
+    "                  Step 1 tests Heart (0.40) and is about bringing the losing house",
+    "                  to sign. Primary reach Gold (tie → first step).",
+    "  Shape           single test → personality fork (ActionStepBranch.decidedBy,",
+    "                  axis asceticism_extravagance — Gold's own pair). `positive`",
+    "                  (Mender) rules for House Corrow, the small house the balance",
+    "                  would break, and must bring Aldane to pay. `negative` (Magnate)",
+    "                  rules for House Aldane, which has the contract's letter and the",
+    "                  larger purse, and must bring Corrow to pay. The player never",
+    "                  picks: the two step-0 specials carry opposite `poleLean`s and are",
+    "                  the god's only lever on which way the mortal reads the books.",
+    "  Consequence hand (binding, THR-1145): `knowledge` + `secret` — no swap.",
+    "    knowledge     `intelligence` (trade_route) on step 0's success side: an",
+    "                  arbiter who reads both houses' books through learns who the",
+    "                  two houses buy from and sell to. BOON chip on the success-side",
+    "                  bands of both arms. Caveat: step 0 is continue_weakened, so a",
+    "                  failed reading can still end in a signed ruling — the chip then",
+    "                  over-claims (no step-gated chip exists to scope it tighter).",
+    "    secret        `favor_creation` on the fork step's success side, debtor = the",
+    "                  winning house's factor (`$cast:corrow` / `$cast:aldane`). An",
+    "                  arbiter who has read both houses' books is owed. A",
+    "                  critical-success reaction also offers `hidden_mark`",
+    "                  (secret_knowledge): the mortal keeps both ledgers to themselves.",
+    "    extra         `attachment_grant` on the fork step's success side: the house",
+    "                  ruled for pays the arbiter. Corrow (Mender arm) pays in",
+    "                  `reward_tomes_scrolls_letters_of_introduction`; Aldane (Magnate",
+    "                  arm) pays in `reward_arms_assessors_weighted_scales`.",
+    "  Failure         money, standing and time: the ruling goes to the magistrate,",
+    "                  the founder stays unpaid, and the losing house thinks less of",
+    "                  the arbiter (`reputation_with` on its factor). No condition on",
+    "                  the mortal (brief: avoid defaulting to a personal condition).",
+    "  Cool failure?   Nobody is jailed, hurt or branded.",
+    "  Systems quota   cast + rewards (attachment_grant) + reputation + secrets",
+    "                  (favour, hidden mark) — four.",
+    "  Trait hook      Variant: `trait.core.core_integrity.virtue` (True) eases the",
+    "                  reading. Gate / trait-only nudge / trait fragment: none.",
+    "  Carryover       Step 0 is `continue_weakened`: a failed reading still reaches",
+    "                  the fork, and the step-1 prose states position, never a finding",
+    "                  only a successful reading could have made.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      `{actor} arrives at the counting house of {location} at",
+    "                     midmorning.` Agent and place are graph names.",
+    "  2 P2 events?       The houses bought the scales together; the founder finished",
+    "                     them; the balance is unpaid; each house's books blame the",
+    "                     other. Events, costs already paid.",
+    "  3 P3 one stake?    Opportunity: rule, and the winning house pays and owes a favour.",
+    "  4 ≤80 words?       Opening 9 + spine 65 = 74.",
+    "  5 Read aloud?      Every sentence is a report.",
+    "  6 Stated?          The stake and the magistrate are stated, not implied.",
+    "  7 Every sentence works? Each states the challenge, the test or the outcome.",
+    "  8 Nothing unintroduced? The houses, the scales, the founder, the books and",
+    "                     the magistrate all appear before a card or chip names them.",
+    "  9 One named person? Step 0 puts the founder on stage (`{cast:founder}`, who asked",
+    "                     for the ruling); each fork arm puts one factor on stage",
+    "                     (`{cast:aldane}` or `{cast:corrow}`). Critic pass, 2026-09-29.",
+    " 10 Stake in a sentence? 'Rule on the debt so the losing house signs, and the",
+    "                     winner pays the arbiter and owes them a favour.'",
+    " 11 Cards verb+noun? Yes; four specials, imperative verb + noun, no word shared",
+    "                     between a name and its effect line, no digits.",
+    " 12 Opening per class? `urban` only, written."
+  ],
+  "template": {
+    "id": "encounter.town.counting_house_dispute",
+    "rarityTier": 2,
+    "intrinsicTier": "background",
+    "name": "The Counting-House Dispute",
+    "reach": "gold",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "asceticism_extravagance"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} arrives at the counting house of {location} at midmorning."
+    },
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_integrity.virtue",
+        "forecastDelta": 0.04,
+        "difficultyDelta": -0.02,
+        "factorLine": "Being True, they read the books as they are written."
+      }
+    ],
+    "steps": [
+      {
+        "reach": "gold",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.42,
+        "purposeLine": "Read the books",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "Houses Aldane and Corrow bought the town's new weighing scales together. {cast:founder}, the founder who cast them, finished the work last week. The balance is still unpaid, and each house's books say the other owes it.\n\n{cast:founder} has asked {actor} to read both books and rule, and both houses have agreed. The house that wins will pay the arbiter and owe a favour besides.",
+        "criticalSuccessAfterimage": "They found the one line in both books that settles it, and both houses watched them find it.",
+        "successAfterimage": "They read both books through and found where the debt sits.",
+        "successAtCostAfterimage": "They found where the debt sits. It took them until dark.",
+        "failureAfterimage": "They read both books and could not make them agree.",
+        "criticalFailureAfterimage": "They lost their place in the Corrow ledger, and both houses saw it.",
+        "successMetadata": {
+          "effects": [
+            {
+              "kind": "intelligence",
+              "category": "trade_route",
+              "label": "The two houses' books",
+              "detail": "Who Aldane and Corrow buy from and sell to, and on what terms, read off both houses' ledgers.",
+              "reliability": 0.85,
+              "targetAgentId": "$actor"
+            }
+          ]
+        },
+        "deal": {
+          "count": 4,
+          "tags": [
+            "insight",
+            "craft"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "counting.reveal_the_cost",
+            "name": "Reveal The Cost",
+            "sphere": "life",
+            "essenceCost": 2,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.warmth",
+            "poleLean": {
+              "axis": "asceticism_extravagance",
+              "toward": "positive"
+            },
+            "effectLine": "Lay House Corrow's wage list open beside the contract. Their reading tilts toward who can bear the debt.",
+            "bandProse": {
+              "success": "Corrow's wages lay open beside the contract, and they read the two together.",
+              "near_miss": "They read Corrow's wages closely, and the contract's figures more slowly for it.",
+              "failure": "They read Corrow's wages line by line and lost the contract's thread doing it."
+            }
+          },
+          {
+            "id": "counting.weigh_the_purse",
+            "name": "Weigh The Purse",
+            "sphere": "matter",
+            "essenceCost": 2,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.luck",
+            "poleLean": {
+              "axis": "asceticism_extravagance",
+              "toward": "negative"
+            },
+            "effectLine": "Set House Aldane's full order book at their elbow. Their reading tilts toward the house that pays best afterwards.",
+            "bandProse": {
+              "critical_success": "Aldane's order book sat open at their elbow, and every figure in it agreed with the contract.",
+              "success": "They checked the contract against Aldane's orders, and the orders held.",
+              "failure": "Aldane's orders were a long read, and the debt was not in them."
+            }
+          }
+        ]
+      },
+      {
+        "branchOnStep": 0,
+        "decidedBy": {
+          "axis": "asceticism_extravagance"
+        },
+        "variants": {
+          "positive": {
+            "reach": "heart",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.4,
+            "purposeLine": "Make it hold",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} rules for House Corrow. Corrow's carts fetched the scales only because Aldane's carter never came, and the balance would break the smaller house. Aldane pays.\n\n{cast:aldane} keeps House Aldane's books and has not agreed to pay anything. {actor} has to bring Aldane to sign. A ruling nobody signs goes to the magistrate, with the arbiter's name on it.",
+            "criticalSuccessAfterimage": "Aldane signed without being asked twice.",
+            "successAfterimage": "Aldane signed, and Corrow kept its carts.",
+            "successAtCostAfterimage": "Aldane signed, but only at the end of a long afternoon.",
+            "failureAfterimage": "Aldane would not sign.",
+            "criticalFailureAfterimage": "Aldane walked out before the ruling was read to the end.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "attachment_grant",
+                  "templateId": "reward_tomes_scrolls_letters_of_introduction",
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "favor_creation",
+                  "magnitudeRange": [
+                    0.2,
+                    0.35
+                  ],
+                  "context": "Ruled for House Corrow when the contract's letter was against it",
+                  "debtorAgentId": "$cast:corrow"
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetAgentId": "$cast:aldane",
+                  "delta": -0.08
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "social",
+                "presence"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "counting.recall_the_missed_cart",
+                "name": "Recall The Missed Cart",
+                "sphere": "time",
+                "essenceCost": 2,
+                "forecastDelta": 0.12,
+                "imageTag": "generic.memory",
+                "effectLine": "Make Aldane's factor remember the morning its own carter failed to come. The argument against paying gets harder to make.",
+                "bandProse": {
+                  "success": "Aldane's factor remembered the empty yard that morning and stopped arguing.",
+                  "near_miss": "Aldane's factor remembered the morning, and argued a while longer anyway.",
+                  "failure": "Aldane's factor remembered the missed cart and blamed the carter, not the house."
+                }
+              }
+            ]
+          },
+          "negative": {
+            "reach": "heart",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.4,
+            "purposeLine": "Make it hold",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} rules for House Aldane. The contract puts the balance on whichever house took delivery, and Corrow's carts took the scales. The letter is on Aldane's side, and so is the larger purse. Corrow pays.\n\n{cast:corrow} keeps House Corrow's books and says the balance will break the house. {actor} has to bring Corrow to sign. A ruling nobody signs goes to the magistrate, with the arbiter's name on it.",
+            "criticalSuccessAfterimage": "Corrow signed without further argument.",
+            "successAfterimage": "Corrow signed, and the founder was paid by evening.",
+            "successAtCostAfterimage": "Corrow signed only after the arbiter gave the house a season to pay.",
+            "failureAfterimage": "Corrow would not sign.",
+            "criticalFailureAfterimage": "Corrow walked out before the ruling was read to the end.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "attachment_grant",
+                  "templateId": "reward_arms_assessors_weighted_scales",
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "favor_creation",
+                  "magnitudeRange": [
+                    0.2,
+                    0.35
+                  ],
+                  "context": "Ruled for House Aldane by the letter of the contract",
+                  "debtorAgentId": "$cast:aldane"
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetAgentId": "$cast:corrow",
+                  "delta": -0.08
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "social",
+                "presence"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "counting.steady_the_debtor",
+                "name": "Steady The Debtor",
+                "sphere": "mind",
+                "essenceCost": 2,
+                "forecastDelta": 0.12,
+                "imageTag": "generic.focus",
+                "effectLine": "Calm Corrow's factor enough to hear the terms through to the end. A frightened house signs nothing.",
+                "bandProse": {
+                  "success": "Corrow's factor heard the terms out and asked for a pen.",
+                  "near_miss": "Corrow's factor heard the terms out, then asked for a day to think.",
+                  "failure": "Corrow's factor heard every word calmly and still said no."
+                }
+              }
+            ]
+          }
+        },
+        "fallback": {
+          "reach": "heart",
+          "duration": {
+            "min": 1,
+            "max": 2
+          },
+          "difficulty": 0.4,
+          "purposeLine": "Make it hold",
+          "onSuccess": [],
+          "onFailure": [],
+          "failBehavior": "fail_action",
+          "narrativeTemplate": "{actor} has read the books and gives a ruling. The house that loses has to be brought to sign it. A ruling nobody signs goes to the magistrate, with the arbiter's name on it.",
+          "criticalSuccessAfterimage": "Both houses signed, and the founder was paid.",
+          "successAfterimage": "The losing house signed.",
+          "successAtCostAfterimage": "The losing house signed after a long afternoon.",
+          "failureAfterimage": "The losing house would not sign.",
+          "criticalFailureAfterimage": "The losing house walked out of the counting house.",
+          "successMetadata": {
+            "effects": []
+          },
+          "failureMetadata": {
+            "effects": []
+          }
+        }
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "founder",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "smith"
+        ],
+        "supportRole": "founder",
+        "spawnNpcRole": "smith",
+        "spawnName": "Ide Brannock"
+      },
+      {
+        "kind": "actor",
+        "key": "aldane",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "merchant"
+        ],
+        "supportRole": "house_factor",
+        "spawnNpcRole": "merchant",
+        "spawnName": "Brisa Tollan"
+      },
+      {
+        "kind": "actor",
+        "key": "corrow",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "trader"
+        ],
+        "supportRole": "house_factor",
+        "spawnNpcRole": "trader",
+        "spawnName": "Oswin Marr"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "Two merchant houses owe a founder the balance on the town's new scales, and each says the other owes it. {actor} has been asked to read both books and rule.",
+      "success": "The ruling held. The losing house signed, and the winning house paid the arbiter.",
+      "failure": "The ruling did not hold. It goes to the magistrate with the arbiter's name on it, and the founder is still unpaid."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {
+        "positive": {
+          "overview": "{actor} ruled for House Corrow, and House Aldane was told to pay.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "House Aldane paid the founder in full, and called the ruling fair where the whole counting house could hear. House Corrow kept its carts. It had no coin to spare, and paid the arbiter in kind.",
+              "changes": [
+                {
+                  "id": "counting.pos.crit.letters",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Letters of Introduction",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries Corrow's seals to the houses it trades with.",
+                  "stateNoun": {
+                    "text": "Letters of Introduction",
+                    "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's seals",
+                      "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.crit.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled for the smaller house",
+                  "detail": "Corrow's factor, {cast:corrow}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's factor",
+                      "entityId": "$cast:corrow",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.crit.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "counting.pos.tell_the_market",
+                  "label": "Let the market hear who ruled",
+                  "intent": "Let the ruling be told in the market. The town thinks better of the arbiter who made it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.08
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.keep_the_ledgers",
+                  "label": "Let them keep both ledgers to themselves",
+                  "intent": "Say nothing of what two houses' books held. The mortal carries those figures away, and nobody knows it.",
+                  "effects": [
+                    {
+                      "kind": "hidden_mark",
+                      "category": "secret_knowledge",
+                      "severity": 0.3,
+                      "label": "Has read the Aldane and Corrow ledgers through",
+                      "targetAgentId": "$actor"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "House Aldane paid the founder, and House Corrow kept its carts. Corrow had no coin to spare, and paid the arbiter in kind.",
+              "changes": [
+                {
+                  "id": "counting.pos.letters",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Letters of Introduction",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries Corrow's seals now.",
+                  "stateNoun": {
+                    "text": "Letters of Introduction",
+                    "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's seals",
+                      "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled for the smaller house",
+                  "detail": "Corrow's factor, {cast:corrow}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's factor",
+                      "entityId": "$cast:corrow",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "Aldane paid the founder, but only after a long afternoon of argument over every clause. Corrow kept its carts, and paid the arbiter in kind.",
+              "changes": [
+                {
+                  "id": "counting.pos.cost.letters",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Letters of Introduction",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries Corrow's seals now.",
+                  "stateNoun": {
+                    "text": "Letters of Introduction",
+                    "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's seals",
+                      "entityId": "reward_tomes_scrolls_letters_of_introduction",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.cost.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled for the smaller house",
+                  "detail": "Corrow's factor, {cast:corrow}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Corrow's factor",
+                      "entityId": "$cast:corrow",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.pos.cost.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "House Aldane would not sign. The ruling goes to the magistrate with {actor}'s name on it, and the founder is still waiting to be paid.",
+              "changes": [
+                {
+                  "id": "counting.pos.fail.aldane",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Aldane's grudge",
+                  "causeClause": "A ruling Aldane refused",
+                  "detail": "{cast:aldane} thinks less of {actor} now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:aldane",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less",
+                      "tooltipId": "ui.reputation_with"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "Aldane walked out and told the market the arbiter was Corrow's creature. The ruling goes to the magistrate, and {actor}'s name goes with it.",
+              "changes": [
+                {
+                  "id": "counting.pos.critfail.aldane",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Aldane's grudge",
+                  "causeClause": "Called bought in open market",
+                  "detail": "{cast:aldane} thinks less of {actor} now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:aldane",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less",
+                      "tooltipId": "ui.reputation_with"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "negative": {
+          "overview": "{actor} ruled for House Aldane, and House Corrow was told to pay.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "House Corrow paid the founder, and thanked the arbiter for reading the contract plainly. House Aldane paid the arbiter's fee from its own counting room.",
+              "changes": [
+                {
+                  "id": "counting.neg.crit.scales",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Assessor's Weighted Scales",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries the weighing pans Aldane's own assessors use.",
+                  "stateNoun": {
+                    "text": "Assessor's Weighted Scales",
+                    "entityId": "reward_arms_assessors_weighted_scales",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "weighing pans",
+                      "entityId": "reward_arms_assessors_weighted_scales",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.crit.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled by the letter",
+                  "detail": "Aldane's factor, {cast:aldane}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Aldane's factor",
+                      "entityId": "$cast:aldane",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.crit.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "counting.neg.tell_the_market",
+                  "label": "Let the market hear who ruled",
+                  "intent": "Let the ruling be told in the market. The town thinks better of the arbiter who made it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.08
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.keep_the_ledgers",
+                  "label": "Let them keep both ledgers to themselves",
+                  "intent": "Say nothing of what two houses' books held. The mortal carries those figures away, and nobody knows it.",
+                  "effects": [
+                    {
+                      "kind": "hidden_mark",
+                      "category": "secret_knowledge",
+                      "severity": 0.3,
+                      "label": "Has read the Aldane and Corrow ledgers through",
+                      "targetAgentId": "$actor"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The debt is off both houses' books. House Aldane paid the arbiter's fee from its own counting room.",
+              "changes": [
+                {
+                  "id": "counting.neg.scales",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Assessor's Weighted Scales",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries Aldane's weighing pans now.",
+                  "stateNoun": {
+                    "text": "Assessor's Weighted Scales",
+                    "entityId": "reward_arms_assessors_weighted_scales",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Aldane's weighing pans",
+                      "entityId": "reward_arms_assessors_weighted_scales",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled by the letter",
+                  "detail": "Aldane's factor, {cast:aldane}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Aldane's factor",
+                      "entityId": "$cast:aldane",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "Corrow signed only once {actor} had given the house a season to pay, and the founder waits that long. Aldane paid the arbiter's fee all the same.",
+              "changes": [
+                {
+                  "id": "counting.neg.cost.scales",
+                  "kind": "item",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Assessor's Weighted Scales",
+                  "causeClause": "The arbiter's fee",
+                  "detail": "{actor} carries Aldane's weighing pans now.",
+                  "stateNoun": {
+                    "text": "Assessor's Weighted Scales",
+                    "entityId": "reward_arms_assessors_weighted_scales",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Aldane's weighing pans",
+                      "entityId": "reward_arms_assessors_weighted_scales",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.cost.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "causeClause": "Ruled by the letter",
+                  "detail": "Aldane's factor, {cast:aldane}, owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Aldane's factor",
+                      "entityId": "$cast:aldane",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "counting.neg.cost.books",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The Houses' Books",
+                  "causeClause": "Read both ledgers through",
+                  "detail": "{actor} knows who trades with whom in {location}.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "intelligence record"
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "House Corrow would not sign. The ruling goes to the magistrate with {actor}'s name on it, and the founder is still waiting to be paid.",
+              "changes": [
+                {
+                  "id": "counting.neg.fail.corrow",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Corrow's grudge",
+                  "causeClause": "A ruling Corrow refused",
+                  "detail": "{cast:corrow} thinks less of {actor} now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:corrow",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less",
+                      "tooltipId": "ui.reputation_with"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "Corrow walked out and told the market the arbiter was Aldane's creature. The ruling goes to the magistrate, and {actor}'s name goes with it.",
+              "changes": [
+                {
+                  "id": "counting.neg.critfail.corrow",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Corrow's grudge",
+                  "causeClause": "Called bought in open market",
+                  "detail": "{cast:corrow} thinks less of {actor} now.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$cast:corrow",
+                    "visualKind": "agent",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks less",
+                      "tooltipId": "ui.reputation_with"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "fallback": {
+        "overview": "The counting house has closed for the day. The ruling stands or falls on whether the losing house signed.",
+        "changes": [],
+        "byOutcome": {
+          "success": {
+            "overview": "The losing house signed, and the founder will be paid.",
+            "changes": []
+          },
+          "failure": {
+            "overview": "The losing house would not sign. The ruling goes to the magistrate.",
+            "changes": []
+          },
+          "critical_failure": {
+            "overview": "The losing house walked out, and the ruling goes to the magistrate with the arbiter's name on it.",
+            "changes": []
+          }
+        }
+      }
+    },
+    "description": "A merchant arbitration in a town counting house: read two houses' books on a founder's unpaid balance (Gold), then — by the mortal's own lean, Mender or Magnate — rule for the small house or the letter of the contract and bring the losing house to sign (Heart). The house ruled for pays the arbiter and owes a favour."
+  }
+}
