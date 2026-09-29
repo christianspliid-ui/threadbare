@@ -239,7 +239,7 @@ import { isStarterActionId } from '../../engine/actionUnlock';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
-import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import { applyBalancedTestAvatar, applySpellStamp, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import { buildEncounterBinderContext } from '../../engine/binding/encounterBinderContext';
 import {
   moveDebugAgent,
@@ -2675,17 +2675,36 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const urlSpawnDoneRef = useRef(false);
   const urlSpawnAttemptsRef = useRef(0);
+  const urlSpellDoneRef = useRef(false);
   useEffect(() => {
     if (urlSpawnDoneRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const templateId = params.get('spawn');
+    // THR-1670 — `?spell=<templateId>` stamps @hero as knowing and wielding the
+    // spell (after the balanced stamp, which would otherwise reset the reaches the
+    // spell stamp may have raised to its floor), so a step cast is reviewable.
+    const spellParam = params.get('spell');
     const wantsTestAvatar = params.has('testavatar') || templateId !== null;
-    if (!templateId && !wantsTestAvatar) {
+    if (!templateId && !wantsTestAvatar && !spellParam) {
       urlSpawnDoneRef.current = true;
       return;
     }
     if (urlSpawnAttemptsRef.current >= 30) return;
     urlSpawnAttemptsRef.current += 1;
+
+    // Returns false while @hero cannot be resolved yet (the effect retries).
+    const stampSpell = (): boolean => {
+      if (!spellParam || urlSpellDoneRef.current) return true;
+      const stamped = applySpellStamp(_gameStateRef.current, '@hero', spellParam);
+      if (!stamped.success) {
+        if (urlSpawnAttemptsRef.current === 30) console.warn(`[?spell] gave up after 30 attempts: ${stamped.message}`);
+        return false;
+      }
+      urlSpellDoneRef.current = true;
+      touchWorld(runtime);
+      console.info(`[?spell] ${stamped.message}`);
+      return true;
+    };
 
     if (wantsTestAvatar) {
       const stamped = applyBalancedTestAvatar(_gameStateRef.current, '@hero');
@@ -2695,6 +2714,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           const pool = stamped.essencePool;
           setGameState(prev => ({ ...prev, essencePool: pool }));
         }
+        if (!stampSpell()) return;
         if (!templateId) {
           urlSpawnDoneRef.current = true;
           return;
@@ -2703,6 +2723,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         if (urlSpawnAttemptsRef.current === 30) {
           console.warn(`[?testavatar] gave up after 30 attempts: ${stamped.message}`);
         }
+        return;
+      }
+    } else {
+      if (!stampSpell()) return;
+      if (!templateId) {
+        urlSpawnDoneRef.current = true;
         return;
       }
     }
@@ -5623,6 +5649,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // defect THR-1477 fixed for the agent's name. The card's own footer carries
             // "open its sheet ↗" for the player who wants the whole of it.
             onSelectEntity={(entityId, kind) => {
+              // THR-1670 — a spell's shared definition node is a Power, not an item:
+              // open its catalog card (and codex sheet) by template id. The `attachment`
+              // world card reads artifacts only, so this would render as "Unknown".
+              const spellTemplateId = kind === 'attachment'
+                ? gameState.graph.getNode(entityId)?.properties.spellTemplateId
+                : undefined;
+              if (typeof spellTemplateId === 'string') {
+                refRouter.open({ kind: 'power_template', id: spellTemplateId }, 'card', { via: 'veil' });
+                return;
+              }
               refRouter.open(
                 { kind: WORLD_REF_KIND_BY_VISUAL_KIND[kind], id: entityId },
                 'card',

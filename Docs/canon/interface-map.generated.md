@@ -823,10 +823,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Ambitions & Undertakings
 - **UL terms:** *Domain Capability*, *Prerequisite*
 - **Module:** `src/engine/domainCapability.ts`
-- **Production hits:** 23 total — 2 write, 10 read, 11 unclassified
+- **Production hits:** 24 total — 2 write, 10 read, 12 unclassified
 - **Write sites:** `src/data/reach-share-constants.ts`, `src/engine/domainCapability.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/gameInit.ts` +5 more
-- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/colocation-content.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts` +6 more
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/colocation-content.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts` +7 more
 - **Verdict:** Verified 2026-09-24: THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.
 
 ### `cast-influence-shifts-target-values` — 🔵 UNVERIFIED-OK
@@ -1124,10 +1124,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Struck down*, *Scarred*, *Grudge*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 89 total — 1 write, 1 read, 87 unclassified
+- **Production hits:** 90 total — 1 write, 1 read, 88 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/encounters/branchDecision.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +82 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts` +83 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
@@ -1303,10 +1303,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 121 total — 1 write, 1 read, 119 unclassified
+- **Production hits:** 123 total — 1 write, 1 read, 121 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +114 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +116 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1351,10 +1351,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *SCAR*, *BOND*, *BOON*, *PATH*
 - **Module:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`
-- **Production hits:** 28 total — 3 write, 2 read, 23 unclassified
+- **Production hits:** 29 total — 3 write, 2 read, 24 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts` +18 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/encounter-stage/adapters/buildStepCastModel.ts`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts` +19 more
 - **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN "Nesrin holds a grudge against Corran." ▼ (`Docs/evidence/thr-1561/`).
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
@@ -1672,10 +1672,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 162 total — 3 write, 7 read, 152 unclassified
+- **Production hits:** 163 total — 3 write, 7 read, 153 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +147 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +148 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1939,10 +1939,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Effects & Conditions
 - **UL terms:** *Condition*, *Curse*, *Blessing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 30 total — 1 write, 3 read, 26 unclassified
+- **Production hits:** 31 total — 1 write, 3 read, 27 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/strategicActionLifecycle.ts`
-- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/game-config.ts` +21 more
+- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/game-config.ts` +22 more
 - **Verdict:** Verified 2026-09-07: THR-1429. On seed 42 small a motive-gated `cell.create.condition` left reward_condition_nightmares on npc_10 with sign=curse, inflictedBy=npc_11 and ticksRemaining=19 (24 from CURSE_DURATION_TICKS_BY_BAND.success, decayed 5 by conditionDecay — the live reader), plus an undertaking_outcome event carrying harmClass=afflicted, victim npc_10, culprit npc_11. `cell.destroy.power` left reward_condition_null_touched with sign=seal and the bearer reading sealed through the effect walker. The blessing arm registers no harm, and the stranger arm refuses no_sign — both falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, along with the cross-bearer guard: a second wielder of the same shared spell node is NOT sealed when the first is cursed.
 
 ### `mortal-learns-a-spell` — 🟢 LIVE
@@ -1951,10 +1951,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 95 total — 2 write, 3 read, 90 unclassified
+- **Production hits:** 97 total — 2 write, 3 read, 92 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +85 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +87 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -2413,11 +2413,11 @@ exit
 - **Producer → Consumer:** Effects & Conditions → Effects & Conditions
 - **UL terms:** *Spell*, *Strained*
 - **Module:** `src/engine/spellCasting.ts`
-- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
+- **Production hits:** 15 total — 2 write, 3 read, 10 unclassified
 - **Write sites:** `src/engine/spellActivation.ts`, `src/engine/spellCasting.ts`
-- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/effects/effectEventDispatch.ts`
-- **Other hits:** `src/data/item-honest-vocabulary.ts`, `src/data/spell-templates.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/castRelocation.ts` +4 more
-- **Verdict:** Verified 2026-09-29: THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/data/item-honest-vocabulary.ts`, `src/data/spell-templates.ts`, `src/debug-bridge.ts`, `src/engine/effectExecutors.ts`, `src/engine/effects/castRelocation.ts` +5 more
+- **Verdict:** Verified 2026-09-29: THR-1670 S2 adds the second call site: a step cast. decideStepCast (unifiedActionResolution.ts) records the mortal's decision on UnifiedAction.stepCasts; the roll carries it as one named `spell` contribution; executeStepResult then calls resolveCast with the step's own band (site: step), and the chips read CastResult.writes back off the record (buildStepCastModel.ts). stepCast.thr1670.test.ts: a success band lands Hollow Crown and writes its price condition; a failure fizzles it and still pays. Live in the browser on the ?spell= review link (pre-card 0.35 → cast → landed → one chip). THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE
 
@@ -2738,10 +2738,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 269 total — 2 write, 6 read, 261 unclassified
+- **Production hits:** 270 total — 2 write, 6 read, 262 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +256 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +257 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

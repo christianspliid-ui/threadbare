@@ -234,8 +234,55 @@ export function NudgeReadingMarks({
 
 // ── Balance ────────────────────────────────────────────────────────
 
+/**
+ * THR-1670 — a factor sentence, with its linked name (if any) as a button that
+ * opens the entity's page (Law 4). A link whose text is not in the sentence, or a
+ * host with no opener, renders the plain sentence.
+ */
+function FactorLineText({
+  factor,
+  onOpenEntity,
+}: {
+  factor: EncounterStageTestPanelModel['factors'][number];
+  onOpenEntity?: (entityId: string, kind: 'attachment') => void;
+}) {
+  const link = factor.link;
+  const at = link ? factor.text.indexOf(link.text) : -1;
+  if (!link || at < 0 || !onOpenEntity) return <span>{factor.text}</span>;
+  return (
+    <span>
+      {factor.text.slice(0, at)}
+      <button
+        type="button"
+        className="focus-ring"
+        data-testid={`nudge-factor-link-${factor.id}`}
+        onClick={() => onOpenEntity(link.entityId, link.kind)}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          padding: 0,
+          font: 'inherit',
+          color: 'inherit',
+          fontStyle: 'italic',
+          textDecoration: 'underline',
+          textUnderlineOffset: 3,
+          cursor: 'pointer',
+        }}
+      >
+        {link.text}
+      </button>
+      {factor.text.slice(at + link.text.length)}
+    </span>
+  );
+}
+
 export interface NudgeBalanceProps {
   testPanel: EncounterStageTestPanelModel;
+  /**
+   * THR-1670 — opens a named entity a factor line links (the step cast's spell).
+   * Absent: the name stays plain text (fail-open, never a dead link).
+   */
+  onOpenEntity?: (entityId: string, kind: 'attachment') => void;
 }
 
 /**
@@ -250,7 +297,7 @@ export interface NudgeBalanceProps {
  * on as that legend item's tooltip, so nothing was deleted from the one tooltip
  * registry (Law 17).
  */
-export function NudgeBalance({ testPanel }: NudgeBalanceProps) {
+export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
   // Law 51 — dismissed once, not once per encounter. Fail-soft (NFP #4):
   // private browsing throws on `localStorage`, and the designed failure is to
   // *show* the legend, because Law 12 prefers noisy over missing.
@@ -300,7 +347,7 @@ export function NudgeBalance({ testPanel }: NudgeBalanceProps) {
                 gap: FACTOR_PIP_GAP,
               }}
             >
-              <span>{factor.text}</span>
+              <FactorLineText factor={factor} onOpenEntity={onOpenEntity} />
               {/* THR-970 — the magnitude beside the sentence, in the same pip
                   vocabulary the cards use. Polarity stays on the text colour;
                   the pips carry size. An absent delta draws nothing at all (the

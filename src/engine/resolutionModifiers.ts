@@ -64,6 +64,8 @@ import {
 } from '../data/condition-trait-content';
 import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import { UNIFIED_ROLL_READS_STANDING_MODIFIERS } from '../data/standing-modifier-constants';
+import type { StepCastRecord } from '../types/unifiedAction';
+import { getSpellTemplate, spellDefinitionNodeId } from '../data/spell-templates';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -120,7 +122,13 @@ export type ModifierSourceKind =
    * `'trait'`, which is what the actor carries. This is what has *happened* to
    * the place lately, and it lifts when the condition decays.
    */
-  | 'condition';
+  | 'condition'
+  /**
+   * THR-1670 — the spell the roller reaches for on this step ("casting Hollow
+   * Crown"). Read from the step's recorded cast decision, so the forecast and the
+   * roll carry the same line.
+   */
+  | 'spell';
 
 export interface NamedModifierContribution {
   readonly kind: ModifierSourceKind;
@@ -692,6 +700,11 @@ export function computeResolutionModifiers(
    * reach; absent, `inCombat` keys on the reach alone, as before.
    */
   encounterType?: string,
+  /**
+   * THR-1670 — the step's recorded cast. Adds one `kind: 'spell'` contribution
+   * when the record is a cast by this roller; every existing caller omits it.
+   */
+  stepCast?: StepCastRecord,
 ): ModifierBreakdown {
   // THR-1241: `encounter_reach_override` owns this site. A step names the reach
   // it tests; a swap says "when this step would test X, test Y instead" — an
@@ -743,6 +756,11 @@ export function computeResolutionModifiers(
     collectLocationConditionContributions(graph, locationId, stepReach);
   const locationConditionModifier = sumContributions(locationConditionContributions);
 
+  // THR-1670 — the step cast's named line. Not clamped with the effect family: it
+  // is the spell's own authored bonus (`CAST_STEP_BONUS_BY_TIER`), one per step.
+  const spellContributions = stepCastContributions(stepCast, agentId);
+  const spellModifier = sumContributions(spellContributions);
+
   const totalModifier =
     sphereAlignmentBonus +
     equipmentModifier +
@@ -752,7 +770,8 @@ export function computeResolutionModifiers(
     effectModifier +
     ruleModifier +
     auraModifier +
-    locationConditionModifier;
+    locationConditionModifier +
+    spellModifier;
 
   // THR-892 — the named causes, in the same order the totals are summed above.
   // `effectResult.contributions` is already named and already reach-filtered, so
@@ -796,6 +815,7 @@ export function computeResolutionModifiers(
           value: ruleModifier,
         }]
       : []),
+    ...spellContributions,
   ];
 
   return {
@@ -812,6 +832,27 @@ export function computeResolutionModifiers(
     totalModifier,
     contributions,
   };
+}
+
+/**
+ * THR-1670 — the step cast as a named contribution, or nothing. Only a cast (never
+ * a decline) by the mortal this breakdown is for, with a known spell and a
+ * non-zero bonus, contributes. The source is the spell's shared definition node,
+ * so the line links to its Power page.
+ */
+export function stepCastContributions(
+  stepCast: StepCastRecord | undefined,
+  agentId: string,
+): NamedModifierContribution[] {
+  if (!stepCast || stepCast.decision !== 'cast' || stepCast.casterId !== agentId) return [];
+  if (!stepCast.spellId || !stepCast.bonus || !Number.isFinite(stepCast.bonus)) return [];
+  const spell = getSpellTemplate(stepCast.spellId);
+  return [{
+    kind: 'spell',
+    sourceId: spellDefinitionNodeId(stepCast.spellId),
+    sourceName: spell?.name ?? stepCast.spellId,
+    value: stepCast.bonus,
+  }];
 }
 
 // ─── The roll's standing-modifier term (THR-1535) ────────────────
@@ -838,11 +879,17 @@ export function computeStandingModifierTotal(
   stepReach: ReachDomain,
   encounterSphereAffinity: SphereName | undefined,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  /** THR-1670 — the step's recorded cast (the forecast passes the same record). */
+  stepCast?: StepCastRecord,
 ): number {
-  if (!UNIFIED_ROLL_READS_STANDING_MODIFIERS) return 0;
+  if (!UNIFIED_ROLL_READS_STANDING_MODIFIERS) {
+    // The one-flag revert turns off the standing read, never a cast's own line.
+    return sumContributions(stepCastContributions(stepCast, actorId));
+  }
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
   const locationId = locEdges.length > 0 ? locEdges[0].target : '';
   return computeResolutionModifiers(
     graph, actorId, locationId, stepReach, encounterSphereAffinity, effectStates,
+    undefined, undefined, stepCast,
   ).totalModifier;
 }

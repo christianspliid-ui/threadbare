@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { constantWriter } from './vite-plugin-constant-writer';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Agent-lane worktrees live *inside* the repo root (`.claude/worktrees/<name>`),
@@ -14,8 +15,16 @@ import { constantWriter } from './vite-plugin-constant-writer';
  * These patterns are appended to Vite's own defaults (`.git`, `node_modules`,
  * `test-results`, cacheDir) rather than replacing them - see
  * `resolveChokidarOptions`. Dev-server only; `vite build` does not watch.
+ *
+ * Anchored to this config's own directory (THR-1670). The unanchored
+ * `**\/.claude/worktrees/**` also matched *every file of a server started inside
+ * a worktree* — its own `src/` sits under `.claude/worktrees/<name>/` — so a
+ * worktree dev server never saw an edit and served stale transforms until
+ * restarted (impediments #1098, #1100, #1102, #1104). Anchored, the home tree
+ * still ignores the worktrees nested in it, and a worktree watches itself.
  */
-const WATCH_IGNORED_WORKTREES = ['**/.claude/worktrees/**', '**/.worktrees/**'];
+const CONFIG_DIR = fileURLToPath(new URL('.', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
+const WATCH_IGNORED_WORKTREES = [`${CONFIG_DIR}/.claude/worktrees/**`, `${CONFIG_DIR}/.worktrees/**`];
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), constantWriter()],

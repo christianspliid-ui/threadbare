@@ -781,7 +781,7 @@ export function EncounterVeil({
               control brings it back. */}
           {replayEntry ? (
             <div data-testid="aftermath-step-replay" style={aftermathEntrance(0, 0.6)}>
-              <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
+              <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} onSelectEntity={onSelectEntity} />
             </div>
           ) : (
           <>
@@ -2192,7 +2192,7 @@ export function EncounterVeil({
               />
             ) : undefined}
             belowBlock={model.nudgePhase ? (
-              <NudgeBalance testPanel={model.nudgePhase.testPanel} />
+              <NudgeBalance testPanel={model.nudgePhase.testPanel} onOpenEntity={onSelectEntity} />
             ) : undefined}
           />
         </div>
@@ -2237,7 +2237,7 @@ export function EncounterVeil({
         {/* Prose — live narrative, or a resolved step's frozen replay (THR-636) */}
         <div style={entranceStyle(ENTRANCE_DELAYS.prose, 1.0, 12)}>
           {replayEntry ? (
-            <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
+            <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} onSelectEntity={onSelectEntity} />
           ) : (
           <>
           {/* THR-972 — the motive as the scene's opening line. Above the prose
@@ -2310,6 +2310,13 @@ export function EncounterVeil({
           {model.resolutionReadout && (
             <ResolutionReadoutBlock readout={model.resolutionReadout} />
           )}
+
+          {/* THR-1670 — the spell the mortal cast on the most recent step, and
+              what the step's roll did with it. */}
+          {(() => {
+            const last = [...(model.history ?? [])].reverse().find(s => s.status === 'resolved');
+            return last?.cast ? <StepCastLine cast={last.cast} onSelectEntity={onSelectEntity} /> : null;
+          })()}
 
           {/* Complication prose — most recent failed step with a complication (THR-20) */}
           {(() => {
@@ -3457,13 +3464,108 @@ function StepNavigator({
   );
 }
 
+// ── StepCastLine sub-component (THR-1670) ──────────────────────────
+/**
+ * The step cast under a step's afterimage: "✦ Casting <Spell>" (the name opens
+ * the spell's Power page, Law 4), then the cast line — landed or fizzled — and
+ * the backlash line when the price bit. GM narration, words only (Law 21).
+ */
+function StepCastLine({
+  cast,
+  onSelectEntity,
+}: {
+  cast: NonNullable<EncounterStageHistoryModel['cast']>;
+  onSelectEntity?: (entityId: string, kind: 'attachment') => void;
+}) {
+  return (
+    <div
+      data-testid="step-cast-line"
+      data-cast-landed={cast.landed ? 'true' : 'false'}
+      style={{
+        marginTop: 16,
+        paddingTop: 12,
+        borderTop: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'rgb(var(--veil-gold-rgb) / 0.55)',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          marginBottom: 6,
+        }}
+      >
+        ✦ {cast.casterName ? `${cast.casterName} casts ` : 'Casting '}
+        {onSelectEntity ? (
+          <button
+            type="button"
+            className="focus-ring"
+            data-testid="step-cast-spell-link"
+            onClick={() => onSelectEntity(cast.spellNodeId, 'attachment')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
+              letterSpacing: 'inherit',
+              textTransform: 'inherit',
+              color: GOLD,
+              textDecoration: 'underline',
+              textUnderlineOffset: 3,
+              cursor: 'pointer',
+            }}
+          >
+            {cast.spellName}
+          </button>
+        ) : (
+          <span style={{ color: GOLD }}>{cast.spellName}</span>
+        )}
+        {' · '}
+        {cast.landed ? 'it lands' : 'it fizzles'}
+      </div>
+      <p
+        style={{
+          fontFamily: FONT_PROSE,
+          fontStyle: 'italic',
+          fontSize: 'var(--text-xs)',
+          lineHeight: 1.7,
+          color: TEXT_WARM,
+          margin: 0,
+          maxWidth: 500,
+        }}
+      >
+        {cast.prose}
+      </p>
+      {cast.backlashProse && (
+        <p
+          data-testid="step-cast-backlash"
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            lineHeight: 1.7,
+            color: 'rgba(220, 100, 60, 0.75)',
+            margin: '6px 0 0',
+            maxWidth: 500,
+          }}
+        >
+          {cast.backlashProse}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── StepReplayView sub-component (THR-636) ─────────────────────────
 function StepReplayView({
   entry,
   onReturn,
+  onSelectEntity,
 }: {
   entry: EncounterStageHistoryModel;
   onReturn: () => void;
+  onSelectEntity?: (entityId: string, kind: 'attachment') => void;
 }) {
   const prose = entry.replayNarrative || entry.afterimage || '';
   const outcomeColor = entry.outcome ? (OUTCOME_DOT_COLOR[entry.outcome] ?? GOLD) : GOLD;
@@ -3572,6 +3674,9 @@ function StepReplayView({
           You whispered: {entry.choiceText}
         </div>
       )}
+
+      {/* THR-1670 — the spell cast on this step */}
+      {entry.cast && <StepCastLine cast={entry.cast} onSelectEntity={onSelectEntity} />}
 
       {/* Complication, if one fired */}
       {entry.complication && (

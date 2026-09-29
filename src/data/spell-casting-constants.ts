@@ -81,6 +81,40 @@ export function isCarriedEffectStateless(effect: AttachmentEffect): boolean {
   return true;
 }
 
+// ─── The step cast (S2, THR-1670) ─────────────────────────────────
+
+/**
+ * Below this pre-card probability a neutral mortal reaches for their spell.
+ * Deliberately **below** the 50–65% window mortals choose challenges at (THR-1581),
+ * so a caster casts only when a step is worse than they would have chosen: a hard
+ * step the god imposed, a scene that turned, a fight going badly.
+ */
+export const CAST_THRESHOLD_BASE = 0.45;
+
+/** A courageous mortal (+1) casts up to 0.55; a prudent one (−1) saves it until 0.35. */
+export const CAST_THRESHOLD_COURAGE_SHIFT = 0.10;
+
+/** The clamp. The maximum sits at the window's floor, so no caster casts inside the band they would choose. */
+export const CAST_THRESHOLD_MIN = 0.30;
+export const CAST_THRESHOLD_MAX = 0.55;
+
+/** The named odds line a step cast adds, by spell tier. */
+export const CAST_STEP_BONUS_BY_TIER: Readonly<Record<number, number>> = { 1: 0.04, 2: 0.07, 3: 0.10, 4: 0.13 };
+
+/** The cast bonus for a tier outside the table (fail-soft: the nearest authored tier's). */
+export function castStepBonusForTier(tier: number): number {
+  const exact = CAST_STEP_BONUS_BY_TIER[tier];
+  if (exact !== undefined) return exact;
+  return tier < 1 ? CAST_STEP_BONUS_BY_TIER[1] : CAST_STEP_BONUS_BY_TIER[4];
+}
+
+/** The mortal's cast threshold for a courage_prudence lean in [-1, 1] (NaN reads as neutral). */
+export function castThresholdFor(courage: number): number {
+  const lean = Number.isFinite(courage) ? courage : 0;
+  const raw = CAST_THRESHOLD_BASE + CAST_THRESHOLD_COURAGE_SHIFT * lean;
+  return Math.max(CAST_THRESHOLD_MIN, Math.min(CAST_THRESHOLD_MAX, raw));
+}
+
 /**
  * Max tick-cost rise vs the pre-change baseline on `npm run measure:tick-cost`. A
  * closeout gate, not a runtime read. The plan's reserve kill switch

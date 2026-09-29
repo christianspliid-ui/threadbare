@@ -4764,3 +4764,15 @@ A spell is a `SpellTemplate` in `src/data/spell-templates.ts`. Four optional fie
 **New trigger moment:** `action_trigger` `on: 'spell_cast'` fires on the caster after every cast, landed or fizzled — use it for "the working takes something from you" riders on items and powers.
 
 Knobs: `src/data/spell-casting-constants.ts`. Seeding: every caster starts knowing one spell (`seedSpellKnowing`; `SEEDED_CASTER_ROLES`, `SEEDED_SPELL_COVERAGE`). Inspect: `__DEBUG.getSpellHolders()`, `await __DEBUG.castSpell({ caster, spell, band })`; traces `spell.seeded`, `spell.cast_resolved`, `spell.backlash`, `effect.teleported`.
+
+### The step cast (THR-1670, power runtime S2)
+
+A mortal who **wields** a deliberate spell casts it in a scene on their own — the author writes no cast into a template. The spell fits a step when its `arena` does: `encounter` on a non-fight step whose `reach` equals the spell's `castReach`; `fight` on a `fightRole: 'clash'` exchange. The mortal casts when the step's odds **before any god card** fall below their threshold (`CAST_THRESHOLD_BASE` ± `CAST_THRESHOLD_COURAGE_SHIFT` × courage, clamped `CAST_THRESHOLD_MIN`/`MAX`), which sits below the odds mortals choose to take on — so a cast is a sign a scene has turned. The step shows it as a factor line ("X is casting *Spell*", `CAST_STEP_BONUS_BY_TIER[tier]`), and **the step's own band decides the spell** through `resolveCast`.
+
+What this means for authors:
+
+- **A hard step is where spells happen.** Author difficulty for the fiction; a caster who holds a fitting spell will reach for it when the step is hard for *them*.
+- **`castProse` is the cast's whole voice in a scene.** `{actor}` is the caster (a company's acting member when one answered), `{target}` who the spell was aimed at. It is frozen on `UnifiedAction.stepCasts[i].prose` and rendered after the step's afterimage and in the chapter ledger.
+- **Chips come from writes only.** A cast whose effects are modifier-only (an `aura`, a `conditional`) writes nothing and draws no chip — its effect in the scene is the odds line. A price that inflicts a condition (`condition_inflict`) does draw one (read back as `fromPrice`).
+
+Inspect: `await __DEBUG.getStepCast(actionId?)` (`recorded` per step, `pending` for the current one); trace `spell.cast_decided`. Review: `?spell=<templateId>` stamps the hero with the spell beside `?testavatar` / `?spawn=`.

@@ -2833,6 +2833,37 @@ if (import.meta.env.DEV) {
         tick: state.tick, site: 'undertaking', siteRef: `debug:${opts.caster}:${state.tick}`,
       });
     },
+    /**
+     * THR-1670 — the step cast record(s) for one action: every recorded
+     * `stepCasts` entry, plus the pure decision the current step would make
+     * (`pending`, what the forecast is showing). Defaults to the newest unresolved
+     * action whose actor wields a deliberate spell, else the newest with a record.
+     */
+    getStepCast: async (actionId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const actions = state.unifiedActions ?? [];
+      const { wieldedDeliberateSpells } = await import('./engine/stepCast');
+      const action = actionId
+        ? actions.find(a => a.actionId === actionId)
+        : [...actions].reverse().find(a => !a.resolved && wieldedDeliberateSpells(state, a.actorId).length > 0)
+          ?? [...actions].reverse().find(a => a.stepCasts && Object.keys(a.stepCasts).length > 0);
+      if (!action) return { error: actionId ? `no unified action ${actionId}` : 'no action with a step cast' };
+      const { decideStepCast } = await import('./engine/unifiedActionResolution');
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const template = getUnifiedTemplateById(action.templateId);
+      const pending = !action.resolved && template ? decideStepCast(action, template, state) : null;
+      return {
+        actionId: action.actionId,
+        templateId: action.templateId,
+        actorId: action.actorId,
+        currentStep: action.currentStep,
+        resolved: action.resolved,
+        stepOutcomes: [...action.stepOutcomes],
+        recorded: action.stepCasts ?? {},
+        pending,
+      };
+    },
 
     // ── Fight review levers (THR-1543, fight block FB7) ───────────────────
     /**

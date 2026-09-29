@@ -19,6 +19,7 @@ import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLin
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
 import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
+import { buildCastChanges, stepCastModelFor } from './buildStepCastModel';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
@@ -451,7 +452,7 @@ function buildHistory(
   args: BuildUnifiedEncounterStageModelArgs,
   ctx: NarrativeContext,
 ): EncounterStageHistoryModel[] {
-  const { template, activeAction } = args;
+  const { template, activeAction, graph } = args;
 
   return template.steps.map((step, index) => {
     const isResolved = index < activeAction.stepOutcomes.length;
@@ -473,6 +474,7 @@ function buildHistory(
 
     let afterimage: string | undefined;
     let complication: { prose: string; name: string; severity: 'minor' | 'standard' | 'severe'; category: string } | undefined;
+    let cast: import('../types').EncounterStageStepCastModel | undefined;
     // THR-636 replay fields
     let outcome: import('../../../../types/unifiedAction').StepOutcome | undefined;
     let outcomeWord: string | undefined;
@@ -508,6 +510,9 @@ function buildHistory(
         };
       }
 
+      // THR-1670 — the spell cast on this step, from the record the roll froze.
+      cast = stepCastModelFor(graph, activeAction.stepCasts?.[index]);
+
       // Prefer the frozen replay record captured at resolution (THR-636); fall back
       // to the re-rendered afterimage summary when no record exists (old saves,
       // legacy path, cap overflow) — never blank, never re-enriched-into-a-wrong-past.
@@ -531,6 +536,7 @@ function buildHistory(
       status: isResolved ? 'resolved' as const : isCurrent ? 'current' as const : 'future' as const,
       afterimage,
       complication,
+      ...(cast ? { cast } : {}),
       outcome,
       outcomeWord,
       reachLabel,
@@ -789,10 +795,17 @@ function buildAftermath(
   // THR-1553 — a fight's chips come from its `fightState`, the one record the
   // fight's writers leave on the action (Law 56). Appended to the chip input
   // only: the highlights above stay the authored/derived set they always were.
+  //
+  // THR-1670 — a step cast's chips come from `stepCasts[i].writes`, the one record
+  // the cast resolver leaves on the action, merged the same way.
+  const chipWorld = buildFightChipWorld(graph);
   const consequences = buildAftermathConsequences({
     changes: mergeFightChanges(
-      displayChanges,
-      buildFightChanges(activeAction.fightState, activeAction.actorId, buildFightChipWorld(graph)),
+      mergeFightChanges(
+        displayChanges,
+        buildFightChanges(activeAction.fightState, activeAction.actorId, chipWorld),
+      ),
+      buildCastChanges(activeAction.stepCasts, chipWorld),
     ),
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),

@@ -264,6 +264,12 @@ export interface EncounterStageHistoryModel {
     severity: 'minor' | 'standard' | 'severe';
     category: string;
   };
+  /**
+   * THR-1670 — the spell the mortal cast on this step, and what the step's roll
+   * did with it: the cast line (landed or fizzled) and the backlash line when the
+   * price bit. Frozen at resolution; absent on every step with no cast.
+   */
+  cast?: EncounterStageStepCastModel;
   // ─── Step-navigator replay (THR-636) — additive, resolved steps only ───
   /** Resolved-step outcome — drives the step-dot colour and replay verdict. */
   outcome?: StepOutcome;
@@ -275,6 +281,21 @@ export interface EncounterStageHistoryModel {
   replayNarrative?: string;
   /** The god-action the player took on this step, if any. */
   choiceText?: string;
+}
+
+/** THR-1670 — one step's cast, as the step history renders it. */
+export interface EncounterStageStepCastModel {
+  /** The spell's display name ("Pact of the Hollow Crown"). */
+  spellName: string;
+  /** The spell's shared definition node — the name links to its Power page (Law 4). */
+  spellNodeId: string;
+  /** The caster's name, for the header line. */
+  casterName: string;
+  landed: boolean;
+  /** `castProse.landed` / `.fizzled`, frozen at resolution. */
+  prose: string;
+  /** The backlash narrative, when the spell's price bit. */
+  backlashProse?: string;
 }
 
 export interface EncounterStageFalloutModel {
@@ -736,6 +757,12 @@ export interface EncounterStageFactorLineModel {
    * promise a magnitude the line does not have.
    */
   delta?: number;
+  /**
+   * THR-1670 — a named entity inside `text` that opens its page (Law 4). Set on the
+   * step cast's line: the spell's name links to its Power page. `text` is the exact
+   * substring of the line it occupies.
+   */
+  link?: { text: string; entityId: string; kind: 'attachment' };
 }
 
 export interface EncounterStageTestPanelModel {

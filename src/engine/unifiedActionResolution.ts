@@ -26,7 +26,7 @@ import type {
   UnifiedActionTemplate,
   StepOutcome,
 } from '../types/unifiedAction';
-import type { ActionStep, ActionStepOutcomeMetadata } from '../types/unifiedAction';
+import type { ActionStep, ActionStepOutcomeMetadata, StepCastRecord } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import {
   type DerivedChange,
@@ -138,6 +138,9 @@ import type { ComplicationContext } from '../types/complication';
 import { applyComplicationEffects } from './complicationEffects';
 import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { computeStandingModifierTotal } from './resolutionModifiers';
+import { stepCastRecordFor, traceStepCastDecided } from './stepCast';
+import { resolveCast } from './spellCasting';
+import { getSpellTemplate } from '../data/spell-templates';
 import { processFactionEncounterReputation } from './factionReputation';
 import { processReputationTally } from './phaseReputationTraits';
 import {
@@ -289,6 +292,12 @@ export interface StepResolutionResult {
    */
   fightEnd?: { reason: FightEndReason };
   /**
+   * THR-1670 — the step's cast record (cast or declined), when the roller wields a
+   * deliberate spell. The phase loop hands it to `executeStepResult`, which
+   * resolves the cast on the band and stores the record on the action.
+   */
+  stepCast?: StepCastRecord;
+  /**
    * THR-1556 (duels plan doc §1) — on a duel step, the opponent's synthesized
    * roll, drawn on its own stream right after the fighter's. Transient: the phase
    * loop hands it to `executeStepResult`, and only its band is ever stored.
@@ -325,12 +334,18 @@ function deriveStepRollInputs(
   state: GameState,
   step: ActionStep,
   dryRun: boolean,
+  /**
+   * THR-1670 — the step's recorded cast. Rides the roller's standing read (the
+   * fighter's, on a fight step) as one named `spell` contribution. Absent when the
+   * pre-card probability itself is being derived.
+   */
+  stepCast?: StepCastRecord,
 ) {
   // THR-1537 — a fight step is rated against its opponent. One pure function
   // derives its reach, difficulty, scale and the fighter's named terms, for this
   // roll and (FB7) for the attended forecast, so the odds shown are the odds
   // rolled. Undefined for every ordinary step, which keeps them byte-identical.
-  const fightInputs = resolveFightStepInputs(state, action, step, template);
+  const fightInputs = resolveFightStepInputs(state, action, step, template, stepCast);
   const stepReach = fightInputs?.reach ?? step.reach;
   const stepScale = fightInputs ? fightInputs.scale : template.scale;
 
@@ -505,7 +520,7 @@ function deriveStepRollInputs(
   const standingModifierTotal = fightInputs
     ? 0
     : computeStandingModifierTotal(
-      state.graph, capabilityNodeId, stepReach, template.sphereAffinity, state.effectStates,
+      state.graph, capabilityNodeId, stepReach, template.sphereAffinity, state.effectStates, stepCast,
     );
   const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
     + nudgeModifierTotal + (fightInputs?.modifierTotal ?? 0) + standingModifierTotal;
@@ -563,6 +578,124 @@ function buildStepCoreInput(
 }
 
 /**
+ * THR-1670 (power runtime S2.1) — does the mortal whose capability this step reads
+ * cast a spell on it? Pure: it reads the graph and writes nothing, so the attended
+ * forecast and the roll ask the same question and get the same answer.
+ *
+ * The pre-card probability is this step's own derivation and step core with **no
+ * god card** and no cast — capability, standing modifiers, company, push priced but
+ * not spent — so the decision reads no nudge (lane decision 2). It is computed only
+ * when a spell could actually go off.
+ *
+ * `null` for a player cast, a step that would not roll, and every roller who wields
+ * no deliberate spell — nothing to record, nothing to trace.
+ */
+export function decideStepCast(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  state: GameState,
+  resolvedStep?: ActionStep,
+): StepCastRecord | null {
+  try {
+    if (action.source === 'player') return null;
+    const step = resolvedStep ?? composeDealtStepFromState(
+      resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+      state,
+    ).step;
+    if (!step || step.difficulty === 0 || checkFightContinuation(state, action, step)) return null;
+    const fightInputs = resolveFightStepInputs(state, action, step, template);
+    const groupNode = !fightInputs ? getGroupOf(state.graph, action.actorId) : undefined;
+    const groupStep = groupNode && (template.actorAffinities ?? []).includes('group')
+      ? resolveGroupStep(state.graph, groupNode.id, step.reach, action.actorId)
+      : undefined;
+    const casterId = groupStep?.actingMemberId ?? action.actorId;
+    const targetIsActor = !!action.targetId && state.graph.getNode(action.targetId)?.type === 'actor';
+    const site = {
+      reach: fightInputs?.reach ?? step.reach,
+      ...(step.fightRole ? { fightRole: step.fightRole } : {}),
+      ...(fightInputs?.opponentId
+        ? { targetNodeId: fightInputs.opponentId }
+        : targetIsActor ? { targetNodeId: action.targetId } : {}),
+    };
+    return stepCastRecordFor(state, casterId, site, () => {
+      const probe = { ...action, activeNudges: [] as string[] };
+      const inputs = deriveStepRollInputs(probe, template, state, step, true, undefined);
+      return resolveStepCore(buildStepCoreInput(probe, step, state, inputs, undefined), () => 0.5).probability;
+    });
+  } catch {
+    return null; // NFP #4 — a decision that cannot be made is no cast
+  }
+}
+
+/**
+ * THR-1670 — the step's cast record: the one already written for this step, else
+ * the pure decision. The forecast and the roll both read through here.
+ */
+export function stepCastFor(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  state: GameState,
+  resolvedStep?: ActionStep,
+): StepCastRecord | undefined {
+  return action.stepCasts?.[action.currentStep] ?? decideStepCast(action, template, state, resolvedStep) ?? undefined;
+}
+
+/**
+ * THR-1670 — resolve a recorded step cast on the band the step landed on, through
+ * S1's one resolver. The god's cards bent that band, so the cast is nudgeable with
+ * no new surface. Returns the record with its outcome half filled (a declined
+ * record passes through untouched), or undefined when there is no record.
+ *
+ * Fail-soft (NFP #4): `resolveCast` catches its own throws and reports
+ * `refused: 'error'`; a refusal here means the step resolved as if uncast.
+ */
+function resolveStepCastOnBand(
+  state: GameState,
+  action: UnifiedAction,
+  record: StepCastRecord | undefined,
+  band: StepOutcome,
+  tick: number,
+): StepCastRecord | undefined {
+  if (!record || record.decision !== 'cast' || !record.spellId) return record;
+  const spell = getSpellTemplate(record.spellId);
+  if (!spell) return { ...record, band, landed: false, refused: 'no_spell_template' };
+  const result = resolveCast(state, {
+    casterId: record.casterId,
+    spell,
+    band,
+    ...(record.targetId ? { targetId: record.targetId } : {}),
+    tick,
+    site: 'step',
+    siteRef: `${action.actionId}:${action.currentStep}`,
+  });
+  return {
+    ...record,
+    band,
+    landed: result.landed,
+    ...(result.refused ? { refused: result.refused } : {}),
+    writes: result.writes.map(w => ({ ...w })),
+    ...(result.backlash?.narrative ? { backlashProse: result.backlash.narrative } : {}),
+  };
+}
+
+/**
+ * THR-1670 — a cast line's words, frozen at resolution. The cast vocabulary is
+ * `{actor}` (the caster, who may be a company's acting member rather than the
+ * action's owner) and `{target}` (who the spell was aimed at); both are filled
+ * from the record, and any other brace is dropped rather than rendered (Law 43).
+ */
+function freezeCastLine(state: GameState, template: string | undefined, record: StepCastRecord): string | undefined {
+  if (!template) return undefined;
+  const nameOf = (id: string | undefined) => (id ? state.graph.getNode(id)?.name : undefined) ?? '';
+  return template
+    .replace(/\{actor\}/g, nameOf(record.casterId))
+    .replace(/\{target\}/g, nameOf(record.targetId) || 'them')
+    .replace(/\{[^}]*\}/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim() || undefined;
+}
+
+/**
  * THR-1543 (fight block §3b) — the probability the resolver would roll this
  * step's d100 against right now, without rolling: the same derivation and the
  * same step core, with the push priced but not spent and no trace emitted.
@@ -585,7 +718,9 @@ export function previewStepProbability(
   if (!step || checkFightContinuation(state, probeAction, step)) return undefined;
   if (step.difficulty === 0) return undefined;
   if (!PLAYER_CAST_VARIANCE_ENABLED && probeAction.source === 'player') return undefined;
-  const inputs = deriveStepRollInputs(probeAction, template, state, step, true);
+  const inputs = deriveStepRollInputs(
+    probeAction, template, state, step, true, stepCastFor(probeAction, template, state, step),
+  );
   // The core draws the d100 (and a resist) from the rng; any value serves, since
   // only the probability — fixed before the roll — is read.
   const core = resolveStepCore(buildStepCoreInput(probeAction, step, state, inputs, undefined), () => 0.5);
@@ -657,7 +792,13 @@ export function resolveUncontestedStep(
     return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
-  const rollInputs = deriveStepRollInputs(action, template, state, step, false);
+  // THR-1670 — the step cast, decided once (the forecast asked the same pure
+  // question at step open) and traced the first time it is decided.
+  const recordedCast = action.stepCasts?.[action.currentStep];
+  const stepCast = recordedCast ?? decideStepCast(action, template, state, step) ?? undefined;
+  if (stepCast && !recordedCast) traceStepCastDecided(state.tick, action.actionId, action.currentStep, stepCast);
+
+  const rollInputs = deriveStepRollInputs(action, template, state, step, false, stepCast);
   const {
     fightInputs, stepScale, effectiveDifficulty, groupNode, groupStep, capability, pushEvent,
   } = rollInputs;
@@ -753,6 +894,7 @@ export function resolveUncontestedStep(
     preResistOutcome: core.preResistOutcome,
     ...(fightInputs ? { reach: fightInputs.reach, difficulty: effectiveDifficulty } : {}),
     ...(opponentRoll ? { opponentRoll } : {}),
+    ...(stepCast ? { stepCast } : {}),
   };
 }
 
@@ -1579,6 +1721,8 @@ export function executeStepResult(
      * none). The phase loop never sets it.
      */
     noComplications?: boolean;
+    /** THR-1670 — the step's cast record (`StepResolutionResult.stepCast`). */
+    stepCast?: StepCastRecord;
   },
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
@@ -1587,6 +1731,10 @@ export function executeStepResult(
   }
   const events: TickEvent[] = [];
   const beforeSnapshot = snapshotEncounterResolutionContext(state, action);
+  // THR-1670 — the step cast lands (or fizzles) on this band, before anything
+  // below reads the graph, so a fight-arena spell's writes precede the step's own
+  // consequences (fight-block plan §5 ordering).
+  let stepCastRecord = resolveStepCastOnBand(state, action, resolutionStats?.stepCast, outcome, tick);
   // THR-1606: a player cast writes to its target, not its actor — read the target
   // before this step's ops so the diff below can name what changed on them.
   const castTargetId = playerCastTargetId(action);
@@ -2324,6 +2472,30 @@ export function executeStepResult(
       proseLength: narrativeProse.length,
       summary: `step_prose_recorded: ${template.name} step ${resolvedStepIndex + 1} ${outcome}`,
     } as any);
+  }
+
+  // THR-1670 — freeze the step cast's record on the action: the decision (so the
+  // forecast and a later read agree), and for a cast the band's verdict, the
+  // writes a chip may name, and the cast line and backlash line in words.
+  if (stepCastRecord) {
+    if (stepCastRecord.decision === 'cast' && stepCastRecord.spellId && !stepCastRecord.refused) {
+      const spell = getSpellTemplate(stepCastRecord.spellId);
+      const prose = freezeCastLine(
+        state,
+        stepCastRecord.landed ? spell?.castProse?.landed : spell?.castProse?.fizzled,
+        stepCastRecord,
+      );
+      const backlashProse = freezeCastLine(state, stepCastRecord.backlashProse, stepCastRecord);
+      stepCastRecord = {
+        ...stepCastRecord,
+        ...(prose ? { prose } : {}),
+        ...(backlashProse ? { backlashProse } : {}),
+      };
+    }
+    finalAction = {
+      ...finalAction,
+      stepCasts: { ...(finalAction.stepCasts ?? {}), [action.currentStep]: stepCastRecord },
+    };
   }
 
   const resolvedReward = finalAction.resolved
@@ -3679,6 +3851,8 @@ export function phaseUnifiedActionProgress(
         ...(stepResult.fightEnd ? { fightEnd: stepResult.fightEnd } : {}),
         // THR-1556 — and a duel step carries its opponent's roll.
         ...(stepResult.opponentRoll ? { opponentRoll: stepResult.opponentRoll } : {}),
+        // THR-1670 — and the step's cast record, resolved on this band.
+        ...(stepResult.stepCast ? { stepCast: stepResult.stepCast } : {}),
       },
       runtime,
     );

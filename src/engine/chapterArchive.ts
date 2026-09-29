@@ -233,6 +233,11 @@ function buildStepRecord(
   }
 
   const complicationProse = action.stepComplications?.[index]?.prose;
+  // THR-1670 — the cast line and the backlash line, as the roll froze them.
+  const castRecord = action.stepCasts?.[index];
+  const castProse = castRecord?.decision === 'cast' && castRecord.prose
+    ? [castRecord.prose, castRecord.backlashProse].filter(Boolean).join(' ')
+    : undefined;
   const choiceText = action.choiceHistory?.find(c => c.stepIndex === index)?.choiceText;
 
   return {
@@ -242,6 +247,7 @@ function buildStepRecord(
     afterimageProse,
     outcome,
     complicationProse,
+    ...(castProse ? { castProse } : {}),
     choiceText,
   };
 }

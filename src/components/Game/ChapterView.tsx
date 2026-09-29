@@ -215,6 +215,20 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
               </div>
             )}
 
+            {step.castProse && (
+              <p
+                data-testid="chapter-step-cast"
+                style={{
+                  margin: 'var(--space-1, 4px) 0 0 0',
+                  color: 'var(--text-secondary)',
+                  fontSize: 'var(--text-sm)',
+                  fontStyle: 'italic',
+                }}
+              >
+                {step.castProse}
+              </p>
+            )}
+
             {step.complicationProse && (
               <p
                 style={{

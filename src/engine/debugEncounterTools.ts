@@ -22,6 +22,9 @@ import type { EssencePool } from '../types/influence';
 import { REACH_DOMAINS } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
 import { ARCHETYPE_NAMES } from '../types/agent';
+import { getSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../data/spell-templates';
+import { SLOT_CAPS } from '../data/attachment-slot-constants';
+import { REACH_SHARE_FULL_RAW } from '../data/reach-share-constants';
 
 export interface DebugSpawnEncounterOptions {
   courtPosition?: CourtPosition;
@@ -688,5 +691,80 @@ export function applyBalancedTestAvatar(
     message:
       `Stamped '${agent.name}' as the balanced test avatar: raw ${DEV_TEST_AVATAR_REACH_RAW} in all reaches, `
       + `neutral value axes, essence floor ${DEV_TEST_AVATAR_ESSENCE_PER_SPHERE} in all spheres`,
+  };
+}
+
+// ─── `?spell=` — the step-cast review lever (THR-1670) ─────────────
+
+export interface SpellStampResult {
+  success: boolean;
+  message: string;
+  agentId?: string;
+  spellId?: string;
+}
+
+/**
+ * Stamp an agent as knowing and wielding a spell (THR-1670, the power runtime S2
+ * review lever). Accepts the template id with or without its `spell_` prefix
+ * (`hollow_crown` → `spell_hollow_crown`).
+ *
+ * Writes the two edges `learn_spell` writes — `knows_spell` and `has_trait` — with
+ * `source: 'debug'`. When the wielded slots (`SLOT_CAPS.spell`) are full, the
+ * lowest (first by id) wielded spell gives up its slot; it stays known. Any Reach
+ * under the spell's `minReach` floor is raised to exactly the floor, so the review
+ * never stalls on a prerequisite the spell's author set. The shared definition node
+ * is minted if the world has none (fail-soft for a world seeded before S1).
+ *
+ * Dev-only review tooling: mutates the graph in place; the caller calls `touchWorld`.
+ * Idempotent: a second stamp of the same spell writes nothing new.
+ */
+export function applySpellStamp(state: GameState, agentQuery: string, spellQuery: string): SpellStampResult {
+  const agent = findAgent(state, agentQuery);
+  if (!agent) return { success: false, message: `No agent matches '${agentQuery}'` };
+  const templateId = spellQuery.startsWith('spell_') ? spellQuery : `spell_${spellQuery}`;
+  const spell = getSpellTemplate(templateId);
+  if (!spell) return { success: false, message: `No spell template '${templateId}'` };
+  const graph = state.graph;
+  const nodeId = spellDefinitionNodeId(spell.id);
+  if (!graph.getNode(nodeId)) graph.addNode(spellDefinitionNode(spell));
+
+  const knowsId = `knows_spell_${agent.id}_${nodeId}`;
+  if (!graph.getOutgoingEdges(agent.id, 'knows_spell').some(e => e.target === nodeId)) {
+    graph.addEdge({
+      id: knowsId, source: agent.id, target: nodeId, type: 'knows_spell',
+      properties: { learnedTick: state.tick, sphereAffinity: spell.sphereAffinity, source: 'debug' },
+    });
+  }
+  const wielded = graph.getOutgoingEdges(agent.id, 'has_trait')
+    .filter(e => graph.getNode(e.target)?.properties.subcategory === 'spell');
+  if (!wielded.some(e => e.target === nodeId)) {
+    const cap = SLOT_CAPS.spell ?? 3;
+    if (wielded.length >= cap) {
+      const lowest = [...wielded].sort((a, b) => a.target.localeCompare(b.target))[0];
+      graph.removeEdge(lowest.id);
+    }
+    graph.addEdge({
+      id: `has_trait_${agent.id}_${nodeId}`, source: agent.id, target: nodeId, type: 'has_trait',
+      properties: {
+        level: 1, acquiredTick: state.tick, ticksRemaining: null, source: 'debug',
+        visibility: 'discoverable', modifiers: {},
+      },
+    });
+  }
+
+  const caps = { ...((agent.properties.domainCapabilities as Record<string, number> | undefined) ?? {}) };
+  const raised: string[] = [];
+  for (const [reach, floor] of Object.entries(spell.prerequisites.minReach ?? {})) {
+    const raw = Math.ceil((floor as number) * REACH_SHARE_FULL_RAW);
+    if ((caps[reach] ?? 0) < raw) { caps[reach] = raw; raised.push(reach); }
+  }
+  if (raised.length > 0) agent.properties.domainCapabilities = caps;
+
+  return {
+    success: true,
+    agentId: agent.id,
+    spellId: spell.id,
+    message: `'${agent.name}' knows and wields ${spell.name}`
+      + (raised.length > 0 ? ` (raised ${raised.join(', ')} to the spell's floor)` : ''),
   };
 }

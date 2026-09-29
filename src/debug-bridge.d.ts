@@ -2215,6 +2215,28 @@ export interface DebugBridge {
       readonly refused?: string;
     }
   >;
+  /** THR-1670 — the step cast (power runtime S2) for one action. `recorded` is the
+   *  action's `stepCasts` map (step index → record: `decision` cast/declined, the
+   *  `casterId`, `spellId`, `threshold`, `preCardProbability`, `declinedReason`, and
+   *  for a resolved cast `band`, `landed`, `writes`, `prose`, `backlashProse`).
+   *  `pending` is the pure decision the current step would make right now — what
+   *  the forecast is showing — or null. Defaults to the newest unresolved action
+   *  whose actor wields a deliberate spell (the `?spell=` review), else the newest
+   *  action carrying a cast record.
+   *  **Async** — `await` it. */
+  getStepCast: (actionId?: string) => Promise<
+    | { readonly error: string }
+    | {
+      readonly actionId: string;
+      readonly templateId: string;
+      readonly actorId: string;
+      readonly currentStep: number;
+      readonly resolved: boolean;
+      readonly stepOutcomes: readonly string[];
+      readonly recorded: Readonly<Record<number, import('./types/unifiedAction').StepCastRecord>>;
+      readonly pending: import('./types/unifiedAction').StepCastRecord | null;
+    }
+  >;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

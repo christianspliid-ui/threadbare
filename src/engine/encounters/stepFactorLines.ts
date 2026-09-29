@@ -72,6 +72,8 @@ export type DerivedFactorKind =
   | 'aura'
   /** A condition on the place the step is resolved at (THR-1483). */
   | 'condition'
+  /** The spell the roller casts on this step (THR-1670). */
+  | 'spell'
   | 'carryover';
 
 export interface DerivedFactorLine {

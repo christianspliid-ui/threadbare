@@ -81,6 +81,11 @@ export interface CastWrite {
   readonly ref: string;
   /** Whether the write came from the backlash rather than the spell landing. */
   readonly fromBacklash?: boolean;
+  /**
+   * THR-1670 — a condition the spell's *price* put on the caster (a
+   * `condition_inflict` cost), read back off the graph after payment.
+   */
+  readonly fromPrice?: boolean;
 }
 
 export type CastRefusal = 'prerequisite' | 'cooldown' | 'cost' | 'sealed' | 'no_target' | 'error';
@@ -207,6 +212,9 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     }
   };
   if (!state.castCooldowns) state.castCooldowns = new Map();
+  // THR-1670 — the caster's bearings before payment, so a `condition_inflict`
+  // price can be read back off the graph as a write (Law 56: never off intent).
+  const bearingsBefore = new Set(graph.getOutgoingEdges(casterId, 'has_trait').map(e => e.id));
   const activation = activateSpell(
     graph, casterId, spell, req.targetId, tick, 1,
     undefined,
@@ -221,6 +229,8 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
   if (activation.outcome === 'blocked_prerequisite') return refuse(req, 'prerequisite');
   if (activation.outcome === 'blocked_cooldown') return refuse(req, 'cooldown');
   if (activation.outcome === 'blocked_cost') return refuse(req, 'cost');
+
+  collectPriceConditions(state, casterId, bearingsBefore, writes);
 
   const landed = activation.landed ?? CAST_LANDED_BANDS.includes(band);
   const teleportRng = castStream(state, 'teleport', req.siteRef, casterId);
@@ -319,6 +329,26 @@ function collectWrites(state: GameState, exec: ExecutionResult, writes: CastWrit
   }
   for (const s of exec.suppressRequests ?? []) {
     writes.push({ kind: 'silenced', actorId: s.casterId, ref: s.attachmentId, ...flag });
+  }
+}
+
+/**
+ * THR-1670 — the conditions the price just put on the caster: every `has_trait`
+ * edge to a condition that was not there before payment, minus the strain the
+ * strain payer already recorded.
+ */
+function collectPriceConditions(
+  state: GameState,
+  casterId: string,
+  bearingsBefore: ReadonlySet<string>,
+  writes: CastWrite[],
+): void {
+  const recorded = new Set(writes.filter(w => w.actorId === casterId).map(w => w.ref));
+  for (const edge of state.graph.getOutgoingEdges(casterId, 'has_trait')) {
+    if (bearingsBefore.has(edge.id) || recorded.has(edge.target)) continue;
+    if (state.graph.getNode(edge.target)?.properties.subcategory !== 'condition') continue;
+    writes.push({ kind: 'condition', actorId: casterId, ref: edge.target, fromPrice: true });
+    recorded.add(edge.target);
   }
 }
 
