@@ -314,7 +314,9 @@ export function payCosts(
           graph.addNode({
             id: condId,
             type: 'trait',
-            name: cost.template,
+            // THR-1670 — a sheet word, not the template id: a price chip names this
+            // node ("Paranoia Whispers", never "paranoia_whispers").
+            name: cost.template.replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
             properties: { subcategory: 'condition', tags: [cost.template] },
           });
         }

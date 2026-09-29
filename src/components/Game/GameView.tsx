@@ -5649,6 +5649,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // defect THR-1477 fixed for the agent's name. The card's own footer carries
             // "open its sheet ↗" for the player who wants the whole of it.
             onSelectEntity={(entityId, kind) => {
+              // THR-1670 — a spell's shared definition node is a Power, not an item:
+              // open its catalog card (and codex sheet) by template id. The `attachment`
+              // world card reads artifacts only, so this would render as "Unknown".
+              const spellTemplateId = kind === 'attachment'
+                ? gameState.graph.getNode(entityId)?.properties.spellTemplateId
+                : undefined;
+              if (typeof spellTemplateId === 'string') {
+                refRouter.open({ kind: 'power_template', id: spellTemplateId }, 'card', { via: 'veil' });
+                return;
+              }
               refRouter.open(
                 { kind: WORLD_REF_KIND_BY_VISUAL_KIND[kind], id: entityId },
                 'card',

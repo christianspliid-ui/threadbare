@@ -2220,8 +2220,9 @@ export interface DebugBridge {
    *  `casterId`, `spellId`, `threshold`, `preCardProbability`, `declinedReason`, and
    *  for a resolved cast `band`, `landed`, `writes`, `prose`, `backlashProse`).
    *  `pending` is the pure decision the current step would make right now — what
-   *  the forecast is showing — or null. Defaults to the newest action carrying a
-   *  cast record, else the newest unresolved action of The First.
+   *  the forecast is showing — or null. Defaults to the newest unresolved action
+   *  whose actor wields a deliberate spell (the `?spell=` review), else the newest
+   *  action carrying a cast record.
    *  **Async** — `await` it. */
   getStepCast: (actionId?: string) => Promise<
     | { readonly error: string }

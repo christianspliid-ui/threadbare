@@ -2836,19 +2836,18 @@ if (import.meta.env.DEV) {
     /**
      * THR-1670 — the step cast record(s) for one action: every recorded
      * `stepCasts` entry, plus the pure decision the current step would make
-     * (`pending`, what the forecast is showing). Defaults to the newest action that
-     * carries a cast record, else the newest unresolved action of The First.
+     * (`pending`, what the forecast is showing). Defaults to the newest unresolved
+     * action whose actor wields a deliberate spell, else the newest with a record.
      */
     getStepCast: async (actionId?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
       const actions = state.unifiedActions ?? [];
-      const firstId = state.graph.getEdgesByType('thread')
-        .find(e => e.properties.courtPosition === 'the_first')?.target;
+      const { wieldedDeliberateSpells } = await import('./engine/stepCast');
       const action = actionId
         ? actions.find(a => a.actionId === actionId)
-        : [...actions].reverse().find(a => a.stepCasts && Object.keys(a.stepCasts).length > 0)
-          ?? [...actions].reverse().find(a => !a.resolved && a.actorId === firstId);
+        : [...actions].reverse().find(a => !a.resolved && wieldedDeliberateSpells(state, a.actorId).length > 0)
+          ?? [...actions].reverse().find(a => a.stepCasts && Object.keys(a.stepCasts).length > 0);
       if (!action) return { error: actionId ? `no unified action ${actionId}` : 'no action with a step cast' };
       const { decideStepCast } = await import('./engine/unifiedActionResolution');
       const { getUnifiedTemplateById } = await import('./data/unified-action-templates');

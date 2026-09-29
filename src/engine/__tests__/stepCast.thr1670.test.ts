@@ -23,6 +23,7 @@ import { resolveStepDefinition } from '../unifiedActionLifecycle';
 import { disableTracing } from '../traceBuffer';
 import { computeResolutionModifiers, stepCastContributions } from '../resolutionModifiers';
 import { stepCastRecordFor } from '../stepCast';
+import { resolveFightStepInputs } from '../fights/fightStepInputs';
 import { getAnyEncounterById } from '../../data/encounter-content';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { getSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../../data/spell-templates';
@@ -276,5 +277,32 @@ describe('THR-1670 — the band decides the cast, and the record freezes it', ()
 
   it('is deterministic: the same world and band freeze the same record', () => {
     expect(resolveOn('failure').record).toEqual(resolveOn('failure').record);
+  });
+});
+
+describe('THR-1670 — a fight-arena spell rides the clash', () => {
+  it('Soulfire fits a clash, and the cast is one named term inside the fighter\'s standing', () => {
+    const FIGHT = 'fight.lair.confront';
+    const t = (getUnifiedTemplateById(FIGHT) ?? getAnyEncounterById(FIGHT)) as UnifiedActionTemplate;
+    const clashIndex = t.steps.findIndex(s => (s as ActionStep).fightRole === 'clash');
+    expect(clashIndex).toBeGreaterThan(0);
+    const graph = world(12, 0, false);
+    graph.addNode(spellDefinitionNode(getSpellTemplate('spell_soulfire')!));
+    graph.addEdge({ id: 'e.soul', source: 'mortal', target: spellDefinitionNodeId('spell_soulfire'), type: 'has_trait', properties: { level: 1 } });
+    const state = stateOf(graph);
+    const action = actionOf({ templateId: FIGHT, targetId: 'rival', currentStep: clashIndex });
+    const step = resolveStepDefinition(t, clashIndex, []) as ActionStep;
+
+    const rec = decideStepCast(action, t, state, step);
+    expect(rec).toMatchObject({ decision: 'cast', spellId: 'spell_soulfire', bonus: CAST_STEP_BONUS_BY_TIER[3] });
+
+    const without = resolveFightStepInputs(state, action, step, t)!;
+    const withCast = resolveFightStepInputs(state, action, step, t, rec!)!;
+    expect(withCast.modifierTotal - without.modifierTotal).toBeCloseTo(CAST_STEP_BONUS_BY_TIER[3], 10);
+
+    // The nerve step never fits a fight spell.
+    const nerve = resolveStepDefinition(t, 0, []) as ActionStep;
+    expect(decideStepCast(actionOf({ templateId: FIGHT, targetId: 'rival' }), t, state, nerve))
+      .toMatchObject({ decision: 'declined', declinedReason: 'no_fitting_spell' });
   });
 });
