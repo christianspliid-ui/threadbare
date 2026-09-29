@@ -5445,6 +5445,38 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1631 S1. The reader existed with no writer (an inline cast at `clueLifecycle.ts:120`, now typed `WorldPastDescentStratum`). On generated medium worlds the pass writes descent on 120 / 480 living mortals (seed 42) and 136 / 624 (seed 99), 25–26% of those on old land (`readers/past.ts`). `worldPast.test.ts` deletes the sibling `originCultureId` from a descended mortal on a generated small world and still reads `cultureBackstoryTieBonus > 0` from `selectClueRecipient` for the stratum\'s culture, and 0 for another.',
     },
   },
+  // -- Ruins -> Undertakings: a lead is a reason to look (THR-1663, seeded things stay alive S2)
+  // What these rows make impossible: 72 leads in 300 ticks, every one `vague`, 0 surveys of
+  // a ruin, because a held lead was read by nothing that decides where a mortal goes, and
+  // a survey of a ruin already clued was refused rather than sharpening the lead.
+  {
+    id: 'held-lead-draws-a-survey',
+    producerSystem: RUINS,
+    consumerSystem: AMBITIONS,
+    intent:
+      "A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it.",
+    ulTerms: ['Undertaking', 'Location'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['knows_clue_of', 'heldLeadRuinIds', 'sharpenClue', 'leadPull'],
+      module: 'src/engine/strategicActionCandidates.ts',
+    },
+    writeSites: [
+      'src/engine/ruins/clueLifecycle.ts',
+      'src/engine/strategicGraphOps.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/decisionBoard.ts',
+      'src/engine/ruins/delveVariant.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        "THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.",
+    },
+  },
   {
     id: 'seeded-dead-stay-dead',
     producerSystem: WORLDGEN,

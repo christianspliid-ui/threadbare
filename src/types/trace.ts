@@ -3056,6 +3056,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     forecastZone?: 'refused' | 'below' | 'in' | 'above';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
+    /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
+    leadPull?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;

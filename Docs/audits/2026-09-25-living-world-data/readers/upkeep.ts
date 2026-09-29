@@ -59,6 +59,8 @@ for (const seed of seeds) {
   const lanesStanding: Record<number, number> = {};
   let located = 0;
   let clueDecayed = 0;
+  // THR-1663: a survey of a site the surveyor already holds a lead on sharpens it.
+  const clueSharpened: Record<string, number> = {};
 
   // Cargo once stock tiers have been derived (t12), for the same lanes.
   let lanesT12: Array<{ id: string; goods: string[]; balance: number }> = [];
@@ -88,6 +90,7 @@ for (const seed of seeds) {
         inc(clueHolderTier, k ? (isAutonomousDecisionActor(k) ? 'decider' : 'ambient') : 'gone');
       }
       if (c === 'ruins.clue_decayed') clueDecayed++;
+      if (c === 'ruins.clue_sharpened') inc(clueSharpened, `${tr.via}:${tr.from}>${tr.to}`);
       if (c === 'undertaking_reader' && tr.reader === 'clue') {
         inc(surveyByBand, String(tr.outcome ?? 'none'));
         if (tr.refused) inc(surveyRefused, String(tr.refused));
@@ -102,7 +105,7 @@ for (const seed of seeds) {
     clearTraces();
     if (t % 50 === 0) lanesStanding[t] = g().getEdgesByType('trades_with').length;
   }
-  out[seed] = { lanesT0, lanesT12, cellTraces, laneEvents, laneLifetimes, lanesStanding, clueMinted, clueHolderTier, surveyByBand, surveyRefused, located, clueDecayed, delveTraces };
+  out[seed] = { lanesT0, lanesT12, cellTraces, laneEvents, laneLifetimes, lanesStanding, clueMinted, clueHolderTier, surveyByBand, surveyRefused, located, clueDecayed, clueSharpened, delveTraces };
   console.log(`seed ${seed}:`, JSON.stringify(out[seed]));
 }
 const path = process.argv[4] ?? 'Docs/audits/2026-09-25-living-world-data/output/upkeep-2026-09-28.json';

@@ -58,9 +58,11 @@ export const CLUE_LEAD_SURVEY_CANDIDATES_MAX = 2;
 /**
  * Desire multiplier on a survey of one's own lead's ruin (THR-1663) — folded into the
  * board's `desireMultiplier` and carried on the entry as `leadPull`. Mirrors
- * `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER`: a reasoned target outranks a merely near one.
+ * `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` (2.5): a reasoned target outranks a merely near one.
+ * The plan drafted 1.5; measured at 1.5 (seed 99, 300 ticks) the lead survey reached the
+ * board's top five 7 times and won none, at 0.56–0.77 of an encounter winner's score.
  */
-export const CLUE_LEAD_SURVEY_PULL_MULT = 1.5;
+export const CLUE_LEAD_SURVEY_PULL_MULT = 2.5;
 /** Multiplier applied to agents who received a clue within the recent-clue window */
 export const RECEIVER_RECENT_CLUE_PENALTY = 0.5;
 /** Ticks within which a second clue receipt triggers the penalty */
