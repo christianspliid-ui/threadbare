@@ -4776,3 +4776,16 @@ What this means for authors:
 - **Chips come from writes only.** A cast whose effects are modifier-only (an `aura`, a `conditional`) writes nothing and draws no chip — its effect in the scene is the odds line. A price that inflicts a condition (`condition_inflict`) does draw one (read back as `fromPrice`).
 
 Inspect: `await __DEBUG.getStepCast(actionId?)` (`recorded` per step, `pending` for the current one); trace `spell.cast_decided`. Review: `?spell=<templateId>` stamps the hero with the spell beside `?testavatar` / `?spawn=`.
+
+### Innate powers (THR-1671, power runtime S3)
+
+A lair's elite is born with its family's **Innate Power** — `power.innate.<family>`, a shared `trait` node with `subcategory: 'innate_power'` (`src/data/innate-powers.ts`), stamped in `createNamedElite` as a `has_trait` edge with `source: 'innate'`. It is fate-woven: never cast, and its effects ride the shared node, so the same stateless-only rule as a carried spell applies.
+
+What this means for authors:
+
+- **A monster's power is priced into its fights for free.** A `passive` on the monster's clash or nerve reach raises that step's difficulty (the opponent-modifier fold in `resolveFightStepInputs`). Author the reach the monster's card fights on, or the power only shows in the monster's own rolls.
+- **An aura on a monster targets `all`, radius 0.** `enemies` needs two hostile factions, and a lair elite has none.
+- **A `test_shaper` shapes the bearer's own roll**, so on a monster it works in the monster's lair encounters, not on a fighter's step.
+- **Encounter content can ask for it.** `has_trait:power.innate.<family>` is an ordinary predicate, and a spell or card can take the power away with a `trait` removal like any other Power.
+
+Inspect: `__DEBUG.getSpellHolders()` (elites list with `source: 'innate'`); trace `power.innate_stamped`.
