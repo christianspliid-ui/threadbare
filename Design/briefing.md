@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-29 15:55 local (13:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-29 16:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -48,7 +48,7 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: 2 jobs ready to build, 1 being built.**
 
-- **Being built:** [six everyday encounters for journeymen](https://linear.app/threadbare/issue/THR-1676). The builder saved its brief at 15:19 on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1676-journeyman-batch-1) and is now writing the encounters. You will be asked to sample 2 of the 6 when it ships.
+- **Almost done:** [six everyday encounters for journeymen](https://linear.app/threadbare/issue/THR-1676). They are written and waiting in [pull request #2150](https://github.com/christianspliid-ui/threadbare/pull/2150), which merges on its own once the checks pass. You will be asked to sample 2 of the 6 once it is live.
 - **Ready next:** [the visit to the ruin](https://linear.app/threadbare/issue/THR-1664), where a mortal who surveys a ruin goes there and the dice decide whether they learn where it lies. Also ready: [two expert-level monsters](https://linear.app/threadbare/issue/THR-1682).
 - **Spells are not ready for you to look at yet.** All three steps of the power runtime are live, but the spell generator ([THR-1572](https://linear.app/threadbare/issue/THR-1572)) has not been designed, so each caster still holds only one starting spell. A curse that lands still changes nothing except the step's odds ([THR-1683](https://linear.app/threadbare/issue/THR-1683)).
 - **The fight system is live but not ready for you to review.** There is no one-click link that opens a fight the way the encounter links above do.
@@ -61,6 +61,6 @@ Say "veto <title>" to reverse any of these.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
   - The live site is up to date. Only docs changed after e9510efe.
-  - Game speed is 95 ms per tick, 18% over the weekly median of 80. That is within normal.
-  - No pull requests are waiting to merge, and all ten scheduled lanes are on time.
+  - Game speed is 89 ms per tick, 11% over the weekly median of 80. That is within normal.
+  - The one open pull request (#2150) will merge on green, and all ten scheduled lanes are on time.
   - The worktree cleaner has five old worktrees waiting on its own decision.
