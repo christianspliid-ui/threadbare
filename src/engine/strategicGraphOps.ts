@@ -542,6 +542,50 @@ export function spawnClue(
   }
 }
 
+/** Clue precision in climbing order: a lead only ever sharpens up this ladder. */
+const CLUE_PRECISION_RANK: Readonly<Record<CluePrecision, number>> = { vague: 0, narrowed: 1, located: 2 };
+
+/** Result of {@link sharpenClue}: the lead edge touched and its precision before and after. */
+export interface SharpenClueResult extends GraphOpResult {
+  from?: CluePrecision;
+  to?: CluePrecision;
+}
+
+/**
+ * Sharpen a lead the actor already holds on a location (THR-1663, seeded things stay
+ * alive S2). The precision becomes the better of the lead's current value and
+ * `precision`, the magnitude the larger of the two, and `discoveredTick` is reset —
+ * a lead someone just went and looked at is fresh again.
+ *
+ * Refuses with `no_lead` when the actor holds no unconsumed lead on the location, so
+ * a caller can fall back to {@link spawnClue}. `spawnClue`'s own `clue_already_held`
+ * refusal is unchanged for its other callers.
+ */
+export function sharpenClue(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+  magnitude: number,
+  precision: CluePrecision,
+): SharpenClueResult {
+  try {
+    const existing = graph.getOutgoingEdges(actorId, 'knows_clue_of')
+      .find(e => e.target === targetLocationId && e.properties?.consumed !== true);
+    if (!existing) return { success: false, op: 'sharpen_clue', error: 'no_lead' };
+    const props = existing.properties as Record<string, unknown>;
+    const from = (props.precision as CluePrecision | undefined) ?? 'vague';
+    const to = (CLUE_PRECISION_RANK[precision] ?? 0) > (CLUE_PRECISION_RANK[from] ?? 0) ? precision : from;
+    const currentMagnitude = typeof props.magnitude === 'number' ? props.magnitude : 0;
+    props.precision = to;
+    props.magnitude = Math.max(currentMagnitude, magnitude);
+    props.discoveredTick = tick;
+    return { success: true, op: 'sharpen_clue', createdId: existing.id, from, to };
+  } catch (e) {
+    return { success: false, op: 'sharpen_clue', error: String(e) };
+  }
+}
+
 /**
  * Stamp durable familiarity with a location.
  *

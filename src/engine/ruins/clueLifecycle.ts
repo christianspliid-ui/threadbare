@@ -33,6 +33,7 @@ import {
   CLUE_BIAS_FACTION_LEADER,
   CLUE_BIAS_SPHERE_MATCH,
   CLUE_BIAS_CULTURE_BACKSTORY_TIE,
+  CLUE_BIAS_DECIDER,
   RECEIVER_RECENT_CLUE_PENALTY,
   RECEIVER_RECENT_CLUE_WINDOW_TICKS,
   WEIGHTED_SELECTION_TOP_N,
@@ -41,6 +42,7 @@ import {
   CLUE_LEAD_STRENGTH_BY_PRECISION,
 } from './constants';
 import { hexDistance } from '../../lib/hexMath';
+import { isAutonomousDecisionActor } from '../decisionTier';
 import type { WorldPastDescentStratum } from '../../types/worldPast';
 
 /** The `magnitude` a `knows_clue_of` edge carries for a given precision (THR-1506). */
@@ -144,6 +146,8 @@ export interface CandidateScoreBreakdown {
   factionRankBonus: number;
   sphereAlignmentMatchBonus: number;
   cultureBackstoryTieBonus: number;
+  /** THR-1663: CLUE_BIAS_DECIDER when the candidate is a deciding mortal, else 0. */
+  deciderBonus: number;
   recentCluePenalty: number;
   finalScore: number;
 }
@@ -187,6 +191,8 @@ function scoreCandidate(
     ? CLUE_BIAS_CULTURE_BACKSTORY_TIE
     : 0;
 
+  const deciderBonus = node && isAutonomousDecisionActor(node) ? CLUE_BIAS_DECIDER : 0;
+
   const recentCluePenalty = agentReceivedClueRecently(agentId, tick, graph)
     ? RECEIVER_RECENT_CLUE_PENALTY
     : 1.0;
@@ -198,6 +204,7 @@ function scoreCandidate(
     (1 + factionRankBonus) *
     (1 + sphereAlignmentMatchBonus) *
     (1 + cultureBackstoryTieBonus) *
+    (1 + deciderBonus) *
     recentCluePenalty;
 
   return {
@@ -212,6 +219,7 @@ function scoreCandidate(
       factionRankBonus,
       sphereAlignmentMatchBonus,
       cultureBackstoryTieBonus,
+      deciderBonus,
       recentCluePenalty,
       finalScore,
     },

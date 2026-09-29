@@ -61,6 +61,7 @@ import {
   foundFaction,
   seedKnowsOf,
   spawnClue,
+  sharpenClue,
   mintTreasureMap,
   foundRing,
   ringMemberInReachOf,
@@ -496,6 +497,30 @@ function maybeSpawnSiteClue(ctx: ObjectVerbContext, cellId: string, siteId: stri
       cellId, reader: 'clue', objectId: siteId,
       refused: ctx.outcome ? 'no_band_row' : undefined,
       summary: `${site?.name ?? siteId} gave up no lead`,
+    });
+    return;
+  }
+  // A survey of a site the surveyor already holds a lead on sharpens that lead instead
+  // of refusing (THR-1663): a rumour (`vague`) becomes `narrowed`, and the lead is fresh.
+  const sharpened = sharpenClue(ctx.graph, ctx.actorId, siteId, ctx.tick, OBSERVE_CLUE_MAGNITUDE, precision);
+  if (sharpened.success && sharpened.from && sharpened.to) {
+    const name = site?.name ?? siteId;
+    emitTrace({
+      category: 'ruins.clue_sharpened',
+      tick: ctx.tick,
+      knowerId: ctx.actorId,
+      targetRuinId: siteId,
+      from: sharpened.from,
+      to: sharpened.to,
+      via: 'survey',
+      ...(ctx.outcome ? { band: ctx.outcome } : {}),
+      summary: `${ctx.actorId} surveyed ${name}: lead ${sharpened.from} → ${sharpened.to}`,
+    } as TraceEntry);
+    emitReaderTrace(ctx, {
+      cellId, reader: 'clue', objectId: siteId, productId: sharpened.createdId,
+      summary: sharpened.to === sharpened.from
+        ? `refreshed a ${sharpened.to} lead on ${name}`
+        : `sharpened a lead on ${name} to ${sharpened.to}`,
     });
     return;
   }

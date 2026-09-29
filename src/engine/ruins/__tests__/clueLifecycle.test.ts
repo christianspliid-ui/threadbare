@@ -20,7 +20,7 @@ import {
   phaseClueDecay,
   findAnyRuinId,
 } from '../clueLifecycle';
-import { CLUE_MAX_AGE_TICKS_VAGUE, CLUE_DECAY_CHECK_INTERVAL } from '../constants';
+import { CLUE_MAX_AGE_TICKS_VAGUE, CLUE_DECAY_CHECK_INTERVAL, CLUE_BIAS_DECIDER } from '../constants';
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
 
@@ -31,6 +31,10 @@ import { CLUE_MAX_AGE_TICKS_VAGUE, CLUE_DECAY_CHECK_INTERVAL } from '../constant
  *   spirit sphere, thanate exile culture tie → score 192.0
  * Mira Voss: story_beat, not bonded, not pinned, guild master (leader bonus 2.5),
  *   order sphere, no culture tie → score 14.0
+ *
+ * Both are deciding mortals (no `spotlightTier` reads as `spotlight`), so since
+ * THR-1663 each also carries the `(1 + CLUE_BIAS_DECIDER)` = ×5 factor: 960 and 70.
+ * The ratio — and so the ~93% win rate below — is unchanged.
  */
 function buildWorkedExampleGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -198,8 +202,36 @@ describe('selectClueRecipient', () => {
     expect(kaelScore).toBeDefined();
     expect(miraScore).toBeDefined();
 
-    expect(kaelScore!.finalScore).toBeCloseTo(192.0, 5);
-    expect(miraScore!.finalScore).toBeCloseTo(14.0, 5);
+    expect(kaelScore!.finalScore).toBeCloseTo(192.0 * (1 + CLUE_BIAS_DECIDER), 5);
+    expect(miraScore!.finalScore).toBeCloseTo(14.0 * (1 + CLUE_BIAS_DECIDER), 5);
+    expect(kaelScore!.deciderBonus).toBe(CLUE_BIAS_DECIDER);
+  });
+
+  it('leans a lead toward the mortal who can act on it (THR-1663)', () => {
+    // Two otherwise-identical mortals in the same settlement: one decides, one is
+    // ambient background. The rumour can still reach either; the decider is ×5.
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'god', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({ id: 'decider', type: 'actor', name: 'Decider', properties: { actorType: 'individual', spotlightTier: 'spotlight' } });
+    graph.addNode({ id: 'ambient', type: 'actor', name: 'Ambient', properties: { actorType: 'individual', spotlightTier: 'ambient' } });
+
+    const result = selectClueRecipient({
+      candidatePool: ['ambient', 'decider'],
+      ruinMagnitude: 0.3,
+      ruinSphereAlignment: 'darkness',
+      ruinOriginCultureId: '',
+      ascendantId: 'god',
+      tick: 10,
+      graph,
+      encounterProgress: [],
+      rng: () => 0,
+    });
+
+    const decider = result.scores.find(s => s.knowerId === 'decider')!;
+    const ambient = result.scores.find(s => s.knowerId === 'ambient')!;
+    expect(ambient.deciderBonus).toBe(0);
+    expect(decider.deciderBonus).toBe(CLUE_BIAS_DECIDER);
+    expect(decider.finalScore).toBeCloseTo(ambient.finalScore * (1 + CLUE_BIAS_DECIDER), 5);
   });
 
   it('suppresses all candidates when none meet saga tier floor', () => {
