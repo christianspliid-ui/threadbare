@@ -81,6 +81,25 @@ export function canonicalBondBasis(basis: unknown): string {
   return BOND_BASIS_ALIASES[basis] ?? basis;
 }
 
+const warnedWordless = new Set<string>();
+
+/**
+ * The word the sheet shows for a written basis (THR-1655), folded through the aliases —
+ * `null` when the basis has no word. A wordless basis renders as no word and warns once
+ * (Law 14: never show the key), so a new basis without a word is loud in dev, silent on screen.
+ */
+export function bondBasisWord(basis: unknown): string | null {
+  const canonical = canonicalBondBasis(basis);
+  if (canonical === '') return null;
+  const word = BOND_BASIS_WORDS[canonical];
+  if (word) return word;
+  if (canonical !== 'unknown' && !warnedWordless.has(canonical)) {
+    warnedWordless.add(canonical);
+    console.warn(`[bond-basis] no display word for bond basis "${canonical}" — rendering none`);
+  }
+  return null;
+}
+
 /** Whether a written basis satisfies a wanted one, both folded through the aliases. */
 export function bondBasisMatches(written: unknown, wanted: unknown): boolean {
   const w = canonicalBondBasis(written);

@@ -320,6 +320,19 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // ── Who matters here (THR-1655) ──────────────────────────────────────
+    /**
+     * The settlement page's notable line, from the same selector the page renders —
+     * under the player's familiarity unless `{ unfogged: true }`. **Async**: `await` it.
+     */
+    getSettlementNotable: async (locationId: string, opts?: { unfogged?: boolean }) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getSettlementNotable } = await import('./engine/settlementNotable');
+      return getSettlementNotable(state.graph, locationId,
+        opts?.unfogged ? {} : { familiarityMap: state.familiarityMap ?? new Map() });
+    },
+
     getFollowedAgents: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { explicit: [], threaded: [], muted: [] };

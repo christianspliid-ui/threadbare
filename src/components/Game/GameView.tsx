@@ -5092,6 +5092,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 rivalDefinitions={gameState.rivalDefinitions}
                 strategicState={gameState.strategicState}
                 pastKnowledge={pastKnowledge}
+                familiarityMap={gameState.familiarityMap}
               />
             )}
           </div>

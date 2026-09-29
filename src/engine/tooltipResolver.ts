@@ -48,6 +48,7 @@ import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { contentTagFromTooltipSuffix } from '../data/content-tags';
 import type { FactionDefinition } from '../types/faction';
 import { FIGHT_TOOLTIP_COPY } from '../data/fight-screen-content';
+import { AGENT_CONCEPT_TOOLTIPS } from '../data/agent-concept-tooltips';
 
 /**
  * A faction definition's name template with its generated slots stripped —
@@ -206,6 +207,11 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
 
   // ─── Agent Tooltip (Tier 1 — Familiarity-Aware) ─────────────────
   if (prefix === 'agent') {
+    // THR-1655: the concept half (`agent.bond.*`, `agent.notable`) is committed content and
+    // resolves with no context, so a plain `<Tooltip id>` can answer it.
+    const concept = AGENT_CONCEPT_TOOLTIPS[id];
+    if (concept) return { label: concept.label, desc: concept.desc };
+
     // Requires context: graph, familiarityMap, ascendantId
     if (!context || !context.graph || !context.familiarityMap) {
       return null;

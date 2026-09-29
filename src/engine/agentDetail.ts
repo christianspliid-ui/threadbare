@@ -450,7 +450,11 @@ export interface AgentInfoCardData {
   domains?: { domain: ReachDomain; word: string; tier: number }[];
   /** Agent gender for pronoun resolution in prose (e.g. 'male', 'female'). Defaults to neutral. */
   gender?: string;
-  topBonds?: { name: string; strengthWord: string; sentiment: string }[];
+  /**
+   * THR-1655 carries `targetId` (the name links to the other party) and `basis` (the bond
+   * word the sheet shows — kin, friend, rival …) through the gate unchanged.
+   */
+  topBonds?: { targetId?: string; name: string; strengthWord: string; sentiment: string; basis?: string }[];
   /**
    * Standing blood with other agents (THR-1298). Gated with `topBonds` at `known`+ —
    * a grudge is the same class of fact as a bond, and learning one before the other
@@ -1671,9 +1675,11 @@ export function getAgentInfoCard(
   if (knowledgeLevel !== 'stranger' && knowledgeLevel !== 'recognised') {
     if (detail.topBonds.length > 0) {
       card.topBonds = detail.topBonds.map(bond => ({
+        targetId: bond.targetId,
         name: bond.targetName,
         strengthWord: getBondStrengthWord(bond.strength),
         sentiment: bond.sentiment >= 0 ? 'positive' : 'negative',
+        basis: bond.basis,
       }));
     }
 
