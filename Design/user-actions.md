@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-29 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-29 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-29: The First's own draws are finished**: at-cost and critical lines and a dealt hand for the ten encounters The First meets most (step two of [finish the encounters](https://linear.app/threadbare/issue/THR-1666)). Merged via [#2144](https://github.com/christianspliid-ui/threadbare/pull/2144), and live on the site.
 - **2026-09-29: steps roll as hard as their word says**: the hidden discount on everyday rolls is gone, the first step of content above novice level ([THR-1627](https://linear.app/threadbare/issue/THR-1627)). Merged via [#2143](https://github.com/christianspliid-ui/threadbare/pull/2143), and live on the site.
 - **2026-09-29: a lead is a reason to look**: a mortal who hears of a ruin can now go and find it, and then delve it (step two of [THR-1636](https://linear.app/threadbare/issue/THR-1636)). Merged via [#2140](https://github.com/christianspliid-ui/threadbare/pull/2140), and live on the site.
 - **2026-09-29: the words "lead" and "delve" are in the glossary** ([THR-1662](https://linear.app/threadbare/issue/THR-1662)). Merged via [#2141](https://github.com/christianspliid-ui/threadbare/pull/2141).
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-29: spells that work**: every caster now starts with one spell of their tradition, and a cast spell does what it says (step one of [the power runtime](https://linear.app/threadbare/issue/THR-1571)). Merged via [#2136](https://github.com/christianspliid-ui/threadbare/pull/2136), and live on the site.
 - **2026-09-29: the player meets the past**: the world's history now reaches the screen ([THR-1656](https://linear.app/threadbare/issue/THR-1656)). Merged via [#2134](https://github.com/christianspliid-ui/threadbare/pull/2134), and live on the site.
 - **2026-09-29: a notable in every settlement**: each settlement now starts with a named notable of its own ([THR-1654](https://linear.app/threadbare/issue/THR-1654)). Merged via [#2133](https://github.com/christianspliid-ui/threadbare/pull/2133), and live on the site.
-- **2026-09-29: a promise outlasts the journey**: a mortal heading off to keep a promise no longer turns back at every step ([THR-1669](https://linear.app/threadbare/issue/THR-1669)). Merged via [#2132](https://github.com/christianspliid-ui/threadbare/pull/2132), and live on the site.
 
 ---
 
