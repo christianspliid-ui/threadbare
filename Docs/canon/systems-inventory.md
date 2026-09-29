@@ -57,7 +57,7 @@ names like `TB-073`) a premise might use.
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation, appointment, rendezvous, due tick | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
 | **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence`, `grievance` | `6.05`, `6.55`, `6.6`, `6.634`, `6.64` |
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret`, `leverage` | — |
-| **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
+| **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell`, `caster` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
 | **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
@@ -251,6 +251,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `calling` (1) | `calling.ts` | `THR-1281`, `THR-1299` |
 | `capability` (1) | `capabilityGrowth.ts` | — |
 | `cast` (2) | `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651` |
+| `caster` (1) | `casterIdentity.ts` | `THR-1229`, `THR-1230`, `THR-1571` |
 | `chapter` (1) | `chapterArchive.ts` | `THR-603` |
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
 | `chronicle` (1) | `chronicle.ts` | `THR-21` |
@@ -289,7 +290,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
-| `effects` (17) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-719`, `THR-761` |
+| `effects` (18) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/castRelocation.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-1571`, `THR-719`, `THR-761` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
 | `encounters` (18) | `encounters/branchDecision.ts`, `encounters/choiceResolution.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/itemConsumption.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963` |
@@ -386,12 +387,12 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `scry` (1) | `scry.ts` | — |
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
 | `secrets` (2) | `secretsFavorsConsequences.ts`, `secretsFromResolution.ts` | `THR-30`, `THR-724` |
-| `seed` (3) | `seedAttachments.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1429`, `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654` |
+| `seed` (3) | `seedAttachments.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654` |
 | `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
-| `spell` (1) | `spellActivation.ts` | — |
+| `spell` (2) | `spellActivation.ts`, `spellCasting.ts` | `THR-1571` |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
@@ -429,4 +430,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 200 engine domains · 617 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 201 engine domains · 620 modules._
