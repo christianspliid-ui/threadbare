@@ -5,6 +5,7 @@
 
 import type { AttentionTier } from '../../types/attention';
 import type { CluePrecision, ClueSource } from '../../types/knowledge';
+import type { UnifiedActionOutcome } from '../../types/unifiedAction';
 
 // ── Clue decay ───────────────────────────────────────────────────────────────
 
@@ -63,6 +64,55 @@ export const CLUE_LEAD_SURVEY_CANDIDATES_MAX = 2;
  * board's top five 7 times and won none, at 0.56–0.77 of an encounter winner's score.
  */
 export const CLUE_LEAD_SURVEY_PULL_MULT = 2.5;
+
+// ── The visit (THR-1664, seeded things stay alive S3) ─────────────────────────
+//
+// A survey of a ruin that leaves its surveyor holding a `narrowed` lead arranges a
+// visit: an appointment at the ruin (`UNDERTAKING_CELL_APPOINTMENTS['cell.observe.location']`).
+// The visit's own dice decide the lead (`CLUE_VISIT_PRECISION_BY_BAND`), because a survey
+// is instant and never rolls — `INSTANT_COMPLETION_BAND` stays untouched (THR-1450).
+
+/** When the visit falls due after the survey. Mirrors `HUNT_APPOINTMENT_DELAY_TICKS`: ruins, like dens, can be far. */
+export const CLUE_LEAD_VISIT_DELAY_TICKS = 48;
+/** The visit's travel pull. Mirrors `HUNT_APPOINTMENT_PULL_MULT`. */
+export const CLUE_LEAD_VISIT_PULL_MULT = 1.0;
+/**
+ * How long past its due tick a lead with a pending visit is spared decay, and how long
+ * the visit counts as pending for the one-visit-per-holder-per-ruin rule. The plan
+ * drafted 12; it is 24 because the missed branch is only eligible at due +
+ * `APPOINTMENT_WINDOW_TICKS` (12) + `APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS` (12), and a
+ * lead that decayed first would leave the cold template nothing to mark cold.
+ */
+export const CLUE_LEAD_VISIT_GRACE_TICKS = 24;
+
+/** What a lead becomes at the visit's band: `cold` consumes the edge. */
+export type ClueVisitVerdict = CluePrecision | 'cold';
+
+/**
+ * How the visit ended → the lead (plan § S3.3). A kept visit that succeeds knows where
+ * the ruin lies; a near thing leaves the lead `narrowed` and fresh, to try again; a
+ * failure loses the trail.
+ *
+ * Keyed on the **action** outcome, not a step band, so the lead always agrees with the
+ * `byOutcome` ending the player reads: a step `near_miss` aggregates to
+ * `success_at_cost` (`computeFinalActionOutcome`), which is the plan's
+ * "at-cost / near-miss → narrowed" row. The contested pair is never a visit's outcome;
+ * it maps by polarity so the table is total.
+ */
+export const CLUE_VISIT_PRECISION_BY_OUTCOME: Readonly<Record<UnifiedActionOutcome, ClueVisitVerdict>> = {
+  critical_success: 'located',
+  success: 'located',
+  contested_won: 'located',
+  success_at_cost: 'narrowed',
+  failure: 'cold',
+  contested_lost: 'cold',
+  critical_failure: 'cold',
+};
+
+/** Whether a lead edge's pending visit still holds at `tick` (stamp set, due + grace not passed). */
+export function isLeadVisitPending(pendingVisitDueTick: unknown, tick: number): boolean {
+  return typeof pendingVisitDueTick === 'number' && tick <= pendingVisitDueTick + CLUE_LEAD_VISIT_GRACE_TICKS;
+}
 /** Multiplier applied to agents who received a clue within the recent-clue window */
 export const RECEIVER_RECENT_CLUE_PENALTY = 0.5;
 /** Ticks within which a second clue receipt triggers the penalty */

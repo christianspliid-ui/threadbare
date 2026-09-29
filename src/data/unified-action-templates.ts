@@ -200,6 +200,9 @@ import { THE_DROWNED_ARCHIVE_TEMPLATE } from './encounters/the-drowned-archive';
 import { ONE_BODY_SHORT_TEMPLATE } from './encounters/one-body-short';
 import { TOLL_OF_BLADES_TEMPLATE } from './encounters/toll-of-blades';
 import { THE_SIGN_OVER_THE_RUIN_TEMPLATE } from './encounters/the-sign-over-the-ruin';
+// THR-1664 — the ruin visit's two seed-only branches (the survey's appointment).
+import { RUIN_LEAD_VISIT } from './encounters/ruin-lead-visit';
+import { RUIN_LEAD_COLD } from './encounters/ruin-lead-cold';
 import { STANDING_THE_LINE_TEMPLATE } from './encounters/standing-the-line';
 import { THE_GARRISONS_PRICE_TEMPLATE } from './encounters/the-garrisons-price';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
@@ -5654,6 +5657,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ONE_BODY_SHORT_TEMPLATE,
   TOLL_OF_BLADES_TEMPLATE,
   THE_SIGN_OVER_THE_RUIN_TEMPLATE,
+  // THR-1664 — seed-only: reached only through the survey's visit appointment.
+  RUIN_LEAD_VISIT,
+  RUIN_LEAD_COLD,
   STANDING_THE_LINE_TEMPLATE,
   THE_GARRISONS_PRICE_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,

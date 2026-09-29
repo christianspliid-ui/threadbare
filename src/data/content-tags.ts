@@ -284,6 +284,10 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   // reader: `cell.destroy.monster`'s appointment payoff names both by query.
   T('#lair_confront', 'family', 'The beast\'s den, entered on purpose.', ['encounter_template']),
   T('#hunt_trail_cold', 'family', 'A hunt that was never taken to the den.', ['encounter_template']),
+  // THR-1664 — the ruin visit's two branches. One bearer each, seated on their runtime
+  // reader: `cell.observe.location`'s appointment payoff names both by query.
+  T('#ruin_lead', 'family', 'A held lead followed to the ruin itself, to see where it lies.', ['encounter_template']),
+  T('#lead_gone_cold', 'family', 'A visit to a lead\'s ruin that was never made.', ['encounter_template']),
   // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),

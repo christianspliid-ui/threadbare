@@ -3259,6 +3259,8 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // the arm that most needed checking: its "no member" no-op was silent, and the
     // trace that now reports it would otherwise have gone in behind a cast.
     | 'faction_reputation_gain'
+    // THR-1664 — the visit's band sets the actor's own lead; emitted unlaundered.
+    | 'sharpen_clue'
     // THR-1206 — added here rather than cast at the call site, which is the
     // direction of travel this union's own note describes. Its arm emits four
     // traces (no-actor, no-counterparty, refused write, applied) and all four go
@@ -3667,8 +3669,12 @@ export interface AppointmentPlantedTrace extends TraceBase {
    * a completed undertaking's `appointmentPayoff`. Absent on pre-THR-1519 traces.
    */
   source?: 'encounter' | 'undertaking';
-  /** Present when the plant fell back to a placeless seed. */
-  refused?: 'over_max' | 'place_unresolved';
+  /**
+   * Present when the plant fell back to a placeless seed — or, for a lead visit
+   * (THR-1664), why no visit was arranged: the surveyor held no lead on the ruin, the
+   * lead was not `narrowed`, or a visit to it was already pending.
+   */
+  refused?: 'over_max' | 'place_unresolved' | 'lead_visit_no_lead' | 'lead_visit_not_narrowed' | 'lead_visit_visit_pending';
   /**
    * THR-1560 — the payoff said the meeting must have a place (`requirePlace`), so the
    * refusal pushed no seed at all rather than a placeless one.
