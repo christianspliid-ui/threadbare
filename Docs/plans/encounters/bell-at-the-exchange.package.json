@@ -1,0 +1,525 @@
+{
+  "slug": "bell-at-the-exchange",
+  "doc": [
+    "The Last Lot at the Exchange (slug bell-at-the-exchange) — slot 5 of the journeyman-everyday-1 batch (THR-1676).",
+    "",
+    "Brief: `Docs/plans/encounters/journeyman-everyday-1-brief.md`.",
+    "plotHookTaken: hook.scarcity_crisis — a thin season, one lot left on the block, and",
+    "  a merchant house that wants every lot it can get. (Rolled beside it:",
+    "  hook.blame_falls_on_outsiders, hook.assassination_succeeded — both pull the scene",
+    "  grim, and this slot carries the batch's one pleasure.)",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      Yes: `{actor}` walks onto the exchange floor in `{location}` an",
+    "                     hour before the closing bell (urban, the only class).",
+    "  2 P2 events?       Few cargoes came in; the floor has sold almost nothing all week;",
+    "                     one lot is left on the block.",
+    "  3 P3 one stake?    Contest, as rolled: `{cast:buyer}` bids for a merchant house and",
+    "                     knows every bidder but the agent; the last bid at the bell wins.",
+    "  4 ≤80 words?       Opening + step-0 spine inside budget.",
+    "  5 Read aloud?      Report throughout.",
+    "  6 Stated, never encoded? 'The houses treat this floor as their own' is said, not",
+    "                     implied by a look.",
+    "  7 Every sentence works? Challenge, test, or outcome.",
+    "  8 Nothing unintroduced? The lot, the bell, the buyer and the house all appear",
+    "                     before a card or a chip names them.",
+    "  9 One named person? `{cast:buyer}` — the house buyer, both beats.",
+    " 10 Stake in a sentence? 'Can a stranger outbid a merchant house on its own floor",
+    "                     before the bell rings?'",
+    " 11 Cards verb+noun, spell-style? Yes; three specials, mechanism-stating.",
+    " 12 Opening per class? `urban`, written.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            The last lot of a thin season is on the block, and {actor} is",
+    "                  bidding for it against a house buyer who knows the room.",
+    "  Whose problem?  The agent's. They walked in to buy; the lot is theirs or the",
+    "                  house's when the bell rings.",
+    "  Reach = theme?  Step 0 tests Gold and is *about* pricing a lot nobody will price",
+    "                  aloud. Step 1 tests Gold and is *about* the bidding itself.",
+    "  Shape           Test & Consequence (two steps, carryover), composed with the",
+    "                  query_prize face: the prize is drawn by query, not by id.",
+    "  Rolled dice     p3 contest · opposition time (the bell) · disposition n/a ·",
+    "                  role trespasser (the houses' floor) · scale company (a house).",
+    "  Consequence hand (binding, THR-1145): `story_seed` + `omen`, recorded swap",
+    "                  `omen` → `possession` (see `consequenceSwap`).",
+    "                  `possession` — a step `rewardPool` on step 1's success half,",
+    "                  `{ categoryWeights: { possession: 1 }, tagFilters: ['#trade'] }`.",
+    "                  The prize is TAG-DRAWN, not id-named: the recipe projects onto",
+    "                  `{ kind: 'item_template', tags: ['#trade'] }` through rewardPool",
+    "                  toContentQuery (site `step_reward_pool`); the tier curve pays a",
+    "                  better lot on a better band, and the engine renders the drawn",
+    "                  item as the PRIZE chip, so no authored item chip sits beside it.",
+    "                  Critic 2026-09-29: the `reward_draw` effect type has no `query`",
+    "                  field (src/types/unifiedAction.ts), and `reward_draw` is not in",
+    "                  PERSISTENT_EFFECT_KINDS, so the effect route failed the Rewards",
+    "                  block and the systems quota; the step route is the same recipe.",
+    "                  `story_seed` — `encounter_seed` literal `encounter.caravan_deal`",
+    "                  (placeless, `inheritContext`, delay 30) on step 1's failure half:",
+    "                  lost at the bell, the mortal is heard of by a caravan master whose",
+    "                  cargo has not reached the floor. Ungated everyday gold trade whose",
+    "                  base prose asserts no guild or house membership (rule 31). PATH",
+    "                  chip `seed` on the failure and critical_failure bands.",
+    "                  Extra: `plant_compulsion` (trade/acquire up) on step 0's",
+    "                  failure half (a misread price sends them into the bidding past",
+    "                  sense) and on step 1's failure half (lost at the bell, and wants",
+    "                  the next lot).",
+    "  Standing        `reputation_with` `$cast:buyer`: up on a win (a real bidder),",
+    "                  down on a loss (they pushed the house's price up and lost).",
+    "  Cool failure?   Nobody is hurt or held. The lot goes to the house, the price the",
+    "                  house paid is higher for them, and the house buyer remembers.",
+    "  Systems quota   cast + rewards + seeds + reputation — four.",
+    "  Trait hooks     Gate: none. Variant: none. Trait-only card: none. Trait fragment:",
+    "                  none — the bidding reads the same for every temperament and the",
+    "                  compulsion is the personal consequence.",
+    "  Specials        step 0 `Remember The Price` (Whisper, mind). step 1 `Cloud The",
+    "                  Count` (Stumble, chaos) and `Hold The Bell` (Long Game, time).",
+    "                  No core Boost special; no rider special (the deal supplies both).",
+    "  Difficulty      gold 0.40 → gold 0.45 (brief amended: no background step above 0.45)."
+  ],
+  "template": {
+    "id": "encounter.town.bell_at_the_exchange",
+    "rarityTier": 2,
+    "intrinsicTier": "background",
+    "name": "The Last Lot at the Exchange",
+    "reach": "gold",
+    "consequenceSwap": {
+      "from": "omen",
+      "to": "possession",
+      "reason": "A closing bell on a thin season is a price, a bidder and a lot — nothing in it is a sign from the sky, and an omen here would be dressing bolted onto a market floor. What the scene decides is who holds the lot when the bell rings, so the consequence it owes is the tag-drawn prize on the win."
+    },
+    "crudType": "update",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "asceticism_extravagance",
+      "courage_prudence"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} walks onto the exchange floor in {location} an hour before the closing bell."
+    },
+    "steps": [
+      {
+        "reach": "gold",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.4,
+        "purposeLine": "Price the lot",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "Few cargoes came in this season, and almost nothing has sold all week. One lot is left on the block. The merchant houses treat the exchange as their own. {cast:buyer} bids for one of them and knows every regular bidder. Whoever holds the last bid when the bell rings takes the lot, and a house outbid on its own floor remembers who did it.",
+        "successAfterimage": "They worked out what the lot is worth and where they would stop.",
+        "failureAfterimage": "They could not put a figure on the lot and went into the bidding without one.",
+        "successAtCostAfterimage": "They priced the lot, and {cast:buyer} saw the figure they settled on.",
+        "criticalSuccessAfterimage": "They priced the lot and picked out the two bidders who were only there to push the price.",
+        "criticalFailureAfterimage": "They priced the lot at twice its worth and said the figure where the room could hear.",
+        "deal": {
+          "count": 5,
+          "tags": [
+            "insight",
+            "social"
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "plant_compulsion",
+              "targetAgentId": "$actor",
+              "encounterBias": {
+                "trade": 0.4,
+                "acquire": 0.4
+              },
+              "durationTicks": 72,
+              "narrativeHook": "They went into the bidding with no figure in mind, and they keep bidding."
+            }
+          ]
+        },
+        "nudges": [
+          {
+            "id": "bell.remember_the_price",
+            "name": "Remember The Price",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.memory",
+            "effectLine": "Bring back what a lot like this one sold for last season, so they know a fair figure when they hear it.",
+            "bandProse": {
+              "success": "They remembered last season's figure, and it was the right one to stop at.",
+              "near_miss": "They remembered last season's figure a moment after they had named their own.",
+              "failure": "They remembered last season's figure, but in a thin season it was far too low."
+            }
+          }
+        ]
+      },
+      {
+        "reach": "gold",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.45,
+        "purposeLine": "Win the bidding",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "The bidding opens. {cast:buyer} answers every bid with a small raise. The price passes what a lot like it fetched last season. The bell ringer already has a hand on the rope.",
+        "successAfterimage": "They held the last bid when the bell rang, and the lot is theirs.",
+        "failureAfterimage": "The bell rang on the house's bid, and the lot went to {cast:buyer}.",
+        "successAtCostAfterimage": "The lot is theirs, at a price well past what it is worth.",
+        "criticalSuccessAfterimage": "They took the lot at a fair price, and the floor cheered when the bell rang.",
+        "criticalFailureAfterimage": "They drove the price up, dropped out at the last raise, and the house took the lot.",
+        "deal": {
+          "count": 4,
+          "tags": [
+            "social",
+            "presence"
+          ]
+        },
+        "successMetadata": {
+          "rewardPool": {
+            "categoryWeights": {
+              "possession": 1
+            },
+            "tagFilters": [
+              "#trade"
+            ]
+          },
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetAgentId": "$cast:buyer",
+              "delta": 0.05
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "plant_compulsion",
+              "targetAgentId": "$actor",
+              "encounterBias": {
+                "trade": 0.5,
+                "acquire": 0.4
+              },
+              "durationTicks": 96,
+              "narrativeHook": "Lost a lot at the bell, and means to win the next one."
+            },
+            {
+              "kind": "reputation_with",
+              "targetAgentId": "$cast:buyer",
+              "delta": -0.04
+            },
+            {
+              "kind": "encounter_seed",
+              "templateId": "encounter.caravan_deal",
+              "targetAgentId": "$actor",
+              "delayTicks": 30,
+              "priority": 0.8,
+              "inheritContext": true,
+              "seedLabel": "A caravan master with cargo still short of the exchange hears who nearly outbid the house."
+            }
+          ]
+        },
+        "nudges": [
+          {
+            "id": "bell.cloud_the_count",
+            "name": "Cloud The Count",
+            "sphere": "chaos",
+            "essenceCost": 2,
+            "forecastDelta": 0.13,
+            "imageTag": "generic.luck",
+            "effectLine": "Cloud the rival buyer's count of the bids, so one raise goes by unanswered.",
+            "bandProse": {
+              "critical_success": "{cast:buyer} lost the figure halfway through a raise, and the room laughed.",
+              "success": "{cast:buyer} checked the tally twice and let one raise pass.",
+              "failure": "{cast:buyer} lost the figure, asked the floor for it, and raised again."
+            }
+          },
+          {
+            "id": "bell.hold_the_bell",
+            "name": "Hold The Bell",
+            "sphere": "time",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.focus",
+            "effectLine": "Slow the ringer's hand on the rope, so the bidding runs long enough for one more raise.",
+            "bandProse": {
+              "success_at_cost": "The ringer waited, and the extra raise was the one that cost them most.",
+              "failure": "The ringer waited, and the house used the time to raise again.",
+              "critical_failure": "The ringer waited, and the house raised twice more before the bell."
+            }
+          }
+        ]
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "buyer",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "merchant",
+          "trader",
+          "noble"
+        ],
+        "supportRole": "house_buyer",
+        "spawnNpcRole": "merchant",
+        "spawnName": "Wenna Castrell"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "The last lot of a thin season is on the block at the exchange, and a merchant house wants it. Whoever holds the last bid at the bell takes it home.",
+      "success": "The bell rang on their bid, and the lot is theirs.",
+      "failure": "The bell rang on the house's bid. The lot went to the house, at a higher price than it would have paid."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The bell has rung and the block is empty. The floor is counting the day's takings.",
+        "changes": [
+          {
+            "id": "bell.the_floor_worked",
+            "kind": "growth",
+            "title": "A lot, bid on",
+            "detail": "An hour against a house buyer teaches the gold reach.",
+            "polarity": "gain",
+            "concepts": [
+              {
+                "text": "gold reach",
+                "tooltipId": "reach.gold"
+              }
+            ]
+          }
+        ],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The lot went to {actor} at a fair price. {cast:buyer} bowed to them in front of the whole floor.",
+            "changes": [
+              {
+                "id": "bell.bowed_out",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:buyer",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "Beaten fairly",
+                "causeClause": "Outbid a house on its own floor",
+                "detail": "{cast:buyer} rates them as a serious bidder.",
+                "polarity": "gain",
+                "concepts": [
+                  {
+                    "text": "rates them",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The bell rang on their bid. {cast:buyer} went back to the house empty-handed.",
+            "changes": [
+              {
+                "id": "bell.a_real_bidder",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:buyer",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A bidder to watch",
+                "detail": "{cast:buyer} thinks better of them as a bidder now.",
+                "polarity": "gain",
+                "concepts": [
+                  {
+                    "text": "thinks better of them",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The lot is theirs, bought well past its worth, and the whole floor saw the figure.",
+            "changes": [
+              {
+                "id": "bell.dear_bidder",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:buyer",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "Outlasted the house",
+                "causeClause": "Outlasted the house",
+                "detail": "{cast:buyer} takes them seriously now.",
+                "polarity": "gain",
+                "concepts": [
+                  {
+                    "text": "takes them seriously",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The bell rang on the house's bid. The house paid more for the lot than it meant to, because of {actor}.",
+            "changes": [
+              {
+                "id": "bell.next_lot",
+                "kind": "shell_state",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": {
+                  "text": "compulsion",
+                  "tooltipId": "ui.compulsion"
+                },
+                "title": "The next lot",
+                "detail": "For a while they will chase trade and buying before anything else.",
+                "polarity": "loss",
+                "concepts": [
+                  {
+                    "text": "chase trade and buying",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              },
+              {
+                "id": "bell.pushed_the_price",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:buyer",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "Cost the house money",
+                "detail": "{cast:buyer} holds the cost against them.",
+                "polarity": "loss",
+                "concepts": [
+                  {
+                    "text": "holds the cost against them",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              },
+              {
+                "id": "bell.cargo_off_the_floor",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Cargo Off the Floor",
+                "causeClause": "Lost at the bell",
+                "detail": "A caravan master with unsold cargo will hear of {actor}.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "{actor} pushed the house to its highest figure of the season, and the house still took the lot.",
+            "changes": [
+              {
+                "id": "bell.cannot_stop_bidding",
+                "kind": "shell_state",
+                "category": "scar",
+                "direction": "loss",
+                "stateNoun": {
+                  "text": "compulsion",
+                  "tooltipId": "ui.compulsion"
+                },
+                "title": "Still bidding",
+                "causeClause": "One raise short",
+                "detail": "For a while they will chase the next deal first.",
+                "polarity": "loss",
+                "concepts": [
+                  {
+                    "text": "chase the next deal",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              },
+              {
+                "id": "bell.the_house_remembers",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:buyer",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "Marked by the house",
+                "detail": "{cast:buyer} will not forget them.",
+                "polarity": "loss",
+                "concepts": [
+                  {
+                    "text": "will not forget",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              },
+              {
+                "id": "bell.critfail.cargo_off_the_floor",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Cargo Off the Floor",
+                "causeClause": "Lost at the bell",
+                "detail": "A caravan master with unsold cargo will hear of {actor}.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A two-step bidding contest at a town exchange: price the last lot of a thin season, then outbid a merchant house's buyer before the closing bell. The prize is drawn by query from the #trade item family; a lost or overpaid bid leaves a lean toward the next deal."
+  }
+}

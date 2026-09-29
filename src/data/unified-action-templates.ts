@@ -230,6 +230,12 @@ import { KEEPERS_PETITION_TEMPLATE } from './encounters/keepers-petition';
 import { CROWNS_RECKONING_TEMPLATE } from './encounters/crowns-reckoning';
 import { BORDER_LEVY_TEMPLATE } from './encounters/border-levy';
 import { TITHE_DEMANDED_TEMPLATE } from './encounters/tithe-demanded';
+import { PILOTS_RECKONING_TEMPLATE } from './encounters/pilots-reckoning';
+import { OVERDUE_CARAVAN_TEMPLATE } from './encounters/overdue-caravan';
+import { ASSIZE_LETTER_TEMPLATE } from './encounters/assize-letter';
+import { COUNTING_HOUSE_DISPUTE_TEMPLATE } from './encounters/counting-house-dispute';
+import { BELL_AT_THE_EXCHANGE_TEMPLATE } from './encounters/bell-at-the-exchange';
+import { MASONS_COMMISSION_TEMPLATE } from './encounters/masons-commission';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5693,6 +5699,12 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // THR-1448 — the town-keeper pair, gated on the hold (`requiresHold`).
   KEEPERS_PETITION_TEMPLATE,
   CROWNS_RECKONING_TEMPLATE,
+  PILOTS_RECKONING_TEMPLATE,
+  OVERDUE_CARAVAN_TEMPLATE,
+  ASSIZE_LETTER_TEMPLATE,
+  COUNTING_HOUSE_DISPUTE_TEMPLATE,
+  BELL_AT_THE_EXCHANGE_TEMPLATE,
+  MASONS_COMMISSION_TEMPLATE,
 ];
 
 /**
@@ -5813,6 +5825,12 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   CROWNS_RECKONING_TEMPLATE,
   // THR-1635 — the coloration token. The slice ids are skipped by the compile pass itself
   // (`COLORATION_EXCLUDED_TEMPLATE_PREFIXES`), so they stay the same objects.
+  PILOTS_RECKONING_TEMPLATE,
+  OVERDUE_CARAVAN_TEMPLATE,
+  ASSIZE_LETTER_TEMPLATE,
+  COUNTING_HOUSE_DISPUTE_TEMPLATE,
+  BELL_AT_THE_EXCHANGE_TEMPLATE,
+  MASONS_COMMISSION_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

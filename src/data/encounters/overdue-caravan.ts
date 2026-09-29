@@ -1,0 +1,716 @@
+/**
+ * The Overdue Caravan — slot 2 of the journeyman-everyday-1 batch (THR-1676).
+ * 
+ * Brief: `Docs/plans/encounters/journeyman-everyday-1-brief.md`.
+ * plotHookRolled: hook.descent_into_darkness, hook.sacred_crime, hook.lost_civilization
+ * plotHookTaken:  hook.lost_civilization (the old road, built by people nobody
+ *                 remembers, open again because the new road washed out; blended
+ *                 with descent_into_darkness for the cutting that runs under ground)
+ * Seed Dice:      p3 obstruction · opposition uncanny (read as rumour, weather and
+ *                 the road itself — no magic) · disposition hostile (the steward) ·
+ *                 agent role bystander pulled in · scale region
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` is in `{location}` when the steward
+ *                      works the market (urban), or rides in asking every farm
+ *                      (rural). Agent and place are graph names.
+ *   2 P2 events?       The caravan is days overdue, carries the house's season, and
+ *                      the house owes money against every wagon. Costs paid, stated.
+ *   3 P3 one stake?    Obstruction, as rolled: the north road is washed out, the old
+ *                      road is the only other way, and the carters will not take it.
+ *   4 ≤80 words?       Opening + step-0 spine at the budget line at both classes.
+ *   5 Read aloud?      Report throughout. No interior sensation anywhere.
+ *   6 Stated, never encoded? The carters' fear is stated as what the carters say,
+ *                      never implied by an empty road.
+ *   7 Every sentence works? Challenge, test, or outcome.
+ *   8 Nothing unintroduced? The steward, the reports, the old road, the markers and
+ *                      the cutting each appear before a card or chip names them.
+ *   9 One named person? `{cast:steward}` — the house's steward, on stage all three beats.
+ *  10 Stake in a sentence? 'Can a mortal who reads roads find the house's caravan on
+ *                      the old road before another night costs the house its season?'
+ *  11 Cards verb+noun, spell-style? Yes; four specials, mechanism-stating, no digits,
+ *                      no word shared between a name and its effect line.
+ *  12 Opening per class? `urban` and `rural`, both written.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            A merchant house's caravan is overdue on the old road, and the
+ *                   house's steward wants anyone who can read a road to find it.
+ *   Title           The Overdue Caravan — the crux in three words.
+ *   Tier            `background` (open draw). Every step is held at or under the
+ *                   0.45 off-reach ceiling, per the brief: eye 0.38 → star 0.45 → star 0.45.
+ *   Whose problem?  The house's, and the agent is pulled in because they know roads.
+ *                   The steward is hostile: the house will remember who helped and
+ *                   who did not, and the agent is the one reading.
+ *   Reach = theme?  Step 0 tests Eye (0.38) and is *about* reading carters' reports
+ *                   true. Steps 1 and 2 test Star (0.45, 0.45) and are *about*
+ *                   reading an old road by its star-cut markers and the night sky.
+ *                   Star by two steps to one; mean 0.427 (journeyman band).
+ *   Shape           Test and Consequence — carryover lines on steps 1 and 2 key on
+ *                   the band the previous step rolled.
+ *   Consequence hand (binding, THR-1145): `thread` + `place`, recorded swap
+ *                   `place` → `story_seed` (see `consequenceSwap`).
+ *                   `thread` — `thread_strengthen` ($ascendant ↔ $actor) on the
+ *                   final step's success; `thread_weaken` on its failure.
+ *                   `story_seed` — `encounter_seed` by query (`#explore`) on BOTH
+ *                   sides of the final step: found or not found, the roads come
+ *                   asking again. Placeless — the prose promises no place (7b).
+ *   Standing        `reputation_with` on `$cast:steward`, both directions — the
+ *                   journeyman register of money and standing, stated in the fiction.
+ *   Cool failure?   Nobody dies, nobody is jailed. The search turns back; the house
+ *                   carries the loss and says whose reading it was.
+ *   Systems quota   cast + rewards + seeds + content_query + reputation — five.
+ * 
+ * ─── Trait hooks (mandatory four questions) ──
+ *   Gate? No — everyday board, no gates by brief. Variant? No. Trait-only nudge?
+ *   No — the specials budget goes to the markers and the night. Trait fragment? No.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.overdue_caravan',
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'The Overdue Caravan',
+  reach: 'star',
+  consequenceSwap: {
+    from: 'place',
+    to: 'story_seed',
+    reason: 'The scene\'s place is the town the searchers ride out from, and nothing about it changes: the '
+      + 'caravan is lost, found or given up on the old road, off-scene from the town. The consequence '
+      + 'runs on down the road — the roads come asking again — which is a planted scene, not a new truth '
+      + 'about the location.',
+  },
+  crudType: 'read',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['sacrifice_survival', 'courage_prudence'],
+  settings: ['urban', 'rural'],
+  openings: {
+    urban: '{actor} is in {location} when {cast:steward}, steward of a merchant house, goes round the market '
+      + 'asking for anyone who knows the roads.',
+    rural: '{actor} is at {location} when {cast:steward}, steward of a merchant house, rides in from the '
+      + 'town asking every farm for anyone who knows the roads.',
+  },
+  steps: [
+    {
+      reach: 'eye',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.38,
+      purposeLine: 'Read the reports',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The house\'s caravan is days overdue. It carries the season\'s trade, and the house owes money '
+        + 'against every wagon. {cast:steward} has the carters\' reports and wants them read. The north '
+        + 'road is washed out. The old road is the only other way, and the carters say nobody who takes it '
+        + 'at night comes back.',
+      successAfterimage: 'They found the one carter who saw the wagons turn onto the old road.',
+      failureAfterimage: 'The reports did not agree, and they could not say which carter to believe.',
+      successAtCostAfterimage: 'They found the turn onto the old road, and called two carters liars to do it.',
+      criticalSuccessAfterimage: 'They found where the wagons turned off, the day they did it, and who led them.',
+      criticalFailureAfterimage: 'They believed the wrong carter, and the house sent riders up the washed-out road.',
+      deal: {
+        count: 4,
+        tags: ['insight', 'social'],
+      },
+      nudges: [
+        {
+          id: 'caravan.stir_the_memory',
+          name: 'Stir The Memory',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.memory',
+          effectLine: 'Bring a forgotten detail back to a witness, so the account they give is whole.',
+          bandProse: {
+            success: 'Halfway through his story, one carter remembered the wagons turning at a marker stone.',
+            near_miss: 'A carter remembered the turn, and not which marker it was at.',
+            failure: 'A carter remembered more, and what he remembered was a different road.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'star',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.45,
+      purposeLine: 'Read the markers',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: '{cast:steward} rides out with {actor} to where the old road leaves the north road. The old road '
+        + 'is older than any town on it. Its marker stones are cut with star signs that nobody reads now, '
+        + 'and the rumour in town is that the road goes wrong after dark. The steward says the house will '
+        + 'remember who helped and who did not.',
+      successAfterimage: 'They read the markers and knew which way the old road bends.',
+      failureAfterimage: 'The markers stayed a row of worn signs, and the party guessed at every fork.',
+      successAtCostAfterimage: 'They read the markers by riding all day without a stop, and the horses are spent.',
+      criticalSuccessAfterimage: 'They read the markers well enough to ride the old road faster than the wagons had.',
+      criticalFailureAfterimage: 'They read a marker backwards and led the party half a day the wrong way.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They know the day the wagons turned off, and who led them.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They know where the wagons left the north road.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The carters they called liars will not ride with them.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They have the turn-off, but not the day.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They do not know which way the wagons went.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'The house\'s riders went up the wrong road.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      deal: {
+        count: 4,
+        tags: ['lore', 'journey'],
+      },
+      nudges: [
+        {
+          id: 'caravan.catch_the_low_sun',
+          name: 'Catch The Low Sun',
+          sphere: 'light',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.light',
+          effectLine: 'Lay a slant of light across a worn surface, so what was cut into it stands out to be read.',
+          bandProse: {
+            critical_success: 'The light held on the stones long enough to read the whole ridge at a canter.',
+            success: 'The low light filled the cut signs, and every marker on the ridge could be read.',
+            failure: 'The light filled the cut signs on every stone, and the signs still made no sense to them.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'star',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.45,
+      purposeLine: 'Follow the stars',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'At dusk the old road forks at the mouth of a cutting. One way runs down under the ground. Wagon '
+        + 'tracks go both ways, and the party will not stay out after dark. {actor} has to pick the way by '
+        + 'the stars before {cast:steward} turns the party back. Another night out could cost the house its '
+        + 'caravan.',
+      successAfterimage: 'They took the way down, and found the caravan stuck where the old paving gave way.',
+      failureAfterimage: 'The party turned back at dark, and the caravan was left to come in on its own.',
+      successAtCostAfterimage: 'They found the caravan down the cutting, and a wagon went over the broken paving getting it out.',
+      criticalSuccessAfterimage: 'They found the caravan before midnight and had the first wagons out by dawn.',
+      criticalFailureAfterimage: 'They took the wrong road into the dark, and the whole party spent the night lost.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They are riding faster than the wagons ever could.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They know which way the old road bends.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The horses are spent, and the light is going.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They are on the right road, and later than they want.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They have been guessing at every fork.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'They lost half a day going the wrong way.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'thread_strengthen',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'Found the way by the stars with the god close',
+          },
+          {
+            kind: 'reputation_with',
+            targetAgentId: '$cast:steward',
+            delta: 0.08,
+          },
+          {
+            kind: 'encounter_seed',
+            query: {
+              kind: 'encounter_template',
+              tags: ['#explore'],
+            },
+            targetAgentId: '$actor',
+            delayTicks: 24,
+            priority: 1,
+            seedLabel: 'Asked out onto the roads again',
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'thread_weaken',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'The search went cold while the god watched',
+          },
+          {
+            kind: 'reputation_with',
+            targetAgentId: '$cast:steward',
+            delta: -0.08,
+          },
+          {
+            kind: 'encounter_seed',
+            query: {
+              kind: 'encounter_template',
+              tags: ['#explore'],
+            },
+            targetAgentId: '$actor',
+            delayTicks: 30,
+            priority: 1,
+            seedLabel: 'The roads come asking again',
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['lore', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'caravan.stiffen_the_resolve',
+          name: 'Stiffen The Resolve',
+          sphere: 'spirit',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.blessing',
+          effectLine: 'Put nerve into the mortal\'s companions, so they stay while the work is finished.',
+          bandProse: {
+            success: 'The party stayed at the fork past dark, and nobody spoke of turning back.',
+            failure: 'The party stayed out past dark, and stayed out on the wrong road.',
+            critical_failure: 'The party was brave past sense, and followed {actor} a long way down the wrong road.',
+          },
+        },
+        {
+          id: 'caravan.clear_the_sky',
+          name: 'Clear The Sky',
+          sphere: 'energy',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.energy',
+          effectLine: 'Push the cloud away overhead, so the stars show plain enough to read.',
+          bandProse: {
+            success_at_cost: 'The cloud went off the stars, and the wind that took it went through the party too.',
+            near_miss: 'The sky cleared late, and the stars showed the way after the party had half turned.',
+            failure: 'The sky cleared, and the stars showed a way that was not the caravan\'s.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'steward',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['merchant', 'trader', 'innkeeper'],
+      supportRole: 'house_steward',
+      spawnNpcRole: 'merchant',
+      spawnName: 'Oda Varrin',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A merchant house\'s caravan is overdue on the old road, and the house\'s steward wants someone '
+      + 'who can read a road to find it.',
+    success: 'The caravan was found on the old road and brought out. The house has its season back.',
+    failure: 'The search turned back without the caravan. The house carries the loss, and remembers who read '
+      + 'the road.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The search is over, one way or the other. The house knows now what the old road did with its '
+        + 'season.',
+      changes: [
+        {
+          id: 'caravan.the_road_read',
+          kind: 'growth',
+          title: 'An old road, read',
+          detail: 'A day reading an old road by its stars teaches the star reach.',
+          polarity: 'gain',
+          concepts: [
+            {
+              text: 'star reach',
+              tooltipId: 'reach.star',
+            },
+          ],
+        },
+      ],
+      reactions: [
+        {
+          id: 'caravan.go_back_with_the_steward',
+          label: 'Ride back into town beside the steward',
+          intent: 'The market sees the mortal come in with the house\'s people, and the house marks who stood with '
+            + 'it.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetAgentId: '$cast:steward',
+              delta: 0.04,
+            },
+          ],
+        },
+        {
+          id: 'caravan.copy_the_markers',
+          label: 'Copy down the marker signs before leaving',
+          intent: 'What the stones said stays with the mortal, whatever the house makes of the search.',
+          effects: [
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'The Old Road\'s Markers',
+              detail: 'The marker stones on the old road are cut with star signs that show which way the road bends.',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: 'Every wagon came home whole, and the house has its full season in the market.',
+          changes: [
+            {
+              id: 'caravan.crit.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt under the stars',
+              causeClause: 'Read the night sky with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'caravan.crit.steward',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:steward',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'The steward\'s good word',
+              causeClause: 'Led the house to its caravan',
+              detail: '{cast:steward} thinks well of {actor} now.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'caravan.crit.seed',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              stateNoun: {
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
+              },
+              title: 'Known for finding the way',
+              causeClause: 'Read a lost road right',
+              detail: 'The roads will call on {actor} again.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'The wagons came up out of the cutting one by one, and the house has its season back.',
+          changes: [
+            {
+              id: 'caravan.success.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt on the old road',
+              causeClause: 'Picked the right fork with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'caravan.success.steward',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:steward',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'The steward\'s good word',
+              causeClause: 'Found the house\'s caravan',
+              detail: '{cast:steward} thinks well of {actor} now.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'caravan.success.seed',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              stateNoun: {
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
+              },
+              title: 'Asked out again',
+              causeClause: 'Known now as a reader of old roads',
+              detail: 'The roads will call on {actor} again.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The caravan came home short of one wagon\'s load. {cast:steward} has written the loss down '
+            + 'against the search.',
+          changes: [
+            {
+              id: 'caravan.cost.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt at the cutting',
+              causeClause: 'Found the way down with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'The caravan reached town days later with half its stock spoiled. The house could not pay what it '
+            + 'owed on the wagons.',
+          changes: [
+            {
+              id: 'caravan.fail.steward',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:steward',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'The steward\'s cold word',
+              causeClause: 'Lost the fork at dark',
+              detail: '{cast:steward} thinks less of {actor} now.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'caravan.fail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Watched, and not helped',
+              causeClause: 'The search went cold with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'caravan.fail.seed',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              stateNoun: {
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
+              },
+              title: 'The roads ask again',
+              causeClause: 'Known now as a reader of roads',
+              detail: 'The roads will call on {actor} again.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The caravan came in a week late with most of its stock spoiled, and the house has lost its '
+            + 'season.',
+          changes: [
+            {
+              id: 'caravan.crit_fail.steward',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:steward',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Blamed by the house',
+              causeClause: 'Led the search down the wrong road',
+              detail: '{cast:steward} thinks less of {actor} now.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'caravan.crit_fail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Lost in the dark, watched',
+              causeClause: 'Went wrong under the stars with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A three-step search for a merchant house\'s overdue caravan: read the carters\' reports, read '
+    + 'the old road by its star-cut markers, then pick the way by the stars at a fork before the search '
+    + 'turns back for the night.',
+  locationSubtypes: expandSettings(['urban', 'rural']),
+  consequenceDraw: ['story_seed', 'thread'],
+};
+
+export const OVERDUE_CARAVAN_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

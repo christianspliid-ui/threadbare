@@ -24,11 +24,12 @@ import {
   printTsString,
   registerTemplateInSource,
   unknownPackageKeys,
+  REGISTRATION_ARRAYS,
   REGISTRATION_FILE_RELPATH,
   type EncounterContentPackage,
 } from '../encounterPackage';
 import { expandSettings } from '../../settingClasses';
-import { drawConsequenceHand } from '../consequenceDraw';
+import { drawConsequenceHand, handAfterSwap } from '../consequenceDraw';
 import type { ActionStep, StepNudge } from '../../../types/unifiedAction';
 
 // ─── Fixture ─────────────────────────────────────────────────────────
@@ -237,6 +238,22 @@ describe('assembleTemplate', () => {
     expect(assembled.consequenceDraw?.length).toBeGreaterThan(0);
   });
 
+  // THR-1676: the gate reads the recorded hand post-swap, so the stamp must too — a
+  // package with a swap used to compile to a template that failed its own gate.
+  it('stamps the post-swap hand when the package records a consequenceSwap', () => {
+    const drawn = drawConsequenceHand({
+      templateId: 'encounter.test.the_test_crossing',
+      reach: 'stone',
+      rarityTier: 1,
+    });
+    const swap = { from: drawn[0], to: drawn.includes('possession') ? 'standing' : 'possession', reason: 'test' } as const;
+    const pkg = { ...FIXTURE, template: { ...FIXTURE.template, consequenceSwap: swap } } as typeof FIXTURE;
+    const assembled = assembleTemplate(pkg);
+    expect(assembled.consequenceDraw).toEqual([...handAfterSwap(drawn, swap)]);
+    expect(assembled.consequenceDraw).not.toContain(drawn[0]);
+    expect(assembled.consequenceDraw).toContain(swap.to);
+  });
+
   it('derives locationSubtypes from the declared envelope', () => {
     expect(assembleTemplate(FIXTURE).locationSubtypes).toEqual(expandSettings(['wayside']));
   });
@@ -377,5 +394,45 @@ describe('registerTemplateInSource', () => {
       'RAW_UNIFIED_ACTION_TEMPLATES',
       'LOCATION_BRANCHING_ENCOUNTER_TEMPLATES',
     ]);
+  });
+
+  // THR-1676: THR-1635 wrapped the location array as `([ … ] as X[]).map(…)`, and a
+  // search for the literal `\n];` walked past it into the next array that closed with
+  // `];` — six template objects landed in a string-id list. Changed-names alone could
+  // not see that; the entry has to sit inside the named array's own span.
+  it('inserts inside an array that closes with a cast-and-map wrapper', () => {
+    const wrapped = `import { A_TEMPLATE } from './encounters/a';
+
+const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  A_TEMPLATE,
+];
+
+export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = ([
+  A_TEMPLATE,
+] as UnifiedActionTemplate[]).map((t) => t);
+
+export const SOME_ID_LIST: readonly string[] = [
+  'a.b',
+];
+`;
+    const { source } = registerTemplateInSource(wrapped, FIXTURE);
+    const idList = source.slice(source.indexOf('const SOME_ID_LIST'));
+    expect(idList).not.toContain('THE_TEST_CROSSING_TEMPLATE');
+    const location = source.slice(
+      source.indexOf('const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES'),
+      source.indexOf('as UnifiedActionTemplate[]).map'),
+    );
+    expect(location).toContain('THE_TEST_CROSSING_TEMPLATE,');
+  });
+
+  it('lands each entry inside its own array in the REAL registration file', () => {
+    const real = readFileSync(path.join(process.cwd(), REGISTRATION_FILE_RELPATH), 'utf8');
+    const { source } = registerTemplateInSource(real, FIXTURE);
+    for (const arrayName of REGISTRATION_ARRAYS) {
+      const start = source.indexOf(`const ${arrayName}`);
+      const span = source.slice(start, source.indexOf('\n]', start));
+      expect(span, arrayName).toContain('THE_TEST_CROSSING_TEMPLATE,');
+    }
+    expect(source.match(/THE_TEST_CROSSING_TEMPLATE,/g)).toHaveLength(REGISTRATION_ARRAYS.length);
   });
 });

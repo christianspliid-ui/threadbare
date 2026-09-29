@@ -15,7 +15,7 @@
 
 import type { GameState } from '../../types/gameState';
 import { getAnyEncounterById } from '../../data/encounter-content';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { getUnifiedTemplateById, LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../../data/unified-action-templates';
 import {
   KPI_FAILURE_RATE_MAX,
   KPI_CRITFAIL_RATE_MAX,
@@ -258,6 +258,22 @@ export function isBranchingTemplate(templateId: string): boolean {
   const result = tmpl ? tmpl.steps.some(s => 'branchOnStep' in s) : false;
   BRANCHING_TEMPLATE_CACHE.set(templateId, result);
   return result;
+}
+
+/**
+ * THR-1676 — is this a factory-registered encounter template? Every encounter the
+ * Encounter Factory compiles registers in `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`
+ * (the location cache mortals draw from), whether or not it forks. Before this, a
+ * *linear* factory encounter — no `branchOnStep`, and absent from the legacy pools
+ * `getAnyEncounterById` reads — classified as no encounter at all: 24 of 59 were
+ * invisible to the engagement ledger, the chapter archive and the balance ledger.
+ * Built lazily for the same static-registry reason as the cache above.
+ */
+let factoryEncounterIds: ReadonlySet<string> | null = null;
+
+export function isFactoryEncounterTemplate(templateId: string): boolean {
+  factoryEncounterIds ??= new Set(LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.map(t => t.id));
+  return factoryEncounterIds.has(templateId);
 }
 
 // THR-577: provably static across sessions — see the BRANCHING_TEMPLATE_CACHE note above.

@@ -3314,6 +3314,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.caravan_deal',
+    // THR-1526 / THR-1676: a seed target (The Pilot's Reckoning and The Last Lot at the
+    // Exchange send a caravan master looking) whose opening stands alone on the board.
+    drawable: true,
     name: 'The Caravan Deal',
     locationTypes: ['oasis', 'camp', 'town'],
     reachPrimary: 'gold',

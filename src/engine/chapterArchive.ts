@@ -41,7 +41,7 @@ import {
 } from '../types/unifiedAction';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { getAnyEncounterById } from '../data/encounter-content';
-import { isBranchingTemplate } from './kpi/gameplayKpi';
+import { isBranchingTemplate, isFactoryEncounterTemplate } from './kpi/gameplayKpi';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
@@ -64,11 +64,14 @@ const DEPARTED_MORTAL = 'a departed mortal';
 
 /**
  * True when a resolved action is an *encounter* worth archiving as a chapter
- * (vs. a raw divine action). Encounters come from the encounter libraries, and
- * all branching quest templates are encounters. Divine actions are neither.
+ * (vs. a raw divine action). Encounters come from the encounter libraries, all
+ * branching quest templates are encounters, and so is every factory-compiled
+ * encounter, linear or not (THR-1676). Divine actions are none of these.
  */
 export function isEncounterAction(templateId: string): boolean {
-  return getAnyEncounterById(templateId) !== undefined || isBranchingTemplate(templateId);
+  return getAnyEncounterById(templateId) !== undefined
+    || isBranchingTemplate(templateId)
+    || isFactoryEncounterTemplate(templateId);
 }
 
 /** Display name for an encounter template id — falls back to the id when unknown. */

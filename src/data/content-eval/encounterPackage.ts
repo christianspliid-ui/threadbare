@@ -52,7 +52,7 @@ import {
   NUDGE_HAND_MAX,
   NUDGE_HAND_MIN,
 } from './nudgeAuthoringConstants';
-import { drawConsequenceHand } from './consequenceDraw';
+import { drawConsequenceHand, handAfterSwap } from './consequenceDraw';
 import { checkComposedHand } from './nudgeHandChecklist';
 
 // ─── Constants (NFP #1) ──────────────────────────────────────────────
@@ -346,11 +346,17 @@ export function assembleTemplate(pkg: EncounterContentPackage): UnifiedActionTem
   return {
     ...template,
     ...(locationSubtypes ? { locationSubtypes } : {}),
-    consequenceDraw: drawConsequenceHand({
-      templateId: template.id,
-      reach: template.reach,
-      rarityTier: template.rarityTier,
-    }),
+    // Post-swap (THR-1676): the gate compares the recorded hand against
+    // `handAfterSwap(drawn, swap)`, so stamping the raw draw made every package
+    // that records a `consequenceSwap` fail its own gate until hand-edited.
+    consequenceDraw: [...handAfterSwap(
+      drawConsequenceHand({
+        templateId: template.id,
+        reach: template.reach,
+        rarityTier: template.rarityTier,
+      }),
+      template.consequenceSwap,
+    )],
   };
 }
 
@@ -552,7 +558,7 @@ export function emitEncounterTest(pkg: EncounterContentPackage): string {
 
 import { describe, expect, it } from 'vitest';
 import { ${constName} } from '../${pkg.slug}';${settingImport}
-import { drawConsequenceHand } from '../../content-eval/consequenceDraw';
+import { drawConsequenceHand, handAfterSwap } from '../../content-eval/consequenceDraw';
 
 describe(${JSON.stringify(`${assembled.name} — template structure`)}, () => {
   it('carries its identity', () => {
@@ -566,11 +572,14 @@ ${handAssertions}${envelopeAssertion}
   it('records exactly the hand its id draws (binding, THR-1145)', () => {
     expect(${constName}.consequenceDraw).toEqual([${draw.map(family => `'${family}'`).join(', ')}]);
     expect(${constName}.consequenceDraw).toEqual(
-      drawConsequenceHand({
-        templateId: '${assembled.id}',
-        reach: '${assembled.reach}',
-        rarityTier: ${assembled.rarityTier},
-      }),
+      handAfterSwap(
+        drawConsequenceHand({
+          templateId: '${assembled.id}',
+          reach: '${assembled.reach}',
+          rarityTier: ${assembled.rarityTier},
+        }),
+        ${constName}.consequenceSwap,
+      ),
     );
   });
 });
@@ -630,9 +639,14 @@ export function registerTemplateInSource(
           + 'the registration landmarks have moved; register by hand and update the compiler',
       );
     }
-    const closeIndex = out.indexOf('\n];', declarationIndex);
+    // The array closes at the first column-0 `]` after its declaration, whatever
+    // follows it: `];`, or `] as UnifiedActionTemplate[]).map(…)` since THR-1635
+    // wrapped LOCATION_BRANCHING_ENCOUNTER_TEMPLATES. Searching for the literal
+    // `\n];` skipped past that wrapper and appended template objects to the next
+    // array that did close with `];` — the regional id list (THR-1676).
+    const closeIndex = out.indexOf('\n]', declarationIndex);
     if (closeIndex === -1) {
-      throw new Error(`array '${arrayName}' has no closing '];' — register by hand`);
+      throw new Error(`array '${arrayName}' has no closing ']' — register by hand`);
     }
     const span = out.slice(declarationIndex, closeIndex);
     if (new RegExp(`\\b${constName}\\b`).test(span)) continue;
