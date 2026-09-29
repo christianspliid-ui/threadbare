@@ -1,0 +1,803 @@
+/**
+ * The Salt Train at the Ford — slot 4 of the journeyman-everyday-2 batch (THR-1677).
+ * 
+ * Brief: `Docs/plans/encounters/journeyman-everyday-2-brief.md`.
+ * 
+ * plotHookRolled: hook.broken_alliance, hook.trade_war, hook.dangerous_truth
+ * plotHookTaken:  hook.trade_war — the lord of the far bank raised the ford's duty this
+ *                 spring to choke a rival's trade, and the hamlet has gone short of salt.
+ *                 The salt train is the trade war seen from the reeds. The broken-alliance
+ *                 and dangerous-truth hooks were not blended in: each would need a second
+ *                 power on stage, and the scene's one opponent is the river and the fog.
+ * 
+ * Rolled constraints (brief, binding): reach shadow · steps shadow 0.40 -> shadow 0.45 ·
+ * settings rural · shape opt-in complication · consequence hand movement + omen ·
+ * p3Shape contest · opposition terrain (indifference): the river and the fog ·
+ * disposition n/a · agentRole bystander pulled in · scale company · rarityTier 2 · scale local.
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes: `{actor}` is in `{location}` when a carrier asks for
+ *                      someone who can move unseen.
+ *   2 P2 events?       A mule train of untaxed salt waits below the ford; the excise
+ *                      keeps a post on the far bank; the fog lifts and the river
+ *                      rises before dawn.
+ *   3 P3 one stake?    Contest, as the brief declared: the crossing against the fog
+ *                      and the water. The money is stated plainly — a season's money
+ *                      in the load, and the excise takes the load and a fine.
+ *   4 ≤80 words?       Opening (15) + step-0 spine (64) = 79 (critic recount).
+ *   5 Read aloud?      Every sentence is a report. No interior sensation.
+ *   6 Stated, never encoded? The post, the deadline and the stake are stated.
+ *   7 Every sentence works? Each states the challenge, the test or the outcome.
+ *   8 Nothing unintroduced? The train, the post, the fog, the river and the carrier
+ *                      appear in the spine; the excise officer is introduced in the
+ *                      lead step's prose before any chip names him.
+ *   9 One named person? Beat 1 `{cast:carrier}`; beat 2 `{cast:exciseman}` (lead
+ *                      path) or `{cast:carrier}` again (decline path).
+ *  10 Stake in a sentence? 'Can the train cross under the post before the fog lifts
+ *                      and the river rises, with the mortal's hand on the rope?'
+ *  11 Cards verb+noun, spell-style? Yes; four specials, no word of a card's name
+ *                      repeated in its effect line, no digits.
+ *  12 Opening per class? `rural`, the only declared class.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            A carrier's mule train of untaxed salt has to pass an excise
+ *                   post in the fog before the river rises, and the carrier asks
+ *                   the agent to take the lead rope.
+ *   Whose problem?  The carrier's first; the agent is a bystander pulled in. It
+ *                   becomes the agent's the moment they take the rope.
+ *   Reach = theme?  Shadow both steps. Step 0 is *about* reading the watch's
+ *                   rounds from the reeds; step 1 (lead path) is *about* moving a
+ *                   train unseen under a lantern post.
+ *   Shape           Opt-in Complication. Step 0 (shadow 0.40) is the scouting every
+ *                   mortal does. Then an agent-decided fork on `honesty_cunning`,
+ *                   Shadow's own pair: the Puppeteer (`negative`) leads the train
+ *                   (shadow 0.45, the test engaged); the Confessor (`positive`) hands
+ *                   the rope back with the watch's rounds (shadow 0.20, the cheap
+ *                   exit: a small loss of face with the carrier, a `bond_change`).
+ *                   The two step-0 specials lean opposite poles so the god has a lever
+ *                   on the decision without picking it.
+ *   Opposition      Terrain, indifferent: the fog lifts and the river rises on their
+ *                   own clock. The post is the stake, not the opponent.
+ *   Consequence hand (binding, THR-1145): `movement` + `omen`, no swap.
+ *                   `movement` — `agent_relocation` (`$actor`, away ≥3 hexes, travel)
+ *                   on the lead path's success side: the guide goes on with the train
+ *                   to the market. Leading the train over the ford is leaving with it.
+ *                   `omen` — `emit_omen` (cultural, global, low intensity) on both
+ *                   sides of the lead path: the hamlet reads the ford as favouring the
+ *                   night carriers (darkness) or turning against them (chaos). The
+ *                   omen is dressing (it backs no chip, per `CHIP_BACKING_EFFECT_KINDS`);
+ *                   the overview carries it in words.
+ *                   Extra: `bond_change` on `$cast:carrier` (both directions) and on
+ *                   `$cast:exciseman` (failure side only: the post knows their face).
+ *   Cool failure?   Nobody is jailed or hurt. The load is seized, the carrier is
+ *                   fined, and a guide known at the post is no use on that road again.
+ *   Trait hooks     Gate: none (everyday by construction). Variant: False +0.04,
+ *                   True -0.04. Trait-only nudge: none. Trait fragment: none.
+ *   Systems quota   cast + rewards (bond_change) + reputation — three, the floor
+ *                   (critic, measured). Movement and the omen back the hand but do not
+ *                   score the quota.
+ * 
+ * ─── Measurement note ────────────────────────────────────────────────
+ *   The fork step carries no top-level `difficulty`, so `measure:roll-spread`
+ *   reads step 0 only (mean 0.40, window fit 0.54 — journeyman, shadow). The lead
+ *   path's authored 0.45 is the brief's second step, rolled only by mortals who
+ *   engage.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.smugglers_ford',
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'The Salt Train at the Ford',
+  reach: 'shadow',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['honesty_cunning'],
+  settings: ['rural'],
+  openings: {
+    rural: '{actor} is in {location} when a salt carrier looks for someone who can move unseen.',
+  },
+  steps: [
+    {
+      reach: 'shadow',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.4,
+      purposeLine: 'Read the watch\'s rounds',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The ford\'s duty doubled this spring. {cast:carrier}\'s mule train of untaxed salt waits in the '
+        + 'reeds. The excise keeps a post on the far bank. The fog lifts and the river rises before dawn. '
+        + 'If the post stops the train, the excise takes the salt and fines the carrier. {cast:carrier} '
+        + 'asks {actor} to read the watch\'s rounds and take the lead rope.',
+      successAfterimage: 'They counted the watch\'s rounds and found the gap between lanterns.',
+      failureAfterimage: 'The lanterns moved without a pattern they could find.',
+      successAtCostAfterimage: 'They found the gap, and a sentry saw someone move in the reeds.',
+      criticalSuccessAfterimage: 'They found the gap, and learned which sentry sleeps on watch.',
+      criticalFailureAfterimage: 'A sentry called out at the reeds, and the post lit more lanterns.',
+      deal: {
+        count: 4,
+        tags: ['shadow', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'ford.deepen_the_fog',
+          name: 'Deepen The Fog',
+          sphere: 'darkness',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.dark',
+          poleLean: {
+            axis: 'honesty_cunning',
+            toward: 'negative',
+          },
+          effectLine: 'Thicken the mist until a figure cannot be told from a post at a stone\'s throw. Cover argues for '
+            + 'the hidden way.',
+          bandProse: {
+            critical_success: 'The mist lay so thick the far post\'s lanterns were only a glow.',
+            success: 'The mist thickened on the water, and the sentries walked blind.',
+            near_miss: 'The mist came thick, and it came late in the night.',
+            failure: 'The mist thickened on both banks, and hid the sentries as well.',
+          },
+        },
+        {
+          id: 'ford.count_the_fine',
+          name: 'Count The Fine',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.focus',
+          poleLean: {
+            axis: 'honesty_cunning',
+            toward: 'positive',
+          },
+          effectLine: 'Set the full price of being caught plainly before them, in coin and in name. It argues for the '
+            + 'honest way.',
+          bandProse: {
+            success_at_cost: 'The price was clear to them, and weighing it slowed them.',
+            failure: 'They weighed every cost of being caught, and missed the watch\'s turn.',
+            critical_failure: 'They weighed the cost so long that a sentry heard them.',
+          },
+        },
+      ],
+    },
+    {
+      branchOnStep: 0,
+      decidedBy: {
+        axis: 'honesty_cunning',
+      },
+      variants: {
+        negative: {
+          reach: 'shadow',
+          duration: {
+            min: 2,
+            max: 3,
+          },
+          difficulty: 0.45,
+          purposeLine: 'Lead the crossing',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} takes the rope. The train goes into the water a mule at a time, within a stone\'s throw '
+            + 'of the post. {cast:exciseman} keeps the post tonight and knows most faces on this road. The '
+            + 'water is at the mules\' bellies before the middle of the ford.',
+          successAfterimage: 'The last mule climbed the far bank before the fog lifted.',
+          failureAfterimage: 'The fog lifted with the train mid-river, in full view of the post.',
+          successAtCostAfterimage: 'The train crossed, and the river took one mule and its load.',
+          criticalSuccessAfterimage: 'The train crossed unseen, and the post logged a quiet night.',
+          criticalFailureAfterimage: 'The post\'s lanterns found the train, and the lead rope in their hand.',
+          successMetadata: {
+            effects: [
+              {
+                kind: 'agent_relocation',
+                targetAgentId: '$actor',
+                destination: {
+                  kind: 'away',
+                  minHexDistance: 3,
+                },
+                mode: 'travel',
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:carrier',
+                sentimentDelta: 0.15,
+                trustDelta: 0.1,
+              },
+              {
+                kind: 'emit_omen',
+                category: 'cultural',
+                intensity: 0.25,
+                narrativeHook: 'The fog held over the ford until a salt train was across, and the country round says the river '
+                  + 'favours those who cross by night.',
+                scope: {
+                  kind: 'global',
+                },
+                sphereAlignment: 'darkness',
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:carrier',
+                sentimentDelta: -0.15,
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:exciseman',
+                sentimentDelta: -0.15,
+                trustDelta: -0.1,
+              },
+              {
+                kind: 'emit_omen',
+                category: 'cultural',
+                intensity: 0.25,
+                narrativeHook: 'The fog lifted on a salt train caught in the ford, and the country round says the river has '
+                  + 'turned against those who cross by night.',
+                scope: {
+                  kind: 'global',
+                },
+                sphereAlignment: 'chaos',
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['shadow', 'journey', 'peril'],
+          },
+          nudges: [
+            {
+              id: 'ford.hold_back_the_water',
+              name: 'Hold Back The Water',
+              sphere: 'time',
+              essenceCost: 2,
+              forecastDelta: 0.12,
+              imageTag: 'generic.ward',
+              effectLine: 'Slow a rising river for an hour, so a crossing stays passable a little longer.',
+              bandProse: {
+                success: 'The river rose no higher than the mules\' bellies all the way across.',
+                failure: 'The river held low for them, and low water hid nobody from the post.',
+                critical_failure: 'The river stayed low for an hour, and the post had light enough to count every mule.',
+              },
+            },
+            {
+              id: 'ford.turn_a_sentrys_eye',
+              name: 'Turn A Sentry\'s Eye',
+              sphere: 'chaos',
+              essenceCost: 1,
+              forecastDelta: 0.07,
+              imageTag: 'generic.luck',
+              effectLine: 'Draw a watchman\'s gaze to some small noise elsewhere, long enough for someone to slip past.',
+              bandProse: {
+                critical_success: 'Both watchmen looked upstream at a splash while the whole train passed.',
+                success_at_cost: 'The watchman looked away, and a mule\'s bray brought him back.',
+                near_miss: 'The watchman looked away late, and the train crossed at a run.',
+                failure: 'The watchman glanced away once, and back before the train was past.',
+              },
+            },
+          ],
+        },
+        positive: {
+          reach: 'shadow',
+          duration: {
+            min: 1,
+            max: 1,
+          },
+          difficulty: 0.2,
+          purposeLine: 'Hand back the rope',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} will not lead the train past the post. {actor} gives the lead rope back to '
+            + '{cast:carrier} and marks out the gap in the watch instead. The carrier has until the fog lifts '
+            + 'to find another guide.',
+          successAfterimage: 'The carrier took the rope back and thanked them for the rounds.',
+          failureAfterimage: 'The carrier took the rope back without a word.',
+          successAtCostAfterimage: 'The carrier paid for the rounds, and paid less than was offered.',
+          criticalSuccessAfterimage: 'The carrier learned the rounds by heart and crossed on them.',
+          criticalFailureAfterimage: 'The carrier called them faint-hearted in front of the drovers.',
+          successMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:carrier',
+                sentimentDelta: -0.05,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:carrier',
+                sentimentDelta: -0.12,
+              },
+              {
+                kind: 'emit_omen',
+                category: 'cultural',
+                intensity: 0.15,
+                narrativeHook: 'The river rose over the ford with a salt train still waiting in the reeds, and the country round '
+                  + 'says the ford has turned against night crossings.',
+                scope: {
+                  kind: 'global',
+                },
+                sphereAlignment: 'chaos',
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['social', 'presence'],
+          },
+        },
+      },
+      fallback: {
+        reach: 'shadow',
+        duration: {
+          min: 1,
+          max: 1,
+        },
+        difficulty: 0.2,
+        purposeLine: 'Hand back the rope',
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'fail_action',
+        narrativeTemplate: '{actor} will not lead the train past the post. {actor} gives the lead rope back to '
+          + '{cast:carrier} and marks out the gap in the watch instead. The carrier has until the fog lifts '
+          + 'to find another guide.',
+        successAfterimage: 'The carrier took the rope back and thanked them for the rounds.',
+        failureAfterimage: 'The carrier took the rope back without a word.',
+        successAtCostAfterimage: 'The carrier paid for the rounds, and paid less than was offered.',
+        criticalSuccessAfterimage: 'The carrier learned the rounds by heart and crossed on them.',
+        criticalFailureAfterimage: 'The carrier called them faint-hearted in front of the drovers.',
+        successMetadata: {
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:carrier',
+              sentimentDelta: -0.05,
+            },
+          ],
+        },
+        failureMetadata: {
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:carrier',
+              sentimentDelta: -0.12,
+            },
+            {
+              kind: 'emit_omen',
+              category: 'cultural',
+              intensity: 0.15,
+              narrativeHook: 'The river rose over the ford with a salt train still waiting in the reeds, and the country round '
+                + 'says the ford has turned against night crossings.',
+              scope: {
+                kind: 'global',
+              },
+              sphereAlignment: 'chaos',
+            },
+          ],
+        },
+        deal: {
+          count: 4,
+          tags: ['social', 'presence'],
+        },
+      },
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_integrity.vice',
+      forecastDelta: 0.04,
+      factorLine: 'Being False, they keep a calm face under a watchman\'s lantern.',
+    },
+    {
+      traitId: 'trait.core.core_integrity.virtue',
+      forecastDelta: -0.04,
+      factorLine: 'Being True, they make a poor liar under a watchman\'s lantern.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'carrier',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['trader', 'fence'],
+      supportRole: 'mule_carrier',
+      spawnNpcRole: 'trader',
+      spawnName: 'Wenna Tarrow',
+    },
+    {
+      kind: 'actor',
+      key: 'exciseman',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['guard', 'clerk'],
+      supportRole: 'excise_officer',
+      spawnNpcRole: 'guard',
+      spawnName: 'Oswin Keel',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A mule train of untaxed salt has to pass an excise post in the fog before the river rises. The '
+      + 'carrier wants a guide who can move unseen.',
+    success: 'The salt train is over the ford, and the post never saw it.',
+    failure: 'The salt train did not get over the ford, and the carrier knows who read the watch.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {
+      negative: {
+        overview: 'The salt train has met the ford, and the post has had its night.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: '{cast:carrier} counted out the guide\'s share twice over on the far bank. {location} says the '
+              + 'river favours whoever crosses by night.',
+            changes: [
+              {
+                id: 'ford.crit.carrier_trusts',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Carrier\'s Trust',
+                detail: '{cast:carrier} trusts {actor} with a lead rope now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'ford.crit.on_the_road',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                title: 'With The Train',
+                detail: '{actor} is headed away from {location} with the salt train.',
+                stateNoun: {
+                  text: 'seed',
+                  tooltipId: 'ui.aftermath_seed',
+                },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The post never knew a train had passed, and {cast:carrier} paid the guide\'s share on the far '
+              + 'bank. {location} says the river favours whoever crosses by night.',
+            changes: [
+              {
+                id: 'ford.success.carrier_trusts',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Carrier\'s Trust',
+                detail: '{cast:carrier} trusts {actor} with a lead rope now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'ford.success.on_the_road',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                title: 'With The Train',
+                detail: '{actor} is headed away from {location} with the salt train.',
+                stateNoun: {
+                  text: 'seed',
+                  tooltipId: 'ui.aftermath_seed',
+                },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'The crossing came dear, and {cast:carrier} took the loss out of the guide\'s share. {location} '
+              + 'says the river favours whoever crosses by night.',
+            changes: [
+              {
+                id: 'ford.cost.carrier_trusts',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Carrier\'s Trust',
+                detail: '{cast:carrier} trusts {actor} with a lead rope now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'ford.cost.on_the_road',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                title: 'With The Train',
+                detail: '{actor} is headed away from {location} with the salt train.',
+                stateNoun: {
+                  text: 'seed',
+                  tooltipId: 'ui.aftermath_seed',
+                },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The watch waded out and took the salt, and the excise fined {cast:carrier} for it. {location} '
+              + 'says the river has turned against night crossings.',
+            changes: [
+              {
+                id: 'ford.failure.carrier_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Carrier\'s Regard',
+                detail: '{cast:carrier} thinks less of {actor} as a guide.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'ford.failure.known_at_the_post',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'Known At The Post',
+                causeClause: 'Seen holding the rope',
+                detail: '{cast:exciseman} knows {actor}\'s face now, and not kindly.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:exciseman',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'knows',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The excise seized every mule and fined {cast:carrier} a season\'s profit. {location} says the '
+              + 'river has turned against night crossings.',
+            changes: [
+              {
+                id: 'ford.critfail.carrier_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Carrier\'s Regard',
+                detail: '{cast:carrier} thinks less of {actor} as a guide.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'ford.critfail.known_at_the_post',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'Known At The Post',
+                detail: '{cast:exciseman} knows {actor}\'s face now, and has it written down.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:exciseman',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'knows',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      positive: {
+        overview: '{cast:carrier} has the lead rope back, and {actor}\'s reading of the watch.',
+        changes: [
+          {
+            id: 'ford.decline.small_loss',
+            kind: 'reputation',
+            category: 'scar',
+            direction: 'loss',
+            polarity: 'loss',
+            title: 'Declined The Rope',
+            detail: '{cast:carrier} thinks a little less of {actor} for refusing the rope.',
+            stateNoun: {
+              text: 'reputation with {target}',
+              entityId: '$cast:carrier',
+              visualKind: 'agent',
+              tooltipId: 'ui.reputation_with',
+            },
+            concepts: [
+              {
+                text: 'thinks a little less of',
+                tooltipId: 'ui.standing',
+              },
+            ],
+          },
+        ],
+        byOutcome: {
+          critical_success: {
+            overview: 'The salt went over unseen on {actor}\'s reading, and {cast:carrier} sent a drover back with a '
+              + 'share for it.',
+          },
+          success: {
+            overview: '{cast:carrier} put a hired boy on the rope and crossed on {actor}\'s reading of the watch.',
+          },
+          success_at_cost: {
+            overview: '{cast:carrier} crossed late on the reading, with the fog already thinning.',
+          },
+          failure: {
+            overview: '{cast:carrier} did not trust the reading, waited for a guide who never came, and watched the '
+              + 'river rise over the ford. {location} says the ford has turned against night crossings.',
+            changes: [
+              {
+                id: 'ford.decline.failure.regard_falls',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A Guide Refused',
+                detail: '{cast:carrier} thinks less of {actor} for refusing the rope.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The salt stayed in the reeds past dawn, and the river took the ford. By noon all of {location} '
+              + 'knew who had refused the rope, and said the ford had turned against night crossings.',
+            changes: [
+              {
+                id: 'ford.decline.critfail.regard_falls',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A Guide Refused',
+                detail: '{cast:carrier} thinks less of {actor} as a guide now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:carrier',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview: 'The salt train has gone to the ford, and the lead rope is back in the carrier\'s hands.',
+      changes: [],
+      byOutcome: {
+        success: {
+          overview: 'The carrier has the watch\'s rounds, and a way over the ford before dawn.',
+        },
+        failure: {
+          overview: 'The salt train lost its night at the ford, and the carrier knows who read the watch. {location} '
+            + 'says the ford has turned against night crossings.',
+        },
+        critical_failure: {
+          overview: 'The salt train\'s night went badly wrong, and the carrier said in {location} who had read the '
+            + 'watch. {location} says the ford has turned against night crossings.',
+        },
+      },
+    },
+  },
+  description: 'An opt-in shadow crossing: read an excise post\'s rounds in the fog, then lead a salt train over '
+    + 'the ford before the river rises (a Puppeteer) or hand the rope back (a Confessor). The lead path '
+    + 'sends the guide on with the train and leaves the hamlet reading an omen in the ford.',
+  locationSubtypes: expandSettings(['rural']),
+  consequenceDraw: ['movement', 'omen'],
+};
+
+export const SMUGGLERS_FORD_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

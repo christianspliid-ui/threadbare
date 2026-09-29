@@ -1,0 +1,533 @@
+{
+  "slug": "ledger-by-lamplight",
+  "doc": [
+    "The Ledger by Lamplight — slot 3 of journeyman-everyday-2 (THR-1677).",
+    "",
+    "Brief: `Docs/plans/encounters/journeyman-everyday-2-brief.md`.",
+    "plotHookRolled: hook.stronghold_raid, hook.sacred_crime, hook.assassination_succeeded",
+    "plotHookTaken:  hook.stronghold_raid — the stronghold is a counting house after dark,",
+    "                and the raid takes nothing: one page, copied and put back. The other",
+    "                two hooks were set aside (no sacred ground on an everyday board; no",
+    "                killing in a journeyman copy job).",
+    "Seed Dice:      p3 opportunity (a season's wages for one page) · opposition faction",
+    "                doctrine (the house's rule of the locked room: nobody after dark, a",
+    "                clerk walks it twice a night, every seal checked at dawn) ·",
+    "                disposition neutral (the house keeps its rule, it hunts nobody) ·",
+    "                agent role trespasser · scale company (two houses and the town's watch)",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      Yes: `{actor}` is in `{location}` on the night its counting",
+    "                     houses close the quarter's books. Graph names only.",
+    "  2 P2 events?       A rival house has already lost a contract to this one; its",
+    "                     factor offers a season's wages for one sealed page. Costs paid.",
+    "  3 P3 one stake?    Opportunity: the purse, for one page copied unseen, against",
+    "                     the house's rule of the locked room.",
+    "  4 ≤80 words?       Opening + step-0 spine: 76 words (critic pass).",
+    "  5 Read aloud?      Every sentence is a report; no interior sensation.",
+    "  6 Stated, never encoded? The rule is stated as a rule ('nobody enters the ledger",
+    "                     room after dark'), never implied by a locked door.",
+    "  7 Every sentence works? Each is the challenge, the test, or the outcome.",
+    "  8 Nothing unintroduced? The factor, the rule, the clerk's two walks, the press,",
+    "                     the seal and the dawn check appear before a card or chip names them.",
+    "  9 One named person? Step 0: `{cast:factor}`. Step 1: `{cast:clerk}`.",
+    " 10 Stake in a sentence? 'Can the sneak copy one sealed page without the counting",
+    "                     house ever knowing it was read?'",
+    " 11 Cards verb+noun, spell-style? Yes; four specials, mechanism-stating, no",
+    "                     digits, no name word repeated in the effect line.",
+    " 12 Opening per class? `urban`, the only declared class, written.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            A rival house pays for one page of a sealed ledger, copied and",
+    "                  put back. The counting house's rule of the locked room stands in",
+    "                  the way, and its seals are checked at dawn.",
+    "  Whose problem?  The agent's: they took the purse and are the one inside the",
+    "                  room after dark (agentRole: trespasser).",
+    "  Reach = theme?  Step 0 tests Shadow and is *about* getting in unseen between the",
+    "                  clerk's walks. Step 1 tests Shadow and is *about* leaving no trace:",
+    "                  lifting the seal, copying by one lamp, closing the press whole.",
+    "                  Difficulties 0.42 → 0.45 (brief; open-draw ceiling 0.45).",
+    "  Shape           Seeded sequel. One placeless `encounter_seed` by query `#steal`",
+    "                  on step 1's success side (`inheritContext`, 96 ticks): when the",
+    "                  rival house wants another thing it should not have, its factor",
+    "                  sends for the mortal. `#steal` is the projected family 'something",
+    "                  to be taken that its keeper means to keep'; its urban members",
+    "                  (pickpocket, smuggle goods, shadow in the night, steal secrets,",
+    "                  vault heist) are the kind of work a paying house sends next. No",
+    "                  place-and-time promise anywhere (prose rule 7b).",
+    "  Consequence hand (binding, THR-1145): `possession` + `place` — no swap.",
+    "                  `possession` — step 1 `successMetadata.rewardPool` (`#shadow`):",
+    "                  the factor pays the purse in kind, something for quiet work.",
+    "                  `place` — `apply_condition` `trait.condition.location.under_watch`",
+    "                  on `$here`, failure side: the dawn check finds a cracked seal, the",
+    "                  house knows its book was read, and the town sets a watch on its",
+    "                  counting houses. A fact about the town, and it makes the next",
+    "                  quiet job there harder (the condition's Shadow step modifier).",
+    "  Extra           `bond_change` with `$cast:factor`, both directions: the paying",
+    "                  house trusts a clean copyist, and doubts one who was nearly caught.",
+    "  Cool failure?   Nobody is hurt or jailed. The purse is not paid, the factor",
+    "                  trusts them less, and the town watches its counting houses.",
+    "  Trait hooks     Gate: none (everyday by construction). Variant: none.",
+    "                  Trait-only nudge: none. Trait fragment: none.",
+    "  Systems quota   cast + rewards + seeds + place conditions + bonds — five.",
+    "  Heavy Hand      none authored (batch allowance left for other slots)."
+  ],
+  "template": {
+    "id": "encounter.town.ledger_by_lamplight",
+    "rarityTier": 2,
+    "intrinsicTier": "background",
+    "name": "The Ledger by Lamplight",
+    "reach": "shadow",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "honesty_cunning",
+      "asceticism_extravagance"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} is in {location} on the night its biggest counting house closes the quarter's books."
+    },
+    "steps": [
+      {
+        "reach": "shadow",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.42,
+        "purposeLine": "Get in unseen",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "A rival house lost a contract to it and wants to know how. Its factor, {cast:factor}, will pay a season's wages for one page of the sealed ledger, copied and put back.\n\nThe counting house has a rule: nobody enters the ledger room after dark, and a clerk walks it twice a night. {actor} must get in unseen between the walks.",
+        "successAfterimage": "They were inside the ledger room before the second walk, and nobody saw them go in.",
+        "failureAfterimage": "They got in, but left a shutter unlatched, and the clerk will see it on the next walk.",
+        "successAtCostAfterimage": "They got in unseen, but only by forcing a shutter that will not close again.",
+        "criticalSuccessAfterimage": "They got in unseen and had the whole time between the walks to work.",
+        "criticalFailureAfterimage": "The clerk saw a shadow at the shutter and doubled his walks. They are inside, with little time to work.",
+        "deal": {
+          "count": 4,
+          "tags": [
+            "shadow",
+            "finesse"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "ledger.darken_the_front",
+            "name": "Smother The Lamps",
+            "sphere": "darkness",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.dark",
+            "effectLine": "Put out every light along the house's street side, so nobody sees who stands at the shutter. A real help.",
+            "bandProse": {
+              "success": "The lamps on the street side went out together, and nobody saw the shutter open.",
+              "failure": "The lamps went out together, and the clerk came to the window to see why."
+            }
+          },
+          {
+            "id": "ledger.stretch_the_rounds",
+            "name": "Stretch The Rounds",
+            "sphere": "time",
+            "essenceCost": 1,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.time-slow",
+            "effectLine": "Draw out the clerk's walk, so the gap between one pass and the next runs longer. A small help.",
+            "bandProse": {
+              "critical_success": "The clerk sat down at the far end of the house, and did not get up for a long while.",
+              "failure": "The clerk walked slower, and stopped by the ledger room door to rest."
+            }
+          }
+        ]
+      },
+      {
+        "reach": "shadow",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.45,
+        "purposeLine": "Copy the page",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "The ledger lies in a locked press under the house's seal. {cast:clerk} will walk the room again within the hour. {actor} must lift the seal, copy the page by one lamp, and shut the press so nobody can tell it was opened. The house checks every seal at dawn.",
+        "successAfterimage": "They copied the page, set the seal back whole, and were gone before the clerk came round.",
+        "failureAfterimage": "They copied the page, but the seal cracked as they set it back, and the house found it at dawn.",
+        "successAtCostAfterimage": "They set the seal back whole, but the clerk came early and half the page went uncopied.",
+        "criticalSuccessAfterimage": "They copied the page and the one after it, and still set the seal back before the clerk came round.",
+        "criticalFailureAfterimage": "The clerk walked in while the press stood open, and they ran with nothing copied.",
+        "successMetadata": {
+          "rewardPool": {
+            "categoryWeights": {
+              "possession": 1
+            },
+            "tagFilters": [
+              "#shadow"
+            ]
+          },
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:factor",
+              "sentimentDelta": 0.1,
+              "trustDelta": 0.12
+            },
+            {
+              "kind": "encounter_seed",
+              "query": {
+                "kind": "encounter_template",
+                "tags": [
+                  "#steal"
+                ]
+              },
+              "targetAgentId": "$actor",
+              "delayTicks": 96,
+              "seedLabel": "When the rival house wants another thing it should not have, its factor sends for the one who copied the page.",
+              "inheritContext": true
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "apply_condition",
+              "conditionTraitId": "trait.condition.location.under_watch",
+              "targetLocationId": "$here",
+              "intensity": 0.6,
+              "durationTicks": 48
+            },
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:factor",
+              "sentimentDelta": -0.08,
+              "trustDelta": -0.1
+            }
+          ]
+        },
+        "deal": {
+          "count": 3,
+          "tags": [
+            "finesse",
+            "insight"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "ledger.spare_the_seal",
+            "name": "Spare The Seal",
+            "sphere": "matter",
+            "essenceCost": 2,
+            "forecastDelta": 0.13,
+            "imageTag": "generic.matter",
+            "effectLine": "Warm the wax under their knife, so it lifts in one piece and presses back without a mark. A real help.",
+            "bandProse": {
+              "success": "The wax came up whole and went back down whole.",
+              "failure": "The wax lifted cleanly, and cracked anyway when the press was shut too fast."
+            }
+          },
+          {
+            "id": "ledger.clear_the_head",
+            "name": "Clear The Head",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.11,
+            "imageTag": "generic.focus",
+            "effectLine": "Hold the columns steady in their memory, so the figures go down right on the first pass. A real help.",
+            "bandProse": {
+              "success": "They copied the page once, without a blot, and had time to check it.",
+              "success_at_cost": "They copied fast and clean, and still ran out of time halfway down.",
+              "failure": "The figures went down right. It was the seal that went wrong."
+            }
+          }
+        ]
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "factor",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "broker",
+          "merchant",
+          "trader"
+        ],
+        "supportRole": "house_factor",
+        "spawnNpcRole": "broker",
+        "spawnName": "Maren Quill"
+      },
+      {
+        "kind": "actor",
+        "key": "clerk",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "scene-only",
+        "reuseNpcRoles": [
+          "clerk",
+          "scribe",
+          "steward"
+        ],
+        "supportRole": "night_clerk",
+        "spawnNpcRole": "clerk",
+        "spawnName": "Tobin Asher"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A rival house pays for one page of a counting house's sealed ledger, copied by lamplight and put back before the dawn check.",
+      "success": "The page was copied and the seal set back whole, and the factor who paid for it will send for the copyist again.",
+      "failure": "The house found its seal cracked at dawn, the purse went unpaid, and the town is watched now."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "One page of a sealed ledger was copied, or nearly, before the dawn check.",
+        "changes": [
+          {
+            "id": "ledger.the_quiet_work",
+            "kind": "growth",
+            "title": "A locked room, entered",
+            "detail": "A night of quiet work teaches the shadow reach.",
+            "polarity": "gain",
+            "concepts": [
+              {
+                "text": "shadow reach",
+                "tooltipId": "reach.shadow"
+              }
+            ]
+          }
+        ],
+        "reactions": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "{actor} handed {cast:factor} two pages instead of one. The house checked its seals at dawn and found nothing wrong. The factor paid in kind.",
+            "changes": [
+              {
+                "id": "ledger.crit.factor_trusts",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Factor's Trust",
+                "detail": "{cast:factor} trusts {actor} with quiet work now.",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "ledger.crit.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for again",
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "{actor} gave {cast:factor} the copied page before dawn. The house checked its seals and found nothing wrong. The factor paid in kind.",
+            "changes": [
+              {
+                "id": "ledger.win.factor_trusts",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Factor's Trust",
+                "detail": "{cast:factor} trusts {actor} with quiet work now.",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "ledger.win.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for again",
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "{actor} brought {cast:factor} half a page. The house checked its seals at dawn and found nothing wrong. The factor paid in kind for what there was.",
+            "changes": [
+              {
+                "id": "ledger.cost.factor_trusts",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Factor's Trust",
+                "detail": "{cast:factor} trusts {actor}'s hands, if not their speed.",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "ledger.cost.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for again",
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The house knows its ledger was read. {cast:factor} will not pay for a secret the house knows is out.",
+            "changes": [
+              {
+                "id": "ledger.lost.under_watch",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "Under Watch",
+                  "entityId": "trait.condition.location.under_watch",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "watch",
+                    "entityId": "trait.condition.location.under_watch",
+                    "visualKind": "attachment"
+                  }
+                ],
+                "title": "A watch on the houses",
+                "causeClause": "The house raised the alarm",
+                "detail": "{location} is watched now, and quiet work there is harder."
+              },
+              {
+                "id": "ledger.lost.factor_doubts",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Factor's Doubt",
+                "detail": "{cast:factor} trusts {actor} less with quiet work.",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "{cast:factor} paid nothing for an empty page. A copyist seen at the press is no use to a house that buys secrets.",
+            "changes": [
+              {
+                "id": "ledger.caught.under_watch",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "Under Watch",
+                  "entityId": "trait.condition.location.under_watch",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "watch",
+                    "entityId": "trait.condition.location.under_watch",
+                    "visualKind": "attachment"
+                  }
+                ],
+                "title": "A watch on the houses",
+                "causeClause": "The clerk raised the alarm",
+                "detail": "{location} is watched now, and quiet work there is harder."
+              },
+              {
+                "id": "ledger.caught.factor_doubts",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Factor's Doubt",
+                "detail": "{cast:factor} trusts {actor} less with quiet work.",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A two-step shadow job in a town counting house: get into the ledger room unseen between the night clerk's walks, then copy one sealed page by lamplight and close the press without a trace. A clean copy is paid in kind and the paying house's factor sends for the mortal again (a placeless seeded sequel by the #steal family); a cracked seal found at dawn leaves the town Under Watch and the purse unpaid."
+  }
+}
