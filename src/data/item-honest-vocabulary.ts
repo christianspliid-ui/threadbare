@@ -71,11 +71,13 @@ export const ITEM_HONEST_RULE_KEYS: ReadonlySet<RuleOverrideKey> = new Set<RuleO
  * `checkAndFireActionTriggers` is called only with `movement_complete`
  * (`phaseMovement.ts`), `action_complete` and the ladder bands
  * (`unifiedActionResolution.ts`), and `encounter_success` / `encounter_failure`
- * (`orchestrator.ts`). **`rest` and `spell_cast` are never raised** — refused.
+ * (`orchestrator.ts`). **`rest` is never raised** — refused. `spell_cast` is live
+ * since THR-1571: `resolveCast` raises it on the caster after every cast, landed or
+ * fizzled (read-back: `spellCasting.test.ts` › "raises spell_cast").
  */
 export const ITEM_HONEST_TRIGGER_EVENTS: ReadonlySet<ActionTriggerEvent> = new Set<ActionTriggerEvent>([
   'encounter_success', 'encounter_critical_success', 'encounter_at_cost', 'encounter_failure',
-  'encounter_critical_failure', 'movement_complete', 'action_complete',
+  'encounter_critical_failure', 'movement_complete', 'action_complete', 'spell_cast',
 ]);
 
 /** Hex properties a `hex_effect` can actually write (the other terrain overlays are unread — 2 of 11). */

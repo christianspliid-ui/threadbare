@@ -75,7 +75,6 @@ import type {
   PlotResolvedTrace,
   TraceEntry,
 } from '../types/trace';
-import type { QuintessenceEvent } from '../types/quintessence';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
@@ -95,7 +94,10 @@ import { drawYield, raiseRouteVolume, LAST_YIELD_DRAW_PROPERTY } from '../engine
 import { stealMark, mintFavor, redeemFavor, forgiveFavor, isLiveFavorEdge, standingSupportsFavor } from '../engine/leverageOps';
 import { TRADE_ROUTE_MAX_VOLUME } from '../engine/tradeRoute';
 import { removeTrait } from '../engine/traits';
-import { activateSpell } from '../engine/spellActivation';
+import { resolveCast, resolveCastTarget } from '../engine/spellCasting';
+import { isCaster, alignedSpheres } from '../engine/casterIdentity';
+import { spellAgencyOf } from './spell-templates';
+import { STEP_OUTCOMES, type StepOutcome } from '../types/unifiedAction';
 import { holdsMotive } from '../engine/undertakingMotive';
 import { instantiateReward } from '../engine/rewardPool';
 import { raiseConditionLanded } from '../engine/effects/conditionProxyEvents';
@@ -151,12 +153,8 @@ import {
   OBSERVE_MARK_MAGNITUDE,
   RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE,
   RUINED_SETTLEMENT_DEFAULT_MAGNITUDE,
-  SPELL_SOUL_PRICE_QUINTESSENCE_SCALE,
   // The dormant kinds I (THR-1429)
   MOTIVE_GATE_KINDS,
-  LEARN_SPELL_CASTER_VEIL_FLOOR,
-  CASTER_NPC_ROLES,
-  CASTER_MASTERY_TRAIT_IDS,
   LEARN_SPELL_UNALIGNED_SHELF_OPEN,
   CONDITION_ALLY_STANDING_MIN,
   CONDITION_TIER_CAP_BY_BAND,
@@ -921,52 +919,12 @@ function emitKindTrace(entry: PowerLearnedTrace | ConditionInflictedTrace): void
   }
 }
 
-/**
- * Is this mortal a caster? THR-1230 ruling 4, composed as THR-1229 recommended:
- * a spell-weaver mastery trait, **or** a caster role, **or** Veil at the floor.
- *
- * Evaluated at proposal so a non-caster never sees the cell on the board (the
- * `no_eligible_apprentice` doctrine), and again at completion so a mortal who stopped
- * being one mid-project is refused rather than quietly allowed.
- */
-function isCaster(graph: WorldGraph, actorId: string): boolean {
-  const node = graph.getNode(actorId);
-  if (!node) return false;
-
-  // (a) A mastery trait that names the craft.
-  for (const edge of graph.getOutgoingEdges(actorId, 'has_trait')) {
-    const id = edge.target.toLowerCase();
-    if (CASTER_MASTERY_TRAIT_IDS.some(t => id.includes(t))) return true;
-  }
-
-  // (b) A caster role. The seeded vocabulary, measured — see CASTER_NPC_ROLES.
-  const role = (str(node.properties, 'npcRole') ?? str(node.properties, 'role') ?? '').toLowerCase();
-  if (role && CASTER_NPC_ROLES.includes(role)) return true;
-
-  // (c) Veil deep enough to teach oneself. Raw 0–100 scale (measured), and a field
-  // most mortals do not carry — an absent capability block is not a caster, never a
-  // zero that accidentally clears a floor of zero.
-  const caps = node.properties.domainCapabilities as Record<string, number> | undefined;
-  const veil = caps && typeof caps.veil === 'number' ? caps.veil : null;
-  return veil !== null && veil >= LEARN_SPELL_CASTER_VEIL_FLOOR;
-}
-
-/** The spheres a mortal is aligned to, sorted, or empty when they have declared none. */
-function alignedSpheres(graph: WorldGraph, actorId: string): string[] {
-  const props = graph.getNode(actorId)?.properties ?? {};
-  const out = new Set<string>();
-
-  const alignment = props.sphereAlignment as { primary?: string; secondary?: string } | undefined;
-  if (alignment?.primary) out.add(alignment.primary);
-  if (alignment?.secondary) out.add(alignment.secondary);
-
-  const affinity = props.sphereAffinity as { scores?: Record<string, number> } | undefined;
-  for (const [sphere, score] of Object.entries(affinity?.scores ?? {})) {
-    if (typeof score === 'number' && score > 0) out.add(sphere);
-  }
-
-  return [...out].sort();
-}
+// `isCaster` / `alignedSpheres` moved to `engine/casterIdentity.ts` (THR-1571) so
+// worldgen's seeded knowing asks the same predicate this cell does. Evaluated at
+// proposal so a non-caster never sees the cell on the board (the
+// `no_eligible_apprentice` doctrine), and again at completion so a mortal who stopped
+// being one mid-project is refused rather than quietly allowed.
+export { isCaster };
 
 /** The `spell`-class definition nodes in the world, sorted by id (NFP #3 — no draw anywhere here). */
 function spellDefinitions(graph: WorldGraph): GraphNode[] {
@@ -2432,30 +2390,38 @@ const POWER: UndertakingObjectType = {
         });
         return fail('activate_spell', 'spell_exhausted');
       }
-      const prng = mulberry32(ctx.tick * 104729 + ctx.actorId.length);
-      const outcome = activateSpell(ctx.graph, ctx.actorId, spell, ctx.targetNodeId, ctx.tick, prng());
-      const cast = outcome.outcome === 'success' || outcome.outcome === 'backlash';
-      // The spell's price lands on quintessence, where the game's threshold gates
-      // already bite — not on the `doom` health meter (THR-1397, verbatim: "the
-      // spell's soul-price moves from the doom health meter to quintessence"). The
-      // quintessence phase owns the write; this only queues the event.
-      if (cast && (outcome.soulPrice ?? 0) > 0) {
-        const mutableState = ctx.state as { pendingQuintessenceEvents?: QuintessenceEvent[] };
-        const events = mutableState.pendingQuintessenceEvents ?? (mutableState.pendingQuintessenceEvents = []);
-        events.push({
-          targetNodeId: ctx.actorId,
-          delta: -(outcome.soulPrice ?? 0) * SPELL_SOUL_PRICE_QUINTESSENCE_SCALE,
-          source: 'spell_price',
-          tick: ctx.tick,
-        });
+      // A fate-woven spell works while carried and is never cast (THR-1230 ruling 1).
+      if (spellAgencyOf(spell) === 'fate_woven') return fail('activate_spell', 'not_castable');
+
+      // THR-1571: the cast goes through the one resolver, and the band decides it.
+      // `ctx.outcome` is the band the work's last checkpoint landed on (THR-1428);
+      // the instant path has none and reads as a plain success. The old
+      // `mulberry32(tick * 104729 + actorId.length)` coin is gone — it was keyed on id
+      // *length*, so two casters with same-length ids shared a stream.
+      const band = (STEP_OUTCOMES as readonly string[]).includes(ctx.outcome ?? '')
+        ? ctx.outcome as StepOutcome
+        : 'success';
+      const { targetId, targetHex } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
+      const result = resolveCast(ctx.state, {
+        casterId: ctx.actorId,
+        spell,
+        band,
+        ...(targetId ? { targetId } : {}),
+        ...(targetHex ? { targetHex } : {}),
+        tick: ctx.tick,
+        site: 'undertaking',
+        siteRef: ctx.projectId ?? `use:${ctx.actorId}:${ctx.tick}`,
+      });
+      if (result.refused) return fail('activate_spell', result.refused);
+      if ((result.soulPrice ?? 0) > 0) {
         emitReaderTrace(ctx, {
           cellId: 'cell.use.power', reader: 'spell_price', objectId: node.id,
           summary: `the calling cost ${node.name ?? node.id}'s bearer something of themselves`,
         });
       }
-      return cast
-        ? { success: true, op: 'activate_spell' }
-        : fail('activate_spell', outcome.outcome);
+      // A fizzle is still a cast — the price was paid and the work is done; what it
+      // did not do is land. The undertaking completes either way.
+      return { success: true, op: 'activate_spell' };
     },
   },
 };

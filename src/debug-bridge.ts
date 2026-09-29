@@ -2777,6 +2777,50 @@ if (import.meta.env.DEV) {
       return pin ? { ...pin, status: 'pending' as const } : null;
     },
 
+    // ── The power runtime (THR-1571) ─────────────────────────────────────
+    /** Every mortal who knows or wields a spell, with where each edge came from. */
+    getSpellHolders: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const g = state.graph;
+      const isSpell = (id: string) => g.getNode(id)?.properties.subcategory === 'spell';
+      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string }> = [];
+      for (const actor of g.getNodesByType('actor')) {
+        const wieldedEdges = g.getOutgoingEdges(actor.id, 'has_trait').filter(e => isSpell(e.target));
+        const knownEdges = g.getOutgoingEdges(actor.id, 'knows_spell');
+        if (wieldedEdges.length === 0 && knownEdges.length === 0) continue;
+        out.push({
+          actorId: actor.id,
+          name: actor.name ?? actor.id,
+          wielded: wieldedEdges.map(e => e.target),
+          known: knownEdges.map(e => e.target),
+          source: String(wieldedEdges[0]?.properties.source ?? knownEdges[0]?.properties.source ?? ''),
+        });
+      }
+      return out.sort((a, b) => a.actorId.localeCompare(b.actorId));
+    },
+    /**
+     * Run one cast through `resolveCast` directly — the engine lever for review. The
+     * band is the roll (no die is thrown); the target resolves from the spell's
+     * `targeting` exactly as `use × Power` resolves it.
+     */
+    castSpell: async (opts: { caster: string; spell: string; band?: string; target?: string }) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { resolveCast, resolveCastTarget } = await import('./engine/spellCasting');
+      const { getSpellTemplate } = await import('./data/spell-templates');
+      const { STEP_OUTCOMES } = await import('./types/unifiedAction');
+      const spell = getSpellTemplate(opts.spell) ?? getSpellTemplate(`spell_${opts.spell}`);
+      if (!spell) return { error: `no spell template: ${opts.spell}` };
+      if (!state.graph.getNode(opts.caster)) return { error: `no caster: ${opts.caster}` };
+      const band = (STEP_OUTCOMES as readonly string[]).includes(opts.band ?? '') ? opts.band as typeof STEP_OUTCOMES[number] : 'success';
+      const target = resolveCastTarget(state.graph, opts.caster, spell, opts.target);
+      return resolveCast(state, {
+        casterId: opts.caster, spell, band, ...target,
+        tick: state.tick, site: 'undertaking', siteRef: `debug:${opts.caster}:${state.tick}`,
+      });
+    },
+
     // ── Fight review levers (THR-1543, fight block FB7) ───────────────────
     /**
      * A fight's own state — `action.fightState` plus where the action stands. Read

@@ -50,8 +50,8 @@ The twelve Spheres. **Derived** from `SPHERE_NAMES`. Projected from `sphereAffin
 | `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 2 |  |
 | `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 11 |  |
 | `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 21 |  |
-| `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 30 |  |
-| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 5 |  |
+| `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 31 |  |
+| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 6 |  |
 | `#entropy` | Of Entropy — it unmakes, and is patient about it. | item 1 | 16 |  |
 
 ## form
@@ -111,14 +111,14 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#disease` | A sickness in the body, which spreads if it can. | condition 5 | 5 |  |
 | `#physical` | Of the body rather than the mind or the soul. | condition 9 | 9 |  |
 | `#divine` | Of the gods — it answers to worship, not to craft. | item 13 · condition 7 · trait 3 · power 2 | 25 |  |
-| `#arcane` | Of learned working — known by study rather than by gift. | item 13 · power 5 · condition 1 | 19 |  |
+| `#arcane` | Of learned working — known by study rather than by gift. | item 13 · power 7 · condition 1 | 21 |  |
 | `#supernatural` | Beyond the ordinary run of things, without saying how. | condition 8 · power 2 · item 1 | 11 |  |
 | `#mystical` | Half-understood even by those who use it. | item 4 · condition 1 · trait 1 | 6 |  |
 | `#nature` | Of growing things and the weather they grow under. | condition 1 · item 1 · legendary 1 · power 1 | 4 |  |
 | `#fate` | It touches what is coming rather than what is here. | item 3 · condition 1 · power 1 | 5 |  |
 | `#vision` | It shows what is not in front of the eye. | condition 1 · item 1 · power 1 | 3 |  |
-| `#temporal` | It works on time — delaying, hastening, or remembering. | item 4 · condition 2 | 6 |  |
-| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 15 · power 2 · trait 1 | 48 |  |
+| `#temporal` | It works on time — delaying, hastening, or remembering. | item 4 · condition 2 · power 1 | 7 |  |
+| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 15 · power 3 · trait 1 | 49 |  |
 | `#knowledge` | Of learning — what is written, taught, or worked out. | item 9 · trait 2 · condition 1 | 12 |  |
 | `#craft` | Of making — the trades, and the hands that keep them. | item 8 · power 1 | 9 |  |
 | `#healing` | Of mending people. | item 8 · power 4 · condition 3 | 15 |  |
@@ -128,8 +128,8 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#social` | Of people and standing — it works through others. | condition 5 · item 5 · trait 3 · power 2 | 15 |  |
 | `#trade` | Of buying and selling. | item 5 · condition 1 · trait 1 | 23 |  |
 | `#commercial` | Of the counting-house — contracts, ledgers, and terms. | item 3 | 3 |  |
-| `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 | 10 |  |
-| `#discovery` | Of finding what nobody had found. | item 5 | 5 |  |
+| `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 · power 1 | 11 |  |
+| `#discovery` | Of finding what nobody had found. | item 5 · power 1 | 6 |  |
 | `#patronage` | Of being owed a favour by someone who matters. | item 1 · power 1 | 2 |  |
 | `#territorial` | Of ground held, claimed, or argued over. | item 2 · condition 1 | 3 |  |
 | `#wilderness` | Of the unsettled country. | item 14 · power 5 · condition 3 | 22 |  |

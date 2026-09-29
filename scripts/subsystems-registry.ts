@@ -265,7 +265,9 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     name: 'Effects & Conditions',
     aliases: ['effect', 'condition', 'buff', 'debuff', 'status', 'possession', 'slot'],
     activityKeywords: ['effect', 'condition'],
-    domains: ['effect', 'effects', 'condition', 'conditiondecay', 'conditionoverflow', 'spell'],
+    // 'caster' joins with THR-1571: `casterIdentity.ts` is the one caster predicate the
+    // spell runtime and worldgen's seeded knowing both ask (the Powers family's bearer).
+    domains: ['effect', 'effects', 'condition', 'conditiondecay', 'conditionoverflow', 'spell', 'caster'],
     phaseMatch: /\b(effect|condition|slot cap)\b/i,
     note: 'Per-agent effect bookkeeping (duration/cooldown/decay/stacking), effect shells, condition decay + overflow, slot caps.',
   },

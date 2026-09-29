@@ -226,6 +226,8 @@ Three authored axes carry a spell's design: **agency** (fate-woven or deliberate
 
 **Shape (THR-1429).** A spell is a graph node: **one shared `trait` definition node per spell**, `subcategory: 'spell'`, minted once at seeding from `SPELL_TEMPLATES` — never one node per bearer (THR-1395). A mortal's relationship to it is two edges to that same node, and they mean different things: **`knows_spell`** is *known* — the biography, unlimited — and **`has_trait`** is *wielded*, what they are carrying now, capped by `SLOT_CAPS.spell`. Learning past the cap leaves a spell known and not carried, which is a fact the sheet states rather than a failure. `'spell'` is also a member of `[[Trait Category]]`, which is what makes the Power kind's discriminator `subcategory: bestowed | spell`.
 
+**Carried versus cast (THR-1571).** A **fate-woven** spell is *carried*: it works on its own while wielded and is never cast. Its effects ride the shared definition node and reach every wielder through the effect walker, with its runtime state kept per bearer; it pays with what it carries (a standing weakness, a chance to turn on the bearer when they fail badly). A **deliberate** spell is *cast*. **The step's roll decides a cast** — the band an encounter step or an undertaking's last checkpoint already landed on, never a second die: a landed band (critical success, success, success at cost) applies the spell; any other fizzles, and the price is paid either way. Code anchor: `SpellTemplate.agency`, and `resolveCast` (`src/engine/spellCasting.ts`), the one path to a cast. Casters start the world knowing one spell of their tradition (seeded knowing, `source: 'seeded'`).
+
 ---
 
 ### Bestowal
@@ -253,6 +255,18 @@ A `[[Power]]` that is **anatomy**: stamped at seeding on monsters and unusual be
 **Do not confuse it with the `innate` `[[Trait Category]]`**, which is a worldgen-minted, permanent *trait* class. The collision is exact in wording and empty in substance: one is a name minted at worldgen, the other a capability stamped at seeding.
 
 **Nor with `[[Temper]]`.** A monster's temper is also stamped when it is minted, but it is how the creature *breaks*, not something it can *do*. The mint in `createNamedElite` is the seam where innate powers will later be stamped; the temper edge written there does not stand in for them.
+
+---
+
+### Strained
+
+**Aliases:** strain condition, `condition.strained.<reach>`
+**Also see:** `[[Spell]]`, `[[Power]]`, `[[Trait Category]]`
+**Status:** canonical — seated by delegation 2026-09-29 (THR-1673, in THR-1571's S1 PR; Christian's veto retained)
+
+A **timed condition that thins one Reach for a while** — the price a *strain* spell charges its caster (THR-1230 ruling 3, the price layer "strain"). One shared condition definition per Reach, `condition.strained.<reach>`, whose one effect is a passive loss of `STRAIN_PENALTY_SHARE` on that Reach; the duration lives on the bearer's `has_trait` edge (`ticksRemaining`), scaled by how much the spell drained. Player-facing: *"Strained: their Veil is thin for a while."* Code anchor: `src/data/strain-conditions.ts`, landed by the `reach_drain` payment in `spellActivation.ts`.
+
+**Disambiguation.** Not **Exhausted** (the `tick_exhaust` cost — "you are spent", a refusal to cast again yet). Not a permanent Reach loss: Reach is never lost to a spell's price. And not the price layer itself — *strain* names the layer, *Strained* the condition it leaves.
 
 ---
 

@@ -100,13 +100,16 @@ describe('S1 — the Power kind has a node shape', () => {
     }
   });
 
-  it('carries no `effects` array — the shared node must never reach the effect walker', () => {
-    // This is the property that keeps a suppression aimed at one bearer from landing
-    // on every mortal who knows the same spell. If a later change puts `effects` on
-    // the definition node, `applySuppressions` starts flagging it by node id and the
-    // seal becomes world-wide. That is the regression this pin exists to catch.
+  it('a deliberate spell carries no `effects` array; a carried one does, keyed per bearer', () => {
+    // The original pin: a suppression aimed at one bearer must never land on every
+    // mortal who knows the same spell. THR-1571 puts carried (fate-woven) effects on the
+    // shared node on purpose, so the pin moved to what actually protects the property —
+    // the walker and `applySuppressions` key a spell node's state by the bearing edge
+    // (`attachmentStateKey`), asserted in `spellCasting.test.ts` › "a seal on one bearer".
     for (const node of allSpellDefinitionNodes()) {
-      expect(node.properties.effects, `${node.id} carries no effects`).toBeUndefined();
+      if (node.properties.agency === 'deliberate') {
+        expect(node.properties.effects, `${node.id} carries no effects`).toBeUndefined();
+      }
     }
   });
 

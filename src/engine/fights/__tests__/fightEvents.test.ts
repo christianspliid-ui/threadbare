@@ -224,8 +224,10 @@ describe('a reactive `attacked` trait on an opponent fires once per landing clas
     giveItem(graph, 'beast', 'item.beast-ward', [], ['ward']);
     const state = baseState(graph);
     runBands(state, fightTemplate(3), ['success', 'success']);
-    expect(graph.getNode('item.ward')).toBeUndefined();
-    expect(graph.getNode('item.beast-ward')).toBeDefined();
+    // THR-1571: dispel silences an item and the owner keeps it — never a node delete.
+    expect(graph.getNode('item.ward')).toBeDefined();
+    expect(state.effectStates!.get('item.ward')?.suppressed).toBe(true);
+    expect(state.effectStates!.get('item.beast-ward')?.suppressed).not.toBe(true);
   });
 });
 
@@ -386,7 +388,8 @@ describe('a reactive on `combat_started` moves the first clash, not the nerve ro
     expect(standing(state, nerve, tpl)).toBeCloseTo(0.05, 10);
     const pNerve = resolveUncontestedStep(nerve, tpl, state, midRng).probability;
     const afterNerve = runStep(state, nerve, tpl, 'success');
-    expect(state.graph.getNode('item.charm')).toBeUndefined();
+    // THR-1571: the roar silences the charm (it is kept, and read as suppressed).
+    expect(state.effectStates!.get('item.charm')?.suppressed).toBe(true);
     expect(standing(state, afterNerve, tpl)).toBe(0);
 
     // Control: without the roar, the same first clash keeps the charm.

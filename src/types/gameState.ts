@@ -430,6 +430,14 @@ export interface GameState {
   // Ticked by phaseEffectTick.
   effectStates?: Map<string, import('./effects').EffectRuntimeState>;
 
+  /**
+   * THR-1571 — the last tick each caster cast each spell, keyed `caster::spell`
+   * (`castCooldownKey`). A dedicated map, not `effectStates`: every reader of that map
+   * treats its keys as attachment ids, and a spell's definition node is shared by every
+   * bearer, so a cooldown there was one caster's cooldown for the whole world.
+   */
+  castCooldowns?: Map<string, number>;
+
   // ─── Persisted effect overlays / rule overrides (THR-1240) ──────────
   //
   // `alter_terrain` and `modify_rules` executors have always *produced*

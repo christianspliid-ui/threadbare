@@ -1545,8 +1545,14 @@ export const CASTER_NPC_ROLES: readonly string[] = [
   'enchanter', 'warmage', 'alchemist', 'scholar', 'healer', 'herald',
 ];
 
-/** Mastery traits that make a mortal a caster. Matched as a substring of the trait node's id. */
-export const CASTER_MASTERY_TRAIT_IDS: readonly string[] = ['spell_weaver', 'spellweaver', 'arcanist'];
+/**
+ * Mastery traits that make a mortal a caster. Matched as a substring of the trait node's id.
+ *
+ * THR-1571: `'spell-weaver'` added — the real trait id is `trait.mastery.spell-weaver`
+ * (hyphen, `mastery-trait-content.ts`), which none of the other three spellings match,
+ * so this arm measured 0 on seed 42 until then.
+ */
+export const CASTER_MASTERY_TRAIT_IDS: readonly string[] = ['spell-weaver', 'spell_weaver', 'spellweaver', 'arcanist'];
 
 /**
  * Whether a mortal with **no** sphere alignment may study from the whole shelf.

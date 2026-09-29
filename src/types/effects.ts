@@ -961,9 +961,29 @@ export interface SpellTemplate {
   /** How the spell picks its target */
   readonly targeting: SpellTargeting;
 
+  /**
+   * THR-1571 (THR-1230 ruling 1, tiered agency). `fate_woven` works on its own while
+   * carried — its `passiveEffects` ride the shared definition node and the effect
+   * walker applies them to every wielder; it is never cast. `deliberate` is cast.
+   * Absent = derived: deliberate when `effects` is non-empty (`spellAgencyOf`).
+   */
+  readonly agency?: SpellAgency;
+  /** THR-1571 (ruling 2) — where the spell does its work: a scene, a fight, or the map. */
+  readonly arena?: SpellArena;
+  /** THR-1571 — the Reach of the step an `encounter`-arena spell fits (S2 reads it). */
+  readonly castReach?: ReachDomain;
+  /** THR-1571 — one line each, GM narration, `{actor}` / `{target}` placeholders only. */
+  readonly castProse?: { readonly landed: string; readonly fizzled: string };
+
   /** Content Census coverage classification (THR-474 schema / THR-477 values). Metadata only. */
   censusTag?: ContentCensusTag;
 }
+
+/** THR-1571 — a spell that works while carried, or one that is cast. */
+export type SpellAgency = 'fate_woven' | 'deliberate';
+
+/** THR-1571 — the arena a spell does its work in. Map arenas never fit an encounter step. */
+export type SpellArena = 'encounter' | 'fight' | 'map_travel' | 'map_sight' | 'map_mark';
 
 /** Activated ability on an artifact/relic (non-spell activatable) */
 export interface ActivatedAbility {
