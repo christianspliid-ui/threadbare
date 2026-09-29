@@ -682,7 +682,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'A buyer lays out six bolts of dyed wool and names a price that assumes nobody will check the underside. {actor} checks the underside. The difficulty is not seeing the short measure — it is saying so without turning a market into a court.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The buyer sells at the honest measure, then tells the next three stalls that {actor} haggles like an excise man. Their prices go up when {actor} walks past.',
+        successAtCostAfterimage: 'The buyer sells at the honest measure, but only if {actor} also takes the water-stained bolt from the bottom of the pile at full price.',
         criticalSuccessAfterimage: '{actor} names the shortfall, and the buyer sells all six bolts at the honest measure and adds a seventh to keep {actor} quiet about it.',
         criticalFailureAfterimage: '{actor} calls the measure short in front of the whole row, and the measure is full. The buyer\'s friends make {actor} buy a bolt to settle the insult.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'social'] },
@@ -705,8 +705,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'A factor {actor} has never traded with offers a cargo of untaxed salt at two-thirds the quay price, payable after resale. The margin is real. So is the reason no one else in the square has touched it.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} refuses the salt, and the factor takes offence and tells the square that {actor} called him a smuggler. {actor} spends the afternoon answering for it.',
-        criticalSuccessAfterimage: '{actor} refuses the salt, and while refusing reads the factor\'s ledger upside down. It names the excise man he pays, and {actor} keeps the name.',
-        criticalFailureAfterimage: '{actor} takes the cargo and pays half up front. The excise men seize it at the gate, and {actor}\'s name is in the ledger they carry away.',
+        criticalSuccessAfterimage: '{actor} refuses the salt, and while refusing reads the factor\'s ledger upside down. It names the excise man he pays. {actor} says the name aloud, and the factor packs up his salt and leaves the square.',
+        criticalFailureAfterimage: '{actor} takes the cargo, and the factor turns out to be the excise men\'s own informer. {actor} spends the night in the gate cell while the salt is counted.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'peril'] },
         onSuccess: {
           narrative: '{actor} declines without insulting the offer, which is the harder half. By evening, three factors who watched the refusal have revised upward what {actor}\'s word is worth on a delayed payment.',
@@ -3745,7 +3745,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} counts every one of them, but the count takes until dark, and the first night passes without food. The children cry through it.',
         criticalSuccessAfterimage: '{actor} counts them and learns their names. One of the elders was a miller, and he knows where the town keeps its spare grain.',
-        criticalFailureAfterimage: '{actor} promises rations before counting and promises too many. When the food comes up short, the refugees stop believing {actor}\'s word.',
+        criticalFailureAfterimage: '{actor} promises rations before counting and promises too many. When the food comes up short that night, the crowd shouts {actor} down at the cart, and the adults eat nothing.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
           narrative: '{actor} counts them properly — the children, the elders, the two who cannot walk — before promising a single ration. The counting is what says where to start.',
@@ -3787,7 +3787,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'The food will not stretch to forty at a full ration. {actor} decides who eats first, and does it in the open where the decision can be watched being made.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The rations hold, but only because {actor} gives up {their} own share. {actor} goes hungry for all four days.',
-        criticalSuccessAfterimage: 'The rations hold, and on the third day the town sends two carts of meal without being asked. Everyone eats a full portion by the end.',
+        criticalSuccessAfterimage: 'The rations hold, and {actor} finds a sack of seed grain in the refugees\' own bundles, carried all this way unopened. Everyone eats a full portion by the fourth day.',
         criticalFailureAfterimage: 'The food runs out on the first day, and a fight breaks out over the last sack. {actor} takes a blow stopping it, and the sack splits in the mud.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
         onSuccess: {
@@ -4041,7 +4041,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds the bad contract, but the treasurer hears the finding as an accusation. He answers every question after that with the ledger closed.',
         criticalSuccessAfterimage: '{actor} finds the bad contract and the clerk who drew it up, still on the guild\'s books and still drawing a wage.',
-        criticalFailureAfterimage: '{actor} trusts the ledger and declares the guild sound. The treasurer, relieved, stops looking, and the real debt grows for another month.',
+        criticalFailureAfterimage: '{actor} declares the guild sound before the assembled masters. That night the treasurer burns the one page that showed the truth.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: '{actor} finds the year it turned — a bad contract nobody wanted to be the one to refuse. Everything after it is consequence.',
@@ -4062,7 +4062,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The two creditors take a schedule, but only at a higher rate. The guild will pay back more than it borrowed.',
         criticalSuccessAfterimage: '{actor} turns one of the hostile creditors, who sells his claim to the friendly two at a loss. All three left at the table want to be paid.',
-        criticalFailureAfterimage: '{actor} offends the creditor who holds the largest debt. He calls it in on the spot, and the guild has a week to find the coin.',
+        criticalFailureAfterimage: '{actor} offends the creditor who holds the largest debt. He calls it in on the spot, and the guild\'s strongbox is emptied onto the table before {actor} leaves.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: 'The two who wanted paying take a schedule. The two who wanted the guild leave with neither, and lose the room.',
@@ -4082,7 +4082,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 4,
         narrative: 'Debt is arithmetic. Reputation is not. {actor} has to make the guild worth trading with again before the schedule comes due.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The orders come, but at prices below cost. The guild gets through the season by working for less than its work is worth.',
+        successAtCostAfterimage: 'The orders come, but at prices below cost. {actor} signs them anyway, and the guild\'s first month of work is sold at a loss.',
         criticalSuccessAfterimage: 'Three houses place orders, and one pays the year in advance. The schedule is met with coin to spare.',
         criticalFailureAfterimage: 'The orders go to a rival guild, and the treasurer resigns rather than face the creditors. {actor} is left holding the ledger when the creditors arrive.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'social'] },
@@ -5849,7 +5849,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The caravan master is nervous — two caravans lost this season. {actor} must hold the convoy together from the first hour.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The caravan leaves in good order, but at the slowest wagon\'s pace. It loses half a day before the first camp.',
+        successAtCostAfterimage: 'The caravan leaves in good order, but only after {actor} pays two frightened drivers from {their} own purse to stay.',
         criticalSuccessAfterimage: 'The caravan master trusts {actor} with the route. {actor} picks a road the two lost caravans did not take.',
         criticalFailureAfterimage: 'Two drivers refuse to leave and take their wagons back to the yard. The caravan sets out short, and the master blames {actor}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['journey', 'presence'] },
@@ -9217,7 +9217,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
         narrative: 'Hunger sharpens the eye. {actor} works the ground with a forager\'s list: what can be eaten raw, what needs boiling twice, what is best left where it grows.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} finds roots and clean water, but only after tasting a berry that turns the stomach. {actor} spends the afternoon sick by the spring.',
+        successAtCostAfterimage: '{actor} finds roots and clean water, but loses {their} knife in the reeds digging them out.',
         criticalSuccessAfterimage: '{actor} finds wild onion, a clean spring and a hare\'s run. There is food for three days, not one.',
         criticalFailureAfterimage: '{actor} eats a root that looked safe and was not. The day is lost to sickness, and the satchel stays empty.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'insight'] },
@@ -9240,7 +9240,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} carries the load home, but a strap breaks at the ford and the best of it goes downstream.',
         criticalSuccessAfterimage: '{actor} ties the load so well that it rides without shifting, and there is light enough for a second trip. Twice the food comes home.',
-        criticalFailureAfterimage: '{actor} slips at the ford under the full load. The food is lost, and {actor} limps home on a twisted ankle.',
+        criticalFailureAfterimage: 'A boar has claimed the same patch and charges while {actor} is digging. {actor} drops the load and spends the evening up a tree.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'wild'] },
         onSuccess: {
           narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
@@ -10904,7 +10904,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} crosses unseen, but tears {their} sleeve on a nail at the fence and leaves a strip of cloth hanging there.',
         criticalSuccessAfterimage: '{actor} crosses the whole yard in the dog\'s own shadow. The dog never lifts its head.',
-        criticalFailureAfterimage: 'A dog finds {actor} at the fence and will not stop barking. A lamp is lit, and {actor} has to run before the work has begun.',
+        criticalFailureAfterimage: 'A dog finds {actor} at the fence and barks until a lamp is lit. {actor} waits out the search pressed flat under the woodpile.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'finesse'] },
         onSuccess: {
           narrative: '{actor} crosses the open ground in three moves instead of one. The night holds, and the dogs stay quiet.',
@@ -11160,7 +11160,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The memory comes, but it brings a headache that will not lift. {actor} holds the picture and pays for it behind the eyes.',
         criticalSuccessAfterimage: 'The memory comes whole: a room full of people, a raised voice, and the moment the quarrel turned. {actor} holds all of it at once.',
-        criticalFailureAfterimage: 'The room gives up an old fear instead of a memory. {actor} leaves it shaking and does not go back in that day.',
+        criticalFailureAfterimage: 'The room gives up an old fear instead of a memory, and {actor} comes out of the stillness shaking and sick.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: 'It arrives as feeling before it arrives as picture. {actor} waits through the first and the second assembles on its own.',
@@ -11179,7 +11179,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'Feeling is not yet knowledge. Turning one into the other is a separate skill, and the one that fails more often.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} gets it into words, but gets one detail wrong: the name of the person who lost. The rest is true, and the name will have to be checked.',
+        successAtCostAfterimage: '{actor} gets it into words, but gets one detail wrong: the name of the person who lost comes out as the winner\'s.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         criticalSuccessAfterimage: 'The impressions do not just resolve — they open. {actor} reads not only what happened in this place but the shape of what it wanted, and the knowing settles in like a language {they} always spoke.',
         // THR-1107: `{they} hold` rendered "she hold" in the he/she arm. `{s}` is
