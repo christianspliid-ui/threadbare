@@ -4743,3 +4743,24 @@ A new world starts with a thin past on the graph, written once at worldgen by `w
 **The dead are not people here.** `graphQueries.getAgentsAtLocation`, `hexZoom.getAgentsAtLocation`, `buildHexActorIndex` and `routeEvents.pickTargetAgent` skip `deceased === true` — run-time dead and seeded dead alike. A sweep you write over individuals must do the same (`isAgentGone`, or `isSeededDead` for the seeded ones only).
 
 Knobs: `src/data/world-past-constants.ts` (`WORLD_PAST_DEFAULTS`; `enabled: false` restores the pre-THR-1631 t0 exactly). Inspect: `await __DEBUG.getWorldPast()`; trace `world_past_seeded` (every miss by id); census `Docs/audits/2026-09-25-living-world-data/readers/past.ts`.
+
+## Capability 37: Spells — carried and cast (THR-1571)
+
+A spell is a `SpellTemplate` in `src/data/spell-templates.ts`. Four optional fields, all additive:
+
+- **`agency`** — `'fate_woven'` or `'deliberate'`. Absent = derived: deliberate when `effects` is non-empty.
+  - A **fate-woven** spell is *carried*. Author its work in `passiveEffects`; `effects` stays `[]` and `cost` stays `[]` — it is never cast, so it can never pay a cast cost. It pays with what it carries: a standing weakness (`passive` on a Reach, negative) and a chance to turn on the bearer (`action_trigger` on `encounter_critical_failure`, with a `probability`).
+  - A **deliberate** spell is *cast*. Its `effects` run through `executeEffect` → `applyExecutionResult` when the cast lands.
+- **`arena`** — `'encounter' | 'fight' | 'map_travel' | 'map_sight' | 'map_mark'`. Map arenas never fit an encounter step (S2 reads it).
+- **`castReach`** — for an `encounter`-arena spell, the Reach of the step it fits.
+- **`castProse`** — `{ landed, fizzled }`, one line each, GM narration, `{actor}` / `{target}` only. The miscast line stays `backlash.narrativeTemplate`.
+
+**The stateless rule — a carried spell may hold only** `passive`, `conditional`, `test_shaper`, `social_modifier`, `aura`, `reveal`, and `action_trigger` **without `maxFires`** (`CARRIED_EFFECT_ALLOWED_TYPES`). The definition node is one per spell for the whole world; its runtime state is kept per bearer (`attachmentStateKey` keys it by the bearing edge), but the stacking/decay/charge/expiry families were built around one attachment owning one node. `spellCasting.test.ts` fails a template that breaks the rule; at runtime the node is minted without effects.
+
+**How a cast resolves** (`resolveCast`, `src/engine/spellCasting.ts` — the only path): the band that already landed decides. `critical_success`, `success`, `success_at_cost` land (`CAST_LANDED_BANDS`); anything else fizzles; the price is paid on every band. Backlash is read against the band by the price layer — `backlash.trigger`: `'failure'` = strain (bites on near miss / failure / critical failure), `'critical_failure'` = transgression (disaster only), `'always'` = gamble (every band but critical success). A `reach_drain` cost now leaves the caster **Strained** (`condition.strained.<reach>`, duration scaled by the drain) — author the amount as a reach share, as before.
+
+**Live effect primitives a cast can use:** `teleport` (lands on a place-tier Location: `target_hex` / `random` within range / `home` / `nearest_ally`), `forced_move` (`away` / `toward` / `random`, `hexes`), `dispel` (lifts the target's bearing — never deletes the definition; `target: 'attachment'` silences a possession for `DISPEL_ITEM_SUPPRESS_TICKS`), `inflict_condition`, `resource_manipulate 'fight_clock'`, `alter_terrain`, `modify_rules`, `spawn`. **Not yet:** `transfer`, `compel` (execute nothing), and the modifier families (`duration`, `aura`, `conditional`, `stacking`, `decay`) have no per-cast channel — on a *cast* spell they are traced and apply nothing. Don't author a cast whose whole point is one of them.
+
+**New trigger moment:** `action_trigger` `on: 'spell_cast'` fires on the caster after every cast, landed or fizzled — use it for "the working takes something from you" riders on items and powers.
+
+Knobs: `src/data/spell-casting-constants.ts`. Seeding: every caster starts knowing one spell (`seedSpellKnowing`; `SEEDED_CASTER_ROLES`, `SEEDED_SPELL_COVERAGE`). Inspect: `__DEBUG.getSpellHolders()`, `await __DEBUG.castSpell({ caster, spell, band })`; traces `spell.seeded`, `spell.cast_resolved`, `spell.backlash`, `effect.teleported`.

@@ -1074,6 +1074,21 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; Spells that work
+      <span class="lead">Added 2026-09-29 (THR-1571 S1, audit-on-touch for Effects &amp; Conditions&rsquo; spell path). No mortal held a spell, and a spell that was cast charged its price and applied nothing.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A cast <span class="arrow">&#10230;</span> Its effects, its backlash and its soul price (<code>spell-cast-applies-effects</code>)</span><span class="chip live">LIVE</span>
+        <span class="note"><code>use &times; Power</code> used to read the outcome and drop the effects, behind a coin keyed on the length of the caster&rsquo;s id. <code>resolveCast</code> is now the only path to a cast. The work&rsquo;s own band decides it: a landed band applies the spell (a Veilwalk moves its caster), any other fizzles, and the price is paid either way. Backlash is read against the band by the price layer, a strain price leaves the caster <em>Strained</em>, and cooldowns are per caster. Both arms are tested. In a 30-tick run no cast fired yet, because every seeded caster was given a carried spell.</span></li>
+      <li class="live"><span class="flow">Worldgen <span class="arrow">&#10230;</span> Every caster starts with a spell (<code>seeded-spell-holders</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">The only writer of a known spell needed a caster in the deciding tier, one of 104 on seed 42, so the census read zero. Seeded knowing now gives every caster one spell at worldgen: 109 of 109 on seed 42 and 127 of 127 on seed 99. All of them got the fallback, because no caster carries a sphere alignment; filling tradition shelves is the generator&rsquo;s job (THR-1572). A carried spell&rsquo;s state is kept per bearer, so a seal on one witch no longer silences the spell for everyone.</span></li>
+      <li class="live"><span class="flow">Items and powers that bend a casting&rsquo;s blowback <span class="arrow">&#10230;</span> The backlash a real cast rolls (<code>rule-overrides-reach-owning-sites</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">This was the row&rsquo;s one known partial reach: the key was wired into a function nothing called. It is live in play now wherever a cast resolves. In the same slice, <code>dispel</code> stopped deleting what it matched: it lifts one bearer&rsquo;s condition and silences an item for a day, and <code>teleport</code> / <code>forced_move</code> finally move someone (<code>effect-vocabulary-consolidated-spellings</code>).</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

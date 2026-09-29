@@ -7,8 +7,13 @@
  * 3. Cost validation (can the agent afford it?)
  * 4. Cost payment (atomic — all or nothing)
  * 5. Effect resolution (apply spell effects)
- * 6. Backlash evaluation (on failure)
+ * 6. Backlash evaluation (THR-1571: against the band the caller passes, per the
+ *    spell's price layer — the legacy coin path survives only for unit tests)
  * 7. Trace emission
+ *
+ * Every live cast reaches this through `resolveCast` (`spellCasting.ts`), which
+ * applies the returned effects and backlash — this module decides and pays, it does
+ * not apply.
  *
  * ─── Constants ──────────────────────────────────────────────────
  * | Name                        | Default | Purpose                       |
