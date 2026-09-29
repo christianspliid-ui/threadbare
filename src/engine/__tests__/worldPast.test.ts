@@ -34,6 +34,11 @@ const PAST_PROPS = ['foundedYearsAgo', 'backstoryStrata', 'originCultureId'] as 
 /** The graph minus everything the past pass writes — the "today's t0" projection. */
 function withoutPast(graph: WorldGraph) {
   const pastNodeIds = new Set(graph.getAllNodes().filter(n => n.properties.pastOrigin === 'worldgen').map(n => n.id));
+  // S3 (THR-1657): past-minted `pursues` edges carry `pastOrigin`; an ambition node that
+  // only they point at was created by the pass too, so it goes with them.
+  const keptEdges = graph.getAllEdges().filter(e => e.properties.pastOrigin !== 'worldgen');
+  const pursued = new Set(keptEdges.filter(e => e.type === 'pursues').map(e => e.target));
+  for (const n of graph.getNodesByType('ambition')) if (!pursued.has(n.id)) pastNodeIds.add(n.id);
   const nodes = graph.getAllNodes()
     .filter(n => !pastNodeIds.has(n.id))
     .map(n => {
@@ -46,7 +51,7 @@ function withoutPast(graph: WorldGraph) {
       return JSON.stringify([n.id, n.type, n.name, props]);
     })
     .sort();
-  const edges = graph.getAllEdges()
+  const edges = keptEdges
     .filter(e => !pastNodeIds.has(e.source) && !pastNodeIds.has(e.target))
     .map(e => JSON.stringify([e.id, e.type, e.source, e.target, e.properties]))
     .sort();

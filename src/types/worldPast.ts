@@ -139,5 +139,24 @@ export interface WorldPastSeededSummary {
     warsWithoutBurnedTown: string[];
     realmPairsAvailable: number;
   };
+  /** S3 (THR-1657): the ambitions the past minted, and every source it could not use. */
+  ambitions?: WorldPastAmbitionsSummary;
   durationMs: number;
+}
+
+/** Why a past source minted no ambition — every skip is named, never silent (NFP #2). */
+export type WorldPastAmbitionSkipReason =
+  | 'no_fallen_commander'
+  | 'no_leader'
+  | 'no_member_protagonist'
+  | 'no_free_slot'
+  | 'none_in_range'
+  | 'grievance_declined'
+  | 'cap_reached'
+  | 'assign_refused';
+
+export interface WorldPastAmbitionsSummary {
+  /** `sourceId` is the war event (revenge) or the wonder (chase). */
+  minted: Array<{ actorId: string; templateId: string; sourceId: string; culpritId?: string; kinOfId?: string }>;
+  skipped: Array<{ sourceId: string; templateId: string; reason: WorldPastAmbitionSkipReason }>;
 }

@@ -36,6 +36,20 @@ export interface WorldPastConstants {
   wonderFindersMax: number;
   /** Share of mortals on dead-empire land given descent. */
   descentShare: number;
+  /** S3 (THR-1657): `seek_revenge` ambitions minted from wars in living memory, at most. */
+  revengeAmbitionsMax: number;
+  /** S3: `chase_the_wonder` ambitions minted from wonders with a finder, at most. */
+  wonderAmbitionsMax: number;
+  /** S3: how far a hero may live from a wonder to want it, in hexes. */
+  wonderPullMaxHexes: number;
+  /**
+   * S3: the harm a fallen commander's death opens as a grievance on their kin — a named
+   * death (`HARM_MAGNITUDE_BY_CLASS.named_death`), so the drive opens at full heat and
+   * cools on the ordinary grievance clock.
+   */
+  revengeHarmMagnitude: number;
+  /** S3: the grievance's chain depth — one step, the dead commander's drive passed to kin. */
+  revengeChainDepth: number;
 }
 
 export const WORLD_PAST_DEFAULTS: WorldPastConstants = {
@@ -59,6 +73,11 @@ export const WORLD_PAST_DEFAULTS: WorldPastConstants = {
   commanderRank: 0.6,
   wonderFindersMax: 4,
   descentShare: 0.25,
+  revengeAmbitionsMax: 2,
+  wonderAmbitionsMax: 2,
+  wonderPullMaxHexes: 12,
+  revengeHarmMagnitude: 1.0,
+  revengeChainDepth: 1,
 };
 
 /** The pass's own PRNG offset — unused anywhere else in the repo (re-grepped at build). */
@@ -77,6 +96,9 @@ export const WORLDGEN_PAST_BURNED_TOWN_MAX_HEXES = WORLD_PAST_DEFAULTS.burnedTow
 export const WORLDGEN_PAST_COMMANDER_RANK = WORLD_PAST_DEFAULTS.commanderRank;
 export const WORLDGEN_PAST_WONDER_FINDERS_MAX = WORLD_PAST_DEFAULTS.wonderFindersMax;
 export const WORLDGEN_PAST_DESCENT_SHARE = WORLD_PAST_DEFAULTS.descentShare;
+export const WORLDGEN_PAST_REVENGE_AMBITIONS_MAX = WORLD_PAST_DEFAULTS.revengeAmbitionsMax;
+export const WORLDGEN_PAST_WONDER_AMBITIONS_MAX = WORLD_PAST_DEFAULTS.wonderAmbitionsMax;
+export const WORLDGEN_PAST_WONDER_PULL_MAX_HEXES = WORLD_PAST_DEFAULTS.wonderPullMaxHexes;
 
 /** Elder war names, drawn once at worldgen and stored on the event as `pastName`. */
 export const WORLD_PAST_ELDER_WAR_NAMES: readonly string[] = [

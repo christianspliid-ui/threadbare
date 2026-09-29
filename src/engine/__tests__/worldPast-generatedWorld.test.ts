@@ -1,4 +1,4 @@
-// @vitest-lane heavy — builds a small world and drives it 200 ticks, watching the seeded dead every tick (THR-1631)
+// @vitest-lane heavy — builds a small world and drives it 200 ticks, watching the seeded dead every tick (THR-1631), and two medium worlds for the past's ambitions (THR-1657)
 /**
  * THR-1631 S1 — the seeded dead stay dead, through the real tick loop.
  *
@@ -22,7 +22,10 @@ import { _resetNpcCounter } from '../npcSeeding';
 import { isAutonomousDecisionActor } from '../decisionTier';
 import { getAgentsAtLocation } from '../graphQueries';
 import { buildHexActorIndex } from '../hexActorIndex';
-import { isSeededDead } from '../worldPast';
+import { isSeededDead, readWorldPast, PAST_REVENGE_TEMPLATE_ID, PAST_WONDER_TEMPLATE_ID } from '../worldPast';
+import { WORLD_PAST_DEFAULTS } from '../../data/world-past-constants';
+import { getFactionLeaderId } from '../factionNetwork';
+import { isAgentGone } from '../groups/groupQueries';
 import type { GameState } from '../../types/gameState';
 
 const SEED = 42;
@@ -69,5 +72,69 @@ describe('worldPast — the seeded dead stay dead over 200 ticks (THR-1631 S1)',
       }
     }
     expect(leaks.slice(0, 10)).toEqual([]);
+  });
+});
+
+describe('worldPast — the past feeds ambitions (THR-1657 S3)', () => {
+  function buildWorld(enabled: boolean): GameState {
+    WORLD_PAST_DEFAULTS.enabled = enabled;
+    try {
+      _resetNpcCounter();
+      resetEventCounter();
+      resetReputationTraitInit();
+      const preset = MAP_SIZE_PRESETS.medium;
+      return initializeGameState(
+        generateArchetypes(4, SEED)[0], 'T', createBalancedCosmology(), SEED, preset.cols, preset.rows,
+      ).state;
+    } finally {
+      WORLD_PAST_DEFAULTS.enabled = true;
+    }
+  }
+
+  it('a revenge heir is kin of the dead commander and holds a grievance against a living culprit; no ambient mortal is given the past; the t0 decider headcount is unchanged', { timeout: TIMEOUT_MS }, () => {
+    const on = buildWorld(true);
+    const g = on.graph;
+    const past = g.getAllEdges().filter(e => e.type === 'pursues' && e.properties.pastOrigin === 'worldgen');
+    const revenge = past.filter(e => e.target === `ambition.${PAST_REVENGE_TEMPLATE_ID}`);
+    const wonder = past.filter(e => e.target === `ambition.${PAST_WONDER_TEMPLATE_ID}`);
+    // Not vacuous: seed 42 medium has two wars in living memory with a fallen commander each.
+    expect(revenge.length).toBeGreaterThanOrEqual(1);
+    expect(revenge.length).toBeLessThanOrEqual(WORLD_PAST_DEFAULTS.revengeAmbitionsMax);
+    expect(wonder.length).toBeLessThanOrEqual(WORLD_PAST_DEFAULTS.wonderAmbitionsMax);
+
+    const view = readWorldPast(g);
+    for (const edge of revenge) {
+      const war = view.livingMemory.find(w => w.eventId === edge.properties.mintedByEventId);
+      expect(war).toBeDefined();
+      const commanderId = war!.fallenIds[0];
+      expect(isSeededDead(g.getNode(commanderId))).toBe(true);
+      // Kin, both directions, in the worldgen tie shape.
+      for (const [a, b] of [[edge.source, commanderId], [commanderId, edge.source]]) {
+        const tie = g.getOutgoingEdges(a, 'relates_to').find(e => e.target === b);
+        expect(tie?.properties.basis).toBe('kin');
+        expect(tie?.properties.origin).toBe('worldgen');
+      }
+      // A grievance against the winning Realm's current, living leader.
+      expect(edge.properties.grievance).toBe(true);
+      const culprit = edge.properties.culpritAgentId as string;
+      expect(culprit).toBe(getFactionLeaderId(g, war!.winnerId));
+      expect(isAgentGone(g.getNode(culprit))).toBe(false);
+      // The heir stood with the losing Realm.
+      expect(g.getOutgoingEdges(edge.source, 'member_of').some(e => e.target === war!.loserId)).toBe(true);
+    }
+
+    // Holders are only protagonists — living deciders, never ambient, never the dead.
+    for (const edge of past) {
+      const holder = g.getNode(edge.source)!;
+      expect(isAutonomousDecisionActor(holder)).toBe(true);
+      expect(isAgentGone(holder)).toBe(false);
+    }
+    // One past ambition per holder.
+    expect(new Set(past.map(e => e.source)).size).toBe(past.length);
+
+    // No history pulls anyone into the deciding tier.
+    const deciders = (s: GameState) => s.graph.getNodesByType('actor')
+      .filter(n => isAutonomousDecisionActor(n) && !isAgentGone(n)).map(n => n.id).sort();
+    expect(deciders(on)).toEqual(deciders(buildWorld(false)));
   });
 });
