@@ -241,7 +241,10 @@ function applyEffect(
     case 'discovery': {
       // Plant a simple information discovery tick event
       events.push({
-        id: `complication_discovery_${tick}_${ctx.action.actorId}`,
+        // THR-1676: tick + actor alone collided when one mortal's actions raised two
+        // discoveries in a tick (THR-853 uniqueness test, seed 42 tick 165). The action
+        // id and the event's position keep each one distinct.
+        id: `complication_discovery_${tick}_${ctx.action.actorId}_${ctx.action.actionId}_${events.length}`,
         tick,
         type: 'complication',
         message: `${actorNode.name ?? 'An agent'} discovered something unexpected.`,

@@ -73,6 +73,15 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   // poles could be encoded.
   'encounter.realm.keepers_petition',
   'encounter.realm.crowns_reckoning',
+  // THR-1676, the first journeyman everyday batch — nudge-native like the realm pair
+  // above: authored specials plus a `deal` fill, no `authoredChoices`. Two carry a
+  // mortal-decided fork (`decidedBy`), whose poles live on the fork, not a choice.
+  'encounter.town.pilots_reckoning',
+  'encounter.town.overdue_caravan',
+  'encounter.town.assize_letter',
+  'encounter.town.counting_house_dispute',
+  'encounter.town.bell_at_the_exchange',
+  'encounter.town.masons_commission',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

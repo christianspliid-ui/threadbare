@@ -15,7 +15,7 @@
 | `encounter.town.assize_letter` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.assize_letter) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.assize_letter) |
 | `encounter.town.counting_house_dispute` | ✅ green | ❌ failed | 🔗 connected | failure | cast, rewards, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.counting_house_dispute) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.counting_house_dispute) |
 | `encounter.town.bell_at_the_exchange` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, seeds, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.bell_at_the_exchange) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.bell_at_the_exchange) |
-| `encounter.town.masons_commission` | ✅ green | ❌ failed | 🔗 connected | failure | cast, rewards, conditions, reputation, content_query, appointments | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.masons_commission) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.masons_commission) |
+| `encounter.town.masons_commission` | ✅ green | ❌ failed | 🔗 connected | failure | cast, rewards, seeds, conditions, reputation, content_query | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.masons_commission) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.masons_commission) |
 
 *Package View links resolve once THR-1046 ships; the spawn links are live today.*
 
@@ -27,11 +27,9 @@ Authored by: `encounter.town.overdue_caravan`, `encounter.town.masons_commission
 
 ## Appointment census
 
-**1 of 6** encounter(s) author an appointment; **0** kept one live (mortal present at the due tick) and **0** missed one live (mortal absent, the promise broken).
+**0 of 6** encounter(s) author an appointment; **0** kept one live (mortal present at the due tick) and **0** missed one live (mortal absent, the promise broken).
 
-Authored by: `encounter.town.masons_commission`.
-
-> 1 authored appointment(s) did not prove both arms on their live run — either the path carrying the seed was not taken, or the mortal was not judged inside the drive. The `appointment_kept` / `appointment_missed` claim rows say which.
+> ⚠️ **Zero appointments authored.** The batch brief's die-B floor (`appointment`, ≥1 per batch of six — the second and last floor on that die) exists to stop this. Two consecutive batches at zero is the retro's "dead primitive" finding for the appointment (THR-1479 § Kill criteria) — record it if this is the second.
 
 ## What each encounter leaves behind
 
@@ -44,7 +42,7 @@ Authored by: `encounter.town.masons_commission`.
 | `encounter.town.assize_letter` | 🔗 connected | The mortal leaves owing or owed trust with the assize clerk Wenna Loy (a relationship later encounters with her read), knowing who laid the heresy charge (a knowledge record that shapes which encounters they are drawn to), and on the road away from the town where the clerk found them, walking toward a place with something happening, which the player watches on the map. |
 | `encounter.town.counting_house_dispute` | 🔗 connected | The arbiter walks away carrying the winning house's fee (Corrow's Letters of Introduction or Aldane's Assessor's Weighted Scales) and a favour owed by that house's factor, a named merchant the favour card can later call in; a refused ruling instead costs standing with the losing factor, and a critical success can raise the town's regard or leave a hidden mark of knowing both ledgers. |
 | `encounter.town.bell_at_the_exchange` | 🔗 connected | The mortal walks away with a real trade item drawn from the world's #trade goods (a better one on a better ending) or, on a loss, a lean toward trading and buying that steers their next encounters, and either way the named house buyer's opinion of them moves and persists on that merchant. |
-| `encounter.town.masons_commission` | 🔗 connected | A win leaves the town (the mortal's current settlement) holding a Festival and a better opinion of the mason, a tool from the town's store in their pack, and an appointment with the inspector to be back on the site when the scaffold comes down — kept, it opens more building work there; missed, the promise to the inspector breaks — while a loss leaves the town thinking less of them. |
+| `encounter.town.masons_commission` | 🔗 connected | A win leaves the town (the mortal's current settlement) holding a Festival and a better opinion of the mason, the inspector's regard, a tool from the town's store in their pack, and a seed: the works office sends for the mason when the next work is let (more building work) — while a loss leaves the town and the inspector thinking less of them. |
 
 ## Verdict roll-up
 
@@ -523,8 +521,8 @@ The bell rang on the house's bid. The house paid more for the lot than it meant 
 - · `aftermath_variant` — aftermathConfig authors a fallback only
 - ❌ `seed_planted` — declared a seed effect on this run's path but pendingEncounterSeeds carries none
 - ❌ `condition_applied` — declared a condition effect on this run's path but none applied — no trait change and no additive condition effect trace
-- ❌ `appointment_kept` — declared an appointment on this run's path but pendingEncounterSeeds carries no seed with an appointment block
-- ❌ `appointment_missed` — declared an appointment on this run's path but pendingEncounterSeeds carries no seed with an appointment block
+- · `appointment_kept` — template plants no appointment
+- · `appointment_missed` — template plants no appointment
 
 <details>
 <summary><strong>The aftermath as a page</strong> — 6 ending(s), read each for repetition, verbosity, conflict</summary>
@@ -533,7 +531,7 @@ The bell rang on the house's bid. The house paid more for the lot than it meant 
 
 The inspector has let the pier to one of two masons.
 
-**`fallback/critical_success`** · 82 words
+**`fallback/critical_success`** · 81 words
 
 {cast:inspector} let the pier to {actor} in front of {location}, while the rival's footing was still sinking into the fill. The town paid the first part of the fee in kind.
 
@@ -543,9 +541,9 @@ The inspector has let the pier to one of two masons.
 
 - The pier was shored by nightfall — {location} holds the fair it had put off.
 
-- Let on one condition — due back on the site when the scaffold comes down.
+- Known for footings that hold — The works office will send for {actor} again.
 
-**`fallback/success`** · 77 words
+**`fallback/success`** · 76 words
 
 The inspector let the pier to {actor}. {cast:rival} took the refusal badly and left the site. The town paid the first part of the fee in kind.
 
@@ -555,9 +553,9 @@ The inspector let the pier to {actor}. {cast:rival} took the refusal badly and l
 
 - The pier was shored by nightfall — {location} holds the fair it had put off.
 
-- Let on one condition — due back on the site when the scaffold comes down.
+- Won the town's work once — The works office will send for {actor} again.
 
-**`fallback/success_at_cost`** · 89 words
+**`fallback/success_at_cost`** · 88 words
 
 The inspector let the pier to {actor}, but the footing that won it stood on stone they paid for themselves. The town paid the first part of the fee in kind, and they start the work out of pocket.
 
@@ -567,7 +565,7 @@ The inspector let the pier to {actor}, but the footing that won it stood on ston
 
 - The pier was shored by nightfall — {location} holds the fair it had put off.
 
-- Let on one condition — due back on the site when the scaffold comes down.
+- Their footing won the letting — The works office will send for {actor} again.
 
 **`fallback/failure`** · 47 words
 
@@ -620,7 +618,7 @@ The table above renders one seed (42) with the cheapest hand. At journeyman diff
 | `encounter.town.assize_letter` | ✅ | ✅ |
 | `encounter.town.counting_house_dispute` | ✅ | ✅ (reaction `counting.neg.tell_the_market`) |
 | `encounter.town.bell_at_the_exchange` | ✅ | ✅ |
-| `encounter.town.masons_commission` | ✅ (appointment planted, kept + missed branches) | ✅ |
+| `encounter.town.masons_commission` | ✅ (re-proved after the appointment was dropped: seed planted, condition applied, reward landed) | ✅ |
 
 Natural success runs also exist for masons (seeds 10, 16, 20, 28) and assize (seed 7).
 

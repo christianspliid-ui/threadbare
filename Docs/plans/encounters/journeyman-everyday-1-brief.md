@@ -171,7 +171,7 @@ clerk's pen that slips). Everything generic is dealt from the Repertoire.
 | Reach spread | star 3 · gold 2 · stone 1, **fixed by the ticket** (the packet reports this as the one unmet bound; accepted, since the gauge's floor is per reach) |
 | Decision shapes | opt-in · test-and-consequence · single test ×2 · query prize · appointment (no shape more than twice) |
 | Query prize | slot 5 draws its lot by tag (a step `rewardPool`; `reward_draw` has no `query` field). The batch census counts `content_query` on slots 2 and 6, whose sequels are seeded by tag query |
-| Appointment | slot 6 |
+| Appointment | **unmet, moved to THR-1677.** Slot 6 was authored with one, but appointment sequels must be seed-only templates (THR-1526), and authoring two for one slot would have doubled it. Slot 6 seeds a placeless `#build` sequel instead |
 | Tone | at most two resolve grim; at least one is a pleasure (slot 5's bidding floor) |
 | Step counts | one 1-step, four 2-step, one 3-step |
 | Setting class | `urban` on all six, overridden by the ticket's everyday constraint (the packet's cap is bust by design; recorded) |

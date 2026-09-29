@@ -247,7 +247,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'justice'],
     reaches: ['veil', 'iron'],
     source: 'vault: Archetypes/Adventure & Quest — Heresy Hunt',
-    usedBy: [],
+    usedBy: ['encounter.town.assize_letter'],
   },
   {
     id: 'hook.siege_and_hold',
@@ -319,7 +319,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['discovery', 'craft'],
     reaches: ['eye', 'stone'],
     source: 'vault: Archetypes/Adventure & Quest — The Lost Civilization Expedition',
-    usedBy: [],
+    usedBy: ['encounter.town.overdue_caravan'],
   },
   {
     id: 'hook.haunted_relic',
@@ -385,7 +385,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'justice'],
     reaches: ['heart', 'gold'],
     source: 'vault: Archetypes/Event — Plague/Famine',
-    usedBy: [],
+    usedBy: ['encounter.town.bell_at_the_exchange'],
   },
   {
     id: 'hook.celestial_sign',
@@ -537,7 +537,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'discovery'],
     reaches: ['stone', 'gold'],
     source: 'vault: Archetypes/Event — The Masterwork Completion',
-    usedBy: [],
+    usedBy: ['encounter.town.counting_house_dispute'],
   },
   {
     id: 'hook.festival_of_fools',
@@ -619,7 +619,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['transformation', 'craft'],
     reaches: ['eye', 'heart'],
     source: 'vault: Archetypes/Ordeal — Mentor\'s Test',
-    usedBy: [],
+    usedBy: ['encounter.town.pilots_reckoning'],
   },
   {
     id: 'hook.standing_the_line',
@@ -651,7 +651,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'scarcity'],
     reaches: ['stone', 'iron'],
     source: 'vault: Archetypes/Ordeal — The Environmental Gauntlet',
-    usedBy: [],
+    usedBy: ['encounter.town.masons_commission'],
   },
   {
     id: 'hook.political_labyrinth',

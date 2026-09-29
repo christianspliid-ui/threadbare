@@ -22,6 +22,7 @@ import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
+import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../../data/unified-action-templates';
 import type { UnifiedAction } from '../../types/unifiedAction';
 
 function mkRecord(id: string, threaded: boolean, resolvedTick: number): ChapterRecord {
@@ -83,6 +84,15 @@ describe('isEncounterAction / getChapterTemplateName', () => {
     const id = ENCOUNTER_TEMPLATES[0].id;
     expect(isEncounterAction(id)).toBe(true);
     expect(getChapterTemplateName(id)).toBe(ENCOUNTER_TEMPLATES[0].name);
+  });
+
+  // THR-1676: a linear factory encounter (no `branchOnStep`, not in the legacy pools)
+  // was classified as no encounter, so it never reached the engagement ledger or the
+  // chronicle. Every factory-registered template must read as an encounter.
+  it('recognizes every factory-registered encounter, linear ones included', () => {
+    const missed = LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.filter(t => !isEncounterAction(t.id)).map(t => t.id);
+    expect(missed).toEqual([]);
+    expect(isEncounterAction('encounter.realm.tithe_demanded')).toBe(true);
   });
 
   it('rejects an unknown / non-encounter template id', () => {

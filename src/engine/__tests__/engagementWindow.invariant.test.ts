@@ -9,8 +9,9 @@
 // `[KPI_BAND_SUCCESS_MIN − tol, KPI_BAND_SUCCESS_MAX + tol]`, mean attempted
 // difficulty rises strictly across those bands, and the in-window share is at
 // least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; THR-1627
-// (local offset ruling) un-skips journeyman and expert level success; master level
-// success, the rise and the in-window share wait on content (THR-1676…THR-1681).
+// (local offset ruling) un-skips journeyman and expert level success; THR-1676 arms the
+// rise's novice→journeyman rung. Master level success, the rest of the rise and the
+// in-window share wait on content (THR-1677…THR-1681).
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
@@ -100,8 +101,24 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1676): un-skip when content above novice exists — at the ruling the band
-  // means are 0.11 / 0.15 / 0.11 / 0.13 on seed 42 (no rise) and in-window is 0.48.
+  // THR-1676 (journeyman everyday batch 1) re-arms the rise's first rung: journeymen
+  // attempt harder content than novices. Measured after the batch (seed 42 / 99):
+  // novice 0.12 / 0.10, journeyman 0.17 / 0.18. Each later band batch adds its rung.
+  it('journeymen attempt harder content than novices (THR-1676)', () => {
+    for (const seed of [42, 99]) {
+      const report = reportFor(seed);
+      const novice = report.bands.find(b => b.band === 'novice')!;
+      const journeyman = report.bands.find(b => b.band === 'journeyman')!;
+      // Non-vacuity: an uncovered band would pass the comparison by skipping it.
+      expect(novice.covered && journeyman.covered, `seed ${seed} coverage`).toBe(true);
+      expect(journeyman.meanAttemptedDifficulty, `seed ${seed} novice→journeyman`)
+        .toBeGreaterThan(novice.meanAttemptedDifficulty);
+    }
+  }, 600_000);
+
+  // TODO(THR-1681): un-skip when the master everyday batch lands (plan § D4: S7 re-arms
+  // the in-window clause). After THR-1676 on seed 42 the band means are 0.12 / 0.17 /
+  // 0.11 / 0.14 (expert does not rise) and in-window is 0.47.
   it.skip('attempted difficulty rises with proficiency, and most choices are in-window', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);

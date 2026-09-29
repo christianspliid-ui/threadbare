@@ -1,6 +1,8 @@
 /**
- * The Mason's Commission — slot 6 of journeyman-everyday-1 (THR-1676), the batch's
- * appointment floor.
+ * The Mason's Commission — slot 6 of journeyman-everyday-1 (THR-1676). Drafted as the
+ * batch's appointment floor; that floor moved to the next batch, because appointment
+ * branches must resolve to seed-only (`drawable: false`) templates authored for them
+ * (THR-1526) and none exist yet. Now a plain seeded sequel.
  * 
  * Brief: `Docs/plans/encounters/journeyman-everyday-1-brief.md`.
  * plotHookTaken: hook.environmental_gauntlet — the ground itself is the threat (old
@@ -38,14 +40,13 @@
  *   Reach = theme?  Step 0 tests Stone and is *about* reading ground (the trial
  *                   pit). Step 1 tests Stone and is *about* building on it (the
  *                   trial footing under load). Difficulties 0.40 → 0.45 (brief, amended: open-draw ceiling).
- *   Shape           Appointment. The commission is let on one condition: the mason
- *                   is back on the site the day the scaffold comes down. That is an
- *                   `encounter_seed` with an `appointment` block (`$here`,
- *                   counterparty `$cast:inspector`) on step 1's success side.
- *                   Kept   → query `#build` (the town has more building work for a
- *                            mason who keeps their day).
- *                   Missed → query `#tavern_night` (word that the mason walked off
- *                            the town's work reaches a common room).
+ *   Shape           Seeded sequel (was: appointment). One placeless `encounter_seed`
+ *                   by query `#build` on step 1's success side (`inheritContext`,
+ *                   96 ticks): when the town lets its next work, its works office
+ *                   sends for the mason — the other party finds them. No place-and-
+ *                   time promise anywhere (prose rule 7b / REVISE 34). The dropped
+ *                   appointment (kept `#build` / missed `#tavern_night`) resolved to
+ *                   drawable board templates, which THR-1526 forbids.
  *   Consequence hand (binding, THR-1145): `relationship` + `possession` — no swap.
  *                   `relationship` — `bond_change` with `$cast:inspector` on step 1,
  *                   both directions: the inspector who let the pier trusts the mason
@@ -53,7 +54,7 @@
  *                   Chipped on every band (`reputation with {target}` on the inspector).
  *                   `possession` — step 1 `successMetadata.rewardPool`
  *                   (`#tool`): the first part of the fee, paid from the town's
- *                   store. The kept appointment's own reward lives in the sequel;
+ *                   store. The sequel's own reward lives in the sequel;
  *                   this encounter pays on the letting (note for the critic).
  *                   Extra: `apply_condition` `trait.condition.location.festival`
  *                   on `$here`, success side: the winning mason's shoring lets the
@@ -205,19 +206,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             },
             targetAgentId: '$actor',
             delayTicks: 96,
-            seedLabel: 'The scaffold comes down, and the mason who kept their day is on the site for the next work.',
+            seedLabel: 'When the town lets its next work, its works office sends for the mason whose footing held.',
             inheritContext: true,
-            appointment: {
-              locationId: '$here',
-              counterpartyId: '$cast:inspector',
-              missed: {
-                query: {
-                  kind: 'encounter_template',
-                  tags: ['#tavern_night'],
-                },
-                seedLabel: 'The scaffold came down without them, and the evening finds them in a common room.',
-              },
-            },
           },
         ],
       },
@@ -297,8 +287,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'A cracked pier is to be rebuilt, and the inspector of works lets it today to one of two masons. '
       + 'The ground under it is worse than anyone said.',
-    success: 'The commission was let to the mason whose footing held. They are due back on the site when the '
-      + 'scaffold comes down.',
+    success: 'The commission was let to the mason whose footing held, and the works office will know their '
+      + 'name when the next work is let.',
     failure: 'The commission went to the rival mason, and the fee went with it.',
   },
   aftermathConfig: {
@@ -372,25 +362,25 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               detail: '{location} holds the fair it had put off.',
             },
             {
-              id: 'commission.crit.the_scaffold_day',
+              id: 'commission.crit.sent_for',
               kind: 'future_hook',
               category: 'path',
               direction: 'opens',
-              polarity: 'info',
+              polarity: 'gain',
               stateNoun: {
-                text: 'appointment',
-                entityId: '$appointment',
-                visualKind: 'location',
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
               },
+              title: 'Sent for by the works',
+              causeClause: 'Known for footings that hold',
+              detail: 'The works office will send for {actor} again.',
               concepts: [
                 {
-                  text: 'due back',
-                  tooltipId: 'ui.aftermath_seed',
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
                 },
               ],
-              title: 'Back when the scaffold comes down',
-              causeClause: 'Let on one condition',
-              detail: 'due back on the site when the scaffold comes down.',
             },
             {
               id: 'commission.crit.inspector_trusts',
@@ -465,25 +455,25 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               detail: '{location} holds the fair it had put off.',
             },
             {
-              id: 'commission.win.the_scaffold_day',
+              id: 'commission.win.sent_for',
               kind: 'future_hook',
               category: 'path',
               direction: 'opens',
-              polarity: 'info',
+              polarity: 'gain',
               stateNoun: {
-                text: 'appointment',
-                entityId: '$appointment',
-                visualKind: 'location',
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
               },
+              title: 'Sent for again',
+              causeClause: 'Won the town\'s work once',
+              detail: 'The works office will send for {actor} again.',
               concepts: [
                 {
-                  text: 'due back',
-                  tooltipId: 'ui.aftermath_seed',
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
                 },
               ],
-              title: 'Back when the scaffold comes down',
-              causeClause: 'Let on one condition',
-              detail: 'due back on the site when the scaffold comes down.',
             },
             {
               id: 'commission.win.inspector_trusts',
@@ -559,25 +549,25 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               detail: '{location} holds the fair it had put off.',
             },
             {
-              id: 'commission.cost.the_scaffold_day',
+              id: 'commission.cost.sent_for',
               kind: 'future_hook',
               category: 'path',
               direction: 'opens',
-              polarity: 'info',
+              polarity: 'gain',
               stateNoun: {
-                text: 'appointment',
-                entityId: '$appointment',
-                visualKind: 'location',
+                text: 'seed',
+                tooltipId: 'ui.aftermath_seed',
               },
+              title: 'Sent for again',
+              causeClause: 'Their footing won the letting',
+              detail: 'The works office will send for {actor} again.',
               concepts: [
                 {
-                  text: 'due back',
-                  tooltipId: 'ui.aftermath_seed',
+                  text: '{actor}',
+                  entityId: '$actor',
+                  visualKind: 'agent',
                 },
               ],
-              title: 'Back when the scaffold comes down',
-              causeClause: 'Let on one condition',
-              detail: 'due back on the site when the scaffold comes down.',
             },
             {
               id: 'commission.cost.inspector_trusts',
@@ -707,8 +697,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   },
   description: 'A two-step stone contest for a town commission: read the ground in a trial pit, then set a trial '
-    + 'footing the inspector loads at noon. The winner is let the work on one condition — back on the '
-    + 'site the day the scaffold comes down (an appointment, both sequels by family query).',
+    + 'footing the inspector loads at noon. The winner is let the work, wins the town\'s and the '
+    + 'inspector\'s regard, and the works office sends for them when it lets its next work (a placeless '
+    + 'seeded sequel by family query).',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['relationship', 'possession'],
 };
