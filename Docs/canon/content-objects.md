@@ -56,7 +56,7 @@ The registry exists because content references content **by literal id**, and li
 | **Item** | Arms, mounts, tomes, relics, tools, provisions — the possession catalog `reward_draw` already draws from by tag. Since THR-1570 also the items the **item generator** mints (`gen_` prefix — a masterwork made with an idea); a minted instance (`craftedBy` or `origin: 'generated'`) is never carved as a template. | `item` | `check:attachment` |
 | **Legendary artifact** | An item with its own trait graph, bonded rather than possessed. Three entries. | `legendary_artifact` | `check:attachment` |
 | **Condition** | Wounds, diseases, strains; blessings and curses as signed conditions. Shared `trait` definition nodes, per-bearer state on the edge. | `condition` | `check:attachment` |
-| **Power** | A god's gift (`bestowed`) and a spell a mortal learned (`spell`) — two classes of one kind (THR-1429), in two catalog shapes. | `power` | `check:attachment` |
+| **Power** | A god's gift (`bestowed`), a spell a mortal learned (`spell`), and a power a monster is born with (`innate_power`, THR-1671) — three classes of one kind (THR-1429), in two catalog shapes. | `power` | `check:attachment` |
 | **Trait** | A mortal's own identity — Core continua poles, emergent personality poles, masteries, reputations, and the cultural marks a guild or a people stamps on its own. Five classes, five id prefixes, the five mortal-trait content files (THR-1520). Conditions and scars are the Condition kind even where they share a file; `innate` / `destiny` / `experience` are minted, never authored. | `trait` | `check:attachment` |
 | **Agreement** | A favour owed or a mark held — the template names a *relationship*, so the thing it becomes is an edge. | `agreement` | `check:attachment` |
 | **Companion** | A face that walks with one mortal and grants small always-on bonuses; never an agent. Already tag-bearing. | `companion` | `check:attachment` |
@@ -119,7 +119,7 @@ Landed by THR-1487 (slice 3). Types: [`src/types/contentQuery.ts`](../../src/typ
 
 **One resolver, and the gate calls it.** `resolveContentQuery` is the only matcher. `validateContentQueries` does not mirror it, it *calls* it — because a gate that re-states the runtime rule agrees only while someone keeps checking, which is the failure `rewardCategoryNodeQuery`'s own header has warned about since THR-1146.
 
-**Matching, exactly.** `classes` narrows within a kind (a Power is `bestowed` or `spell`; a Condition is `condition` or `scar`). `tags` is ALL-of and `anyTags` is any-of, over `effectiveTags` — so the projection rule above applies to queries too. `tier` is an inclusive window, and **an entry with no declared tier passes every window** (the condition pool's rule since it was written; the alternative silently drops untiered content). Results are totally ordered: registry kind order, then id ascending.
+**Matching, exactly.** `classes` narrows within a kind (a Power is `bestowed`, `spell` or `innate_power`; a Condition is `condition` or `scar`). `tags` is ALL-of and `anyTags` is any-of, over `effectiveTags` — so the projection rule above applies to queries too. `tier` is an inclusive window, and **an entry with no declared tier passes every window** (the condition pool's rule since it was written; the alternative silently drops untiered content). Results are totally ordered: registry kind order, then id ascending.
 
 **A resolve is uncapped; a draw is capped** at `CONTENT_QUERY_MAX_CANDIDATES` (64). A caller that weights the resolved set itself must see all of it.
 

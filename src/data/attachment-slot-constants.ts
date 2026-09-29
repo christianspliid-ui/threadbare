@@ -126,4 +126,6 @@ export const SLOT_TAG_DISPLAY_NAMES: Record<string, string> = {
   curse: 'Curses',
   blessing: 'Blessings',
   bestowed: 'Bestowed',
+  // THR-1671 — a monster's anatomy: the power its family is born with.
+  innate_power: 'Innate Powers',
 };

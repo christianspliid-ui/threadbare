@@ -37,7 +37,7 @@ const SLOT_GROUP_ORDER = [
   'quest',
   'weapon', 'vestment', 'ring', 'necklace', 'tome', 'spell',
   'consumable', 'utility', 'mount', 'ally', 'companion', 'wealth', 'brand',
-  'wound', 'disease', 'curse', 'blessing', 'bestowed',
+  'wound', 'disease', 'curse', 'blessing', 'bestowed', 'innate_power',
   'agreement',
 ];
 
@@ -200,8 +200,11 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
             </Tooltip>
             <span className="text-xs uppercase tracking-wider" style={{ color: `${tierColor}99` }}>
               {/* The class word (THR-1429, Law 14): a Power says which kind it is —
-                  a Spell somebody learned, or a Bestowal a god gave. */}
-              {entry.powerClass === 'spell' ? 'Spell · ' : entry.powerClass === 'bestowal' ? 'Bestowal · ' : ''}
+                  a Spell somebody learned, a Bestowal a god gave, or an Innate power
+                  a creature was born with (THR-1671). */}
+              {entry.powerClass === 'spell' ? 'Spell · '
+                : entry.powerClass === 'bestowal' ? 'Bestowal · '
+                : entry.powerClass === 'innate' ? 'Innate · ' : ''}
               {tierName}
               {entry.isPinned && ' (pinned)'}
             </span>

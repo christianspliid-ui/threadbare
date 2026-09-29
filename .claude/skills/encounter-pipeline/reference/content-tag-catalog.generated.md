@@ -45,14 +45,14 @@ The twelve Spheres. **Derived** from `SPHERE_NAMES`. Projected from `sphereAffin
 | `#order` | Sworn to Order — it holds its shape, and holds others to theirs. | item 1 · power 1 | 5 |  |
 | `#light` | Sworn to Light — it reveals, warms, and is hard to hide behind. | — | 0 | **DEAD** |
 | `#darkness` | Sworn to Darkness — it conceals, and asks nothing about what it hides. | — | 2 |  |
-| `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 16 |  |
-| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 24 |  |
-| `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 2 |  |
-| `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 11 |  |
-| `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 21 |  |
-| `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 31 |  |
-| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 6 |  |
-| `#entropy` | Of Entropy — it unmakes, and is patient about it. | item 1 | 16 |  |
+| `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 17 |  |
+| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 25 |  |
+| `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 3 |  |
+| `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 12 |  |
+| `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 22 |  |
+| `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 32 |  |
+| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 7 |  |
+| `#entropy` | Of Entropy — it unmakes, and is patient about it. | item 1 | 17 |  |
 
 ## form
 
@@ -76,7 +76,7 @@ What the thing *is* — its shape in a mortal's hands. Authored.
 | `#pearl` | Drawn from deep water, and never the same twice. | item 1 · power 1 | 2 |  |
 | `#herb` | Cut, dried, and kept for what it does. | item 1 · power 1 | 2 |  |
 | `#fungus` | Grown in the dark, and seldom entirely safe. | condition 1 · item 1 · power 1 | 3 |  |
-| `#flesh` | Of the body — borne in it rather than carried. | condition 5 · item 1 | 6 |  |
+| `#flesh` | Of the body — borne in it rather than carried. | power 8 · condition 5 · item 1 | 14 |  |
 | `#beast` | A living creature, not a made thing. | item 16 | 16 |  |
 | `#mount` | Ridden — it carries its bearer as much as the reverse. | item 11 | 11 |  |
 | `#tool` | Made for work rather than for war. | item 16 | 16 |  |
@@ -112,13 +112,13 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#physical` | Of the body rather than the mind or the soul. | condition 9 | 9 |  |
 | `#divine` | Of the gods — it answers to worship, not to craft. | item 13 · condition 7 · trait 3 · power 2 | 25 |  |
 | `#arcane` | Of learned working — known by study rather than by gift. | item 13 · power 7 · condition 1 | 21 |  |
-| `#supernatural` | Beyond the ordinary run of things, without saying how. | condition 8 · power 2 · item 1 | 11 |  |
+| `#supernatural` | Beyond the ordinary run of things, without saying how. | power 10 · condition 8 · item 1 | 19 |  |
 | `#mystical` | Half-understood even by those who use it. | item 4 · condition 1 · trait 1 | 6 |  |
 | `#nature` | Of growing things and the weather they grow under. | condition 1 · item 1 · legendary 1 · power 1 | 4 |  |
 | `#fate` | It touches what is coming rather than what is here. | item 3 · condition 1 · power 1 | 5 |  |
 | `#vision` | It shows what is not in front of the eye. | condition 1 · item 1 · power 1 | 3 |  |
 | `#temporal` | It works on time — delaying, hastening, or remembering. | item 4 · condition 2 · power 1 | 7 |  |
-| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 15 · power 3 · trait 1 | 49 |  |
+| `#combat` | Of fighting — carried into it, or earned there. | item 29 · condition 15 · power 11 · trait 1 | 57 |  |
 | `#knowledge` | Of learning — what is written, taught, or worked out. | item 9 · trait 2 · condition 1 | 12 |  |
 | `#craft` | Of making — the trades, and the hands that keep them. | item 8 · power 1 | 9 |  |
 | `#healing` | Of mending people. | item 8 · power 4 · condition 3 | 15 |  |

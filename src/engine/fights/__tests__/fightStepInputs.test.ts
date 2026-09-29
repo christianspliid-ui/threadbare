@@ -20,6 +20,7 @@ import { computeRawScore } from '../../domainCapability';
 import { createSimulationRuntime } from '../../simulationRuntime';
 import { readOpponentCard, deriveMightWord } from '../opponentCard';
 import { isActionOnFightStep, resolveFightStepInputs } from '../fightStepInputs';
+import { stampInnatePower } from '../../monsters/innatePower';
 import {
   FIGHT_CLOCK_RECOVERY_TICKS,
   FIGHT_RATING_DIFFICULTY,
@@ -224,6 +225,31 @@ describe('difficulty per word', () => {
     const inputs = resolveFightStepInputs(baseState(graph), action('t'), step, template(step))!;
     expect(inputs.opponentModifierDelta).toBeCloseTo(0.05, 10);
     expect(inputs.difficulty).toBeCloseTo(FIGHT_RATING_DIFFICULTY.fair + 0.05, 10);
+  });
+
+  // THR-1671 — a monster's innate power is its own modifier, so the same fold prices it.
+  it("a beast's innate power (Thick Hide) prices its clash step", () => {
+    const monster = { family: 'beast', dread: 'fair', might: 'fair', clashReach: 'iron', clockSize: 3, clockFilled: 0 };
+    const bare = fightWorld({ monsterState: monster });
+    const born = fightWorld({ monsterState: monster });
+    stampInnatePower(born, 'beast', 'beast', TICK);
+    const step = fightStep('clash');
+    const before = resolveFightStepInputs(baseState(bare), action('t'), step, template(step))!;
+    const after = resolveFightStepInputs(baseState(born), action('t'), step, template(step))!;
+    expect(before.opponentModifierDelta).toBe(0);
+    expect(after.opponentModifierDelta).toBeCloseTo(0.05, 10);
+    expect(after.difficulty - before.difficulty).toBeCloseTo(0.05, 10);
+  });
+
+  it("a stormkin's innate aura (Crackling Air) thins the fighter standing on its ground", () => {
+    const monster = { family: 'stormkin', dread: 'fair', might: 'fair', clashReach: 'iron', clockSize: 3, clockFilled: 0 };
+    const bare = fightWorld({ monsterState: monster });
+    const born = fightWorld({ monsterState: monster });
+    stampInnatePower(born, 'beast', 'stormkin', TICK);
+    const step = fightStep('clash');
+    const standing = (g: WorldGraph) => resolveFightStepInputs(baseState(g), action('t'), step, template(step))!
+      .modifiers.reduce((sum, m) => sum + m.delta, 0);
+    expect(standing(born) - standing(bare)).toBeCloseTo(-0.03, 10);
   });
 
   it('the roll reads the card, never the placeholder difficulty', () => {

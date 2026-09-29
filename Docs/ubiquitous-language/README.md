@@ -175,7 +175,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Power](./Traits.md#power)** — player-facing family name for a carried, capability-granting thing: spell, bestowal, innate power; a conceptual family, not an `AttachmentCategory`
 - **[Spell](./Traits.md#spell)** — a Power learned from a magic tradition; carries an agency, an arena, and a price
 - **[Bestowal](./Traits.md#bestowal)** — a god-given Power; player-facing name for the `bestowed_power` kind, whose code identifier stays; not the `bestowed` trait category
-- **[Innate Power](./Traits.md#innate-power)** — a Power that is anatomy, stamped at seeding; no code anchor yet, and not the `innate` trait category
+- **[Innate Power](./Traits.md#innate-power)** — a Power that is anatomy — the `innate_power` class, one `power.innate.<family>` per monster family, stamped on a lair's elite at `createNamedElite` (THR-1671); not the `innate` trait category
 - **[Strained](./Traits.md#strained)** — a timed condition that thins one Reach, the price a strain spell charges (`condition.strained.<reach>`, THR-1571 / THR-1673); not Exhausted, never a permanent Reach loss
 - **[Temper](./Traits.md#temper)** — how a creature breaks when a fight turns (*stubborn*, *berserk*, *skittish*, *bargains*); a `trait.temper.*` trait each lair monster is minted with, read at the fight's temper checkpoint (THR-1544)
 - **[Tag Namespace](./Traits.md#tag-namespace)** — every content tag is written `#`-prefixed across one shared namespace; `normalizeTag` strips one leading `#` as a safety net, but the convention is the rule
