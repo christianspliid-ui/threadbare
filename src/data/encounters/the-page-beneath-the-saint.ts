@@ -68,8 +68,8 @@ const step0TheFind: ActionStep = {
   // carries no hand (a hand on a choice step would replace the fork).
   successAtCostAfterimage: 'The archivist kept hold of the chronicle, but gripped it hard enough to crack the page along its old fold.',
   criticalSuccessAfterimage:
-    'Under the lamp the archivist found a second hand in the margin: a later scribe who had known the page was ' +
-    'forged, and had written nothing but a small cross beside it.',
+    'Under the lamp the archivist found a second hand in the margin: a later scribe who had read the same page, ' +
+    'and had written nothing but a small cross beside it.',
   criticalFailureAfterimage:
     'The lamp went out. The archivist groped for the stair in the dark and came up with the page crushed in ' +
     'one fist.',
@@ -150,8 +150,8 @@ const step1LetTheTruthSurface: ActionStep = {
     'broke clean, and the region got a long ugly rumor instead of a reckoning.',
   // THR-1667 S3: the missing afterimages and a dealt hand.
   successAtCostAfterimage:
-    'The chronicle reached the light, but the order took the archivist\'s keys the day the copies went out. They ' +
-    'watched the schism begin from outside the library door.',
+    'The chronicle reached the light, but the order took the archivist\'s keys the day the copies went out. The ' +
+    'archivist watched the schism begin from outside the library door.',
   criticalSuccessAfterimage:
     'The first to read the copies was the order\'s own high reader, who laid the page beside the relic\'s ' +
     'certificate and said aloud, in chapter, that the page was genuine.',
@@ -408,8 +408,8 @@ const TRUTH_BURIED_ENDINGS: AftermathVariant = {
       overview:
         'The burial did not hold its secret even for a season. A junior reader found the archivist weeping over ' +
         'the open chronicle, asked what it was, and was told a lie too clumsy to believe. The page went back into ' +
-        'the wall all the same, and the region went on lighting its river-lamps. But two people now know which ' +
-        'wall it is, and one of them never agreed to keep it.',
+        'the wall all the same, and the region went on lighting its river-lamps. But two people now know the ' +
+        'page exists, and one of them never agreed to keep it.',
     },
   },
 };
@@ -427,6 +427,9 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
         'the square. The faith did not break. It hardened. The river-lamps burn in more windows than before, and ' +
         'the archivist lives outside the library now, on what the few who believed them can spare.',
       changes: [],
+      reactionPrompt:
+        'The truth was denied and the faith has hardened around the lie. The archivist is out in the cold for ' +
+        'reading it. What does the god do now?',
       reactions: [],
     },
   },

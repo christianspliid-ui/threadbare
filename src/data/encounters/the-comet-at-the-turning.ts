@@ -65,7 +65,7 @@ const step0TheSkyOpens: ActionStep = {
     'would have known what it meant.',
   criticalFailureAfterimage:
     'The prophet slipped on the frosted tiles and came down the hill with a gashed head, the reading still ' +
-    'unmade. The couriers waited another night, and the capitals heard that the seer had fallen.',
+    'unmade. The couriers waited at the foot of the hill until dawn.',
 };
 
 /**
@@ -105,8 +105,8 @@ const step1ProclaimTheTurning: ActionStep = {
     'the strength of a word the god let slip too far.',
   // THR-1667 S3: the missing at-cost line and a dealt hand.
   successAtCostAfterimage:
-    'The prophet proclaimed the turning, and the couriers rode, but the height stayed in the prophet\'s eyes. ' +
-    'They could not sleep under a roof for a month after.',
+    'The prophet proclaimed the turning, and the couriers rode, but the reading cost the prophet their voice. ' +
+    'They spoke the last of it in a whisper.',
   deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'lore'] },
   successMetadata: { reputationDelta: 0.18 },
   failureMetadata: { reputationDelta: -0.12 },
@@ -420,10 +420,13 @@ const ANCHORED_ENDINGS: AftermathVariant = {
     critical_failure: {
       overview:
         'The prophet told the nations to hold fast, and the nations held. Border lords stayed behind walls that ' +
-        'were already failing. The pilgrims turned home to fields that could not feed them through the winter ' +
-        'the comet had warned of. The grief the god meant to spare them has only been put off, and when it comes ' +
+        'were already failing. The pilgrims turned home to fields that could not feed them through the hard ' +
+        'years ahead. The grief the god meant to spare them has only been put off, and when it comes ' +
         'it will find a whole world standing still, reassured.',
       changes: keepChanges(ANCHORED_AFTERMATH, ['anchored_age_held', 'anchored_unborn']),
+      reactionPrompt:
+        'The age has been told to hold, and the grief has only been put off. What does the god do with a world ' +
+        'it has steadied in the wrong place?',
     },
   },
 };
