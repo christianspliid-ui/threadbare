@@ -91,6 +91,13 @@ function pickKeeperOnRealmGround(s: GameState, runtime: SimulationRuntime): { ke
     if (!realm) continue;
     // Not already a member of that Realm — we want to see the membership minted.
     if (findMembershipEdge(s.graph, m.id, realm)) continue;
+    // Nor of *any* Realm: the decayed-stranger arm drops the keeper below subject in
+    // this Realm and expects the court rows to stop, which a subject of a second Realm
+    // is rightly still supplied. THR-1627 moved the seed's trajectory onto such a
+    // keeper (ind_8, a subject of faction_0), which read as the decay arm failing.
+    const inAnyRealm = s.graph.getOutgoingEdges(m.id, 'member_of')
+      .some(e => String(s.graph.getNode(e.target)?.properties.factionDefId ?? '').startsWith('realm.'));
+    if (inAnyRealm) continue;
     const pick = { keeper: m.id, town: at, realm };
     if (isAutonomousDecisionActor(m)) return pick;
     fallback ??= pick;

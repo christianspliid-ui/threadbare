@@ -622,8 +622,15 @@ export function prepareDebugEncounterContext(
  * `perilous` on a `fair` step. 14 (capability ~0.83) lands the forecast
  * mid-word on `fair`, with room for a hand to move it in either direction —
  * the whole point of balanced review. Measured live 2026-07-31.
+ *
+ * **THR-1627 re-set 14 → 28.** On the THR-1581 re-fitted curve (midpoint 30,
+ * k 0.08) raw 14 is capability 0.218, and with the local offset at 0 a mid-`fair`
+ * step (0.375) forecast 0.40 + 1.25 × (0.218 − 0.375) ≈ 0.20 — `doomed`/`perilous`,
+ * not `uncertain`. Raw 28 is capability 0.460: mid-`fair` forecasts ≈ 0.51, the
+ * middle of `uncertain` (0.40–0.60), and the whole `fair` band (0.30–0.45) spans
+ * 0.41–0.60 before sphere and hand. Purpose unchanged; only the number re-derived.
  */
-export const DEV_TEST_AVATAR_REACH_RAW = 14;
+export const DEV_TEST_AVATAR_REACH_RAW = 28;
 
 /**
  * Minimum essence per sphere for balanced review — every sphere-gated card in

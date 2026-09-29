@@ -197,10 +197,13 @@ describe('the planner forecasts the odds the dice use (planner-forecast-equals-r
 
   it('the case the plan names: a local step at difficulty 0.45 plans with what it rolls', () => {
     // Capability 0.55 against d 0.45 at local scale: the old planner read 0.10 → floor 0.05
-    // while the roll applied the −0.10 offset and the 0.65 floor.
+    // while the roll applied the −0.10 offset and the 0.65 floor. THR-1627: the local
+    // offset is 0, so both read 0.40 + 1.25 × (0.55 − 0.45) = 0.525 — the parity is the point.
     const rolled = estimateStepProbability(0.55, 0.45, undefined, 'local');
-    expect(rolled).toBeGreaterThanOrEqual(0.65);
-    expect(forecastStepProbabilities(0.55, 0.45, undefined, 'local').successProbability).toBeCloseTo(0.65, 2);
+    expect(rolled).toBeCloseTo(0.525, 9);
+    // The expected-utility forecast counts whole d100 faces, so it may sit one face off.
+    expect(Math.abs(forecastStepProbabilities(0.55, 0.45, undefined, 'local').successProbability - rolled))
+      .toBeLessThan(0.01 + 1e-9);
   });
 });
 

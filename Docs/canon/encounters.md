@@ -152,7 +152,18 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 - **Rule 3 — Divine influence is soft-power, expressed through the scene's prose; card faces are library-generic.** *(Amended 2026-07-30/2026-08-25: the original rule — "each encounter writes its own god-verbs" — predates the communication pivot. What survives: never full control, and the scene prose grounds each card in this encounter's named elements. What changed: the card text itself is the shared 21-type library vocabulary, spell-style, never scene-bespoke.)*
 - **Rule 4 — Every primitive is clickable.** Every node type — cast tile, item, clue, place, faction, Ascendant — has a detail page.
 
-**Picking a step's `difficulty` (THR-1575 forecast window, guidance from 2026-09-24).** A step's difficulty is **the proficiency the step demands**, on the same 0–1 scale as a mortal's capability. Pick it as the proficiency of the mortal the step is written for, and expect mortals of that level to engage it at about even odds. A step for a green apprentice sits low; a step only a master should face sits high. Do not pick a number by feel for "how hard does this sound". The dice are being re-fitted to this reading (THR-1581), and mortals will choose challenges whose forecast is about 50–65% (THR-1582). A step's number therefore decides *who* attempts it, not whether it is easy for everyone. The four difficulty words (`gentle` · `fair` · `steep` · `severe`) keep their bands. Coverage per proficiency band — which levels the catalog already serves and which it starves — is printed by `npm run measure:roll-spread`. Expert- and master-level content is authored after the design lands, from that report.
+**Picking a step's `difficulty` (THR-1575 forecast window, guidance from 2026-09-24).** A step's difficulty is **the proficiency the step demands**, on the same 0–1 scale as a mortal's capability. A mortal exactly as able as the number faces the step **at par** — *uncertain*, about 40% (THR-1581). The mortals who actually **choose** it stand about **0.14 above it**, because mortals commit at a forecast of about 50–65% (THR-1582; the gap is derived — `windowFitGap()` in `src/engine/kpi/engagementKpi.ts`). So write the number for the mortal a notch *below* the one you want to attempt the step. A step for a green apprentice sits low; a step only a master should face sits high. Do not pick a number by feel for "how hard does this sound". Since THR-1627 a local step rolls against exactly the number you wrote (the local scale offset is 0), and the difficulty word the player reads names that same number. A step's number therefore decides *who* attempts it, not whether it is easy for everyone. The four difficulty words (`gentle` · `fair` · `steep` · `severe`) keep their bands.
+
+To aim content at a band, author the template's **mean step difficulty** in its range (plan `Docs/plans/2026-09-29-thr-1627-content-above-novice.md` § D3):
+
+| Band that should choose it | Its capability | Mean step difficulty | Word it reads |
+|---|---|---|---|
+| novice | < 0.35 | under 0.21 | gentle / fair |
+| journeyman | 0.35–0.65 | 0.35–0.50 | fair / steep |
+| expert | 0.65–0.85 | 0.55–0.70 | steep / severe |
+| master | ≥ 0.85 | 0.72–0.85 | severe |
+
+**The coverage scoreboard** is `npm run measure:roll-spread -- --coverage-only`: content banded by window fit (with the at-par row kept for continuity) and the **everyday settlement board** by band × primary reach, each reach marked `<` where it sits under its band's floor (`EVERYDAY_FLOOR_BY_BAND`). The everyday board is what a mortal meets where it stands — settlement-drawable, rarity ≤ 2, not a guild, army, monster, fight or confront template. Content above novice is authored against that board, one factory batch at a time (THR-1676…THR-1682). "Window fit" and "everyday board" are KPI-internal labels, never player-facing.
 
 ## Content references content by kind and tags, not by id (THR-1487/THR-1488)
 
