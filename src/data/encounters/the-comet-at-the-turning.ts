@@ -26,8 +26,9 @@
  * at every branch, human consequences over mechanical labels.
  */
 
-import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant, EncounterAftermathChange } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -54,6 +55,17 @@ const step0TheSkyOpens: ActionStep = {
     'them at the top of the hill, in the cold, where the comet\'s light fell on both alike.',
   successAfterimage: 'The prophet stood beneath the comet, and a waiting world held its breath.',
   failureAfterimage: 'The prophet faltered at the threshold of the reading, and the cold crept in.',
+  // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
+  // carries no hand (a hand on a choice step would replace the fork).
+  successAtCostAfterimage:
+    'The prophet held the reading through the night, but the cold took two fingers\' feeling and did not give ' +
+    'it back.',
+  criticalSuccessAfterimage:
+    'Before the comet set, the prophet saw it split in two. No one else on the hill saw it, and no one else ' +
+    'would have known what it meant.',
+  criticalFailureAfterimage:
+    'The prophet slipped on the frosted tiles and came down the hill with a gashed head, the reading still ' +
+    'unmade. The couriers waited at the foot of the hill until dawn.',
 };
 
 /**
@@ -91,6 +103,11 @@ const step1ProclaimTheTurning: ActionStep = {
     'stripped of all comfort, and named ruins that were never in the reading — a war here, a drowned city ' +
     'there. The couriers rode with it anyway. Somewhere a peace that would have held is unravelling now on ' +
     'the strength of a word the god let slip too far.',
+  // THR-1667 S3: the missing at-cost line and a dealt hand.
+  successAtCostAfterimage:
+    'The prophet proclaimed the turning, and the couriers rode, but the reading cost the prophet their voice. ' +
+    'They spoke the last of it in a whisper.',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'lore'] },
   successMetadata: { reputationDelta: 0.18 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -131,6 +148,11 @@ const step1LetThemReadIt: ActionStep = {
     'mortal\'s full conviction. Hold fast, they told a world that should have been running. The nations ' +
     'obeyed. What is coming will find them where they stood, reassured, and the prophet\'s name will be ' +
     'fixed to the stillness that cost them.',
+  // THR-1667 S3: the missing at-cost line and a dealt hand.
+  successAtCostAfterimage:
+    'The prophet read continuity in the comet and the world was told to hold fast, but the prophet had to ' +
+    'leave out what they had half-seen. They wrote it down that night and burned the page before dawn.',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'insight'] },
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.08 },
 };
@@ -359,6 +381,56 @@ const ANCHORED_AFTERMATH = {
   ],
 } as const;
 
+// ─── Band endings (THR-1667 S3) ───────────────────────────────────────
+//
+// Every step on both paths continues weakened, so a critical failure is the one
+// losing band each path owes (THR-1509 per-path coverage). A band ending retells
+// how the existing change landed and keeps only the base chips still true; it
+// never adds one (UI Law 56).
+
+/** The subset of a variant's own chips, by id — never a new chip. */
+function keepChanges(
+  variant: { readonly changes: readonly EncounterAftermathChange[] },
+  ids: readonly string[],
+): readonly EncounterAftermathChange[] {
+  return variant.changes.filter((change) => ids.includes(change.id));
+}
+
+// The age was still told to turn, and the turning still unseats people. The
+// prophet's renown as the one who read the hinge is what a false reading loses.
+const TURNING_ENDINGS: AftermathVariant = {
+  ...TURNING_AFTERMATH,
+  byOutcome: {
+    critical_failure: {
+      overview:
+        'The prophecy went out wrong. The prophet named ruins that were never in the reading, and the couriers ' +
+        'carried every one of them. A border lord mustered for a war the comet never promised, and his ' +
+        'neighbour mustered to meet him. Pilgrims left their fields for a drowned city that does not exist. The ' +
+        'old order is coming apart, as the god whispered it could, but along lines the god never drew.',
+      changes: keepChanges(TURNING_AFTERMATH, ['turning_age_proclaimed', 'turning_displaced']),
+    },
+  },
+};
+
+// The age was still told to hold, and what wanted to be born still sleeps. The
+// grief it prevented is what a wrong reassurance does not prevent.
+const ANCHORED_ENDINGS: AftermathVariant = {
+  ...ANCHORED_AFTERMATH,
+  byOutcome: {
+    critical_failure: {
+      overview:
+        'The prophet told the nations to hold fast, and the nations held. Border lords stayed behind walls that ' +
+        'were already failing. The pilgrims turned home to fields that could not feed them through the hard ' +
+        'years ahead. The grief the god meant to spare them has only been put off, and when it comes ' +
+        'it will find a whole world standing still, reassured.',
+      changes: keepChanges(ANCHORED_AFTERMATH, ['anchored_age_held', 'anchored_unborn']),
+      reactionPrompt:
+        'The age has been told to hold, and the grief has only been put off. What does the god do with a world ' +
+        'it has steadied in the wrong place?',
+    },
+  },
+};
+
 // ─── Template ──────────────────────────────────────────────────────────
 
 export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
@@ -429,10 +501,10 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      proclaim_the_turning: TURNING_AFTERMATH,
-      let_them_read_it: ANCHORED_AFTERMATH,
+      proclaim_the_turning: TURNING_ENDINGS,
+      let_them_read_it: ANCHORED_ENDINGS,
     },
-    fallback: { ...ANCHORED_AFTERMATH },
+    fallback: { ...ANCHORED_ENDINGS },
   },
 
   description:

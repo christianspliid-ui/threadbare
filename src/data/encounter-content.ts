@@ -3239,6 +3239,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 2,
         narrative: 'The tower keeps its correspondence on the third floor and its guards on the first and second. {actor} goes up the outside, where the stonework is old enough to have handholds and sound enough to hold weight.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} reaches the window, but a handhold breaks away on the way up and drops into the yard. Someone below goes looking for what fell.',
+        criticalSuccessAfterimage: 'On the way up {actor} passes a lit window and hears the steward give a guard the new watchword for the gate.',
+        criticalFailureAfterimage: 'A handhold gives on the second floor. {actor} lands on the wall walk in front of a guard and runs for the dark with the alarm bell ringing.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'shadow'] },
         onSuccess: {
           narrative: '{actor} comes in through a window left open for the heat, and stands a while letting {their} eyes adjust. The floor below is loud with people who believe the stair is the only route up.',
           reputationDelta: 0.05,
@@ -3257,6 +3262,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // The prior prose used `{their}` for the secrets' meaning, but the pronoun tokens
         // resolve to the acting agent — it rendered as the actor's. Third parties get nouns.
         narrative: 'The correspondence room is not locked, because a locked door on the third floor would tell everyone which door mattered. {actor} has to read enough to know what is worth taking.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds the letters worth having, but reads them by a candle stub and leaves a drop of wax on one sheet. A careful clerk would see it.',
+        criticalSuccessAfterimage: 'One letter has not been answered yet. {actor} reads what the tower is being asked before the tower has decided what to say.',
+        criticalFailureAfterimage: '{actor} knocks the candle over on the desk, and the letters that mattered go up with it. Nothing is left worth copying.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
           narrative: 'The letters worth having are the ones filed under a dull heading and dated out of order. {actor} reads four of them twice, and puts every sheet back in the order it lay.',
           reputationDelta: 0.08,
@@ -3274,6 +3284,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'Going down the outside in the dark is harder than coming up it was, and now there is a reason to hurry. The window has been shut and latched since {actor} came through it.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} gets down with the copies, but has to force the latched window to do it. The latch hangs broken for the first guard who checks it.',
+        criticalSuccessAfterimage: 'At the foot of the tower {actor} finds a servants\' door, barred only from the inside. {actor} lifts the bar and walks out into the street like a servant on an errand.',
+        criticalFailureAfterimage: 'Guards drag {actor} off the stonework and find the copies inside {their} shirt. {actor} breaks loose and runs, and the copies stay with the guards.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'peril'] },
         onSuccess: {
           narrative: '{actor} goes down the same stones with the letters copied and the originals back in their order. The tower will not know it was read until the knowledge is used against it.',
           reputationDelta: 0.15,
@@ -7185,6 +7200,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} traces the edge of the settlement, noting every gap in fence and wall. Vigilance is mostly routine, and the routine is mostly walking.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} walks the whole circuit, but the last stretch runs through a bramble ditch. {actor} comes back with torn legs and boots full of water.',
+        criticalSuccessAfterimage: 'Halfway round, {actor} finds a path beaten through the hedge that nobody in the settlement made. Fresh tracks run out through it and back again.',
+        criticalFailureAfterimage: '{actor} slips on the ditch bank and turns an ankle a mile from the gate. The circuit ends there, and {actor} limps home in the dark.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['journey', 'insight'] },
         onSuccess: {
           narrative: 'Every approach mapped, every weak point catalogued. {actor} finishes the circuit knowing exactly where the wall would give first.',
           reputationDelta: 0.02,
@@ -7201,6 +7221,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'A gap in the stones, a trampled section of hedge — {actor} must decide what to fix and what to watch.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The worst gap is closed, but with the stakes from the goat pen. The goats are loose by morning, and their owner wants to know who took his fence.',
+        criticalSuccessAfterimage: 'While {actor} fills the gap, two neighbours stop to help and come back with a cart of stone. By dusk the whole east wall is mended, not just the gap.',
+        criticalFailureAfterimage: '{actor} pulls a rotten post to replace it and brings a whole length of fence down with it. The gap is three times wider than when {actor} started.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'craft'] },
         onSuccess: {
           narrative: '{actor} shores up the worst of it and places markers where the rest need attention. The perimeter holds.',
           reputationDelta: 0.03,
@@ -7742,6 +7767,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Darkness settles. {actor} takes the watch, eyes adjusting to the shapes that move beyond the firelight and the ones that only appear to.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} stays awake all night by standing in the wind. Nothing gets past the line, and by dawn {actor} cannot stop shaking.',
+        criticalSuccessAfterimage: 'Near midnight {actor} hears two voices on the road, low, counting the tents. They move off without seeing {actor}, and {actor} marks which way they went.',
+        criticalFailureAfterimage: '{actor} falls asleep by the fire. Before dawn someone walks through the camp and takes a pack from beside the sleepers, and nobody wakes.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'peril'] },
         onSuccess: {
           narrative: '{actor} reads the night like a language — every sound placed, every shadow accounted for. What moves out there stays out there.',
           reputationDelta: 0.02,
@@ -7758,6 +7788,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'A sound at the edge of camp, wrong for the wind. {actor} rises with a hand on the weapon and waits for it to come again.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'It is a fox at the hen coop. {actor} drives it off, but it takes two hens with it, and the hens\' owner blames the watch.',
+        criticalSuccessAfterimage: 'It is a man at the edge of the firelight, and he runs when {actor} rises. He drops what he was carrying: a knife and an empty sack.',
+        criticalFailureAfterimage: '{actor} charges the sound with a raised blade, and the sound is a child from the camp looking for the latrine. The child screams, the camp wakes, and nobody sleeps again that night.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['might', 'peril'] },
         onSuccess: {
           narrative: 'A wild animal, a falling branch — no more than that. {actor} handles it cleanly and the camp sleeps on.',
           reputationDelta: 0.03,
@@ -7789,6 +7824,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101 (batch 13, hearsay slice).
         narrative: '{actor} takes up position where voices gather — a well, a hearth, a crossroads. The trick is having a reason to be there that nobody has to ask about.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} hears plenty, but only by buying drinks for whoever is talking. By evening {actor}\'s purse is lighter by a day\'s wage.',
+        criticalSuccessAfterimage: 'A carter who has drunk too much takes {actor} for a friend. He names who is buying grain this month and who is quietly selling.',
+        criticalFailureAfterimage: 'The woman at the well asks {actor} outright why {they} keep{s} standing there. {actor} has no answer ready, and by noon the neighbours are all watching.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'social'] },
         onSuccess: {
           narrative: 'Fragments reach {their} ears — a name dropped carelessly, a warning half-whispered. {actor} files it all away.',
           reputationDelta: 0.02,
@@ -7805,6 +7845,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Most of it is repeated, and repetition is not evidence. {actor} sorts for the detail nobody would have bothered to invent.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'One story holds up, but checking it means asking the wrong man a question. He answers, and then starts asking around about who {actor} is.',
+        criticalSuccessAfterimage: 'Two stories that disagree turn out to be one quarrel told from both sides. {actor} learns the quarrel, and who started it.',
+        criticalFailureAfterimage: '{actor} settles on the likeliest story, and it is the one the locals tell to fool strangers. {actor} leaves certain of something false.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: 'One thread holds up. {actor} has learned something real — where to go, whom to trust, what to avoid.',
           reputationDelta: 0.03,
@@ -8260,6 +8305,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // slice). The failure line was also character-identical to
         // `study_surroundings` (impediment #571) — the duplicate is resolved here.
         narrative: 'Older channels run under this ground the way water runs under limestone. {actor} sits down on the dirt and stops trying to see.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The pull comes, but it comes through {actor}\'s teeth and temples. {actor} reads the channel with a headache that lasts until dark.',
+        criticalSuccessAfterimage: 'The pull is not faint at all. The whole hillside hums with it, and {actor} can feel two channels crossing under the spot where {they} sit{s}.',
+        criticalFailureAfterimage: 'Something in the ground pulls back. {actor} comes to lying in the dirt with a nosebleed, and the hour gone.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'wild'] },
         onSuccess: {
           narrative: 'There — a pull, faint but unmistakable. The land remembers its channels, and {actor} begins to read them.',
           reputationDelta: 0.02,
@@ -8276,6 +8326,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Feeling the pull is the easy half. Following it to where it goes, and working out what put it there, takes the rest of the daylight.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} follows the line to its end, but the end is a mile out in open country. Dark comes down first, and {actor} spends the night out there without a fire.',
+        criticalSuccessAfterimage: 'The line ends at a standing stone nobody in the district has ever mentioned. Someone has been leaving offerings at its foot, and not long ago.',
+        criticalFailureAfterimage: '{actor} follows the line into a bog and sinks to the waist before {they} can turn. {actor} crawls out without the map and without a boot.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['journey', 'lore'] },
         onSuccess: {
           narrative: 'The ley line resolves into a path {actor} can follow. Where it leads, the magic runs stronger.',
           reputationDelta: 0.03,
@@ -8576,6 +8631,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Gear frays and blunts with use. {actor} lays out {their} tools and takes stock of what needs fixing.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds the crack in the haft, but only by testing it, and the haft gives. What needed mending now needs replacing.',
+        criticalSuccessAfterimage: 'Laid out side by side, the gear shows {actor} why it wears: every strap is rubbed on one side, because the pack has ridden crooked all season.',
+        criticalFailureAfterimage: '{actor} takes the buckle apart to see the damage and drops the pin in the grass. After an hour on hands and knees, the strap still has no buckle.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'insight'] },
         onSuccess: {
           narrative: '{actor} identifies the worst of it — a cracked haft, a loosened strap — and sets to work without hurrying.',
           reputationDelta: 0.02,
@@ -8598,6 +8658,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // engine's existing agreement token and is what the rest of the corpus uses.
         criticalSuccessAfterimage: 'The repair holds better than the gear did new. {actor} stumbles on an old improvement in the fixing — a balance, a set to the grip — and keeps it for everything {they} mend{s} after.',
         criticalFailureAfterimage: 'The fix fails at the worst moment to learn it failed — not on the bench but later, out where it mattered. {actor} carries the lesson a good deal longer than the broken gear.',
+        // THR-1667 S3: the missing at-cost line and a dealt hand.
+        successAtCostAfterimage: 'The repair holds, but it takes the last of {actor}\'s cord and the spare strap to make it. The next thing that breaks will have to wait.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
         onSuccess: {
           narrative: 'Not perfect, but serviceable. {actor} tests the repair — it holds. Good enough for what lies ahead.',
           reputationDelta: 0.03,
@@ -8627,6 +8690,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Roof, wall, foundation — {actor} checks each in turn. The plain calculus of what will hold and what will not.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The weak points are clear, but {actor} finds the rotten beam by putting a foot through it. The ankle has swollen before the survey is done.',
+        criticalSuccessAfterimage: 'The walls are sounder than they look. The real danger is a crack running up the chimney, and {actor} finds it before the next fire is lit.',
+        criticalFailureAfterimage: '{actor} leans on the wrong post, and a length of roof comes down in a shower of thatch and dust. What was fragile is now open to the sky.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'insight'] },
         onSuccess: {
           narrative: 'The weak points are clear. A sagging beam here, a crumbling joint there. {actor} knows where to start.',
           reputationDelta: 0.02,
@@ -8643,6 +8711,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Salvaged timber, borrowed rope, stones wedged into gaps. {actor} makes do with what is to hand.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The shelter holds, but the timber came off a neighbour\'s woodpile. The neighbour comes round that evening to say so, loudly, in front of everyone.',
+        criticalSuccessAfterimage: 'The salvaged timber turns out to be seasoned oak, better than anything the shelter was built with. When the work is done it is the soundest roof for a mile.',
+        criticalFailureAfterimage: 'The wedge {actor} drives in splits the old wall along its length. The shelter still stands, just, but nobody will sleep under it now.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'craft'] },
         onSuccess: {
           narrative: 'The shelter holds firmer now. Not beautiful, but solid. {actor} has earned a dry night.',
           reputationDelta: 0.03,
@@ -9746,6 +9819,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101 (batch 13, hearsay slice).
         narrative: 'Every place keeps its own historians, and they are not the ones with the records. {actor} has to find them and then be worth the telling.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The talkers take {actor} in, but the price is a round of drinks, and then another. {actor} learns plenty and pays for all of it.',
+        criticalSuccessAfterimage: 'The oldest of the talkers takes a liking to {actor}. She tells the stories the others leave out, including the ones about her own family.',
+        criticalFailureAfterimage: '{actor} laughs at a story about a drunk, and the drunk\'s son is sitting among the talkers. The talk stops, and nobody tells {actor} anything after that.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: '{actor} is handed a stool before asking for one. The talk gets ahead of itself inside ten minutes.',
           reputationDelta: 0.02,
@@ -9762,6 +9840,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Half of it is wishful, a quarter is spite, and the rest has been improved in the retelling. {actor} works out which parts nobody had a motive to alter.',
+        // THR-1667 S3: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds the true account, but tests it by repeating it to the wrong listener. By evening the story is going round with {actor}\'s name on it.',
+        criticalSuccessAfterimage: 'The detail nobody bothered to alter points somewhere nobody has looked: an old quarrel between two families that neither will speak of.',
+        criticalFailureAfterimage: '{actor} trusts the account that flatters nobody. It was made up by the one talker who wanted {actor} to believe it.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
           narrative: 'One account carries a detail that flatters none of the people repeating it. {actor} takes that one and leaves the rest where it lies.',
           reputationDelta: 0.03,
