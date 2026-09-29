@@ -5284,7 +5284,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Movement & Colocation',
     intent:
-      'A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board.',
+      'A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. The goal is the encounter *here* (THR-1674): a copy of the template in another town never carries the commitment.',
     ulTerms: ['Encounter'],
     // `movementState` is the carrier. `targetEncounterId` + `motivationPull` are
     // written at queue time and on both reroutes; `journeyGoal` is the per-decision
@@ -5298,9 +5298,9 @@ export const CONTRACTS: readonly Contract[] = [
     // which is where the live decision is made.
     readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/encounterFilterPipeline.ts', 'src/engine/decisionBoard.ts'],
     verifiedLive: {
-      date: '2026-09-28',
+      date: '2026-09-29',
       evidence:
-        'THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First\'s longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan\'s first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.',
+        'THR-1674: arrival decisions (all mortals, attended medium world, 150 ticks) that re-picked the goal template at a different hex than the trip was for — 3 in 23 seeds on main (seeds 1, 14, 19; each logged journeyGoal: kept), 0 after the commitment was scoped to the copy here (seeds 1, 14, 19, 42, 99, 11, 7, 123); first-encounter-gate unchanged on 42/99/11/7/123 (gaps 24/14/16/28/23). THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First\'s longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan\'s first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.',
     },
   },
   // -- Culture & Spheres -> the encounter opening (THR-1635) ------------------
