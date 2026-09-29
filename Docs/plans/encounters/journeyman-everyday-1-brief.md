@@ -33,32 +33,61 @@ inside these rows.
 
 | Slot | id | reach (binding) | steps (reach · difficulty) | mean | window fit | shape | settings | consequence hand (binding) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | `encounter.slice.pilots_reckoning` | star | star 0.40 → star 0.48 | 0.44 | 0.58 | opt-in complication | `urban` | `knowledge` + `story_seed` |
-| 2 | `encounter.slice.overdue_caravan` | star | eye 0.38 → star 0.45 → star 0.48 | 0.44 | 0.58 | test and consequence | `urban`, `rural` | `story_seed` + `thread` |
-| 3 | `encounter.slice.assize_letter` | star | star 0.45 | 0.45 | 0.59 | single test | `rural`, `urban` | `knowledge` + `movement` |
-| 4 | `encounter.slice.counting_house_dispute` | gold | gold 0.42 → heart 0.40 | 0.41 | 0.55 | single test → fork (the mortal rules) | `urban` | `possession` + `secret` |
-| 5 | `encounter.slice.bell_at_the_exchange` | gold | gold 0.40 → gold 0.48 | 0.44 | 0.58 | query prize | `urban` | `possession` + `drive` |
-| 6 | `encounter.slice.masons_commission` | stone | stone 0.40 → stone 0.50 | 0.45 | 0.59 | appointment | `urban`, `rural` | `possession` + `place` |
+| 1 | `encounter.town.pilots_reckoning` | star | star 0.40 → star 0.45 | 0.425 | 0.565 | opt-in complication | `urban` | `relationship` + `membership` → swap `membership` → `story_seed` |
+| 2 | `encounter.town.overdue_caravan` | star | eye 0.38 → star 0.45 → star 0.45 | 0.427 | 0.567 | test and consequence | `urban`, `rural` | `thread` + `place` → swap `place` → `story_seed` |
+| 3 | `encounter.town.assize_letter` | star | star 0.45 | 0.45 | 0.59 | single test | `rural`, `urban` | `knowledge` + `story_seed` → swap `story_seed` → `movement` |
+| 4 | `encounter.town.counting_house_dispute` | gold | gold 0.42 → heart 0.40 | 0.41 | 0.55 | single test → fork (the mortal rules) | `urban` | `knowledge` + `secret` |
+| 5 | `encounter.town.bell_at_the_exchange` | gold | gold 0.40 → gold 0.45 | 0.425 | 0.565 | query prize | `urban` | `story_seed` + `omen` → swap `omen` → `possession` |
+| 6 | `encounter.town.masons_commission` | stone | stone 0.40 → stone 0.45 | 0.425 | 0.565 | appointment | `urban`, `rural` | `relationship` + `possession` |
 
 - **`rarityTier: 2` on all six, `scale: 'local'` on all six.** Local's offset is 0 since
   THR-1627, so the authored number is the rolled number. Mean step difficulty sits in
   the brief's 0.35–0.50 journeyman range with margin on both sides. Window fit =
   mean + 0.14 lands 0.55–0.59, inside the journeyman capability band (0.35–0.65) and
   clear of both edges.
+- **No step above 0.45, and `intrinsicTier: 'background'` on all six.** Open-draw
+  (background) templates are held to `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45) per step,
+  so that a hand can still move the forecast word for an off-reach mortal. The first
+  draft of this brief put final steps at 0.48–0.50. Raising the tier to `shaping` would
+  lift the ceiling, but it would also change how often the player is interrupted, which
+  this batch has no business changing. So every step is capped at 0.45 instead; the
+  means move from 0.44–0.45 to 0.425–0.45, still journeyman (window fit ≥ 0.565).
+  Everyday content is open-draw by definition, so the cap is the honest constraint.
 - **The primary reach is the reach of most rolled steps** (`measure-roll-spread`
   `primaryReachOf`). On a tie the first step wins. Slot 2 opens on Eye and is still
   Star by two steps to one. Slot 4's tie goes to its first step, Gold.
 - **Everyday by construction.** Every slot declares `urban` and/or `rural`, which expand
   to `hamlet · town · city · capital`. No slot carries a guild-rank, army, monster,
-  fight or confront gate, and no id wears an excluded prefix (`encounter.slice.*`). The
+  fight or confront gate, and no id wears an excluded prefix (`encounter.town.*`). The
   higher stakes live in the fiction (who is across the table, what the money is), never
   in a rule gate. A gate would re-create the situational problem this brief exists to
   fix (plan § D4).
 - **Consequence hands** rolled with `npm run draw:consequences -- <id> --reach <r>
-  --rarity 2`. `check:encounter` recomputes each from id + reach + rarity. No swap is
-  planned; each hand fits its premise.
+  --rarity 2`. `check:encounter` recomputes each from id + reach + rarity. See § Amendment —
+  the id move for the hands that bind now.
 
-### How each drawn family is wired in context
+### Amendment — the id move (2026-09-29, same session)
+
+The batch was first authored under `encounter.slice.*`. That prefix is reserved for
+Christian's vertical-slice playthrough: it is held out of opening coloration
+(`COLORATION_EXCLUDED_TEMPLATE_PREFIXES`, TODO THR-1220) and pinned at ten templates by
+test. All six moved to `encounter.town.*`. The hand is drawn from the id, so every hand
+re-rolled. The new hands bind, and each was wired inside the fiction already written.
+Where a drawn family fights that fiction, the one recorded `consequenceSwap` is used:
+
+| Slot | New hand | Wiring |
+|---|---|---|
+| 1 pilots | relationship + membership | relationship: the factor's `bond_change`. **Swap** membership → story_seed: a merchant house is a counterparty, not a body the mortal can join; the house coming back for the next run is the fiction (`encounter_seed`) |
+| 2 overdue | thread + place | thread as below. **Swap** place → story_seed: the scene's place is the town the searchers leave from, and nothing about it changes |
+| 3 assize | knowledge + story_seed | knowledge: `intelligence`. **Swap** story_seed → movement: the case is decided at the assize, off-scene; what this scene changes is that the mortal leaves with the letter (`agent_relocation`) |
+| 4 counting | knowledge + secret | knowledge: a trade-route `intelligence` from reading both houses' books. secret: `favor_creation`. No swap |
+| 5 bell | story_seed + omen | story_seed: a placeless `encounter_seed` (`encounter.caravan_deal`) on the outbid side. **Swap** omen → possession: the tag-drawn lot |
+| 6 masons | relationship + possession | relationship: `bond_change` with the inspector. possession: the tag-drawn fee. No swap |
+
+The effect notes below are the first-draft wiring and still describe the fiction; the
+table above is what binds.
+
+### How each drawn family is wired in context (first draft)
 
 - **slot 1 `knowledge`**: `intelligence` or `spawn_clue` on the success side. A pilot who
   read the water right knows something about that route that the harbour does not.
@@ -125,7 +154,7 @@ clerk's pen that slips). Everything generic is dealt from the Repertoire.
 
 ## Family and setting envelope
 
-- **Family:** `encounter.slice.*` (the everyday life-of-a-town family). No new family tag
+- **Family:** `encounter.town.*` (the everyday life-of-a-town family; see § Amendment for why not `encounter.slice.*`). No new family tag
   is minted. The batch is everyday by design, so it should not be findable as a
   faction's errand.
 - **Setting classes:** `urban` on all six; `rural` also on slots 2, 3 and 6. Each
@@ -141,7 +170,7 @@ clerk's pen that slips). Everything generic is dealt from the Repertoire.
 |---|---|
 | Reach spread | star 3 · gold 2 · stone 1, **fixed by the ticket** (the packet reports this as the one unmet bound; accepted, since the gauge's floor is per reach) |
 | Decision shapes | opt-in · test-and-consequence · single test ×2 · query prize · appointment (no shape more than twice) |
-| Query prize | slot 5 |
+| Query prize | slot 5 draws its lot by tag (a step `rewardPool`; `reward_draw` has no `query` field). The batch census counts `content_query` on slots 2 and 6, whose sequels are seeded by tag query |
 | Appointment | slot 6 |
 | Tone | at most two resolve grim; at least one is a pleasure (slot 5's bidding floor) |
 | Step counts | one 1-step, four 2-step, one 3-step |
