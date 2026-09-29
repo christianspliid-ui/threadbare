@@ -1469,9 +1469,23 @@ export interface DebugBridge {
    * Realms, winner, loser, burned town, fallen commander ids, `yearsAgo`), and
    * `wonders[]` (finder and holder ids).
    *
+   * **`{ fogged: true }` (THR-1656)** returns the player's view instead —
+   * `readWorldPastForPlayer` over the live fog (`visibilityMap` + `hexRevelation`):
+   * the same outline, with each specific marked — `elderAge.war.knownSiteIds`,
+   * `livingMemory[].burnedTownKnown` and `.fallen[].known`, `wonders[].known` — plus
+   * `lines`, the four "Before you woke" groups as flat text (what the chronicle shows).
+   * It reads `gameState.visibilityMap` directly, so under `?nofog` it still reports
+   * the fog the engine holds, not the UI's all-visible proxy.
+   *
    * Async — `await` it.
    */
-  getWorldPast(): Promise<import('./types/worldPast').WorldPastView | null>;
+  getWorldPast(opts?: { fogged?: boolean }): Promise<
+    | import('./types/worldPast').WorldPastView
+    | (import('./types/worldPast').WorldPastPlayerView & {
+        lines: Array<{ group: string; count: number; lines: string[] }>;
+      })
+    | null
+  >;
 
   // ── Follow affordance (THR-1299) ──────────────────────────────────────────
   /**

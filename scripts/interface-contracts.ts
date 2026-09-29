@@ -5343,21 +5343,20 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: WORLDGEN,
     consumerSystem: NARRATIVE,
     intent:
-      'The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties.',
+      'The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties.',
     ulTerms: ['Location', 'Realm'],
     mechanism: {
       kind: 'function',
-      symbols: ['seedWorldPast', 'readWorldPast', 'getPlacePast'],
+      symbols: ['seedWorldPast', 'readWorldPast', 'readWorldPastForPlayer', 'getPlacePast'],
       module: 'src/engine/worldPast.ts',
     },
     writeSites: ['src/engine/worldPast.ts', 'src/engine/gameInit.ts'],
-    readSites: ['src/debug-bridge.ts'],
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Producer half shipped (THR-1631 S1): `seedWorldPast` runs in `initializeGameState` and `readWorldPast` / `getPlacePast` read it back, exposed as `window.__DEBUG.getWorldPast()`. The player-facing readers — the pinned chronicle section and the settlement, ruin and dead-person lines — are S2.',
-      deferralTicket: 'THR-1656',
-    },
+    readSites: [
+      'src/debug-bridge.ts',
+      'src/engine/worldPastWords.ts',
+      'src/components/Game/GameView.tsx',
+      'src/engine/proseEnrichment.ts',
+    ],
   },
   {
     id: 'world-past-descent-feeds-clue-scoring',

@@ -585,6 +585,28 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'The arc so far',
     desc: 'What this mortal has finished, failed and been through, oldest first — read from what the world remembers, not from the day\'s digest.',
   },
+  // The world's past (THR-1656). Filed under `ui.*` because `location.*` and `agent.*`
+  // resolve world-model kinds and live nodes; these are static concepts.
+  'ui.before_you_woke': {
+    label: 'Before you woke',
+    desc: 'What the world was before you woke: the empires that fell, the wars people still remember, and who founded the towns.',
+  },
+  'ui.past.founding': {
+    label: 'Founding',
+    desc: 'How long a place has stood and who founded it. Every town has a founding; the oldest towns were the seats of Realms.',
+  },
+  'ui.past.burned_town': {
+    label: 'A burned town',
+    desc: 'A town that burned in a war people still remember, and was never rebuilt. Which town it was is learned by finding it.',
+  },
+  'ui.past.elder_ruin_empire': {
+    label: 'A dead empire',
+    desc: 'A people who ruled here long before the living, and left ruins behind. Whose ruin a place is becomes clear once it is found.',
+  },
+  'ui.past.dead': {
+    label: 'Died before you woke',
+    desc: 'Someone who died before you woke. The living still remember them.',
+  },
   'ui.calling': {
     label: 'The calling',
     desc: 'What the world calls this mortal for what they do — read from their strongest reaches, the ambition they pursue and their temperament. It changes only when their life does.',

@@ -8,6 +8,7 @@
  * - getAgentFullProfile: Tier 3 UI (detailed profile, knowledge level filtered)
  */
 
+import { buildDeadPastLine, type PastLine } from './worldPastWords';
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { CoreProfile } from '../types/coreRegistry';
@@ -629,6 +630,11 @@ export interface AgentInfoCardData {
     causeWord: string;
     /** The killer's name, only where somebody could actually know it. */
     by?: string;
+    /**
+     * For someone who died before the god woke (THR-1656): what they were and how long
+     * ago they died, as declared segments. Absent for anyone the past pass did not seed.
+     */
+    pastLine?: PastLine;
   };
 }
 
@@ -1548,6 +1554,8 @@ export function getAgentInfoCard(
     const causeWord = DEATH_CAUSE_WORDS[agentProps.deathCause as string] ?? 'died';
     const slainBy = typeof agentProps.slainBy === 'string' ? agentProps.slainBy : undefined;
     card.death = { causeWord };
+    const pastLine = buildDeadPastLine(graph, agentId);
+    if (pastLine) card.death.pastLine = pastLine;
     if (slainBy && killerIsKnown(graph, agentId, slainBy)) {
       const killer = graph.getNode(slainBy);
       if (killer?.name) card.death.by = killer.name;

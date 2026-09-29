@@ -77,6 +77,43 @@ export interface WorldPastView {
   wonders: WorldPastWonder[];
 }
 
+// ─── The player's view (THR-1656, S2) ──────────────────────────────────────
+
+/**
+ * What the player's fog knows — the inputs of the "seen or found" gate (plan § S2b).
+ *
+ * A specific is known once its place's hex is `visible` or `remembered`, or that hex's
+ * ruins layer is revealed (`hexRevelation[key].ruins`). Nothing new is stored:
+ * `remembered` is the fog's own memory, so a specific never un-learns itself.
+ * `visibility` absent means fog is off, and everything is known.
+ */
+export interface WorldPastKnowledge {
+  /** Hex key (`col,row`) → fog state; any object with a `get` works (the fog-off proxy does). */
+  visibility?: { get(key: string): { state: string } | undefined };
+  hexRevelation?: Record<string, { ruins?: boolean } | undefined>;
+}
+
+/** A war in living memory, with each specific marked known or not. */
+export interface WorldPastPlayerLivingWar extends WorldPastLivingWar {
+  burnedTownKnown: boolean;
+  fallen: Array<{ id: string; restingAtId?: string; known: boolean }>;
+}
+
+/**
+ * `readWorldPast`, fog-gated for the player. The outline (empires, the elder war, the
+ * wars' sides, every founding) is always present; the specifics carry `known` flags, and
+ * the surfaces word an unknown one without naming it.
+ */
+export interface WorldPastPlayerView {
+  elderAge: {
+    empires: WorldPastEmpire[];
+    war?: WorldPastElderWar & { knownSiteIds: string[] };
+  };
+  settling: WorldPastSettling[];
+  livingMemory: WorldPastPlayerLivingWar[];
+  wonders: Array<WorldPastWonder & { known: boolean }>;
+}
+
 /** One place's record — the hook ruin content and the S2 page line read. */
 export interface PlacePast {
   locationId: string;

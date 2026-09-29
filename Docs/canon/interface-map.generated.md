@@ -16,11 +16,11 @@ remediation ticket or the build fails.
 | Badge | Count |
 |---|---|
 | 🟢 LIVE | 144 |
-| 🟠 PARTIAL | 2 |
+| 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 51 |
+| 🔵 UNVERIFIED-OK | 52 |
 | **Total** | **205** |
 
 ## Contracts by producing subsystem
@@ -341,7 +341,7 @@ remediation ticket or the build fails.
 | `seeded-pilgrim-route-pools-pilgrimage` | Every culture's capital is a pilgrim's destination from the first tick: its congregation consecrated a route there at worldgen, so the pilgrimage encounter can happen at a capital — a town that could never host it by subtype. | edge: `sacred_route`, `sacredRouteDestinationTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
-| `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `getPlacePast` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1656 |
+| `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `readWorldPastForPlayer`, `getPlacePast` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `worldgen-seeds-the-living-world` | Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one. | edge-prop: `trades_with`, `owns`, `possesses`, `hostile_to`, `knows_secret_of`, `commanded_by` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `worldgen-ties-reach-ambition-and-grief` | Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes. | edge-prop: `relates_to` | Ambitions & Undertakings | 🟢 LIVE | — |
 
@@ -2097,10 +2097,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 320 total — 1 write, 1 read, 318 unclassified
+- **Production hits:** 322 total — 1 write, 1 read, 320 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +313 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +315 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2213,10 +2213,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
+- **Production hits:** 119 total — 1 write, 1 read, 117 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +111 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +112 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2326,10 +2326,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 97 total — 1 write, 1 read, 95 unclassified
+- **Production hits:** 98 total — 1 write, 1 read, 96 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +90 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/hooks/useSimulation.ts` +91 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2627,10 +2627,10 @@ exit
 - **Producer → Consumer:** Agent Lifecycle → Strategic Projects & Control
 - **UL terms:** *World Object*, *Location*, *Place*, *Route*, *Area*
 - **Module:** `src/data/world-objects.ts`
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/data/world-objects.ts`
 - **Read sites:** `src/engine/graph.ts`, `src/types/nodeSchema.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts`, `src/engine/yieldOps.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts`, `src/engine/worldPastWords.ts` +1 more
 - **Verdict:** Verified 2026-09-03: THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.
 
 ### `world-past-descent-feeds-clue-scoring` — 🟢 LIVE
@@ -2645,17 +2645,17 @@ exit
 - **Other hits:** `src/types/worldPast.ts`
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The reader existed with no writer (an inline cast at `clueLifecycle.ts:120`, now typed `WorldPastDescentStratum`). On generated medium worlds the pass writes descent on 120 / 480 living mortals (seed 42) and 136 / 624 (seed 99), 25–26% of those on old land (`readers/past.ts`). `worldPast.test.ts` deletes the sibling `originCultureId` from a descended mortal on a generated small world and still reads `cultureBackstoryTieBonus > 0` from `selectClueRecipient` for the stratum's culture, and 0 for another.
 
-### `world-past-reaches-the-chronicle` — 🟠 PARTIAL
+### `world-past-reaches-the-chronicle` — 🔵 UNVERIFIED-OK
 
-- **Intent:** The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast`, which the "Before you woke" chronicle section and the place lines read (S2), and never through `chronicleEntries`, which cycle end empties.
+- **Intent:** The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties.
 - **Producer → Consumer:** World Generation, Terrain & Places → Attention, Chronicle & Narrative
 - **UL terms:** *Location*, *Realm*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 8 total — 2 write, 4 read, 2 unclassified
 - **Write sites:** `src/engine/gameInit.ts`, `src/engine/worldPast.ts`
-- **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/types/worldPast.ts`
-- **Verdict:** Pinned by badgeOverride: Producer half shipped (THR-1631 S1): `seedWorldPast` runs in `initializeGameState` and `readWorldPast` / `getPlacePast` read it back, exposed as `window.__DEBUG.getWorldPast()`. The player-facing readers — the pinned chronicle section and the settlement, ruin and dead-person lines — are S2.
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`, `src/engine/proseEnrichment.ts`, `src/engine/worldPastWords.ts`
+- **Other hits:** `src/data/world-past-content.ts`, `src/types/worldPast.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `world-ref-opens-one-card` — 🟢 LIVE
 
@@ -2663,10 +2663,10 @@ exit
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
 - **UL terms:** *World object*
 - **Module:** `src/data/surface-registry.ts`
-- **Production hits:** 8 total — 2 write, 3 read, 3 unclassified
+- **Production hits:** 9 total — 2 write, 3 read, 4 unclassified
 - **Write sites:** `src/data/surface-registry.ts`, `src/hooks/useRefRouter.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts`, `src/debug-bridge.ts`
-- **Other hits:** `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`
+- **Other hits:** `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`, `src/engine/worldPastWords.ts`
 - **Verdict:** Verified 2026-09-12: DetailModal + HoverCard mounted in GameView behind RefRouterProvider; the veil, the thread panel and notification click-through all route through it. surfaceRegistry.test.ts pins totality and reachability; refRouterAdapters.coverage.test.ts pins all three source vocabularies. __DEBUG.getSurfaceRegistry() reads the shipped record.
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE

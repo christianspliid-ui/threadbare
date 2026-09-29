@@ -8,6 +8,7 @@ import {
 } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
+import { PastLineText } from '../PastLineText';
 import { EntityVisual } from '../../shared/EntityVisual';
 import { resolveTooltip } from '../../../engine/tooltipResolver';
 import type { WorldGraph } from '../../../engine/graph';
@@ -379,6 +380,14 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
                 ? `${card.death.causeWord} — by ${card.death.by}`
                 : card.death.causeWord}
             </p>
+          )}
+          {/* THR-1656: someone who died before the god woke — what they were, and when. */}
+          {card.death?.pastLine && (
+            <PastLineText
+              line={card.death.pastLine}
+              testId="identity-past"
+              style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontStyle: 'italic' }}
+            />
           )}
           {card.locationName && (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>

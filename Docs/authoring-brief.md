@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-09-28 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-09-29 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 1de77174a8b9f4d3179c26a115fa7452accf45e3)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: e31ad80c6484d37c1d003a2e1165b9d653fa73c1)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a9e866b16e82f019e80385eabd9327d31f4226b5)
 >   - Docs/canon/undertakings.md (sha1: 851d8660d4891fac0e8193531e6abac64d7881c4)
@@ -82,6 +82,8 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{target:place}` | **The place the scene is *about*** (THR-1493). On the organic draw that is the place the scene stands in, so it equals `{location}`; on a seed planted with `inheritContext: true` it is the *parent beat's* target, which `{location}` cannot name because a seed fires wherever the agent has drifted to. Falls back to the current location whenever the target is not a place (dead inherited target, or an agent-kind target) — a place token degrades to a place, never to "the other party". **Use this, not `{location}`, in any prose a seeded encounter may render** | "Ardenmor Keep" |
 | `{target:family}` | **What kind of creature a monster target is** (THR-1545): the family card line of a target carrying a `monsterState` (`MONSTER_FAMILIES[family].cardLine`). **Strips to nothing for any other target**, so pair it with `{?target_has_family}…{/target_has_family}` and the whole sentence drops out: `Inside, {target} is waiting.{?target_has_family} It is {target:family}.{/target_has_family}` | "a beast of claw and hunger" |
 | `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
+| `{place.founded_ago}` / `{place.founder}` | The scene place's past (THR-1656), via `getPlacePast` on where the agent stands: how long ago it was founded, in words, and its named founder (only Realm seats have one). Fall back to "long" / "its first settlers" | "about four centuries" / "Mainua" |
+| `{ruin.empire}` / `{ruin.fall}` | An elder ruin's dead empire (fallback "a people long gone"), and the past war the place fell in. `{ruin.fall}` **strips when the engine holds no fall**, so guard the sentence with `{?has_ruin_fall}…{/has_ruin_fall}` | "the Veiled Sands" / "the Last Siege" |
 | `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
 | `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
 | `{econ_atmosphere}` | Economic mood atmospheric phrase | "nobody is counting carefully" / "people watch each other's hands" |

@@ -337,7 +337,11 @@ past** — `world-past-reaches-the-chronicle`, `world-past-descent-feeds-clue-sc
 said nothing about them, and the one reader of descent (`clueLifecycle`) had no writer. The
 past pass (`worldPast.seedWorldPast`) now writes an elder war, founding ages, wars in living
 memory and up to ten dead onto the graph — never into `chronicleEntries`, which cycle end
-empties. The chronicle row is pinned **PARTIAL** to THR-1656 until the S2 surfaces read it.
+empties. The chronicle row was pinned **PARTIAL** to THR-1656 until the S2 surfaces read it;
+THR-1656 (2026-09-29) registered its reader half — `readWorldPastForPlayer` (fog-gated) feeding
+the pinned "Before you woke" chronicle section, the place line on a settlement or ruin page and
+the line on a dead person's sheet through `worldPastWords`, plus four enrichment placeholders
+in `proseEnrichment` — and the override is gone.
 The dead row is written negative-first: its census caught `routeEvents.pickTargetAgent`
 handing a scarcity quest to a seeded founder, and the fix went into that reader and the three
 location readers that counted the dead as residents, never into the dead. The run-time dead
