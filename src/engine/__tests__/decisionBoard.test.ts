@@ -592,14 +592,24 @@ describe('scoreUnifiedBoard', () => {
       expect(committed[0].candidateIndex).toBe(0);
     });
 
-    it('commits every instance when none is at the destination, and nothing without a goal', () => {
+    // THR-1674 — this used to commit every copy, and a copy in the town just left
+    // won: The First arrived, turned round, and walked back for "the same" encounter.
+    it('commits no copy elsewhere when none is at the destination, and nothing without a goal', () => {
       const elsewhere = scoreUnifiedBoard({
         graph: emptyGraph, agentId: 'a', tick: 1,
         encounterCandidates: [mk('goal', 0.4, 'loc_a'), mk('goal', 0.4, 'loc_b')],
         strategicCandidates: [],
         arrivalGoal: { templateId: 'goal', locationId: 'loc_here' },
       });
-      expect(elsewhere.entries.every(e => e.arrivalCommitment === M)).toBe(true);
+      expect(elsewhere.entries.every(e => e.arrivalCommitment === undefined)).toBe(true);
+      expect(elsewhere.entries.every(e => Math.abs(e.score - 0.4) < 1e-10)).toBe(true);
+      const unlocated = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('goal', 0.4, 'loc_a'), mk('goal', 0.4, 'loc_b')],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal' },
+      });
+      expect(unlocated.entries.every(e => e.arrivalCommitment === M)).toBe(true);
       const none = scoreUnifiedBoard({
         graph: emptyGraph, agentId: 'a', tick: 1,
         encounterCandidates: [mk('goal', 0.4)],

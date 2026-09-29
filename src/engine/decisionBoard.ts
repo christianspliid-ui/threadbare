@@ -255,8 +255,9 @@ export interface BoardInput {
   /**
    * THR-1668 — the encounter a finished journey was walking to, when this is the
    * first decision after arrival and the goal is still on the encounter list. Its
-   * entry (the one at `locationId`, else every entry of the template) scores
-   * `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` × its board score. Absent → no commitment.
+   * entry scores `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` × its board score — only the
+   * one at `locationId` when given (THR-1674: never a copy elsewhere), else every
+   * entry of the template. Absent → no commitment.
    */
   readonly arrivalGoal?: { readonly templateId: string; readonly locationId?: string };
 }
@@ -539,17 +540,15 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // disagreeing about the window. A candidate scored before S4 reads fit 1.
   //
   // THR-1668: the arrival commitment is applied here, where the decision is made.
-  // Prefer the goal's instance at the journey's destination; if none is there,
-  // every instance of the template carries it (the scorer found it elsewhere).
+  // THR-1674: only the goal's instance at `locationId` carries it. A copy of the
+  // template elsewhere is a different encounter — committing to it walked The
+  // First back to the town it had just left. No `locationId` → every instance.
   const goal = input.arrivalGoal;
-  const goalAtDestination = goal?.locationId !== undefined && input.encounterCandidates.some(
-    c => c.entry.templateId === goal.templateId && c.entry.locationId === goal.locationId,
-  );
   for (const [index, candidate] of input.encounterCandidates.entries()) {
     const forecastFit = Number.isFinite(candidate.engagementFit) ? candidate.engagementFit : 1;
     const isGoal = goal !== undefined
       && candidate.entry.templateId === goal.templateId
-      && (!goalAtDestination || candidate.entry.locationId === goal.locationId);
+      && (goal.locationId === undefined || candidate.entry.locationId === goal.locationId);
     const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
     entries.push({
       family: 'encounter',
