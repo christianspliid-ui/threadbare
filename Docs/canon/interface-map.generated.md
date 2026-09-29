@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 149 |
+| 🟢 LIVE | 150 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **209** |
+| **Total** | **210** |
 
 ## Contracts by producing subsystem
 
@@ -286,6 +286,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `held-lead-draws-a-survey` | A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. | edge-prop: `knows_clue_of`, `heldLeadRuinIds`, `sharpenClue`, `leadPull` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `monster-card-shows-on-lair` | A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does. | function: `buildLairMonsterCardModel`, `readOpponentCard`, `monsterState`, `getAgentInfoCard` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -1617,6 +1618,18 @@ exit
 - **Other hits:** `src/data/monster-faction-definitions.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/courtStrategicPack.ts`, `src/engine/strategicGraphOps.ts` +2 more
 - **Verdict:** Verified 2026-09-28: THR-1641. Before: 39 guild `.social.` templates, 0 fired — the lookup read `FACTION_ENCOUNTER_TEMPLATES` (only the Adventurers' six) and ten of eleven definitions listed ids no file defines. After (ids repaired, resolved through `getUnifiedTemplateById`, the reserved slot rotated by `FACTION_SOCIAL_SLOT_ROTATE`): `readers/reach.ts 42,99 200` fired 18 distinct guild `.social.` templates (gate ≥ 10) — without the rotation 9, each the first entry in its guild's list. Unit: `guildSocialTemplates.test.ts` (6), both directions of the id contract.
 
+### `held-lead-draws-a-survey` — 🟢 LIVE
+
+- **Intent:** A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it.
+- **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
+- **UL terms:** *Undertaking*, *Location*
+- **Module:** `src/engine/strategicActionCandidates.ts`
+- **Production hits:** 23 total — 3 write, 3 read, 17 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/strategicGraphOps.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/strategic-packs/wandererStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/engine/agentDetail.ts` +12 more
+- **Verdict:** Verified 2026-09-29: THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.
+
 ### `held-town-affinity-on-the-board` — 🟢 LIVE
 
 - **Intent:** A keeper’s work leans toward what they hold (THR-1448). `computeTemperamentWeight` gains one additive term keyed on the *candidate’s object* — `1` on a Location the actor holds through an active stance, `HELD_REALM_AFFINITY_SHARE` on the Realm’s other holdings, `0` elsewhere — so it discriminates by construction rather than paying every candidate (THR-1301). Carried on `boardTop[].heldTownAffinity` so the census can measure its spread.
@@ -1727,10 +1740,10 @@ exit
 - **Intent:** A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board.
 - **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
 - **UL terms:** *Encounter*
-- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
+- **Production hits:** 14 total — 2 write, 2 read, 10 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +4 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +5 more
 - **Verdict:** Verified 2026-09-28: THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
 
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
@@ -2424,10 +2437,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 42 total — 3 write, 4 read, 35 unclassified
+- **Production hits:** 45 total — 3 write, 4 read, 38 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +30 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +33 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -2448,10 +2461,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 112 total — 2 write, 4 read, 106 unclassified
+- **Production hits:** 113 total — 2 write, 4 read, 107 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +101 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +102 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
