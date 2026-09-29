@@ -485,6 +485,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'seed',
                   tooltipId: 'ui.aftermath_seed',
                 },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
               },
             ],
           },
@@ -525,6 +530,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'seed',
                   tooltipId: 'ui.aftermath_seed',
                 },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
               },
             ],
           },
@@ -565,6 +575,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'seed',
                   tooltipId: 'ui.aftermath_seed',
                 },
+                concepts: [
+                  {
+                    text: 'headed away',
+                  },
+                ],
               },
             ],
           },

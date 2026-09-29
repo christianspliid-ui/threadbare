@@ -444,6 +444,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'companion',
                   tooltipId: 'ui.companions',
                 },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
               },
               {
                 id: 'bout.crit.favour',
@@ -506,6 +512,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'companion',
                   tooltipId: 'ui.companions',
                 },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
               },
               {
                 id: 'bout.success.favour',
@@ -567,6 +579,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   text: 'companion',
                   tooltipId: 'ui.companions',
                 },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
               },
               {
                 id: 'bout.cost.favour',

@@ -410,6 +410,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: '$appointment',
                 visualKind: 'location',
               },
+              concepts: [
+                {
+                  text: 'pays the rest',
+                },
+              ],
               title: 'Paid at the well',
               causeClause: 'The shaft stands',
               detail: '{cast:reeve} pays the rest at the well when its water runs clear.',
@@ -474,6 +479,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: '$appointment',
                 visualKind: 'location',
               },
+              concepts: [
+                {
+                  text: 'pays the rest',
+                },
+              ],
               title: 'Paid at the well',
               causeClause: 'The shaft stands',
               detail: '{cast:reeve} pays the rest at the well when its water runs clear.',
@@ -539,6 +549,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: '$appointment',
                 visualKind: 'location',
               },
+              concepts: [
+                {
+                  text: 'pays the rest',
+                },
+              ],
               title: 'Paid at the well',
               causeClause: 'The shaft stands',
               detail: '{cast:reeve} pays the rest at the well when its water runs clear.',

@@ -51,6 +51,8 @@ export const WELL_FIRST_WATER: UnifiedActionTemplate = {
       duration: { min: 1, max: 1 },
       difficulty: FIRST_WATER_DIFFICULTY,
       failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
       purposeLine: 'Show the water clear',
       narrativeTemplate:
         '{name} is at the new well in {location} on the day its water runs clear. ' +
@@ -110,6 +112,8 @@ export const WELL_GONE_FOUL: UnifiedActionTemplate = {
       duration: { min: 1, max: 1 },
       difficulty: GONE_FOUL_DIFFICULTY,
       failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
       purposeLine: 'Talk the fee out',
       narrativeTemplate:
         'Nobody from the work was at the new well when its water ran clear. ' +

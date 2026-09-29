@@ -484,7 +484,12 @@
                   "stateNoun": {
                     "text": "seed",
                     "tooltipId": "ui.aftermath_seed"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "headed away"
+                    }
+                  ]
                 }
               ]
             },
@@ -523,7 +528,12 @@
                   "stateNoun": {
                     "text": "seed",
                     "tooltipId": "ui.aftermath_seed"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "headed away"
+                    }
+                  ]
                 }
               ]
             },
@@ -562,7 +572,12 @@
                   "stateNoun": {
                     "text": "seed",
                     "tooltipId": "ui.aftermath_seed"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "headed away"
+                    }
+                  ]
                 }
               ]
             },

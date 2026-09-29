@@ -340,7 +340,12 @@
                   "tooltipId": "ui.aftermath_seed"
                 },
                 "title": "Sent for again",
-                "detail": "{cast:factor} will send for {actor} with more work."
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
               }
             ]
           },
@@ -377,7 +382,12 @@
                   "tooltipId": "ui.aftermath_seed"
                 },
                 "title": "Sent for again",
-                "detail": "{cast:factor} will send for {actor} with more work."
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
               }
             ]
           },
@@ -414,7 +424,12 @@
                   "tooltipId": "ui.aftermath_seed"
                 },
                 "title": "Sent for again",
-                "detail": "{cast:factor} will send for {actor} with more work."
+                "detail": "{cast:factor} will send for {actor} with more work.",
+                "concepts": [
+                  {
+                    "text": "more work"
+                  }
+                ]
               }
             ]
           },
@@ -425,7 +440,7 @@
                 "id": "ledger.lost.under_watch",
                 "kind": "trait",
                 "category": "scar",
-                "direction": "gain",
+                "direction": "loss",
                 "polarity": "loss",
                 "stateNoun": {
                   "text": "Under Watch",
@@ -471,7 +486,7 @@
                 "id": "ledger.caught.under_watch",
                 "kind": "trait",
                 "category": "scar",
-                "direction": "gain",
+                "direction": "loss",
                 "polarity": "loss",
                 "stateNoun": {
                   "text": "Under Watch",

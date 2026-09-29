@@ -336,6 +336,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 text: 'seed',
                 tooltipId: 'ui.aftermath_seed',
               },
+              concepts: [
+                {
+                  text: 'more work',
+                },
+              ],
               title: 'Sent for again',
               detail: '{cast:factor} will send for {actor} with more work.',
             },
@@ -374,6 +379,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 text: 'seed',
                 tooltipId: 'ui.aftermath_seed',
               },
+              concepts: [
+                {
+                  text: 'more work',
+                },
+              ],
               title: 'Sent for again',
               detail: '{cast:factor} will send for {actor} with more work.',
             },
@@ -412,6 +422,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 text: 'seed',
                 tooltipId: 'ui.aftermath_seed',
               },
+              concepts: [
+                {
+                  text: 'more work',
+                },
+              ],
               title: 'Sent for again',
               detail: '{cast:factor} will send for {actor} with more work.',
             },
@@ -425,7 +440,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               id: 'ledger.lost.under_watch',
               kind: 'trait',
               category: 'scar',
-              direction: 'gain',
+              direction: 'loss',
               polarity: 'loss',
               stateNoun: {
                 text: 'Under Watch',
@@ -472,7 +487,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
               id: 'ledger.caught.under_watch',
               kind: 'trait',
               category: 'scar',
-              direction: 'gain',
+              direction: 'loss',
               polarity: 'loss',
               stateNoun: {
                 text: 'Under Watch',
