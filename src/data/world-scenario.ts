@@ -125,6 +125,14 @@ export function formatCultureFringeLabel(cultureName: string): string {
   return CULTURE_FRINGE_LABEL.replace('{culture}', cultureName);
 }
 
+/**
+ * How a hex's culture reads on a player surface (THR-1659): the culture's name, or
+ * "Varn fringe" when every link to it in the hex is a fringe link. Never the strength.
+ */
+export function formatHexCultureName(summary: { cultureName: string; fringe?: boolean }): string {
+  return summary.fringe ? formatCultureFringeLabel(summary.cultureName) : summary.cultureName;
+}
+
 // ─── Resolver ─────────────────────────────────────────────────────────────────
 
 let warnedOutOfRange = false;

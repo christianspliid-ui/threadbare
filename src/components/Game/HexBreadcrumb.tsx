@@ -2,6 +2,7 @@ import type { SphereName } from '../../types';
 import type { SphereInfluence, LineOfSight, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { TerrainType } from '../../types';
 import { getSphereColor } from '../../data/sphereIcons';
+import { formatHexCultureName } from '../../data/world-scenario';
 
 const SIGHT_LABELS: Record<LineOfSight, string> = {
   full: 'Full Sight',
@@ -124,7 +125,7 @@ export function HexBreadcrumb({
           }}
         >
           {regionName ? `${terrainLabel} at ${hexCol}, ${hexRow}` : ''}
-          {dominantCulture && (regionName ? ' · ' : '') + dominantCulture.cultureName}
+          {dominantCulture && (regionName ? ' · ' : '') + formatHexCultureName(dominantCulture)}
           {dominantFaction && ' · ' + dominantFaction.factionName}
         </span>
       </div>
