@@ -3,6 +3,9 @@ import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
 import { EntityLink } from '../../shared/EntityLink';
+import { bondBasisWord, canonicalBondBasis } from '../../../data/bond-basis';
+import { bondTooltipId } from '../../../data/agent-concept-tooltips';
+import { tooltipResolves } from '../../../engine/tooltipResolver';
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -32,6 +35,34 @@ function getTrustDescriptor(strength: number, sentiment: string): string {
     if (strength >= 0.2) return 'Wary of';
     return 'Unknown quantity';
   }
+}
+
+// ─── Bond word (THR-1655) ─────────────────────────────────────────
+
+const CHIP_STYLE = {
+  backgroundColor: 'var(--border-subtle)',
+  color: 'var(--text-secondary)',
+  cursor: 'help',
+} as const;
+
+/**
+ * What the bond *is* — kin, friend, rival — as a chip before the name, explained from the
+ * one registry (`agent.bond.*`, Law 17). A basis with no word renders nothing (Law 14).
+ */
+function BondWordChip({ basis }: { basis?: string }) {
+  const word = bondBasisWord(basis);
+  if (!word) return null;
+  const chip = (
+    <span
+      data-testid="bond-word"
+      className="text-xs px-1.5 py-0.5 rounded mr-1.5"
+      style={CHIP_STYLE}
+    >
+      {word}
+    </span>
+  );
+  const tooltipId = bondTooltipId(canonicalBondBasis(basis));
+  return tooltipResolves(tooltipId) ? <Tooltip id={tooltipId}>{chip}</Tooltip> : chip;
 }
 
 // ─── Disposition labels ───────────────────────────────────────────
@@ -212,9 +243,19 @@ export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
         {bondsToShow.length > 0 ? (
           <div className="space-y-2">
             {bondsToShow.map((bond, idx) => (
-              <div key={idx} className="flex items-center justify-between">
+              <div key={idx} className="flex items-center justify-between" data-testid="bond-row">
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  <span style={{ color: 'var(--accent-gold)' }}>{bond.name}</span>
+                  <BondWordChip basis={bond.basis} />
+                  {bond.targetId ? (
+                    <EntityLink
+                      id={bond.targetId}
+                      name={bond.name}
+                      entityRef={{ kind: 'agent', id: bond.targetId }}
+                      onOpenEntity={onOpenEntity}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--accent-gold)' }}>{bond.name}</span>
+                  )}
                   {' — '}
                   <span>{getTrustDescriptor(0.5, bond.sentiment)}</span>
                 </p>

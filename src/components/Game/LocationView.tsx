@@ -36,6 +36,9 @@ import { renderProseWithIPK } from '../ProseKeyword';
 import { buildPlacePastLine } from '../../engine/worldPastWords';
 import type { WorldPastKnowledge } from '../../types/worldPast';
 import { PastLineText } from './PastLineText';
+import { getSettlementNotable } from '../../engine/settlementNotable';
+import type { FamiliarityMap } from '../../types/familiarity';
+import { NotableLine } from './NotableLine';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -78,6 +81,11 @@ interface LocationViewProps {
    * treated as off and every specific shows — the page still renders its founding line.
    */
   pastKnowledge?: WorldPastKnowledge;
+  /**
+   * The player's familiarity, which gates the notable's secret clause (THR-1655). Absent ⇒
+   * the clause is withheld — a surface that cannot tell what the player knows shows less.
+   */
+  familiarityMap?: FamiliarityMap;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -1076,6 +1084,7 @@ export const LocationView = memo(function LocationView({
   rivalDefinitions,
   strategicState,
   pastKnowledge,
+  familiarityMap,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1088,6 +1097,16 @@ export const LocationView = memo(function LocationView({
     () => (graph ? buildPlacePastLine(graph, location.id, pastKnowledge ?? {}) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [graph, location.id, pastKnowledge, tick],
+  );
+
+  // THR-1655 — the settlement's notable and what the player may read of them. `tick` keys it
+  // for the same reason as the past line: edges change in place, the graph object does not.
+  const settlementNotable = useMemo(
+    () => (graph
+      ? getSettlementNotable(graph, location.id, { familiarityMap: familiarityMap ?? new Map() })
+      : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [graph, location.id, familiarityMap, tick],
   );
 
   // ── Sublocation drill-down state ──
@@ -1497,7 +1516,9 @@ export const LocationView = memo(function LocationView({
                 const tier = (a.properties as Record<string, unknown>)?.spotlightTier;
                 return !tier || tier === 'spotlight';
               });
+              // THR-1655: the settlement's notable is lifted out of the list to the top.
               const npcsAtLocation = agents.filter(a => {
+                if (a.id === settlementNotable?.notableId) return false;
                 const tier = (a.properties as Record<string, unknown>)?.spotlightTier;
                 return tier === 'ambient' || tier === 'notable';
               });
@@ -1579,9 +1600,12 @@ export const LocationView = memo(function LocationView({
                   )}
 
                   {/* Inhabitants (ambient/notable NPCs) */}
-                  {npcsAtLocation.length > 0 && (
+                  {(npcsAtLocation.length > 0 || settlementNotable) && (
                     <div className="mt-3">
                       <SectionHeading>Inhabitants</SectionHeading>
+                      {settlementNotable && (
+                        <NotableLine notable={settlementNotable} onAgentClick={onAgentClick} />
+                      )}
                       <div className="flex flex-col gap-1">
                         {npcsAtLocation.map(npc => {
                           const npcRarity = ((npc.properties as Record<string, unknown>)?.rarityTier ?? 1) as RarityTier;

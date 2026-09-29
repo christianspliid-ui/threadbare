@@ -1487,6 +1487,25 @@ export interface DebugBridge {
     | null
   >;
 
+  // ── Who matters here (THR-1655) ───────────────────────────────────────────
+  /**
+   * The settlement's seeded notable and the clauses of its page sentence — the same
+   * `settlementNotable.getSettlementNotable` the settlement page's Inhabitants renders.
+   *
+   * `clauses[]` are `{ kind, targetId, targetName, targetKind }` in sentence order:
+   * `holds` (owned Place), `at_odds_with` (`hostile_to` `old_quarrel`), `knows_secret_of`
+   * (unrevealed mark), `is_owed_by` (live favour owed to the notable). By default the
+   * secret clause is gated on the player's familiarity with the notable at `known`+ and
+   * `secretWithheld` says whether one was dropped; `{ unfogged: true }` returns every clause.
+   * `null` when the location has no living, resident seeded notable (or no world yet).
+   *
+   * Async — `await` it.
+   */
+  getSettlementNotable(
+    locationId: string,
+    opts?: { unfogged?: boolean },
+  ): Promise<import('./engine/settlementNotable').SettlementNotable | null>;
+
   // ── Follow affordance (THR-1299) ──────────────────────────────────────────
   /**
    * Who the player is watching, as the three terms that decide it.

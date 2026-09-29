@@ -30,6 +30,8 @@ export interface NotableAgendaRow {
   status: 'active' | 'completed' | 'failed';
   contested: boolean;
   tugGated: boolean;
+  /** THR-1655: a seeded settlement notable's agenda (the Local group), not a ruler's. */
+  local: boolean;
 }
 
 /** Derive panel rows from live state (exported for tests). */
@@ -66,6 +68,7 @@ export function buildNotableAgendaRows(gameState: GameState): NotableAgendaRow[]
         status: c.status,
         contested,
         tugGated,
+        local: worldFlags[agendaFlags.local(c.compositionId)] === true,
       };
     });
 }
@@ -84,10 +87,27 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
     );
   }
 
+  // THR-1655: two groups — the realm's rulers and the settlements' own figures (Law 36).
+  const groups = [
+    { key: 'rulers', title: 'Rulers', rows: rows.filter((r) => !r.local) },
+    { key: 'local', title: 'Local', rows: rows.filter((r) => r.local) },
+  ].filter((g) => g.rows.length > 0);
+
   return (
-    <div className="space-y-2">
-      <SectionHeading as="h2" count={rows.length}>Notable Intents</SectionHeading>
-      <div role="list" aria-label="Notable agendas">
+    <div className="space-y-3">
+      {groups.map((group) => (
+        <section key={group.key} className="space-y-2" data-testid={`notables-group-${group.key}`}>
+          <SectionHeading as="h2" count={group.rows.length}>{group.title}</SectionHeading>
+          <NotableAgendaList rows={group.rows} label={`${group.title} agendas`} />
+        </section>
+      ))}
+    </div>
+  );
+});
+
+function NotableAgendaList({ rows, label }: { rows: NotableAgendaRow[]; label: string }) {
+  return (
+      <div role="list" aria-label={label}>
         {rows.map((row) => {
           const color = AGENDA_FAMILY_COLORS[row.familyId] ?? AGENDA_FAMILY_COLOR_DEFAULT;
           const failed = row.status === 'failed';
@@ -169,6 +189,5 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
           );
         })}
       </div>
-    </div>
   );
-});
+}
