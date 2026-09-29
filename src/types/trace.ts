@@ -153,6 +153,11 @@ export type TraceCategory =
   // The dormant kinds — powers and conditions (THR-1429)
   | 'power_learned'
   | 'condition_inflicted'
+  // The power runtime (THR-1571)
+  | 'spell.seeded'
+  | 'spell.cast_resolved'
+  | 'spell.backlash'
+  | 'effect.teleported'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -645,6 +650,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'plot_resolved',
   'power_learned',
   'condition_inflicted',
+  'spell.seeded',
+  'spell.cast_resolved',
+  'spell.backlash',
+  'effect.teleported',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2739,6 +2748,58 @@ export interface PowerLearnedTrace extends TraceBase {
 }
 
 /**
+ * Trace: the world's casters were seeded with their first spell (THR-1571, one
+ * aggregate per world). `fallbackCantrip` counts casters whose tradition shelf was
+ * empty — the generator's (THR-1572) signal, not a defect here.
+ */
+export interface SpellSeededTrace extends TraceBase {
+  category: 'spell.seeded';
+  casters: number;
+  seeded: number;
+  bySpell: Record<string, number>;
+  fallbackCantrip: number;
+}
+
+/** Trace: one cast resolved through `resolveCast` (THR-1571). A refusal writes nothing. */
+export interface SpellCastResolvedTrace extends TraceBase {
+  category: 'spell.cast_resolved';
+  site: 'step' | 'undertaking';
+  siteRef: string;
+  casterId: string;
+  spellId: string;
+  band: string;
+  landed: boolean;
+  /** Effect types executed (empty on a fizzle). */
+  applied: string[];
+  /** Cost types paid. */
+  paid: string[];
+  soulPrice?: number;
+  refused?: string;
+  /** Carried triggers the cast's `'spell_cast'` raise fired on the caster. */
+  triggersFired: number;
+}
+
+/** Trace: a cast's backlash fired (THR-1571). */
+export interface SpellBacklashTrace extends TraceBase {
+  category: 'spell.backlash';
+  siteRef: string;
+  casterId: string;
+  spellId: string;
+  trigger: string;
+  band: string;
+  effectType: string;
+}
+
+/** Trace: a `teleport` / `forced_move` moved a mortal (THR-1571). */
+export interface EffectTeleportedTrace extends TraceBase {
+  category: 'effect.teleported';
+  actorId: string;
+  from: string;
+  to: string;
+  primitive: 'teleport' | 'forced_move';
+}
+
+/**
  * Trace: a condition was put on somebody (THR-1429, `create × Condition` and
  * `destroy × Power`).
  *
@@ -4228,6 +4289,10 @@ export type TraceEntry =
   | RingRunTrace
   | PlotResolvedTrace
   | PowerLearnedTrace
+  | SpellSeededTrace
+  | SpellCastResolvedTrace
+  | SpellBacklashTrace
+  | EffectTeleportedTrace
   | ConditionInflictedTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace

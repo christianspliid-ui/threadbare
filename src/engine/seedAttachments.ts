@@ -15,7 +15,17 @@ import {
   REWARD_CONDITIONS,
   REWARD_BESTOWED_POWERS,
 } from '../data/reward-attachment-catalog';
-import { allSpellDefinitionNodes } from '../data/spell-templates';
+import { allSpellDefinitionNodes, SPELL_TEMPLATES, spellDefinitionNodeId } from '../data/spell-templates';
+import { allStrainConditionNodes } from '../data/strain-conditions';
+import {
+  SEEDED_SPELLS_PER_CASTER,
+  SEEDED_FALLBACK_TO_CANTRIP,
+  SEEDED_CASTER_ROLES,
+  SEEDED_SPELL_COVERAGE,
+} from '../data/spell-casting-constants';
+import { SLOT_CAPS } from '../data/attachment-slot-constants';
+import { isCaster, isCasterByCraft, casterRoleOf, alignedSpheres } from './casterIdentity';
+import { emitTrace } from './traceBuffer';
 import {
   ANOMALY_SIGNATURE_ARTIFACTS,
   ANOMALY_BESTOWED_POWERS,
@@ -52,6 +62,11 @@ export function seedAttachments(graph: WorldGraph): void {
   // only world where a learn can refuse `no_definition`.
   for (const node of allSpellDefinitionNodes()) {
     graph.addNode(node);
+  }
+  // The price a strain spell charges (THR-1571): eight shared condition definitions,
+  // one per Reach, beside the spells that land them.
+  for (const node of allStrainConditionNodes()) {
+    if (!graph.getNode(node.id)) graph.addNode(node);
   }
 
   // ── Add anomaly reward catalog (unowned, used by anomaly discovery rewards) ──
@@ -233,3 +248,118 @@ export function seedAttachments(graph: WorldGraph): void {
     });
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Seeded knowing — acquisition channel 2 (THR-1571, lane decision 5)
+// ═══════════════════════════════════════════════════════════════════
+
+/** What `seedSpellKnowing` did — the `spell.seeded` aggregate. */
+export interface SpellSeedingReport {
+  readonly casters: number;
+  readonly seeded: number;
+  readonly bySpell: Record<string, number>;
+  readonly fallbackCantrip: number;
+}
+
+/**
+ * Give every caster the world's first spell of their tradition.
+ *
+ * Before THR-1571 the only writer of `knows_spell` was `create × Power`, which needs a
+ * caster in the deciding tier — one of 104 on seed 42 — so no mortal in the world held
+ * a spell. This writes both edges (`knows_spell`, and `has_trait` while a slot is free)
+ * with `source: 'seeded'` for every `isCaster` actor, subject to two levers:
+ *
+ * - `SEEDED_CASTER_ROLES` — a caster *by role* is seeded only if the role is listed.
+ *   Casters by mastery trait or by Veil are always eligible.
+ * - `SEEDED_SPELL_COVERAGE` — the fraction of eligible casters seeded, by a sorted
+ *   pick on actor id.
+ *
+ * The pick: the tradition shelf (templates whose sphere is one of the caster's aligned
+ * spheres), lowest tier then id; else, when `SEEDED_FALLBACK_TO_CANTRIP`, the lowest-
+ * tier template by id. No draws anywhere — sorted picks only (NFP #3), so seeding
+ * shifts no other stream.
+ *
+ * Runs at the tail of worldgen, after every mortal is placed (NPCs are seeded after
+ * `seedAttachments`, so the definitions and the knowing cannot share one pass).
+ */
+export function seedSpellKnowing(graph: WorldGraph): SpellSeedingReport {
+  const templates = [...SPELL_TEMPLATES]
+    .filter(t => graph.getNode(spellDefinitionNodeId(t.id)))
+    .sort((a, b) => a.tier - b.tier || a.id.localeCompare(b.id));
+  const cantrip = templates[0];
+
+  const casters = graph.getNodesByType('actor')
+    .filter(n => isCaster(graph, n.id))
+    .map(n => n.id)
+    .sort();
+  const eligible = casters.filter(id => {
+    const role = casterRoleOf(graph, id);
+    // A caster by trait or Veil has no role on the list to check; one by role must be listed.
+    return role === null || SEEDED_CASTER_ROLES.includes(role) || isCasterByCraft(graph, id);
+  });
+  const chosen = eligible.slice(0, Math.ceil(eligible.length * Math.max(0, Math.min(1, SEEDED_SPELL_COVERAGE))));
+
+  const bySpell: Record<string, number> = {};
+  let seeded = 0;
+  let fallbackCantrip = 0;
+  for (const actorId of chosen) {
+    const aligned = alignedSpheres(graph, actorId);
+    const shelf = templates.filter(t => aligned.includes(t.sphereAffinity));
+    let picks = shelf.slice(0, SEEDED_SPELLS_PER_CASTER);
+    if (picks.length === 0 && SEEDED_FALLBACK_TO_CANTRIP && cantrip) {
+      picks = [cantrip];
+      fallbackCantrip += 1;
+    }
+    if (picks.length === 0) continue;
+
+    let wielded = graph.getOutgoingEdges(actorId, 'has_trait')
+      .filter(e => graph.getNode(e.target)?.properties.subcategory === 'spell').length;
+    let wroteAny = false;
+    for (const spell of picks) {
+      const defId = spellDefinitionNodeId(spell.id);
+      const knowsId = `knows_spell_${actorId}_${defId}`;
+      if (graph.getEdge(knowsId)) continue;
+      graph.addEdge({
+        id: knowsId,
+        source: actorId,
+        target: defId,
+        type: 'knows_spell',
+        properties: { learnedTick: 0, sphereAffinity: spell.sphereAffinity, source: 'seeded' },
+      });
+      if (wielded < (SLOT_CAPS.spell ?? 0)) {
+        graph.addEdge({
+          id: `has_trait_${actorId}_${defId}`,
+          source: actorId,
+          target: defId,
+          type: 'has_trait',
+          properties: {
+            level: 1,
+            acquiredTick: 0,
+            ticksRemaining: null,
+            source: 'seeded',
+            visibility: 'discoverable',
+            modifiers: {},
+          },
+        });
+        wielded += 1;
+      }
+      bySpell[spell.id] = (bySpell[spell.id] ?? 0) + 1;
+      wroteAny = true;
+    }
+    if (wroteAny) seeded += 1;
+  }
+
+  const report: SpellSeedingReport = { casters: casters.length, seeded, bySpell, fallbackCantrip };
+  try {
+    emitTrace({
+      category: 'spell.seeded',
+      tick: 0,
+      ...report,
+      summary: `Seeded knowing: ${seeded} of ${casters.length} casters start with a spell (${fallbackCantrip} from the fallback cantrip)`,
+    });
+  } catch {
+    /* NFP #4 */
+  }
+  return report;
+}
+

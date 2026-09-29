@@ -8,6 +8,7 @@
  */
 
 import type { WorldGraph } from '../graph';
+import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { AttachmentEffect, EffectRuntimeState } from '../../types/effects';
 import {
   MAX_EFFECTS_PER_ATTACHMENT,
@@ -80,6 +81,22 @@ export interface AttachedEffect {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * The key an attachment's runtime state lives under (THR-1571).
+ *
+ * The node id, as always — except for a **spell** definition node, which is one
+ * shared node per spell for every bearer in the world (THR-1395, THR-1429). Keyed by
+ * node id, one bearer's seal, trigger cooldown or fire count would be every bearer's:
+ * `applySuppressions` silencing one witch's carried Wayfinding would silence it for
+ * the whole world, and a trigger's default cooldown would run for all of them at
+ * once. A spell's state is keyed by the **bearing edge** instead, the precedent the
+ * edge-backed agreements already set. Deliberate spells carry no `effects`, so this
+ * only ever touches carried (fate-woven) spells.
+ */
+export function attachmentStateKey(edge: GraphEdge, node: GraphNode): string {
+  return node.properties.subcategory === 'spell' ? edge.id : node.id;
+}
+
+/**
  * Collect all effects from an agent's attachments.
  *
  * Walks possesses, bonded_to, and has_trait edges, reads effects[] from
@@ -119,12 +136,13 @@ export function collectAttachmentEffects(
 
       const attachmentName = node.name ?? node.id;
       const attachmentTier = (node.properties.tier as number) ?? 1;
-      const runtimeState = effectStates?.get(node.id);
+      const stateKey = attachmentStateKey(edge, node);
+      const runtimeState = effectStates?.get(stateKey);
       const effectsToRead = applyContentGuards(effects);
 
       for (const effect of effectsToRead) {
         entries.push({
-          attachmentId: node.id,
+          attachmentId: stateKey,
           attachmentName,
           attachmentTier,
           effect,

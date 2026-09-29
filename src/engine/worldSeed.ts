@@ -52,7 +52,7 @@ import {
   REALM_FACTION_CLASS,
 } from '../data/realm-content';
 import { seedLocationResources } from './resourceSeeding';
-import { seedAttachments } from './seedAttachments';
+import { seedAttachments, seedSpellKnowing } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
 import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -2374,6 +2374,13 @@ export function seedWorld(
   // `individualIds` (ambitions, the roster, the census) sees them as what they are.
   individualIds.push(...livingWorld.captainIds);
   console.log(formatLivingWorldSummary(livingWorld));
+
+  // ── Seeded knowing — the world's casters start with a spell (THR-1571) ──────
+  // Here, after the living world, because this is the first point every mortal a
+  // caster role can land on exists (roster NPCs, the genome top-up, the captains).
+  // No draws — sorted picks only — so it shifts no stream above or below it.
+  const spellSeeding = seedSpellKnowing(graph);
+  console.log(`[WorldGen] Seeded knowing: ${spellSeeding.seeded}/${spellSeeding.casters} casters wield a spell (${spellSeeding.fallbackCantrip} via the fallback)`);
 
   if (genomeNpcResult.npcIds.length > 0) {
     console.log(

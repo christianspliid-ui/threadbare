@@ -7,7 +7,8 @@
  * Design doc: Docs/plans/2026-03-31-generic-effect-system-design.md
  */
 
-import type { SpellTemplate } from '../types/effects';
+import type { SpellTemplate, SpellAgency, AttachmentEffect } from '../types/effects';
+import { isCarriedEffectStateless } from './spell-casting-constants';
 
 export const SPELL_TEMPLATES: SpellTemplate[] = [
   // ─── T2: Veilwalk ───────────────────────────────────────────────
@@ -35,6 +36,12 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
       narrativeTemplate: 'The veil tears — {actor} stumbles through to the wrong place.',
     },
     targeting: { type: 'self' },
+    agency: 'deliberate',
+    arena: 'map_travel',
+    castProse: {
+      landed: '{actor} steps through a fold in the air and is somewhere else.',
+      fizzled: '{actor} reaches for the fold and finds only the road under their feet.',
+    },
   },
 
   // ─── T3: Soulfire ───────────────────────────────────────────────
@@ -65,6 +72,12 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
       narrativeTemplate: 'The soulfire turns inward — {actor} feels their star essence fading.',
     },
     targeting: { type: 'self' },
+    agency: 'deliberate',
+    arena: 'fight',
+    castProse: {
+      landed: "Starlight runs down {actor}'s arms, and every blow they strike burns.",
+      fizzled: '{actor} calls the fire and it gutters, leaving only a warmth in the hands.',
+    },
   },
 
   // ─── T3: Pact of the Hollow Crown ──────────────────────────────
@@ -95,6 +108,13 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
       narrativeTemplate: "The crown's shadow recoils — {actor}'s blessings flow to their enemy.",
     },
     targeting: { type: 'agent', range: 2, filter: 'enemy' },
+    agency: 'deliberate',
+    arena: 'encounter',
+    castReach: 'gold',
+    castProse: {
+      landed: "{actor} speaks with a borrowed crown's weight, and the room bends to it.",
+      fizzled: "{actor} reaches for the crown's weight and finds only their own voice.",
+    },
   },
 
   // ─── T3: Crystal Gate ───────────────────────────────────────────
@@ -121,6 +141,12 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
       narrativeTemplate: 'The crystal shatters mid-transit — {actor} emerges somewhere unexpected.',
     },
     targeting: { type: 'hex', range: 999 },
+    agency: 'deliberate',
+    arena: 'map_travel',
+    castProse: {
+      landed: 'The crystal breaks with a sound like a door, and {actor} walks through it.',
+      fizzled: 'The crystal cracks, and the door it should have opened stays shut.',
+    },
   },
 
   // ─── T4: Last Breath ───────────────────────────────────────────
@@ -152,8 +178,90 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
       narrativeTemplate: "Death notices the attempt. {actor}'s connection to the stars dims.",
     },
     targeting: { type: 'agent', range: 0, filter: 'ally' },
+    agency: 'deliberate',
+    arena: 'encounter',
+    castReach: 'heart',
+    castProse: {
+      landed: '{actor} takes {target} by the hand and pulls them back across the threshold.',
+      fizzled: '{actor} reaches across the threshold, and nothing takes their hand.',
+    },
+  },
+
+  // ─── Fate-woven ports (THR-1571 S1.4) ──────────────────────────────
+  //
+  // Hand-ported from the spell prototype (THR-1232, "twenty generated spells" #1 and
+  // #12) to prove the carried half: a fate-woven spell is never cast. It works while
+  // it is carried — its `passiveEffects` ride the shared definition node, and the
+  // effect walker applies them to every wielder — and it pays with what it carries:
+  // a standing weakness and a chance to turn on the bearer when they fail badly.
+  // Every primitive is stateless (lane decision 6). The generator (THR-1572) fills the
+  // rest of the shelf.
+
+  // ─── T2: The Wayfinding ─────────────────────────────────────────
+  {
+    id: 'spell_wayfinding',
+    name: 'The Wayfinding',
+    tier: 2,
+    tags: ['#travel', '#discovery', '#arcane'],
+    sphereAffinity: 'spirit',
+    flavorText: 'The land speaks to the one who carries this working, and the next valley is never quite a stranger.',
+    mechanicalSummary: 'Carried: every place within two hexes of an arrival goes on the map. Price: a little worse at Stone; a disaster may leave the bearer Grieving.',
+    censusTag: { scale: 'personal' },
+    prerequisites: {},
+    effects: [],
+    passiveEffects: [
+      { type: 'reveal', target: 'hexes', range: 2 },
+      { type: 'passive', reach: 'stone', value: -0.04 },
+      {
+        type: 'action_trigger',
+        on: 'encounter_critical_failure',
+        probability: 0.25,
+        payload: { kind: 'condition_grant', conditionTraitId: 'trait.condition.grieving', durationTicks: 24 },
+        narrativeTemplate: 'The land goes quiet in {actor}\'s head, and the silence is a kind of grief.',
+      },
+    ],
+    cost: [],
+    cooldownTicks: 0,
+    targeting: { type: 'self' },
+    agency: 'fate_woven',
+    arena: 'map_sight',
+  },
+
+  // ─── T2: Height Anchor ──────────────────────────────────────────
+  {
+    id: 'spell_height_anchor',
+    name: 'Height Anchor',
+    tier: 2,
+    tags: ['#combat', '#temporal', '#arcane'],
+    sphereAffinity: 'time',
+    flavorText: 'When a fight turns against the bearer, the moment catches them and holds, just long enough.',
+    mechanicalSummary: 'Carried: in a fight, an exchange lost by a little counts as a near miss. Price: a little worse at Heart; a disaster may leave the bearer Exhausted.',
+    censusTag: { scale: 'personal' },
+    prerequisites: {},
+    effects: [],
+    passiveEffects: [
+      { type: 'test_shaper', trigger: 'failure', steps: 1, condition: 'in_combat', maxMargin: 0.1 },
+      { type: 'passive', reach: 'heart', value: -0.05 },
+      {
+        type: 'action_trigger',
+        on: 'encounter_critical_failure',
+        probability: 0.25,
+        payload: { kind: 'condition_grant', conditionTraitId: 'trait.condition.exhausted', durationTicks: 24 },
+        narrativeTemplate: 'The held moment lets go all at once, and {actor} is left spent.',
+      },
+    ],
+    cost: [],
+    cooldownTicks: 0,
+    targeting: { type: 'self' },
+    agency: 'fate_woven',
+    arena: 'fight',
   },
 ];
+
+/** THR-1571 — a spell's agency, authored or derived (deliberate when it has cast effects). */
+export function spellAgencyOf(spell: Pick<SpellTemplate, 'agency' | 'effects'>): SpellAgency {
+  return spell.agency ?? (spell.effects.length > 0 ? 'deliberate' : 'fate_woven');
+}
 
 /** Lookup spell by ID */
 export function getSpellTemplate(id: string): SpellTemplate | undefined {
@@ -168,13 +276,17 @@ export function getSpellTemplate(id: string): SpellTemplate | undefined {
 // this node; one who merely *knows* it holds a `knows_spell` edge to the same node.
 // Per-bearer state — when it was learned, where it came from — lives on the edge.
 //
-// The node deliberately carries **no `effects` array**. A cast resolves through
-// `activateSpell` against the *template* (looked up by `spellTemplateId`), so the
-// effects would be read by nobody here — and putting them on a node that many
-// mortals share would hand the effect walker a shared attachment, where a suppression
-// or a decay meant for one bearer would land on every bearer at once. The shape is
-// the reason the seal is read off the bearer's own conditions rather than off this
-// node's runtime state.
+// A deliberate spell's node carries **no `effects` array**: a cast resolves through
+// `resolveCast` against the *template* (looked up by `spellTemplateId`).
+//
+// A fate-woven spell's node carries its `passiveEffects` as `effects` (THR-1571
+// S1.4), so the effect walker applies them to every wielder through the `has_trait`
+// edge it already walks. The node is shared by every bearer and `effectStates` is keyed
+// by attachment id, so only **stateless** primitives may ride it — a stacking count or
+// a charge would be one counter for the whole world (lane decision 6). A template that
+// breaks the rule fails `spellTemplates.carried.test.ts` at build time; at runtime its
+// node is minted without effects rather than shared-stateful. The same shape is why
+// the seal is read off the bearer's own conditions rather than off this node's state.
 
 /** The id of the shared definition node for a spell template. */
 export function spellDefinitionNodeId(spellTemplateId: string): string {
@@ -202,8 +314,27 @@ export function spellDefinitionNode(spell: SpellTemplate): {
       flavorText: spell.flavorText,
       visibility: 'discoverable',
       maxLevel: 1,
+      agency: spellAgencyOf(spell),
+      ...(spell.arena ? { arena: spell.arena } : {}),
+      ...(carriedEffectsOf(spell) ? { effects: carriedEffectsOf(spell) } : {}),
     },
   };
+}
+
+/**
+ * The effects a fate-woven spell carries onto its shared node, or null. Null when the
+ * spell is deliberate, has no passives, or holds a stateful primitive (the runtime
+ * half of lane decision 6 — the data test is the build-time half).
+ */
+export function carriedEffectsOf(spell: SpellTemplate): AttachmentEffect[] | null {
+  if (spellAgencyOf(spell) !== 'fate_woven') return null;
+  const passives = spell.passiveEffects ?? [];
+  if (passives.length === 0) return null;
+  if (!passives.every(isCarriedEffectStateless)) {
+    console.warn(`[spells] ${spell.id} carries a stateful primitive — minted without effects (THR-1571)`);
+    return null;
+  }
+  return passives.map(e => ({ ...e }));
 }
 
 /** Every spell definition node the world seeds — one per template, sorted by id (NFP #3). */

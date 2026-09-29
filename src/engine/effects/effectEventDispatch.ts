@@ -140,6 +140,52 @@ export function applyExecutionResult(
   applyExecutionMutations(state.graph, exec.mutations);
   applyExecutionOverlays(state, exec.terrainOverlays, exec.ruleOverrides, tick);
   applyFightVocabularyRequests(state, exec, tick);
+  applyCastRequests(state, exec, tick);
+}
+
+/**
+ * THR-1571 — the power runtime's two extra channels. A `dispel` silences a possession
+ * (the `suppressed` / `suppressedUntilTick` shape `applySuppressions` lifts when the
+ * tick passes), and a `teleport` / `forced_move` records the move it wrote.
+ */
+function applyCastRequests(state: GameState, exec: ExecutionResult, tick: number): void {
+  for (const req of exec.suppressRequests ?? []) {
+    try {
+      if (!state.effectStates) state.effectStates = new Map();
+      const prior = state.effectStates.get(req.attachmentId) ?? {};
+      const until = Math.max(prior.suppressedUntilTick ?? 0, req.untilTick);
+      state.effectStates.set(req.attachmentId, { ...prior, suppressed: true, suppressedUntilTick: until });
+      const owner = state.graph.getIncomingEdges(req.attachmentId)
+        .find(e => e.type === 'possesses' || e.type === 'bonded_to')?.source ?? '';
+      emitTrace({
+        category: 'effect.suppressed',
+        tick,
+        agentId: owner,
+        attachmentId: req.attachmentId,
+        sourceAttachmentId: `dispel:${req.casterId}`,
+        sourceAgentId: req.casterId,
+        untilTick: until,
+        summary: `${req.attachmentId} silenced until tick ${until} by a dispel from ${req.casterId}`,
+      });
+    } catch {
+      /* fail-soft */
+    }
+  }
+  for (const move of exec.moved ?? []) {
+    // Only trace a move the graph actually shows — a mutation the applier skipped
+    // must not read as a landing.
+    const landed = state.graph.getOutgoingEdges(move.actorId, 'located_at').some(e => e.target === move.to);
+    if (!landed) continue;
+    emitTrace({
+      category: 'effect.teleported',
+      tick,
+      actorId: move.actorId,
+      from: move.from,
+      to: move.to,
+      primitive: move.primitive,
+      summary: `${move.actorId} is moved by ${move.primitive} from ${move.from || 'nowhere'} to ${move.to}`,
+    });
+  }
 }
 
 /**

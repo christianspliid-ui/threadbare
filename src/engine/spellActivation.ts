@@ -47,6 +47,14 @@ import {
   COOLDOWN_MINIMUM_TICKS,
 } from '../data/effect-constants';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
+import type { StepOutcome } from '../types/unifiedAction';
+import {
+  CAST_LANDED_BANDS,
+  BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER,
+  STRAIN_PENALTY_SHARE,
+  STRAIN_TICKS_PER_UNIT,
+} from '../data/spell-casting-constants';
+import { strainConditionId } from '../data/strain-conditions';
 
 // ═══════════════════════════════════════════════════════════════════
 // Activation Result
@@ -57,7 +65,26 @@ export type ActivationOutcome =
   | 'blocked_prerequisite'
   | 'blocked_cooldown'
   | 'blocked_cost'
-  | 'backlash';
+  | 'backlash'
+  /** THR-1571 — the band did not land: the price is paid, nothing applies. */
+  | 'fizzled';
+
+/** THR-1571 — what a band-driven cast passes to `activateSpell`. */
+export interface ActivateSpellOptions {
+  /** The roll that already happened. Replaces the legacy coin whenever it is given. */
+  readonly band?: StepOutcome;
+  /** The consequence draw for backlash probability (0–1) — its own seeded stream. */
+  readonly backlashRoll?: number;
+  /** Per-caster cooldowns (`GameState.castCooldowns`), keyed by `castCooldownKey`. */
+  readonly castCooldowns?: Map<string, number>;
+  /** How strain is paid; absent → the graph-only default. */
+  readonly payStrain?: StrainPayer;
+}
+
+/** The per-caster cooldown key (THR-1571). */
+export function castCooldownKey(casterId: string, spellId: string): string {
+  return `${casterId}::${spellId}`;
+}
 
 export interface ActivationResult {
   outcome: ActivationOutcome;
@@ -75,6 +102,8 @@ export interface ActivationResult {
   soulPrice?: number;
   /** Narrative text for the backlash (if any) */
   backlashNarrative?: string;
+  /** THR-1571 — band-driven casts only: whether the band landed (effects apply). */
+  landed?: boolean;
   /** Trace for inspectability */
   trace: EffectActivationTrace;
 }
@@ -230,6 +259,7 @@ export function payCosts(
   agentId: string,
   costs: SpellCost | SpellCost[],
   tick?: number,
+  payStrain?: StrainPayer,
 ): number {
   const costArray = Array.isArray(costs) ? costs : [costs];
   let soulPrice = 0;
@@ -237,12 +267,13 @@ export function payCosts(
   for (const cost of costArray) {
     switch (cost.type) {
       case 'reach_drain': {
-        const agentNode = graph.getNode(agentId);
-        if (!agentNode) break;
-        const dc = (agentNode.properties.domainCapability ?? {}) as Record<ReachDomain, number>;
+        // THR-1571 (lane decision 4): strain is paid as a timed "strained" condition
+        // that thins the Reach. This used to subtract from `domainCapability`
+        // (singular), a property nothing reads — so the price cost nothing. That dead
+        // write is gone.
         const capped = Math.min(cost.amount, SPELL_COST_REACH_DRAIN_CAP);
-        dc[cost.reach] = Math.max(0, (dc[cost.reach] ?? 0) - capped);
-        agentNode.properties.domainCapability = dc;
+        const durationTicks = strainDurationTicks(capped);
+        (payStrain ?? defaultStrainPayer(graph))(agentId, cost.reach, durationTicks, tick ?? 0);
         break;
       }
       case 'doom_increase': {
@@ -314,13 +345,53 @@ export function payCosts(
         break;
       }
       case 'multi': {
-        soulPrice += payCosts(graph, agentId, cost.costs, tick);
+        soulPrice += payCosts(graph, agentId, cost.costs, tick, payStrain);
         break;
       }
     }
   }
 
   return soulPrice;
+}
+
+/**
+ * Lands a strain condition on a caster (THR-1571). `resolveCast` passes one built on
+ * `applyConditionToActor`, the one condition writer (tag immunity, loss guards, the
+ * proxy events); callers without a `GameState` get `defaultStrainPayer`.
+ */
+export type StrainPayer = (agentId: string, reach: ReachDomain, durationTicks: number, tick: number) => void;
+
+/** How long a drain of `amount` keeps the caster strained. */
+export function strainDurationTicks(amount: number): number {
+  return Math.max(1, Math.ceil(amount / STRAIN_PENALTY_SHARE - 1e-9)) * STRAIN_TICKS_PER_UNIT;
+}
+
+/**
+ * The graph-only strain payer: writes the same `has_trait` edge shape the condition
+ * applier writes. A missing strain definition falls back to `tick_exhaust` for
+ * `STRAIN_TICKS_PER_UNIT` — the price is still paid, and the dead property is never
+ * written again (fail-soft table).
+ */
+export function defaultStrainPayer(graph: WorldGraph): StrainPayer {
+  return (agentId, reach, durationTicks, tick) => {
+    const agentNode = graph.getNode(agentId);
+    if (!agentNode) return;
+    const conditionId = strainConditionId(reach);
+    if (!graph.getNode(conditionId)) {
+      agentNode.properties.exhaustedUntilTick = Math.max(
+        (agentNode.properties.exhaustedUntilTick as number | undefined) ?? 0,
+        tick + STRAIN_TICKS_PER_UNIT,
+      );
+      return;
+    }
+    graph.addEdge({
+      id: `e_strain_${agentId}_${reach}_${conditionCounter++}`,
+      type: 'has_trait',
+      source: agentId,
+      target: conditionId,
+      properties: { appliedAt: tick, durationTicks, ticksRemaining: durationTicks, intensity: 0.5, source: 'spell_strain' },
+    });
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -355,6 +426,34 @@ export function evaluateBacklash(
   const prob = Math.max(backlash.probability, BACKLASH_PROBABILITY_FLOOR);
   if (roll >= prob) return { fires: false };
 
+  return {
+    fires: true,
+    effect: backlash.effect,
+    narrative: backlash.narrativeTemplate,
+    severity: shiftBacklashSeverity(backlash.severity, severityMultiplier),
+  };
+}
+
+/**
+ * THR-1571 — backlash read against the band the cast resolved on.
+ *
+ * `backlash.trigger` is the price layer, and `BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER` says
+ * on which bands it may bite: strain on a slip, transgression only on disaster, a
+ * gamble on every band but a triumph. On an eligible band it fires with
+ * `backlash.probability` (floored) against `roll` — a consequence draw on its own
+ * stream, never an outcome die.
+ */
+export function evaluateBacklashForBand(
+  backlash: BacklashEffect | undefined,
+  band: StepOutcome,
+  roll: number,
+  severityMultiplier = 1.0,
+): { fires: boolean; effect?: AttachmentEffect; narrative?: string; severity?: BacklashEffect['severity'] } {
+  if (!backlash) return { fires: false };
+  const eligible = BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER[backlash.trigger] ?? [];
+  if (!eligible.includes(band)) return { fires: false };
+  const prob = Math.max(backlash.probability, BACKLASH_PROBABILITY_FLOOR);
+  if (roll >= prob) return { fires: false };
   return {
     fires: true,
     effect: backlash.effect,
@@ -413,6 +512,7 @@ export function activateSpell(
   roll: number,
   effectStates?: Map<string, EffectRuntimeState>,
   overrideCtx?: RuleOverrideContext,
+  opts?: ActivateSpellOptions,
 ): ActivationResult {
   const baseTrace: EffectActivationTrace = {
     type: 'effect_activation',
@@ -435,10 +535,14 @@ export function activateSpell(
     };
   }
 
-  // 2. Cooldown check
-  const spellState = effectStates?.get(spell.id);
-  if (spellState?.spellLastCastTick !== undefined) {
-    const elapsed = tick - spellState.spellLastCastTick;
+  // 2. Cooldown check. THR-1571: a caller passing `castCooldowns` keys the cooldown
+  // per caster (`caster::spell`); the legacy `effectStates` key is `spell.id`, which
+  // one caster's cast would have put on cooldown for every bearer in the world.
+  const lastCastTick = opts?.castCooldowns
+    ? opts.castCooldowns.get(castCooldownKey(agentId, spell.id))
+    : effectStates?.get(spell.id)?.spellLastCastTick;
+  if (lastCastTick !== undefined) {
+    const elapsed = tick - lastCastTick;
     const cd = Math.max(spell.cooldownTicks, COOLDOWN_MINIMUM_TICKS);
     if (elapsed < cd) {
       return {
@@ -463,30 +567,58 @@ export function activateSpell(
 
   // 4. Cost payment (atomic)
   const costArray = Array.isArray(spell.cost) ? spell.cost : [spell.cost];
-  const soulPrice = payCosts(graph, agentId, spell.cost, tick);
+  const soulPrice = payCosts(graph, agentId, spell.cost, tick, opts?.payStrain);
 
   // 5. Update cooldown state
-  if (effectStates) {
+  if (opts?.castCooldowns) {
+    opts.castCooldowns.set(castCooldownKey(agentId, spell.id), tick);
+  } else if (effectStates) {
     const current = effectStates.get(spell.id) ?? {};
     effectStates.set(spell.id, { ...current, spellLastCastTick: tick });
   }
 
-  // 6. Backlash check (for now: spells always "succeed" — future phases add failure mechanics)
-  // Use roll to determine if backlash fires (treating low rolls as failure for backlash purposes)
+  const severityMultiplier = (): number => (overrideCtx !== undefined
+    // THR-1241: `backlash_severity_multiplier` owns this site — the one place the
+    // game decides how badly a spell turns on its caster.
+    ? readMultiplierOverride(overrideCtx, agentId, 'backlash_severity_multiplier', 'spellActivation.backlash')
+    : 1.0);
+
+  // 6. THR-1571: the band decides. `band` is the roll that already happened (a step's
+  // or an undertaking's); a landed band applies the effects, any other fizzles, and
+  // the price layer (`backlash.trigger`) decides on which bands backlash may fire —
+  // including a gamble on a *successful* cast, which the old coin could never reach.
+  if (opts?.band !== undefined) {
+    const band = opts.band;
+    const landed = CAST_LANDED_BANDS.includes(band);
+    const backlash = evaluateBacklashForBand(
+      spell.backlash, band, opts.backlashRoll ?? 1, severityMultiplier(),
+    );
+    return {
+      outcome: backlash.fires ? 'backlash' : landed ? 'success' : 'fizzled',
+      appliedEffects: landed ? spell.effects : [],
+      ...(backlash.fires ? { backlashEffect: backlash.effect, backlashNarrative: backlash.narrative } : {}),
+      paidCosts: costArray,
+      soulPrice,
+      landed,
+      trace: {
+        ...baseTrace,
+        result: backlash.fires ? 'backlash' : 'applied',
+        costsPaid: costArray,
+        ...(backlash.fires ? { backlashFired: true } : {}),
+        effectDetails: { ...baseTrace.effectDetails, band, landed },
+      },
+    };
+  }
+
+  // Legacy coin path — kept only for this module's existing unit tests. Every live
+  // caller goes through `resolveCast`, which always passes a band (THR-1571).
   const isFailure = roll < 0.15; // ~15% base failure rate
   const isCriticalFailure = roll < 0.05; // ~5% critical failure rate
   const outcomeType = isCriticalFailure ? 'critical_failure' : isFailure ? 'failure' : 'success';
 
   if (isFailure && spell.backlash) {
-    // THR-1241: `backlash_severity_multiplier` owns this site — the one place the
-    // game decides how badly a spell turns on its caster.
-    const severityMultiplier = overrideCtx !== undefined
-      ? readMultiplierOverride(
-        overrideCtx, agentId, 'backlash_severity_multiplier', 'spellActivation.backlash',
-      )
-      : 1.0;
     const backlashResult = evaluateBacklash(
-      spell.backlash, outcomeType, roll * 7 % 1, severityMultiplier,
+      spell.backlash, outcomeType, roll * 7 % 1, severityMultiplier(),
     ); // Derive secondary roll
     if (backlashResult.fires) {
       return {

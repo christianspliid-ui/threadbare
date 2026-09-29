@@ -2168,6 +2168,34 @@ export interface DebugBridge {
    *
    *  **Async** (`await` it) — the bridge has no static imports, so the pin module is
    *  pulled in on call. An unawaited call logs a Promise, not the verdict. */
+  /** THR-1571 — every mortal who knows or wields a spell. `source` is the first
+   *  edge's (`'seeded'` for worldgen's seeded knowing, `'learn_spell'` for study).
+   *  Spell ids are definition-node ids (`power.spell.<templateId>`). Synchronous. */
+  getSpellHolders: () => ReadonlyArray<{
+    readonly actorId: string;
+    readonly name: string;
+    readonly wielded: readonly string[];
+    readonly known: readonly string[];
+    readonly source: string;
+  }>;
+  /** THR-1571 — run one cast through `resolveCast` (the only cast path). `spell` is a
+   *  template id (`spell_veilwalk`, or `veilwalk`); `band` is one of the six step
+   *  outcomes and defaults to `success` — the band *is* the roll, no die is thrown.
+   *  Writes to the live graph: a landed Veilwalk moves the caster, strain lands as
+   *  `condition.strained.<reach>`. Returns the `CastResult` (`landed`, `applied`,
+   *  `backlash`, `paid`, `writes`, `refused`). **Async** — `await` it. */
+  castSpell: (opts: { caster: string; spell: string; band?: string; target?: string }) => Promise<
+    | { readonly error: string }
+    | {
+      readonly landed: boolean;
+      readonly applied: readonly { readonly type: string }[];
+      readonly backlash?: { readonly effect: { readonly type: string }; readonly narrative?: string };
+      readonly paid: readonly { readonly type: string }[];
+      readonly soulPrice?: number;
+      readonly writes: readonly { readonly kind: string; readonly actorId: string; readonly ref: string; readonly fromBacklash?: boolean }[];
+      readonly refused?: string;
+    }
+  >;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

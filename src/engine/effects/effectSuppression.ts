@@ -31,7 +31,7 @@
 import type { WorldGraph } from '../graph';
 import type { AttachmentEffect, EffectRuntimeState, SuppressEffect } from '../../types/effects';
 import { emitTrace } from '../traceBuffer';
-import { collectAttachmentEffects, ATTACHMENT_EDGE_TYPES } from './effectWalker';
+import { collectAttachmentEffects, ATTACHMENT_EDGE_TYPES, attachmentStateKey } from './effectWalker';
 import { resolveAgentHex } from '../relocationIntent';
 import { hexDistance } from '../../lib/hexMath';
 import { AURA_MAX_RADIUS } from '../../data/effect-constants';
@@ -189,26 +189,28 @@ export function applySuppressions(
         // The source never silences itself — a self-scoped `all_effects` amulet
         // would otherwise switch itself off on its first tick and stay off, which
         // reads in the trace exactly like the primitive not working at all.
-        if (node.id === p.sourceAttachmentId) continue;
+        // THR-1571: a shared spell node's state is the bearer's own (its bearing edge).
+        const stateKey = attachmentStateKey(edge, node);
+        if (stateKey === p.sourceAttachmentId) continue;
 
         const effects = node.properties.effects as AttachmentEffect[] | undefined;
         if (!effects || !Array.isArray(effects)) continue;
         if (!matchesSuppressTarget(p.target, effects, node.properties.subcategory as string | undefined)) continue;
 
-        const prior = states.get(node.id) ?? {};
+        const prior = states.get(stateKey) ?? {};
         // Longest suppression wins — two overlapping shrouds should not let the
         // shorter one's expiry lift the longer one's silence.
         const until = Math.max(prior.suppressedUntilTick ?? 0, p.untilTick);
         if (prior.suppressed === true && prior.suppressedUntilTick === until) continue;
 
-        states.set(node.id, { ...prior, suppressed: true, suppressedUntilTick: until });
+        states.set(stateKey, { ...prior, suppressed: true, suppressedUntilTick: until });
         suppressedCount += 1;
 
         emitTrace({
           category: 'effect.suppressed',
           tick,
           agentId: p.targetAgentId,
-          attachmentId: node.id,
+          attachmentId: stateKey,
           sourceAttachmentId: p.sourceAttachmentId,
           sourceAgentId: p.sourceAgentId,
           untilTick: until,

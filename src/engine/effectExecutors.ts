@@ -51,6 +51,10 @@ import {
 } from '../data/effect-constants';
 import { evaluatePredicate, evaluateOptionalCondition } from './effects/effectPredicates';
 import { mulberry32 } from '../lib/prng';
+import type { GraphNode } from '../types/graph';
+import { normalizeTag } from './effects/effectQueries';
+import { resolveTeleportLanding, resolveForcedMoveLanding, type CastLanding } from './effects/castRelocation';
+import { DISPEL_ITEM_SUPPRESS_TICKS } from '../data/spell-casting-constants';
 
 // ═══════════════════════════════════════════════════════════════════
 // Execution Context
@@ -67,6 +71,13 @@ export interface ExecutionContext {
    * When absent, all options pass (no predicate gates applied).
    */
   predicateContext?: PredicateContext;
+  /**
+   * THR-1571 — the seeded stream a draw inside an executor uses (a `random` teleport
+   * destination). The caller seeds it per site (`hashSeed('teleport:' + seed + …)`);
+   * absent, the executor falls back to a stream on (caster, tick), never
+   * `Math.random` (NFP #3).
+   */
+  rng?: () => number;
 }
 
 /** Pending player choice — returned when choice_set fires in 'player' mode */
@@ -106,6 +117,29 @@ export interface ExecutionResult {
    * writer, which needs the game state an executor does not hold.
    */
   conditionRequests?: ConditionRequest[];
+  /**
+   * THR-1571 — possessions a `dispel` silenced. An executor cannot write runtime
+   * state, so `applyExecutionResult` sets `suppressed` / `suppressedUntilTick` on each
+   * — the same shape `applySuppressions` writes and lifts.
+   */
+  suppressRequests?: SuppressRequest[];
+  /** THR-1571 — mortals a `teleport` / `forced_move` moved; traced as `effect.teleported` on apply. */
+  moved?: MovedActor[];
+}
+
+/** One move a relocation effect wrote (THR-1571). */
+export interface MovedActor {
+  readonly actorId: string;
+  readonly from: string;
+  readonly to: string;
+  readonly primitive: 'teleport' | 'forced_move';
+}
+
+/** One possession a `dispel` asked to silence (THR-1571). */
+export interface SuppressRequest {
+  readonly attachmentId: string;
+  readonly untilTick: number;
+  readonly casterId: string;
 }
 
 /** One fight-clock write an executor asked for (THR-1542). */
@@ -144,6 +178,16 @@ interface ExecutionTrace {
 // Type 15: Teleport / Forced Movement
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * THR-1571: `teleport` moves the mortal. It used to return `mutations: []`, so a
+ * Veilwalk paid its price and went nowhere. The landing is resolved by
+ * `resolveTeleportLanding`; the move is the `remove_edge` + `add_edge` pair
+ * `rebindLocatedAt` writes, applied by `applyExecutionResult`.
+ *
+ * `destination` absent reads as `target_hex` when the cast named a hex and as `random`
+ * within range when it did not — a self-targeted Veilwalk has no hex to aim at.
+ * No landing → `success: false`, no mutation, the mortal stays put (fail-soft).
+ */
 export function executeTeleport(
   effect: TeleportEffect,
   ctx: ExecutionContext,
@@ -152,23 +196,25 @@ export function executeTeleport(
   if (!targetAgentId) {
     return { success: false, mutations: [], traces: [], warnings: ['No target for teleport'] };
   }
-
-  return {
-    success: true,
-    mutations: [],
-    traces: [{
-      effectType: 'teleport',
-      casterId: ctx.casterId,
-      targetId: targetAgentId,
-      details: {
-        range: effect.range,
-        destination: effect.destination ?? 'target_hex',
-        targetHex: ctx.targetHex,
-      },
-    }],
-  };
+  const destination = effect.destination ?? (ctx.targetHex ? 'target_hex' : 'random');
+  const landing = resolveTeleportLanding(
+    ctx.graph, targetAgentId, destination, effect.range, ctx.targetHex, executorRng(ctx, 'teleport'),
+  );
+  if (!landing) {
+    return {
+      success: false,
+      mutations: [],
+      traces: [{ effectType: 'teleport', casterId: ctx.casterId, targetId: targetAgentId, details: { destination, landed: false } }],
+      warnings: ['teleport: no destination'],
+    };
+  }
+  return relocationResult('teleport', ctx, targetAgentId, landing, { destination, range: effect.range });
 }
 
+/**
+ * THR-1571: `forced_move` pushes the target `hexes` away from / toward the caster (or
+ * at random), landing on the nearest location to where the push ends.
+ */
 export function executeForcedMove(
   effect: ForcedMoveEffect,
   ctx: ExecutionContext,
@@ -176,16 +222,61 @@ export function executeForcedMove(
   if (!ctx.targetId) {
     return { success: false, mutations: [], traces: [], warnings: ['No target for forced move'] };
   }
+  const landing = resolveForcedMoveLanding(
+    ctx.graph, ctx.casterId, ctx.targetId, effect.direction, effect.hexes, executorRng(ctx, 'forced_move'),
+  );
+  if (!landing) {
+    return {
+      success: false,
+      mutations: [],
+      traces: [{ effectType: 'forced_move', casterId: ctx.casterId, targetId: ctx.targetId, details: { direction: effect.direction, landed: false } }],
+      warnings: ['forced_move: no destination'],
+    };
+  }
+  return relocationResult('forced_move', ctx, ctx.targetId, landing, { direction: effect.direction, hexes: effect.hexes });
+}
 
+/** The seeded stream an executor draws from — the caller's, else one on (caster, tick). */
+function executorRng(ctx: ExecutionContext, salt: string): () => number {
+  if (ctx.rng) return ctx.rng;
+  let h = 2166136261;
+  for (const ch of `${salt}:${ctx.casterId}:${ctx.tick}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return mulberry32(h >>> 0);
+}
+
+/** The `located_at` rebind for a resolved landing, plus its `effect.teleported` trace. */
+function relocationResult(
+  primitive: 'teleport' | 'forced_move',
+  ctx: ExecutionContext,
+  agentId: string,
+  landing: CastLanding,
+  details: Record<string, unknown>,
+): ExecutionResult {
+  const mutations: GraphMutation[] = ctx.graph
+    .getOutgoingEdges(agentId, 'located_at')
+    .map(e => ({ type: 'remove_edge' as const, edgeId: e.id }));
+  const from = ctx.graph.getOutgoingEdges(agentId, 'located_at')[0]?.target ?? '';
+  mutations.push({
+    type: 'add_edge',
+    edgeId: `located_at_${agentId}_${landing.locationId}`,
+    data: {
+      id: `located_at_${agentId}_${landing.locationId}`,
+      source: agentId,
+      target: landing.locationId,
+      type: 'located_at',
+      properties: {},
+    },
+  });
   return {
     success: true,
-    mutations: [],
+    mutations,
     traces: [{
-      effectType: 'forced_move',
+      effectType: primitive,
       casterId: ctx.casterId,
-      targetId: ctx.targetId,
-      details: { direction: effect.direction, hexes: effect.hexes },
+      targetId: agentId,
+      details: { ...details, from, to: landing.locationId, hex: landing.hex, landed: true },
     }],
+    moved: [{ actorId: agentId, from, to: landing.locationId, primitive }],
   };
 }
 
@@ -225,6 +316,24 @@ export function executeSpawn(
 // Type 18: Dispel
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * THR-1571 (lane decision 7): `dispel` lifts a bearing, never a definition.
+ *
+ * It used to push `remove_node` on whatever it matched. Since THR-1395 a condition is
+ * one shared definition node, so dispelling one mortal's curse deleted the curse for
+ * every bearer in the world — and a matched possession was deleted outright. Now:
+ *
+ * - a matched `has_trait` bearing → `remove_edge` only; the definition survives and
+ *   every other bearer keeps it;
+ * - a matched `possesses` / `bonded_to` item → silenced for
+ *   `DISPEL_ITEM_SUPPRESS_TICKS` (a `suppressRequest`), and the owner keeps it;
+ * - `effect.target` filters what may match (`condition`, `spell`, `attachment`;
+ *   `aura` matches any bearing or item carrying an aura);
+ * - never `remove_node`.
+ *
+ * Tags compare through `normalizeTag`, so `'dead'` matches `'#dead'`. One match per
+ * edge type, as before ("dispel one at a time").
+ */
 export function executeDispel(
   effect: DispelEffect,
   ctx: ExecutionContext,
@@ -232,44 +341,63 @@ export function executeDispel(
   const targetAgentId = ctx.targetId ?? ctx.casterId;
   const graph = ctx.graph;
   const mutations: GraphMutation[] = [];
+  const suppressRequests: SuppressRequest[] = [];
+  const wanted = (effect.tags ?? []).map(normalizeTag);
 
-  // Find matching attachments on target
-  const edgeTypes = ['has_trait', 'possesses', 'bonded_to'] as const;
-  for (const edgeType of edgeTypes) {
-    const edges = graph.getOutgoingEdges(targetAgentId, edgeType);
-    for (const edge of edges) {
+  const matches = (node: GraphNode): boolean => {
+    const tags = ((node.properties.tags as string[] | undefined) ?? []).map(normalizeTag);
+    if (wanted.length > 0 && !wanted.some(t => tags.includes(t))) return false;
+    const tier = node.properties.tier as number | undefined;
+    if (effect.tierMax && tier && tier > effect.tierMax) return false;
+    return true;
+  };
+  const carriesAura = (node: GraphNode): boolean =>
+    ((node.properties.effects as AttachmentEffect[] | undefined) ?? []).some(e => e.type === 'aura');
+
+  // Bearings: conditions, spells, or an aura-bearing trait.
+  if (effect.target !== 'attachment') {
+    for (const edge of graph.getOutgoingEdges(targetAgentId, 'has_trait')) {
       const node = graph.getNode(edge.target);
-      if (!node) continue;
-
-      const tags = node.properties.tags as string[] | undefined;
-      const tier = node.properties.tier as number | undefined;
-
-      // Check tag filter
-      if (effect.tags && effect.tags.length > 0) {
-        if (!tags || !effect.tags.some(t => tags.includes(t))) continue;
-      }
-
-      // Check tier filter
-      if (effect.tierMax && tier && tier > effect.tierMax) continue;
-
-      // Match found — mark for removal
+      if (!node || !matches(node)) continue;
+      const sub = String(node.properties.subcategory ?? '');
+      const fits = effect.target === 'condition' ? DISPEL_CONDITION_SUBCATEGORIES.includes(sub)
+        : effect.target === 'spell' ? sub === 'spell'
+        : carriesAura(node);
+      if (!fits) continue;
       mutations.push({ type: 'remove_edge', edgeId: edge.id });
-      mutations.push({ type: 'remove_node', nodeId: edge.target });
-      break; // Dispel one at a time
+      break;
     }
   }
 
+  // Items: silenced, never deleted.
+  if (effect.target === 'attachment' || effect.target === 'aura') {
+    for (const edgeType of ['possesses', 'bonded_to'] as const) {
+      const hit = graph.getOutgoingEdges(targetAgentId, edgeType).find(edge => {
+        const node = graph.getNode(edge.target);
+        return !!node && matches(node) && (effect.target === 'attachment' || carriesAura(node));
+      });
+      if (hit) {
+        suppressRequests.push({ attachmentId: hit.target, untilTick: ctx.tick + DISPEL_ITEM_SUPPRESS_TICKS, casterId: ctx.casterId });
+      }
+    }
+  }
+
+  const lifted = mutations.length;
   return {
-    success: mutations.length > 0,
+    success: lifted + suppressRequests.length > 0,
     mutations,
+    ...(suppressRequests.length > 0 ? { suppressRequests } : {}),
     traces: [{
       effectType: 'dispel',
       casterId: ctx.casterId,
       targetId: targetAgentId,
-      details: { target: effect.target, tags: effect.tags, removed: mutations.length / 2 },
+      details: { target: effect.target, tags: effect.tags, lifted, silenced: suppressRequests.map(r => r.attachmentId) },
     }],
   };
 }
+
+/** The bearings a `dispel` with `target: 'condition'` may lift (conditions and scars). */
+const DISPEL_CONDITION_SUBCATEGORIES: readonly string[] = ['condition', 'scar'];
 
 // ═══════════════════════════════════════════════════════════════════
 // Type 20: Alter Terrain
