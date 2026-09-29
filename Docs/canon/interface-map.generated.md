@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 150 |
+| 🟢 LIVE | 151 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **210** |
+| **Total** | **211** |
 
 ## Contracts by producing subsystem
 
@@ -290,6 +290,7 @@ remediation ticket or the build fails.
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `monster-card-shows-on-lair` | A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does. | function: `buildLairMonsterCardModel`, `readOpponentCard`, `monsterState`, `getAgentInfoCard` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `survey-arranges-a-ruin-visit` | A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold. | edge-prop: `knows_clue_of`, `pendingVisitDueTick`, `claimLeadVisit`, `resolveVisitLead`, `sharpen_clue` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Secrets & Favors
 
@@ -391,10 +392,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 70 total — 2 write, 3 read, 65 unclassified
+- **Production hits:** 72 total — 2 write, 3 read, 67 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +60 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +62 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
@@ -709,10 +710,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 202 total — 1 write, 3 read, 198 unclassified
+- **Production hits:** 204 total — 1 write, 3 read, 200 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +193 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +195 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1032,10 +1033,10 @@ exit
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 12 total — 2 write, 2 read, 8 unclassified
+- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +3 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +4 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
@@ -1624,10 +1625,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/strategicActionCandidates.ts`
-- **Production hits:** 23 total — 3 write, 3 read, 17 unclassified
+- **Production hits:** 25 total — 3 write, 3 read, 19 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/strategic-packs/wandererStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/engine/agentDetail.ts` +12 more
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/strategic-packs/wandererStrategicPack.ts`, `src/data/undertaking-kinds.ts` +14 more
 - **Verdict:** Verified 2026-09-29: THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.
 
 ### `held-town-affinity-on-the-board` — 🟢 LIVE
@@ -1707,10 +1708,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **UL terms:** *Undertaking*, *Appointment*, *Fight*
 - **Module:** `src/engine/monsters/hunts.ts`
-- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
+- **Production hits:** 12 total — 2 write, 2 read, 8 unclassified
 - **Write sites:** `src/engine/appointments.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/encounterSeeding.ts`, `src/engine/monsters/lairArrivalTrigger.ts`
-- **Other hits:** `src/data/movement-content.ts`, `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`, `src/engine/monsters/hunts.ts`, `src/types/strategicAction.ts` +2 more
+- **Other hits:** `src/data/encounters/ruin-lead-visit.ts`, `src/data/movement-content.ts`, `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`, `src/engine/monsters/hunts.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `incident-bundle-to-download` — 🟢 LIVE
@@ -2114,10 +2115,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 330 total — 1 write, 1 read, 328 unclassified
+- **Production hits:** 333 total — 1 write, 1 read, 331 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +323 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +326 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2230,10 +2231,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 120 total — 1 write, 1 read, 118 unclassified
+- **Production hits:** 121 total — 1 write, 1 read, 119 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +113 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +114 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2285,10 +2286,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 24 total — 1 write, 3 read, 20 unclassified
+- **Production hits:** 26 total — 1 write, 3 read, 22 unclassified
 - **Write sites:** `src/data/encounters/vertical-slice.ts`
 - **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +15 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +17 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
 ### `seeded-dead-stay-dead` — 🟢 LIVE
@@ -2455,16 +2456,28 @@ exit
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/data/unified-action-templates.ts`, `src/engine/groups/groupQueries.ts`, `src/types/graphOp.ts`
 - **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "Sunder read sites" measures the doubled dissent delta against the plain constant, confirms non-dissent events are untouched, and confirms an open Bless window still suppresses first (the two windows are read independently and neither cancels the other).
 
+### `survey-arranges-a-ruin-visit` — 🟢 LIVE
+
+- **Intent:** A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold.
+- **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
+- **UL terms:** *Undertaking*, *Location*
+- **Module:** `src/engine/ruins/leadVisit.ts`
+- **Production hits:** 28 total — 3 write, 2 read, 23 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/delveVariant.ts`
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts`, `src/data/encounters/ruin-lead-cold.ts` +18 more
+- **Verdict:** Verified 2026-09-29: THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply).
+
 ### `t1-undertaking-objects-feed-existing-economies` — 🟢 LIVE
 
 - **Intent:** A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads.
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 113 total — 2 write, 4 read, 107 unclassified
+- **Production hits:** 115 total — 2 write, 4 read, 109 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +102 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +104 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -2598,10 +2611,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 66 total — 3 write, 4 read, 59 unclassified
+- **Production hits:** 67 total — 3 write, 4 read, 60 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +54 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +55 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
@@ -2679,10 +2692,10 @@ exit
 - **Producer → Consumer:** Agent Lifecycle → Strategic Projects & Control
 - **UL terms:** *World Object*, *Location*, *Place*, *Route*, *Area*
 - **Module:** `src/data/world-objects.ts`
-- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
 - **Write sites:** `src/data/world-objects.ts`
 - **Read sites:** `src/engine/graph.ts`, `src/types/nodeSchema.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts`, `src/engine/worldPastWords.ts` +1 more
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts` +3 more
 - **Verdict:** Verified 2026-09-03: THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.
 
 ### `world-past-descent-feeds-clue-scoring` — 🟢 LIVE
