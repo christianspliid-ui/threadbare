@@ -1,0 +1,461 @@
+{
+ "4": {
+  "lanesT0": [
+   {
+    "id": "trades_with_loc_4_loc_102_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_4_loc_31_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_1_loc_33_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_1_loc_12_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0,
+    "hexes": 6,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_3_loc_15_0",
+    "by": "worldgen",
+    "goods": [
+     "ore",
+     "grazing",
+     "stone"
+    ],
+    "balance": 0.9,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_3_loc_48_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0.267,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   }
+  ],
+  "lanesT12": [
+   {
+    "id": "trades_with_loc_4_loc_102_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_4_loc_31_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_33_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_12_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_3_loc_15_0",
+    "goods": [
+     "stone"
+    ],
+    "balance": 0.267
+   },
+   {
+    "id": "trades_with_loc_3_loc_48_0",
+    "goods": [],
+    "balance": 0
+   }
+  ],
+  "cellTraces": {
+   "undertaking_reader:cell.observe.faction": 3,
+   "strategic_action_started:cell.observe.faction": 4,
+   "undertaking_reader:cell.observe.route": 10,
+   "strategic_action_started:cell.observe.route": 5,
+   "undertaking_reader:cell.observe.place": 10,
+   "strategic_action_started:cell.observe.place": 5,
+   "strategic_action_started:cell.observe.monster": 3,
+   "undertaking_reader:cell.observe.location": 11,
+   "strategic_action_started:cell.observe.location": 7,
+   "appointment_planted:cell.observe.location": 4
+  },
+  "laneEvents": {
+   "founded_with_cargo": 4,
+   "volume:traffic": 11,
+   "volume:decayed": 2,
+   "dissolved": 2
+  },
+  "laneLifetimes": [
+   60,
+   60
+  ],
+  "lanesStanding": {
+   "50": 6,
+   "100": 4,
+   "150": 4,
+   "200": 4,
+   "250": 4,
+   "300": 4
+  },
+  "clueMinted": {
+   "tavern_rumor:vague": 19,
+   "spy_debrief:vague": 11,
+   "library_research:vague": 1,
+   "undertaking_survey:narrowed": 4,
+   "library_research:narrowed": 1
+  },
+  "clueHolderTier": {
+   "ambient": 24,
+   "decider": 8
+  },
+  "surveyByBand": {
+   "success": 4
+  },
+  "surveyRefused": {},
+  "located": 0,
+  "clueDecayed": 30,
+  "clueSharpened": {
+   "survey:vague>narrowed": 1,
+   "survey:narrowed>narrowed": 3
+  },
+  "visit": {
+   "arranged": 2,
+   "refused:lead_visit_visit_pending": 2,
+   "regime:far": 1,
+   "regime:leaning": 1,
+   "regime:departing": 1,
+   "regime:lost": 1
+  },
+  "delveTraces": {}
+ },
+ "42": {
+  "lanesT0": [
+   {
+    "id": "trades_with_loc_4_loc_15_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_4_loc_32_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_9_loc_10_0",
+    "by": "worldgen",
+    "goods": [
+     "timber"
+    ],
+    "balance": 0,
+    "hexes": 6,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_9_loc_19_0",
+    "by": "worldgen",
+    "goods": [
+     "timber"
+    ],
+    "balance": 0.3,
+    "hexes": 6,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_1_loc_7_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 6,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_1_loc_13_0",
+    "by": "worldgen",
+    "goods": [
+     "ore",
+     "stone"
+    ],
+    "balance": 0.367,
+    "hexes": 8,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   }
+  ],
+  "lanesT12": [
+   {
+    "id": "trades_with_loc_4_loc_15_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_4_loc_32_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_9_loc_10_0",
+    "goods": [
+     "timber"
+    ],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_9_loc_19_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_7_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_1_loc_13_0",
+    "goods": [
+     "stone"
+    ],
+    "balance": 0
+   }
+  ],
+  "cellTraces": {
+   "undertaking_reader:cell.observe.route": 6,
+   "strategic_action_started:cell.observe.route": 3,
+   "undertaking_reader:cell.observe.area": 5,
+   "strategic_action_started:cell.observe.area": 2,
+   "undertaking_reader:cell.observe.location": 1,
+   "strategic_action_started:cell.observe.location": 1,
+   "strategic_action_started:cell.observe.monster": 2
+  },
+  "laneEvents": {
+   "founded_with_cargo": 3,
+   "volume:traffic": 8
+  },
+  "laneLifetimes": [],
+  "lanesStanding": {
+   "50": 6,
+   "100": 7,
+   "150": 7,
+   "200": 7,
+   "250": 7,
+   "300": 7
+  },
+  "clueMinted": {
+   "library_research:vague": 8,
+   "spy_debrief:vague": 6,
+   "tavern_rumor:vague": 18,
+   "encounter_outcome:vague": 1
+  },
+  "clueHolderTier": {
+   "ambient": 28,
+   "decider": 5
+  },
+  "surveyByBand": {},
+  "surveyRefused": {},
+  "located": 0,
+  "clueDecayed": 26,
+  "clueSharpened": {},
+  "visit": {},
+  "delveTraces": {}
+ },
+ "99": {
+  "lanesT0": [
+   {
+    "id": "trades_with_loc_8_loc_10_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0.267,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_8_loc_28_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0.267,
+    "hexes": 5,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_16_loc_92_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0.267,
+    "hexes": 3,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_16_loc_99_0",
+    "by": "worldgen",
+    "goods": [
+     "grazing"
+    ],
+    "balance": 0.267,
+    "hexes": 3,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_27_loc_37_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 2,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   },
+   {
+    "id": "trades_with_loc_27_loc_42_0",
+    "by": "worldgen",
+    "goods": [],
+    "balance": 0,
+    "hexes": 2,
+    "sourcePop": null,
+    "targetPop": null,
+    "identityOwned": false
+   }
+  ],
+  "lanesT12": [
+   {
+    "id": "trades_with_loc_8_loc_10_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_8_loc_28_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_16_loc_92_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_16_loc_99_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_27_loc_37_0",
+    "goods": [],
+    "balance": 0
+   },
+   {
+    "id": "trades_with_loc_27_loc_42_0",
+    "goods": [],
+    "balance": 0
+   }
+  ],
+  "cellTraces": {
+   "undertaking_reader:cell.observe.place": 8,
+   "strategic_action_started:cell.observe.place": 4,
+   "undertaking_reader:cell.observe.faction": 5,
+   "strategic_action_started:cell.observe.faction": 5,
+   "undertaking_reader:cell.observe.area": 21,
+   "strategic_action_started:cell.observe.area": 8,
+   "strategic_action_started:cell.observe.monster": 7,
+   "undertaking_reader:cell.observe.route": 6,
+   "strategic_action_started:cell.observe.route": 3,
+   "undertaking_reader:cell.observe.location": 4,
+   "strategic_action_started:cell.observe.location": 4
+  },
+  "laneEvents": {
+   "founded_with_cargo": 4,
+   "volume:traffic": 7
+  },
+  "laneLifetimes": [],
+  "lanesStanding": {
+   "50": 6,
+   "100": 6,
+   "150": 6,
+   "200": 6,
+   "250": 7,
+   "300": 7
+  },
+  "clueMinted": {
+   "tavern_rumor:vague": 22,
+   "spy_debrief:vague": 14
+  },
+  "clueHolderTier": {
+   "ambient": 30,
+   "decider": 6
+  },
+  "surveyByBand": {},
+  "surveyRefused": {},
+  "located": 0,
+  "clueDecayed": 34,
+  "clueSharpened": {},
+  "visit": {},
+  "delveTraces": {}
+ }
+}

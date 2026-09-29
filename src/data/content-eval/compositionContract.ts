@@ -131,6 +131,8 @@ const PERSISTENT_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'axiological_mark_apply',
   'secret_discovery',
   'spawn_clue',
+  // THR-1664 — the visit sets the actor's own lead (`knows_clue_of` precision, or consumed).
+  'sharpen_clue',
   'spawn_unique_location',
   'encounter_seed',
   'bond_change',

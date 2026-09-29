@@ -181,6 +181,10 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       // THR-1560 — the hunt's missed sequel (`hunt.trail_cold`). Without the prefix the
       // kind narrows it out of `{ kind: 'encounter_template' }`, and a missed hunt fires nothing.
       'hunt.',
+      // THR-1664 — the ruin visit's two seed-only branches (`ruins.lead.visit`,
+      // `ruins.lead.cold`). Claimed for the same reason as `hunt.`: without it the
+      // survey's visit query finds nothing and no visit ever fires.
+      'ruins.',
       // The faction quest families, two-letter by convention (THR-1481 names these
       // `encounterFamily` prefixes as the literal-id rot slice 4 replaces with tags).
       'ag.', 'mc.', 'tg.', 'ac.', 'bf.', 'cg.', 'hod.', 'uk.', 'rb.', 'mct.', 'lk.', 'ts.', 'fa.',

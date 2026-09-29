@@ -27,6 +27,8 @@
  *                   success → knows where it lies (`located`), at cost → the lead holds
  *                   (`narrowed`, fresh), failure → the lead is lost (consumed).
  *   Cool failure?   Nobody is hurt. The trail simply stops making sense.
+ *   The god's hand  Each step deals a hand (`insight`/`lore`, then `might`/`peril`), so
+ *                   the visit's dice are the god's to bend like any other roll.
  *
  * Chips anchor on **the ruin** through `$here` (Law 56 clause two): the kept visit
  * resolves at the ruin, so the place the mortal stands is the place the lead names.
@@ -113,6 +115,8 @@ export const RUIN_LEAD_VISIT: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       purposeLine: 'Read the ground',
+      // The god's hand (charter rule 7): reading old ground.
+      deal: { count: 4, tags: ['insight', 'lore'] },
       narrativeTemplate:
         '{actor} has come to {location} with a lead and a rough idea of where it points. '
         + 'The ground is broken stone and old cuts. Somewhere in it is a way down.',
@@ -133,6 +137,8 @@ export const RUIN_LEAD_VISIT: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       purposeLine: 'Find the way in',
+      // Moving fallen stone over a drop: strength, and the risk of it.
+      deal: { count: 4, tags: ['might', 'peril'] },
       narrativeTemplate:
         'The low place is choked with fallen stone. Under it, if the lead is right, is the way in. '
         + '{actor} starts moving stone.',
@@ -174,7 +180,8 @@ export const RUIN_LEAD_VISIT: UnifiedActionTemplate = {
           changes: [LOST],
         },
         critical_failure: {
-          overview: 'The stone slid at {location} and buried the way in. {actor} has lost the lead.',
+          // A critical failure can end the visit at either step, so this line names neither.
+          overview: '{location} gave {actor} nothing to follow, and now nothing will. {actor} has lost the lead.',
           changes: [LOST],
         },
       },

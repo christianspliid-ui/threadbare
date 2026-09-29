@@ -263,6 +263,9 @@ const DECLARED_QUERY_PLANTERS: Readonly<Record<string, readonly string[]>> = {
   'encounter.slice.full_moon_reckoning': ['encounter.slice.bargain_at_crossroads'],
   // THR-1560 — the hunt appointment's missed branch: `#hunt_trail_cold`, one bearer.
   'hunt.trail_cold': ['cell.destroy.monster'],
+  // THR-1664 — the ruin visit's two branches: `#ruin_lead` and `#lead_gone_cold`, one bearer each.
+  'ruins.lead.visit': ['cell.observe.location'],
+  'ruins.lead.cold': ['cell.observe.location'],
 };
 
 const NON_DRAWABLE = CORPUS.filter(t => t.drawable === false);

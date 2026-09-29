@@ -24,15 +24,15 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 42 | 44 | 86 |
+| ✅ acted-on | 43 | 44 | 87 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **44** | **45** | **89** |
+| **Total** | **45** | **45** | **90** |
 
 ## Aftermath effect kinds
 
-Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 44 members.
+Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 45 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -69,6 +69,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 | `thread_branch` | ✅ acted-on | a second thread edge to a newly threaded actor | `src/engine/graphQueries.ts` → `getThreadTo` (acts) |
 | `archetype_drift_register` | ✅ acted-on | a drift delta in `state.archetypeDrift` | `src/engine/encounters/branchDecision.ts` → `archetypeDrift` (acts) |
 | `spawn_clue` | ✅ acted-on | a clue node attached to a ruin | `src/engine/ruins/clueLifecycle.ts` → `clue` (acts) |
+| `sharpen_clue` | ✅ acted-on | the actor's own `knows_clue_of` lead set to `located` / `narrowed`, or consumed (THR-1664) | `src/engine/ruins/delveVariant.ts` → `located` (acts) |
 | `secret_discovery` | ✅ acted-on | a `knows_secret_of` edge marked discovered | `src/engine/phaseSecretsFavors.ts` → `knows_secret_of` (acts) |
 | `favor_creation` | ✅ acted-on | an `owes_favor` edge from debtor to creditor | `src/engine/phaseSecretsFavors.ts` → `owes_favor` (acts) <br/>*operand:* person-shaped debtor — a non-person endpoint is refused by the THR-1175 guards |
 | `faction_reputation_gain` | ✅ acted-on | a raised standing on the actor's `member_of` edge | `src/engine/factionMembership.ts` → `member_of` (acts) |

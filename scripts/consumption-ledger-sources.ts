@@ -292,6 +292,10 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: "a clue node attached to a ruin",
     consumers: [acts('src/engine/ruins/clueLifecycle.ts', 'clue')],
   },
+  sharpen_clue: {
+    writes: "the actor's own `knows_clue_of` lead set to `located` / `narrowed`, or consumed (THR-1664)",
+    consumers: [acts('src/engine/ruins/delveVariant.ts', 'located')],
+  },
   secret_discovery: {
     writes: "a `knows_secret_of` edge marked discovered",
     consumers: [acts('src/engine/phaseSecretsFavors.ts', 'knows_secret_of')],

@@ -4243,6 +4243,40 @@ cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertakin
   (its first profile) and `ambition_conquer_territory`. The object scan reads a per-type cap,
   `STRATEGIC_TARGET_SCAN_CAPS[objectTypeId] ?? .object` (`monster: HUNT_TARGET_SCAN_CAP` = 128 — at least the 120 living monsters an epic map holds at 300 ticks).
 
+**The ruin visit (THR-1664, seeded things stay alive S3).** The second appointment row, and the
+first that gates on the site and on the actor's own state rather than planting on every completion:
+
+- **Two more optional `UndertakingAppointmentPayoff` fields** (read at plant time only, not carried
+  onto `PlantedAppointment`):
+  - `siteClasses` — the Location classes (`locationClassOf`) the work's site must be; any other site
+    arranges nothing, silently. The survey row names `['ruin', 'wonder']`, so a survey of a town
+    plants no visit.
+  - `leadVisit` — the meeting is a visit to a held lead's ruin. `claimLeadVisit` admits only when the
+    work left the actor holding an unconsumed **`narrowed`** lead on the site and no visit to it is
+    pending (**one pending visit per holder per ruin** — the planter's seed id is tick-keyed, so a
+    repeat survey would otherwise plant a duplicate). On admission it stamps
+    `knows_clue_of.pendingVisitDueTick`, which `phaseClueDecay` reads to spare the lead until due +
+    `CLUE_LEAD_VISIT_GRACE_TICKS` (24). A refusal traces `appointment_planted` with
+    `refused: 'lead_visit_no_lead' | 'lead_visit_not_narrowed' | 'lead_visit_visit_pending'` and
+    `seedWithheld`.
+- **The row:** `UNDERTAKING_CELL_APPOINTMENTS['cell.observe.location']` — meeting `#ruin_lead` (its
+  one bearer, the seed-only `ruins.lead.visit`), missed `#lead_gone_cold` (its one bearer, the
+  seed-only `ruins.lead.cold`), `delayTicks: CLUE_LEAD_VISIT_DELAY_TICKS` (48), `requirePlace`,
+  `pricedByHex`.
+- **The `sharpen_clue` aftermath effect** (`{ kind: 'sharpen_clue', missed?: boolean }`) — sibling of
+  `spawn_clue`, but it acts only on **the actor's own lead** (the one carrying the visit stamp, else
+  the one on a ruin at their hex), never by Narrative Gravity. Author it in a step's
+  `successMetadata` / `failureMetadata`: the step-outcome reaction now carries the encounter's
+  **terminal outcome** (`EncounterAftermathReaction.actionOutcome`, from `terminalActionOutcome`,
+  absent while the encounter goes on), and the effect maps it through
+  `CLUE_VISIT_PRECISION_BY_OUTCOME` — success → `located`, at cost → `narrowed` and fresh, failure →
+  cold (consumed). Keyed on the action outcome, not the step band, so the lead always agrees with
+  the `byOutcome` ending the player reads. On a step that does not end the encounter it is a no-op
+  (`not_terminal`), so put it on **every step that can end the encounter** — including a first step
+  whose `critical_failure` ends it early. `missed: true` makes the lead cold whatever the outcome.
+  It backs Law 56 chips (`CHIP_BACKING_EFFECT_KINDS`) and satisfies the `knowledge` consequence
+  family. Emits `ruins.clue_sharpened` with `via: 'visit' | 'missed_visit'`.
+
 Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI
 `hunts` (founded, tracked, planted / kept / missed with reasons, travel ticks, out-of-scan
 reason-holders); `npm run census:hunts -- --seeds 42,99 --ticks 300` (runs past the CLI's
