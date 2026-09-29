@@ -1,5 +1,5 @@
-// Census reader (THR-1631 S1): the past worldgen writes. Read-only; one world per seed,
-// medium map, unattended (no player, no First) — `dying.ts`'s pattern.
+// Census reader (THR-1631 S1, THR-1657 S3): the past worldgen writes, and the ambitions
+// it mints (with every skipped source's reason). Read-only; one world per seed, medium map, unattended (no player, no First) — `dying.ts`'s pattern.
 //
 // Usage:
 //   npx esbuild Docs/audits/2026-09-25-living-world-data/readers/past.ts --bundle --platform=node \
@@ -20,6 +20,7 @@ import { locationClassOf } from '../../../../src/data/world-objects';
 import { readWorldPast, isSeededDead } from '../../../../src/engine/worldPast';
 import { WORLD_PAST_DEFAULTS } from '../../../../src/data/world-past-constants';
 import { isAutonomousDecisionActor } from '../../../../src/engine/decisionTier';
+import { enableTracing, disableTracing, clearTraces, getTraces } from '../../../../src/engine/traceBuffer';
 import type { GameState } from '../../../../src/types/gameState';
 
 const seeds = (process.argv[2] ?? '42,99').split(',').map(Number);
@@ -30,15 +31,25 @@ WORLD_PAST_DEFAULTS.enabled = !OFF;
 if (process.argv[5]) Object.assign(WORLD_PAST_DEFAULTS, JSON.parse(process.argv[5]));
 
 type P = Record<string, unknown>;
+
+/** Living deciders at t0 — S3 must leave this unchanged against the 'off' run. */
+function g0Deciders(s: GameState): number {
+  return s.graph.getNodesByType('actor').filter(n => isAutonomousDecisionActor(n) && n.properties.deceased !== true).length;
+}
 const out: Record<string, unknown> = {};
 
 for (const seed of seeds) {
   resetEventCounter(); resetReputationTraitInit();
+  enableTracing(); clearTraces();
   const rt = createSimulationRuntime();
   const pr = MAP_SIZE_PRESETS.medium;
   const t0 = Date.now();
   let { state } = initializeGameState(generateArchetypes(4, seed)[0], 'C', createBalancedCosmology(), seed, pr.cols, pr.rows) as { state: GameState };
   const worldgenMs = Date.now() - t0;
+  // S3 (THR-1657): the minted and skipped past ambitions, read off the one worldgen trace.
+  const pastTrace = getTraces().find(t => t.category === 'world_past_seeded') as unknown as { ambitions?: { minted: P[]; skipped: P[] } } | undefined;
+  const holdersAtT0 = g0Deciders(state);
+  disableTracing();
   const g = state.graph;
   const view = readWorldPast(g);
   const events = g.getNodesByType('event').filter(n => n.properties.pastOrigin === 'worldgen');
@@ -61,6 +72,8 @@ for (const seed of seeds) {
     dead: { total: dead.length, byRole: dead.reduce<Record<string, number>>((m, n) => { const r = String(n.properties.pastRole); m[r] = (m[r] ?? 0) + 1; return m; }, {}) },
     descent: { mortals: withDescent.length, livingMortals: mortals.length },
     wondersWithFinder: view.wonders.filter(w => w.finderId).length,
+    deciderHeadcountT0: holdersAtT0,
+    ambitions: pastTrace?.ambitions ?? null,
   };
 
   if (TICKS > 0) {

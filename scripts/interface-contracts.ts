@@ -5469,6 +5469,32 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.',
     },
   },
+  {
+    id: 'world-past-mints-ambitions',
+    producerSystem: WORLDGEN,
+    consumerSystem: AMBITIONS,
+    intent:
+      "The past gives the living reasons (THR-1657, S3): a fallen commander's kin — the losing Realm's highest-standing protagonist with a free slot, tied `kin` both ways — inherits a `seek_revenge` grievance against the winning Realm's current leader through `resolveGrievanceDisposition`'s succession, and the protagonist nearest a wonder with a finder comes to chase it. Deciders only, no spotlight pull, so the t0 decider headcount is unchanged; every source that mints nothing is named with its reason in `world_past_seeded.ambitions`.",
+    ulTerms: ['Realm', 'Location'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['mintPastAmbitions', 'assignAmbitionToActor', 'resolveGrievanceDisposition'],
+      module: 'src/engine/worldPastAmbitions.ts',
+    },
+    writeSites: ['src/engine/worldPastAmbitions.ts', 'src/engine/worldPast.ts', 'src/engine/gameInit.ts'],
+    readSites: [
+      'src/engine/ambitionTick.ts',
+      'src/engine/grievance/grievanceLifecycle.ts',
+      'src/engine/phaseAgentDecision.ts',
+      'src/engine/undertakingMotive.ts',
+      'src/engine/agentDetail.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        "THR-1657. `readers/past.ts` on medium worlds: seed 42 mints 2 `seek_revenge` + 2 `chase_the_wonder` (2 wonders skipped `no_free_slot`), seed 99 mints 2 + 1 (3 skipped `no_free_slot`); decider headcount at t0 is 20 / 23 with the pass on and off alike. Headless seed-42 medium CLI: both revenge drives are still `active` at tick 60 with heat cooled 1.0 → 0.82 by the milestone pass, and one heir (`agent_garrison_culture_1`) runs `cell.destroy.monster` and `cell.destroy.power` undertakings sourced from `ambition_seek_revenge`. The heavy test `worldPast-generatedWorld.test.ts` proves on a generated world that each revenge heir is kin of the dead commander both ways, a member of the losing Realm, and holds a grievance naming the winning Realm's living leader, and that no ambient or dead actor holds a past ambition.",
+    },
+  },
   // -- The opening: the meeting's bond is what makes a First (THR-1605 S1) ---
   // Audit-on-touch row for the plan `2026-09-27-thr-1605-the-opening.md`. The
   // meeting writes one `thread` edge at court position `the_first`; that edge is

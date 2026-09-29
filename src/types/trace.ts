@@ -6010,6 +6010,11 @@ export interface WorldPastSeededTrace extends TraceBase {
     warsWithoutBurnedTown: string[];
     realmPairsAvailable: number;
   };
+  /** S3 (THR-1657): past-minted ambitions, and every source skipped with its reason. */
+  ambitions?: {
+    minted: Array<{ actorId: string; templateId: string; sourceId: string; culpritId?: string; kinOfId?: string }>;
+    skipped: Array<{ sourceId: string; templateId: string; reason: string }>;
+  };
   durationMs: number;
 }
 

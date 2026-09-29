@@ -30,10 +30,26 @@ function buildWorld(seed = SEED) {
 }
 
 const PAST_PROPS = ['foundedYearsAgo', 'backstoryStrata', 'originCultureId'] as const;
+const CALLING_PROPS = ['calling', 'callingTitleKey', 'callingScore'] as const;
+
+/**
+ * Who holds a past-minted drive (S3, THR-1657). The drive feeds the holder's t0 calling
+ * (`recomputeCalling(…, 'initial')` reads ambitions), so on those holders the calling is
+ * the pass's consequence too — stripped on both sides of the comparison.
+ */
+function pastAmbitionHolders(graph: WorldGraph): Set<string> {
+  return new Set(graph.getAllEdges()
+    .filter(e => e.type === 'pursues' && e.properties.pastOrigin === 'worldgen').map(e => e.source));
+}
 
 /** The graph minus everything the past pass writes — the "today's t0" projection. */
-function withoutPast(graph: WorldGraph) {
+function withoutPast(graph: WorldGraph, pastHolders: ReadonlySet<string> = pastAmbitionHolders(graph)) {
   const pastNodeIds = new Set(graph.getAllNodes().filter(n => n.properties.pastOrigin === 'worldgen').map(n => n.id));
+  // S3 (THR-1657): past-minted `pursues` edges carry `pastOrigin`; an ambition node that
+  // only they point at was created by the pass too, so it goes with them.
+  const keptEdges = graph.getAllEdges().filter(e => e.properties.pastOrigin !== 'worldgen');
+  const pursued = new Set(keptEdges.filter(e => e.type === 'pursues').map(e => e.target));
+  for (const n of graph.getNodesByType('ambition')) if (!pursued.has(n.id)) pastNodeIds.add(n.id);
   const nodes = graph.getAllNodes()
     .filter(n => !pastNodeIds.has(n.id))
     .map(n => {
@@ -43,10 +59,11 @@ function withoutPast(graph: WorldGraph) {
         if (k === 'originCultureId' && props.actorType !== 'individual') continue;
         delete props[k];
       }
+      if (pastHolders.has(n.id)) for (const k of CALLING_PROPS) delete props[k];
       return JSON.stringify([n.id, n.type, n.name, props]);
     })
     .sort();
-  const edges = graph.getAllEdges()
+  const edges = keptEdges
     .filter(e => !pastNodeIds.has(e.source) && !pastNodeIds.has(e.target))
     .map(e => JSON.stringify([e.id, e.type, e.source, e.target, e.properties]))
     .sort();
@@ -72,7 +89,8 @@ describe('worldPast — the past on the graph (THR-1631 S1)', () => {
     const on = buildWorld().graph;
     // Own PRNG stream, run after every other draw: stripping the pass's writes
     // recovers the disabled world byte for byte.
-    expect(withoutPast(on)).toEqual(withoutPast(off));
+    const holders = pastAmbitionHolders(on);
+    expect(withoutPast(on, holders)).toEqual(withoutPast(off, holders));
   });
 
   it('writes at most six events and ten dead, in the run-time death shape', () => {

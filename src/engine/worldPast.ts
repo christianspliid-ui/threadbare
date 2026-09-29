@@ -11,7 +11,10 @@
  *    burned town (a plain ruin) and a fallen commander;
  *  - **S1e** descent from a dead empire on about a quarter of the mortals on its old land;
  *  - **S1f** the dead — founders, fallen commanders and wonder finders — capped at ten;
- *  - **S1g** `readWorldPast` / `getPlacePast`, the pure readers.
+ *  - **S1g** `readWorldPast` / `getPlacePast`, the pure readers;
+ *  - **S3** (THR-1657) `worldPastAmbitions.mintPastAmbitions`, injected and run at the
+ *    tail: a fallen commander's kin wants revenge on the winning Realm's leader, and a
+ *    hero near a wonder chases its legend. Drawless, deciders only, no spotlight pull.
  *
  * **Everything is graph** (plan Lane decision 1): event nodes, deceased actors in the
  * run-time `retain` shape (`markMortalDead`), existing edge types, and two properties.
@@ -65,6 +68,7 @@ import {
   type WorldPastLivingWar,
   type WorldPastKnowledge,
   type WorldPastPlayerView,
+  type WorldPastAmbitionsSummary,
 } from '../types/worldPast';
 
 /** A year, in ticks (90 × 4 = 360). Past ticks are negative: `-yearsAgo × TICKS_PER_YEAR`. */
@@ -78,7 +82,7 @@ type P = Record<string, unknown>;
 
 const byId = (a: { id: string }, b: { id: string }): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
-function hexOf(node: GraphNode | undefined): { col: number; row: number } | undefined {
+export function hexOf(node: GraphNode | undefined): { col: number; row: number } | undefined {
   const p = node?.properties as P | undefined;
   if (!p || typeof p.hexCol !== 'number' || typeof p.hexRow !== 'number') return undefined;
   return { col: p.hexCol, row: p.hexRow };
@@ -182,6 +186,12 @@ export interface SeedWorldPastOptions {
   /** Worldgen tiles, for a mortal's home region (descent). Without them no descent is written. */
   tiles?: readonly HexTile[];
   constants?: Partial<WorldPastConstants>;
+  /**
+   * S3 (THR-1657): `worldPastAmbitions.mintPastAmbitions`, injected by `gameInit` so this
+   * module stays free of the ambition, grievance and faction imports (it is read low in the
+   * import graph, and those close a cycle). Absent → the past mints no ambitions.
+   */
+  mintAmbitions?: (graph: WorldGraph, view: WorldPastView, constants: WorldPastConstants) => WorldPastAmbitionsSummary;
 }
 
 /**
@@ -502,6 +512,11 @@ export function seedWorldPast(
     finderIndex++;
   }
 
+  // ── S3: the past feeds ambitions (THR-1657) ───────────────────────────────
+  // Last, and drawless: it reads what the pass just wrote and consumes nothing from the
+  // stream, so every S1 write above is byte-identical with or without it.
+  if (options.mintAmbitions) summary.ambitions = options.mintAmbitions(graph, readWorldPast(graph), c);
+
   summary.durationMs = Date.now() - started;
   emitTrace({
     category: 'world_past_seeded',
@@ -512,13 +527,14 @@ export function seedWorldPast(
     dead: summary.dead,
     descent: summary.descent,
     misses: summary.misses,
+    ambitions: summary.ambitions,
     durationMs: summary.durationMs,
   });
   return summary;
 }
 
 /** A mortal's home hex: its `locationId`, else its `located_at`, resolved to the Location tier. */
-function homeHex(graph: WorldGraph, mortal: GraphNode): { col: number; row: number } | undefined {
+export function homeHex(graph: WorldGraph, mortal: GraphNode): { col: number; row: number } | undefined {
   const locId = typeof mortal.properties.locationId === 'string'
     ? mortal.properties.locationId as string
     : graph.getOutgoingEdges(mortal.id, 'located_at')[0]?.target;
@@ -534,6 +550,7 @@ export function formatWorldPastSummary(s: WorldPastSeededSummary): string {
     + `descent ${s.descent.mortals}/${s.descent.candidates}`
     + (s.misses.elderWar ? `, no elder war (${s.misses.elderWar})` : '')
     + (s.misses.warsWithoutBurnedTown.length ? `, ${s.misses.warsWithoutBurnedTown.length} war(s) without a burned town` : '')
+    + (s.ambitions ? `, ambitions ${s.ambitions.minted.length} minted / ${s.ambitions.skipped.length} skipped` : '')
     + ` (${s.durationMs} ms)`;
 }
 
