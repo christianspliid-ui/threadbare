@@ -39,6 +39,7 @@ import type { GraphNode } from '../types/graph';
 import type { HexTile } from '../types';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
+import { hexKey } from '../lib/hexKey';
 import { getLocationNodes, resolveToParentLocation } from './sublocationShape';
 import { locationClassOf } from '../data/world-objects';
 import { REALM_FACTION_CLASS } from '../data/realm-content';
@@ -62,6 +63,8 @@ import {
   type WorldPastSeededSummary,
   type WorldPastView,
   type WorldPastLivingWar,
+  type WorldPastKnowledge,
+  type WorldPastPlayerView,
 } from '../types/worldPast';
 
 /** A year, in ticks (90 × 4 = 360). Past ticks are negative: `-yearsAgo × TICKS_PER_YEAR`. */
@@ -665,6 +668,60 @@ export function getPlacePast(graph: WorldGraph, locationId: string): PlacePast |
   };
   const hasAnything = record.foundedYearsAgo != null || record.empireId || record.fellInEventId || record.restingIds.length > 0;
   return hasAnything ? record : null;
+}
+
+// ─── S2: the player's view (THR-1656) ─────────────────────────────────────
+
+/** The hex a place sits on — its own, or its parent Location's for the inner tier. */
+function placeHex(graph: WorldGraph, locationId: string): { col: number; row: number } | undefined {
+  const node = graph.getNode(locationId);
+  return hexOf(node) ?? hexOf(resolveToParentLocation(graph, node));
+}
+
+/**
+ * Whether the player's fog knows a place (plan § S2b, Lane decision 4): its hex is
+ * `visible` or `remembered`, or its ruins layer has been revealed by a Find or Perceive.
+ * No `visibility` means fog is off. A place with no hex is never known — fail closed, so a
+ * specific cannot leak through a broken position.
+ */
+export function isPastPlaceKnown(graph: WorldGraph, locationId: string | undefined, knowledge: WorldPastKnowledge): boolean {
+  if (!locationId) return false;
+  if (!knowledge.visibility) return true;
+  const hex = placeHex(graph, locationId);
+  if (!hex) return false;
+  const key = hexKey(hex.col, hex.row);
+  const state = knowledge.visibility.get(key)?.state;
+  if (state === 'visible' || state === 'remembered') return true;
+  return knowledge.hexRevelation?.[key]?.ruins === true;
+}
+
+/**
+ * `readWorldPast`, fog-gated for the player (THR-1656). Pure. The outline is always
+ * present; every specific — which ruin fell in the elder war, which town burned, where a
+ * commander or a wonder finder lies — carries a `known` flag the surfaces word by.
+ */
+export function readWorldPastForPlayer(graph: WorldGraph, knowledge: WorldPastKnowledge): WorldPastPlayerView {
+  const view = readWorldPast(graph);
+  const known = (id: string | undefined) => isPastPlaceKnown(graph, id, knowledge);
+  const restingAt = (actorId: string) => graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
+  return {
+    elderAge: {
+      empires: view.elderAge.empires,
+      ...(view.elderAge.war
+        ? { war: { ...view.elderAge.war, knownSiteIds: view.elderAge.war.siteIds.filter(known) } }
+        : {}),
+    },
+    settling: view.settling,
+    livingMemory: view.livingMemory.map(w => ({
+      ...w,
+      burnedTownKnown: known(w.burnedTownId),
+      fallen: w.fallenIds.map(id => {
+        const at = restingAt(id);
+        return { id, ...(at ? { restingAtId: at } : {}), known: known(at) };
+      }),
+    })),
+    wonders: view.wonders.map(w => ({ ...w, known: known(w.wonderId) })),
+  };
 }
 
 /** True for a dead actor the past pass seeded. */

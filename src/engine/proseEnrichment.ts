@@ -16,6 +16,11 @@
  *   {target:place}      → the place the scene is about (seeded: the inherited
  *                         target; organic: the place the scene stands in), or
  *                         the current location when the target is not a place
+ *   {place.founded_ago} → how long ago the scene's place was founded, in words (THR-1656)
+ *   {place.founder}     → the place's named founder, or "its first settlers"
+ *   {ruin.empire}       → the dead empire an elder ruin belonged to, or "a people long gone"
+ *   {ruin.fall}         → the past war the place fell in — strips when the engine holds
+ *                         none; guard with {?has_ruin_fall}...{/has_ruin_fall}
  *   {?has_X}...{/has_X} → conditional block (rendered if condition true)
  *   {?no_X}...{/no_X}   → inverse conditional block
  */
@@ -58,6 +63,8 @@ import {
   type IntelligenceView,
 } from './intelligence';
 import { TICKS_PER_DAY } from '../data/attention-constants';
+import { placePastEnrichment } from './worldPastWords';
+import { resolveToParentLocation } from './sublocationShape';
 import {
   OUTCOME_BAND_PROSE,
   OUTCOME_BAND_Q_FLAVOR,
@@ -293,6 +300,18 @@ export interface NarrativeContext {
   econAdj?: string;
   econNoun?: string;
   econAtmosphere?: string;
+
+  /** The scene place's past (THR-1656) — what `{place.founded_ago}`, `{place.founder}`,
+   * `{ruin.empire}` and `{ruin.fall}` read. Derived at context build through
+   * `worldPastWords.placePastEnrichment` (itself `getPlacePast`, never re-derived) from the
+   * location this builder already resolved, walking up from a sublocation. Each key is
+   * absent when the engine holds no such fact, and its token falls back. */
+  placePast?: {
+    foundedAgo?: string;
+    founder?: string;
+    ruinEmpire?: string;
+    ruinFall?: string;
+  };
 
   /** The actor's own sphere (THR-1516) — `sphereAlignment.primary` on an ascendant,
    * else the dominant score of a mortal's `sphereAffinity`. Enables `{sphere_flavor}`
@@ -608,6 +627,8 @@ export function gatherNarrativeContext(
           econAtmosphere: economicMood.atmosphere,
         }
       : {}),
+    // The place's past (THR-1656) — the scene place, one tier up from a sublocation.
+    placePast: placePastEnrichment(graph, resolveToParentLocation(graph, location ?? undefined)?.id ?? location?.id),
   };
 }
 
@@ -890,6 +911,14 @@ export function enrichProse(
   result = result.replace(/{econ_noun}/g, ctx.econNoun ?? '');
   result = result.replace(/{econ_atmosphere}/g, ctx.econAtmosphere ?? '');
 
+  // The place's past (THR-1656). Ages are words already (`pastSpanLabel`). `{ruin.fall}`
+  // strips rather than falls back: a fall is claimed only where the engine holds one, so
+  // prose that names it guards the sentence with `{?has_ruin_fall}`.
+  result = result.replace(/{place.founded_ago}/g, ctx.placePast?.foundedAgo ?? 'long');
+  result = result.replace(/{place.founder}/g, ctx.placePast?.founder ?? 'its first settlers');
+  result = result.replace(/{ruin.empire}/g, ctx.placePast?.ruinEmpire ?? 'a people long gone');
+  result = result.replace(/{ruin.fall}/g, ctx.placePast?.ruinFall ?? '');
+
   result = result.replace(/{doom_verb}/g, ctx.doomVerb ?? '');
   result = result.replace(/{doom_adj}/g, ctx.doomAdj ?? '');
   result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
@@ -1014,6 +1043,9 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     // THR-1545: whether `{target:family}` has a line to say — so a sentence built on it
     // can drop out whole for a target that is not a monster.
     target_has_family: ctx.target?.family != null,
+    // THR-1656: whether the scene place fell in a past war the engine holds.
+    has_ruin_fall: ctx.placePast?.ruinFall != null,
+    no_ruin_fall: ctx.placePast?.ruinFall == null,
   };
 
   // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.

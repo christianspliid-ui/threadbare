@@ -33,6 +33,9 @@ import { getResourceClass, getResourceTierProse } from '../../data/resource-clas
 import { getSustenanceProse } from '../../data/essence-sources';
 import { readEssenceSource, selectLocationSustenanceVoice } from '../../engine/essenceSources';
 import { renderProseWithIPK } from '../ProseKeyword';
+import { buildPlacePastLine } from '../../engine/worldPastWords';
+import type { WorldPastKnowledge } from '../../types/worldPast';
+import { PastLineText } from './PastLineText';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -70,6 +73,11 @@ interface LocationViewProps {
    * did when no initiative was running.
    */
   strategicState?: StrategicRuntimeState;
+  /**
+   * What the player's fog knows, for the place's past line (THR-1656). Absent ⇒ fog is
+   * treated as off and every specific shows — the page still renders its founding line.
+   */
+  pastKnowledge?: WorldPastKnowledge;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -1067,12 +1075,20 @@ export const LocationView = memo(function LocationView({
   onNavigateToRuin,
   rivalDefinitions,
   strategicState,
+  pastKnowledge,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
   const locProps = (location.properties ?? {}) as Record<string, unknown>;
   const locType = typeof locProps.locationType === 'string' ? locProps.locationType : 'location';
   const locationSubtype = typeof locProps.locationSubtype === 'string' ? locProps.locationSubtype : locType;
+  // THR-1656 — the place's past line. `tick` keys it: the graph mutates in place, and a
+  // place's specifics change only as fog moves, which the knowledge object tracks.
+  const placePastLine = useMemo(
+    () => (graph ? buildPlacePastLine(graph, location.id, pastKnowledge ?? {}) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [graph, location.id, pastKnowledge, tick],
+  );
 
   // ── Sublocation drill-down state ──
   const [selectedSublocationId, setSelectedSublocationId] = useState<string | null>(null);
@@ -1245,6 +1261,21 @@ export const LocationView = memo(function LocationView({
           >
             {locType} · in {terrainLabel} Hex ({hexCol}, {hexRow})
           </p>
+          {/* The place's past (THR-1656): one sentence, fog-gated for its specifics. */}
+          {placePastLine && (
+            <PastLineText
+              line={placePastLine}
+              testId="location-past-line"
+              style={{
+                marginTop: '4px',
+                fontSize: 'var(--text-sm)',
+                fontFamily: 'var(--font-prose)',
+                color: 'var(--text-secondary)',
+                fontStyle: 'italic',
+                maxWidth: '720px',
+              }}
+            />
+          )}
         </div>
 
         <button

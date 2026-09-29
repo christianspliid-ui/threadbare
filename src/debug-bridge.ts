@@ -299,11 +299,25 @@ if (import.meta.env.DEV) {
      * The past worldgen wrote, read back through the same pure selector S2's surfaces
      * use — unfogged. `null` before a world exists. **Async**: `await` it.
      */
-    getWorldPast: async () => {
+    getWorldPast: async (opts?: { fogged?: boolean }) => {
       const state = _gameStateProvider?.();
       if (!state) return null;
-      const { readWorldPast } = await import('./engine/worldPast');
-      return readWorldPast(state.graph);
+      const { readWorldPast, readWorldPastForPlayer } = await import('./engine/worldPast');
+      if (!opts?.fogged) return readWorldPast(state.graph);
+      // THR-1656 — the player's view, and the chapter's words as flat text.
+      const { buildBeforeYouWoke, pastLineText } = await import('./engine/worldPastWords');
+      const view = readWorldPastForPlayer(state.graph, {
+        visibility: state.visibilityMap,
+        hexRevelation: state.hexRevelation,
+      });
+      return {
+        ...view,
+        lines: buildBeforeYouWoke(state.graph, view).map(g => ({
+          group: g.title,
+          count: g.count,
+          lines: g.lines.map(pastLineText),
+        })),
+      };
     },
 
     getFollowedAgents: async () => {

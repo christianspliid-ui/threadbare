@@ -129,6 +129,8 @@ import { AvatarHUD } from './AvatarHUD';
 import { LiveLocationBar } from './LiveLocationBar';
 import { WorldPulse } from './WorldPulse';
 import { ChroniclePanel } from './ChroniclePanel';
+import { readWorldPastForPlayer } from '../../engine/worldPast';
+import { buildBeforeYouWoke, worldHasPast } from '../../engine/worldPastWords';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificationNavigation';
@@ -727,6 +729,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       },
     });
   }, [fogDisabled, gameState.visibilityMap]);
+
+  // The world's past, as the player's fog knows it (THR-1656). The outline is the
+  // same every tick; only the specifics move, as fog reveals hexes — hence the
+  // visibility and revelation deps beside worldVersion.
+  const pastKnowledge = useMemo(
+    () => ({ visibility: effectiveVisibilityMap, hexRevelation: gameState.hexRevelation }),
+    [effectiveVisibilityMap, gameState.hexRevelation],
+  );
+  const beforeYouWoke = useMemo(() => {
+    const view = readWorldPastForPlayer(gameState.graph, pastKnowledge);
+    return worldHasPast(view) ? buildBeforeYouWoke(gameState.graph, view) : [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.graph, runtime.worldVersion, pastKnowledge]);
 
   // THR-1213 slice 2 deleted an `ascendantLens` memo here. It built a stub lens
   // from *archetype* spheres, nothing read it, and the real lens now comes from
@@ -5076,6 +5091,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 onNavigateToRuin={handleZoomToLocation}
                 rivalDefinitions={gameState.rivalDefinitions}
                 strategicState={gameState.strategicState}
+                pastKnowledge={pastKnowledge}
               />
             )}
           </div>
@@ -5292,9 +5308,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     onSpeedChange={setSpeed}
                   />
                 </div>
-                {gameState.chronicleEntries.length > 0 && (
+                {/* THR-1656: the chronicle mounts from minute one when the world has a past. */}
+                {(gameState.chronicleEntries.length > 0 || beforeYouWoke.length > 0) && (
                   <div style={{ marginTop: 'var(--panel-padding)' }}>
-                    <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} />
+                    <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} past={beforeYouWoke} />
                   </div>
                 )}
               </div>
