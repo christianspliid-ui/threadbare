@@ -153,6 +153,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Fight Clock](./Encounters.md#fight-clock)** — an opponent's wear in segments; a full clock falls to the next landing blow; a monster's persists on its node; not the Doom Clock (THR-1538)
 - **[Fight Result](./Encounters.md#fight-result)** — how a fight ended (overcome … struck down); ends the encounter at once and sets its outcome; recorded as `fight:<result>`
 - **[Fight Advantage](./Encounters.md#fight-advantage)** — what the world lends a fighter at fight start (old wound, their secret, a favour called, company, Storied arms, Blessed, Cursed), each a named term on the odds; not a graph Edge (THR-1543)
+- **[Lead](./Encounters.md#lead)** — what a mortal knows about where a ruin or wonder lies; three rungs (vague / narrowed / located), sharpened by a survey, stale if unworked; a `knows_clue_of` edge (THR-1662)
+- **[Clue](./Encounters.md#clue)** — the code word for a Lead; code and traces only, never a player surface (THR-1662)
+- **[Delve](./Encounters.md#delve)** — an expedition into a ruin, admitted when a mortal with a *located* lead stands on the ruin's hex (THR-1662)
 
 ### Traits
 

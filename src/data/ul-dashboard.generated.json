@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 57,
+      "termCount": 60,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -4630,6 +4630,94 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#fight-advantage",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "lead",
+      "name": "Lead",
+      "aliases": [
+        "clue (code word)",
+        "`knows_clue_of` (edge)",
+        "has heard of it / has a lead on it / knows where it lies (its three sheet phrasings)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-29 (THR-1662)",
+      "oneLiner": "what a mortal knows about where a ruin or wonder lies; three rungs (vague / narrowed / located), sharpened by a survey, stale if unworked; a `knows_clue_of` edge (THR-1662)",
+      "body": "What a mortal knows about where a ruin or wonder lies — a `knows_clue_of` edge from the knower to the site, carrying a **precision** with three rungs (`CluePrecision`): *vague* (sheet: \"has heard of it\"), *narrowed* (\"has a lead on it\"), *located* (\"knows where it lies\"). A lead arrives by rumour, research, a map, a god's whisper or an encounter's outcome; a survey of the site leaves one banded by how well it went (`OBSERVE_CLUE_PRECISION_BY_BAND` — only a critical success locates), and a survey of a site the mortal already holds a lead on **sharpens** it a rung instead of refusing (THR-1663). A lead left unworked **goes stale**: `phaseClueDecay` prunes it after a precision-scaled age (`CLUE_MAX_AGE_TICKS_VAGUE` / `_NARROWED` / `_LOCATED`). A lead that goes **cold** because the mortal missed the visit it arranged is THR-1664's, not yet shipped. The climb is *hear → survey → visit → delve*; only a *located* lead admits a [[Delve]].\n\nPlayer surfaces say **lead**, never *clue*.\n\nCode anchors: `src/types/knowledge.ts` (`KnowsClueOfEdgeProperties`, `CluePrecision`), `src/engine/ruins/clueLifecycle.ts`, `src/engine/phases/clueDecay.ts`, `src/engine/agentDetail.ts` (sheet phrasing).",
+      "seeAlso": [
+        {
+          "raw": "Clue",
+          "termName": "Clue",
+          "resolvedSlug": "encounters#clue"
+        },
+        {
+          "raw": "Delve",
+          "termName": "Delve",
+          "resolvedSlug": "encounters#delve"
+        },
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#lead",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "clue",
+      "name": "Clue",
+      "aliases": [
+        "`knows_clue_of`",
+        "`ClueSource`",
+        "`CluePrecision`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-29 (THR-1662)",
+      "oneLiner": "the code word for a Lead; code and traces only, never a player surface (THR-1662)",
+      "body": "The **code word** for a [[Lead]]: the `knows_clue_of` edge, its types, its traces (`ruins.clue_sharpened`, `Clue discovered: …`) and its constants (`CLUE_*`). Reserve *clue* for code, traces and engine docs; every player surface — sheet, chip, prose, rulebook — says **lead**. Not the rulebook's \"every primitive is clickable\" sense of an arbitrary in-encounter hint.",
+      "seeAlso": [
+        {
+          "raw": "Lead",
+          "termName": "Lead",
+          "resolvedSlug": "encounters#lead"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#clue",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "delve",
+      "name": "Delve",
+      "aliases": [
+        "delve admission",
+        "`ruins.delve_admitted`"
+      ],
+      "status": "canonical",
+      "statusNote": "seated by delegation 2026-09-29 (THR-1662)",
+      "oneLiner": "an expedition into a ruin, admitted when a mortal with a *located* lead stands on the ruin's hex (THR-1662)",
+      "body": "An expedition into a ruin, admitted by `phaseDelveAdmission` when a mortal holding a **located** [[Lead]] stands on the ruin's hex; admission consumes the lead. Elder ruins and ruined settlements (after `RUINED_SETTLEMENT_DELVE_DECAY_TICKS`) both admit delves. Delve families are group-eligible — a [[Company]] may take one a lone mortal cannot. Discovery through delving is the third breadth path for the Ascendant's cards (rulebook §4).\n\nCode anchors: `src/engine/phases/delveAdmission.ts`, `src/engine/ruins/delveTypes.ts`, `src/engine/ruins/delveVariant.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Lead",
+          "termName": "Lead",
+          "resolvedSlug": "encounters#lead"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Company",
+          "termName": "Company",
+          "resolvedSlug": "agents#company"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#delve",
       "contentAdjacent": true
     },
     {

@@ -4710,3 +4710,4 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-29 | `src/engine/strategicGraphOps.ts`, `src/data/undertaking-objects.ts`, `src/types/trace.ts` | `sharpenClue`; a survey sharpens a held lead instead of refusing `clue_already_held`; `ruins.clue_sharpened` trace | THR-1663 |
 | 2026-09-29 | `src/engine/ruins/delveVariant.ts` | Delve admission scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins the old scan's decisions | THR-1663 |
 | 2026-09-29 | `scripts/interface-contracts.ts`, wiki pages (agents, encounters-agents, undertaking grid, interface map) | Contract `held-lead-draws-a-survey` (LIVE); the lead pull and survey sharpening documented | THR-1663 |
+| 2026-09-29 | `Docs/ubiquitous-language/Encounters.md`, `README.md`, `Docs/canon/rulebook.md` §10 | UL entries Lead / Clue / Delve seated by delegation; rulebook climb reworded *survey → lead → delve* with the three rungs | THR-1662 |
