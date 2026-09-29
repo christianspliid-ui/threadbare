@@ -4715,3 +4715,6 @@ esolveEncounterTemplate, and removed canonical AG duplication path so unified ID
 | 2026-09-29 | `src/engine/kpi/engagementKpi.ts`, `kpiConstants.ts`, `scripts/measure-roll-spread.ts` | `windowFitGap`/`windowFitBandFor`; everyday-board constants and table; `--coverage-only` | Plan D2/D3: the brief's scoreboard — THR-1627 |
 | 2026-09-29 | `src/engine/debugEncounterTools.ts` | `DEV_TEST_AVATAR_REACH_RAW` 14 → 28 | Its purpose (a fair step reads uncertain) failed on the re-fitted curve at local 0 — THR-1627 |
 | 2026-09-29 | `Docs/canon/encounters.md`, `public/encounters-manual-reference.html`, invariant + golden + cast tests | At-par ≠ chosen (+0.14), per-band authored-difficulty table; wiki bullet; journeyman/expert level success live | THR-1627 |
+| 2026-09-29 | `src/data/encounter-content.ts` | At-cost / crit-success / crit-failure afterimages and a `deal` fill on 24 steps of ten templates The First draws; 14 lines rewritten after a cold critic pass | Plan S2: finish the encounters the player meets — THR-1666 |
+| 2026-09-29 | `src/data/content-eval/firedTemplateCompletion.ts` | `FIRED_TEMPLATE_COMPLETION` +10 (S2) | E3 ratchet grows — THR-1666 |
+| 2026-09-29 | `Docs/audits/2026-09-25-living-world-data/output/completion-2026-09-29-{before,after}.txt`, README | S2 predicate run and after-coverage | THR-1666 |

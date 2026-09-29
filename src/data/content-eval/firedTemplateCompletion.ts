@@ -30,6 +30,18 @@ export const FIRED_TEMPLATE_COMPLETION: readonly string[] = [
   'encounter.pickpocket',
   'encounter.study_surroundings',
   'encounter.tend_the_weary',
+  // S2 (THR-1666): The First's other draws on the 2026-09-29 attended run
+  // (origin/main 4f4f0377), incomplete, highest world rank first.
+  'encounter.aid_refugees',
+  'encounter.arcane_resonance_study',
+  'encounter.forage_provisions',
+  'encounter.forage_the_land',
+  'encounter.guild_aid',
+  'encounter.merchants_gambit',
+  'encounter.rest_and_recover',
+  'encounter.shadow_in_the_night',
+  'encounter.smuggle_goods',
+  'encounter.trade_caravan_escort',
 ];
 
 /** Templates per slice: one executor run's worth of prose (~60–80 lines). */

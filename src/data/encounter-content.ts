@@ -660,6 +660,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         narrative: 'Two grain factors have been shouting across the same stall for an hour, and the crowd has stopped pretending not to listen. {actor} steps between them before the shouting finds a knife. Both want the same contract, and neither will be the first to name a number.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The factors sign, but only after {actor} gives up {their} own broker\'s fee to close the gap. {actor} leaves the stall with nothing for the day\'s work.',
+        criticalSuccessAfterimage: 'The factors sign, and each pays {actor} a broker\'s fee on the spot to be sure the other one does not get a better split.',
+        criticalFailureAfterimage: 'Both factors turn on {actor} at once. One shoves {actor} into the stall, the crates go over, and the stall owner wants {actor} to pay for them.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: 'The split {actor} proposes gives each factor slightly less than he demanded and slightly more than he expected. They sign, because arithmetic is harder to argue with than pride.',
           reputationDelta: 0.05,
@@ -676,6 +681,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
         narrative: 'A buyer lays out six bolts of dyed wool and names a price that assumes nobody will check the underside. {actor} checks the underside. The difficulty is not seeing the short measure — it is saying so without turning a market into a court.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The buyer sells at the honest measure, but only if {actor} also takes the water-stained bolt from the bottom of the pile at full price.',
+        criticalSuccessAfterimage: '{actor} names the shortfall, and the buyer sells all six bolts at the honest measure and adds a seventh to keep {actor} quiet about it.',
+        criticalFailureAfterimage: '{actor} calls the measure short in front of the whole row, and the measure is full. The buyer\'s friends make {actor} buy a bolt to settle the insult.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'social'] },
         onSuccess: {
           narrative: '{actor} names the shortfall to the inch and offers to buy at the honest measure instead. The buyer laughs, recalculates, and sells. A man caught quietly loses less than a man caught loudly, and both of them know it.',
           reputationDelta: 0.08,
@@ -693,6 +703,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'A factor {actor} has never traded with offers a cargo of untaxed salt at two-thirds the quay price, payable after resale. The margin is real. So is the reason no one else in the square has touched it.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} refuses the salt, and the factor takes offence and tells the square that {actor} called him a smuggler. {actor} spends the afternoon answering for it.',
+        criticalSuccessAfterimage: '{actor} refuses the salt, and while refusing reads the factor\'s ledger upside down. It names the excise man he pays. {actor} says the name aloud, and the factor packs up his salt and leaves the square.',
+        criticalFailureAfterimage: '{actor} takes the cargo, and the factor turns out to be the excise men\'s own informer. {actor} spends the night in the gate cell while the salt is counted.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'peril'] },
         onSuccess: {
           narrative: '{actor} declines without insulting the offer, which is the harder half. By evening, three factors who watched the refusal have revised upward what {actor}\'s word is worth on a delayed payment.',
           reputationDelta: 0.15,
@@ -3140,6 +3155,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 2,
         narrative: 'The goods are three crates of untaxed salt in a yard behind a tannery, where the smell keeps honest people from lingering. {actor} has to buy them without leaving a name.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The seller hands over the crates but wants a third over the agreed price to do it. {actor} pays rather than argue in the yard.',
+        criticalSuccessAfterimage: 'The seller is in a hurry and throws in a fourth crate to be rid of it. {actor} loads four and pays for three.',
+        criticalFailureAfterimage: 'The crates are sand under a skin of salt, and two of the seller\'s friends block the gate while {actor} finds out. {actor} leaves the yard with nothing and a split lip.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'social'] },
         onSuccess: {
           narrative: 'The seller wants coin and no conversation, which suits. {actor} pays over a barrel head, and the crates are loaded before the price is repeated aloud.',
           reputationDelta: 0.05,
@@ -3156,6 +3176,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
         narrative: 'The road has one checkpoint and the river has none, but the river has a ferryman who talks. {actor} takes the road, with the crates under a load of hides.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The cart gets through, but the guard keeps one crate as his fee. {actor} lets it go rather than have the rest searched.',
+        criticalSuccessAfterimage: 'The guard knows the hide dealer and waves the cart through without a look. He even warns {actor} about the patrol on the east road.',
+        criticalFailureAfterimage: 'The guard finds the salt and calls two more men. {actor} loses the crates and the cart, and walks back to town.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'journey'] },
         onSuccess: {
           narrative: 'The hides do the work. The checkpoint guard lifts one corner, decides against lifting the rest, and waves the cart through with the back of his hand.',
           reputationDelta: 0.08,
@@ -3173,6 +3198,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'The buyer wants the crates at a mill outside the walls, after dark, which is either caution or a plan. {actor} arrives early to find out which.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The buyer pays, but in clipped coin worth two-thirds of its face. {actor} takes it rather than stand arguing at the mill after dark.',
+        criticalSuccessAfterimage: 'The buyer pays in full, then buys the cart and the mule as well. {actor} walks home with twice the coin.',
+        criticalFailureAfterimage: 'The buyer brought three men and no coin. They take the crates, the cart and {actor}\'s purse, and leave {actor} tied up in the mill until morning.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'peril'] },
         onSuccess: {
           narrative: 'The buyer comes alone and the coin is counted out on the millstone. {actor} leaves by a different road than the one {they} came in on.',
           reputationDelta: 0.15,
@@ -3712,6 +3742,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape, `assist` family batch.
         narrative: 'Forty of them at the edge of the fields, carrying what they could hold. They have not asked for aid yet. That silence is its own kind of asking.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} counts every one of them, but the count takes until dark, and the first night passes without food. The children cry through it.',
+        criticalSuccessAfterimage: '{actor} counts them and learns their names. One of the elders was a miller, and he knows where the town keeps its spare grain.',
+        criticalFailureAfterimage: '{actor} promises rations before counting and promises too many. When the food comes up short that night, the crowd shouts {actor} down at the cart, and the adults eat nothing.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
           narrative: '{actor} counts them properly — the children, the elders, the two who cannot walk — before promising a single ration. The counting is what says where to start.',
           reputationDelta: 0.05,
@@ -3728,6 +3763,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 3,
         narrative: 'There is canvas, a fallen barn, and four hours of light. {actor} decides what the barn is worth pulling apart for.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The shelter holds, but {actor} tears {their} hands raw pulling the barn apart, and binds them with canvas the shelter needed.',
+        criticalSuccessAfterimage: 'The barn comes apart cleanly and the shelter goes up with a second room for the sick. The two who cannot walk sleep warm.',
+        criticalFailureAfterimage: 'The barn wall comes down on {actor} as the last beam is pulled. {actor} crawls out bruised, and no shelter goes up that night.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'labor'] },
         onSuccess: {
           narrative: 'The shelter is ugly and it holds. Forty people sleep dry, which the builders of better roofs rarely manage on a first night.',
           reputationDelta: 0.08,
@@ -3745,6 +3785,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 4,
         narrative: 'The food will not stretch to forty at a full ration. {actor} decides who eats first, and does it in the open where the decision can be watched being made.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The rations hold, but only because {actor} gives up {their} own share. {actor} goes hungry for all four days.',
+        criticalSuccessAfterimage: 'The rations hold, and {actor} finds a sack of seed grain in the refugees\' own bundles, carried all this way unopened. Everyone eats a full portion by the fourth day.',
+        criticalFailureAfterimage: 'The food runs out on the first day, and a fight breaks out over the last sack. {actor} takes a blow stopping it, and the sack splits in the mud.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
         onSuccess: {
           narrative: 'The rations hold four days — long enough for the town to be shamed into sending more. Nobody thanks {actor} directly. The bowls come back washed.',
           reputationDelta: 0.15,
@@ -3993,6 +4038,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape, `assist` family batch.
         narrative: 'The guild has been solvent on paper for two years and solvent in fact for none of them. The treasurer shows {actor} the ledger, having shown it to nobody else.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds the bad contract, but the treasurer hears the finding as an accusation. He answers every question after that with the ledger closed.',
+        criticalSuccessAfterimage: '{actor} finds the bad contract and the clerk who drew it up, still on the guild\'s books and still drawing a wage.',
+        criticalFailureAfterimage: '{actor} declares the guild sound before the assembled masters. That night the treasurer burns the one page that showed the truth.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
           narrative: '{actor} finds the year it turned — a bad contract nobody wanted to be the one to refuse. Everything after it is consequence.',
           reputationDelta: 0.05,
@@ -4009,6 +4059,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 3,
         narrative: 'Four creditors, and only two of them want their money back more than they want the guild gone. {actor} has to work out which two before committing to terms.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The two creditors take a schedule, but only at a higher rate. The guild will pay back more than it borrowed.',
+        criticalSuccessAfterimage: '{actor} turns one of the hostile creditors, who sells his claim to the friendly two at a loss. All three left at the table want to be paid.',
+        criticalFailureAfterimage: '{actor} offends the creditor who holds the largest debt. He calls it in on the spot, and the guild\'s strongbox is emptied onto the table before {actor} leaves.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
           narrative: 'The two who wanted paying take a schedule. The two who wanted the guild leave with neither, and lose the room.',
           reputationDelta: 0.08,
@@ -4026,6 +4081,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 4,
         narrative: 'Debt is arithmetic. Reputation is not. {actor} has to make the guild worth trading with again before the schedule comes due.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The orders come, but at prices below cost. {actor} signs them anyway, and the guild\'s first month of work is sold at a loss.',
+        criticalSuccessAfterimage: 'Three houses place orders, and one pays the year in advance. The schedule is met with coin to spare.',
+        criticalFailureAfterimage: 'The orders go to a rival guild, and the treasurer resigns rather than face the creditors. {actor} is left holding the ledger when the creditors arrive.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['craft', 'social'] },
         onSuccess: {
           narrative: 'Two houses place orders they would not have placed last season. The guild survives on that, and knows it.',
           reputationDelta: 0.15,
@@ -5788,6 +5848,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 1,
         narrative: 'The caravan master is nervous — two caravans lost this season. {actor} must hold the convoy together from the first hour.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The caravan leaves in good order, but only after {actor} pays two frightened drivers from {their} own purse to stay.',
+        criticalSuccessAfterimage: 'The caravan master trusts {actor} with the route. {actor} picks a road the two lost caravans did not take.',
+        criticalFailureAfterimage: 'Two drivers refuse to leave and take their wagons back to the yard. The caravan sets out short, and the master blames {actor}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['journey', 'presence'] },
         onSuccess: {
           narrative: '{actor} sets a pace the slowest wagon can keep and a clear watch rotation. The caravan departs in good order.',
           reputationDelta: 0.04,
@@ -5804,6 +5869,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'Shapes move in the treeline, keeping pace. {actor} has seconds to react before the caravan freezes.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} drives them off, but a guard takes an arrow in the shoulder and a wagon loses a wheel in the rush. The caravan goes on more slowly.',
+        criticalSuccessAfterimage: '{actor} catches the ambushers\' leader in the treeline, and the rest scatter. The caravan passes without a single wagon stopping.',
+        criticalFailureAfterimage: 'The ambushers cut the lead wagon loose and drive it off. {actor} is knocked down in the fight, and the caravan loses its best goods and two guards.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['might', 'peril'] },
         onSuccess: {
           narrative: '{actor} drives them off with decisive force before the first wagon stops. The caravan passes safely.',
           reputationDelta: 0.10,
@@ -9086,6 +9156,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} searches for a sheltered spot to rest. The land offers little comfort, but a dry hollow and a windbreak will serve.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds a dry hollow, but only after walking an extra hour in the dark. {actor} lies down with sore feet.',
+        criticalSuccessAfterimage: '{actor} finds a dry hollow with a spring beside it and dead wood for a fire. It is the best camp of the road.',
+        criticalFailureAfterimage: '{actor} settles in a hollow that floods when the rain starts, and spends the night on {their} feet, soaked through.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'journey'] },
         onSuccess: {
           narrative: '{actor} settles into stillness, letting the weight of the road lift from aching limbs.',
           reputationDelta: 0.02,
@@ -9102,6 +9177,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Rest is its own kind of work. {actor} surrenders to the pull of exhaustion.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} sleeps, but wakes to find the fire out and the food gone to a fox. The rest cost tomorrow\'s meal.',
+        criticalSuccessAfterimage: '{actor} sleeps through the night and wakes before dawn with no ache left from the road.',
+        criticalFailureAfterimage: '{actor} wakes in the night with a fever from the cold ground, and starts the day weaker than the one before.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'might'] },
         onSuccess: {
           narrative: 'Sleep comes deep and dreamless. {actor} wakes stiff but renewed, ready for what comes next.',
           reputationDelta: 0.03,
@@ -9136,6 +9216,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
         narrative: 'Hunger sharpens the eye. {actor} works the ground with a forager\'s list: what can be eaten raw, what needs boiling twice, what is best left where it grows.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finds roots and clean water, but loses {their} knife in the reeds digging them out.',
+        criticalSuccessAfterimage: '{actor} finds wild onion, a clean spring and a hare\'s run. There is food for three days, not one.',
+        criticalFailureAfterimage: '{actor} eats a root that looked safe and was not. The day is lost to sickness, and the satchel stays empty.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'insight'] },
         onSuccess: {
           narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, enough to sustain {them} another day.',
           reputationDelta: 0.02,
@@ -9152,6 +9237,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'What the eye found, the back has to carry. {actor} bends to it — digging, cutting, and tying the load so it rides high enough to walk with.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} carries the load home, but a strap breaks at the ford and the best of it goes downstream.',
+        criticalSuccessAfterimage: '{actor} ties the load so well that it rides without shifting, and there is light enough for a second trip. Twice the food comes home.',
+        criticalFailureAfterimage: 'A boar has claimed the same patch and charges while {actor} is digging. {actor} drops the load and spends the evening up a tree.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'wild'] },
         onSuccess: {
           narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
           reputationDelta: 0.03,
@@ -9196,6 +9286,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
         narrative: 'Even worked-out land keeps a little back for anyone who knows the order to look in. {actor} reads the ground: low places first, then edges, then the north side of stone.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} reads the terrain right, but it takes the whole day. The harvest has to wait until morning.',
+        criticalSuccessAfterimage: '{actor} reads the ground and finds a spring the locals have forgotten, with watercress growing in it.',
+        criticalFailureAfterimage: '{actor} reads the terrain wrong and walks knee-deep into a bog. The day ends cold, wet and empty-handed.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'insight'] },
         onSuccess: {
           narrative: '{actor} reads the terrain correctly — water, roots, shelter material. The land is never entirely empty.',
           reputationDelta: 0.02,
@@ -9212,6 +9307,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
         narrative: '{actor} puts {their} back into it — digging, cutting, hauling. The finding was the clever part; this part is only work.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} gets the roots out, but breaks the digging stick and blisters both hands doing it. The haul is good and the tools are not.',
+        criticalSuccessAfterimage: '{actor} lifts the root run whole and finds a forgotten winter cache of nuts and dried apples buried beneath it.',
+        criticalFailureAfterimage: 'The bank gives way while {actor} is digging, and {actor} wrenches a wrist. Nothing comes home but the pain.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'craft'] },
         onSuccess: {
           narrative: '{actor} gathers half again what the survey promised, because the digging turned up a second root run beside the first. The labour pays for itself before dark.',
           reputationDelta: 0.03,
@@ -10801,6 +10901,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + 5,
         duration: 1,
         narrative: 'The night offers cover, and cover works for whoever is already still. {actor} moves between the places where the dark sits deepest, and waits in each one long enough to be sure of the next.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} crosses unseen, but tears {their} sleeve on a nail at the fence and leaves a strip of cloth hanging there.',
+        criticalSuccessAfterimage: '{actor} crosses the whole yard in the dog\'s own shadow. The dog never lifts its head.',
+        criticalFailureAfterimage: 'A dog finds {actor} at the fence and barks until a lamp is lit. {actor} waits out the search pressed flat under the woodpile.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'finesse'] },
         onSuccess: {
           narrative: '{actor} crosses the open ground in three moves instead of one. The night holds, and the dogs stay quiet.',
           reputationDelta: 0.04,
@@ -10817,6 +10922,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP + 5,
         duration: 2,
         narrative: 'The objective is reached. {actor} has to finish in the dark, working by touch, with the time the household\'s sleep allows and not a minute past it.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} finishes, but knocks a jar off a shelf on the way out. The household wakes, and {actor} leaves by a window with the house shouting behind {them}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['finesse', 'insight'] },
         // Both crit bands predate this batch and carried vagueness-lexicon hits on lines the
         // token sweep never touched: `something` (evasive — enforced at zero in every field
         // class, scope-independent) and `thing`/`someone` (natural indefinites, enforced in
@@ -11049,6 +11157,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
         // divination slice).
         narrative: 'Rooms keep what is done in them. It settles into plaster and floorboard and stays there, thinning by the year. {actor} stops moving and lets it come.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The memory comes, but it brings a headache that will not lift. {actor} holds the picture and pays for it behind the eyes.',
+        criticalSuccessAfterimage: 'The memory comes whole: a room full of people, a raised voice, and the moment the quarrel turned. {actor} holds all of it at once.',
+        criticalFailureAfterimage: 'The room gives up an old fear instead of a memory, and {actor} comes out of the stillness shaking and sick.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: 'It arrives as feeling before it arrives as picture. {actor} waits through the first and the second assembles on its own.',
           reputationDelta: 0.06,
@@ -11065,6 +11178,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'Feeling is not yet knowledge. Turning one into the other is a separate skill, and the one that fails more often.',
+        // THR-1666 S2: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} gets it into words, but gets one detail wrong: the name of the person who lost comes out as the winner\'s.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         criticalSuccessAfterimage: 'The impressions do not just resolve — they open. {actor} reads not only what happened in this place but the shape of what it wanted, and the knowing settles in like a language {they} always spoke.',
         // THR-1107: `{they} hold` rendered "she hold" in the he/she arm. `{s}` is
         // the present-tense agreement suffix and reaches this one in place.
