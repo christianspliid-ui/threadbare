@@ -61,7 +61,7 @@ function survey(targetNodeId = 'loc-ruin'): StrategicActionCandidate {
     candidateId: 'cand_1', templateId: CELL, ambitionId: 'ambition_x', actorId: 'actor-hero',
     verb: 'observe', executionMode: 'instant', behaviorFamily: 'wanderer-explorer',
     displayName: 'Survey a location', targetNodeId,
-  } as StrategicActionCandidate;
+  } as unknown as StrategicActionCandidate;
 }
 
 function leadProps(state: GameState): Record<string, unknown> | undefined {
