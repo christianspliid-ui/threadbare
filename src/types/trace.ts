@@ -243,6 +243,7 @@ export type TraceCategory =
   | 'ruins.clue_consumed'
   | 'ruins.clue_decayed'
   | 'ruins.clue_rumor_sweep' // THR-1506: one aggregate per rumour sweep
+  | 'ruins.clue_sharpened' // THR-1663: a held lead changed precision
   | 'ruins.delve_admitted'
   | 'ruins.delve_blocked'
   | 'ruins.delve_beat'
@@ -739,6 +740,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_consumed',
   'ruins.clue_decayed',
   'ruins.clue_rumor_sweep',
+  'ruins.clue_sharpened',
   'ruins.delve_admitted',
   'ruins.delve_blocked',
   'ruins.delve_beat',
@@ -3054,6 +3056,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     forecastZone?: 'refused' | 'below' | 'in' | 'above';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
+    /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
+    leadPull?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -4550,6 +4554,7 @@ export type TraceEntry =
   | SurveyProseComposedTrace
   | KpiSnapshotTrace
   | ClueRumorSweepTrace
+  | ClueSharpenedTrace
   | ChoiceResolvedTrace
   | ForecastComputedTrace
   | HandFilteredTrace
@@ -5825,6 +5830,21 @@ export interface ClueRumorSweepTrace extends TraceBase {
   capped: number;
   /** Spawned clues by `ClueSource`. */
   bySource: Partial<Record<import('./knowledge').ClueSource, number>>;
+}
+
+/**
+ * Trace: a held lead changed precision (THR-1663, seeded things stay alive S2/S3).
+ * S2 writes `via: 'survey'` — a survey of a site the surveyor already holds a lead
+ * on raises the lead instead of refusing. `visit` / `missed_visit` are S3's.
+ */
+export interface ClueSharpenedTrace extends TraceBase {
+  category: 'ruins.clue_sharpened';
+  knowerId: string;
+  targetRuinId: string;
+  from: import('./knowledge').CluePrecision;
+  to: import('./knowledge').CluePrecision | 'cold';
+  via: 'survey' | 'visit' | 'missed_visit';
+  band?: StepOutcome;
 }
 
 /** Emitted by branchingCurator.ts when a branching template's score is boosted (THR-452). */

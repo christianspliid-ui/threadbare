@@ -216,6 +216,12 @@ export interface BoardEntry {
    * commitment went dead unnoticed (it scaled `finalScore`, which the board never reads).
    */
   readonly arrivalCommitment?: number;
+  /**
+   * THR-1663 — the pull of a survey on a ruin the mortal holds a lead on
+   * (`CLUE_LEAD_SURVEY_PULL_MULT`), already folded into `desireMultiplier` and
+   * `score`; absent on every other entry.
+   */
+  readonly leadPull?: number;
 }
 
 export interface BoardResult {
@@ -581,12 +587,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const evt = undertakingEVT(payoff, advanceProbability, checkpointsRemaining);
 
     const ambitionBoost = computeAmbitionCentralityBoost(candidate.ambitionId, reach);
+    const leadPull = candidate.leadPull;
     const desireMultiplier = computeBoardDesireMultiplier(
       template?.motivations ?? [],
       profile,
       ambitionBoost,
       template?.motivationPoles,
-    );
+    ) * (leadPull ?? 1);
 
     // The grievance this candidate would pursue, if any (THR-1298 slice 6). Resolved
     // per candidate rather than once per board because a board carries candidates from
@@ -620,6 +627,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       advanceProbability,
       ambitionBoost,
       heldTownAffinity: affinity,
+      ...(leadPull !== undefined ? { leadPull } : {}),
       score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit,
       candidateIndex: index,
       forecast: advanceProbability,

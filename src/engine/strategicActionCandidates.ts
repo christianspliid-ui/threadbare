@@ -64,6 +64,8 @@ import { deriveDivisionCells, rotateForTick } from './divisionRule';
 import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
 import { computeReachShare } from './domainCapability';
+import { isAutonomousDecisionActor } from './decisionTier';
+import { CLUE_LEAD_SURVEY_CANDIDATES_MAX, CLUE_LEAD_SURVEY_PULL_MULT } from './ruins/constants';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -221,10 +223,23 @@ export function generateStrategicCandidates(
     p => p.actorId === actorId && p.status === 'active',
   ).length ?? 0;
 
-  // Collect active ambitions with strategic profiles
-  for (const ambitionTemplateId of activeAmbitionTemplateIds) {
+  // A held lead is a reason to look (THR-1663, seeded things stay alive S2). The
+  // ruins of the actor's live leads, freshest first, ride ahead of the survey cell's
+  // proximity cap; a survey of one scores `CLUE_LEAD_SURVEY_PULL_MULT` on the board.
+  const leadRuinIds = heldLeadRuinIds(graph, actorId);
+  const leadRuinSet = new Set(leadRuinIds);
+  /** Lead ruins some walk already proposed a survey of. */
+  const leadRuinsProposed = new Set<string>();
+
+  // Collect active ambitions with strategic profiles. `leadOnly` is the one extra pass
+  // below: the survey cell walked for the lead ruins alone, under an ambition that
+  // did not list it.
+  const walkAmbition = (ambitionTemplateId: string, leadOnly: boolean): void => {
     const ambitionTemplate = findAmbitionTemplate(ambitionTemplateId);
-    if (!ambitionTemplate?.strategicProfile) continue;
+    if (!ambitionTemplate?.strategicProfile) return;
+    // The lead pass may add one candidate per lead beyond the per-actor cap — that is
+    // its point: a lead is a reason on top of the ordinary spread, not inside it.
+    const actorCap = STRATEGIC_MAX_CANDIDATES_PER_ACTOR + (leadOnly ? CLUE_LEAD_SURVEY_CANDIDATES_MAX : 0);
 
     const profile = ambitionTemplate.strategicProfile;
     let ambitionCandidateCount = 0;
@@ -233,17 +248,19 @@ export function generateStrategicCandidates(
     // (category × leading Reaches) with the profile's hand list added on top; rotated
     // by tick and actor so the per-actor cap starves no cell by list position. The
     // per-ambition cap below is a template-model lever — cells enumerate by object.
-    const workIds = model === 'cells'
+    const workIds = leadOnly
+      ? [LEAD_SURVEY_CELL_ID]
+      : model === 'cells'
       ? rotateForTick([...new Set([...deriveDivisionCells(actor, ambitionTemplate.category), ...profileWorkIds(profile, model)])], tick, actorId)
       : [...profileWorkIds(profile, model)];
     // Mentorship is its own initiative, not a cell: it rides ahead of the spread for the
     // ambition categories that used to list it (first, so the per-actor cap never
     // starves it behind a dozen cells), and keeps its apprentice gate.
-    if (model === 'cells' && MENTORSHIP_AMBITION_CATEGORIES.includes(ambitionTemplate.category)) workIds.unshift(MENTORSHIP_TEMPLATE_ID);
+    if (!leadOnly && model === 'cells' && MENTORSHIP_AMBITION_CATEGORIES.includes(ambitionTemplate.category)) workIds.unshift(MENTORSHIP_TEMPLATE_ID);
     for (const templateId of workIds) {
       const isCell = isCellTemplateId(templateId);
       if (!isCell && ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
-      if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
+      if (candidates.length >= actorCap) break;
 
       const template = getStrategicTemplate(templateId);
       if (!template) {
@@ -296,7 +313,11 @@ export function generateStrategicCandidates(
       // stands for rides beside the node — an edge object has no node of its own.
       const objectHandles = new Map<string, UndertakingObjectHandle>();
       const objectSweep = { enumerated: 0 };
-      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles, objectSweep, tick);
+      const leadSurvey = templateId === LEAD_SURVEY_CELL_ID && leadRuinIds.length > 0;
+      let targets = leadOnly
+        ? leadSurveyTargets(graph, actorId, template, leadRuinIds.filter(id => !leadRuinsProposed.has(id)), objectHandles)
+        : findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles, objectSweep, tick,
+          leadSurvey ? leadRuinIds : undefined);
       if (review?.targetId) targets = targets.filter(t => t.id === review.targetId);
       if (review?.preferOwnedTarget) {
         // Owned first, stable otherwise: the motive gate already knows how to count
@@ -325,7 +346,7 @@ export function generateStrategicCandidates(
       for (const target of targets) {
         if (templateCandidateCount >= maxPerTemplate) break;
         if (!isCell && ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
-        if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
+        if (candidates.length >= actorCap) break;
 
         // Check variety: skip if recent history has this template+target combo.
         //
@@ -470,6 +491,7 @@ export function generateStrategicCandidates(
           // completion time the undertaking has mutated the very ownership this was
           // read from, so re-deriving it there reads the world after the harm.
           victimAgentId: motiveGate.ownerId,
+          ...(leadSurvey && leadRuinSet.has(target.id) ? { leadPull: CLUE_LEAD_SURVEY_PULL_MULT } : {}),
           scoreComponents: {
             ambitionAlignment: computeAmbitionAlignment(template, profile),
             blockerRelief: 0, // Computed in scoring phase with full context
@@ -485,13 +507,77 @@ export function generateStrategicCandidates(
         };
 
         candidates.push(candidate);
+        if (candidate.leadPull !== undefined) leadRuinsProposed.add(target.id);
         ambitionCandidateCount++;
         templateCandidateCount++;
       }
     }
+  };
+
+  for (const ambitionTemplateId of activeAmbitionTemplateIds) walkAmbition(ambitionTemplateId, false);
+
+  // The lead pass (THR-1663): a deciding mortal holding a lead walks the survey cell
+  // for that lead's ruin even when no active ambition lists the cell — one extra
+  // candidate per unproposed lead, never the whole Location sweep. It rides under the
+  // first ambition with a strategic profile, the one the board will credit it to.
+  if (!review && leadRuinIds.some(id => !leadRuinsProposed.has(id)) && isAutonomousDecisionActor(actor)) {
+    const host = activeAmbitionTemplateIds.find(id => findAmbitionTemplate(id)?.strategicProfile);
+    if (host) walkAmbition(host, true);
   }
 
   return { candidates, rejections };
+}
+
+/** The survey cell a held lead draws its holder to (THR-1663). */
+export const LEAD_SURVEY_CELL_ID = 'cell.observe.location';
+
+/**
+ * The ruins of an actor's live leads (unconsumed `knows_clue_of`), freshest first —
+ * ties broken on edge id (NFP #3) — capped at `CLUE_LEAD_SURVEY_CANDIDATES_MAX`. A
+ * lead whose ruin is gone is skipped and left for decay (fail-soft). Exported for tests.
+ */
+export function heldLeadRuinIds(graph: WorldGraph, actorId: string): string[] {
+  try {
+    const seen = new Set<string>();
+    return graph.getOutgoingEdges(actorId, 'knows_clue_of')
+      .filter(e => e.properties?.consumed !== true && graph.getNode(e.target)?.type === 'location')
+      .sort((a, b) =>
+        (Number(b.properties?.discoveredTick ?? 0) - Number(a.properties?.discoveredTick ?? 0))
+        || a.id.localeCompare(b.id))
+      .map(e => e.target)
+      .filter(id => (seen.has(id) ? false : (seen.add(id), true)))
+      .slice(0, CLUE_LEAD_SURVEY_CANDIDATES_MAX);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The lead pass's targets: the lead ruins themselves, under the cell's own object type
+ * and ownership rule, without enumerating every Location (THR-1663).
+ */
+function leadSurveyTargets(
+  graph: WorldGraph,
+  actorId: string,
+  template: StrategicActionTemplate,
+  ruinIds: readonly string[],
+  objectHandles: Map<string, UndertakingObjectHandle>,
+): GraphNode[] {
+  const rule = template.targetRule;
+  if (rule.type !== 'object') return [];
+  const type = getUndertakingObjectType(rule.objectTypeId);
+  if (!type) return [];
+  const out: GraphNode[] = [];
+  for (const id of ruinIds) {
+    const node = graph.getNode(id);
+    if (!node || (type.shape.nodeType && node.type !== type.shape.nodeType)) continue;
+    if (type.shape.discriminator && !type.shape.discriminator(node, graph)) continue;
+    const handle: UndertakingObjectHandle = { kind: 'node', nodeId: id };
+    if (!ownershipSatisfies(rule.ownership, ownershipOf(graph, actorId, type, handle))) continue;
+    objectHandles.set(id, handle);
+    out.push(node);
+  }
+  return out;
 }
 
 // ─── Target Finding ─────────────────────────────────────────────────
@@ -612,6 +698,11 @@ function findValidTargets(
   objectSweep?: { enumerated: number },
   /** The board's tick, for the eligibility hook consulted when two objects share a place (THR-1630). */
   tick = 0,
+  /**
+   * THR-1663: the ruins of the actor's held leads — for the survey cell only. Those the
+   * ownership rule admits ride ahead of the proximity cap, in the order given.
+   */
+  leadRuinIds?: readonly string[],
 ): GraphNode[] {
   const rule = template.targetRule;
 
@@ -669,10 +760,20 @@ function findValidTargets(
       }
       // THR-1560: a type may keep its own cap (the monster scan), else the object one.
       // The cut runs before every gate, so a far, reasoned object needs the headroom.
-      return orderTargetsByProximity(
+      const nearest = orderTargetsByProximity(
         graph, nodes, actorHex,
         STRATEGIC_TARGET_SCAN_CAPS[rule.objectTypeId] ?? STRATEGIC_TARGET_SCAN_CAPS.object,
       );
+      // THR-1663: a held lead's ruin is exactly that far, reasoned object — it rides
+      // ahead of the cap rather than competing with every nearer Location for a slot.
+      if (!leadRuinIds || leadRuinIds.length === 0) return nearest;
+      const leads = leadRuinIds
+        .filter(id => seen.has(id))
+        .map(id => graph.getNode(id))
+        .filter((n): n is GraphNode => n !== undefined);
+      if (leads.length === 0) return nearest;
+      const leadIds = new Set(leads.map(n => n.id));
+      return [...leads, ...nearest.filter(n => !leadIds.has(n.id))];
     }
 
     case 'self':

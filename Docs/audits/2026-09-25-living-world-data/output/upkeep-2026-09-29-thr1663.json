@@ -1,0 +1,143 @@
+{
+ "note": "THR-1663 S2: readers/upkeep.ts 42,99 300, medium. base = origin/main @ 12dae3b2; after = THR-1663 branch (CLUE_LEAD_SURVEY_PULL_MULT 2.5).",
+ "base": {
+  "42": {
+   "clueMinted": {
+    "library_research:vague": 8,
+    "spy_debrief:vague": 6,
+    "tavern_rumor:vague": 18
+   },
+   "clueHolderTier": {
+    "ambient": 32
+   },
+   "surveyByBand": {},
+   "surveyRefused": {},
+   "clueSharpened": {},
+   "located": 0,
+   "clueDecayed": 26,
+   "delveTraces": {},
+   "cellTraces": {
+    "undertaking_reader:cell.observe.faction": 4,
+    "strategic_action_started:cell.observe.faction": 4,
+    "strategic_action_started:cell.observe.monster": 4,
+    "undertaking_reader:cell.observe.place": 8,
+    "strategic_action_started:cell.observe.place": 4,
+    "undertaking_reader:cell.observe.area": 6,
+    "strategic_action_started:cell.observe.area": 2,
+    "undertaking_reader:cell.observe.route": 4,
+    "strategic_action_started:cell.observe.route": 2,
+    "undertaking_reader:cell.observe.army": 1,
+    "strategic_action_started:cell.observe.army": 1,
+    "undertaking_reader:cell.observe.location": 2,
+    "strategic_action_started:cell.observe.location": 2
+   }
+  },
+  "99": {
+   "clueMinted": {
+    "tavern_rumor:vague": 24,
+    "spy_debrief:vague": 16,
+    "library_research:vague": 1,
+    "undertaking_survey:narrowed": 1
+   },
+   "clueHolderTier": {
+    "ambient": 39,
+    "decider": 2
+   },
+   "surveyByBand": {
+    "success": 1
+   },
+   "surveyRefused": {},
+   "clueSharpened": {},
+   "located": 0,
+   "clueDecayed": 37,
+   "delveTraces": {},
+   "cellTraces": {
+    "undertaking_reader:cell.observe.location": 5,
+    "strategic_action_started:cell.observe.location": 4,
+    "undertaking_reader:cell.observe.faction": 5,
+    "strategic_action_started:cell.observe.faction": 5,
+    "undertaking_reader:cell.observe.place": 14,
+    "strategic_action_started:cell.observe.place": 7,
+    "undertaking_reader:cell.observe.area": 44,
+    "strategic_action_started:cell.observe.area": 16,
+    "strategic_action_started:cell.observe.monster": 13,
+    "undertaking_reader:cell.observe.route": 2,
+    "strategic_action_started:cell.observe.route": 1
+   }
+  }
+ },
+ "after": {
+  "42": {
+   "clueMinted": {
+    "library_research:vague": 8,
+    "spy_debrief:vague": 6,
+    "tavern_rumor:vague": 18,
+    "undertaking_survey:narrowed": 6
+   },
+   "clueHolderTier": {
+    "ambient": 28,
+    "decider": 4
+   },
+   "surveyByBand": {
+    "success": 6
+   },
+   "surveyRefused": {},
+   "clueSharpened": {
+    "survey:vague>narrowed": 2,
+    "survey:narrowed>narrowed": 3
+   },
+   "located": 0,
+   "clueDecayed": 25,
+   "delveTraces": {},
+   "cellTraces": {
+    "undertaking_reader:cell.observe.faction": 3,
+    "strategic_action_started:cell.observe.faction": 3,
+    "undertaking_reader:cell.observe.location": 12,
+    "strategic_action_started:cell.observe.location": 6,
+    "strategic_action_started:cell.observe.monster": 5,
+    "undertaking_reader:cell.observe.place": 4,
+    "strategic_action_started:cell.observe.place": 2,
+    "undertaking_reader:cell.observe.area": 3,
+    "strategic_action_started:cell.observe.area": 1,
+    "undertaking_reader:cell.observe.route": 4,
+    "strategic_action_started:cell.observe.route": 2
+   }
+  },
+  "99": {
+   "clueMinted": {
+    "tavern_rumor:vague": 23,
+    "spy_debrief:vague": 12,
+    "undertaking_survey:narrowed": 3,
+    "library_research:vague": 1
+   },
+   "clueHolderTier": {
+    "ambient": 31,
+    "decider": 5
+   },
+   "surveyByBand": {
+    "success": 3
+   },
+   "surveyRefused": {},
+   "clueSharpened": {
+    "survey:vague>narrowed": 1,
+    "survey:narrowed>narrowed": 1
+   },
+   "located": 0,
+   "clueDecayed": 34,
+   "delveTraces": {},
+   "cellTraces": {
+    "undertaking_reader:cell.observe.location": 10,
+    "strategic_action_started:cell.observe.location": 7,
+    "undertaking_reader:cell.observe.faction": 8,
+    "strategic_action_started:cell.observe.faction": 8,
+    "undertaking_reader:cell.observe.area": 27,
+    "strategic_action_started:cell.observe.area": 10,
+    "strategic_action_started:cell.observe.monster": 9,
+    "undertaking_reader:cell.observe.place": 14,
+    "strategic_action_started:cell.observe.place": 7,
+    "undertaking_reader:cell.observe.route": 4,
+    "strategic_action_started:cell.observe.route": 2
+   }
+  }
+ }
+}

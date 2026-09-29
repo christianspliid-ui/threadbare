@@ -44,6 +44,25 @@ export const CLUE_BIAS_FACTION_LEADER = 2.5;
 export const CLUE_BIAS_SPHERE_MATCH = 1.5;
 /** Additive bonus when agent's backstory-stratum ties to the originating culture */
 export const CLUE_BIAS_CULTURE_BACKSTORY_TIE = 3.0;
+/**
+ * Additive bonus for a deciding mortal (`isAutonomousDecisionActor`) — THR-1663 (seeded things
+ * stay alive S2). Leads lean toward the mortals who can act on them: a `(1 + bias)` factor, so ×5
+ * (`CLUE_BIAS_BONDED_AGENT` 5.0 is ×6). Target: ≥ 30% of new leads held by deciders per seed.
+ */
+export const CLUE_BIAS_DECIDER = 4.0;
+/**
+ * How many of a holder's lead ruins join their `cell.observe.location` survey targets
+ * ahead of the proximity cap, freshest lead first (THR-1663). A lead is a reason to look.
+ */
+export const CLUE_LEAD_SURVEY_CANDIDATES_MAX = 2;
+/**
+ * Desire multiplier on a survey of one's own lead's ruin (THR-1663) — folded into the
+ * board's `desireMultiplier` and carried on the entry as `leadPull`. Mirrors
+ * `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` (2.5): a reasoned target outranks a merely near one.
+ * The plan drafted 1.5; measured at 1.5 (seed 99, 300 ticks) the lead survey reached the
+ * board's top five 7 times and won none, at 0.56–0.77 of an encounter winner's score.
+ */
+export const CLUE_LEAD_SURVEY_PULL_MULT = 2.5;
 /** Multiplier applied to agents who received a clue within the recent-clue window */
 export const RECEIVER_RECENT_CLUE_PENALTY = 0.5;
 /** Ticks within which a second clue receipt triggers the penalty */

@@ -809,6 +809,13 @@ export interface StrategicActionCandidate {
    */
   readonly anchorNodeId?: string;
 
+  /**
+   * THR-1663 — a survey of a ruin the actor holds a lead on: the desire pull
+   * (`CLUE_LEAD_SURVEY_PULL_MULT`) the decision board folds into its desire term.
+   * Absent on every other candidate.
+   */
+  readonly leadPull?: number;
+
   /** Raw score components before normalization */
   readonly scoreComponents: StrategicScoreComponents;
   /** Final normalized score (0-1 range, comparable with encounter scores) */

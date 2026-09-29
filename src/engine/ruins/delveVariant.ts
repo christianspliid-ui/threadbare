@@ -16,6 +16,7 @@
 
 import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../graph';
+import type { GraphNode } from '../../types/graph';
 import type { ReachDomain } from '../../types/traits';
 import { emitTrace } from '../traceBuffer';
 import { computeCapability } from '../domainCapability';
@@ -242,6 +243,19 @@ export function rollDelveConsequence(
   return 'transformed';
 }
 
+/**
+ * Is this Location somewhere a delve can be admitted: a worldgen elder ruin, or a
+ * settlement a mortal ruined once `RUINED_SETTLEMENT_DELVE_DECAY_TICKS` have passed.
+ */
+function isDelvableRuin(props: Record<string, unknown>, tick: number): boolean {
+  if (props.locationType === 'elder_ruin') return true;
+  const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
+  const ruinedTick = props.ruinedTick;
+  return subtype === 'ruins'
+    && typeof ruinedTick === 'number'
+    && ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick;
+}
+
 // ── Phase: Delve Admission ────────────────────────────────────────────────────
 
 /**
@@ -297,10 +311,35 @@ export function phaseDelveAdmission(state: GameState): Partial<GameState> {
     }
 
     // ── 2. Scan for new admissions ────────────────────────────────────────
-    const agentNodes = graph.getNodesByType('actor');
+    //
+    // Scans from the holders of a live `located` lead (THR-1663), not every actor ×
+    // every location: admission requires such a lead on the ruin, so a mortal holding
+    // none can never be admitted and a ruin nobody holds a lead on never needs looking
+    // at. Iteration order is the old scan's exactly — actors in node order, a holder's
+    // ruins in location node order — so who is admitted, who queues and which leads are
+    // spent is unchanged (pinned by `delveAdmissionEquivalence.test.ts`).
+    const locatedLeadRuins = new Map<string, Set<string>>();
+    for (const e of graph.getEdgesByType('knows_clue_of')) {
+      const cp = e.properties as Record<string, unknown>;
+      if (cp.precision !== 'located' || cp.consumed) continue;
+      let ruins = locatedLeadRuins.get(e.source);
+      if (!ruins) { ruins = new Set(); locatedLeadRuins.set(e.source, ruins); }
+      ruins.add(e.target);
+    }
+    let locationRank: Map<string, number> | null = null;
+    const rankOf = (id: string): number => {
+      if (!locationRank) {
+        locationRank = new Map(graph.getNodesByType('location').map((n, i) => [n.id, i]));
+      }
+      return locationRank.get(id) ?? Number.MAX_SAFE_INTEGER;
+    };
+
+    const agentNodes = locatedLeadRuins.size > 0 ? graph.getNodesByType('actor') : [];
 
     for (const agentNode of agentNodes) {
       const agentId = agentNode.id;
+      const leadRuins = locatedLeadRuins.get(agentId);
+      if (!leadRuins) continue;
       const hex = agentHex(graph, agentId);
       if (!hex) continue;
 
@@ -310,19 +349,16 @@ export function phaseDelveAdmission(state: GameState): Partial<GameState> {
       // is how long the world waits before it is somewhere to explore. A `ruins`
       // location with no `ruinedTick` (worldgen ruins) is not admitted by this branch —
       // elder ruins keep their own.
-      const ruinNodes = graph.getNodesByType('location').filter(n => {
+      const ruinNodes: GraphNode[] = [];
+      for (const ruinId of leadRuins) {
+        const n = graph.getNode(ruinId);
+        if (!n || n.type !== 'location') continue;
         const props = n.properties as Record<string, unknown>;
-        const isElder = props.locationType === 'elder_ruin';
-        const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
-        const ruinedTick = props.ruinedTick;
-        const isMatureMortalRuin = subtype === 'ruins'
-          && typeof ruinedTick === 'number'
-          && ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick;
-        if (!isElder && !isMatureMortalRuin) return false;
-        const nHexCol = props.hexCol as number | undefined;
-        const nHexRow = props.hexRow as number | undefined;
-        return nHexCol === hex.col && nHexRow === hex.row;
-      });
+        if (!isDelvableRuin(props, tick)) continue;
+        if (props.hexCol !== hex.col || props.hexRow !== hex.row) continue;
+        ruinNodes.push(n);
+      }
+      if (ruinNodes.length > 1) ruinNodes.sort((a, b) => rankOf(a.id) - rankOf(b.id));
 
       for (const ruinNode of ruinNodes) {
         const ruinId = ruinNode.id;

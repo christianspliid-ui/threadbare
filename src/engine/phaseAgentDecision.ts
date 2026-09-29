@@ -1283,6 +1283,7 @@ export function phaseAgentDecision(
               ...(e.forecastFit !== undefined ? { forecastFit: e.forecastFit } : {}),
               ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
               ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
+              ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
             })),
             agreement,
             boardFamily,
