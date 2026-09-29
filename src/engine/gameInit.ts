@@ -45,6 +45,7 @@ import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
 import { seedLatentEssenceSources } from './essenceSourceSeeding';
 import { seedWorldPast, formatWorldPastSummary } from './worldPast';
+import { mintPastAmbitions } from './worldPastAmbitions';
 import { assignInitialAmbitions, assignAmbitionToActor } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
@@ -260,7 +261,8 @@ export function initializeGameState(
   // protagonists, which all exist by now; it cannot live in `seedLivingWorld` because
   // ruins are seeded after `seedWorld` returns. Fail-soft: a throw costs the past only.
   try {
-    const past = seedWorldPast(graph, seed, { tiles });
+    // S3 (THR-1657): the past's grievances and legends become ambitions, at the tail of the pass.
+    const past = seedWorldPast(graph, seed, { tiles, mintAmbitions: mintPastAmbitions });
     if (past) console.log(formatWorldPastSummary(past));
   } catch (err) {
     console.warn('[worldgen] past pass failed; the world starts with no past', err);

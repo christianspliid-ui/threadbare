@@ -347,6 +347,16 @@ handing a scarcity quest to a seeded founder, and the fix went into that reader 
 location readers that counted the dead as residents, never into the dead. The run-time dead
 had the same leak. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1657 (2026-09-29), the past's third slice** —
+`world-past-mints-ambitions`. The past now gives the living reasons: at the tail of
+`seedWorldPast`, a fallen commander's kin (the losing Realm's highest-standing protagonist with
+a free slot) inherits a `seek_revenge` grievance against the winning Realm's current leader —
+routed through `resolveGrievanceDisposition`'s succession, the same path a dead victim's drive
+takes at run time — and the protagonist nearest a wonder with a finder comes to chase it.
+Deciders only and no spotlight pull, so the t0 decider headcount is unchanged. A past drive
+changes its holder's t0 calling, which `recomputeCalling` derives from ambitions — expected.
+Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 
