@@ -881,12 +881,23 @@ export function phaseAgentDecision(
       const journeyGoalId = arrivedState?.targetEncounterId && (arrivedState.movementQueue?.length ?? 0) === 0
         ? arrivedState.targetEncounterId
         : undefined;
+      // THR-1674: the goal is the encounter *here* — at the journey's destination or
+      // on the hex the mortal arrived on (awareness is hex-granular). A copy of the
+      // same template elsewhere is a different encounter: committing to it sent The
+      // First straight back to the town it had just left, recorded as `kept`.
+      const isGoalHere = (entry: { templateId: string; locationId: string }): boolean => {
+        if (entry.templateId !== journeyGoalId) return false;
+        if (entry.locationId === arrivedState?.destinationId) return true;
+        if (!agentHex) return false;
+        const entryHex = resolveLocationToHex(graph, entry.locationId);
+        return !!entryHex && entryHex.col === agentHex.col && entryHex.row === agentHex.row;
+      };
       let mergedEntries = unflaggedEntries;
       if (journeyGoalId) {
         let goalIndex = -1;
         for (let i = 0; i < unflaggedEntries.length; i++) {
           const e = unflaggedEntries[i];
-          if (e.templateId !== journeyGoalId) continue;
+          if (!isGoalHere(e)) continue;
           if (goalIndex < 0) goalIndex = i;
           if (e.locationId === arrivedState?.destinationId) { goalIndex = i; break; }
         }
@@ -1006,22 +1017,28 @@ export function phaseAgentDecision(
       let boardArrivalGoal: { templateId: string; locationId?: string } | undefined;
       if (journeyGoalId && arrivedState) {
         const goalId = journeyGoalId;
+        // THR-1674: one instance only — the goal here, preferring the destination's.
+        // No instance here → the goal is gone: dropped, and copies elsewhere compete
+        // on their own scores like anything else on the board.
+        const goalCandidate = decision.rankedCandidates.find(
+          c => c.entry.templateId === goalId && c.entry.locationId === arrivedState.destinationId,
+        ) ?? decision.rankedCandidates.find(c => isGoalHere(c.entry));
+        const isCommitted = (c: ScoredCandidate): boolean => !!goalCandidate
+          && c.entry.templateId === goalId && c.entry.locationId === goalCandidate.entry.locationId;
         const commit = (list: ScoredCandidate[]): ScoredCandidate[] => list
-          .map(c => (c.entry.templateId === goalId ? { ...c, finalScore: c.finalScore * ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } : c))
+          .map(c => (isCommitted(c) ? { ...c, finalScore: c.finalScore * ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } : c))
           .sort((a, b) => b.finalScore - a.finalScore);
-        const goalOnBoard = decision.rankedCandidates.some(c => c.entry.templateId === goalId);
-        if (goalOnBoard) {
+        const goalOnBoard = !!goalCandidate;
+        if (goalCandidate) {
           decision.rankedCandidates = commit(decision.rankedCandidates);
           decision.topCandidates = commit(decision.topCandidates);
           const top = decision.rankedCandidates[0] ?? null;
           if (top && top.finalScore >= IDLE_SCORE_THRESHOLD) decision.selected = top;
-          if (!decision.topCandidates.some(c => c.entry.templateId === goalId)) {
-            const goalCandidate = decision.rankedCandidates.find(
-              c => c.entry.templateId === goalId && c.entry.locationId === arrivedState.destinationId,
-            ) ?? decision.rankedCandidates.find(c => c.entry.templateId === goalId);
-            if (goalCandidate) decision.topCandidates = [...decision.topCandidates, goalCandidate];
+          if (!decision.topCandidates.some(isCommitted)) {
+            const committed = decision.rankedCandidates.find(isCommitted);
+            if (committed) decision.topCandidates = [...decision.topCandidates, committed];
           }
-          boardArrivalGoal = { templateId: goalId, locationId: arrivedState.destinationId };
+          boardArrivalGoal = { templateId: goalId, locationId: goalCandidate.entry.locationId };
         }
         arrivalGoal = goalOnBoard ? 'kept' : 'dropped';
         // Consumed in place: later writes in this iteration spread the actor's
