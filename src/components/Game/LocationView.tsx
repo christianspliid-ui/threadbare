@@ -1442,6 +1442,15 @@ export const LocationView = memo(function LocationView({
       {sublocationData.sublocations.length > 0 ? (
         // ──── SUBLOCATION VIEW ────
         <div className="flex-1 flex flex-col overflow-y-auto px-6 py-6">
+          {/* THR-1655 — a settlement with Places has no flat Inhabitants list (its people are
+              listed per Place below), so its notable heads the page here instead. Every seeded
+              notable lives in a settlement with Places, so this is the arm the player sees. */}
+          {settlementNotable && (
+            <div className="mb-4" style={{ maxWidth: '820px' }}>
+              <SectionHeading>Inhabitants</SectionHeading>
+              <NotableLine notable={settlementNotable} onAgentClick={onAgentClick} />
+            </div>
+          )}
           <SectionHeading>Sublocations</SectionHeading>
 
           <div className="space-y-3 flex-1 overflow-y-auto pr-2" style={{ maxWidth: '820px' }}>

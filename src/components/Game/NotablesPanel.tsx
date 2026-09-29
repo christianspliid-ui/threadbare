@@ -15,6 +15,9 @@ import {
 import { getNotableAgendaFamily } from '../../data/notable-agendas';
 import { agendaFlags } from '../../engine/notableAgendas';
 
+/** THR-1655: the panel scrolls inside the dropdown past this height, so it never leaves the viewport. */
+const NOTABLES_PANEL_MAX_HEIGHT = '70vh';
+
 interface NotablesPanelProps {
   gameState: GameState;
 }
@@ -93,8 +96,9 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
     { key: 'local', title: 'Local', rows: rows.filter((r) => r.local) },
   ].filter((g) => g.rows.length > 0);
 
+  // The dropdown has no scroll of its own; a busy world's rows ran past the fold (Law 33).
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1" style={{ maxHeight: NOTABLES_PANEL_MAX_HEIGHT }}>
       {groups.map((group) => (
         <section key={group.key} className="space-y-2" data-testid={`notables-group-${group.key}`}>
           <SectionHeading as="h2" count={group.rows.length}>{group.title}</SectionHeading>
@@ -127,12 +131,18 @@ function NotableAgendaList({ rows, label }: { rows: NotableAgendaRow[]; label: s
                 }
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <ListRow.Title>{row.notableName}</ListRow.Title>
+                  {/* THR-1655: each on its own truncating line — the primitives are inline
+                      spans, so side by side they ran together and under the family label. */}
+                  <div className="truncate">
+                    <ListRow.Title>{row.notableName}</ListRow.Title>
+                  </div>
                   {row.targetName && (
-                    <ListRow.Subtitle>
-                      {failed ? 'Abandoned designs on ' : done ? 'Settled the matter of ' : 'Eyes on '}
-                      {row.targetName}
-                    </ListRow.Subtitle>
+                    <div className="truncate">
+                      <ListRow.Subtitle>
+                        {failed ? 'Abandoned designs on ' : done ? 'Settled the matter of ' : 'Eyes on '}
+                        {row.targetName}
+                      </ListRow.Subtitle>
+                    </div>
                   )}
                   <div className="mt-1 flex items-center gap-2">
                     <div className="flex gap-1" aria-hidden="true">

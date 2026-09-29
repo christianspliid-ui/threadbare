@@ -2897,6 +2897,17 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 
 **Wired and asserted:** `seededTies-generatedWorld.test.ts` (heavy) reads medium worlds on seeds 42 and 99. Every hero has kin, every seeded tie is mutual, a seeded kin raises `protect_the_home`'s score, and a dead hero's grievance lands on their kin. `seededTies-streamIntact.test.ts` (heavy) proves the legacy pass's draws are kept. `npcGraduation.test.ts` pins that worldgen ties do not count toward graduation and earned ties do.
 
+## Who matters here — the notables-and-ties surfaces (THR-1655, S4)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/settlementNotable.ts` (new: `getSettlementNotable`, `NOTABLE_QUARREL_CAUSE`, `NOTABLE_SECRET_MIN_KNOWLEDGE`) | read at render | `LocationView` → `NotableLine` (both layouts; the Places layout is the one every seeded settlement uses) | graph + `familiarityMap` (read) | — | `__DEBUG.getSettlementNotable(id, { unfogged? })` |
+| `data/agent-concept-tooltips.ts` (new) + `tooltipResolver` `agent.*` static arm | — | `BondsTab` bond chip, `NotableLine` chip | — | — | — |
+| `agentDetail.getAgentInfoCard` (`topBonds.targetId` / `.basis`) · `bond-basis.bondBasisWord` | — | `BondsTab` Relationships | — | — | `getAgentDetail` bonds |
+| `NotablesPanel` Rulers / Local split | reads `agendaFlags.local` (written by the notable-agenda phase) | `NotablesButton` dropdown | `activeCompositions`, `worldFlags` | existing agenda traces | `getNotableAgendas` |
+
+**Wired and asserted:** `settlementNotable.test.ts` covers the four clauses, the knowledge gate, spent and dead edges and a non-quarrel grudge. `whoMattersHere.test.tsx` renders the bond word, the sentence and the two groups, each with its absence arm. Browser evidence is in `Docs/evidence/thr-1655/`.
+
 ## Culture and spheres showing through — the opening place fact (THR-1635)
 
 | Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |

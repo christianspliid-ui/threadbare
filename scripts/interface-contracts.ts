@@ -3479,6 +3479,31 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'seeded-notable-reaches-the-settlement-page',
+    producerSystem: WORLDGEN,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The settlement page names who matters there: `settlementNotable.getSettlementNotable` finds the living, resident seeded notable (`notableOrigin: worldgen`) and reads the edges `seedNotables` wrote — `owns` (Holds), `hostile_to` with cause `old_quarrel` (At odds with), an unrevealed `knows_secret_of` (Knows something about, gated on the player knowing the notable at `known`+) and a live incoming `owes_favor` (Is owed a favour by) — as structured clauses. `LocationView` lifts the notable to the top of Inhabitants with a notable chip and one sentence built from those clauses; `window.__DEBUG.getSettlementNotable` returns the same object.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['NOTABLE_ORIGIN_WORLDGEN', 'getSettlementNotable'],
+      module: 'src/engine/settlementNotable.ts',
+    },
+    writeSites: [
+      'src/engine/seedLivingWorld.ts',
+    ],
+    readSites: [
+      'src/engine/settlementNotable.ts',
+      'src/components/Game/LocationView.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        'THR-1655. `settlementNotable.test.ts` pins the four clauses, the knowledge gate on the secret and the dropped clause for a dead or spent edge; `whoMattersHere.test.tsx` renders the sentence. Browser evidence on `?view=game&seeded&size=medium` at 1920×1080: The Bone Coast (`loc_7`) shows "notable Remnant · Holds Counting House. At odds with Saiwia.", and `await window.__DEBUG.getSettlementNotable(\'loc_7\')` returns exactly those two clauses with `secretWithheld: true` (the player does not know Remnant). All 12 settlements probed had a notable with holds + at_odds_with.',
+    },
+  },
+  {
     id: 'seeded-ties-never-graduate',
     producerSystem: WORLDGEN,
     consumerSystem: 'Agent Lifecycle',

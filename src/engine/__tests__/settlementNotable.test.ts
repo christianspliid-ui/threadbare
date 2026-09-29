@@ -86,7 +86,8 @@ describe('bond and notable words (THR-1655)', () => {
     for (const id of ['agent.bond.kin', 'agent.bond.friendship', 'agent.bond.rivalry', 'agent.notable']) {
       const tip = resolveTooltip(id);
       expect(tip?.label).toBeTruthy();
-      expect(tip!.desc.length).toBeLessThanOrEqual(200);
+      expect(tip?.desc).toBeTruthy();
+      expect(tip?.desc?.length ?? 0).toBeLessThanOrEqual(200);
     }
   });
 
