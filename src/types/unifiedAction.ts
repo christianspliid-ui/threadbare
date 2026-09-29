@@ -3112,6 +3112,16 @@ export interface UnifiedAction {
    */
   readonly stepComplications?: readonly (StepComplicationSlot | null)[];
   /**
+   * THR-1670 (power runtime S2) — the step cast, keyed by step index. Written once
+   * per step by the roll (`executeStepResult`), from the same pure decision the
+   * attended forecast reads, so the odds shown are the odds rolled. Holds the
+   * decision (cast or declined, with its inputs) and, for a cast, what the step's
+   * band did with it: landed or fizzled, the writes a chip may name (Law 56), and
+   * the prose frozen at resolution. Absent on every step where the mortal wields
+   * no deliberate spell. Additive/optional.
+   */
+  readonly stepCasts?: Readonly<Record<number, StepCastRecord>>;
+  /**
    * THR-636: per-resolved-step replay records — the enriched prose the player
    * saw at each step's resolution, frozen so the encounter step-navigator can
    * replay a past step without re-enriching against a moved-on world. Additive/
@@ -3139,6 +3149,57 @@ export interface UnifiedAction {
  * Defined here to avoid circular imports between unifiedAction.ts and complication.ts.
  * The actual runtime value is a ComplicationResult from src/types/complication.ts.
  */
+/** THR-1670 — why a mortal who could reach for a spell on a step did not. */
+export type StepCastDeclinedReason =
+  | 'odds_good'
+  | 'cooldown'
+  | 'cost'
+  | 'sealed'
+  | 'prerequisite'
+  | 'no_target'
+  | 'no_fitting_spell';
+
+/** THR-1670 — one graph write a step cast produced (mirrors `CastWrite`, Law 56). */
+export interface StepCastWrite {
+  readonly kind: 'moved' | 'condition' | 'strain' | 'lifted' | 'silenced';
+  readonly actorId: string;
+  readonly ref: string;
+  readonly fromBacklash?: boolean;
+  readonly fromPrice?: boolean;
+}
+
+/**
+ * THR-1670 (power runtime S2) — the step cast record. The decision half is fixed
+ * before the roll and read by the forecast and the roll alike; the outcome half is
+ * written once the step's band has landed.
+ */
+export interface StepCastRecord {
+  readonly decision: 'cast' | 'declined';
+  /** The mortal whose capability the step reads — the actor, or a company's acting member. */
+  readonly casterId: string;
+  /** The spell template chosen (or, when declined, the best fitting one, if any). */
+  readonly spellId?: string;
+  /** The node the spell is aimed at, resolved at decision time from `spell.targeting`. */
+  readonly targetId?: string;
+  /** The named odds line's value (`CAST_STEP_BONUS_BY_TIER[tier]`); cast only. */
+  readonly bonus?: number;
+  /** The mortal's own cast threshold (courage against prudence). */
+  readonly threshold: number;
+  /** The step's probability before any god card and without the cast (absent when a gate declined first). */
+  readonly preCardProbability?: number;
+  readonly declinedReason?: StepCastDeclinedReason;
+  // ── Outcome (written after the band lands; cast only) ──
+  readonly band?: StepOutcome;
+  readonly landed?: boolean;
+  /** The resolver refused at resolution time (the step resolved as if uncast). */
+  readonly refused?: string;
+  readonly writes?: readonly StepCastWrite[];
+  /** `castProse.landed` / `.fizzled`, enriched and frozen at resolution. */
+  readonly prose?: string;
+  /** The backlash narrative, when the price bit. */
+  readonly backlashProse?: string;
+}
+
 export interface StepComplicationSlot {
   readonly templateId: string;
   readonly category: string;

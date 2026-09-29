@@ -56,6 +56,8 @@ import { computeResolutionModifiers } from '../../../../engine/resolutionModifie
 import { forecastAction } from '../../../../engine/resolutionService';
 import { forecastActionAtScale } from '../../../../engine/scaledForecast';
 import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
+import { stepCastFor } from '../../../../engine/unifiedActionResolution';
+import type { StepCastRecord } from '../../../../types/unifiedAction';
 import type { FightStepInputs } from '../../../../types/fight';
 import {
   FIGHT_ENCOUNTER_TYPE,
@@ -501,13 +503,26 @@ function fightInputsForForecast(
   activeAction: UnifiedAction,
   step: ActionStep,
   template: UnifiedActionTemplate,
+  stepCast?: StepCastRecord,
 ): FightStepInputs | undefined {
   if (!step.fightRole || !gameState) return undefined;
   try {
-    return resolveFightStepInputs(gameState, activeAction, step, template);
+    return resolveFightStepInputs(gameState, activeAction, step, template, stepCast);
   } catch {
     return undefined;
   }
+}
+
+/**
+ * THR-1670 — the link on a step cast's factor line: the spell's name, pointing at
+ * its shared definition node. Empty when the contribution cannot be found.
+ */
+function spellLinkFor(
+  source: string,
+  contributions: readonly { kind: string; sourceId: string; sourceName: string }[],
+): { link?: { text: string; entityId: string; kind: 'attachment' } } {
+  const found = contributions.find((c) => c.kind === 'spell' && `spell:${c.sourceId}` === source);
+  return found ? { link: { text: found.sourceName, entityId: found.sourceId, kind: 'attachment' } } : {};
 }
 
 /** The factor line for one of the fight's own named terms (courage, momentum, an advantage). */
@@ -665,7 +680,16 @@ export function buildNudgePhaseModel(
   // uses: the card's reach and difficulty, the fighter's standing modifiers read in
   // a combat context, and the fight's named terms (courage, momentum, advantages).
   // Pure: reading the advantages here spends nothing.
-  const fightInputs = fightInputsForForecast(gameState, activeAction, step, template);
+  // THR-1670 — the step cast: the record the roll wrote, or the same pure decision
+  // it will make (the decision reads no card, so toggling cards never changes it).
+  // One `spell` line rides the standing read below, for the forecast and the roll.
+  let stepCast: StepCastRecord | undefined;
+  try {
+    stepCast = gameState ? stepCastFor(activeAction, template, gameState, step) : undefined;
+  } catch {
+    stepCast = undefined;
+  }
+  const fightInputs = fightInputsForForecast(gameState, activeAction, step, template, stepCast);
   const stepReach = fightInputs?.reach ?? step.reach;
   const capability = computeCapability(graph, actorId, stepReach);
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
@@ -680,6 +704,7 @@ export function buildNudgePhaseModel(
       gameState?.effectStates,
       undefined,
       FIGHT_ENCOUNTER_TYPE,
+      stepCast,
     )
     : computeResolutionModifiers(
       graph,
@@ -690,6 +715,9 @@ export function buildNudgePhaseModel(
       // THR-1535 — the live effect states, as the roll reads them, so a timed
       // effect moves the shown odds exactly as it moves the dice.
       gameState?.effectStates,
+      undefined,
+      undefined,
+      stepCast,
     );
   // THR-892 — the carryover line the prior step's band earned, if the author wrote
   // one. It contributes to the floor exactly as a trait variant does, so the hand
@@ -843,6 +871,8 @@ export function buildNudgePhaseModel(
       // last two both mean "draw no pips": the model's `delta` is absent, never
       // zero, because a zero would draw an empty row promising a magnitude.
       delta: line.delta === 0 ? undefined : line.delta,
+      // THR-1670 — the cast line names its spell, and the name opens its Power page.
+      ...(line.kind === 'spell' ? spellLinkFor(line.source, standing.contributions) : {}),
     });
   }
 

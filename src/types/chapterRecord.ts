@@ -45,6 +45,11 @@ export interface ChapterStepRecord {
   readonly outcome?: StepOutcome;
   /** Complication prose if a complication fired on this step (THR-20). */
   readonly complicationProse?: string;
+  /**
+   * THR-1670 — the spell cast on this step: its cast line (landed or fizzled),
+   * then the backlash line when the price bit, frozen at resolution.
+   */
+  readonly castProse?: string;
   /** The player's own intervention on this step, if any — rendered as a "you whispered…" beat. */
   readonly choiceText?: string;
 }

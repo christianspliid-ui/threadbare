@@ -291,6 +291,13 @@ export const DERIVED_FACTOR_SENTENCES: Readonly<
     for: '{source} favours the attempt here.',
     against: '{source} tells against it here.',
   },
+  // THR-1670. `{source}` is the *spell's* name — the mortal reaches for it because
+  // the odds looked bad, and the same roll decides the step and the spell. A cast
+  // bonus is never negative, so the `against` half exists only to satisfy the pair.
+  spell: {
+    for: '{actor} is casting {source}.',
+    against: '{actor} is casting {source}.',
+  },
 };
 
 /**

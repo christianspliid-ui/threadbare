@@ -158,6 +158,8 @@ export type TraceCategory =
   | 'spell.cast_resolved'
   | 'spell.backlash'
   | 'effect.teleported'
+  // The step cast (THR-1670)
+  | 'spell.cast_decided'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -655,6 +657,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'spell.cast_resolved',
   'spell.backlash',
   'effect.teleported',
+  'spell.cast_decided',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2792,6 +2795,23 @@ export interface SpellBacklashTrace extends TraceBase {
   effectType: string;
 }
 
+/**
+ * Trace: a caster who could reach for a spell on a step decided (THR-1670). Once
+ * per step, the first time the decision is made. `preCardProbability` is absent
+ * when a gate (cooldown, cost, seal, target) declined before the odds were read.
+ */
+export interface SpellCastDecidedTrace extends TraceBase {
+  category: 'spell.cast_decided';
+  actionId: string;
+  stepIndex: number;
+  casterId: string;
+  spellId: string;
+  preCardProbability?: number;
+  threshold: number;
+  decision: 'cast' | 'declined';
+  declinedReason?: string;
+}
+
 /** Trace: a `teleport` / `forced_move` moved a mortal (THR-1571). */
 export interface EffectTeleportedTrace extends TraceBase {
   category: 'effect.teleported';
@@ -4296,6 +4316,7 @@ export type TraceEntry =
   | SpellSeededTrace
   | SpellCastResolvedTrace
   | SpellBacklashTrace
+  | SpellCastDecidedTrace
   | EffectTeleportedTrace
   | ConditionInflictedTrace
   | UndertakingCheckpointTrace

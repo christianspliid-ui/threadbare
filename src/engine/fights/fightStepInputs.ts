@@ -30,6 +30,7 @@ import type { GameState } from '../../types/gameState';
 import type {
   ActionScale,
   ActionStep,
+  StepCastRecord,
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
@@ -150,6 +151,12 @@ export function resolveFightStepInputs(
   action: UnifiedAction,
   step: ActionStep,
   template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
+  /**
+   * THR-1670 — the step's recorded cast. Rides the fighter's standing read, so a
+   * fight-arena spell is one named line inside the standing term — for the roll
+   * and the forecast alike. Every existing caller omits it.
+   */
+  stepCast?: StepCastRecord,
 ): FightStepInputs | undefined {
   const role = fightRoleOf(step);
   if (!role) return undefined;
@@ -202,6 +209,7 @@ export function resolveFightStepInputs(
     state.effectStates,
     undefined,
     FIGHT_ENCOUNTER_TYPE,
+    stepCast,
   );
 
   const modifiers: FightNamedModifier[] = [];
