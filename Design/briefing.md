@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-29 03:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-29 04:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,20 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 jobs ready to build, none being built right now.** New this hour, merged and live: [spells that work](https://linear.app/threadbare/issue/THR-1571), step one of the power runtime ([#2136](https://github.com/christianspliid-ui/threadbare/pull/2136)).
+**Healthy: 7 jobs ready to build, none being built right now.** New this hour, merged and live: [the player sees who matters here](https://linear.app/threadbare/issue/THR-1655) ([#2137](https://github.com/christianspliid-ui/threadbare/pull/2137)).
 
-- **The living world, next up:** [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [the player sees faith and fringe](https://linear.app/threadbare/issue/THR-1659), [the player sees who matters here](https://linear.app/threadbare/issue/THR-1655), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), and [finish the encounters, step two](https://linear.app/threadbare/issue/THR-1666). The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation.
+- **The living world, next up:** [the past feeds ambitions](https://linear.app/threadbare/issue/THR-1657), [the player sees faith and fringe](https://linear.app/threadbare/issue/THR-1659), [a lead is a reason to look](https://linear.app/threadbare/issue/THR-1663), and [finish the encounters, step two](https://linear.app/threadbare/issue/THR-1666).
+- **Spells, next up:** [a caster casts in the scene](https://linear.app/threadbare/issue/THR-1670) and [monsters born with a power](https://linear.app/threadbare/issue/THR-1671), both newly queued. The glossary words "lead" and "delve" ([THR-1662](https://linear.app/threadbare/issue/THR-1662)) are queued under your standing delegation.
 - **Faith and politics is not ready for you to look at yet.** The world has it, but nothing on screen shows it until [THR-1659](https://linear.app/threadbare/issue/THR-1659) ships.
 - **Spells are not ready for you to look at yet.** Casters carry and cast them, but you only see a cast on the step once step two of [the power runtime](https://linear.app/threadbare/issue/THR-1571) ships.
 - **The fight system is live but not ready for you to review.** No one-click link opens a fight the way the encounter links above open an encounter. Until a builder adds one, a review would mean hunting for a fight.
 
 ## Health
 
-- **The home checkout is now 100 commits behind `main`**, stuck for about 20 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
+- **The game got slower this hour: 103 ms per tick, 32% above the weekly median (79)**, past the 25% line. The busiest part is mortals deciding what to do (516 on the test world); the merges since the baseline are listed by `git log --oneline --merges f04ea84c..cac08e12`. A builder's job, not yours.
+- **The home checkout is now 104 commits behind `main`**, stuck for about 21 hours. The stray untracked copy of `Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md` there has the same name as a merged plan, which probably blocks the update. A builder's job, not yours.
 - **Lane silence:** the worst recent gap was 13.6 hours, from Tuesday evening 22 September into Wednesday morning. Overnight quiet is normal, so you don't need to do anything.
 - **Everything else is green:**
-  - Game speed: 94 ms per tick, 20% above the weekly median (78), inside the 25% line.
-  - The live site is up to date (6f0f63a6, spells that work).
+  - The live site is up to date (cac08e12, who matters here).
   - Automated checks and the three background jobs are running; no pull requests are waiting.
   - All ten scheduled lanes are on time. The worktree cleaner reports five old worktrees awaiting its own decision.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-29 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-09-29 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -31,6 +31,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-29: the player sees who matters here**: a settlement's notables now show on screen ([THR-1655](https://linear.app/threadbare/issue/THR-1655)). Merged via [#2137](https://github.com/christianspliid-ui/threadbare/pull/2137), and live on the site.
 - **2026-09-29: spells that work**: every caster now starts with one spell of their tradition, and a cast spell does what it says (step one of [the power runtime](https://linear.app/threadbare/issue/THR-1571)). Merged via [#2136](https://github.com/christianspliid-ui/threadbare/pull/2136), and live on the site.
 - **2026-09-29: the player meets the past**: the world's history now reaches the screen ([THR-1656](https://linear.app/threadbare/issue/THR-1656)). Merged via [#2134](https://github.com/christianspliid-ui/threadbare/pull/2134), and live on the site.
 - **2026-09-29: a notable in every settlement**: each settlement now starts with a named notable of its own ([THR-1654](https://linear.app/threadbare/issue/THR-1654)). Merged via [#2133](https://github.com/christianspliid-ui/threadbare/pull/2133), and live on the site.
@@ -40,7 +41,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-28: the ten most common encounters are finished**: each now has its own lines for succeeding at a cost and for crits, and deals a hand from your god's cards (step one of [THR-1634](https://linear.app/threadbare/issue/THR-1634)). Merged via [#2129](https://github.com/christianspliid-ui/threadbare/pull/2129), and live on the site.
 - **2026-09-28: the hover tooltip is readable again**: a region's name no longer draws on top of it ([THR-1665](https://linear.app/threadbare/issue/THR-1665)). Merged via [#2127](https://github.com/christianspliid-ui/threadbare/pull/2127), and live on the site.
 - **2026-09-28: spotlight mortals join guilds**: heroes who choose for themselves now join a guild when it suits their strengths ([THR-1640](https://linear.app/threadbare/issue/THR-1640)). Merged via [#2126](https://github.com/christianspliid-ui/threadbare/pull/2126), and live on the site.
-- **2026-09-28: trade lanes stay alive**: a lane now carries while both its towns stand and nothing blocks it, instead of every lane vanishing on day 36 (first step of [seeded things that stay alive](https://linear.app/threadbare/issue/THR-1636)). Merged via [#2125](https://github.com/christianspliid-ui/threadbare/pull/2125), and live on the site.
 
 ---
 
