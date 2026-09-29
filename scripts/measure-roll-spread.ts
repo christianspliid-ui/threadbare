@@ -39,7 +39,7 @@ import { MIN_PROBABILITY_BY_SCALE, SCALE_DIFFICULTY_OFFSETS } from '../src/engin
 import { isEncounterAction } from '../src/engine/chapterArchive';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
-import { MONSTER_FAMILIES } from '../src/data/monster-families';
+import { MONSTER_APEX_CARD_LIST, MONSTER_FAMILIES } from '../src/data/monster-families';
 import { FIGHT_RATING_DIFFICULTY, FIGHT_STEP_SCALE } from '../src/data/fight-constants';
 import { PROFICIENCY_BANDS, proficiencyBandFor, windowFitBandFor, windowFitGap, isSuccessFamily, demandedDifficultyOf } from '../src/engine/kpi/engagementKpi';
 import type { ProficiencyBand } from '../src/engine/kpi/engagementKpi';
@@ -262,6 +262,18 @@ function coverage(): void {
   }
   rows.push(['monster families', monsters, monsterTotal]);
   rows.push(['  (at par)', monstersAtPar, monsterTotal]);
+
+  // THR-1682 — apex elites: a legendary golem or behemoth grows into a severe/severe card.
+  const apexes = emptyBandCounts();
+  const apexesAtPar = emptyBandCounts();
+  for (const apex of MONSTER_APEX_CARD_LIST) {
+    const demanded = (FIGHT_RATING_DIFFICULTY[apex.dread] + FIGHT_RATING_DIFFICULTY[apex.might]) / 2
+      + SCALE_DIFFICULTY_OFFSETS[FIGHT_STEP_SCALE];
+    apexes[windowFitBandFor(demanded)]++;
+    apexesAtPar[proficiencyBandFor(demanded)]++;
+  }
+  rows.push(['monster apex elites', apexes, MONSTER_APEX_CARD_LIST.length]);
+  rows.push(['  (at par)', apexesAtPar, MONSTER_APEX_CARD_LIST.length]);
 
   console.log(`  ${'content'.padEnd(20)} ${PROFICIENCY_BANDS.map(b => b.padStart(14)).join('')}   total`);
   for (const [name, counts, total] of rows) {

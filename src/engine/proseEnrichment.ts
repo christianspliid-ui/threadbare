@@ -51,8 +51,7 @@ import {
 import { gatherAgentPlaceColoration, type PlaceColoration } from './openingColoration';
 import { settingClassForSubtype } from '../data/settingClasses';
 import { locationTypeFromProperties } from './encounterCache';
-import { MONSTER_FAMILIES } from '../data/monster-families';
-import type { MonsterFamilyId } from '../types/monster';
+import { monsterCardLine } from '../data/monster-families';
 import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import {
@@ -436,8 +435,8 @@ export function resolveSceneTargetContext(
   }
 
   // THR-1545: a lair's monster carries its family card line for `{target:family}`.
-  const familyId = (node.properties?.monsterState as { family?: string } | undefined)?.family;
-  const family = familyId ? MONSTER_FAMILIES[familyId as MonsterFamilyId]?.cardLine : undefined;
+  // THR-1682: an apex (a legendary golem or behemoth) reads its own apex line.
+  const family = monsterCardLine(node.properties?.monsterState as { family?: string; apex?: string } | undefined);
 
   return {
     id: targetId, kind, name: node.name ?? 'the other party', pronouns, factionName, relation,

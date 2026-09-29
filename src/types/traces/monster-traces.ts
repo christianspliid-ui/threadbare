@@ -33,6 +33,10 @@ export interface MonsterHardenedTrace extends TraceBase {
   lairId: string;
   clockSize: number;
   dread: FightRatingWord;
+  /** THR-1682 — the hardened Might (unchanged unless the monster grew into an apex). */
+  might?: FightRatingWord;
+  /** THR-1682 — the apex card id the monster grew into, or `''` when it took the Dread step. */
+  apex?: string;
 }
 
 /**
