@@ -388,6 +388,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
 | `secrets` (2) | `secretsFavorsConsequences.ts`, `secretsFromResolution.ts` | `THR-30`, `THR-724` |
 | `seed` (3) | `seedAttachments.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654` |
+| `settlement` (1) | `settlementNotable.ts` | `THR-1630`, `THR-1655` |
 | `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
@@ -430,4 +431,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 201 engine domains · 620 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 202 engine domains · 621 modules._
