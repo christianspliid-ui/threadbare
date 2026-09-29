@@ -166,7 +166,7 @@ describe('a survey sharpens a held lead instead of refusing', () => {
     expect(leads).toHaveLength(1); // sharpened in place, not stacked
     expect(leads[0].properties.precision).toBe('narrowed');
 
-    const traces = getTraces() as ReadonlyArray<Record<string, unknown>>;
+    const traces = getTraces() as unknown as ReadonlyArray<Record<string, unknown>>;
     const sharpened = traces.find(t => t.category === 'ruins.clue_sharpened');
     expect(sharpened).toMatchObject({ from: 'vague', to: 'narrowed', via: 'survey', band: 'success' });
     const reader = traces.find(t => t.category === 'undertaking_reader' && t.reader === 'clue');
