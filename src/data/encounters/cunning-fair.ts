@@ -1,0 +1,559 @@
+/**
+ * The Cunning Fair (slug cunning-fair) — slot 6 of the journeyman-everyday-2 batch (THR-1677).
+ * 
+ * Brief: `Docs/plans/encounters/journeyman-everyday-2-brief.md`.
+ * Draft: `Docs/plans/encounters/cunning-fair-draft.md`.
+ * plotHookTaken: hook.grief_absorption — a widow's house has had no luck since her
+ *   husband was buried, and she reads it as his grief or hers. (Rolled beside it:
+ *   hook.monster_eradication, hook.heresy_hunt — both pull the scene toward arms or
+ *   a trial, and the brief keeps this slot everyday folk magic.)
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` is in `{location}` on fair day
+ *                      (urban), or comes into `{location}` on fair day (rural), and
+ *                      a widow is asking for cunning-folk. Graph names.
+ *   2 P2 events?       Her house has had no luck since the burial; the hearth will
+ *                      not draw; she dreams of him each night. Costs already paid.
+ *   3 P3 one stake?    Unmitigated risk, as rolled, with the agent as competitor:
+ *                      `{cast:rival}` has already read the house and is selling a
+ *                      charm; a wrong reading in front of the fair loses the town's
+ *                      trade. Nothing forces the risk; reading at all invites it.
+ *   4 ≤80 words?       Opening 14 + spine 64 = 78 (urban); 15 + 64 = 79 (rural).
+ *   5 Read aloud?      Report throughout. No interior sensation.
+ *   6 Stated, never encoded? The prize, the rival's reading and the cost of a wrong
+ *                      one are all stated in plain sentences.
+ *   7 Every sentence works? Challenge, test, or outcome.
+ *   8 Nothing unintroduced? The widow, the hearth, the dream, the keepsake, the rival
+ *                      and the town's trade all appear before a card or chip names them.
+ *   9 One named person? `{cast:rival}` — the rival reader. The widow is a role noun.
+ *  10 Stake in a sentence? 'Can they read the widow's trouble truly, in front of the
+ *                      fair, before the rival's charm is bought?'
+ *  11 Cards verb+noun, spell-style? Yes; two specials, no word shared between a name
+ *                      and its effect line, no digits, no odds-talk.
+ *  12 Opening per class? `urban` and `rural`, both written.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            A widow at the fair will pay whoever reads her house's trouble
+ *                   truly, and a rival reader has already given the wrong answer.
+ *   Title           The Cunning Fair — cunning-folk competing at a fair.
+ *   Whose problem?  The agent's: they chose to read, and the prize, the town's
+ *                   trust and their trade ride on whether the reading is true.
+ *   Reach = theme?  One step, Veil 0.45 (`fair`), *about* reading a dream truly —
+ *                   everyday divination, not spectacle.
+ *   Shape           Single test composed with the query_prize face (brief: slot 6
+ *                   stays one step so the batch keeps one 1-step encounter).
+ *   Rolled dice     p3 unmitigated risk · opposition terrain (indifference: the
+ *                   truth is up the chimney and cares nothing for either reader) ·
+ *                   disposition n/a · role competitor · scale company (one house,
+ *                   one rival, one fair).
+ *   The truth       The dead man hid his savings up the chimney in a cloth bag; it
+ *                   blocks the flue, so the hearth will not draw, and the dream shows
+ *                   him at the cold hearth pointing up. The rival reads it as a
+ *                   restless ghost. Revealed only in the success-side bands.
+ *   Consequence hand (binding, THR-1145): `secret` + `thread` — no swap.
+ *                   `secret` — `hidden_mark` (secret_knowledge) on `$actor` on the
+ *                   step's success half: a reader who watched the bag come down knows
+ *                   what coin the widow keeps in her house. PATH chip, `hidden mark`.
+ *                   `thread` — `thread_strengthen` ($ascendant ↔ $actor) on the
+ *                   success half, `thread_weaken` on the failure half.
+ *   Query prize     Step `rewardPool` on the success half,
+ *                   `{ categoryWeights: { possession: 1 }, tagFilters: ['#talisman'] }`
+ *                   → `{ kind: 'item_template', tags: ['#talisman'] }`. The keepsake
+ *                   from the dead man's box is TAG-DRAWN; the prose never names it,
+ *                   and the engine renders the drawn item as the PRIZE chip.
+ *   Standing        `reputation_with` `$here` (the town's trust): up on a true
+ *                   reading, down on a wrong one.
+ *   Cool failure?   Nobody is hurt or held. The widow buys the rival's charm, the
+ *                   hearth stays cold, and the town trusts the reader less.
+ *   Systems quota   cast + rewards + reputation — three, the floor.
+ *   Trait hooks     Gate: none. Variant: none. Trait-only nudge: none. Trait
+ *                   fragment: none — no live trait fits dream-reading better than the
+ *                   reach itself; everyday board, no gates by brief.
+ *   Mortal choice?  None — this is a test.
+ *   Specials        `Borrow Her Sleep` (Whisper, mind) and `Rattle The Flue` (Omen,
+ *                   matter). No core Boost special, no rider (the deal supplies both).
+ *   Prose rule 7b   No promise about later; the hidden mark is the only forward
+ *                   state, and its chip says only that the mortal carries it.
+ * 
+ * ─── Critic revisions (independent critic loop, 2026-09-29) ─────────
+ *   See cunning-fair-editorial.md / -systems.md / -package.md. Title renamed to
+ *   "The Widow's Dream" (glance test); the hidden mark's label now reads as a
+ *   spoken phrase for the secret_knowledge reveal table and carries
+ *   revealFamilies [shadow, settlement] so it scores and surfaces (without them
+ *   it only decayed); seam echoes and page repetitions rewritten; card names
+ *   moved onto lexicon verbs (Open Her Dream, Stir The Chimney); reputation
+ *   chip wording no longer implies band-different magnitudes over one write.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.cunning_fair',
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'The Widow\'s Dream',
+  reach: 'veil',
+  crudType: 'read',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['tradition_novelty', 'courage_prudence'],
+  settings: ['urban', 'rural'],
+  openings: {
+    urban: '{actor} is in {location} on fair day when a widow asks for a dream reader.',
+    rural: '{actor} comes into {location} on fair day and hears a widow asking for a dream reader.',
+  },
+  steps: [
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.45,
+      purposeLine: 'Read the widow\'s dream',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'Her house has had no luck since her husband was buried. Her fire smokes, and she dreams of him '
+        + 'each night. She offers a keepsake of his to whoever finds the cause. {cast:rival}, a rival '
+        + 'reader, says the dead man is restless and sells a charm to calm him. Whoever reads it wrong in '
+        + 'front of the fair loses trade in {location}.',
+      criticalSuccessAfterimage: 'They said the dead man was pointing up his own chimney before the widow had finished telling the '
+        + 'dream.',
+      successAfterimage: 'They read the dream as the dead man pointing up at his own chimney.',
+      successAtCostAfterimage: 'They named grief first, then changed their reading to the chimney, and the second reading was '
+        + 'right.',
+      failureAfterimage: 'They read the dream as plain grief and told the widow to let him go.',
+      criticalFailureAfterimage: 'They told the fair the dead man was angry with his widow, and she left the square in tears.',
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: {
+            possession: 1,
+          },
+          tagFilters: ['#talisman'],
+        },
+        effects: [
+          {
+            kind: 'thread_strengthen',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'Read the widow\'s dream true with the god close',
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+          {
+            kind: 'hidden_mark',
+            category: 'secret_knowledge',
+            severity: 0.3,
+            label: 'the coin in the widow\'s house',
+            targetAgentId: '$actor',
+            revealFamilies: ['shadow', 'settlement'],
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'thread_weaken',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'Read the widow\'s dream wrong with the god watching',
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.05,
+          },
+        ],
+      },
+      deal: {
+        count: 4,
+        tags: ['lore', 'social'],
+      },
+      nudges: [
+        {
+          id: 'cunning.borrow_her_sleep',
+          name: 'Open Her Dream',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.memory',
+          effectLine: 'Put them inside the widow\'s sleep, so they read what she sees and not her telling of it.',
+          bandProse: {
+            success: 'They saw the dream as the widow sees it: her husband at the smoking hearth, pointing up.',
+            near_miss: 'They saw the dream, but saw the hearth in it only at the last.',
+            failure: 'They saw the dream clearly and still read the pointing hand as a farewell.',
+          },
+        },
+        {
+          id: 'cunning.rattle_the_flue',
+          name: 'Stir The Chimney',
+          sphere: 'matter',
+          essenceCost: 2,
+          forecastDelta: 0.11,
+          imageTag: 'generic.matter',
+          effectLine: 'Knock soot down onto the widow\'s hearth while they stand at it, so a sign falls where they can '
+            + 'read it.',
+          bandProse: {
+            critical_success: 'Soot came down the chimney as they spoke, and a corner of cloth came with it.',
+            success_at_cost: 'Soot fell on the hearth, and they read it only after {cast:rival} had called it a draught.',
+            failure: 'Soot fell on the hearth, and {cast:rival} told the fair it was a bad draught.',
+            critical_failure: 'Soot fell on the hearth, and they read it as the dead man\'s anger.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'rival',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['healer'],
+      supportRole: 'rival_reader',
+      spawnNpcRole: 'healer',
+      spawnName: 'Tamsin Carrow',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A widow at the fair will pay whoever finds the cause of her house\'s trouble, and a rival reader '
+      + 'is already selling a charm for it.',
+    success: 'The reading was right. The widow\'s fire burns again, and the keepsake is theirs.',
+    failure: 'The reading was wrong. The widow bought the rival\'s charm, and the fair trusts the reader less.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The fair has moved on from the square. The widow\'s house has its answer, right or wrong.',
+      changes: [
+        {
+          id: 'cunning.a_dream_read',
+          kind: 'growth',
+          title: 'A dream, read',
+          detail: 'Reading a stranger\'s dream in public teaches the veil reach.',
+          polarity: 'gain',
+          concepts: [
+            {
+              text: 'veil reach',
+              tooltipId: 'reach.veil',
+            },
+          ],
+        },
+      ],
+      reactions: [],
+      byOutcome: {
+        critical_success: {
+          overview: 'Someone climbed the widow\'s chimney in front of the whole fair and brought down his savings in '
+            + 'a cloth bag. {cast:rival} packed away the charms and left early.',
+          changes: [
+            {
+              id: 'cunning.crit.town_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Trusted at the fair',
+              detail: '{location} thinks better of their readings.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'cunning.crit.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt at the hearth',
+              causeClause: 'Read the dream with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'cunning.crit.the_widows_coin',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              title: 'The widow\'s coin',
+              detail: '{actor} knows there is coin in the widow\'s house now.',
+              concepts: [
+                {
+                  text: 'coin in the widow\'s house',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'His savings were up the chimney in a cloth bag, blocking the smoke. With them out, her fire '
+            + 'burns clean again.',
+          changes: [
+            {
+              id: 'cunning.success.town_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'A reader to ask',
+              detail: '{location} thinks better of their readings.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'cunning.success.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt at the hearth',
+              causeClause: 'Read the dream with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'cunning.success.the_widows_coin',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              title: 'The widow\'s coin',
+              detail: '{actor} knows there is coin in the widow\'s house now.',
+              concepts: [
+                {
+                  text: 'coin in the widow\'s house',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The fair saw the first answer fail, and {cast:rival} calls the second one luck. Still, the '
+            + 'widow\'s fire burns and her husband\'s savings are back.',
+          changes: [
+            {
+              id: 'cunning.cost.town_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Right in the end',
+              detail: '{location} thinks better of their readings.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'cunning.cost.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt at the hearth',
+              causeClause: 'Read the dream with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'cunning.cost.the_widows_coin',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              title: 'The widow\'s coin',
+              detail: '{actor} knows there is coin in the widow\'s house now.',
+              concepts: [
+                {
+                  text: 'coin in the widow\'s house',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'The widow bought {cast:rival}\'s charm and hung it over the hearth. Her fire still smokes.',
+          changes: [
+            {
+              id: 'cunning.fail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Watched, and not helped',
+              causeClause: 'Misread the dream with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'cunning.fail.town_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Read it wrong',
+              detail: '{location} trusts their readings less.',
+              concepts: [
+                {
+                  text: 'trusts their readings less',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: '{cast:rival} sold a charm against the angry dead to every house on the square by nightfall.',
+          changes: [
+            {
+              id: 'cunning.critfail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Watched, and not helped',
+              causeClause: 'Blamed the dead man\'s anger with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'cunning.critfail.town_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Nobody\'s reader',
+              detail: '{location} trusts their readings less.',
+              concepts: [
+                {
+                  text: 'trusts their readings less',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A one-step Veil test for a journeyman at a town or village fair: read a widow\'s dream right '
+    + 'against a rival reader who is already selling a charm. The prize is drawn by query from the '
+    + '#talisman item family; a true reading also leaves the reader knowing there is coin in the '
+    + 'widow\'s house, and a wrong one costs their standing in the settlement.',
+  locationSubtypes: expandSettings(['urban', 'rural']),
+  consequenceDraw: ['secret', 'thread'],
+};
+
+export const CUNNING_FAIR_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

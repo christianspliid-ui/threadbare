@@ -247,7 +247,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'justice'],
     reaches: ['veil', 'iron'],
     source: 'vault: Archetypes/Adventure & Quest — Heresy Hunt',
-    usedBy: ['encounter.town.assize_letter'],
+    usedBy: ['encounter.town.assize_letter', 'encounter.town.levee_breach'],
   },
   {
     id: 'hook.siege_and_hold',
@@ -335,7 +335,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'discovery'],
     reaches: ['stone', 'eye'],
     source: 'vault: Archetypes/Adventure & Quest — The Mad Artificer Stronghold',
-    usedBy: [],
+    usedBy: ['encounter.town.well_sinking'],
   },
   {
     id: 'hook.underground_city',
@@ -351,7 +351,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'discovery'],
     reaches: ['shadow', 'iron'],
     source: 'vault: Archetypes/Adventure & Quest — The Enemy Stronghold Raid',
-    usedBy: [],
+    usedBy: ['encounter.town.ledger_by_lamplight'],
   },
   {
     id: 'hook.compassionate_liberation',
@@ -457,7 +457,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'conflict'],
     reaches: ['gold', 'heart'],
     source: 'vault: Archetypes/Event — The Trade War',
-    usedBy: [],
+    usedBy: ['encounter.town.smugglers_ford'],
   },
   {
     id: 'hook.oath_breaking_scandal',
@@ -571,7 +571,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['justice', 'conflict'],
     reaches: ['iron', 'veil'],
     source: 'vault: Archetypes/Ordeal — Trial by Combat',
-    usedBy: [],
+    usedBy: ['encounter.town.fair_bout'],
   },
   {
     id: 'hook.impossible_heist',
@@ -675,7 +675,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['protection', 'transformation'],
     reaches: ['heart', 'veil'],
     source: 'vault: Archetypes/Ordeal — The Grief Absorption',
-    usedBy: [],
+    usedBy: ['encounter.town.cunning_fair'],
   },
   {
     id: 'hook.endless_pursuit',
