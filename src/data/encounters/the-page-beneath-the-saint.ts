@@ -31,8 +31,9 @@
  * at every branch, human consequences over mechanical labels.
  */
 
-import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep, ActionStepBranch, AftermathVariant } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { DEAL_DEFAULT_COUNT } from '../nudge-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -63,6 +64,15 @@ const step0TheFind: ActionStep = {
     'of the page and the weight of the hundred thousand graves it would reopen.',
   successAfterimage: 'The archivist held the founding chronicle in the failing lamplight and could not put it down.',
   failureAfterimage: 'The archivist\'s hands shook so badly that the brittle page nearly tore, and they had to set it flat and breathe.',
+  // THR-1667 S3: the missing afterimages. Step 0 is the authored choice, so it
+  // carries no hand (a hand on a choice step would replace the fork).
+  successAtCostAfterimage: 'The archivist kept hold of the chronicle, but gripped it hard enough to crack the page along its old fold.',
+  criticalSuccessAfterimage:
+    'Under the lamp the archivist found a second hand in the margin: a later scribe who had known the page was ' +
+    'forged, and had written nothing but a small cross beside it.',
+  criticalFailureAfterimage:
+    'The lamp went out. The archivist groped for the stair in the dark and came up with the page crushed in ' +
+    'one fist.',
 };
 
 /**
@@ -93,6 +103,17 @@ const step1BuryItDeeper: ActionStep = {
   failureAfterimage:
     'The burial half-took — the archivist sealed the page but botched the marginal forgeries, leaving a ' +
     'scholar\'s thread that a sharper successor will one day pull, so the lie holds for now and rots for later.',
+  // THR-1667 S3: the missing afterimages and a dealt hand.
+  successAtCostAfterimage:
+    'The truth went back into the dark, but the mortaring took three nights, and a novice saw the archivist on ' +
+    'the lowest stair with a trowel in hand.',
+  criticalSuccessAfterimage:
+    'The archivist sealed the page and then, unasked, burned the only shelf-list that named it. No one will ' +
+    'know which wall to open.',
+  criticalFailureAfterimage:
+    'The archivist broke halfway through the forgeries and wept at their desk. A junior reader found them there, ' +
+    'with the original page lying open beside them.',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'presence'] },
   successMetadata: { reputationDelta: 0.14 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -127,6 +148,17 @@ const step1LetTheTruthSurface: ActionStep = {
   failureAfterimage:
     'The truth surfaced clumsily — leaked half-proven, easy to deny — so the faith neither held clean nor ' +
     'broke clean, and the region got a long ugly rumor instead of a reckoning.',
+  // THR-1667 S3: the missing afterimages and a dealt hand.
+  successAtCostAfterimage:
+    'The chronicle reached the light, but the order took the archivist\'s keys the day the copies went out. They ' +
+    'watched the schism begin from outside the library door.',
+  criticalSuccessAfterimage:
+    'The first to read the copies was the order\'s own high reader, who laid the page beside the relic\'s ' +
+    'certificate and said aloud, in chapter, that the page was genuine.',
+  criticalFailureAfterimage:
+    'The order called the chronicle a forgery before the copies were a day old. The archivist was named a ' +
+    'heretic from every pulpit, and the copies burned in the square.',
+  deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.13 },
 };
@@ -361,6 +393,45 @@ const TRUTH_SURFACED_AFTERMATH = {
   ],
 } as const;
 
+// ─── Band endings (THR-1667 S3) ───────────────────────────────────────
+//
+// Every step on both paths continues weakened, so a critical failure is the one
+// losing band each path owes (THR-1509 per-path coverage). A band ending retells
+// how the existing change landed; it never adds a chip (UI Law 56).
+
+// The burial still holds on a critical failure, only worse kept: all three
+// base chips stay true, so the band restates the overview alone.
+const TRUTH_BURIED_ENDINGS: AftermathVariant = {
+  ...TRUTH_BURIED_AFTERMATH,
+  byOutcome: {
+    critical_failure: {
+      overview:
+        'The burial did not hold its secret even for a season. A junior reader found the archivist weeping over ' +
+        'the open chronicle, asked what it was, and was told a lie too clumsy to believe. The page went back into ' +
+        'the wall all the same, and the region went on lighting its river-lamps. But two people now know which ' +
+        'wall it is, and one of them never agreed to keep it.',
+    },
+  },
+};
+
+// On a critical failure the truth did not surface: the order denied it and the
+// faith hardened. Every base chip says the faith broke and the truth walked, and
+// both reactions tend what the break left, so the band carries neither.
+const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
+  ...TRUTH_SURFACED_AFTERMATH,
+  byOutcome: {
+    critical_failure: {
+      overview:
+        'The truth came out too fast and too thinly proven. The order called the chronicle a forgery before the ' +
+        'ink on the copies was dry, named the archivist a heretic from every pulpit, and burned the copies in ' +
+        'the square. The faith did not break. It hardened. The river-lamps burn in more windows than before, and ' +
+        'the archivist lives outside the library now, on what the few who believed them can spare.',
+      changes: [],
+      reactions: [],
+    },
+  },
+};
+
 // ─── Template ──────────────────────────────────────────────────────────
 
 export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
@@ -432,10 +503,10 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
-      bury_it_deeper: TRUTH_BURIED_AFTERMATH,
-      let_the_truth_surface: TRUTH_SURFACED_AFTERMATH,
+      bury_it_deeper: TRUTH_BURIED_ENDINGS,
+      let_the_truth_surface: TRUTH_SURFACED_ENDINGS,
     },
-    fallback: { ...TRUTH_SURFACED_AFTERMATH },
+    fallback: { ...TRUTH_SURFACED_ENDINGS },
   },
 
   description:

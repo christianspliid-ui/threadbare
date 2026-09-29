@@ -42,6 +42,18 @@ export const FIRED_TEMPLATE_COMPLETION: readonly string[] = [
   'encounter.shadow_in_the_night',
   'encounter.smuggle_goods',
   'encounter.trade_caravan_escort',
+  // S3 (THR-1667): the next ten incomplete templates by world rank on the
+  // 2026-09-29 attended run (origin/main 109e20b8).
+  'encounter.listen_for_rumors',
+  'encounter.local_gossip',
+  'encounter.mend_equipment',
+  'encounter.night_watch',
+  'encounter.patrol_perimeter',
+  'encounter.shore_up_shelter',
+  'encounter.steal_secrets',
+  'encounter.trace_ley_lines',
+  'star.turning.comet_omen',
+  'veil.truth.page_beneath_saint',
 ];
 
 /** Templates per slice: one executor run's worth of prose (~60–80 lines). */
