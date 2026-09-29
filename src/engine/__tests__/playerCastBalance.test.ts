@@ -302,15 +302,20 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     // this to ~0.50 and breaks the lower bound, which is the intended trip-wire:
     // the base raw doubles as the whole progression range `reachPractice` walks,
     // so spending it up front flattens the Deepening arc.
+    //
+    // THR-1627 re-baseline (local offset −0.10 → 0): a local cast now rolls against
+    // the difficulty the slot names, so primary P ≈ 0.15 and at-cost measures 0.838
+    // (was 0.75 ceiling). Still dominant-but-not-only; the ceiling rises to 0.90.
     expect(d.share('success_at_cost')).toBeGreaterThan(0.55);
-    expect(d.share('success_at_cost')).toBeLessThan(0.75);
+    expect(d.share('success_at_cost')).toBeLessThan(0.90);
 
-    // Measured 0.280; 0.195 on the re-fitted dice (THR-1581, primary P ≈ 0.28) — a
-    // clean landing has to stay a real outcome, not a rumour.
-    expect(d.share('success')).toBeGreaterThan(0.15);
+    // Measured 0.280; 0.195 on the re-fitted dice (THR-1581, primary P ≈ 0.28);
+    // 0.100 at local offset 0 (THR-1627) — a clean landing has to stay a real
+    // outcome (about one cast in ten for a fresh god), not a rumour.
+    expect(d.share('success')).toBeGreaterThan(0.07);
     expect(d.share('success')).toBeLessThan(0.40);
 
-    // Measured 0.030 — a surge is an event, so it stays scarce.
+    // Measured 0.030; 0.013 at local offset 0 (THR-1627) — a surge is an event, so it stays scarce.
     expect(d.share('critical_success')).toBeLessThan(0.08);
     expect(d.share('critical_success')).toBeGreaterThan(0);
 

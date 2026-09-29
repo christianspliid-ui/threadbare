@@ -44,6 +44,7 @@ import {
 } from './kpiConstants';
 import { ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH } from '../../data/agent-behavior-constants';
 import { SCALE_DIFFICULTY_OFFSETS } from '../resolutionScaleAdjust';
+import { ODDS_AT_PAR, ODDS_GAIN } from '../resolutionService';
 import type { ActionScale } from '../../types/unifiedAction';
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -187,6 +188,26 @@ export function demandedDifficultyOf(
   if (difficulties.length === 0) return NaN;
   const offset = SCALE_DIFFICULTY_OFFSETS[scale ?? 'regional'] ?? 0;
   return difficulties.reduce((s, d) => s + d, 0) / difficulties.length + offset;
+}
+
+/**
+ * How far above a step's demanded difficulty a mortal stands when it *chooses* that
+ * step (THR-1627 D2). Mortals commit at forecasts inside the engagement window, not
+ * at par, so the capability that picks a step is `demanded + gap`, where the gap
+ * solves `ODDS_AT_PAR + ODDS_GAIN × gap = window midpoint`. Derived, never a magic
+ * number: it follows any retune of the window or the odds (0.14 at 0.40/1.25/0.50–0.65).
+ */
+export function windowFitGap(): number {
+  return ((ENGAGE_WINDOW_LOW + ENGAGE_WINDOW_HIGH) / 2 - ODDS_AT_PAR) / ODDS_GAIN;
+}
+
+/**
+ * The band a template actually serves: the band of the capability that meets its
+ * demanded difficulty at the window midpoint (THR-1627 D2). `proficiencyBandFor`
+ * stays the right call for *mortals*; this is the one for *content*.
+ */
+export function windowFitBandFor(demanded: number): ProficiencyBand {
+  return proficiencyBandFor(demanded + windowFitGap());
 }
 
 export function isInEngagementWindow(forecast: number): boolean {

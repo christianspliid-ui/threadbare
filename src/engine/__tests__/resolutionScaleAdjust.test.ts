@@ -26,8 +26,9 @@ describe('SCALE_DIFFICULTY_OFFSETS', () => {
     expect(SCALE_DIFFICULTY_OFFSETS.personal).toBeLessThan(0);
   });
 
-  test('local is negative (easier)', () => {
-    expect(SCALE_DIFFICULTY_OFFSETS.local).toBeLessThan(0);
+  // THR-1627 D1: a local step demands exactly what its author wrote (was −0.10).
+  test('local is neutral — the authored difficulty is the demanded one', () => {
+    expect(SCALE_DIFFICULTY_OFFSETS.local).toBe(0);
   });
 
   test('regional is neutral', () => {
@@ -69,11 +70,11 @@ describe('applyScaleDifficultyAdjust', () => {
     expect(result.adjustedDifficulty).toBeCloseTo(0.10, 5);
   });
 
-  test('local scale: applies -0.10 offset, no cap', () => {
+  test('local scale: applies no offset (THR-1627), no cap', () => {
     const result = applyScaleDifficultyAdjust(0.3, 0.75, 0, 0, 'local');
-    expect(result.scaleOffsetApplied).toBeCloseTo(-0.10, 5);
+    expect(result.scaleOffsetApplied).toBeCloseTo(0, 5);
     expect(result.scaleFloorApplied).toBe(false);
-    expect(result.adjustedDifficulty).toBeCloseTo(0.20, 5);
+    expect(result.adjustedDifficulty).toBeCloseTo(0.30, 5);
   });
 
   test('cosmic scale: applies +0.10 offset', () => {

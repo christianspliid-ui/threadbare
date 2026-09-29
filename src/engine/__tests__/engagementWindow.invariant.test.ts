@@ -8,8 +8,9 @@
 // `KPI_BAND_MIN_ENGAGEMENTS` resolved free-choice engagements succeeds within
 // `[KPI_BAND_SUCCESS_MIN − tol, KPI_BAND_SUCCESS_MAX + tol]`, mean attempted
 // difficulty rises strictly across those bands, and the in-window share is at
-// least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; the
-// journeyman-and-up clauses wait on content (THR-1627, second amendment 2026-09-26).
+// least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; THR-1627
+// (local offset ruling) un-skips journeyman and expert level success; master level
+// success, the rise and the in-window share wait on content (THR-1676…THR-1681).
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
@@ -74,17 +75,39 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1627): un-skip when journeyman-and-up content exists — these are content KPIs until then.
-  it.skip('journeyman and above succeed level, attempted difficulty rises with proficiency, and most choices are in-window', () => {
+  // THR-1627 (plan `Docs/plans/2026-09-29-thr-1627-content-above-novice.md` § Systems
+  // design item 5): with local's offset at 0 the level-success clause runs live for
+  // every band that is covered and inside the range on both seeds. Measured at the
+  // ruling (seed 42 / 99): journeyman 0.59 / 0.64, expert 0.50 / 0.68 — live;
+  // master 0.74 / 0.59 — seed 42 outside, so it stays skipped until its content lands.
+  it.each(['journeyman', 'expert'] as const)('the %s band succeeds level (THR-1627)', (band) => {
+    for (const seed of [42, 99]) {
+      const b = reportFor(seed).bands.find(x => x.band === band)!;
+      // Non-vacuity: an uncovered band would pass the range check by skipping it.
+      expect(b.covered, `seed ${seed} ${band} coverage (${b.engagements} engagements)`).toBe(true);
+      expect(b.successRate, `seed ${seed} ${band}`).toBeGreaterThanOrEqual(KPI_BAND_SUCCESS_MIN - KPI_BAND_TOLERANCE);
+      expect(b.successRate, `seed ${seed} ${band}`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
+    }
+  }, 600_000);
+
+  // TODO(THR-1681): un-skip when the master everyday batch lands — 0.74 on seed 42 at the ruling.
+  it.skip('the master band succeeds level', () => {
+    for (const seed of [42, 99]) {
+      const b = reportFor(seed).bands.find(x => x.band === 'master')!;
+      expect(b.covered, `seed ${seed} master coverage (${b.engagements} engagements)`).toBe(true);
+      expect(b.successRate, `seed ${seed} master`).toBeGreaterThanOrEqual(KPI_BAND_SUCCESS_MIN - KPI_BAND_TOLERANCE);
+      expect(b.successRate, `seed ${seed} master`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
+    }
+  }, 600_000);
+
+  // TODO(THR-1676): un-skip when content above novice exists — at the ruling the band
+  // means are 0.11 / 0.15 / 0.11 / 0.13 on seed 42 (no rise) and in-window is 0.48.
+  it.skip('attempted difficulty rises with proficiency, and most choices are in-window', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
       const covered = PROFICIENCY_BANDS
         .map(band => report.bands.find(b => b.band === band)!)
         .filter(b => b.covered);
-      for (const b of covered) {
-        expect(b.successRate, `seed ${seed} ${b.band}`).toBeGreaterThanOrEqual(KPI_BAND_SUCCESS_MIN - KPI_BAND_TOLERANCE);
-        expect(b.successRate, `seed ${seed} ${b.band}`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
-      }
       for (let i = 1; i < covered.length; i++) {
         expect(covered[i].meanAttemptedDifficulty, `seed ${seed} ${covered[i - 1].band}→${covered[i].band}`)
           .toBeGreaterThan(covered[i - 1].meanAttemptedDifficulty);

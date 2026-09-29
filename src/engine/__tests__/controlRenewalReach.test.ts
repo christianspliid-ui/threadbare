@@ -77,6 +77,10 @@ function unheldStanders(s: GameState): { actorId: string; locationId: string }[]
   const out: { actorId: string; locationId: string }[] = [];
   for (const m of s.graph.getNodesByType('actor')) {
     if (m.properties.actorType !== 'individual' || isAgentGone(m)) continue;
+    // A mortal who already holds something is not a clean arm: the edge counts below
+    // would read the world's own holds as this test's. THR-1627 moved the seed's
+    // trajectory onto a worker that had claimed two places during the warm-up.
+    if (s.graph.getOutgoingEdges(m.id, 'controls').some(e => e.properties?.controlType === 'strategic')) continue;
     const at = standsAt(s, m.id);
     if (!at || seen.has(at)) continue;
     if (holdersOf(s, at).length > 0) continue;

@@ -19,6 +19,8 @@ import {
   computeMaxFailureStreakP95,
   computeAttemptedDifficultyTrend,
   demandedDifficultyOf,
+  windowFitBandFor,
+  windowFitGap,
   type EngagementLogEntry,
 } from '../engagementKpi';
 import {
@@ -30,6 +32,7 @@ import {
 } from '../kpiConstants';
 import { ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH } from '../../../data/agent-behavior-constants';
 import { SCALE_DIFFICULTY_OFFSETS } from '../../resolutionScaleAdjust';
+import { ODDS_AT_PAR, ODDS_GAIN } from '../../resolutionService';
 
 function entry(over: Partial<EngagementLogEntry>): EngagementLogEntry {
   return {
@@ -213,5 +216,31 @@ describe('demandedDifficultyOf', () => {
 
   it('reads NaN with no rollable step', () => {
     expect(demandedDifficultyOf([{ branchOnStep: 0 }], 'local')).toBeNaN();
+  });
+});
+
+describe('windowFitBandFor (THR-1627 D2)', () => {
+  it('derives the gap from the window midpoint and the odds, not a magic number', () => {
+    const expected = ((ENGAGE_WINDOW_LOW + ENGAGE_WINDOW_HIGH) / 2 - ODDS_AT_PAR) / ODDS_GAIN;
+    expect(windowFitGap()).toBeCloseTo(expected, 12);
+    // At today's 0.40 / 1.25 / 0.50–0.65: a mortal chooses a step ~0.14 above its demand.
+    expect(windowFitGap()).toBeCloseTo(0.14, 10);
+  });
+
+  it('bands content by the capability that chooses it — about half a band above par', () => {
+    const [a, b, c] = PROFICIENCY_BAND_EDGES;
+    const gap = windowFitGap();
+    // A step demanding 0.25 is novice at par but serves journeymen in the window.
+    expect(proficiencyBandFor(0.25)).toBe('novice');
+    expect(windowFitBandFor(0.25)).toBe('journeyman');
+    // Edges shift down by the gap (ε either side: `edge − gap + gap` is not exact in floats).
+    expect(windowFitBandFor(a - gap - 1e-9)).toBe('novice');
+    expect(windowFitBandFor(a - gap + 1e-9)).toBe('journeyman');
+    expect(windowFitBandFor(b - gap + 1e-9)).toBe('expert');
+    expect(windowFitBandFor(c - gap + 1e-9)).toBe('master');
+  });
+
+  it('local steps demand what their authors wrote (local offset 0)', () => {
+    expect(demandedDifficultyOf([{ difficulty: 0.45 }], 'local')).toBeCloseTo(0.45, 10);
   });
 });
