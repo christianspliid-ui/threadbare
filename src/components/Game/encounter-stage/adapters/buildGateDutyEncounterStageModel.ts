@@ -42,7 +42,7 @@ import {
   type EntityLinkEntry,
 } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
-import { buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
+import { buildChipAnchorNameResolver, buildChipAnchorResolver, buildChipIconResolver } from './chipCollaborators';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
@@ -1168,6 +1168,8 @@ function buildGateDutyAftermathPresentation(args: {
     link: (id, text) => autoLinkNarrative(id, text, args.linkEntries),
     resolveIcon: buildChipIconResolver(args.graph),
     resolveAnchor: buildChipAnchorResolver(args.graph, args.activeAction, args.realmProjection),
+    // THR-1685 — a noun's `{target}` reads its own anchor when that is a person.
+    anchorNameFor: buildChipAnchorNameResolver(args.graph),
   });
 
   let overview = 'Only a few consequences are heavy enough to keep their hands on tomorrow. These are the ones worth naming.';

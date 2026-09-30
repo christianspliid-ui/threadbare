@@ -17,7 +17,7 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
-import { buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
+import { buildChipAnchorNameResolver, buildChipAnchorResolver, buildChipIconResolver, buildFightChipWorld } from './chipCollaborators';
 import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
 import { buildCastChanges, stepCastModelFor } from './buildStepCastModel';
 import type { RealmProjectionThunk } from '../../../../engine/sceneRealm';
@@ -820,6 +820,8 @@ function buildAftermath(
       const id = buildChipAnchorResolver(graph, activeAction, realmProjection)(ref);
       return id ? graph.getNode(id)?.name ?? undefined : undefined;
     },
+    // THR-1685 — a noun's `{target}` reads its own anchor when that is a person.
+    anchorNameFor: buildChipAnchorNameResolver(graph),
   });
 
   return {

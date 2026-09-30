@@ -269,7 +269,7 @@ So there is now **one** effect for "they think better/worse of you" wherever the
 3. **Player surfaces** — the Location Profile's Standing row and the agent Overview's Standings list, so every `reputation_with` chip has an inspectable backing (UI Law 56).
 
 **Authoring rules.**
-- **Say it as reputation on the chip.** `stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' }`. Do not invent a bespoke noun for a standing — that is exactly what this capability retired (`standing_welcome`).
+- **Say it as reputation on the chip.** `stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' }`. Do not invent a bespoke noun for a standing — that is exactly what this capability retired (`standing_welcome`). **Standing with a person** uses the same noun anchored on the person (`entityId: '$cast:<key>'`, `visualKind: 'agent'`): `{target}` in a state noun reads the chip's own anchor when that anchor is a person other than the scene's target (THR-1685), so the tag names the inspector even on a board draw, where the scene's `{target}` is the town. `$target` and `$here` anchors keep the scene's reading.
 - **Deltas are capped** at `REPUTATION_WITH_MAX_DELTA_PER_OUTCOME` (0.15) per outcome. One scene cannot take a stranger to revered.
 - **Bands scale with the door you opened.** If three outcome bands write different deltas, give their chips different `magnitude.band` values — a warm welcome and a fumbled one that draw the same cluster are indistinguishable at a glance.
 - **A sublocation target resolves to its parent place.** Standing at the shrine and standing in the town that holds it are one number, deliberately.
