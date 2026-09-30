@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 722 |
-| drawable at ≥1 location subtype | 482 |
+| templates in the pool | 730 |
+| drawable at ≥1 location subtype | 488 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 49 |
+| declaring a setting envelope | 55 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -31,8 +31,8 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 32 | 22 | 12 | 6 | 22 | 15 | 17 | 9 | **135** |
-| `urban` | 66 | 53 | 44 | 18 | 43 | 48 | 27 | 27 | **326** |
+| `rural` | 32 | 22 | 13 | 7 | 23 | 15 | 18 | 9 | **139** |
+| `urban` | 66 | 54 | 44 | 19 | 44 | 48 | 28 | 28 | **331** |
 | `stronghold` | 27 | 8 | 9 | 5 | 14 | 17 | 8 | 5 | **93** |
 | `sacred` | 7 | 9 | 4 | 17 | 12 | 8 | 6 | 24 | **87** |
 | `arcane` | 5 | 5 | 7 | 20 | 7 | 26 | 5 | 11 | **86** |
@@ -59,7 +59,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
 | `encounter.slice` | 10 | 61 | push 12, rider 3, sphere 46, trait 0, free 0 |
 | `encounter.border` | 6 | 53 | push 10, rider 6, sphere 35, trait 2, free 0 |
-| `encounter.town` | 12 | 35 | push 0, rider 0, sphere 35, trait 0, free 0 |
+| `encounter.town` | 18 | 52 | push 0, rider 0, sphere 51, trait 1, free 0 |
 | `encounter.delve` | 3 | 34 | push 8, rider 4, sphere 20, trait 2, free 0 |
 | `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
 | `encounter.realm` | 5 | 14 | push 0, rider 0, sphere 14, trait 0, free 0 |
@@ -72,6 +72,6 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 - `encounter` — 71% `sphere` across 85 cards
 - `encounter.slice` — 75% `sphere` across 61 cards
 - `encounter.border` — 66% `sphere` across 53 cards
-- `encounter.town` — 100% `sphere` across 35 cards
+- `encounter.town` — 98% `sphere` across 52 cards
 - `encounter.company` — 80% `sphere` across 20 cards
 - `encounter.realm` — 100% `sphere` across 14 cards
