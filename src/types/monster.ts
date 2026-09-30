@@ -136,4 +136,13 @@ export interface MonsterState {
   readonly clockUpdatedTick: number;
   /** False at mint; set by the fight's temper checkpoint or a hunt's track step. */
   readonly temperShown: boolean;
+  /**
+   * THR-1682 — set when the lair went legendary and the family has an apex card
+   * (`MONSTER_APEX_CARDS`): the elite has grown into that apex, and `dread`/`might`
+   * carry its words. Absent on every other monster.
+   */
+  readonly apex?: MonsterApexId;
 }
+
+/** An apex card's id — `<family>.<apex>` (THR-1682). */
+export type MonsterApexId = 'golem.colossus' | 'behemoth.ancient';

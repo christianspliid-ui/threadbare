@@ -236,6 +236,13 @@ import { ASSIZE_LETTER_TEMPLATE } from './encounters/assize-letter';
 import { COUNTING_HOUSE_DISPUTE_TEMPLATE } from './encounters/counting-house-dispute';
 import { BELL_AT_THE_EXCHANGE_TEMPLATE } from './encounters/bell-at-the-exchange';
 import { MASONS_COMMISSION_TEMPLATE } from './encounters/masons-commission';
+import { LEDGER_BY_LAMPLIGHT_TEMPLATE } from './encounters/ledger-by-lamplight';
+import { FAIR_BOUT_TEMPLATE } from './encounters/fair-bout';
+import { LEVEE_BREACH_TEMPLATE } from './encounters/levee-breach';
+import { SMUGGLERS_FORD_TEMPLATE } from './encounters/smugglers-ford';
+import { CUNNING_FAIR_TEMPLATE } from './encounters/cunning-fair';
+import { WELL_SINKING_TEMPLATE } from './encounters/well-sinking';
+import { WELL_SINKING_SEQUELS } from './encounters/well-sinking-sequels';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5705,6 +5712,15 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   COUNTING_HOUSE_DISPUTE_TEMPLATE,
   BELL_AT_THE_EXCHANGE_TEMPLATE,
   MASONS_COMMISSION_TEMPLATE,
+  LEDGER_BY_LAMPLIGHT_TEMPLATE,
+  FAIR_BOUT_TEMPLATE,
+  LEVEE_BREACH_TEMPLATE,
+  SMUGGLERS_FORD_TEMPLATE,
+  CUNNING_FAIR_TEMPLATE,
+  WELL_SINKING_TEMPLATE,
+  // THR-1677 — the well sinking appointment's kept and missed sequels: seed-only
+  // (`drawable: false`), registry-only (not LOCATION_BRANCHING), like hunt.trail_cold.
+  ...WELL_SINKING_SEQUELS,
 ];
 
 /**
@@ -5831,6 +5847,12 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   COUNTING_HOUSE_DISPUTE_TEMPLATE,
   BELL_AT_THE_EXCHANGE_TEMPLATE,
   MASONS_COMMISSION_TEMPLATE,
+  LEDGER_BY_LAMPLIGHT_TEMPLATE,
+  FAIR_BOUT_TEMPLATE,
+  LEVEE_BREACH_TEMPLATE,
+  SMUGGLERS_FORD_TEMPLATE,
+  CUNNING_FAIR_TEMPLATE,
+  WELL_SINKING_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

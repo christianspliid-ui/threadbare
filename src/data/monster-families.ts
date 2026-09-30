@@ -22,7 +22,7 @@
  */
 
 import type { FightTemper, FightRatingWord } from '../types/fight';
-import type { MonsterFamilyId } from '../types/monster';
+import type { MonsterApexId, MonsterFamilyId } from '../types/monster';
 import type { ReachDomain } from '../types/traits';
 import type { CreationSphereName } from '../types/index';
 
@@ -98,6 +98,61 @@ export const MONSTER_FAMILIES: Readonly<Record<MonsterFamilyId, MonsterFamily>> 
     nerveReach: 'stone', clashReach: 'iron', dread: 'steep', might: 'fair', temper: 'berserk',
   },
 };
+
+/**
+ * One apex card — an elite of an existing family that has grown into something only
+ * an expert should face (THR-1682, plan doc `Docs/plans/2026-09-29-thr-1627-content-above-novice.md`
+ * § D3). Rated `severe` Dread and `severe` Might, so it demands
+ * `FIGHT_RATING_DIFFICULTY.severe` (0.65) — window fit 0.79, the expert band.
+ */
+export interface MonsterApexCard {
+  readonly id: MonsterApexId;
+  readonly family: MonsterFamilyId;
+  /** The apex's own card line — GAME register, one plain line. */
+  readonly cardLine: string;
+  readonly dread: FightRatingWord;
+  readonly might: FightRatingWord;
+}
+
+/**
+ * The apex cards, keyed by the family they grow from. A family with a row here does
+ * not take the one-word Dread step when its lair goes legendary: its elite becomes
+ * the apex instead (`hardenMonsterCard`). Families without a row harden as before.
+ *
+ * Two families, chosen because a stone thing and an overgrown beast are the two whose
+ * fiction reads most plainly as "older and bigger", and whose clash reaches (stone,
+ * iron) are the ones an expert fighter trains. Masters are out of scope (§ D5):
+ * `severe` is the top word, so no card reaches a master's window.
+ */
+export const MONSTER_APEX_CARDS: Readonly<Partial<Record<MonsterFamilyId, MonsterApexCard>>> = {
+  golem: {
+    id: 'golem.colossus', family: 'golem',
+    cardLine: 'a stone colossus older than the hills it walks',
+    dread: 'severe', might: 'severe',
+  },
+  behemoth: {
+    id: 'behemoth.ancient', family: 'behemoth',
+    cardLine: 'an ancient behemoth the land has fed for a hundred years',
+    dread: 'severe', might: 'severe',
+  },
+};
+
+/** Every apex card, in table order. */
+export const MONSTER_APEX_CARD_LIST: readonly MonsterApexCard[] =
+  Object.values(MONSTER_APEX_CARDS).filter((c): c is MonsterApexCard => c !== undefined);
+
+/**
+ * The card line a monster shows: its apex's line when it has grown into one, else its
+ * family's. Fail-soft: an unknown apex or family reads the family line, then undefined.
+ */
+export function monsterCardLine(state: { family?: unknown; apex?: unknown } | undefined): string | undefined {
+  if (!state) return undefined;
+  const apex = MONSTER_APEX_CARD_LIST.find(c => c.id === state.apex);
+  if (apex) return apex.cardLine;
+  return typeof state.family === 'string'
+    ? MONSTER_FAMILIES[state.family as MonsterFamilyId]?.cardLine
+    : undefined;
+}
 
 /** Every family id, in table order. */
 export const MONSTER_FAMILY_IDS: readonly MonsterFamilyId[] = Object.keys(MONSTER_FAMILIES) as MonsterFamilyId[];

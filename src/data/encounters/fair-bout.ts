@@ -1,0 +1,846 @@
+/**
+ * Called to the Ring — slot 1 of the journeyman-everyday-2 batch (THR-1677).
+ * 
+ * Brief: `Docs/plans/encounters/journeyman-everyday-2-brief.md`.
+ * Draft: `Docs/plans/encounters/fair-bout-draft.md`.
+ * 
+ * plotHookRolled: hook.civil_unrest, hook.trial_by_combat, hook.desperate_escort
+ * plotHookTaken:  hook.trial_by_combat — a question settled by a bout under the fair's
+ *                 own law: a challenge called at the ring must be answered. The bout is
+ *                 sport, not a feud, and the stranger is not the favourite. Civil unrest
+ *                 and the desperate escort fought the fair's everyday register and were
+ *                 not blended in.
+ * 
+ * Rolled constraints (brief, binding): reach iron · steps iron 0.42 -> iron 0.45 ·
+ * settings urban, rural · shape opt-in complication · consequence hand companion +
+ * secret · p3Shape threat · opposition the fair's own law (uncanny, read with no magic)
+ * · disposition open · agentRole the target · scale personal · rarityTier 2 · scale local.
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` is in `{location}` for the first day
+ *                      of the town fair (urban) / comes into `{location}` on the
+ *                      morning of the harvest fair (rural).
+ *   2 P2 events?       `{cast:champion}` has held the fair's ring for three days; the
+ *                      champion's corner calls `{actor}` out by name and crowds them
+ *                      against the rope.
+ *   3 P3 one stake?    Threat, as the brief declared: refuse the call and be named a
+ *                      coward at the ring. The money is stated plainly — a purse of
+ *                      silver, and the crowd's bets.
+ *   4 ≤80 words?       Opening (11–12) + step-0 spine (56) = 67–68.
+ *   5 Read aloud?      Every sentence is a report. No interior sensation.
+ *   6 Stated, never encoded? The call, the custom, the purse and the bets are stated.
+ *   7 Every sentence works? Each states the challenge, the test or the outcome.
+ *   8 Nothing unintroduced? The champion, the corner, the rope, the purse and the
+ *                      custom appear in the spine; the backer and the cutman appear
+ *                      in the bout step before any chip names them.
+ *   9 One named person? Beat 1 `{cast:champion}`; beat 2 `{cast:backer}` (bout path)
+ *                      or `{cast:champion}` again (walk-away path).
+ *  10 Stake in a sentence? 'Will the stranger answer the champion's call for a purse,
+ *                      or walk out and be named a coward at the ring?'
+ *  11 Cards verb+noun, spell-style? Yes; four specials, no word of a card's name
+ *                      repeated in its effect line, no digits.
+ *  12 Opening per class? `urban` and `rural`, one each.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            The fair's ring champion calls the agent out by name for a
+ *                   purse bout, and the fair's custom says a call must be answered.
+ *   Whose problem?  The agent's: they are the one called (agentRole the target), and
+ *                   whether to step through the rope is theirs alone.
+ *   Reach = theme?  Iron both steps. Step 0 is *about* holding ground under the
+ *                   corner's shoving at the rope; step 1 (bout path) is *about* the
+ *                   fight itself, a heavier fighter's rushes against their stance.
+ *   Shape           Opt-in Complication. Step 0 (iron 0.42) is standing the corner
+ *                   down, which every mortal does. Then an agent-decided fork on
+ *                   `courage_prudence` (Vanguard `positive` / Watcher `negative`):
+ *                   the Vanguard takes the bout (iron 0.45, the test engaged); the
+ *                   Watcher walks out (iron 0.20, the cheap exit: keep from swinging
+ *                   at the jeering corner; a small loss of the champion's regard,
+ *                   written as a `bond_change`). The two step-0 specials carry
+ *                   opposite pole leans so the god has a lever on the decision.
+ *   Opposition      The fair's own law: the custom that a called challenge is
+ *                   answered or cried at the ring. No magic in it.
+ *   Consequence hand (binding, THR-1145): `companion` + `secret`, no swap.
+ *                   `companion` — `grant_companion` `companion.hedge-healer` on the
+ *                   bout step's success side: the beaten champion's cutman walks
+ *                   away with the winner.
+ *                   `secret` — `favor_creation`, debtor `$cast:backer`, on the same
+ *                   success side: the stakeholder quietly bet on the stranger against
+ *                   the whole fair, and owes the winner for it.
+ *                   Extra: `bond_change` on `$cast:champion` (-0.08) on every win —
+ *                   a beaten champion thinks less of the stranger; chipped on
+ *                   all three success bands (critic pass).
+ *   Cool failure?   Nobody is hurt past bruises, jailed or branded. A lost bout
+ *                   loses the purse and the backer's money (`bond_change` on
+ *                   `$cast:backer`, -0.15). Walking away costs the champion's regard.
+ *   Trait hooks     Gate: none (everyday by construction). Variant: Brave
+ *                   (`trait.personality.iron.virtue`) +0.04, Proud
+ *                   (`trait.core.core_humility.vice`) -0.04. Trait-only nudge: none
+ *                   (the specials cap is spent on the pole-lean pair). Trait fragment:
+ *                   none.
+ *   Systems quota   cast + rewards + reputation — three.
+ * 
+ * ─── Measurement note ────────────────────────────────────────────────
+ *   The fork step carries no top-level `difficulty`, so `measure:roll-spread`
+ *   reads step 0 only (mean 0.42, window fit 0.56 — journeyman, iron). The bout
+ *   path's authored 0.45 is the brief's second step, rolled only by mortals who
+ *   engage.
+ * 
+ * ─── Critic pass (Passes 2/3/3b, 2026-09-29) ─────────────────────────
+ *   Editorial PASS WITH REVISIONS · Systems READY FOR IMPLEMENTATION ·
+ *   Package connected. See fair-bout-editorial.md / -systems.md / -package.md.
+ *   The champion regard write fires on every win (successMetadata, near_miss
+ *   included), so it is now chipped on all three success bands (Law 56 both ways).
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.fair_bout',
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'Called to the Ring',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence'],
+  settings: ['urban', 'rural'],
+  openings: {
+    urban: '{actor} is in {location} on the last day of the town fair.',
+    rural: '{actor} comes into {location} on the last morning of the village fair.',
+  },
+  steps: [
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 1,
+      },
+      difficulty: 0.42,
+      purposeLine: 'Stand the corner down',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: '{cast:champion} has held the fair\'s ring for three days against every comer. The champion\'s '
+        + 'corner picks {actor} out of the onlookers as the next challenger and shoves {actor} against the '
+        + 'rope. A purse of silver rides on the bout, and the crowd is already betting. By the fair\'s '
+        + 'custom, a challenger who refuses is named a coward at the ring.',
+      successAfterimage: 'They held their ground at the rope, and the corner stepped back first.',
+      failureAfterimage: 'The corner pushed them off the rope, and the crowd laughed.',
+      successAtCostAfterimage: 'They held the rope, and took an elbow in the ribs doing it.',
+      criticalSuccessAfterimage: 'They stood so still at the rope that the corner went quiet.',
+      criticalFailureAfterimage: 'The corner shoved them into the dust, and the betting turned against them.',
+      deal: {
+        count: 4,
+        tags: ['might', 'presence'],
+      },
+      nudges: [
+        {
+          id: 'bout.rouse_the_crowd',
+          name: 'Rouse The Crowd',
+          sphere: 'energy',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.crowd',
+          poleLean: {
+            axis: 'courage_prudence',
+            toward: 'positive',
+          },
+          effectLine: 'Raise a roar from the onlookers at their back, so the ground feels like their own. A cheering '
+            + 'audience argues for boldness.',
+          bandProse: {
+            success_at_cost: 'The onlookers roared for {actor}, and the corner shoved harder to quiet them.',
+            failure: 'The roar went up behind {actor}, and the corner laughed over it.',
+            critical_failure: 'The roar turned to laughter when the corner shoved {actor} off the rope.',
+          },
+        },
+        {
+          id: 'bout.cool_the_blood',
+          name: 'Cool The Blood',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.focus',
+          poleLean: {
+            axis: 'courage_prudence',
+            toward: 'negative',
+          },
+          effectLine: 'Settle their temper under provocation, so they size up the danger plainly. A clear head argues '
+            + 'for caution.',
+          bandProse: {
+            critical_success: '{actor} watched the champion\'s feet through the shoving and saw how the champion moves.',
+            success: '{actor} stayed calm at the rope and took a long look at the champion.',
+            near_miss: '{actor} kept a cool head, and gave a step of ground keeping it.',
+            failure: '{actor} stayed calm, and the corner took the calm for fear.',
+          },
+        },
+      ],
+    },
+    {
+      branchOnStep: 0,
+      decidedBy: {
+        axis: 'courage_prudence',
+      },
+      variants: {
+        positive: {
+          reach: 'iron',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.45,
+          purposeLine: 'Fight the purse bout',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} answers the challenge and steps into the ring. {cast:backer}, who holds the stakes, '
+            + 'quietly bets on {actor} against the whole fair. The champion is heavier, fights by rushing in, '
+            + 'and likes to play to the crowd. The champion\'s cutman waits in the corner with needle and '
+            + 'thread. The bout runs until one fighter yields.',
+          successAfterimage: 'The champion yielded, and the purse was theirs.',
+          failureAfterimage: 'The champion put them down, and the purse stayed in the champion\'s corner.',
+          successAtCostAfterimage: 'The champion yielded, and they left the ring with a split brow.',
+          criticalSuccessAfterimage: 'The champion went down in the first exchange, and the crowd paid out.',
+          criticalFailureAfterimage: 'The champion put them down in the first exchange, and the crowd jeered them out.',
+          successMetadata: {
+            effects: [
+              {
+                kind: 'grant_companion',
+                companionTemplateId: 'companion.hedge-healer',
+                targetAgentId: '$actor',
+              },
+              {
+                kind: 'favor_creation',
+                magnitudeRange: [0.15, 0.3],
+                context: 'Paid out on a quiet bet laid against the fair\'s champion',
+                debtorAgentId: '$cast:backer',
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:champion',
+                sentimentDelta: -0.08,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:backer',
+                sentimentDelta: -0.15,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['might', 'peril'],
+          },
+          nudges: [
+            {
+              id: 'bout.harden_the_stance',
+              name: 'Harden The Stance',
+              sphere: 'matter',
+              essenceCost: 2,
+              forecastDelta: 0.12,
+              imageTag: 'generic.strength',
+              effectLine: 'Root their feet, so a heavier opponent\'s rushes cannot move them.',
+              bandProse: {
+                success: '{actor} took the champion\'s rushes square and gave no ground.',
+                failure: '{actor} held firm, and the champion simply went round.',
+                critical_failure: '{actor} stood planted and took every blow the champion threw.',
+              },
+            },
+            {
+              id: 'bout.stir_vanity',
+              name: 'Stir Vanity',
+              sphere: 'chaos',
+              essenceCost: 1,
+              forecastDelta: 0.07,
+              imageTag: 'generic.rumor',
+              effectLine: 'Tempt a proud opponent to play to the onlookers, so their guard drops for a cheer.',
+              bandProse: {
+                critical_success: 'The champion turned to wave at the crowd, and {actor} ended the bout there.',
+                success_at_cost: 'The champion showed off, and caught {actor} with a wild swing doing it.',
+                near_miss: 'The champion played to the crowd once, and {actor} was too slow to use it.',
+                failure: 'The champion never took an eye off {actor} once.',
+              },
+            },
+          ],
+        },
+        negative: {
+          reach: 'iron',
+          duration: {
+            min: 1,
+            max: 1,
+          },
+          difficulty: 0.2,
+          purposeLine: 'Walk from the ring',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} will not take the bout, and walks out through the crowd. {cast:champion}\'s corner '
+            + 'follows, jeering, to draw a swing.',
+          successAfterimage: 'They walked out through the jeers without turning round.',
+          failureAfterimage: 'They turned on the jeering corner, and the stewards pulled them apart.',
+          successAtCostAfterimage: 'They walked out, and paid a coin of forfeit to the corner at the gate.',
+          criticalSuccessAfterimage: 'They walked out so calmly that half the crowd stopped jeering.',
+          criticalFailureAfterimage: 'They swung at the corner outside the ring, and lost the scuffle and the forfeit both.',
+          successMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:champion',
+                sentimentDelta: -0.05,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:champion',
+                sentimentDelta: -0.12,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['social', 'presence'],
+          },
+        },
+      },
+      fallback: {
+        reach: 'iron',
+        duration: {
+          min: 1,
+          max: 1,
+        },
+        difficulty: 0.2,
+        purposeLine: 'Walk from the ring',
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'fail_action',
+        narrativeTemplate: '{actor} will not take the bout, and walks out through the crowd. {cast:champion}\'s corner '
+          + 'follows, jeering, to draw a swing.',
+        successAfterimage: 'They walked out through the jeers without turning round.',
+        failureAfterimage: 'They turned on the jeering corner, and the stewards pulled them apart.',
+        successAtCostAfterimage: 'They walked out, and paid a coin of forfeit to the corner at the gate.',
+        criticalSuccessAfterimage: 'They walked out so calmly that half the crowd stopped jeering.',
+        criticalFailureAfterimage: 'They swung at the corner outside the ring, and lost the scuffle and the forfeit both.',
+        successMetadata: {
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:champion',
+              sentimentDelta: -0.05,
+            },
+          ],
+        },
+        failureMetadata: {
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:champion',
+              sentimentDelta: -0.12,
+            },
+          ],
+        },
+        deal: {
+          count: 4,
+          tags: ['social', 'presence'],
+        },
+      },
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.personality.iron.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Brave, they give no ground to a shove.',
+    },
+    {
+      traitId: 'trait.core.core_humility.vice',
+      forecastDelta: -0.04,
+      factorLine: 'Being Proud, they rise to every jeer from the corner.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'champion',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['guard', 'mercenary'],
+      supportRole: 'ring_champion',
+      spawnNpcRole: 'guard',
+      spawnName: 'Bram Tallow',
+    },
+    {
+      kind: 'actor',
+      key: 'backer',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['innkeeper', 'merchant'],
+      supportRole: 'stakeholder',
+      spawnNpcRole: 'innkeeper',
+      spawnName: 'Oda Brisk',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'The fair\'s ring champion has picked a stranger out of the crowd for a purse bout. By the '
+      + 'fair\'s custom, a challenger who refuses is named a coward at the ring.',
+    success: 'The ring champion\'s challenge at the fair ended well for the stranger.',
+    failure: 'The ring champion\'s challenge at the fair ended badly for the stranger.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {
+      positive: {
+        overview: 'The bout is over, and the fair saw how it went.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'By dusk, every stall at the fair was talking about the stranger who beat {cast:champion}.',
+            changes: [
+              {
+                id: 'bout.crit.champion_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Champion\'s Regard',
+                detail: '{cast:champion} thinks less of {actor} now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:champion',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'bout.crit.cutman',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Cutman',
+                causeClause: 'Left the beaten corner',
+                detail: 'A hedge-healer travels with {actor} now.',
+                stateNoun: {
+                  text: 'companion',
+                  tooltipId: 'ui.companions',
+                },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
+              },
+              {
+                id: 'bout.crit.favour',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Favour Owed',
+                causeClause: 'Paid out on a quiet bet',
+                detail: '{cast:backer} owes {actor} a favour.',
+                stateNoun: {
+                  text: 'a favour owed',
+                  tooltipId: 'ui.favour_owed',
+                },
+                concepts: [
+                  {
+                    text: '{cast:backer}',
+                    entityId: '$cast:backer',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: '{cast:backer} had laid a quiet bet on {actor} against the whole fair, and collected on it '
+              + 'without a word to anyone.',
+            changes: [
+              {
+                id: 'bout.success.champion_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Champion\'s Regard',
+                detail: '{cast:champion} thinks less of {actor} now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:champion',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'bout.success.cutman',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Cutman',
+                causeClause: 'Left the beaten corner',
+                detail: 'A hedge-healer travels with {actor} now.',
+                stateNoun: {
+                  text: 'companion',
+                  tooltipId: 'ui.companions',
+                },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
+              },
+              {
+                id: 'bout.success.favour',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Favour Owed',
+                detail: '{cast:backer} owes {actor} a favour.',
+                stateNoun: {
+                  text: 'a favour owed',
+                  tooltipId: 'ui.favour_owed',
+                },
+                concepts: [
+                  {
+                    text: '{cast:backer}',
+                    entityId: '$cast:backer',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: '{actor} came out of the last round with one eye swelling shut, and {cast:champion} walked off '
+              + 'without a word.',
+            changes: [
+              {
+                id: 'bout.cost.champion_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Champion\'s Regard',
+                detail: '{cast:champion} thinks less of {actor} now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:champion',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'bout.cost.cutman',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Cutman',
+                causeClause: 'Stitched their split brow',
+                detail: 'A hedge-healer travels with {actor} now.',
+                stateNoun: {
+                  text: 'companion',
+                  tooltipId: 'ui.companions',
+                },
+                concepts: [
+                  {
+                    text: 'hedge-healer',
+                    tooltipId: 'ui.companions',
+                  },
+                ],
+              },
+              {
+                id: 'bout.cost.favour',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Favour Owed',
+                causeClause: 'Paid out on a quiet bet',
+                detail: '{cast:backer} owes {actor} a favour.',
+                stateNoun: {
+                  text: 'a favour owed',
+                  tooltipId: 'ui.favour_owed',
+                },
+                concepts: [
+                  {
+                    text: '{cast:backer}',
+                    entityId: '$cast:backer',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: '{cast:backer} lost the quiet bet laid on {actor}, and the champion\'s backers collected from the '
+              + 'whole crowd.',
+            changes: [
+              {
+                id: 'bout.failure.backer_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Backer\'s Regard',
+                detail: '{cast:backer} thinks less of {actor} now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:backer',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: '{cast:backer} lost every coin laid on {actor}, and the crier called the result round the fair '
+              + 'before {actor} was back on their feet.',
+            changes: [
+              {
+                id: 'bout.critfail.backer_cools',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Backer\'s Regard',
+                detail: '{cast:backer} thinks less of {actor} now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:backer',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'thinks less of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      negative: {
+        overview: 'The crier named the refusal at the ring, as the fair\'s custom says, and {cast:champion} kept '
+          + 'the purse without a bout.',
+        changes: [
+          {
+            id: 'bout.decline.small_loss',
+            kind: 'reputation',
+            category: 'scar',
+            direction: 'loss',
+            polarity: 'loss',
+            title: 'Refused The Call',
+            detail: '{cast:champion} thinks a little less of {actor}.',
+            stateNoun: {
+              text: 'reputation with {target}',
+              entityId: '$cast:champion',
+              visualKind: 'agent',
+              tooltipId: 'ui.reputation_with',
+            },
+            concepts: [
+              {
+                text: 'thinks a little less of',
+                tooltipId: 'ui.standing',
+              },
+            ],
+          },
+        ],
+        byOutcome: {
+          success: {
+            overview: 'The crier named the refusal at the ring, and the fair moved on to the next bout.',
+          },
+          failure: {
+            overview: 'The crier named the refusal at the ring, and the stewards watched {actor} out of the fair.',
+            changes: [
+              {
+                id: 'bout.decline.failure.regard_falls',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'Refused The Call',
+                detail: '{cast:champion}\'s regard for {actor} fell.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:champion',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'regard',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The crier named {actor} a coward at the ring, loud enough for the whole fair to hear.',
+            changes: [
+              {
+                id: 'bout.decline.critfail.regard_falls',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'Refused The Call',
+                detail: '{cast:champion}\'s regard for {actor} fell.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:champion',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'regard',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview: 'The crier named the refusal at the ring, as the fair\'s custom says, and {cast:champion} kept '
+        + 'the purse without a bout.',
+      changes: [
+        {
+          id: 'bout.fallback.small_loss',
+          kind: 'reputation',
+          category: 'scar',
+          direction: 'loss',
+          polarity: 'loss',
+          title: 'Refused The Call',
+          detail: '{cast:champion} thinks a little less of {actor}.',
+          stateNoun: {
+            text: 'reputation with {target}',
+            entityId: '$cast:champion',
+            visualKind: 'agent',
+            tooltipId: 'ui.reputation_with',
+          },
+          concepts: [
+            {
+              text: 'thinks a little less of',
+              tooltipId: 'ui.standing',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        success: {
+          overview: 'The crier named the refusal at the ring, and the fair moved on to the next bout.',
+        },
+        failure: {
+          overview: 'The crier named the refusal at the ring, and the stewards watched {actor} out of the fair.',
+          changes: [
+            {
+              id: 'bout.fallback.failure.regard_falls',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'Refused The Call',
+              detail: '{cast:champion}\'s regard for {actor} fell.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:champion',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'regard',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The crier named {actor} a coward at the ring, loud enough for the whole fair to hear.',
+          changes: [
+            {
+              id: 'bout.fallback.critfail.regard_falls',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'Refused The Call',
+              detail: '{cast:champion}\'s regard for {actor} fell.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:champion',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'regard',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'An opt-in fair bout: stand the champion\'s corner down at the rope, then take the purse bout (a '
+    + 'Vanguard) or walk out and be named a coward at the ring (a Watcher). A won bout brings a '
+    + 'hedge-healer from the beaten corner and a favour owed by the backer who bet on the stranger, and '
+    + 'costs the beaten champion\'s regard.',
+  locationSubtypes: expandSettings(['urban', 'rural']),
+  consequenceDraw: ['companion', 'secret'],
+};
+
+export const FAIR_BOUT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

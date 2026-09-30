@@ -185,6 +185,9 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       // `ruins.lead.cold`). Claimed for the same reason as `hunt.`: without it the
       // survey's visit query finds nothing and no visit ever fires.
       'ruins.',
+      // THR-1677 — the well sinking appointment's seed-only sequels
+      // (`town.well_first_water`, `town.well_gone_foul`).
+      'town.',
       // The faction quest families, two-letter by convention (THR-1481 names these
       // `encounterFamily` prefixes as the literal-id rot slice 4 replaces with tags).
       'ag.', 'mc.', 'tg.', 'ac.', 'bf.', 'cg.', 'hod.', 'uk.', 'rb.', 'mct.', 'lk.', 'ts.', 'fa.',

@@ -23,6 +23,7 @@ import type { GraphNode } from '../../types/graph';
 import type { FightRatingWord } from '../../types/fight';
 import type { MonsterState } from '../../types/monster';
 import {
+  MONSTER_APEX_CARDS,
   MONSTER_CLOCK_BY_TIER,
   MONSTER_LEGENDARY_DREAD_STEP,
   monsterFamilyForSphere,
@@ -101,6 +102,12 @@ export function mintMonsterCard(
  * Harden the lair's monster when the lair goes legendary: the clock grows to
  * `MONSTER_CLOCK_BY_TIER.legendary`, Dread rises `MONSTER_LEGENDARY_DREAD_STEP` words
  * (capped at severe), and `clockFilled` is kept — wounds outlast the den's growth.
+ *
+ * THR-1682 — a family with an apex card (`MONSTER_APEX_CARDS`) grows into that apex
+ * instead of taking the Dread step: the card takes the apex's Dread and Might words
+ * (severe / severe) and records `apex`. Deterministic — the family decides, no roll.
+ * Hardening twice is harmless: an apex card re-reads the same row.
+ *
  * Returns the hardened card, or null when there was nothing to harden.
  */
 export function hardenMonsterCard(
@@ -115,22 +122,35 @@ export function hardenMonsterCard(
   const bag = elite.properties.monsterState as MonsterState | undefined;
   if (!bag || typeof bag !== 'object') return null;
 
-  const card: MonsterState = {
-    ...bag,
-    clockSize: Math.max(bag.clockSize ?? 0, MONSTER_CLOCK_BY_TIER.legendary),
-    dread: shiftWord(bag.dread, MONSTER_LEGENDARY_DREAD_STEP),
-  };
+  const apex = MONSTER_APEX_CARDS[bag.family];
+  const card: MonsterState = apex
+    ? {
+      ...bag,
+      clockSize: Math.max(bag.clockSize ?? 0, MONSTER_CLOCK_BY_TIER.legendary),
+      dread: apex.dread,
+      might: apex.might,
+      apex: apex.id,
+    }
+    : {
+      ...bag,
+      clockSize: Math.max(bag.clockSize ?? 0, MONSTER_CLOCK_BY_TIER.legendary),
+      dread: shiftWord(bag.dread, MONSTER_LEGENDARY_DREAD_STEP),
+    };
   graph.updateNode(eliteId, { properties: { ...elite.properties, monsterState: card } });
 
   emitTrace({
     category: 'monster.hardened',
     tick,
     agentId: eliteId,
-    summary: `${elite.name} hardened with its lair: clock ${card.clockSize}, dread ${card.dread}`,
+    summary: apex
+      ? `${elite.name} grew with its lair into ${apex.cardLine}: clock ${card.clockSize}, ${card.dread}/${card.might}`
+      : `${elite.name} hardened with its lair: clock ${card.clockSize}, dread ${card.dread}`,
     monsterId: eliteId,
     lairId: lairNode.id,
     clockSize: card.clockSize,
     dread: card.dread,
+    might: card.might,
+    apex: apex?.id ?? '',
   } as Parameters<typeof emitTrace>[0]);
 
   return card;

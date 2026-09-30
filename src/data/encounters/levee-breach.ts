@@ -1,0 +1,705 @@
+/**
+ * The Levee Breach — slot 2 of the journeyman-everyday-2 batch (THR-1677).
+ * 
+ * Brief: `Docs/plans/encounters/journeyman-everyday-2-brief.md`.
+ * plotHookRolled: hook.ritual_of_undeath, hook.endless_pursuit, hook.heresy_hunt
+ * plotHookTaken:  hook.heresy_hunt, read with no religion in it: the hunt for the
+ *                 one to blame. The warden has already named the culprit (the
+ *                 evening watch) before anyone has looked for the fault. Blended
+ *                 with endless_pursuit for the night-long chase after the water
+ *                 along the bank. ritual_of_undeath dropped: it pulls the scene out
+ *                 of the everyday board the brief confines it to.
+ * Seed Dice:      p3 choice · opposition faction (orders), read as the levee
+ *                 warden's orders, a town office and not a faction node (brief
+ *                 § Overrides) · disposition hostile (the warden blames the mortal)
+ *                 · agent role suspect or cause · scale settlement
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` is woken in `{location}` by the bell
+ *                      on the river gate (urban), or at `{location}` by shouting from
+ *                      the river bank (rural). Agent and place are graph names.
+ *   2 P2 events?       The river is at the top of the levee and seeping below the
+ *                      mill; the warden says the mortal stood the evening watch and blames
+ *                      them and has ordered them onto the line. Costs paid, stated.
+ *   3 P3 one stake?    Choice, as rolled: banking the mill saves the houses and
+ *                      leaves the far bank, and the fields under it, unwatched.
+ *   4 ≤80 words?       Opening + step-0 spine: 78 (urban) / 77 (rural).
+ *   5 Read aloud?      Report throughout. No interior sensation anywhere.
+ *   6 Stated, never encoded? The blame is stated ('blames {actor} for missing the
+ *                      seep'), never implied by a look or a pointed finger.
+ *   7 Every sentence works? Challenge, test, or outcome.
+ *   8 Nothing unintroduced? The mill, the far bank, the fields, the sandbag line and
+ *                      the warden all appear in step 0 before a card or chip names them.
+ *   9 One named person? `{cast:warden}` — the levee warden, on stage all three beats.
+ *  10 Stake in a sentence? 'Can the mortal the warden blames find where the levee is
+ *                      failing and hold it till dawn, before the fields flood?'
+ *  11 Cards verb+noun, spell-style? Yes; four specials, mechanism-stating, no digits,
+ *                      no word shared between a name and its effect line.
+ *  12 Opening per class? `urban` and `rural`, both written.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            The river is up, the town's levee is failing in the night, and
+ *                   the warden blames the mortal for the evening watch.
+ *   Title           The Levee Breach — the crux in three words.
+ *   Tier            `background` (open draw). Every step at or under the 0.45
+ *                   off-reach ceiling: iron 0.42 → eye 0.40 → iron 0.45.
+ *   Whose problem?  The town's, and the mortal's name with it: the warden has said
+ *                   whose watch it was (agentRole: suspect or cause).
+ *   Reach = theme?  Step 0 tests Iron and is *about* hauling sandbags to the mill.
+ *                   Step 1 tests Eye and is *about* finding where the far bank is
+ *                   washing out. Step 2 tests Iron and is *about* standing in
+ *                   the breach till the river falls. Iron by two steps to one; mean 0.423.
+ *   Shape           Investigation → resolution. Carryover lines on steps 1 and 2 key
+ *                   on the band the previous step rolled.
+ *   Consequence hand (binding, THR-1145): `thread` + `place` — no swap.
+ *                   `thread` — `thread_strengthen` ($ascendant ↔ $actor) on the
+ *                   final step's success; `thread_weaken` on its failure.
+ *                   `place` — `apply_condition` `trait.condition.location.harvest_blight`
+ *                   on `$here`, final step's failure side: the river lies on the
+ *                   fields below the far bank and the town goes short. An existing
+ *                   location condition ('The fields here have failed. Food is short,
+ *                   prices climb'). A levee that held has no honest location
+ *                   condition to land on, so the place family fires on the failure
+ *                   side only: a town whose levee held is the same town it was.
+ *   Standing        `reputation_with` on `$here`, both directions (chip noun
+ *                   `reputation with {location}`) — the warden has told the town
+ *                   whose watch it was, and the town is the party that judges.
+ *   Cool failure?   Nobody drowns, nobody is jailed. The fields flood, the town goes
+ *                   short, and the town thinks less of the mortal.
+ *   Systems quota   cast + conditions + reputation (+ rewards via the persistent
+ *                   condition) — the contract's three and more.
+ *   Heavy Hand      none authored (batch allowance left for other slots).
+ * 
+ * ─── Trait hooks (mandatory four questions) ──
+ *   Gate? No — everyday board, no gates by brief. Variant? No. Trait-only nudge?
+ *   No — the specials budget goes to the sacks, the leak and the breach. Trait
+ *   fragment? No.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.levee_breach',
+  rarityTier: 2,
+  intrinsicTier: 'background',
+  name: 'The Levee Breach',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['mercy_ruthlessness', 'courage_prudence'],
+  settings: ['rural', 'urban'],
+  openings: {
+    rural: '{actor} is woken at {location} after midnight by shouting from the river bank.',
+    urban: '{actor} is woken in {location} after midnight by the bell on the river gate.',
+  },
+  steps: [
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.42,
+      purposeLine: 'Haul the sandbags',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The river is at the top of the levee, and water is seeping through below the mill. '
+        + '{cast:warden}, the levee warden, says {actor} stood the evening watch on that bank and missed '
+        + 'the seep. The warden orders {actor} onto the sandbag line. Banking the mill will save the '
+        + 'houses. It leaves the far bank unwatched, with the fields below it a month from harvest.',
+      successAfterimage: 'They carried bags until the seep below the mill stopped.',
+      failureAfterimage: 'They carried bags all night, and the mill bank was still seeping at the change of watch.',
+      successAtCostAfterimage: 'The seep below the mill stopped, and they tore their back hauling the last of the bags.',
+      criticalSuccessAfterimage: 'They banked the mill in an hour, with bags to spare for the far bank.',
+      criticalFailureAfterimage: 'A wall of bags they set slid into the river, and the warden saw it go.',
+      deal: {
+        count: 4,
+        tags: ['might', 'labor'],
+      },
+      nudges: [
+        {
+          id: 'levee.stiffen_the_load',
+          name: 'Stiffen The Load',
+          sphere: 'matter',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.matter',
+          effectLine: 'Make whatever is carried or stacked hold firm, so it sits where it is placed and does not slump.',
+          bandProse: {
+            success: 'The bags sat square on the bank and did not slump as they soaked.',
+            failure: 'The bags kept their shape, and the water came in under the bottom row.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'eye',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.4,
+      purposeLine: 'Find the washout',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'Water is spreading across the lowest fields, and it is not coming from the mill bank. It is '
+        + 'coming through somewhere on the far bank. {actor} leaves the sandbag line to walk it in the '
+        + 'dark. {cast:warden} shouts that anyone who leaves the line will answer for it, and that the town '
+        + 'will hear who ran.',
+      successAfterimage: 'They found where the far bank is washing out from beneath, above the fields.',
+      failureAfterimage: 'They walked the far bank twice and found nothing before the water found it.',
+      successAtCostAfterimage: 'They found the washout, and slid into the ditch below it and lost the lantern.',
+      criticalSuccessAfterimage: 'They found the washout, and the old drain under the bank that the water is following.',
+      criticalFailureAfterimage: 'They sent the warden\'s men to the wrong stretch, and the far bank went on washing out.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'There are bags to spare for the far bank.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'The mill bank holds without them.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'Their back is torn from the hauling.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'The mill bank is still seeping a little.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The mill bank is still seeping, and the men are tired.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'The warden saw their wall slide into the river.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      deal: {
+        count: 4,
+        tags: ['insight', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'levee.show_the_leak',
+          name: 'Show The Leak',
+          sphere: 'light',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.light',
+          effectLine: 'Make moving water catch whatever lamp or moon is near, so a seep shines plain against still '
+            + 'water.',
+          bandProse: {
+            critical_success: 'The leak shone in the lantern, and so did the trickle feeding it from further along.',
+            success: 'Water running out of the earth caught the lantern and shone.',
+            failure: 'Every puddle on the bank shone alike, and the leak shone with them.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.45,
+      purposeLine: 'Hold the breach',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The water breaks through the bank late in the night. {cast:warden} brings the men over from the '
+        + 'mill. {actor} stands in the breach up to the waist, holding the bags while the others stack '
+        + 'behind. The breach must hold until dawn, when the river starts to fall. If it goes, the harvest '
+        + 'goes, and {location} will blame {actor}.',
+      successAfterimage: 'The bags held until the river fell, and the fields below stayed dry.',
+      failureAfterimage: 'The breach opened wider before dawn, and the river went over the fields.',
+      successAtCostAfterimage: 'The breach held until dawn, and the one field at its foot went under.',
+      criticalSuccessAfterimage: 'The breach held, and by dawn the warden\'s men had a second wall of sacks built behind it.',
+      criticalFailureAfterimage: 'The breach tore open in the night, and the river took every field below it.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They know where the water is going, and why.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They found the washout before it opened.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'They lost the lantern in the ditch.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They found the washout late.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The water found the washout before they did.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'The warden\'s men were banking the wrong stretch.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'thread_strengthen',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'Held the breach till dawn with the god close',
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'thread_weaken',
+            ascendantId: '$ascendant',
+            mortalId: '$actor',
+            reason: 'The levee broke while the god watched',
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.location.harvest_blight',
+            targetLocationId: '$here',
+            intensity: 0.6,
+            durationTicks: 240,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['might', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'levee.bolster_the_wall',
+          name: 'Bolster The Wall',
+          sphere: 'force',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.strength',
+          effectLine: 'Push back against water or weight pressing on a barrier, so the barrier takes less of the load.',
+          bandProse: {
+            success: 'The current struck the stack and slid off it, and the sacks stayed put.',
+            failure: 'The current eased against the stack, and came round the end of it instead.',
+            critical_failure: 'The stack stood, and the bank gave way beside it.',
+          },
+        },
+        {
+          id: 'levee.hasten_the_dawn',
+          name: 'Hasten The Dawn',
+          sphere: 'time',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.time-slow',
+          effectLine: 'Make the dark hours pass quicker for tired people, so morning comes before their strength gives '
+            + 'out.',
+          bandProse: {
+            success_at_cost: 'The night went quickly, and the river was falling within the hour.',
+            near_miss: 'Morning came early, and the river was slow to follow it.',
+            failure: 'The night went quickly, and the men tired just as fast.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'warden',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['elder', 'guard_captain', 'guard'],
+      supportRole: 'levee_warden',
+      spawnNpcRole: 'elder',
+      spawnName: 'Hale Brannock',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'The river is up and the levee is seeping in the night. The levee warden blames the evening watch '
+      + 'and orders it onto the sandbag line.',
+    success: 'The far bank held until the river fell, and the fields below it were saved.',
+    failure: 'The levee broke on the far bank, and the river took the fields below it.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The river is falling, and {location} is out on the levee counting sacks and fields.',
+      changes: [
+        {
+          id: 'levee.the_night_held',
+          kind: 'growth',
+          title: 'A night on the levee',
+          detail: 'A night hauling and holding a bank teaches the iron reach.',
+          polarity: 'gain',
+          concepts: [
+            {
+              text: 'iron reach',
+              tooltipId: 'reach.iron',
+            },
+          ],
+        },
+      ],
+      reactions: [
+        {
+          id: 'levee.stay_to_rebuild',
+          label: 'Stay on to rebuild the far bank',
+          intent: 'The mortal works past the end of the watch where the town can see it, and the town marks who '
+            + 'stayed.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.03,
+            },
+          ],
+        },
+        {
+          id: 'levee.walk_the_bank_at_first_light',
+          label: 'Walk the levee again at first light',
+          intent: 'What the night showed about the bank stays with the mortal, whatever the town makes of the '
+            + 'watch.',
+          effects: [
+            {
+              kind: 'intelligence',
+              category: 'cultural_knowledge',
+              label: 'The Levee\'s Weak Place',
+              detail: 'The far bank of the levee washes out from beneath when the river is high.',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: '{cast:warden} takes back the charge about the evening watch, in front of the men who heard it '
+            + 'made.',
+          changes: [
+            {
+              id: 'levee.crit.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt in the flood',
+              causeClause: 'Held the breach with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'levee.crit.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The town\'s thanks',
+              causeClause: 'Found the real fault and held it',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        success: {
+          overview: '{cast:warden} drops the charge about the evening watch and sends everyone home to sleep.',
+          changes: [
+            {
+              id: 'levee.success.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt on the levee',
+              causeClause: 'Stood in the water with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'levee.success.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The town\'s thanks',
+              causeClause: 'Held the far bank until morning',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: '{actor} comes off the levee at noon, long after the others, and sleeps through the rest of the '
+            + 'day.',
+          changes: [
+            {
+              id: 'levee.cost.thread',
+              kind: 'growth',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Felt in the water',
+              causeClause: 'Held the bank with the god close',
+              detail: 'The thread to {actor} runs stronger.',
+              polarity: 'gain',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+            {
+              id: 'levee.cost.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The town saw it',
+              causeClause: 'Kept the far bank standing',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        failure: {
+          overview: '{cast:warden} and the men fall back to the mill bank and keep the houses dry. The far bank is '
+            + 'left to the river.',
+          changes: [
+            {
+              id: 'levee.fail.flooded_fields',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'Blighted Harvest',
+                entityId: 'trait.condition.location.harvest_blight',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'go short',
+                  entityId: 'trait.condition.location.harvest_blight',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Flooded fields',
+              causeClause: 'The crop rotted in the ground',
+              detail: '{location} will go short this winter.',
+            },
+            {
+              id: 'levee.fail.the_towns_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The town\'s blame',
+              causeClause: 'Blamed for the watch and the breach',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'levee.fail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Watched, and not helped',
+              causeClause: 'The bank broke with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: '{cast:warden} and the men fall back to the houses and leave the far bank to the river. At dawn '
+            + 'the warden tells {location} that the river came in through {actor}\'s watch.',
+          changes: [
+            {
+              id: 'levee.crit_fail.flooded_fields',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'Blighted Harvest',
+                entityId: 'trait.condition.location.harvest_blight',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'go short',
+                  entityId: 'trait.condition.location.harvest_blight',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Drowned fields',
+              causeClause: 'The crop drowned where it stood',
+              detail: '{location} will go short this winter.',
+            },
+            {
+              id: 'levee.crit_fail.the_towns_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The warden\'s word believed',
+              causeClause: 'Believed to have missed the seep',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'levee.crit_fail.thread',
+              kind: 'growth',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'thread',
+                tooltipId: 'ui.thread',
+              },
+              title: 'Lost to the river, watched',
+              causeClause: 'The flood came with the god watching',
+              detail: 'The thread to {actor} runs thinner.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'thread',
+                  tooltipId: 'ui.thread',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A three-step night on a failing levee: haul sandbags to the mill on the warden\'s orders, find '
+    + 'where the far bank is washing out, then hold the breach until the river falls at dawn.',
+  locationSubtypes: expandSettings(['rural', 'urban']),
+  consequenceDraw: ['thread', 'place'],
+};
+
+export const LEVEE_BREACH_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);
