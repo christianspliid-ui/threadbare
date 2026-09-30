@@ -106,6 +106,30 @@ export function buildChipAnchorResolver(
 }
 
 /**
+ * Actor types that are a collective rather than a person. A chip anchored on
+ * one keeps the scene's `{target}` (THR-1685): "reputation with {target}" about
+ * a faction is a standing chip, and those name their own referent.
+ */
+const COLLECTIVE_ACTOR_TYPES: ReadonlySet<string> = new Set(['faction', 'culture', 'group']);
+
+/**
+ * THR-1685 — the graph-holding half of `anchorNameFor`: a resolved anchor's
+ * name when it is a person, `undefined` for a place, a collective, or a node
+ * that does not exist (the noun then keeps the scene's reading, NFP #4).
+ */
+export function buildChipAnchorNameResolver(
+  graph: WorldGraph,
+): (resolvedEntityId: string) => string | undefined {
+  return (id) => {
+    const node = graph.getNode(id);
+    if (node?.type !== 'actor') return undefined;
+    const actorType = node.properties?.actorType;
+    if (typeof actorType === 'string' && COLLECTIVE_ACTOR_TYPES.has(actorType)) return undefined;
+    return node.name || undefined;
+  };
+}
+
+/**
  * THR-1553 — the graph-holding half of the fight chips (`buildFightChanges` is
  * pure). A node that does not exist has no name, which drops its chip: an
  * anchor that resolves to nothing never renders (Law 56, NFP #4).

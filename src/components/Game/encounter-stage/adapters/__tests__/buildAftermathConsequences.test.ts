@@ -1331,3 +1331,63 @@ describe('the state noun names where the state changed (THR-1205)', () => {
     expect(chips[0].nounEntityId).toBe('location.sacred_grove.3');
   });
 });
+
+describe('a reputation noun about a person names the person, not the town (THR-1685)', () => {
+  // A board-drawn everyday encounter targets its location, so the scene's
+  // `{target}` is the settlement. These pin that a chip anchored on a cast
+  // member reads its own anchor instead.
+  const sceneEnrich = (text: string) => text.replace(/\{target\}/g, 'Ardenmor');
+  const names: Record<string, string> = { 'actor.inspector.12': 'Maud Harrow' };
+  const anchorNameFor = (id: string) => names[id];
+
+  function repChip(entityId: string, resolved: string | undefined) {
+    return buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: { text: 'reputation with {target}', entityId, visualKind: 'agent' },
+      })],
+      link: passthrough.link,
+      enrich: sceneEnrich,
+      resolveAnchor: () => resolved,
+      anchorNameFor,
+    })[0];
+  }
+
+  it('a $cast anchor on a location-targeted encounter names the cast member', () => {
+    const chip = repChip('$cast:inspector', 'actor.inspector.12');
+    expect(chip.nounLabel).toBe('REPUTATION WITH MAUD HARROW');
+    expect(chip.nounLabel).not.toContain('ARDENMOR');
+    expect(chip.delta?.label).toContain('Maud Harrow');
+    expect(chip.nounEntityId).toBe('actor.inspector.12');
+  });
+
+  it('a $target anchor keeps the scene reading (regression pin)', () => {
+    expect(repChip('$target', 'actor.inspector.12').nounLabel).toBe('REPUTATION WITH ARDENMOR');
+  });
+
+  it('a $here anchor keeps the scene reading (regression pin)', () => {
+    expect(repChip('$here', 'loc.ardenmor.3').nounLabel).toBe('REPUTATION WITH ARDENMOR');
+  });
+
+  it('an anchor that is not a person, or resolves to nothing, falls back to the scene', () => {
+    expect(repChip('$faction:guild', 'actor.faction.guild.2').nounLabel).toBe('REPUTATION WITH ARDENMOR');
+    expect(repChip('$cast:missing', undefined).nounLabel).toBe('REPUTATION WITH ARDENMOR');
+  });
+
+  it('without the callback every noun renders exactly as before', () => {
+    const chip = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: { text: 'reputation with {target}', entityId: '$cast:inspector', visualKind: 'agent' },
+      })],
+      link: passthrough.link,
+      enrich: sceneEnrich,
+      resolveAnchor: () => 'actor.inspector.12',
+    })[0];
+    expect(chip.nounLabel).toBe('REPUTATION WITH ARDENMOR');
+  });
+});

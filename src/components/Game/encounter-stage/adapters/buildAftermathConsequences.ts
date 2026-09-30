@@ -513,6 +513,64 @@ export interface BuildAftermathConsequencesArgs {
    * chip says "the promised place".
    */
   placeNameFor?: (locationRef: string) => string | undefined;
+  /**
+   * THR-1685 — the display name of a *resolved* anchor, when that anchor is a
+   * person. Returns `undefined` for anything else (a place, a faction, a node
+   * that does not exist), which leaves the noun enriched from the scene exactly
+   * as before.
+   *
+   * Exists because `{target}` in a state noun means "the other party", and the
+   * scene's `{target}` is only that party when the encounter was aimed at them.
+   * A board-drawn everyday encounter targets its *location*, so a chip anchored
+   * on `$cast:inspector` used to read "REPUTATION WITH ARDENMOR" above a
+   * sentence about the inspector. See `nounTextFor`.
+   */
+  anchorNameFor?: (resolvedEntityId: string) => string | undefined;
+}
+
+/**
+ * Anchors whose `{target}` already *is* the scene's `{target}` — the noun keeps
+ * the scene's reading for these, so they render unchanged (THR-1685).
+ */
+const SCENE_TARGET_ANCHORS: ReadonlySet<string> = new Set(['$target', '$here']);
+
+/** The `{target}` placeholder, as authored in a state noun. */
+const NOUN_TARGET_PLACEHOLDER = /\{target\}/g;
+
+/**
+ * THR-1685 — the state noun's display text, with `{target}` read from the
+ * chip's **own** anchor when that anchor is a person other than the scene's
+ * target.
+ *
+ * `CHIP_STATE_NOUN_REPUTATION_FORM` rules `reputation with {target}` legal on
+ * the premise that `{target}` is the other party. On a board draw the action
+ * targets the settlement, so the premise fails for every chip anchored on a
+ * cast member. Substituting here, before `enrich`, fixes the whole corpus in
+ * one place with no content edits; any other placeholder in the noun still
+ * enriches from the scene. Declared anchors of `$target` / `$here`, anchors
+ * that resolve to nothing, and anchors that are not a person all fall through
+ * to the scene's reading, which is what they always had (NFP #6).
+ */
+function nounTextFor(
+  declared: EncounterAftermathConceptRef | undefined,
+  resolved: EncounterAftermathConceptRef | undefined,
+  enrich: (text: string) => string,
+  anchorNameFor: ((resolvedEntityId: string) => string | undefined) | undefined,
+): string | undefined {
+  const text = resolved?.text;
+  if (!text) return undefined;
+  const declaredAnchor = declared?.entityId;
+  if (
+    anchorNameFor
+    && declaredAnchor
+    && !SCENE_TARGET_ANCHORS.has(declaredAnchor)
+    && resolved?.entityId
+    && text.includes('{target}')
+  ) {
+    const name = anchorNameFor(resolved.entityId);
+    if (name) return enrich(text.replace(NOUN_TARGET_PLACEHOLDER, name));
+  }
+  return enrich(text);
 }
 
 /**
@@ -656,7 +714,7 @@ function compareChips(
 export function buildAftermathConsequences(
   args: BuildAftermathConsequencesArgs,
 ): EncounterStageConsequenceChipModel[] {
-  const { changes, reactions, enrich, link, resolveIcon, resolveAnchor, placeNameFor } = args;
+  const { changes, reactions, enrich, link, resolveIcon, resolveAnchor, placeNameFor, anchorNameFor } = args;
   const chips: EncounterStageConsequenceChipModel[] = [];
 
   for (const change of changes) {
@@ -702,7 +760,10 @@ export function buildAftermathConsequences(
     // so the tile and the link resolve off the declared anchor exactly as they
     // did (they route by `entityId`, never by this string). Identity for text
     // with no placeholders, so every existing noun is untouched (NFP #6).
-    const nounText = stateNoun?.text ? enrich(stateNoun.text) : undefined;
+    //
+    // THR-1685 — `{target}` in the noun reads the chip's own anchor when that
+    // anchor is a person other than the scene's target (`nounTextFor`).
+    const nounText = nounTextFor(change.stateNoun, stateNoun, enrich, anchorNameFor);
     chips.push({
       id,
       kind,
