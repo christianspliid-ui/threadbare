@@ -5439,6 +5439,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Smuggler's Den (2) ─────────────────────────────────────────
   {
     id: 'encounter.black_market_deal',
+    // THR-1526 / THR-1679: a seed target (The Cooper's Pawned Box sends the losing buyer's
+    // broker looking) whose opening stands alone on the board.
+    drawable: true,
     name: 'Black Market Deal',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.smugglers-den'],

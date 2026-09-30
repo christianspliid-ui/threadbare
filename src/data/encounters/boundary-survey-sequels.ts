@@ -102,7 +102,7 @@ export const BOUNDS_BEATEN: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: "{name} kept the day at the beating of the bounds, with {cast:steward} there as the lord's witness.",
+      overview: "{name} kept the day at the beating of the bounds, with the steward there as the lord's witness.",
       changes: [],
     },
   },
