@@ -140,7 +140,7 @@ Step 0 resolves, whatever its band. The engine reads the agent's `revelation_dis
 
 ## 10. Sample Opening (narrator mode, ≤80 words: opening 14 + spine 65 = 79)
 
-> {actor} reaches the toll gate of {location} in the morning, behind a travelling family.
+> {actor} reaches the toll gate of {location} at dawn, behind a travelling family.
 >
 > The family carries a writ of passage that frees them of the toll. The toll-master, {cast:tollmaster}, doubts it and asks {actor}, who has a trained eye, to judge it. The writ is forged, and forged well. Under the town's toll charter, whoever approves a writ answers for it.
 >

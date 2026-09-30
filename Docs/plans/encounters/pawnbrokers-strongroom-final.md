@@ -150,7 +150,7 @@ N/A — linear encounter.
 **Openings (P1, one per declared class):**
 
 - `urban`: "A cooper finds {actor} in {location} on the night before the fair." (12 words)
-- `rural`: "{actor} reaches {location} the night before the fair, and a cooper finds them." (13 words)
+- `rural`: "{actor} reaches {location} the night before the fair; a cooper finds them." (13 words)
 
 **Spine (step 0 `narrativeTemplate`, setting-neutral — P2 + P3):**
 
@@ -262,7 +262,7 @@ No reaction choices. The consequence is clean: short scale, every write fires fr
 - PATH · SEED — "The Buyer's Interest" — as critical_success.
 
 **failure** — overview: "{cast:rival} took the cooper's box to the buyer at the fair gate. The pawnbroker found his lock opened and told {location} who he thinks did it."
-- SCAR · COMPULSION — "Beaten to the Box" — causeClause "Outrun by a hired thief" — detail "For a while they look for a lock to prove themselves on." (4 + 11 = 15 words)
+- SCAR · COMPULSION — "Beaten to the Box" — causeClause "Outrun by a hired thief" — detail "They look for a lock to prove themselves on." (4 + 11 = 15 words)
 - BOND · REPUTATION WITH {target} (`$here`) — "Named by the Pawnbroker" — "{location} thinks less of {actor}." (5 words)
 
 **critical_failure** — overview (**Pass 3**, true on both paths): "The pawnbroker found {actor} below his house with empty hands, so he could not hold them. By noon the whole fair had heard his story."

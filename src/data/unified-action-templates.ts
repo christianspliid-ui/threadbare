@@ -253,6 +253,10 @@ import { COMET_DISPUTATION_TEMPLATE } from './encounters/comet-disputation';
 import { WOLF_WINTER_WATCH_TEMPLATE } from './encounters/wolf-winter-watch';
 import { OATH_BREAKER_RITE_TEMPLATE } from './encounters/oath-breaker-rite';
 import { HARVEST_ALMANAC_TEMPLATE } from './encounters/harvest-almanac';
+import { PAWNBROKERS_STRONGROOM_TEMPLATE } from './encounters/pawnbrokers-strongroom';
+import { TOLL_GATE_WRIT_TEMPLATE } from './encounters/toll-gate-writ';
+import { BOUNDARY_SURVEY_SEQUELS } from './encounters/boundary-survey-sequels';
+import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5743,6 +5747,11 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   WOLF_WINTER_WATCH_TEMPLATE,
   OATH_BREAKER_RITE_TEMPLATE,
   HARVEST_ALMANAC_TEMPLATE,
+  PAWNBROKERS_STRONGROOM_TEMPLATE,
+  TOLL_GATE_WRIT_TEMPLATE,
+  BOUNDARY_SURVEY_TEMPLATE,
+  // THR-1679 — the boundary survey appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...BOUNDARY_SURVEY_SEQUELS,
 ];
 
 /**
@@ -5884,6 +5893,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   WOLF_WINTER_WATCH_TEMPLATE,
   OATH_BREAKER_RITE_TEMPLATE,
   HARVEST_ALMANAC_TEMPLATE,
+  PAWNBROKERS_STRONGROOM_TEMPLATE,
+  TOLL_GATE_WRIT_TEMPLATE,
+  BOUNDARY_SURVEY_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

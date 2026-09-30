@@ -385,7 +385,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         {
           id: 'wolf.name_the_drover',
           label: 'Name the drover to the village',
-          intent: 'The mortal tells {location} who staked the carrion. The village thinks the better of them, and '
+          intent: 'The mortal names the drover to {location}. The village thinks the better of them, and '
             + 'the drover will not forget it.',
           effects: [
             {

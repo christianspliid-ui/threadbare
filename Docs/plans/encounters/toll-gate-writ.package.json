@@ -1,0 +1,1444 @@
+{
+  "slug": "toll-gate-writ",
+  "doc": [
+    "The Writ at the Toll Gate (slug toll-gate-writ) — slot 2 of the expert-everyday-2 batch (THR-1679).",
+    "",
+    "Final: `Docs/plans/encounters/toll-gate-writ-final.md` (draft, editorial PASS WITH REVISIONS,",
+    "systems READY, package critic PACKAGE PASS).",
+    "plotHook taken: hook.mad_artificer, drifted to an old seal-cutter selling cheap false writs.",
+    "Shape: Personality Fork on `revelation_discretion`. Seeker (positive, also fallback) traces the",
+    "maker (eye 0.64); Sentinel (negative) vouches and holds the toll-master's trust (heart 0.62).",
+    "Consequence hand: knowledge (intelligence) + movement (agent_relocation) on both arms; favor_creation",
+    "on the Sentinel win. Measurement note: the fork step has no top-level difficulty, so roll-spread",
+    "reads step 0 only (0.60)."
+  ],
+  "template": {
+    "id": "encounter.town.toll_gate_writ",
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Writ at the Toll Gate",
+    "reach": "eye",
+    "crudType": "update",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "revelation_discretion",
+      "mercy_ruthlessness"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} reaches the toll gate of {location} at dawn, behind a travelling family."
+    },
+    "steps": [
+      {
+        "reach": "eye",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.6,
+        "purposeLine": "Read the writ",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "The family carries a writ of passage that frees them of the toll. The toll-master, {cast:tollmaster}, doubts it and asks {actor}, who has a trained eye, to judge it. The writ is forged, and forged well. Under the town's toll charter, whoever approves a writ answers for it.\n\nNaming it false sends the family to the town's court. Approving it puts {actor}'s name on a forgery.",
+        "criticalSuccessAfterimage": "{actor} found the fault at once. The seal is a copy of the town's own toll seal, and a good one.",
+        "successAfterimage": "{actor} found the fault. The seal is a copy of the town's own toll seal.",
+        "successAtCostAfterimage": "{actor} found the fault, but kept the family and the toll-master waiting half the morning.",
+        "failureAfterimage": "{actor} is sure the writ is wrong, but cannot point to the fault.",
+        "criticalFailureAfterimage": "{actor} misread the seal in front of the whole gate, and {cast:tollmaster} saw it.",
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.03
+            }
+          ]
+        },
+        "deal": {
+          "count": 4,
+          "tags": [
+            "insight",
+            "craft"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "writ.light_the_page",
+            "name": "Light The Page",
+            "sphere": "light",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "poleLean": {
+              "axis": "revelation_discretion",
+              "toward": "positive"
+            },
+            "imageTag": "generic.light",
+            "effectLine": "Throw the sun full across the writ, so every stroke of ink and wax shows. A fault seen this plainly is hard to keep quiet.",
+            "bandProse": {
+              "success": "The sun fell full across the writ, and the wax showed its seam.",
+              "near_miss": "The sun lit the ink, but a cloud crossed before it reached the seal.",
+              "failure": "The sun lit every stroke, and every stroke looked right."
+            }
+          },
+          {
+            "id": "writ.cool_their_scorn",
+            "name": "Cool Their Scorn",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "poleLean": {
+              "axis": "revelation_discretion",
+              "toward": "negative"
+            },
+            "imageTag": "generic.focus",
+            "effectLine": "Ease any contempt for the family, so they read the writ slowly and miss no fault. Without contempt, they are slower to condemn.",
+            "bandProse": {
+              "critical_success": "{actor} read the writ without haste or scorn, and saw every fault in it.",
+              "success_at_cost": "{actor} read slowly and without scorn, and the carters behind the family began to shout.",
+              "failure": "{actor} read the writ without scorn, and wanted it to be good.",
+              "critical_failure": "{actor} read the writ as a friend would, and saw only what a friend would see."
+            }
+          }
+        ]
+      },
+      {
+        "branchOnStep": 0,
+        "decidedBy": {
+          "axis": "revelation_discretion"
+        },
+        "variants": {
+          "positive": {
+            "reach": "eye",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.64,
+            "purposeLine": "Trace the writ's maker",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} names the writ false, and the family is held at the gate for the town's court. The court wants the maker as well. {cast:traveller}, who leads the family, will not say where the writ was bought. {actor} goes into the town to find who cut the seal.",
+            "criticalSuccessAfterimage": "{actor} found the maker at the bench: an old seal-cutter who has copied the toll seal for years, and sells the writs cheap to families who cannot pay the toll.",
+            "successAfterimage": "{actor} found the maker: an old seal-cutter who has copied the toll seal for years.",
+            "successAtCostAfterimage": "{actor} found the old seal-cutter by nightfall, after asking at every shop on the market.",
+            "failureAfterimage": "{actor} searched the town all day, and no one would say who cut the seal.",
+            "criticalFailureAfterimage": "The seal-cutter heard that a writ had been stopped, and was gone before {actor} found the shop.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": 0.06
+                },
+                {
+                  "kind": "intelligence",
+                  "category": "political_secret",
+                  "label": "Who copies the toll seal",
+                  "detail": "An old seal-cutter in the town has copied the toll seal for years and sells false writs cheap to families who cannot pay the toll.",
+                  "reliability": 0.9,
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "agent_relocation",
+                  "targetAgentId": "$actor",
+                  "destination": {
+                    "kind": "away",
+                    "minHexDistance": 4
+                  },
+                  "mode": "travel"
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.06
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "insight",
+                "shadow"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "writ.guide_their_steps",
+                "name": "Guide Their Steps",
+                "sphere": "spirit",
+                "essenceCost": 2,
+                "forecastDelta": 0.12,
+                "imageTag": "generic.blessing",
+                "effectLine": "Lead them down the right lane first, so they reach the maker's door before word of the held family does.",
+                "bandProse": {
+                  "success": "{actor} took the right lane first and came straight to the seal-cutter's door.",
+                  "near_miss": "{actor} took the right lane, and found the shop shut until evening.",
+                  "failure": "{actor} took the right lane first, and walked past the shop without knowing it."
+                }
+              },
+              {
+                "id": "writ.twist_a_steady_hand",
+                "name": "Twist A Steady Hand",
+                "sphere": "chaos",
+                "essenceCost": 1,
+                "forecastDelta": 0.09,
+                "imageTag": "generic.luck",
+                "effectLine": "Put a tremor in the maker's fingers at the bench, so a botched seal lies there for them to find.",
+                "bandProse": {
+                  "critical_success": "The seal-cutter botched a fresh copy of the seal, and {actor} found it on the bench.",
+                  "success_at_cost": "The seal-cutter botched a fresh seal and threw it in the fire before {actor} arrived.",
+                  "failure": "The seal-cutter's hand shook, and no one saw it but the seal-cutter.",
+                  "critical_failure": "The seal-cutter's hand shook, and the seal-cutter took it as a warning."
+                }
+              }
+            ]
+          },
+          "negative": {
+            "reach": "heart",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.62,
+            "purposeLine": "Keep the toll-master's trust",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} vouches for the family, and they go through the gate without paying the toll. Under the charter, the writ is now {actor}'s to answer for. In front of the waiting carters, {cast:tollmaster} asks why {actor} frowned over a sound seal.",
+            "criticalSuccessAfterimage": "{cast:tollmaster} took {actor}'s word without a second question.",
+            "successAfterimage": "{cast:tollmaster} took {actor}'s word and let the question drop.",
+            "successAtCostAfterimage": "{cast:tollmaster} took {actor}'s word, but only after an hour of hard questions.",
+            "failureAfterimage": "{cast:tollmaster} did not believe {actor}, and sent a guard after the family.",
+            "criticalFailureAfterimage": "{cast:tollmaster} sent a guard after the family before {actor} had finished speaking.",
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "favor_creation",
+                  "magnitudeRange": [
+                    0.15,
+                    0.3
+                  ],
+                  "context": "Vouched for the family at the toll gate",
+                  "debtorAgentId": "$cast:traveller"
+                },
+                {
+                  "kind": "intelligence",
+                  "category": "political_secret",
+                  "label": "Who copies the toll seal",
+                  "detail": "The family bought the writ from an old seal-cutter in the town, who sells copies of the toll seal to travellers who cannot pay.",
+                  "reliability": 0.75,
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "agent_relocation",
+                  "targetAgentId": "$actor",
+                  "destination": {
+                    "kind": "away",
+                    "minHexDistance": 3
+                  },
+                  "mode": "travel"
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.08
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "social",
+                "presence"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "writ.kindle_goodwill",
+                "name": "Kindle Goodwill",
+                "sphere": "life",
+                "essenceCost": 2,
+                "forecastDelta": 0.12,
+                "imageTag": "generic.warmth",
+                "effectLine": "Warm the toll-master toward them, so the hardest questions are asked kindly.",
+                "bandProse": {
+                  "success": "{cast:tollmaster} warmed to {actor}, and asked the last question kindly.",
+                  "near_miss": "{cast:tollmaster} warmed to {actor}, but asked every question anyway.",
+                  "failure": "{cast:tollmaster} warmed to {actor}, and still did not believe them."
+                }
+              },
+              {
+                "id": "writ.turn_away_eyes",
+                "name": "Turn Away Eyes",
+                "sphere": "darkness",
+                "essenceCost": 2,
+                "forecastDelta": 0.08,
+                "imageTag": "generic.dark",
+                "effectLine": "Draw the waiting carters' attention elsewhere, so the toll-master can let it go without an audience.",
+                "bandProse": {
+                  "critical_success": "The carters turned to watch a loose cart horse, and no one heard {cast:tollmaster} let it go.",
+                  "success_at_cost": "The carters looked away, but a guard at the gate heard every word.",
+                  "failure": "The carters looked away, and {cast:tollmaster} asked the questions anyway.",
+                  "critical_failure": "The carters looked away, then looked back as {cast:tollmaster} raised the alarm."
+                }
+              }
+            ]
+          }
+        },
+        "fallback": {
+          "reach": "eye",
+          "duration": {
+            "min": 1,
+            "max": 2
+          },
+          "difficulty": 0.64,
+          "purposeLine": "Trace the writ's maker",
+          "onSuccess": [],
+          "onFailure": [],
+          "failBehavior": "fail_action",
+          "narrativeTemplate": "{actor} names the writ false, and the family is held at the gate for the town's court. The court wants the maker as well. {cast:traveller}, who leads the family, will not say where the writ was bought. {actor} goes into the town to find who cut the seal.",
+          "criticalSuccessAfterimage": "{actor} found the maker at the bench: an old seal-cutter who has copied the toll seal for years, and sells the writs cheap to families who cannot pay the toll.",
+          "successAfterimage": "{actor} found the maker: an old seal-cutter who has copied the toll seal for years.",
+          "successAtCostAfterimage": "{actor} found the old seal-cutter by nightfall, after asking at every shop on the market.",
+          "failureAfterimage": "{actor} searched the town all day, and no one would say who cut the seal.",
+          "criticalFailureAfterimage": "The seal-cutter heard that a writ had been stopped, and was gone before {actor} found the shop.",
+          "successMetadata": {
+            "effects": [
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": 0.06
+              },
+              {
+                "kind": "intelligence",
+                "category": "political_secret",
+                "label": "Who copies the toll seal",
+                "detail": "An old seal-cutter in the town has copied the toll seal for years and sells false writs cheap to families who cannot pay the toll.",
+                "reliability": 0.9,
+                "targetAgentId": "$actor"
+              },
+              {
+                "kind": "agent_relocation",
+                "targetAgentId": "$actor",
+                "destination": {
+                  "kind": "away",
+                  "minHexDistance": 4
+                },
+                "mode": "travel"
+              }
+            ]
+          },
+          "failureMetadata": {
+            "effects": [
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": -0.06
+              }
+            ]
+          },
+          "deal": {
+            "count": 4,
+            "tags": [
+              "insight",
+              "shadow"
+            ]
+          },
+          "nudges": [
+            {
+              "id": "writ.guide_their_steps",
+              "name": "Guide Their Steps",
+              "sphere": "spirit",
+              "essenceCost": 2,
+              "forecastDelta": 0.12,
+              "imageTag": "generic.blessing",
+              "effectLine": "Lead them down the right lane first, so they reach the maker's door before word of the held family does.",
+              "bandProse": {
+                "success": "{actor} took the right lane first and came straight to the seal-cutter's door.",
+                "near_miss": "{actor} took the right lane, and found the shop shut until evening.",
+                "failure": "{actor} took the right lane first, and walked past the shop without knowing it."
+              }
+            },
+            {
+              "id": "writ.twist_a_steady_hand",
+              "name": "Twist A Steady Hand",
+              "sphere": "chaos",
+              "essenceCost": 1,
+              "forecastDelta": 0.09,
+              "imageTag": "generic.luck",
+              "effectLine": "Put a tremor in the maker's fingers at the bench, so a botched seal lies there for them to find.",
+              "bandProse": {
+                "critical_success": "The seal-cutter botched a fresh copy of the seal, and {actor} found it on the bench.",
+                "success_at_cost": "The seal-cutter botched a fresh seal and threw it in the fire before {actor} arrived.",
+                "failure": "The seal-cutter's hand shook, and no one saw it but the seal-cutter.",
+                "critical_failure": "The seal-cutter's hand shook, and the seal-cutter took it as a warning."
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.personality.eye.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Perceptive, they see a seal's faults before its words."
+      },
+      {
+        "traitId": "trait.personality.eye.vice",
+        "forecastDelta": -0.04,
+        "factorLine": "Being Judgemental, they made up their mind before reading a line."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "tollmaster",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "clerk",
+          "guard_captain"
+        ],
+        "supportRole": "toll_master",
+        "spawnNpcRole": "clerk",
+        "spawnName": "Reyne Holloway"
+      },
+      {
+        "kind": "actor",
+        "key": "traveller",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "supportRole": "family_head",
+        "spawnNpcRole": "wanderer",
+        "spawnName": "Oswin Farrow"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A toll-master asks a stranger with a trained eye to judge a travelling family's writ of passage.",
+      "success": "The stranger's reading of a forged writ held at the toll gate.",
+      "failure": "The stranger's reading of a forged writ failed at the toll gate, and their name suffered for it."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {
+        "positive": {
+          "overview": "The toll gate has its answer on the family's writ.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "The case goes up to the county court: the family for carrying the writ, the seal-cutter for making it. {actor} is sent for to swear to the reading. No one at the toll house has seen a forgery this good caught so quickly.",
+              "changes": [
+                {
+                  "id": "writ.seek.crit.standing",
+                  "kind": "reputation",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The town's trust",
+                  "detail": "The town trusts {actor}'s eye more.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.crit.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.crit.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.seek.crit.swear_to_seal",
+                  "label": "Swear to the seal alone",
+                  "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                  "effects": [
+                    {
+                      "kind": "favor_creation",
+                      "magnitudeRange": [
+                        0.15,
+                        0.3
+                      ],
+                      "context": "Swore to the forged toll seal and kept the case clean",
+                      "debtorAgentId": "$cast:tollmaster"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.crit.speak_for_family",
+                  "label": "Speak for the family",
+                  "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:traveller",
+                      "delta": 0.12
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The case goes up to the county court: the family for carrying the writ, the seal-cutter for making it. {actor} is sent for to swear to the reading.",
+              "changes": [
+                {
+                  "id": "writ.seek.success.standing",
+                  "kind": "reputation",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The town's trust",
+                  "detail": "The town trusts {actor}'s eye more.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.success.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.success.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.seek.success.swear_to_seal",
+                  "label": "Swear to the seal alone",
+                  "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                  "effects": [
+                    {
+                      "kind": "favor_creation",
+                      "magnitudeRange": [
+                        0.15,
+                        0.3
+                      ],
+                      "context": "Swore to the forged toll seal and kept the case clean",
+                      "debtorAgentId": "$cast:tollmaster"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.success.speak_for_family",
+                  "label": "Speak for the family",
+                  "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:traveller",
+                      "delta": 0.12
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "The case goes up to the county court, and {actor} is sent for to swear to the reading. The family spent the whole day held at the gate while {actor} searched.",
+              "changes": [
+                {
+                  "id": "writ.seek.cost.standing",
+                  "kind": "reputation",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "The town's trust",
+                  "detail": "The town trusts {actor}'s eye more.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.cost.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.cost.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.seek.cost.swear_to_seal",
+                  "label": "Swear to the seal alone",
+                  "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                  "effects": [
+                    {
+                      "kind": "favor_creation",
+                      "magnitudeRange": [
+                        0.15,
+                        0.3
+                      ],
+                      "context": "Swore to the forged toll seal and kept the case clean",
+                      "debtorAgentId": "$cast:tollmaster"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.seek.cost.speak_for_family",
+                  "label": "Speak for the family",
+                  "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:traveller",
+                      "delta": 0.12
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "Without the maker, the town's court would not hold the family, and let them go. The toll house asked a trained eye to settle the writ, and {actor} left it unsettled.",
+              "changes": [
+                {
+                  "id": "writ.seek.fail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The town's doubt",
+                  "detail": "The town trusts {actor}'s eye less.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{actor} named the writ false, and the maker was never caught. The town's court let the family go, and every carter at the gate has heard the toll house call {actor}'s reading a guess.",
+              "changes": [
+                {
+                  "id": "writ.seek.critfail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The town's doubt",
+                  "detail": "The town trusts {actor}'s eye less.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "negative": {
+          "overview": "The toll gate has its answer on the family's writ.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "The family is through the gate, and the toll house wrote them down as paid. On the far side, {cast:traveller} told {actor} who made the writ, and why it was sold so cheap.",
+              "changes": [
+                {
+                  "id": "writ.sent.crit.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:traveller} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:traveller}",
+                      "entityId": "$cast:traveller",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.crit.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.crit.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.sent.crit.send_the_name",
+                  "label": "Send the name to the toll house",
+                  "intent": "Write to the toll-master naming the seal-cutter, and leave the family out of it. The toll-master will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:tollmaster",
+                      "delta": 0.1
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.crit.keep_secret",
+                  "label": "Keep the family's secret whole",
+                  "intent": "Tell no one what the family said on the road. The family's leader will trust the mortal the more for it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:traveller",
+                      "sentimentDelta": 0.15,
+                      "trustDelta": 0.1
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The family is through the gate. On the far side, {cast:traveller} told {actor} who made the writ.",
+              "changes": [
+                {
+                  "id": "writ.sent.success.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:traveller} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:traveller}",
+                      "entityId": "$cast:traveller",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.success.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.success.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.sent.success.send_the_name",
+                  "label": "Send the name to the toll house",
+                  "intent": "Write to the toll-master naming the seal-cutter, and leave the family out of it. The toll-master will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:tollmaster",
+                      "delta": 0.1
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.success.keep_secret",
+                  "label": "Keep the family's secret whole",
+                  "intent": "Tell no one what the family said on the road. The family's leader will trust the mortal the more for it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:traveller",
+                      "sentimentDelta": 0.15,
+                      "trustDelta": 0.1
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "The family is through the gate, and {actor}'s name is written in the toll book beside their writ. On the far side, {cast:traveller} told {actor} who made it.",
+              "changes": [
+                {
+                  "id": "writ.sent.cost.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:traveller} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:traveller}",
+                      "entityId": "$cast:traveller",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.cost.knowledge",
+                  "kind": "shell_state",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Who copies the seal",
+                  "detail": "{actor} knows where the false writs on this road come from.",
+                  "stateNoun": {
+                    "text": "knowledge",
+                    "tooltipId": "ui.knowledge"
+                  },
+                  "concepts": [
+                    {
+                      "text": "false writs",
+                      "tooltipId": "ui.knowledge"
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.cost.road",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "On the road",
+                  "detail": "{actor} is travelling away from {location} now.",
+                  "stateNoun": {
+                    "text": "seed",
+                    "tooltipId": "ui.aftermath_seed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "travelling away"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "writ.sent.cost.send_the_name",
+                  "label": "Send the name to the toll house",
+                  "intent": "Write to the toll-master naming the seal-cutter, and leave the family out of it. The toll-master will think better of the mortal.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetAgentId": "$cast:tollmaster",
+                      "delta": 0.1
+                    }
+                  ]
+                },
+                {
+                  "id": "writ.sent.cost.keep_secret",
+                  "label": "Keep the family's secret whole",
+                  "intent": "Tell no one what the family said on the road. The family's leader will trust the mortal the more for it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:traveller",
+                      "sentimentDelta": 0.15,
+                      "trustDelta": 0.1
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "The toll house read the writ again and found it false. The family was brought back from the road and held for the town's court. A trained eye passed that forgery, and under the charter it is {actor}'s to answer for.",
+              "changes": [
+                {
+                  "id": "writ.sent.fail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The town's doubt",
+                  "detail": "The town trusts {actor}'s eye less.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{actor} let a forged writ through the gate, and the toll house found it out the same day. The family is held for the town's court, and every carter at the gate knows whose word passed the writ.",
+              "changes": [
+                {
+                  "id": "writ.sent.critfail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "The town's doubt",
+                  "detail": "The town trusts {actor}'s eye less.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "fallback": {
+        "overview": "The toll gate has its answer on the family's writ.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The case goes up to the county court: the family for carrying the writ, the seal-cutter for making it. {actor} is sent for to swear to the reading. No one at the toll house has seen a forgery this good caught so quickly.",
+            "changes": [
+              {
+                "id": "writ.fallback.crit.standing",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The town's trust",
+                "detail": "The town trusts {actor}'s eye more.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.crit.knowledge",
+                "kind": "shell_state",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Who copies the seal",
+                "detail": "{actor} knows where the false writs on this road come from.",
+                "stateNoun": {
+                  "text": "knowledge",
+                  "tooltipId": "ui.knowledge"
+                },
+                "concepts": [
+                  {
+                    "text": "false writs",
+                    "tooltipId": "ui.knowledge"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.crit.road",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "On the road",
+                "detail": "{actor} is travelling away from {location} now.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "travelling away"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "writ.fallback.crit.swear_to_seal",
+                "label": "Swear to the seal alone",
+                "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                "effects": [
+                  {
+                    "kind": "favor_creation",
+                    "magnitudeRange": [
+                      0.15,
+                      0.3
+                    ],
+                    "context": "Swore to the forged toll seal and kept the case clean",
+                    "debtorAgentId": "$cast:tollmaster"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.crit.speak_for_family",
+                "label": "Speak for the family",
+                "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetAgentId": "$cast:traveller",
+                    "delta": 0.12
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The case goes up to the county court: the family for carrying the writ, the seal-cutter for making it. {actor} is sent for to swear to the reading.",
+            "changes": [
+              {
+                "id": "writ.fallback.success.standing",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The town's trust",
+                "detail": "The town trusts {actor}'s eye more.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.success.knowledge",
+                "kind": "shell_state",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Who copies the seal",
+                "detail": "{actor} knows where the false writs on this road come from.",
+                "stateNoun": {
+                  "text": "knowledge",
+                  "tooltipId": "ui.knowledge"
+                },
+                "concepts": [
+                  {
+                    "text": "false writs",
+                    "tooltipId": "ui.knowledge"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.success.road",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "On the road",
+                "detail": "{actor} is travelling away from {location} now.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "travelling away"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "writ.fallback.success.swear_to_seal",
+                "label": "Swear to the seal alone",
+                "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                "effects": [
+                  {
+                    "kind": "favor_creation",
+                    "magnitudeRange": [
+                      0.15,
+                      0.3
+                    ],
+                    "context": "Swore to the forged toll seal and kept the case clean",
+                    "debtorAgentId": "$cast:tollmaster"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.success.speak_for_family",
+                "label": "Speak for the family",
+                "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetAgentId": "$cast:traveller",
+                    "delta": 0.12
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The case goes up to the county court, and {actor} is sent for to swear to the reading. The family spent the whole day held at the gate while {actor} searched.",
+            "changes": [
+              {
+                "id": "writ.fallback.cost.standing",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The town's trust",
+                "detail": "The town trusts {actor}'s eye more.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.cost.knowledge",
+                "kind": "shell_state",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Who copies the seal",
+                "detail": "{actor} knows where the false writs on this road come from.",
+                "stateNoun": {
+                  "text": "knowledge",
+                  "tooltipId": "ui.knowledge"
+                },
+                "concepts": [
+                  {
+                    "text": "false writs",
+                    "tooltipId": "ui.knowledge"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.cost.road",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "On the road",
+                "detail": "{actor} is travelling away from {location} now.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "travelling away"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "writ.fallback.cost.swear_to_seal",
+                "label": "Swear to the seal alone",
+                "intent": "Give the court the reading and no more. The toll-master owes the mortal for a clean case.",
+                "effects": [
+                  {
+                    "kind": "favor_creation",
+                    "magnitudeRange": [
+                      0.15,
+                      0.3
+                    ],
+                    "context": "Swore to the forged toll seal and kept the case clean",
+                    "debtorAgentId": "$cast:tollmaster"
+                  }
+                ]
+              },
+              {
+                "id": "writ.fallback.cost.speak_for_family",
+                "label": "Speak for the family",
+                "intent": "Tell the court the family bought the writ in good faith. The family's leader will think better of the mortal.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetAgentId": "$cast:traveller",
+                    "delta": 0.12
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "Without the maker, the town's court would not hold the family, and let them go. The toll house asked a trained eye to settle the writ, and {actor} left it unsettled.",
+            "changes": [
+              {
+                "id": "writ.fallback.fail.standing",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The town's doubt",
+                "detail": "The town trusts {actor}'s eye less.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "{actor} named the writ false, and the maker was never caught. The town's court let the family go, and every carter at the gate has heard the toll house call {actor}'s reading a guess.",
+            "changes": [
+              {
+                "id": "writ.fallback.critfail.standing",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The town's doubt",
+                "detail": "The town trusts {actor}'s eye less.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A two-step Eye test for an expert at a town gate: read a travelling family's writ of passage and find it a good forgery, then decide its cost. The mortal either names it false and hunts the seal-cutter who made it (a bigger standing gain and a summons), or vouches for the family and answers for the writ under the town's charter (a favour owed and the maker's name secondhand). A win leaves the maker's name known and the mortal on the road; a loss costs standing in the town."
+  }
+}

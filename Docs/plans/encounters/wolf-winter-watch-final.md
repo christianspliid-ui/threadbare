@@ -297,7 +297,7 @@ The page per band is in § 14b below: overview, chip captions, then reactions.
 ## 14. Aftermath Reaction Choices
 
 **Success pair (critical_success, success, success_at_cost):**
-- **Name the drover to the village.** Intent: The mortal tells {location} who staked the carrion. The village thinks the better of them, and the drover will not forget it. Effects: `reputation_with` `$here` +0.03; `bond_change` `$cast:drover` −0.12.
+- **Name the drover to the village.** Intent: The mortal names the drover to {location}. The village thinks the better of them, and the drover will not forget it. Effects: `reputation_with` `$here` +0.03; `bond_change` `$cast:drover` −0.12.
 - **Keep the drover's secret.** Intent: The mortal keeps quiet about the carrion, and the drover owes them for the silence. Effect: `favor_creation` { magnitudeRange [0.2, 0.35], context "Kept quiet about the carrion staked by a neighbouring village's folds", debtorAgentId `$cast:drover` }.
 
 **Failure pair (failure, critical_failure):**
