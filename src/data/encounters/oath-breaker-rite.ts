@@ -1,0 +1,930 @@
+/**
+ * The Oath-Breaker's Rite — slot 6 of the expert-everyday-2 batch (THR-1679).
+ * 
+ * Pipeline: oath-breaker-rite draft / editorial / revised / systems (READY WITH CAVEATS) / final / package (PACKAGE PASS, connected).
+ * plotHookTaken: hook.blame_falls_on_outsiders, blended with hook.haunted_relic.
+ * Shape: opt-in complication; step 0 read the oath (veil 0.60), then an agent-decided fork on tradition_novelty:
+ * Archivist looses the oath (veil 0.68), Heretic exposes the empty rite (veil 0.62, raised by the batch ruling).
+ * Consequence hand (binding): condition (cursed on $actor) + place (tended_shrine / under_watch on $here). No swap.
+ * Known caveat: a step-0 critical failure ends the action after the pole is recorded, so the chosen arm critical_failure
+ * page renders chips whose writes never fired (corpus-wide engine gap). The fallback aftermath is authored for the fix.
+ * Heretic decline arm priced at expert odds under the batch ruling (recorded shape deviation).
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.oath_breaker_rite',
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Oath-Breaker\'s Rite',
+  reach: 'veil',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['tradition_novelty'],
+  settings: ['urban'],
+  openings: {
+    urban: '{actor} arrives in {location} at dusk.',
+  },
+  steps: [
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.6,
+      purposeLine: 'Read the oath',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: '{cast:oathbreaker}, a weaver, broke an oath sworn on the stone in the town shrine. Since then '
+        + 'the weaver\'s workshop has burned. The shrine lamp goes out whenever the weaver walks in.\n\n'
+        + '{cast:oathbreaker} is sure of a curse and asks {actor}, a reader of oaths, whether it is real. A '
+        + 'frightened hedge-priest has already taken the weaver\'s coin for a rite at midnight. A wrong '
+        + 'answer will cost {actor} their name in town.',
+      criticalSuccessAfterimage: 'They read the stone plainly. The oath was a promise to repay a neighbour\'s loan by midsummer, '
+        + 'and it still holds; that is why the lamp goes out. No curse follows the weaver. The fire was the '
+        + 'weaver\'s own lamp, left burning.',
+      successAfterimage: 'They found the oath still holding on the stone, and no curse on the weaver at all.',
+      successAtCostAfterimage: 'They found the oath still holding and no curse, after a reading so slow that the weaver nearly '
+        + 'left.',
+      failureAfterimage: 'They felt the oath\'s weight at the stone, and could not tell it from a curse.',
+      criticalFailureAfterimage: 'They told the weaver the curse was real.',
+      deal: {
+        count: 4,
+        tags: ['lore', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'oath.remember_old_ways',
+          name: 'Remember The Old Ways',
+          sphere: 'time',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'tradition_novelty',
+            toward: 'positive',
+          },
+          imageTag: 'generic.memory',
+          effectLine: 'Bring the oath-rite back to their mind as it was first done. They lean toward performing it at '
+            + 'the stone.',
+          bandProse: {
+            critical_success: 'The oath-rite came back to them whole, and they read the stone by it.',
+            success: 'The oath-rite came back to them, and the stone answered it.',
+            near_miss: 'Half of the oath-rite came back to them, and the stone answered half.',
+            failure: 'The oath-rite came back to them wrong, and they read the stone by a wrong verse.',
+          },
+        },
+        {
+          id: 'oath.stir_doubt',
+          name: 'Stir Doubt',
+          sphere: 'mind',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'tradition_novelty',
+            toward: 'negative',
+          },
+          imageTag: 'generic.focus',
+          effectLine: 'Make every rite they know sound hollow to them. They lean toward refusing every rite and telling '
+            + 'the plain truth.',
+          bandProse: {
+            success_at_cost: 'They doubted the stone out loud, and the weaver heard it.',
+            failure: 'They doubted the stone, and then doubted what it showed them.',
+            critical_failure: 'They doubted every true sign at the stone and trusted the one false sign.',
+          },
+        },
+      ],
+    },
+    {
+      branchOnStep: 0,
+      decidedBy: {
+        axis: 'tradition_novelty',
+      },
+      variants: {
+        positive: {
+          reach: 'veil',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.68,
+          purposeLine: 'Loose the oath',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} offers the weaver the old rite in place of the priest\'s. The old rite is spoken at the '
+            + 'stone, before witnesses. {cast:priest}, the hedge-priest, keeps the coin and holds a rival rite '
+            + 'in the square. There the priest tells the crowd that the strangers camped outside the gate '
+            + 'brought the curse. {actor} must loose the oath before the crowd believes the priest.',
+          criticalSuccessAfterimage: 'They loosed the oath in its first form, word for word.',
+          successAfterimage: 'They loosed the oath at the stone.',
+          successAtCostAfterimage: 'They loosed the oath, but the rite ran until dawn.',
+          failureAfterimage: 'The oath held against every verse they spoke.',
+          criticalFailureAfterimage: 'The oath held, and the shrine lamp went out in their hand.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They know the oath holds and no curse does.',
+              polarity: 'for',
+              forecastDelta: 0.06,
+            },
+            success: {
+              text: 'They know what holds the weaver.',
+              polarity: 'for',
+              forecastDelta: 0.04,
+            },
+            success_at_cost: {
+              text: 'The weaver trusts their reading less.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They know only part of the oath.',
+              polarity: 'for',
+              forecastDelta: 0.02,
+            },
+            failure: {
+              text: 'They cannot tell the oath from a curse.',
+              polarity: 'against',
+              forecastDelta: -0.03,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'condition_attachment',
+                templateId: 'trait.condition.location.tended_shrine',
+                targetLocationId: '$here',
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: 0.08,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'condition_attachment',
+                templateId: 'trait.condition.cursed',
+                targetAgentId: '$actor',
+              },
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.under_watch',
+                targetLocationId: '$here',
+                intensity: 0.6,
+                durationTicks: 48,
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.1,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['lore', 'presence'],
+          },
+          nudges: [
+            {
+              id: 'oath.twist_the_words',
+              name: 'Twist The Words',
+              sphere: 'chaos',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              opposes: 'priest',
+              imageTag: 'generic.luck',
+              effectLine: 'Make the hedge-priest stumble through the rival rite in the square, so the crowd drifts back '
+                + 'toward the shrine.',
+              bandProse: {
+                success: '{cast:priest} lost the rival rite twice in the square, and the crowd walked back to the shrine.',
+                near_miss: '{cast:priest} lost the rival rite once, and only half the crowd walked back.',
+                failure: '{cast:priest} lost a verse and found it again, and the crowd stayed in the square.',
+                critical_failure: '{cast:priest} spoke the rival rite without one slip, and the crowd stayed to hear it all.',
+              },
+            },
+            {
+              id: 'oath.wake_the_stone',
+              name: 'Wake The Stone',
+              sphere: 'time',
+              essenceCost: 2,
+              forecastDelta: 0.12,
+              imageTag: 'generic.time-slow',
+              effectLine: 'Stir the memory the shrine holds, so the oath answers the old rite more readily.',
+              bandProse: {
+                critical_success: 'The stone answered the first verse, and the lamp above it flared and held.',
+                success: 'The stone answered the rite as it had answered the swearing.',
+                success_at_cost: 'The stone answered one verse at a time, and slowly.',
+                failure: 'The stone answered only with the oath, still owed.',
+              },
+            },
+          ],
+        },
+        negative: {
+          reach: 'veil',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.62,
+          purposeLine: 'Expose the empty rite',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} refuses to hold any rite and tells the weaver to keep the oath instead. {cast:priest}, '
+            + 'the hedge-priest, holds the midnight rite in the square anyway. The priest blames the strangers '
+            + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than a '
+            + 'doubter. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
+          criticalSuccessAfterimage: 'They took the priest\'s rite apart in front of the square, step by step.',
+          successAfterimage: 'They showed the crowd that the priest\'s rite called on no power at all.',
+          successAtCostAfterimage: 'They turned the crowd, and lost the weaver.',
+          failureAfterimage: 'The crowd listened to the priest over them.',
+          criticalFailureAfterimage: 'The crowd turned on them as well as on the strangers.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They know there is no curse to lift.',
+              polarity: 'for',
+              forecastDelta: 0.05,
+            },
+            success: {
+              text: 'They know the weaver carries no curse.',
+              polarity: 'for',
+              forecastDelta: 0.03,
+            },
+            success_at_cost: {
+              text: 'The weaver doubts their word.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They are nearly sure there is no curse.',
+              polarity: 'for',
+              forecastDelta: 0.01,
+            },
+            failure: {
+              text: 'They are not sure the curse is false.',
+              polarity: 'against',
+              forecastDelta: -0.03,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: 0.06,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.under_watch',
+                targetLocationId: '$here',
+                intensity: 0.6,
+                durationTicks: 48,
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.08,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['social', 'insight'],
+          },
+        },
+      },
+      fallback: {
+        reach: 'veil',
+        duration: {
+          min: 1,
+          max: 2,
+        },
+        difficulty: 0.62,
+        purposeLine: 'Expose the empty rite',
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'fail_action',
+        narrativeTemplate: '{actor} refuses to hold any rite and tells the weaver to keep the oath instead. {cast:priest}, '
+          + 'the hedge-priest, holds the midnight rite in the square anyway. The priest blames the strangers '
+          + 'camped outside the gate. The crowd is afraid, and it would rather believe a priest than a '
+          + 'doubter. {actor} must prove to the whole square that the priest\'s rite calls on no power.',
+        criticalSuccessAfterimage: 'They took the priest\'s rite apart in front of the square, step by step.',
+        successAfterimage: 'They showed the crowd that the priest\'s rite called on no power at all.',
+        successAtCostAfterimage: 'They turned the crowd, and lost the weaver.',
+        failureAfterimage: 'The crowd listened to the priest over them.',
+        criticalFailureAfterimage: 'The crowd turned on them as well as on the strangers.',
+        carryoverFactorLines: {
+          critical_success: {
+            text: 'They know there is no curse to lift.',
+            polarity: 'for',
+            forecastDelta: 0.05,
+          },
+          success: {
+            text: 'They know the weaver carries no curse.',
+            polarity: 'for',
+            forecastDelta: 0.03,
+          },
+          success_at_cost: {
+            text: 'The weaver doubts their word.',
+            polarity: 'against',
+            forecastDelta: -0.02,
+          },
+          near_miss: {
+            text: 'They are nearly sure there is no curse.',
+            polarity: 'for',
+            forecastDelta: 0.01,
+          },
+          failure: {
+            text: 'They are not sure the curse is false.',
+            polarity: 'against',
+            forecastDelta: -0.03,
+          },
+        },
+        successMetadata: {
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.06,
+            },
+          ],
+        },
+        failureMetadata: {
+          effects: [
+            {
+              kind: 'apply_condition',
+              conditionTraitId: 'trait.condition.location.under_watch',
+              targetLocationId: '$here',
+              intensity: 0.6,
+              durationTicks: 48,
+            },
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: -0.08,
+            },
+          ],
+        },
+        deal: {
+          count: 4,
+          tags: ['social', 'insight'],
+        },
+      },
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.personality.veil.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Patient, they do not hurry the work.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'oathbreaker',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      supportRole: 'oath_breaker',
+      spawnNpcRole: 'weaver',
+      spawnName: 'Tobin Marle',
+    },
+    {
+      kind: 'actor',
+      key: 'priest',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      supportRole: 'hedge_priest',
+      spawnNpcRole: 'priest',
+      spawnName: 'Wendel Crane',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A weaver who broke an oath is sure of a curse, and a frightened hedge-priest has already taken '
+      + 'the weaver\'s coin for a rite.',
+    success: 'The priest lost the square, and the town trusts {actor}\'s word on oaths more.',
+    failure: 'The priest won the square, and the town trusts {actor}\'s word on oaths less.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {
+      positive: {
+        overview: '{actor} held the old rite at the stone.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'The oath came off the stone before midnight, in front of half the town. {cast:priest} handed the '
+              + 'weaver\'s coin back where everyone could see.',
+            changes: [
+              {
+                id: 'oath.arch.cs.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept shrine',
+                detail: 'Rites at the shrine in town take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.cs.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The oath came off the stone, and the shrine lamp stayed lit when {cast:oathbreaker} walked in. '
+              + '{cast:priest} kept the coin, and the rival rite ended to an empty square.',
+            changes: [
+              {
+                id: 'oath.arch.su.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept shrine',
+                detail: 'Rites at the shrine in town take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.su.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'Most of the crowd had gone home before the old rite ended. The oath is off the stone, and '
+              + '{cast:priest} kept the weaver\'s coin.',
+            changes: [
+              {
+                id: 'oath.arch.sc.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept shrine',
+                detail: 'Rites at the shrine in town take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.sc.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The oath is still on the stone, and part of it caught on {actor}. {cast:priest} kept the crowd '
+              + 'in the square and blamed the strangers at the gate.',
+            changes: [
+              {
+                id: 'oath.arch.fa.cursed',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A caught oath',
+                detail: 'Misfortune clings to {actor} for a while.',
+                stateNoun: {
+                  text: 'Cursed',
+                  entityId: 'trait.condition.cursed',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'Misfortune',
+                    entityId: 'trait.condition.cursed',
+                    visualKind: 'attachment',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.fa.watch',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A watch on strangers',
+                detail: 'The town watches every newcomer now, and quiet work there is harder.',
+                stateNoun: {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.fa.repm',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths less.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The whole crowd saw the rite fail. {cast:priest} told the square that the strangers had brought '
+              + 'the curse, and that {actor} was one of them.',
+            changes: [
+              {
+                id: 'oath.arch.cf.cursed',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A caught oath',
+                detail: 'Misfortune clings to {actor} for a while.',
+                stateNoun: {
+                  text: 'Cursed',
+                  entityId: 'trait.condition.cursed',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'Misfortune',
+                    entityId: 'trait.condition.cursed',
+                    visualKind: 'attachment',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.cf.watch',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A watch on strangers',
+                detail: 'The town watches every newcomer now, and quiet work there is harder.',
+                stateNoun: {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.arch.cf.repm',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths less.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      negative: {
+        overview: '{actor} refused to hold any rite.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'The crowd went home before the rite ended. The strangers at the gate were never named, and '
+              + '{cast:oathbreaker} knows now that there is no curse, only an oath still owed.',
+            changes: [
+              {
+                id: 'oath.her.cs.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The crowd went home, and {cast:priest} ended the rite early. No one named the strangers at the '
+              + 'gate.',
+            changes: [
+              {
+                id: 'oath.her.su.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'The crowd went home, but {cast:oathbreaker} stayed in the square with {cast:priest}, still sure '
+              + 'of a curse.',
+            changes: [
+              {
+                id: 'oath.her.sc.repp',
+                kind: 'reputation',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths more.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: '{cast:priest} named the strangers at the gate as the cause of the curse, and the crowd believed '
+              + 'it.',
+            changes: [
+              {
+                id: 'oath.her.fa.watch',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A watch on strangers',
+                detail: 'The town watches every newcomer now, and quiet work there is harder.',
+                stateNoun: {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.her.fa.repm',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths less.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: '{cast:priest} named the strangers at the gate, and named {actor} with them. The square believed '
+              + 'every word.',
+            changes: [
+              {
+                id: 'oath.her.cf.watch',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A watch on strangers',
+                detail: 'The town watches every newcomer now, and quiet work there is harder.',
+                stateNoun: {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: 'town',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'oath.her.cf.repm',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Trust',
+                detail: 'The town trusts {actor}\'s word on oaths less.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview: '{actor} left before any rite began.',
+      changes: [],
+      byOutcome: {
+        success: {
+          overview: '{actor} left the shrine with the reading done and no rite held.',
+          changes: [],
+        },
+        failure: {
+          overview: '{actor} left the shrine unsure, and the rite went ahead without them.',
+          changes: [],
+        },
+        critical_failure: {
+          overview: '{actor} told the weaver the curse was real and left before midnight. The priest\'s rite went '
+            + 'ahead without them.',
+          changes: [],
+        },
+      },
+    },
+  },
+  description: 'An opt-in oath reading at a town shrine: read a broken oath on the shrine stone (Veil), then, by '
+    + 'the mortal\'s own regard for old rites, loosen the oath by the old rite against a frightened '
+    + 'hedge-priest\'s rival rite (Archivist, Veil) or refuse every rite and prove to the crowd in the '
+    + 'square that the priest\'s rite is empty (Heretic, Veil). A true release tends the shrine; any '
+    + 'failure lets the priest blame the strangers at the gate, and the town sets a watch.',
+  locationSubtypes: expandSettings(['urban']),
+  consequenceDraw: ['condition', 'place'],
+};
+
+export const OATH_BREAKER_RITE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

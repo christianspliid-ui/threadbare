@@ -250,6 +250,9 @@ import { BELL_TOWER_SHORING_TEMPLATE } from './encounters/bell-tower-shoring';
 import { FEUD_MEDIATION_TEMPLATE } from './encounters/feud-mediation';
 import { DEBT_ARBITRATION_TEMPLATE } from './encounters/debt-arbitration';
 import { COMET_DISPUTATION_TEMPLATE } from './encounters/comet-disputation';
+import { WOLF_WINTER_WATCH_TEMPLATE } from './encounters/wolf-winter-watch';
+import { OATH_BREAKER_RITE_TEMPLATE } from './encounters/oath-breaker-rite';
+import { HARVEST_ALMANAC_TEMPLATE } from './encounters/harvest-almanac';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5737,6 +5740,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   FEUD_MEDIATION_TEMPLATE,
   DEBT_ARBITRATION_TEMPLATE,
   COMET_DISPUTATION_TEMPLATE,
+  WOLF_WINTER_WATCH_TEMPLATE,
+  OATH_BREAKER_RITE_TEMPLATE,
+  HARVEST_ALMANAC_TEMPLATE,
 ];
 
 /**
@@ -5875,6 +5881,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   FEUD_MEDIATION_TEMPLATE,
   DEBT_ARBITRATION_TEMPLATE,
   COMET_DISPUTATION_TEMPLATE,
+  WOLF_WINTER_WATCH_TEMPLATE,
+  OATH_BREAKER_RITE_TEMPLATE,
+  HARVEST_ALMANAC_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**
