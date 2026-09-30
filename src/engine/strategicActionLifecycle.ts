@@ -84,6 +84,8 @@ import { isAgentGone } from './groups/groupQueries';
 import { isMonster } from './monsters/isMonster';
 import { monsterLairId } from './monsters/hunts';
 import { plantAppointmentPromise } from './appointments';
+import { claimLeadVisit, siteClassAdmits } from './ruins/leadVisit';
+import { APPOINTMENT_WINDOW_TICKS } from '../data/movement-content';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
@@ -2284,6 +2286,27 @@ export function maybePlantAppointmentPayoff(
   // THR-1560: a meeting aimed at its site needs a site to aim at. A beast that died
   // while the hunt was prepared is no one's to face — no promise, no seed.
   if (payoff.inheritSiteAsTarget && (!site || isAgentGone(site))) return false;
+  // THR-1664: a survey of a town arranges nothing — only the site classes the row names.
+  if (!siteClassAdmits(site, payoff.siteClasses)) return false;
+  const dueTick = tick + (payoff.delayTicks ?? UNDERTAKING_APPOINTMENT_DELAY_TICKS);
+  // THR-1664: the visit is to a lead the survey left `narrowed`, and one pending visit
+  // per holder per ruin — the seed id below is tick-keyed, so a repeat survey would
+  // otherwise plant a duplicate. The gate stamps `pendingVisitDueTick` on the lead.
+  if (payoff.leadVisit) {
+    const claim = site ? claimLeadVisit(state.graph, candidate.actorId, site.id, tick, dueTick) : undefined;
+    if (!claim?.admitted) {
+      const reason = claim?.reason ?? 'no_lead';
+      emitTrace({
+        tick, category: 'appointment_planted', agentId: candidate.actorId,
+        seedId, locationId: site?.id ?? '', dueTick,
+        windowTicks: payoff.windowTicks ?? APPOINTMENT_WINDOW_TICKS,
+        templateId: candidate.templateId, source: 'undertaking',
+        refused: `lead_visit_${reason}`, seedWithheld: true,
+        summary: `No visit arranged to ${site?.name ?? candidate.targetNodeId ?? 'the site'} for ${candidate.actorId}: ${reason}`,
+      });
+      return false;
+    }
+  }
   // A beast's meeting is at its den (the lair it belongs to), the place the one-confront
   // refusal and the draw gate both read; every other site is where the work stands.
   const siteIsMonster = isMonster(site);
@@ -2295,7 +2318,6 @@ export function maybePlantAppointmentPayoff(
     && site.id !== candidate.actorId && !siteIsMonster
     ? site.id
     : undefined;
-  const dueTick = tick + (payoff.delayTicks ?? UNDERTAKING_APPOINTMENT_DELAY_TICKS);
 
   const result = plantAppointmentPromise({
     graph: state.graph,

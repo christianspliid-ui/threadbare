@@ -40,6 +40,7 @@ import {
   SAGA_MAGNITUDE_THRESHOLD,
   SAGA_CLUE_MIN_TIER,
   CLUE_LEAD_STRENGTH_BY_PRECISION,
+  isLeadVisitPending,
 } from './constants';
 import { hexDistance } from '../../lib/hexMath';
 import { isAutonomousDecisionActor } from '../decisionTier';
@@ -539,6 +540,10 @@ export function phaseClueDecay(state: GameState): Partial<GameState> {
         try { graph.removeEdge(edge.id); } catch { /* already gone */ }
         continue;
       }
+
+      // THR-1664: a lead with a visit on the way is spared until the visit resolves (or
+      // its grace lapses) — a 48-tick journey must not outlive a 40-tick lead.
+      if (isLeadVisitPending(props.pendingVisitDueTick, tick)) continue;
 
       const age = tick - props.discoveredTick;
       const maxAge = CLUE_MAX_AGE[props.precision] ?? CLUE_MAX_AGE_TICKS_VAGUE;

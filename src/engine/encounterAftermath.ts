@@ -112,6 +112,7 @@ import {
 import { getAgreementTemplate } from '../data/agreement-reward-catalog';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId, findNearestRuinId } from './ruins/clueLifecycle';
+import { resolveVisitLead } from './ruins/leadVisit';
 import { applyFactionReputationGain } from './factionReputation';
 import { spherePowerMultiplier, scaledEffect, scaledCost } from './sphereScaling';
 import type { ControlEffect } from '../types/controlEffect';
@@ -4646,6 +4647,49 @@ export function applyEncounterAftermathReaction(
         } catch {
           // fail-soft: clue spawn failure is non-fatal
         }
+        break;
+      }
+
+      case 'sharpen_clue': {
+        // THR-1664 — the visit's band sets the actor's own lead (never Narrative Gravity).
+        if (!actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId ?? '',
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'sharpen_clue', effectDetail: {}, success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `sharpen_clue[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        const visit = resolveVisitLead(state.graph, actorAgentId, tick, {
+          outcome: reaction.actionOutcome,
+          band: reaction.stepOutcome,
+          missed: effect.missed,
+        });
+        if (visit.success) {
+          touchWorld(runtime);
+          mutationSummary.touchedWorld = true;
+        }
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'sharpen_clue',
+          effectDetail: {
+            ...(visit.ruinId ? { targetRuinId: visit.ruinId } : {}),
+            ...(visit.from ? { from: visit.from } : {}),
+            ...(visit.to ? { to: visit.to } : {}),
+            ...(reaction.stepOutcome ? { band: reaction.stepOutcome } : {}),
+            ...(reaction.actionOutcome ? { actionOutcome: reaction.actionOutcome } : {}),
+          },
+          success: visit.success,
+          failReason: visit.failReason,
+          effectiveTargetId: actorAgentId,
+          effectiveTargetKind: 'actor_fallback',
+          summary: visit.success
+            ? `sharpen_clue[${i}]: lead on ${visit.ruinId} ${visit.from} → ${visit.to}`
+            : `sharpen_clue[${i}] no-op: ${visit.failReason}`,
+        });
         break;
       }
 

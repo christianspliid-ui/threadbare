@@ -34,6 +34,7 @@ import type { ValuePair } from '../types/agent';
 import type { ContentQuery } from '../types/contentQuery';
 import { UNDERTAKING_OBJECT_TYPES, HARM_ON_DESTROY, type UndertakingObjectType } from './undertaking-objects';
 import { UNDERTAKING_VERB_PROSE, UNDERTAKING_VERB_WORDS, UNDERTAKING_CELL_PHRASES } from './undertaking-verb-prose';
+import { CLUE_LEAD_VISIT_DELAY_TICKS, CLUE_LEAD_VISIT_PULL_MULT } from '../engine/ruins/constants';
 import {
   UNDERTAKING_VERB_VARIANTS,
   STRATEGIC_VERB_OF_UNDERTAKING_VERB,
@@ -263,6 +264,29 @@ export const UNDERTAKING_CELL_APPOINTMENTS: Readonly<Record<string, UndertakingA
     requirePlace: true,
     // A lair sits off the road graph; the hunter walks there by hex, so price it so.
     pricedByHex: true,
+  },
+  // THR-1664 — the visit to a lead's ruin (seeded things stay alive S3). A survey is
+  // instant and always `success`, so it can only leave a lead `narrowed`; the visit is
+  // where the dice live. Arranged only for a ruin or a wonder (`siteClasses`), only when
+  // the survey left the surveyor holding a `narrowed` lead on it, and only once per
+  // holder per ruin while a visit is pending (`leadVisit`). The kept branch is the one
+  // template tagged `#ruin_lead` (`ruins.lead.visit`), judged at the ruin; the missed
+  // branch is `#lead_gone_cold` (`ruins.lead.cold`), fired wherever the mortal stands.
+  // Both end in `sharpen_clue`, which sets the lead from the band.
+  'cell.observe.location': {
+    delayTicks: CLUE_LEAD_VISIT_DELAY_TICKS,
+    meeting: { kind: 'encounter_template', tags: ['#ruin_lead'] },
+    seedLabel: 'A lead to follow, at the ruin itself.',
+    missed: {
+      query: { kind: 'encounter_template', tags: ['#lead_gone_cold'] },
+      seedLabel: 'The lead went cold.',
+    },
+    pullMult: CLUE_LEAD_VISIT_PULL_MULT,
+    requirePlace: true,
+    // Ruins sit off the road graph as lairs do; price the walk by hex.
+    pricedByHex: true,
+    siteClasses: ['ruin', 'wonder'],
+    leadVisit: true,
   },
 };
 

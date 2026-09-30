@@ -189,7 +189,7 @@ export const CONSEQUENCE_FAMILY_EFFECT_KINDS: Readonly<
   standing: ['reputation_score', 'reputation_tally', 'reputation_set', 'faction_reputation_gain', 'reputation_with'],
   possession: ['spawn_artifact', 'attachment_grant', 'reward_draw'],
   condition: ['condition_attachment', 'apply_condition', 'remove_condition', 'attachment_grant'],
-  knowledge: ['intelligence', 'spawn_clue'],
+  knowledge: ['intelligence', 'spawn_clue', 'sharpen_clue'],
   secret: ['hidden_mark', 'secret_discovery', 'favor_creation'],
   story_seed: ['encounter_seed'],
   thread: ['thread_strengthen', 'thread_weaken', 'thread_break', 'thread_branch'],

@@ -1064,6 +1064,22 @@ export type EncounterAftermathReactionEffect =
     readonly targetRuinId: string;
     readonly when?: EffectPredicate;
   }
+  | {
+    /**
+     * THR-1664 — the visit to a lead's ruin sets the lead from how the encounter
+     * ended. Acts only on the actor's own lead (the one carrying the visit stamp, else
+     * the one on the ruin at their hex), never by Narrative Gravity. The action outcome
+     * maps through `CLUE_VISIT_PRECISION_BY_OUTCOME`: success → `located`, at cost
+     * (a near miss aggregates here) → `narrowed` and fresh, failure → cold (consumed).
+     * Clears the visit stamp. Outcome-aware only as a step-outcome effect
+     * (`successMetadata` / `failureMetadata`), and a no-op on a step that does not end
+     * the encounter — so an author may put it on every step that can.
+     */
+    readonly kind: 'sharpen_clue';
+    /** The missed visit: the lead goes cold whatever the outcome. */
+    readonly missed?: boolean;
+    readonly when?: EffectPredicate;
+  }
   // ─── Secrets & Favors effects (THR-30) ────────────────────────────────────
   | {
     /**
@@ -1506,6 +1522,19 @@ export interface EncounterAftermathReaction {
   readonly intent?: string;
   readonly effects: readonly EncounterAftermathReactionEffect[];
   readonly closeAfterSelection?: boolean;
+  /**
+   * THR-1664 — set only on the synthetic reaction that carries a step's
+   * `successMetadata` / `failureMetadata` effects: the band the step resolved to, so
+   * a band-aware effect (`sharpen_clue`) reads it. Absent on author-picked reactions.
+   */
+  readonly stepOutcome?: StepOutcome;
+  /**
+   * THR-1664 — on the same synthetic reaction: the outcome the action resolves with
+   * once this step applies, or absent while it goes on to another step
+   * (`terminalActionOutcome`). `sharpen_clue` keys on it, so the lead agrees with
+   * the `byOutcome` ending the player reads.
+   */
+  readonly actionOutcome?: UnifiedActionOutcome;
 }
 
 export interface EncounterAftermathSummary {

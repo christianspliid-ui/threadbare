@@ -165,6 +165,32 @@ export function isStepComplete(action: UnifiedAction): boolean {
  *   one must not silently draw the tier-1 range from step 1 onward.
  * @returns Updated action
  */
+/**
+ * THR-1664 — the outcome the action will resolve with once `outcome` is applied, or
+ * `undefined` when the action will advance to another step. Pure and draw-free: the
+ * same three terminal branches as {@link advanceStep} (hard failure, a set fight
+ * result, the final step), read without the next-step duration roll, so a step's
+ * outcome effects can know how the encounter ends before `advanceStep` runs.
+ */
+export function terminalActionOutcome(
+  action: UnifiedAction,
+  outcome: StepOutcome,
+  template: UnifiedActionTemplate,
+): UnifiedActionOutcome | undefined {
+  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  if (isStepFailure(outcome) && (
+    currentStepDef.failBehavior === 'fail_action' || outcome === 'critical_failure'
+  )) {
+    return outcome === 'critical_failure' ? 'critical_failure' : 'failure';
+  }
+  const fightResult = action.fightState?.result;
+  if (fightResult) return FIGHT_RESULT_ACTION_OUTCOME[fightResult];
+  if (action.currentStep + 1 >= template.steps.length) {
+    return computeFinalActionOutcome([...action.stepOutcomes, outcome]);
+  }
+  return undefined;
+}
+
 export function advanceStep(
   action: UnifiedAction,
   outcome: StepOutcome,

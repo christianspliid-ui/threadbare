@@ -30,4 +30,11 @@ export interface KnowsClueOfEdgeProperties {
   detail?: string;
   /** If composed by a god, the god's id — enables divine_mark spillover */
   composedByGodId?: string;
+  /**
+   * THR-1664 — the due tick of a visit a survey arranged to this ruin. While set and
+   * not past due + `CLUE_LEAD_VISIT_GRACE_TICKS`, `phaseClueDecay` spares the lead and
+   * the survey planter arranges no second visit. The visit's resolution (kept or
+   * missed, via `sharpen_clue`) clears it.
+   */
+  pendingVisitDueTick?: number;
 }

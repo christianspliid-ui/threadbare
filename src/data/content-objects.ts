@@ -181,6 +181,10 @@ export const CONTENT_OBJECT_KINDS: readonly ContentObjectKind[] = [
       // THR-1560 — the hunt's missed sequel (`hunt.trail_cold`). Without the prefix the
       // kind narrows it out of `{ kind: 'encounter_template' }`, and a missed hunt fires nothing.
       'hunt.',
+      // THR-1664 — the ruin visit's two seed-only branches (`ruins.lead.visit`,
+      // `ruins.lead.cold`). Claimed for the same reason as `hunt.`: without it the
+      // survey's visit query finds nothing and no visit ever fires.
+      'ruins.',
       // THR-1677 — the well sinking appointment's seed-only sequels
       // (`town.well_first_water`, `town.well_gone_foul`).
       'town.',

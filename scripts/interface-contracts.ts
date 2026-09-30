@@ -5479,6 +5479,36 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.",
     },
   },
+  // -- Ruins -> Undertakings: the visit sets the lead (THR-1664, seeded things stay alive S3)
+  // What these rows make impossible: a survey is instant and always `success`, so no lead
+  // could ever reach `located` and no delve could ever be admitted from the climb.
+  {
+    id: 'survey-arranges-a-ruin-visit',
+    producerSystem: RUINS,
+    consumerSystem: AMBITIONS,
+    intent:
+      "A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold.",
+    ulTerms: ['Undertaking', 'Location'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['knows_clue_of', 'pendingVisitDueTick', 'claimLeadVisit', 'resolveVisitLead', 'sharpen_clue'],
+      module: 'src/engine/ruins/leadVisit.ts',
+    },
+    writeSites: [
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/ruins/leadVisit.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    readSites: [
+      'src/engine/ruins/clueLifecycle.ts',
+      'src/engine/ruins/delveVariant.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-29',
+      evidence:
+        "THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply).",
+    },
+  },
   {
     id: 'seeded-dead-stay-dead',
     producerSystem: WORLDGEN,

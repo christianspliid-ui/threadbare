@@ -61,6 +61,9 @@ for (const seed of seeds) {
   let clueDecayed = 0;
   // THR-1663: a survey of a site the surveyor already holds a lead on sharpens it.
   const clueSharpened: Record<string, number> = {};
+  // THR-1664 (S3): the visit's rungs — arranged or refused, kept or missed, the verdict.
+  const visit: Record<string, number> = {};
+  const visitSeeds = new Set<string>();
 
   // Cargo once stock tiers have been derived (t12), for the same lanes.
   let lanesT12: Array<{ id: string; goods: string[]; balance: number }> = [];
@@ -101,11 +104,22 @@ for (const seed of seeds) {
         }
       }
       if (/delve/.test(c)) inc(delveTraces, c);
+      if (c === 'appointment_planted' && tr.templateId === 'cell.observe.location') {
+        if (tr.refused) inc(visit, `refused:${tr.refused}`);
+        else { inc(visit, 'arranged'); visitSeeds.add(String(tr.seedId)); }
+      }
+      if ((c === 'appointment_kept' || c === 'appointment_missed') && visitSeeds.has(String(tr.seedId))) inc(visit, c === 'appointment_missed' ? `${c}:${tr.reason}` : c);
+      if (c === 'appointment_regime' && visitSeeds.has(String(tr.seedId))) inc(visit, `regime:${tr.regime}${tr.queuedJourney ? '+journey' : ''}`);
+      if (c === 'encounter_aftermath_effect' && tr.effectKind === 'sharpen_clue') {
+        const d = (tr.effectDetail ?? {}) as Record<string, unknown>;
+        inc(visit, tr.success ? `sharpen:${d.actionOutcome ?? 'missed'}>${d.to}` : `sharpen_noop:${tr.failReason}`);
+      }
+      if (c === 'ruins.clue_sharpened' && tr.via !== 'survey' && tr.to === 'located') located++;
     }
     clearTraces();
     if (t % 50 === 0) lanesStanding[t] = g().getEdgesByType('trades_with').length;
   }
-  out[seed] = { lanesT0, lanesT12, cellTraces, laneEvents, laneLifetimes, lanesStanding, clueMinted, clueHolderTier, surveyByBand, surveyRefused, located, clueDecayed, clueSharpened, delveTraces };
+  out[seed] = { lanesT0, lanesT12, cellTraces, laneEvents, laneLifetimes, lanesStanding, clueMinted, clueHolderTier, surveyByBand, surveyRefused, located, clueDecayed, clueSharpened, visit, delveTraces };
   console.log(`seed ${seed}:`, JSON.stringify(out[seed]));
 }
 const path = process.argv[4] ?? 'Docs/audits/2026-09-25-living-world-data/output/upkeep-2026-09-28.json';

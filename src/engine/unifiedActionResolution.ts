@@ -44,6 +44,7 @@ import {
   progressUnifiedAction,
   isStepComplete,
   advanceStep,
+  terminalActionOutcome,
   sortByPriority,
   resolveStepDefinition,
 } from './unifiedActionLifecycle';
@@ -1222,6 +1223,7 @@ function applyStepOutcomeEffects(
   outcome: StepOutcome,
   tick: number,
   runtime: SimulationRuntime | undefined,
+  actionOutcome?: UnifiedActionOutcome,
 ): { woundApplied: boolean } {
   const effects = metadata?.effects;
   if (!effects || effects.length === 0) return { woundApplied: false };
@@ -1251,6 +1253,8 @@ function applyStepOutcomeEffects(
     id: `${STEP_OUTCOME_EFFECTS_REACTION_PREFIX}_${action.currentStep}_${outcome}`,
     label: 'Step outcome',
     effects,
+    stepOutcome: outcome,
+    ...(actionOutcome ? { actionOutcome } : {}),
   };
 
   try {
@@ -2229,7 +2233,12 @@ export function executeStepResult(
   // THR-783: authored step-outcome effects (conditions, marks, seeds …). No-ops for
   // every template that declares none; the helper owns its own tracing and cache
   // invalidation, so the result is intentionally unbound here.
-  applyStepOutcomeEffects(state, action, stepMetadata, outcome, tick, runtime);
+  // THR-1664: the effects also learn how the encounter ends (undefined while it goes
+  // on), so a band-aware effect (`sharpen_clue`) agrees with the ending prose.
+  applyStepOutcomeEffects(
+    state, action, stepMetadata, outcome, tick, runtime,
+    terminalActionOutcome(fightAction, outcome, template),
+  );
   const branchConsequence = applyGateDutyBranchConsequences(
     state,
     action,

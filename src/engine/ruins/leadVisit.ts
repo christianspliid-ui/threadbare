@@ -1,0 +1,179 @@
+/**
+ * The visit to a lead's ruin (THR-1664, seeded things stay alive S3; plan doc
+ * `Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md` § S3).
+ *
+ * The climb runs **hear → survey → visit → delve**. A survey is instant and always
+ * `success`, so it can only ever write `narrowed` (`OBSERVE_CLUE_PRECISION_BY_BAND`).
+ * The survey therefore arranges a visit — an appointment at the ruin, the hunt's shape
+ * (THR-1560) — and the visit's own dice decide the lead (`CLUE_VISIT_PRECISION_BY_OUTCOME`).
+ *
+ * Three pure-ish helpers, each fail-soft (NFP #4):
+ * - {@link siteClassAdmits} — the payoff's `siteClasses` gate, read by the planter.
+ * - {@link claimLeadVisit} — the planter's lead gate: a `narrowed` lead on the site, no
+ *   visit already pending; stamps `pendingVisitDueTick` when it admits.
+ * - {@link resolveVisitLead} — the `sharpen_clue` aftermath effect: how the visit ended sets the lead.
+ *
+ * No PRNG (NFP #3): the band is the encounter resolution's own seeded roll.
+ */
+
+import type { GraphEdge, GraphNode } from '../../types/graph';
+import type { CluePrecision } from '../../types/knowledge';
+import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedAction';
+import type { WorldGraph } from '../graph';
+import { locationClassOf } from '../../data/world-objects';
+import { isLocationNode } from '../sublocationShape';
+import { resolveAgentHex } from '../relocationIntent';
+import { resolveLocationToHex } from '../encounterAwareness';
+import { emitTrace } from '../traceBuffer';
+import {
+  CLUE_VISIT_PRECISION_BY_OUTCOME,
+  isLeadVisitPending,
+  type ClueVisitVerdict,
+} from './constants';
+
+/** The subtype a Location carries, under either of the two property spellings. */
+function locationSubtypeOf(node: GraphNode | undefined): string | undefined {
+  if (!node) return undefined;
+  return (node.properties.locationSubtype ?? node.properties.locationType) as string | undefined;
+}
+
+/**
+ * Does the site belong to one of `classes`? Absent `classes` admits every site
+ * (the field is optional, NFP #6). A site that is not a Location never matches a list.
+ */
+export function siteClassAdmits(site: GraphNode | undefined, classes: readonly string[] | undefined): boolean {
+  if (!classes || classes.length === 0) return true;
+  if (!site || !isLocationNode(site)) return false;
+  const cls = locationClassOf(locationSubtypeOf(site));
+  return cls !== undefined && classes.includes(cls);
+}
+
+/** The actor's one unconsumed lead on `ruinId`, if any. */
+export function heldLead(graph: WorldGraph, actorId: string, ruinId: string): GraphEdge | undefined {
+  return graph.getOutgoingEdges(actorId, 'knows_clue_of')
+    .find(e => e.target === ruinId && e.properties?.consumed !== true);
+}
+
+/** Why the planter's lead gate refused. Carried on the refusal trace. */
+export type LeadVisitRefusal = 'no_lead' | 'not_narrowed' | 'visit_pending';
+
+/**
+ * The planter's lead gate (plan § S3.1). Admits when the actor holds an unconsumed
+ * `narrowed` lead on the site and no visit to it is pending; on admission stamps
+ * `pendingVisitDueTick = dueTick` on the lead, which pauses its decay.
+ *
+ * **One pending visit per holder per ruin** (THR-1675 re-plan): a lead that already
+ * carries a live stamp refuses `visit_pending` — the survey already refreshed the lead,
+ * and nothing new is planted.
+ *
+ * A `located` lead refuses `not_narrowed`: the holder already knows where it lies, and
+ * the next arrival admits the delve on its own.
+ */
+export function claimLeadVisit(
+  graph: WorldGraph,
+  actorId: string,
+  siteId: string,
+  tick: number,
+  dueTick: number,
+): { admitted: true; leadId: string } | { admitted: false; reason: LeadVisitRefusal } {
+  try {
+    const lead = heldLead(graph, actorId, siteId);
+    if (!lead) return { admitted: false, reason: 'no_lead' };
+    const props = lead.properties as Record<string, unknown>;
+    if (isLeadVisitPending(props.pendingVisitDueTick, tick)) return { admitted: false, reason: 'visit_pending' };
+    if (props.precision !== 'narrowed') return { admitted: false, reason: 'not_narrowed' };
+    props.pendingVisitDueTick = dueTick;
+    return { admitted: true, leadId: lead.id };
+  } catch {
+    return { admitted: false, reason: 'no_lead' };
+  }
+}
+
+/** Result of {@link resolveVisitLead}, carried on the aftermath effect trace. */
+export interface VisitLeadResult {
+  readonly success: boolean;
+  readonly failReason?: 'no_lead' | 'not_terminal';
+  readonly ruinId?: string;
+  readonly from?: CluePrecision;
+  readonly to?: ClueVisitVerdict;
+}
+
+/**
+ * The lead a visit acts on: the actor's lead that carries a visit stamp, the one on the
+ * ruin they stand on first (the kept visit), else the soonest due (the missed one, which
+ * fires wherever the mortal is). With no stamped lead — a `?spawn=` review, a stamp
+ * that lapsed — the lead on a ruin at the actor's own hex. Deterministic: ties by edge id.
+ */
+function visitLead(graph: WorldGraph, actorId: string): GraphEdge | undefined {
+  const leads = graph.getOutgoingEdges(actorId, 'knows_clue_of')
+    .filter(e => e.properties?.consumed !== true)
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  if (leads.length === 0) return undefined;
+  const hex = resolveAgentHex(graph, actorId);
+  const onHex = (e: GraphEdge): boolean => {
+    if (!hex) return false;
+    const at = resolveLocationToHex(graph, e.target);
+    return at !== null && at.col === hex.col && at.row === hex.row;
+  };
+  const stamped = leads.filter(e => typeof e.properties?.pendingVisitDueTick === 'number');
+  const stampedHere = stamped.find(onHex);
+  if (stampedHere) return stampedHere;
+  if (stamped.length > 0) {
+    return [...stamped].sort((a, b) =>
+      (a.properties.pendingVisitDueTick as number) - (b.properties.pendingVisitDueTick as number))[0];
+  }
+  return leads.find(onHex);
+}
+
+/**
+ * The `sharpen_clue` aftermath effect (plan § S3.3). Acts only on the actor's own lead —
+ * never by Narrative Gravity (that is `spawn_clue`'s path, untouched).
+ *
+ * - `missed: true` (the cold template) — the lead goes cold whatever the outcome.
+ * - otherwise `outcome` — how the encounter ends, absent while it goes on to another
+ *   step — maps through `CLUE_VISIT_PRECISION_BY_OUTCOME`: `located` / `narrowed`
+ *   sharpen (or refresh) the lead, `cold` consumes it. A step that does not end the
+ *   encounter is a no-op (`not_terminal`), so the effect may ride every step that can.
+ *
+ * Every applied outcome clears the visit stamp: the visit happened, or it was missed.
+ * Emits `ruins.clue_sharpened` when a lead changed.
+ */
+export function resolveVisitLead(
+  graph: WorldGraph,
+  actorId: string,
+  tick: number,
+  opts: { outcome?: UnifiedActionOutcome; /** The last step's band, carried onto the trace only. */ band?: StepOutcome; missed?: boolean },
+): VisitLeadResult {
+  try {
+    if (!opts.missed && !opts.outcome) return { success: false, failReason: 'not_terminal' };
+    const lead = visitLead(graph, actorId);
+    if (!lead) return { success: false, failReason: 'no_lead' };
+    const props = lead.properties as Record<string, unknown>;
+    const from = (props.precision as CluePrecision | undefined) ?? 'vague';
+    const to: ClueVisitVerdict = opts.missed ? 'cold' : (CLUE_VISIT_PRECISION_BY_OUTCOME[opts.outcome!] ?? 'narrowed');
+    delete props.pendingVisitDueTick;
+    if (to === 'cold') {
+      props.consumed = true;
+      props.consumedTick = tick;
+    } else {
+      // A lead only climbs: a `located` lead the visit rated `narrowed` stays located.
+      props.precision = from === 'located' ? 'located' : to;
+      props.discoveredTick = tick;
+    }
+    const ruinName = graph.getNode(lead.target)?.name ?? lead.target;
+    emitTrace({
+      category: 'ruins.clue_sharpened',
+      tick,
+      knowerId: actorId,
+      targetRuinId: lead.target,
+      from,
+      to: to === 'cold' ? 'cold' : (props.precision as CluePrecision),
+      via: opts.missed ? 'missed_visit' : 'visit',
+      ...(opts.band ? { band: opts.band } : {}),
+      summary: `${actorId} ${opts.missed ? 'missed the visit to' : 'visited'} ${ruinName}: lead ${from} → ${to === 'cold' ? 'cold' : String(props.precision)}`,
+    });
+    return { success: true, ruinId: lead.target, from, to };
+  } catch {
+    return { success: false, failReason: 'no_lead' };
+  }
+}

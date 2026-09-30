@@ -158,6 +158,20 @@ export interface UndertakingAppointmentPayoff {
    * Without it such a meeting reads `unreachable` and is never travelled to.
    */
   readonly pricedByHex?: boolean;
+  /**
+   * THR-1664 — the Location classes (`locationClassOf`) the work's site must be for a
+   * meeting to be arranged at all. A survey of a town arranges nothing; a survey of a
+   * ruin or a wonder arranges the visit. Absent, every site qualifies (NFP #6).
+   */
+  readonly siteClasses?: readonly string[];
+  /**
+   * THR-1664 — the meeting is the visit to a held lead's ruin. The planter arranges it
+   * only when the work left the actor holding an unconsumed `narrowed` lead on the site,
+   * and only when no visit to that ruin is already pending for them (one pending visit
+   * per holder per ruin — the seed id is tick-keyed, so a repeat survey would otherwise
+   * plant a duplicate). It stamps `pendingVisitDueTick` on the lead, which pauses its decay.
+   */
+  readonly leadVisit?: boolean;
 }
 
 export interface StrategicActionTemplate {
