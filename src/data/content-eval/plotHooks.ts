@@ -343,7 +343,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['discovery', 'power'],
     reaches: ['shadow', 'stone'],
     source: 'vault: Archetypes/Adventure & Quest — The Underground City Intrigue',
-    usedBy: [],
+    usedBy: ['encounter.town.comet_disputation'],
   },
   {
     id: 'hook.stronghold_raid',
@@ -409,7 +409,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'bargain'],
     reaches: ['heart', 'gold'],
     source: 'vault: Archetypes/Event — Unlikely Alliance',
-    usedBy: [],
+    usedBy: ['encounter.town.feud_mediation'],
   },
   {
     id: 'hook.succession_crisis',
@@ -521,7 +521,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'power'],
     reaches: ['gold', 'heart'],
     source: 'vault: Archetypes/Event — The Market Collapse',
-    usedBy: [],
+    usedBy: ['encounter.town.tithe_barn_raid'],
   },
   {
     id: 'hook.harvest_reckoning',
@@ -643,7 +643,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'discovery'],
     reaches: ['eye', 'stone'],
     source: 'vault: Archetypes/Ordeal — The Puzzle Temple Gauntlet',
-    usedBy: [],
+    usedBy: ['encounter.town.debt_arbitration', 'encounter.town.bell_tower_shoring'],
   },
   {
     id: 'hook.environmental_gauntlet',
@@ -683,7 +683,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'conflict'],
     reaches: ['star', 'iron'],
     source: 'vault: Archetypes/Ordeal — The Endless Pursuit',
-    usedBy: [],
+    usedBy: ['encounter.town.drowned_mans_testimony'],
   },
   {
     id: 'hook.shifting_shape',

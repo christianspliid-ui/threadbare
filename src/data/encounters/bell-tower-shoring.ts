@@ -1,0 +1,627 @@
+/**
+ * The Leaning Bell Tower — slot 5 of expert-everyday-1 (THR-1678), the batch's
+ * appointment floor. Two-step expert stone encounter: read a cracked, leaning bell
+ * tower to find what still holds it up, then cut out and reset the cracked courses
+ * while it stands. On a saved tower the councillor owes the rest of the fee, paid AT
+ * THE TOWER when the bell rings on market day — an `encounter_seed` carrying an
+ * `appointment` block (THR-1479), so the spine may name the place and the day (prose
+ * rule 7b's one lawful exception).
+ * 
+ * Brief: `Docs/plans/encounters/expert-everyday-1-brief.md` § slot 5.
+ * Pipeline: `Docs/plans/encounters/bell-tower-shoring-final.md` (editorial PASS WITH
+ * REVISIONS · systems READY WITH CAVEATS · package: `bell-tower-shoring-package.md`).
+ * plotHookTaken: hook.puzzle_gauntlet, blended with hook.natural_disaster — the lodge
+ * built the tower with a hidden arch inside the wall to carry the bell (a builders'
+ * trick made by people who expected to be understood, and it still works); a tremor
+ * cracked the wall beside it. hook.death_and_return set aside: nothing in a shoring
+ * job dies and comes back.
+ * Seed dice: p3 plea (the councillor asks) · opposition uncanny (its own law), read
+ * as the tower's own weight and age — old stone settles at its own pace and the job
+ * is done while it stands · disposition neutral (the lodge's master neither helps nor
+ * hinders) · agentRole trespasser — the lodge has never let an outsider work on its
+ * tower, and the mortal is that outsider · scale settlement.
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      Yes, per class: `{actor}` comes into `{location}`, sent for
+ *                      by the village (rural) or town (urban) council.
+ *   2 P2 events?       A tremor cracked the tower and it leans; the lodge that
+ *                      built it bound the crack with iron and the crack spread.
+ *   3 P3 one stake?    Plea: `{cast:councillor}` asks the mortal to save the tower;
+ *                      half the fee is paid, the rest at the tower on market day;
+ *                      failing costs the place's regard.
+ *   4 ≤80 words?       Opening + spine: 78 (rural) / 78 (urban).
+ *   5 Read aloud?      Every sentence is a report; no interior sensation.
+ *   6 Stated, never encoded? 'now it leans', 'the crack spread', 'will think less
+ *                      of them' are said outright.
+ *   7 Every sentence works? Each is the challenge, the test or the stake.
+ *   8 Nothing unintroduced? The lodge, the iron, the fee, market day and the bell
+ *                      appear before any card or chip names them; the iron ties
+ *                      and the lodge's master are stated on step 1 before its
+ *                      specials; the hidden arch is named only after step 0 rolls.
+ *   9 One named person? Step 0: `{cast:councillor}`. Step 1: `{cast:lodgemaster}`.
+ *  10 Stake in a sentence? 'Can the outside mason save the lodge's cracked tower,
+ *                      be paid for it, and keep their name?'
+ *  11 Cards verb+noun, spell-style? Yes; four specials, mechanism-stating, no
+ *                      digits, no name word repeated in the effect line.
+ *  12 Opening per class? `rural` and `urban`, both written.
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            A tremor has cracked a town's bell tower and it leans; the
+ *                   lodge that built it already failed to bind the crack, and the
+ *                   council sends for the best mason within reach.
+ *   Whose problem?  The agent's: their commission, their half-fee, their name.
+ *   Reach = theme?  Step 0 tests Stone: reading masonry under load. Step 1 tests
+ *                   Stone: resetting courses under a standing tower. Difficulties
+ *                   0.60 → 0.66 (mean 0.63, window fit 0.77 — the expert band).
+ *   Tier            rarityTier 2, scale local, intrinsicTier 'shaping' (brief: the
+ *                   0.45 open-draw cap binds `background` only; the forecast
+ *                   window keeps a low-Stone mortal from committing to a severe
+ *                   step).
+ *   Shape           Appointment (placed/timed seeded sequel, THR-1479). Step 1
+ *                   success plants `encounter_seed` → kept
+ *                   `town.bell_tower_first_peal` (seed-only), with
+ *                   `appointment: { locationId '$here', counterpartyId
+ *                   '$cast:councillor', missed → town.bell_tower_cracked }`,
+ *                   `inheritContext`, 36 ticks (three days to market day). Both
+ *                   sequels are seed-only (`drawable: false`, THR-1526), hand-
+ *                   authored in `bell-tower-sequels.ts` outside the factory
+ *                   catalog (the well-sinking precedent).
+ *   Consequence hand (binding, THR-1145): `possession` + `knowledge` — no swap.
+ *                   `possession` — step 1 `successMetadata.rewardPool`
+ *                   { possession, #stone }: the council adds a gift from the
+ *                   place's stores (the auto PRIZE chip).
+ *                   `knowledge` — `intelligence` (cultural_knowledge) on step 1
+ *                   success: the mortal now knows how the lodge's hidden arch
+ *                   carries the bell. Chipped as BOON · knowledge.
+ *   Spine           `reputation_with` on `$here`: +0.06 on step 1 success, −0.06
+ *                   on step 1 failure, −0.03 on step 0 failure (a step-0
+ *                   critical_failure ends the action there, so the
+ *                   critical_failure SCAR chip needs its own backing write).
+ *   Conditions      Land in the kept sequel (festival on `$here`); the parent
+ *                   puts no condition on the mortal (brief: reputation is the
+ *                   expert penalty).
+ *   Expert stakes   Someone powerful across the table (the council); failure
+ *                   costs standing before money; nobody is hurt — the council
+ *                   cleared the houses below.
+ *   Trait hooks     Gate: none (everyday by construction). Variant: none — no
+ *                   live trait fits reading load paths better than the reach does.
+ *                   Trait-only nudge: none. Trait fragment: none.
+ *   Systems quota   cast + rewards + appointments + reputation — four.
+ *   Heavy Hand      none authored. Card types: Whisper (light) · Long Game
+ *                   (time) on step 0; Favor (spirit) · Boost (force) on step 1.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.bell_tower_shoring',
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Leaning Bell Tower',
+  reach: 'stone',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['preservation_transformation', 'tradition_novelty'],
+  tags: ['#build'],
+  settings: ['rural', 'urban'],
+  openings: {
+    rural: '{actor} comes into {location}, sent for by the village council.',
+    urban: '{actor} comes into {location}, sent for by the town council.',
+  },
+  steps: [
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.6,
+      purposeLine: 'Find what holds it',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'A tremor has cracked the bell tower, and now it leans. The masons\' lodge that built it bound '
+        + 'the crack with iron, and the crack spread.\n\n'
+        + '{cast:councillor} of the council asks {actor} to save the tower. Half the fee is paid now. The '
+        + 'rest will be paid at the tower when the bell rings on market day. If {actor} fails as well, '
+        + '{location} will think less of them.',
+      successAfterimage: 'They found the lodge\'s secret: a hidden arch inside the wall carries the bell, and the crack '
+        + 'runs beside it.',
+      failureAfterimage: 'They could not find what carried the weight, and set the props by guesswork.',
+      successAtCostAfterimage: 'They found a hidden arch inside the wall that carries the bell, but a loose block fell from the '
+        + 'bell chamber while they searched and split a prop.',
+      criticalSuccessAfterimage: 'By noon they had found a hidden arch inside the wall that carries the bell, and saw which '
+        + 'courses to cut out.',
+      criticalFailureAfterimage: 'They set a prop against the wrong course, and the crack opened wider before they could pull it '
+        + 'out.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.03,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['craft', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'bell.show_the_hidden',
+          name: 'Show The Hidden',
+          sphere: 'light',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.light',
+          effectLine: 'Let the low sun shine through the crack, so they can see what carries the weight inside the '
+            + 'wall.',
+          bandProse: {
+            critical_success: 'The low sun lit every stone inside the wall through the crack.',
+            success: 'The low sun came through the crack and lit the inside of the wall.',
+            near_miss: 'The low sun lit the inside of the wall, but only for a moment.',
+            failure: 'The low sun came through the crack, but the dust hung too thick to see inside.',
+          },
+        },
+        {
+          id: 'bell.slow_the_settling',
+          name: 'Slow The Settling',
+          sphere: 'time',
+          essenceCost: 1,
+          forecastDelta: 0.1,
+          imageTag: 'generic.time-slow',
+          effectLine: 'Hold back the tower\'s sinking for a day, so the crack stops spreading while they study it.',
+          bandProse: {
+            success_at_cost: 'The crack held still for most of the day, and moved once, at dusk.',
+            failure: 'The crack held still until noon, then moved again under their hands.',
+            critical_failure: 'The tower held still for an hour, then settled all at once.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.66,
+      purposeLine: 'Reset the cracked courses',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'By the second day the props are in. The council has cleared the houses below the tower. '
+        + '{cast:lodgemaster}, the lodge\'s master, has never let an outsider work on this tower, and '
+        + 'watches from the street without helping. Only the lodge knows where its iron ties sit inside the '
+        + 'wall. The cracked courses must now be cut out and reset while the tower stands. If the new '
+        + 'courses give way, the top of the tower can come down.',
+      successAfterimage: 'They cut out the cracked courses one at a time and reset them, and the tower stood straight '
+        + 'without its props.',
+      failureAfterimage: 'The new courses would not take the weight, so the tower was propped again and left leaning.',
+      successAtCostAfterimage: 'The tower stood without its props, but it still leans a little, and everyone in {location} can '
+        + 'see it.',
+      criticalSuccessAfterimage: 'They reset the courses so well that the tower stands straighter than it has in years.',
+      criticalFailureAfterimage: 'The new courses gave way, and the top of the tower came down into the cleared street, bell and '
+        + 'all.',
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: {
+            possession: 1,
+          },
+          tagFilters: ['#stone'],
+        },
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+          {
+            kind: 'intelligence',
+            category: 'cultural_knowledge',
+            label: 'How the lodge\'s tower stands',
+            detail: 'The lodge\'s hidden arch inside the wall carries the bell, and the crack runs beside it.',
+            reliability: 0.85,
+            targetAgentId: '$actor',
+          },
+          {
+            kind: 'encounter_seed',
+            templateId: 'town.bell_tower_first_peal',
+            targetAgentId: '$actor',
+            delayTicks: 36,
+            seedLabel: 'The rest of the fee is paid at the tower when the bell rings on market day.',
+            inheritContext: true,
+            appointment: {
+              locationId: '$here',
+              counterpartyId: '$cast:councillor',
+              missed: {
+                templateId: 'town.bell_tower_cracked',
+                seedLabel: 'Nobody from the work was at the bell tower when the bell rang on market day, and the councillor '
+                  + 'comes looking with the fee held back.',
+              },
+            },
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['craft', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'bell.stir_old_pride',
+          name: 'Stir Old Pride',
+          sphere: 'spirit',
+          essenceCost: 2,
+          forecastDelta: 0.11,
+          imageTag: 'generic.oath',
+          effectLine: 'Wake the lodge master\'s love for the tower, so the master calls out where the lodge set its '
+            + 'iron ties.',
+          bandProse: {
+            success: '{cast:lodgemaster} called out from the street where the iron ties sat, and the cuts missed them.',
+            success_at_cost: '{cast:lodgemaster} called out the ties, then walked off before the work was done.',
+            failure: '{cast:lodgemaster} called out where the ties sat, but too late for the first cut.',
+          },
+        },
+        {
+          id: 'bell.press_the_wall',
+          name: 'Press The Wall',
+          sphere: 'force',
+          essenceCost: 2,
+          forecastDelta: 0.12,
+          imageTag: 'generic.strength',
+          effectLine: 'Bear down on the upper tower, so it sits still while the courses beneath it are cut out.',
+          bandProse: {
+            critical_success: 'The upper tower sat as still as bedrock while the old courses came out.',
+            near_miss: 'The upper tower sat still until the last course, then shifted as it went in.',
+            failure: 'The upper tower held still for the first courses, then shifted and cracked the new ones.',
+            critical_failure: 'The upper tower sat still for a while, then dropped all at once onto the new courses.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'councillor',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['elder', 'steward', 'clerk', 'merchant', 'noble'],
+      supportRole: 'councillor',
+      spawnNpcRole: 'elder',
+      spawnName: 'Maud Carrow',
+    },
+    {
+      kind: 'actor',
+      key: 'lodgemaster',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['mason'],
+      supportRole: 'lodge_master',
+      spawnNpcRole: 'mason',
+      spawnName: 'Osric Venn',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'The bell tower in {location} is cracked and leaning, and the lodge that built it could not save '
+      + 'it.',
+    success: 'The tower was saved, and the rest of the fee is paid at the tower when the bell rings on market '
+      + 'day.',
+    failure: 'The tower was not saved.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The bell tower in {location} has been saved, or lost.',
+      changes: [
+        {
+          id: 'bell.the_tower_worked',
+          kind: 'growth',
+          title: 'A tower, worked',
+          detail: 'Resetting courses under a standing tower teaches the stone reach.',
+          polarity: 'gain',
+          concepts: [
+            {
+              text: 'stone reach',
+              tooltipId: 'reach.stone',
+            },
+          ],
+        },
+      ],
+      reactions: [],
+      byOutcome: {
+        critical_success: {
+          overview: '{cast:lodgemaster} came up the scaffold at dusk to see how the courses were cut. The council '
+            + 'added a gift from {location}\'s stores.',
+          changes: [
+            {
+              id: 'bell.crit.the_places_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A tower saved',
+              causeClause: 'Where the lodge had failed',
+              detail: '{location} thinks well of their work.',
+            },
+            {
+              id: 'bell.crit.how_it_stands',
+              kind: 'shell_state',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'knowledge',
+                tooltipId: 'ui.knowledge',
+              },
+              concepts: [
+                {
+                  text: 'how the lodge\'s hidden arch carries the bell',
+                  tooltipId: 'ui.knowledge',
+                },
+              ],
+              title: 'How the tower stands',
+              causeClause: 'Seen from inside the wall',
+              detail: '{actor} knows how the lodge\'s hidden arch carries the bell.',
+            },
+            {
+              id: 'bell.crit.market_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'pays it',
+                },
+              ],
+              title: 'Market day',
+              causeClause: 'Half still owed',
+              detail: '{cast:councillor} pays it at the tower when the bell rings.',
+            },
+          ],
+        },
+        success: {
+          overview: 'The families below the tower are back in their houses. The council added a gift from '
+            + '{location}\'s stores.',
+          changes: [
+            {
+              id: 'bell.win.the_places_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A tower saved',
+              causeClause: 'Where the lodge had failed',
+              detail: '{location} thinks well of their work.',
+            },
+            {
+              id: 'bell.win.how_it_stands',
+              kind: 'shell_state',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'knowledge',
+                tooltipId: 'ui.knowledge',
+              },
+              concepts: [
+                {
+                  text: 'how the lodge\'s hidden arch carries the bell',
+                  tooltipId: 'ui.knowledge',
+                },
+              ],
+              title: 'How the tower stands',
+              causeClause: 'Seen from inside the wall',
+              detail: '{actor} knows how the lodge\'s hidden arch carries the bell.',
+            },
+            {
+              id: 'bell.win.market_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'pays it',
+                },
+              ],
+              title: 'Market day',
+              causeClause: 'Half still owed',
+              detail: '{cast:councillor} pays it at the tower when the bell rings.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The work ran a day long and used up the half fee on timber. The council added a gift from '
+            + '{location}\'s stores all the same.',
+          changes: [
+            {
+              id: 'bell.cost.the_places_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A tower saved',
+              causeClause: 'Where the lodge had failed',
+              detail: '{location} thinks well of their work.',
+            },
+            {
+              id: 'bell.cost.how_it_stands',
+              kind: 'shell_state',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'knowledge',
+                tooltipId: 'ui.knowledge',
+              },
+              concepts: [
+                {
+                  text: 'how the lodge\'s hidden arch carries the bell',
+                  tooltipId: 'ui.knowledge',
+                },
+              ],
+              title: 'How the tower stands',
+              causeClause: 'Seen from inside the wall',
+              detail: '{actor} knows how the lodge\'s hidden arch carries the bell.',
+            },
+            {
+              id: 'bell.cost.market_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'pays it',
+                },
+              ],
+              title: 'Market day',
+              causeClause: 'Half still owed',
+              detail: '{cast:councillor} pays it at the tower when the bell rings.',
+            },
+          ],
+        },
+        failure: {
+          overview: 'The lodge failed first, and now {actor} has failed after it.',
+          changes: [
+            {
+              id: 'bell.lost.the_places_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A tower still propped',
+              causeClause: 'The new courses failed',
+              detail: '{location} thinks less of their work.',
+            },
+          ],
+        },
+        critical_failure: {
+          overview: '{location} counts the half fee it paid as thrown away. The lodge\'s failure looks small beside '
+            + 'this one.',
+          changes: [
+            {
+              id: 'bell.broke.the_places_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Found wanting',
+              causeClause: 'A tower left worse',
+              detail: '{location} thinks less of their work.',
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'An expert two-step stone job for a village or a town: read a bell tower cracked by a tremor to '
+    + 'find the hidden arch that carries the bell, then cut out and reset the cracked courses while the '
+    + 'tower stands, after the masons\' lodge that built it has already failed. A saved tower wins the '
+    + 'place\'s regard, a gift from its stores and the knowledge of how the lodge built it, and plants '
+    + 'an appointment: the councillor pays the rest of the fee at the tower when the bell rings on '
+    + 'market day (kept → first-peal sequel, missed → cracked sequel). A lost tower costs the place\'s '
+    + 'regard.',
+  locationSubtypes: expandSettings(['rural', 'urban']),
+  consequenceDraw: ['possession', 'knowledge'],
+};
+
+export const BELL_TOWER_SHORING_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

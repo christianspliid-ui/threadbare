@@ -25,13 +25,13 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
 | `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 185 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 121 |  |
-| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 123 |  |
-| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 119 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 140 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 122 |  |
+| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 124 |  |
+| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 120 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 142 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 160 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 95 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 122 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 97 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 123 |  |
 
 ## sphere
 
@@ -168,7 +168,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#assist` | A hand lent to someone who needs one, for thanks or for pay. | — | 20 |  |
 | `#duel` | A contest of arms, one against one or side against side. | — | 23 |  |
 | `#lead` | Others to be taken somewhere — rallied, organised, or talked round. | — | 17 |  |
-| `#build` | Something to be raised or mended where people will use it. | encounter 1 | 22 |  |
+| `#build` | Something to be raised or mended where people will use it. | encounter 2 | 23 |  |
 | `#steal` | Something to be taken that its keeper means to keep. | — | 9 |  |
 | `#create` | A made thing, worked from nothing by skill or by art. | — | 15 |  |
 | `#acquire` | A thing to be got hold of, by whatever means will get it. | — | 14 |  |

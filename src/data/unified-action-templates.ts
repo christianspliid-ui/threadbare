@@ -243,6 +243,13 @@ import { SMUGGLERS_FORD_TEMPLATE } from './encounters/smugglers-ford';
 import { CUNNING_FAIR_TEMPLATE } from './encounters/cunning-fair';
 import { WELL_SINKING_TEMPLATE } from './encounters/well-sinking';
 import { WELL_SINKING_SEQUELS } from './encounters/well-sinking-sequels';
+import { BELL_TOWER_SEQUELS } from './encounters/bell-tower-sequels';
+import { TITHE_BARN_RAID_TEMPLATE } from './encounters/tithe-barn-raid';
+import { DROWNED_MANS_TESTIMONY_TEMPLATE } from './encounters/drowned-mans-testimony';
+import { BELL_TOWER_SHORING_TEMPLATE } from './encounters/bell-tower-shoring';
+import { FEUD_MEDIATION_TEMPLATE } from './encounters/feud-mediation';
+import { DEBT_ARBITRATION_TEMPLATE } from './encounters/debt-arbitration';
+import { COMET_DISPUTATION_TEMPLATE } from './encounters/comet-disputation';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5721,6 +5728,15 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // THR-1677 — the well sinking appointment's kept and missed sequels: seed-only
   // (`drawable: false`), registry-only (not LOCATION_BRANCHING), like hunt.trail_cold.
   ...WELL_SINKING_SEQUELS,
+  TITHE_BARN_RAID_TEMPLATE,
+  DROWNED_MANS_TESTIMONY_TEMPLATE,
+  BELL_TOWER_SHORING_TEMPLATE,
+  // THR-1678 — the bell tower appointment's kept and missed sequels: seed-only
+  // (`drawable: false`), registry-only (not LOCATION_BRANCHING), like the well sinking's.
+  ...BELL_TOWER_SEQUELS,
+  FEUD_MEDIATION_TEMPLATE,
+  DEBT_ARBITRATION_TEMPLATE,
+  COMET_DISPUTATION_TEMPLATE,
 ];
 
 /**
@@ -5853,6 +5869,12 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   SMUGGLERS_FORD_TEMPLATE,
   CUNNING_FAIR_TEMPLATE,
   WELL_SINKING_TEMPLATE,
+  TITHE_BARN_RAID_TEMPLATE,
+  DROWNED_MANS_TESTIMONY_TEMPLATE,
+  BELL_TOWER_SHORING_TEMPLATE,
+  FEUD_MEDIATION_TEMPLATE,
+  DEBT_ARBITRATION_TEMPLATE,
+  COMET_DISPUTATION_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**
