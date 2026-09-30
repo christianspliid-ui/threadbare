@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-30 22:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-09-30: six everyday encounters for experts**: the first expert-level batch of town encounters ([THR-1678](https://linear.app/threadbare/issue/THR-1678)). Merged via [#2155](https://github.com/christianspliid-ui/threadbare/pull/2155), and live on the site.
 - **2026-09-30: a mortal who hears of a ruin goes to see it** ([THR-1664](https://linear.app/threadbare/issue/THR-1664)). Merged via [#2151](https://github.com/christianspliid-ui/threadbare/pull/2151) after a 30-hour stall, and live on the site.
 - **2026-09-30: the spell generator is designed**: each school of magic gets its own book of spells per world ([THR-1572](https://linear.app/threadbare/issue/THR-1572)). Plan merged via [#2154](https://github.com/christianspliid-ui/threadbare/pull/2154); ready to build.
 - **2026-09-29: two expert-level monsters**: monster families now field apex elites ([THR-1682](https://linear.app/threadbare/issue/THR-1682)). Merged via [#2153](https://github.com/christianspliid-ui/threadbare/pull/2153), and live on the site.
@@ -46,7 +47,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-29: monsters are born with a power**: each of the eight monster families starts with one power of its kind (step three of [the power runtime](https://linear.app/threadbare/issue/THR-1671)). Merged via [#2147](https://github.com/christianspliid-ui/threadbare/pull/2147), and live on the site.
 - **2026-09-29: the next ten most-played encounters are finished** (step three of [finish the encounters](https://linear.app/threadbare/issue/THR-1667)). Merged via [#2146](https://github.com/christianspliid-ui/threadbare/pull/2146), and live on the site.
 - **2026-09-29: a caster casts in the scene**: a mortal reaches for a spell when a step looks bad (step two of [the power runtime](https://linear.app/threadbare/issue/THR-1670)). Merged via [#2145](https://github.com/christianspliid-ui/threadbare/pull/2145), and live on the site.
-- **2026-09-29: The First's own draws are finished** (step two of [finish the encounters](https://linear.app/threadbare/issue/THR-1666)). Merged via [#2144](https://github.com/christianspliid-ui/threadbare/pull/2144), and live on the site.
 
 ---
 
