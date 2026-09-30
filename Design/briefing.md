@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 01:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,16 +32,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 1 job ready to build, 2 being built.** The design lane runs again at ~02:15 and the orchestrator hourly, so the shelf refills on its own.
+**Thin: 2 jobs ready to build, none being built.** Both jobs from last hour merged. The pickup lane runs next at ~02:10 and the design lane at ~02:15, so the shelf refills on its own.
 
-- **Being built:** [expert everyday encounters, batch 2](https://linear.app/threadbare/issue/THR-1679) — picked up at ~23:30, last checkpoint saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1679-expert-everyday-2) at 00:56.
-- **Being built:** [a reputation chip that names the town instead of the person](https://linear.app/threadbare/issue/THR-1685) — fix is done in [PR #2156](https://github.com/christianspliid-ui/threadbare/pull/2156), set to merge itself, but it now collides with batch 1's merge and needs a builder to reconcile it.
 - **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
+- **Ready:** [expert everyday encounters, batch 3](https://linear.app/threadbare/issue/THR-1680/content-above-novice-s6-expert-everyday-encounters-batch-3-up-to-4).
 
 ## Health
 
-- **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs. It is scheduled, it is starting, and it is breaking every time — so whatever it was supposed to be doing has not happened for a while." This is a builder's job.
-- **One pull request is stuck on a merge conflict:** [PR #2156](https://github.com/christianspliid-ui/threadbare/pull/2156). This is a builder's job.
+- **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs. It is scheduled, it is starting, and it is breaking every time — so whatever it was supposed to be doing has not happened for a while." It is also red on the latest `main`. This is a builder's job.
 - **A third of some factions' senior and elite jobs are still unreachable in a long game** (14 of 60 gated encounters blocked). Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-30.md). This is a builder's job.
-- **The home checkout is 188 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
-- The simulation's speed is back to normal (91 ms per tick, +10% on the week).
+- **The home checkout is 203 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
+- The simulation's speed is normal (85 ms per tick, +2% on the week). The live site serves the latest `main`.
