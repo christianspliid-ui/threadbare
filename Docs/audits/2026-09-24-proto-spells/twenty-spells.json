@@ -1,0 +1,2057 @@
+{
+  "seed": 42,
+  "spells": [
+    {
+      "name": "Green Chart",
+      "sphere": "life",
+      "tradition": "magic.shamanism",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "sight",
+      "price": "transgression",
+      "mode": "core",
+      "cores": [
+        "sight.survey"
+      ],
+      "does": "The bearer knows the land: whenever they arrive somewhere, every place within several hexes goes onto their map.",
+      "costs": "Transgression. Carrying it wears the bearer thin: they lose a little quintessence every day, and it is the kind of magic people notice.",
+      "goesWrong": "It changes them. Carrying it slowly makes the bearer more Misleading.",
+      "flags": [
+        "notice: no engine home"
+      ],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "reveal(hexes, range 3)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "resource_manipulate(quintessence -0.0015 on self, per_tick)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "axiological_drift(sacrifice_survival -0.002/tick → -0.5)",
+          "badge": "live"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_life_green_chart",
+        "name": "Green Chart",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#life"
+        ],
+        "sphereAffinity": "life",
+        "flavorText": "",
+        "mechanicalSummary": "reveal(hexes, range 3)",
+        "prerequisites": {
+          "requiredSphere": "life"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "reveal",
+            "target": "hexes",
+            "range": 3
+          },
+          {
+            "type": "resource_manipulate",
+            "resource": "quintessence",
+            "target": "self",
+            "amount": -0.0015,
+            "mode": "per_tick"
+          },
+          {
+            "type": "axiological_drift",
+            "axis": "sacrifice_survival",
+            "ratePerTick": -0.002,
+            "limitValue": -0.5
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Horn Silence",
+      "sphere": "mind",
+      "tradition": "magic.demonology",
+      "tier": "great",
+      "agency": "cast",
+      "arena": "encounter",
+      "price": "gamble",
+      "mode": "free",
+      "cores": [
+        "core:enc.hush",
+        "raw.overlay"
+      ],
+      "does": "For a couple of days, magic near the caster goes quiet. The ground where the caster stands becomes Shrouded (those inside see less far) for a few days. It can be cast again after a few days.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "Every casting is a risk, even a good one: sometimes, their thoughts scatter, leaving them a good deal worse at Eye for a couple of days.",
+      "flags": [
+        "backlash (any casting, 31%): works only in part",
+        "mixes arenas (encounter + mark)",
+        "name drawn from the first effect only"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "suppress(radius 1, 24 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cast",
+          "text": "alter_terrain(self_hex → shrouded, 48 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (any casting, 31%)",
+          "text": "duration(eye -0.12, 24 ticks)",
+          "badge": "partial"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_mind_horn_silence",
+        "name": "Horn Silence",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#mind"
+        ],
+        "sphereAffinity": "mind",
+        "flavorText": "",
+        "mechanicalSummary": "suppress(radius 1, 24 ticks) + alter_terrain(self_hex → shrouded, 48 ticks)",
+        "prerequisites": {
+          "requiredSphere": "mind"
+        },
+        "effects": [
+          {
+            "type": "suppress",
+            "target": "all_effects",
+            "scope": {
+              "scope": "radius",
+              "hexes": 1
+            },
+            "ticks": 24
+          },
+          {
+            "type": "alter_terrain",
+            "target": "self_hex",
+            "ticks": 48,
+            "terrainEffect": "shrouded"
+          }
+        ],
+        "cost": [],
+        "cooldownTicks": 49,
+        "backlash": {
+          "trigger": "always",
+          "probability": 0.31,
+          "severity": "major",
+          "effect": {
+            "type": "duration",
+            "ticks": 24,
+            "reach": "eye",
+            "value": -0.12,
+            "destroyOnExpiry": true
+          },
+          "narrativeTemplate": "their thoughts scatter, leaving them a good deal worse at Eye for a couple of days"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "The Nod Survey",
+      "sphere": "spirit",
+      "tradition": "magic.dreamcraft",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "sight",
+      "price": "gamble",
+      "mode": "core",
+      "cores": [
+        "sight.survey"
+      ],
+      "does": "The bearer knows the land: whenever they arrive somewhere, every place within several hexes goes onto their map.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "When the bearer fails disastrously, the spell often leaves them for good.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "reveal(hexes, range 3)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → self_remove, 50%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_spirit_the_nod_survey",
+        "name": "The Nod Survey",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#spirit"
+        ],
+        "sphereAffinity": "spirit",
+        "flavorText": "",
+        "mechanicalSummary": "reveal(hexes, range 3)",
+        "prerequisites": {
+          "requiredSphere": "spirit"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "reveal",
+            "target": "hexes",
+            "range": 3
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.5,
+            "payload": {
+              "kind": "self_remove"
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Burning Grace",
+      "sphere": "energy",
+      "tradition": "magic.fire",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "encounter",
+      "price": "transgression",
+      "mode": "free",
+      "cores": [
+        "core:enc.steel",
+        "core:fight.reach_swap"
+      ],
+      "does": "The caster is left Inspired for a few days. The caster uses Star in place of Iron for a couple of days. It can be cast again after about a week.",
+      "costs": "Transgression. Each casting costs the caster a great deal of their quintessence, so they grow more threadbare, and it is the kind of magic people notice.",
+      "goesWrong": "If the casting fails badly, it usually turns on them: it burns out, and their other spells and charms go quiet for a few days.",
+      "flags": [
+        "cast: planned: fight block",
+        "notice: no engine home",
+        "name drawn from the first effect only"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "inflict_condition(inspired on self, 36 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "cast",
+          "text": "modify_rules(encounter_reach_override iron→star, 24 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cost",
+          "text": "doom_increase(25, lands on quintessence)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (bad failure, 71%)",
+          "text": "suppress(self, 36 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_energy_burning_grace",
+        "name": "Burning Grace",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#energy"
+        ],
+        "sphereAffinity": "energy",
+        "flavorText": "",
+        "mechanicalSummary": "inflict_condition(inspired on self, 36 ticks) + modify_rules(encounter_reach_override iron→star, 24 ticks)",
+        "prerequisites": {
+          "requiredSphere": "energy"
+        },
+        "effects": [
+          {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.inspired",
+            "target": "self",
+            "durationTicks": 36
+          },
+          {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "encounter_reach_override",
+            "value": {
+              "from": "iron",
+              "to": "star"
+            },
+            "ticks": 24
+          }
+        ],
+        "cost": [
+          {
+            "type": "doom_increase",
+            "amount": 25
+          }
+        ],
+        "cooldownTicks": 98,
+        "backlash": {
+          "trigger": "critical_failure",
+          "probability": 0.71,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "suppress",
+            "target": "all_effects",
+            "scope": {
+              "scope": "self"
+            },
+            "ticks": 36
+          },
+          "narrativeTemplate": "it burns out, and their other spells and charms go quiet for a few days"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Clear Manner",
+      "sphere": "light",
+      "tradition": "magic.divination",
+      "tier": "cantrip",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "strain",
+      "mode": "free",
+      "cores": [
+        "core:enc.easy_company"
+      ],
+      "does": "Others are a little readier to cooperate with the bearer.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are slightly worse at Shadow.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Shaken (weaker at Star and Heart) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "social_modifier(any +0.1)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(shadow -0.02)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant shaken, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_light_clear_manner",
+        "name": "Clear Manner",
+        "tier": 1,
+        "tags": [
+          "#spell",
+          "#light"
+        ],
+        "sphereAffinity": "light",
+        "flavorText": "",
+        "mechanicalSummary": "social_modifier(any +0.1)",
+        "prerequisites": {
+          "requiredSphere": "light"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "social_modifier",
+            "targetFilter": "any",
+            "cooperationBias": 0.1
+          },
+          {
+            "type": "passive",
+            "reach": "shadow",
+            "value": -0.02
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.shaken",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Take the Road",
+      "sphere": "chaos",
+      "tradition": "magic.weather",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "travel",
+      "price": "gamble",
+      "mode": "core",
+      "cores": [
+        "travel.burst"
+      ],
+      "does": "Cast before a journey. For a few days, the caster travels at double pace. It can be cast again after about a week.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "Every casting is a risk, even a good one: sometimes, the magic stays wild in them, and for about a week any other miscast they suffer lands one grade worse.",
+      "flags": [
+        "backlash (any casting, 36%): works only in part"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "modify_rules(movement_cost_multiplier ×0.5, 36 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (any casting, 36%)",
+          "text": "modify_rules(backlash_severity_multiplier ×2, 72 ticks)",
+          "badge": "partial"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_chaos_take_the_road",
+        "name": "Take the Road",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#chaos"
+        ],
+        "sphereAffinity": "chaos",
+        "flavorText": "",
+        "mechanicalSummary": "modify_rules(movement_cost_multiplier ×0.5, 36 ticks)",
+        "prerequisites": {
+          "requiredSphere": "chaos"
+        },
+        "effects": [
+          {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "movement_cost_multiplier",
+            "value": 0.5,
+            "ticks": 36
+          }
+        ],
+        "cost": [],
+        "cooldownTicks": 84,
+        "backlash": {
+          "trigger": "always",
+          "probability": 0.36,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "backlash_severity_multiplier",
+            "value": 2,
+            "ticks": 72
+          },
+          "narrativeTemplate": "the magic stays wild in them, and for about a week any other miscast they suffer lands one grade worse"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Bright Blow",
+      "sphere": "energy",
+      "tradition": "magic.water",
+      "tier": "working",
+      "agency": "cast",
+      "arena": "fight",
+      "price": "free",
+      "mode": "core",
+      "cores": [
+        "fight.clock_blow"
+      ],
+      "rider": "afterglow",
+      "does": "Cast in a fight, it strikes the opponent with a crushing wave: one more segment of their clock fills, as a landed blow would. Afterwards, the caster is slightly better at Iron for half a day. It can be cast again after a couple of days.",
+      "costs": "Free. Casting it costs the caster nothing.",
+      "goesWrong": "Little. If the casting fails, it simply fails.",
+      "flags": [
+        "cast: planned: fight block"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "resource_manipulate(fight_clock +1 on other_agent, one_shot)",
+          "badge": "fight"
+        },
+        {
+          "part": "rider",
+          "text": "duration(iron +0.03, 6 ticks)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_energy_bright_blow",
+        "name": "Bright Blow",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#energy"
+        ],
+        "sphereAffinity": "energy",
+        "flavorText": "",
+        "mechanicalSummary": "resource_manipulate(fight_clock +1 on other_agent, one_shot) + duration(iron +0.03, 6 ticks)",
+        "prerequisites": {
+          "requiredSphere": "energy"
+        },
+        "effects": [
+          {
+            "type": "resource_manipulate",
+            "resource": "fight_clock",
+            "target": "other_agent",
+            "amount": 1,
+            "mode": "one_shot"
+          },
+          {
+            "type": "duration",
+            "reach": "iron",
+            "value": 0.03,
+            "ticks": 6,
+            "destroyOnExpiry": true
+          }
+        ],
+        "cost": [],
+        "cooldownTicks": 21,
+        "targeting": {
+          "type": "agent",
+          "range": 0,
+          "filter": "enemy"
+        }
+      }
+    },
+    {
+      "name": "Uncover the Hidden",
+      "sphere": "mind",
+      "tradition": "magic.psionics",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "sight",
+      "price": "transgression",
+      "mode": "core",
+      "cores": [
+        "sight.uncover"
+      ],
+      "does": "Cast to see what is hidden. For a few days, nothing within several hexes of the caster stays hidden from them: fog, shrouds and their own dull wits make no difference. It can be cast again after a week or two.",
+      "costs": "Transgression. Each casting costs the caster a great deal of their quintessence, so they grow more threadbare, and it is the kind of magic people notice.",
+      "goesWrong": "If the casting fails badly, it usually turns on them: their own judgement slips, and the caster is left Shaken (weaker at Star and Heart) for a few days.",
+      "flags": [
+        "backlash (bad failure, 71%): planned: fight block",
+        "notice: no engine home"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "reveal(encounters, range 3)",
+          "badge": "live"
+        },
+        {
+          "part": "cost",
+          "text": "doom_increase(25, lands on quintessence)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (bad failure, 71%)",
+          "text": "inflict_condition(shaken on self, 48 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_mind_uncover_the_hidden",
+        "name": "Uncover the Hidden",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#mind"
+        ],
+        "sphereAffinity": "mind",
+        "flavorText": "",
+        "mechanicalSummary": "reveal(encounters, range 3)",
+        "prerequisites": {
+          "requiredSphere": "mind"
+        },
+        "effects": [
+          {
+            "type": "reveal",
+            "target": "encounters",
+            "range": 3,
+            "duration": 36
+          }
+        ],
+        "cost": [
+          {
+            "type": "doom_increase",
+            "amount": 25
+          }
+        ],
+        "cooldownTicks": 142,
+        "backlash": {
+          "trigger": "critical_failure",
+          "probability": 0.71,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.shaken",
+            "target": "self",
+            "durationTicks": 48
+          },
+          "narrativeTemplate": "their own judgement slips, and the caster is left Shaken (weaker at Star and Heart) for a few days"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Break the Brave",
+      "sphere": "darkness",
+      "tradition": "magic.illusion",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "fight",
+      "price": "transgression",
+      "mode": "free",
+      "cores": [
+        "core:fight.inflict_fear",
+        "core:fight.reach_swap"
+      ],
+      "does": "The opponent is left Terrified for a few days. The caster uses Shadow in place of Iron for a couple of days. It can be cast again after about a week.",
+      "costs": "Transgression. Each casting costs the caster a great deal of their quintessence, so they grow more threadbare, and it is the kind of magic people notice.",
+      "goesWrong": "If the casting fails badly, it often turns on them: something looks back, and the caster is left Terrified (weaker at Iron, and keen to get away) for a few days.",
+      "flags": [
+        "cast: planned: fight block",
+        "backlash (bad failure, 66%): planned: fight block",
+        "notice: no engine home",
+        "name drawn from the first effect only"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "inflict_condition(terrified on counterpart, 48 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "cast",
+          "text": "modify_rules(encounter_reach_override iron→shadow, 24 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cost",
+          "text": "doom_increase(25, lands on quintessence)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (bad failure, 66%)",
+          "text": "inflict_condition(terrified on self, 48 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_darkness_break_the_brave",
+        "name": "Break the Brave",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#darkness"
+        ],
+        "sphereAffinity": "darkness",
+        "flavorText": "",
+        "mechanicalSummary": "inflict_condition(terrified on counterpart, 48 ticks) + modify_rules(encounter_reach_override iron→shadow, 24 ticks)",
+        "prerequisites": {
+          "requiredSphere": "darkness"
+        },
+        "effects": [
+          {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.terrified",
+            "target": "counterpart",
+            "durationTicks": 48
+          },
+          {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "encounter_reach_override",
+            "value": {
+              "from": "iron",
+              "to": "shadow"
+            },
+            "ticks": 24
+          }
+        ],
+        "cost": [
+          {
+            "type": "doom_increase",
+            "amount": 25
+          }
+        ],
+        "cooldownTicks": 107,
+        "backlash": {
+          "trigger": "critical_failure",
+          "probability": 0.66,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.terrified",
+            "target": "self",
+            "durationTicks": 48
+          },
+          "narrativeTemplate": "something looks back, and the caster is left Terrified (weaker at Iron, and keen to get away) for a few days"
+        },
+        "targeting": {
+          "type": "agent",
+          "range": 0,
+          "filter": "enemy"
+        }
+      }
+    },
+    {
+      "name": "Last Coin",
+      "sphere": "life",
+      "tradition": "magic.healing",
+      "tier": "cantrip",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "strain",
+      "mode": "core",
+      "cores": [
+        "enc.soul_ward"
+      ],
+      "does": "The next time the bearer would be worn thin, the spell takes a small part of the loss instead, and is used up doing it.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are slightly worse at Shadow.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Exhausted (weaker at Iron, Eye and Stone) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "prevent_loss(quintessence, 0.03, spent on use)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(shadow -0.03)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant exhausted, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_life_last_coin",
+        "name": "Last Coin",
+        "tier": 1,
+        "tags": [
+          "#spell",
+          "#life"
+        ],
+        "sphereAffinity": "life",
+        "flavorText": "",
+        "mechanicalSummary": "prevent_loss(quintessence, 0.03, spent on use)",
+        "prerequisites": {
+          "requiredSphere": "life"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "prevent_loss",
+            "channel": "quintessence",
+            "amount": 0.03,
+            "consumeOnPrevent": true
+          },
+          {
+            "type": "passive",
+            "reach": "shadow",
+            "value": -0.03
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.exhausted",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Late Tipping",
+      "sphere": "time",
+      "tradition": "magic.chronomancy",
+      "tier": "cantrip",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "strain",
+      "mode": "free",
+      "cores": [
+        "core:enc.second_chance"
+      ],
+      "does": "When the bearer narrowly fails at Stone, the result is lifted a step.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are slightly worse at Star.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Exhausted (weaker at Iron, Eye and Stone) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "test_shaper(near_miss +1 on stone)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(star -0.04)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant exhausted, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_time_late_tipping",
+        "name": "Late Tipping",
+        "tier": 1,
+        "tags": [
+          "#spell",
+          "#time"
+        ],
+        "sphereAffinity": "time",
+        "flavorText": "",
+        "mechanicalSummary": "test_shaper(near_miss +1 on stone)",
+        "prerequisites": {
+          "requiredSphere": "time"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "test_shaper",
+            "trigger": "near_miss",
+            "steps": 1,
+            "reach": "stone"
+          },
+          {
+            "type": "passive",
+            "reach": "star",
+            "value": -0.04
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.exhausted",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Height Anchor",
+      "sphere": "time",
+      "tradition": "magic.ascension",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "fight",
+      "price": "strain",
+      "mode": "core",
+      "cores": [
+        "fight.last_stand"
+      ],
+      "does": "When a fight turns against the bearer, the spell catches them: an exchange they would lose by a little counts as a near miss instead. They take no wound, and their blow still lands.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are a little worse at Heart.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Exhausted (weaker at Iron, Eye and Stone) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "test_shaper(failure +1, in_combat, margin ≤0.1)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(heart -0.05)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant exhausted, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_time_height_anchor",
+        "name": "Height Anchor",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#time"
+        ],
+        "sphereAffinity": "time",
+        "flavorText": "",
+        "mechanicalSummary": "test_shaper(failure +1, in_combat, margin ≤0.1)",
+        "prerequisites": {
+          "requiredSphere": "time"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "test_shaper",
+            "trigger": "failure",
+            "steps": 1,
+            "condition": "in_combat",
+            "maxMargin": 0.1
+          },
+          {
+            "type": "passive",
+            "reach": "heart",
+            "value": -0.05
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.exhausted",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Brace of Loam",
+      "sphere": "matter",
+      "tradition": "magic.earth",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "fight",
+      "price": "free",
+      "mode": "core",
+      "cores": [
+        "fight.last_stand"
+      ],
+      "does": "When a fight turns against the bearer, the spell catches them: an exchange they would lose by a little counts as a near miss instead. They take no wound, and their blow still lands.",
+      "costs": "Free. Carrying it costs nothing beyond a place among the spells the bearer keeps ready.",
+      "goesWrong": "Rarely, when the bearer fails disastrously, the spell slips away from them for good.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "test_shaper(failure +1, in_combat, margin ≤0.1)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → self_remove, 15%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_matter_brace_of_loam",
+        "name": "Brace of Loam",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#matter"
+        ],
+        "sphereAffinity": "matter",
+        "flavorText": "",
+        "mechanicalSummary": "test_shaper(failure +1, in_combat, margin ≤0.1)",
+        "prerequisites": {
+          "requiredSphere": "matter"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "test_shaper",
+            "trigger": "failure",
+            "steps": 1,
+            "condition": "in_combat",
+            "maxMargin": 0.1
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.15,
+            "payload": {
+              "kind": "self_remove"
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Sudden Road",
+      "sphere": "force",
+      "tradition": "magic.air",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "travel",
+      "price": "gamble",
+      "mode": "core",
+      "cores": [
+        "travel.swift"
+      ],
+      "rider": "calling_star",
+      "does": "The road is shorter for the bearer: they travel much faster than others, whatever the ground. It also gives the bearer itchy feet: they take to the road more often.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "Whenever the bearer fails, the spell sometimes turns on them: they are left Wounded (weaker at Iron and Stone) for a few days.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "range_modifier(movement ×0.65)",
+          "badge": "live"
+        },
+        {
+          "part": "rider",
+          "text": "behavior_weight(star ×1.2)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_failure → grant wounded, 40%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_force_sudden_road",
+        "name": "Sudden Road",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#force"
+        ],
+        "sphereAffinity": "force",
+        "flavorText": "",
+        "mechanicalSummary": "range_modifier(movement ×0.65) + behavior_weight(star ×1.2)",
+        "prerequisites": {
+          "requiredSphere": "force"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "range_modifier",
+            "movementCostMultiplier": 0.65
+          },
+          {
+            "type": "behavior_weight",
+            "reach": "star",
+            "multiplier": 1.2
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_failure",
+            "probability": 0.4,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.wounded",
+              "durationTicks": 36
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Sour Barb",
+      "sphere": "entropy",
+      "tradition": "magic.luck",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "fight",
+      "price": "gamble",
+      "mode": "free",
+      "cores": [
+        "core:fight.trade_answer",
+        "core:enc.dread",
+        "core:fight.trophy"
+      ],
+      "does": "When blows are traded, the opponent is left Cursed for a couple of days. Enemies near the bearer do a little worse at Gold. Each time the bearer overcomes an opponent, they grow slightly better at Iron, up to a point.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "Whenever the bearer fails, the spell sometimes turns on them: they are left Cursed (unlucky at Star and Gold) for a few days.",
+      "flags": [
+        "carried: planned: fight block",
+        "carried: planned: fight block",
+        "mixes arenas (fight + encounter)",
+        "effects point at 2 different Reaches (Gold, Iron)",
+        "name drawn from the first effect only"
+      ],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "reactive(on attacked → inflict_condition(cursed on counterpart, 24 ticks), cooldown 12)",
+          "badge": "fight"
+        },
+        {
+          "part": "carried",
+          "text": "aura(enemies, radius 1, gold -0.07)",
+          "badge": "live"
+        },
+        {
+          "part": "carried",
+          "text": "stacking(iron +0.04 per on_kill, max 3)",
+          "badge": "fight"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_failure → grant cursed, 40%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_entropy_sour_barb",
+        "name": "Sour Barb",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#entropy"
+        ],
+        "sphereAffinity": "entropy",
+        "flavorText": "",
+        "mechanicalSummary": "reactive(on attacked → inflict_condition(cursed on counterpart, 24 ticks), cooldown 12) + aura(enemies, radius 1, gold -0.07) + stacking(iron +0.04 per on_kill, max 3)",
+        "prerequisites": {
+          "requiredSphere": "entropy"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "reactive",
+            "trigger": "attacked",
+            "cooldown": 12,
+            "effect": {
+              "type": "inflict_condition",
+              "conditionTraitId": "trait.condition.cursed",
+              "target": "counterpart",
+              "durationTicks": 24
+            }
+          },
+          {
+            "type": "aura",
+            "radius": 1,
+            "target": "enemies",
+            "reach": "gold",
+            "value": -0.07
+          },
+          {
+            "type": "stacking",
+            "reach": "iron",
+            "valuePerStack": 0.04,
+            "maxStacks": 3,
+            "stackOn": "on_kill"
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_failure",
+            "probability": 0.4,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.cursed",
+              "durationTicks": 36
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Second Sight",
+      "sphere": "darkness",
+      "tradition": "magic.necromancy",
+      "tier": "cantrip",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "free",
+      "mode": "core",
+      "cores": [
+        "enc.favoured"
+      ],
+      "does": "When the bearer is dealing with magic or fate, they are a little better at Veil.",
+      "costs": "Free. Carrying it costs nothing beyond a place among the spells the bearer keeps ready.",
+      "goesWrong": "Nothing that matters. It is the kind of magic a village keeps.",
+      "flags": [
+        "a free price sits badly with Necromancy"
+      ],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "conditional(in_mystical: veil +0.05)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_darkness_second_sight",
+        "name": "Second Sight",
+        "tier": 1,
+        "tags": [
+          "#spell",
+          "#darkness"
+        ],
+        "sphereAffinity": "darkness",
+        "flavorText": "",
+        "mechanicalSummary": "conditional(in_mystical: veil +0.05)",
+        "prerequisites": {
+          "requiredSphere": "darkness"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "conditional",
+            "condition": "in_mystical",
+            "reach": "veil",
+            "value": 0.05
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Horn Lure",
+      "sphere": "force",
+      "tradition": "magic.summoning",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "strain",
+      "mode": "core",
+      "cores": [
+        "enc.calling"
+      ],
+      "rider": "favoured",
+      "does": "The bearer is drawn to the open road: they seek out Star encounters much more often than they otherwise would. They are also a little better at Star when out in the wilds.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are a little worse at Stone.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Wounded (weaker at Iron and Stone) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "behavior_weight(star ×1.5)",
+          "badge": "live"
+        },
+        {
+          "part": "rider",
+          "text": "conditional(in_wilderness: star +0.07)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(stone -0.07)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant wounded, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_force_horn_lure",
+        "name": "Horn Lure",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#force"
+        ],
+        "sphereAffinity": "force",
+        "flavorText": "",
+        "mechanicalSummary": "behavior_weight(star ×1.5) + conditional(in_wilderness: star +0.07)",
+        "prerequisites": {
+          "requiredSphere": "force"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "behavior_weight",
+            "reach": "star",
+            "multiplier": 1.5
+          },
+          {
+            "type": "conditional",
+            "condition": "in_wilderness",
+            "reach": "star",
+            "value": 0.07
+          },
+          {
+            "type": "passive",
+            "reach": "stone",
+            "value": -0.07
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.wounded",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Search the Distance",
+      "sphere": "light",
+      "tradition": "magic.divination",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "sight",
+      "price": "transgression",
+      "mode": "core",
+      "cores": [
+        "sight.scry"
+      ],
+      "does": "Cast to look far. For a few days, the caster notices what is happening several hexes further off than usual. It can be cast again after about a week.",
+      "costs": "Transgression. Each casting costs the caster a great deal of their quintessence, so they grow more threadbare, and it is the kind of magic people notice.",
+      "goesWrong": "If the casting fails badly, it usually turns on them: the light shows the caster too, leaving them a good deal worse at Shadow for a few days.",
+      "flags": [
+        "notice: no engine home"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "modify_rules(awareness_range_bonus 3, 36 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cost",
+          "text": "doom_increase(25, lands on quintessence)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (bad failure, 74%)",
+          "text": "duration(shadow -0.13, 48 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_light_search_the_distance",
+        "name": "Search the Distance",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#light"
+        ],
+        "sphereAffinity": "light",
+        "flavorText": "",
+        "mechanicalSummary": "modify_rules(awareness_range_bonus 3, 36 ticks)",
+        "prerequisites": {
+          "requiredSphere": "light"
+        },
+        "effects": [
+          {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "awareness_range_bonus",
+            "value": 3,
+            "ticks": 36
+          }
+        ],
+        "cost": [
+          {
+            "type": "doom_increase",
+            "amount": 25
+          }
+        ],
+        "cooldownTicks": 93,
+        "backlash": {
+          "trigger": "critical_failure",
+          "probability": 0.74,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "duration",
+            "ticks": 48,
+            "reach": "shadow",
+            "value": -0.13,
+            "destroyOnExpiry": true
+          },
+          "narrativeTemplate": "the light shows the caster too, leaving them a good deal worse at Shadow for a few days"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Spark Tally",
+      "sphere": "energy",
+      "tradition": "magic.fire",
+      "tier": "great",
+      "agency": "carried",
+      "arena": "fight",
+      "price": "transgression",
+      "mode": "core",
+      "cores": [
+        "fight.trophy"
+      ],
+      "does": "It keeps count. Each opponent the bearer overcomes makes them slightly better at Iron, up to three times over, and the count never fades.",
+      "costs": "Transgression. Carrying it wears the bearer thin: they lose a little quintessence every day, and it is the kind of magic people notice.",
+      "goesWrong": "It changes them. Carrying it slowly makes the bearer more Power-Hungry.",
+      "flags": [
+        "carried: planned: fight block",
+        "notice: no engine home"
+      ],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "stacking(iron +0.04 per on_kill, max 3)",
+          "badge": "fight"
+        },
+        {
+          "part": "price",
+          "text": "resource_manipulate(quintessence -0.0015 on self, per_tick)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "axiological_drift(mercy_ruthlessness -0.002/tick → -0.5)",
+          "badge": "live"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_energy_spark_tally",
+        "name": "Spark Tally",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#energy"
+        ],
+        "sphereAffinity": "energy",
+        "flavorText": "",
+        "mechanicalSummary": "stacking(iron +0.04 per on_kill, max 3)",
+        "prerequisites": {
+          "requiredSphere": "energy"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "stacking",
+            "reach": "iron",
+            "valuePerStack": 0.04,
+            "maxStacks": 3,
+            "stackOn": "on_kill"
+          },
+          {
+            "type": "resource_manipulate",
+            "resource": "quintessence",
+            "target": "self",
+            "amount": -0.0015,
+            "mode": "per_tick"
+          },
+          {
+            "type": "axiological_drift",
+            "axis": "mercy_ruthlessness",
+            "ratePerTick": -0.002,
+            "limitValue": -0.5
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Close the Way",
+      "sphere": "order",
+      "tradition": "magic.warding",
+      "tier": "great",
+      "agency": "cast",
+      "arena": "mark",
+      "price": "strain",
+      "mode": "core",
+      "cores": [
+        "mark.ward"
+      ],
+      "does": "The caster salts the ground where they stand. For a few days, anyone crossing that hex does so at little more than half pace. It can be cast again after about a week.",
+      "costs": "Strain. Casting it leaves the caster Exhausted (weaker at Iron, Eye and Stone) until it wears off.",
+      "goesWrong": "If the casting fails, it sometimes rebounds: it takes everything they have, and the caster is left Exhausted (weaker at Iron, Eye and Stone) for a few days.",
+      "flags": [
+        "backlash (failure, 28%): planned: fight block"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "alter_terrain(self_hex → warded, 48 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cost",
+          "text": "condition_inflict(exhausted)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (failure, 28%)",
+          "text": "inflict_condition(exhausted on self, 36 ticks)",
+          "badge": "fight"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_order_close_the_way",
+        "name": "Close the Way",
+        "tier": 3,
+        "tags": [
+          "#spell",
+          "#order"
+        ],
+        "sphereAffinity": "order",
+        "flavorText": "",
+        "mechanicalSummary": "alter_terrain(self_hex → warded, 48 ticks)",
+        "prerequisites": {
+          "requiredSphere": "order"
+        },
+        "effects": [
+          {
+            "type": "alter_terrain",
+            "target": "self_hex",
+            "terrainEffect": "warded",
+            "ticks": 48
+          }
+        ],
+        "cost": [
+          {
+            "type": "condition_inflict",
+            "template": "exhausted"
+          }
+        ],
+        "cooldownTicks": 72,
+        "backlash": {
+          "trigger": "failure",
+          "probability": 0.28,
+          "severity": "minor",
+          "effect": {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.exhausted",
+            "target": "self",
+            "durationTicks": 36
+          },
+          "narrativeTemplate": "it takes everything they have, and the caster is left Exhausted (weaker at Iron, Eye and Stone) for a few days"
+        },
+        "targeting": {
+          "type": "hex",
+          "range": 0
+        }
+      }
+    }
+  ],
+  "appendixSeed": 1231,
+  "appendix": [
+    {
+      "name": "The Wayfinding",
+      "sphere": "spirit",
+      "tradition": "magic.ascension",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "sight",
+      "price": "strain",
+      "mode": "core",
+      "cores": [
+        "sight.survey"
+      ],
+      "does": "The bearer knows the land: whenever they arrive somewhere, every place within a couple of hexes goes onto their map.",
+      "costs": "Strain. It weighs on the bearer: while they carry it, they are slightly worse at Stone.",
+      "goesWrong": "When the bearer fails disastrously, the spell sometimes turns on them: they are left Grieving (weaker at Heart and Eye) for a day.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "reveal(hexes, range 2)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "passive(stone -0.04)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → grant grieving, 25%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_spirit_the_wayfinding",
+        "name": "The Wayfinding",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#spirit"
+        ],
+        "sphereAffinity": "spirit",
+        "flavorText": "",
+        "mechanicalSummary": "reveal(hexes, range 2)",
+        "prerequisites": {
+          "requiredSphere": "spirit"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "reveal",
+            "target": "hexes",
+            "range": 2
+          },
+          {
+            "type": "passive",
+            "reach": "stone",
+            "value": -0.04
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.25,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.grieving",
+              "durationTicks": 12
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Kindling Run",
+      "sphere": "energy",
+      "tradition": "magic.lightning",
+      "tier": "signature",
+      "agency": "cast",
+      "arena": "travel",
+      "price": "transgression",
+      "mode": "free",
+      "cores": [
+        "core:travel.burst",
+        "raw.overlay",
+        "core:fight.inflict_curse"
+      ],
+      "does": "The caster travels at double pace for a few days. The ground where the caster stands becomes Volcanic (stronger at Iron) for about a week. The opponent is left Wounded for about a week. It can be cast again after a week or two.",
+      "costs": "Transgression. Each casting costs the caster a great deal of their quintessence, so they grow more threadbare, and it is the kind of magic people notice.",
+      "goesWrong": "If the casting fails badly, it often turns on them: it takes everything they have, and the caster is left Exhausted (weaker at Iron, Eye and Stone) for a few days.",
+      "flags": [
+        "cast: stored, but nothing reads it",
+        "cast: planned: fight block",
+        "backlash (bad failure, 61%): planned: fight block",
+        "notice: no engine home",
+        "mixes arenas (travel + mark + fight)",
+        "name drawn from the first effect only"
+      ],
+      "liveness": [
+        {
+          "part": "cast",
+          "text": "modify_rules(movement_cost_multiplier ×0.5, 36 ticks)",
+          "badge": "live"
+        },
+        {
+          "part": "cast",
+          "text": "alter_terrain(self_hex → volcanic, 72 ticks)",
+          "badge": "unread"
+        },
+        {
+          "part": "cast",
+          "text": "inflict_condition(wounded on counterpart, 72 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "cost",
+          "text": "doom_increase(25, lands on quintessence)",
+          "badge": "live"
+        },
+        {
+          "part": "backlash (bad failure, 61%)",
+          "text": "inflict_condition(exhausted on self, 48 ticks)",
+          "badge": "fight"
+        },
+        {
+          "part": "notice",
+          "text": "(no cost type exists)",
+          "badge": "nohome"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_energy_kindling_run",
+        "name": "Kindling Run",
+        "tier": 4,
+        "tags": [
+          "#spell",
+          "#energy"
+        ],
+        "sphereAffinity": "energy",
+        "flavorText": "",
+        "mechanicalSummary": "modify_rules(movement_cost_multiplier ×0.5, 36 ticks) + alter_terrain(self_hex → volcanic, 72 ticks) + inflict_condition(wounded on counterpart, 72 ticks)",
+        "prerequisites": {
+          "requiredSphere": "energy"
+        },
+        "effects": [
+          {
+            "type": "modify_rules",
+            "scope": {
+              "scope": "self"
+            },
+            "rule": "movement_cost_multiplier",
+            "value": 0.5,
+            "ticks": 36
+          },
+          {
+            "type": "alter_terrain",
+            "target": "self_hex",
+            "ticks": 72,
+            "terrainEffect": "volcanic"
+          },
+          {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.wounded",
+            "target": "counterpart",
+            "durationTicks": 72
+          }
+        ],
+        "cost": [
+          {
+            "type": "doom_increase",
+            "amount": 25
+          }
+        ],
+        "cooldownTicks": 136,
+        "backlash": {
+          "trigger": "critical_failure",
+          "probability": 0.61,
+          "severity": "catastrophic",
+          "effect": {
+            "type": "inflict_condition",
+            "conditionTraitId": "trait.condition.exhausted",
+            "target": "self",
+            "durationTicks": 48
+          },
+          "narrativeTemplate": "it takes everything they have, and the caster is left Exhausted (weaker at Iron, Eye and Stone) for a few days"
+        },
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Wild Trophy",
+      "sphere": "chaos",
+      "tradition": "magic.weather",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "fight",
+      "price": "gamble",
+      "mode": "free",
+      "cores": [
+        "core:fight.trophy"
+      ],
+      "does": "Each time the bearer overcomes an opponent, they grow slightly better at Iron, up to a point.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "Whenever the bearer fails, the spell sometimes turns on them: they are left Cursed (unlucky at Star and Gold) for a few days.",
+      "flags": [
+        "carried: planned: fight block"
+      ],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "stacking(iron +0.03 per on_kill, max 3)",
+          "badge": "fight"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_failure → grant cursed, 30%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_chaos_wild_trophy",
+        "name": "Wild Trophy",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#chaos"
+        ],
+        "sphereAffinity": "chaos",
+        "flavorText": "",
+        "mechanicalSummary": "stacking(iron +0.03 per on_kill, max 3)",
+        "prerequisites": {
+          "requiredSphere": "chaos"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "stacking",
+            "reach": "iron",
+            "valuePerStack": 0.03,
+            "maxStacks": 3,
+            "stackOn": "on_kill"
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_failure",
+            "probability": 0.3,
+            "payload": {
+              "kind": "condition_grant",
+              "conditionTraitId": "trait.condition.cursed",
+              "durationTicks": 36
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Beacon Fire",
+      "sphere": "mind",
+      "tradition": "magic.dreamcraft",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "mark",
+      "price": "gamble",
+      "mode": "core",
+      "cores": [
+        "mark.drift"
+      ],
+      "does": "Wherever the bearer stays, the place starts to draw the curious: the hex pulls more wanderers and seekers the longer they remain.",
+      "costs": "A gamble. It asks nothing up front.",
+      "goesWrong": "When the bearer fails disastrously, the spell often leaves them for good.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "hex_effect(explorationAttraction +0.004/tick, radius 0)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → self_remove, 50%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_mind_beacon_fire",
+        "name": "Beacon Fire",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#mind"
+        ],
+        "sphereAffinity": "mind",
+        "flavorText": "",
+        "mechanicalSummary": "hex_effect(explorationAttraction +0.004/tick, radius 0)",
+        "prerequisites": {
+          "requiredSphere": "mind"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "hex_effect",
+            "property": "explorationAttraction",
+            "value": 0.004,
+            "mode": "add",
+            "radius": 0
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.5,
+            "payload": {
+              "kind": "self_remove"
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    },
+    {
+      "name": "Warm Standard",
+      "sphere": "life",
+      "tradition": "magic.restoration",
+      "tier": "working",
+      "agency": "carried",
+      "arena": "encounter",
+      "price": "free",
+      "mode": "core",
+      "cores": [
+        "enc.rally"
+      ],
+      "does": "Allies near the bearer do slightly better at Star. It reaches anyone of the bearer's faction within a hex.",
+      "costs": "Free. Carrying it costs nothing beyond a place among the spells the bearer keeps ready.",
+      "goesWrong": "Rarely, when the bearer fails disastrously, the spell slips away from them for good.",
+      "flags": [],
+      "liveness": [
+        {
+          "part": "carried",
+          "text": "aura(allies, radius 1, star +0.04)",
+          "badge": "live"
+        },
+        {
+          "part": "price",
+          "text": "action_trigger(on encounter_critical_failure → self_remove, 15%)",
+          "badge": "live"
+        }
+      ],
+      "template": {
+        "id": "spell_gen_life_warm_standard",
+        "name": "Warm Standard",
+        "tier": 2,
+        "tags": [
+          "#spell",
+          "#life"
+        ],
+        "sphereAffinity": "life",
+        "flavorText": "",
+        "mechanicalSummary": "aura(allies, radius 1, star +0.04)",
+        "prerequisites": {
+          "requiredSphere": "life"
+        },
+        "effects": [],
+        "cost": [],
+        "cooldownTicks": 0,
+        "passiveEffects": [
+          {
+            "type": "aura",
+            "radius": 1,
+            "target": "allies",
+            "reach": "star",
+            "value": 0.04
+          },
+          {
+            "type": "action_trigger",
+            "on": "encounter_critical_failure",
+            "probability": 0.15,
+            "payload": {
+              "kind": "self_remove"
+            }
+          }
+        ],
+        "targeting": {
+          "type": "self"
+        }
+      }
+    }
+  ]
+}
