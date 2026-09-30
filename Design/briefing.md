@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-09-30 21:55 local (19:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-30 22:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,13 +32,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 3 jobs ready to build, none being built.** The lanes are back on schedule; the builder ran at ~21:10 and its next run is ~22:10.
+**Thin but moving: 2 jobs ready to build, 1 being built.**
 
-- **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and), [expert everyday encounters, batch 1](https://linear.app/threadbare/issue/THR-1678), and [a reputation chip that names the town instead of the person](https://linear.app/threadbare/issue/THR-1685).
-- **Unstuck:** [the visit to the ruin](https://linear.app/threadbare/issue/THR-1664) merged at ~21:38 via [pull request #2151](https://github.com/christianspliid-ui/threadbare/pull/2151) and is live on the site. The build slot is free again.
+- **Being built:** [expert everyday encounters, batch 1](https://linear.app/threadbare/issue/THR-1678) was picked up at ~22:10. Its six encounters are drafted and saved on [its branch](https://github.com/christianspliid-ui/threadbare/tree/thr-1678-expert-everyday-1) (checkpoint at 22:48), and checking is under way.
+- **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and) and [a reputation chip that names the town instead of the person](https://linear.app/threadbare/issue/THR-1685).
 
 ## Health
 
-- **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs … \"Heavy simulation tests\" has been failing on main for 31 hours and nobody has picked it up — the code on main has a problem the merge gate does not check." This is a builder's job.
+- **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs … \"Heavy simulation tests\" has been failing on main for 32 hours and nobody has picked it up — the code on main has a problem the merge gate does not check." This is a builder's job.
+- **The simulation got slower:** "tick cost 109 ms/tick steady, 33% above the 7-day median (82, 139 rows since 95999554); top phase agent_decision, 534 agents. Name the merges between 95999554 and 9ce5b0f3: git log --oneline --merges 95999554..9ce5b0f3" This is a builder's job.
 - **A third of some factions' senior and elite jobs are still unreachable in a long game** (14 of 60 gated encounters blocked). Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-30.md). This is a builder's job.
 - **The home checkout is 182 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
