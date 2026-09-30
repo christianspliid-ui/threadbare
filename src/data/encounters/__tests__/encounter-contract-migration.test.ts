@@ -89,6 +89,13 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.smugglers_ford',
   'encounter.town.well_sinking',
   'encounter.town.cunning_fair',
+  // THR-1678, the first expert everyday batch — nudge-native, same shape.
+  'encounter.town.debt_arbitration',
+  'encounter.town.feud_mediation',
+  'encounter.town.tithe_barn_raid',
+  'encounter.town.comet_disputation',
+  'encounter.town.bell_tower_shoring',
+  'encounter.town.drowned_mans_testimony',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {
