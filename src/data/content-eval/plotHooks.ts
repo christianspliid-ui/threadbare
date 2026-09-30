@@ -335,7 +335,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'discovery'],
     reaches: ['stone', 'eye'],
     source: 'vault: Archetypes/Adventure & Quest — The Mad Artificer Stronghold',
-    usedBy: ['encounter.town.well_sinking'],
+    usedBy: ['encounter.town.well_sinking', 'encounter.town.toll_gate_writ'],
   },
   {
     id: 'hook.underground_city',
@@ -401,7 +401,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'protection'],
     reaches: ['stone', 'iron'],
     source: 'vault: Archetypes/Event — Natural Disaster',
-    usedBy: [],
+    usedBy: ['encounter.town.harvest_almanac'],
   },
   {
     id: 'hook.unlikely_alliance',
@@ -425,7 +425,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['betrayal', 'discovery'],
     reaches: ['heart', 'shadow'],
     source: 'vault: Archetypes/Event — Betrayal Revealed',
-    usedBy: [],
+    usedBy: ['encounter.town.boundary_survey'],
   },
   {
     id: 'hook.dangerous_truth',
@@ -457,7 +457,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'conflict'],
     reaches: ['gold', 'heart'],
     source: 'vault: Archetypes/Event — The Trade War',
-    usedBy: ['encounter.town.smugglers_ford'],
+    usedBy: ['encounter.town.smugglers_ford', 'encounter.town.wolf_winter_watch'],
   },
   {
     id: 'hook.oath_breaking_scandal',
@@ -473,7 +473,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'justice'],
     reaches: ['heart', 'eye'],
     source: 'vault: Archetypes/Event — The Seasonal Plague',
-    usedBy: [],
+    usedBy: ['encounter.town.oath_breaker_rite'],
   },
   {
     id: 'hook.stronghold_mobilization',
@@ -611,7 +611,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'discovery'],
     reaches: ['shadow', 'stone'],
     source: 'vault: Archetypes/Ordeal — Descent Into Darkness',
-    usedBy: ['encounter.delve.the_broken_seal'],
+    usedBy: ['encounter.delve.the_broken_seal', 'encounter.town.pawnbrokers_strongroom'],
   },
   {
     id: 'hook.mentors_test',

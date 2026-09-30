@@ -1,0 +1,702 @@
+/**
+ * Wolves at the Fold — slot 3 of expert-everyday-2 (THR-1679). Three-step expert
+ * iron encounter: find what draws a wolf pack to a village (eye), post its frightened
+ * watch on the folds (iron), then hold the great fold gate until dawn (iron).
+ * 
+ * Pipeline: `Docs/plans/encounters/wolf-winter-watch-final.md` (editorial PASS WITH
+ * REVISIONS, systems READY FOR IMPLEMENTATION, package PASS / connected).
+ * plotHookTaken: hook.trade_war blended with hook.environmental_gauntlet — the drover
+ * from the next village staked carrion by this village's folds and offers to buy the
+ * frightened village's flock at half price.
+ * Seed dice: p3 opportunity (command of the watch and a fee, at the risk of the name)
+ * · opposition beast (territory) · disposition hostile · agentRole judge asked to
+ * rule · scale company.
+ * 
+ * Consequence hand (binding, THR-1145): `secret` + `place`. secret = `hidden_mark`
+ * on `$cast:drover` (step 0 success, concealed, not chipped) + `favor_creation` by
+ * the success reaction. place = `apply_condition` Under Watch on `$here` (final step
+ * success, chipped BOON / gain by editorial ruling).
+ * Standing: `reputation_with` `$here` +0.06 / -0.06 on the final step; -0.02 on the
+ * failureMetadata of steps 0 and 1 (a critical_failure at any step ends the action).
+ * Systems quota: cast + rewards + conditions + reputation = 4. No rider, no Heavy
+ * Hand. Wolves are weather with teeth, never a monster template or a fight gate.
+ * Trait hooks: Hopeful variant +0.04 with trait card Raise Morale (step 2); Bitter
+ * variant -0.04.
+ * Hands: step 0 Boost (tracks, life) + Stumble (chaos, opposes drover), deal 3
+ * insight/wild; step 1 Boost (light), deal 3 might/peril; step 2 Boost (ward, matter)
+ * + Trait card (Hopeful), deal 3 might/wild.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.wolf_winter_watch',
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'Wolves at the Fold',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence', 'sacrifice_survival'],
+  settings: ['rural'],
+  openings: {
+    rural: '{actor} arrives at {location} in a hard frost.',
+  },
+  steps: [
+    {
+      reach: 'eye',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.56,
+      purposeLine: 'Find what draws them',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'Since the snow came, wolves take ewes from the folds each night. The pack passes the next '
+        + 'village by. {cast:drover}, a drover from there, says the pack likes this side of the valley, and '
+        + 'offers to buy the flock at half price. The reeve sent for {actor} to size up the watch and '
+        + 'command it for a fee. If the folds fall under that command, {location} will think less of '
+        + '{actor}.',
+      successAfterimage: 'They found carrion staked past the last fold, left there by {cast:drover} to draw the pack.',
+      failureAfterimage: 'They walked the folds and the hill until dark and found only tracks.',
+      successAtCostAfterimage: 'They found the carrion and who staked it, and {cast:drover} saw them find it.',
+      criticalSuccessAfterimage: 'They found carrion staked past the last fold, and caught {cast:drover} bringing more.',
+      criticalFailureAfterimage: 'They blamed the shepherds\' dogs for drawing the pack, and the shepherds have not forgiven it.',
+      successMetadata: {
+        effects: [
+          {
+            kind: 'hidden_mark',
+            category: 'concealed_action',
+            severity: 0.5,
+            label: 'Staked carrion by a neighbouring village\'s folds to draw the wolves away from home',
+            targetAgentId: '$cast:drover',
+            revealFamilies: ['investigation'],
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['insight', 'wild'],
+      },
+      nudges: [
+        {
+          id: 'wolf.reveal_the_trail',
+          name: 'Reveal The Trail',
+          sphere: 'life',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.focus',
+          effectLine: 'Make the tracks of beasts plain in snow and mud, so a tracker can follow them back to where they '
+            + 'began.',
+          bandProse: {
+            critical_success: 'The tracks led {actor} to the stakes as plainly as a road.',
+            success: 'A line of tracks showed {actor} where the pack turned off the hill.',
+            near_miss: 'The tracks stayed plain until the wind rose, and {actor} spent an hour finding them again.',
+            failure: 'Fresh snow filled the tracks behind {actor} faster than they could follow.',
+          },
+        },
+        {
+          id: 'wolf.twist_a_tale',
+          libraryCardId: 'card.stumble.signature.chaos',
+          name: 'Twist A Tale',
+          sphere: 'chaos',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          opposes: 'drover',
+          imageTag: 'generic.luck',
+          effectLine: 'Make a liar\'s account slip and contradict itself, so whoever is listening hears the gap.',
+          bandProse: {
+            success: '{cast:drover} said the pack came down from the north, then said the east.',
+            success_at_cost: '{cast:drover} changed the story halfway, then saw that {actor} had noticed.',
+            failure: '{cast:drover} told the same story twice, word for word, and it held.',
+            critical_failure: '{cast:drover} stumbled over the story, and the shepherds heard only {actor} pressing a guest.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.64,
+      purposeLine: 'Set the watch',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The watch is a handful of farmhands with spears, lanterns and one horn. None of them has stood '
+        + 'against wolves. At dusk the reeve, {cast:reeve}, hands the watch to {actor}. {actor} must post '
+        + 'it on the folds before the pack comes down.',
+      successAfterimage: 'The watch stood at every fold by dark, and each farmhand knew where to run when the horn blew.',
+      failureAfterimage: 'The watch was still arguing over the lanterns when the light went.',
+      successAtCostAfterimage: 'The watch stood by dark, but a few farmhands went home rather than stand in the snow.',
+      criticalSuccessAfterimage: 'Every fold had a lantern and a spear on it by dark, and the horn hung where all could hear it.',
+      criticalFailureAfterimage: 'Half the watch refused to stand, and told {cast:reeve} so in front of the others.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'The carrion is pulled up, and {cast:drover} dares not stake more.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They pulled up the carrion before dusk.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: '{cast:drover} knows they found the carrion.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They found the carrion late, with the light going.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They still do not know what draws the pack.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'The shepherds will not take orders from them.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['might', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'wolf.guard_the_flames',
+          name: 'Guard The Flames',
+          sphere: 'light',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.light',
+          effectLine: 'Keep lamps and fires burning through wind and snow, so watchers see what comes at them.',
+          bandProse: {
+            critical_success: 'No lantern on the folds went out in the wind.',
+            success: 'The lanterns burned steady on every fold through the first squall.',
+            success_at_cost: 'The lanterns burned, and showed the watch how many wolves there were.',
+            near_miss: 'The lanterns would not catch in the wind until the light was nearly gone.',
+            failure: 'The lanterns burned, but the watch had set them where the pack never came.',
+            critical_failure: 'A lantern tipped into the straw of the east fold, and the watch spent the dusk beating out the '
+              + 'fire.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.68,
+      purposeLine: 'Hold the fold gate',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'On the coldest night the whole pack comes down at once. The watch falls back to the great fold, '
+        + 'where most of the flock is penned. {actor} must hold its barred gate until dawn. {cast:drover} '
+        + 'waits at the end of the lane, ready to buy whatever is left.',
+      successAfterimage: 'The gate held until dawn, and the pack went back up the hill hungry.',
+      failureAfterimage: 'The gate gave way before dawn, and the pack got into the great fold.',
+      successAtCostAfterimage: 'The gate held until dawn, but the pack took ewes from the far folds.',
+      criticalSuccessAfterimage: 'The pack broke off before midnight and did not come back.',
+      criticalFailureAfterimage: 'The gate fell, the watch ran, and the pack was in the fold until dawn.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'The watch has had time to learn its posts.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'The watch took its posts in good order.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The watch is short of hands.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'The watch took its places late.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The watch never settled on its posts.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'Half the watch would not stand.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.location.under_watch',
+            targetLocationId: '$here',
+            intensity: 0.6,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['might', 'wild'],
+      },
+      nudges: [
+        {
+          id: 'wolf.harden_the_bar',
+          name: 'Harden The Bar',
+          sphere: 'matter',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.ward',
+          effectLine: 'Make wood and iron hold past their strength, so a shut door stays shut.',
+          bandProse: {
+            critical_success: 'The gate bar took the whole weight of the pack and did not crack.',
+            success: 'The gate bar bowed under the rush, and held.',
+            success_at_cost: 'The bar held all night, but the watch left the far folds to stand behind it.',
+            near_miss: 'The bar held, but the hinge post split, and the gate hung by one side until dawn.',
+            failure: 'The bar held, and the post beside it gave way.',
+            critical_failure: 'The bar held until the post tore out of the frozen ground and took the gate with it.',
+          },
+        },
+        {
+          id: 'wolf.raise_morale',
+          libraryCardId: 'card.trait_card.core',
+          name: 'Raise Morale',
+          requiredTrait: 'trait.core.core_hope.virtue',
+          essenceCost: 0,
+          forecastDelta: 0.08,
+          imageTag: 'generic.warmth',
+          effectLine: 'Wake their hopeful nature, so the people beside them take heart and hold their ground.',
+          bandProse: {
+            success: '{actor} laughed at the wolves through the gate, and the watch laughed with them.',
+            success_at_cost: 'The watch stayed at the gate because {actor} did.',
+            failure: '{actor} stood at the gate alone for a while before the watch came back to it.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_hope.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Hopeful, they expect the gate to hold till dawn.',
+      addNudgeIds: ['wolf.raise_morale'],
+    },
+    {
+      traitId: 'trait.core.core_hope.vice',
+      forecastDelta: -0.04,
+      factorLine: 'Being Bitter, they expect the gate to fall before dawn.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'reeve',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['elder'],
+      supportRole: 'wolf_watch_reeve',
+      spawnNpcRole: 'elder',
+      spawnName: 'Hild Aysgarth',
+    },
+    {
+      kind: 'actor',
+      key: 'drover',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['wanderer'],
+      supportRole: 'wolf_watch_drover',
+      spawnNpcRole: 'trader',
+      spawnName: 'Col Brannock',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'Wolves are taking a village\'s ewes each night, and a drover from the next village offers to buy '
+      + 'the flock cheap.',
+    success: 'The great fold held until dawn, and the flock stays in the village.',
+    failure: 'The great fold fell, and the reeve agrees to sell what is left.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The snow stops, and {location} counts its flock.',
+      changes: [],
+      reactions: [
+        {
+          id: 'wolf.name_the_drover',
+          label: 'Name the drover to the village',
+          intent: 'The mortal names the drover to {location}. The village thinks the better of them, and '
+            + 'the drover will not forget it.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.03,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:drover',
+              sentimentDelta: -0.12,
+            },
+          ],
+        },
+        {
+          id: 'wolf.keep_the_drovers_secret',
+          label: 'Keep the drover\'s secret',
+          intent: 'The mortal keeps quiet about the carrion, and the drover owes them for the silence.',
+          effects: [
+            {
+              kind: 'favor_creation',
+              magnitudeRange: [0.2, 0.35],
+              context: 'Kept quiet about the carrion staked by a neighbouring village\'s folds',
+              debtorAgentId: '$cast:drover',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: '{cast:reeve} turns down the drover\'s offer and sends {cast:drover} home. {actor} has told no '
+            + 'one who staked the carrion past the last fold.',
+          changes: [
+            {
+              id: 'wolf.crit.the_villages_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A fold held',
+              causeClause: 'Not one ewe lost all night',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'wolf.crit.under_watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'A watch on the folds',
+              causeClause: 'Their watch stays on the folds',
+              detail: 'quiet work in {location} is harder now.',
+            },
+          ],
+        },
+        success: {
+          overview: '{cast:reeve} turns down the drover\'s offer, and the flock stays in {location}. {actor} has told '
+            + 'no one who staked the carrion past the last fold.',
+          changes: [
+            {
+              id: 'wolf.win.the_villages_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A fold held',
+              causeClause: 'Kept the pack out of the great fold',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'wolf.win.under_watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'A watch on the folds',
+              causeClause: 'Their watch stays on the folds',
+              detail: 'quiet work in {location} is harder now.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: '{cast:reeve} turns down the drover\'s offer, and the flock stays in {location}. {actor} gives '
+            + 'the fee to the shepherds who lost ewes this winter. {actor} knows now that {cast:drover} staked '
+            + 'the carrion past the last fold, and has told no one.',
+          changes: [
+            {
+              id: 'wolf.cost.the_villages_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A fold held',
+              causeClause: 'Kept the pack out of the great fold',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'wolf.cost.under_watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'A watch on the folds',
+              causeClause: 'Their watch stays on the folds',
+              detail: 'quiet work in {location} is harder now.',
+            },
+          ],
+        },
+        failure: {
+          overview: '{cast:reeve} agrees to sell what is left of the flock to {cast:drover}, at the drover\'s price. '
+            + 'This is what {cast:drover} staked carrion past the last fold to get.',
+          changes: [
+            {
+              id: 'wolf.lost.the_villages_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A fold fallen',
+              causeClause: 'The fold fell under their command',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'wolf.help_count_losses',
+              label: 'Help the village count its losses',
+              intent: 'The mortal stays to bury the dead ewes and mend the folds, and the village marks who stayed.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.03,
+                },
+              ],
+            },
+            {
+              id: 'wolf.speak_against_sale',
+              label: 'Speak against the sale',
+              intent: 'The mortal tells the reeve the flock is worth more than the drover offers, and the drover hears '
+                + 'of it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:reeve',
+                  sentimentDelta: 0.12,
+                },
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:drover',
+                  sentimentDelta: -0.12,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: '{cast:reeve} agrees to sell the flock to {cast:drover} for a handful of coin, before the pack '
+            + 'takes the rest. Every village in the valley hears whose command it was.',
+          changes: [
+            {
+              id: 'wolf.broke.the_villages_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Found wanting',
+              causeClause: 'Found wanting in the worst of winter',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'wolf.crit_fail.help_count_losses',
+              label: 'Help the village count its losses',
+              intent: 'The mortal stays to bury the dead ewes and mend the folds, and the village marks who stayed.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.03,
+                },
+              ],
+            },
+            {
+              id: 'wolf.crit_fail.speak_against_sale',
+              label: 'Speak against the sale',
+              intent: 'The mortal tells the reeve the flock is worth more than the drover offers, and the drover hears '
+                + 'of it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:reeve',
+                  sentimentDelta: 0.12,
+                },
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:drover',
+                  sentimentDelta: -0.12,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'An expert three-step iron job for a village: find what draws a wolf pack to its folds (a drover '
+    + 'from the next village has staked carrion past the last fold), post a frightened watch on the '
+    + 'folds, then hold the great fold\'s barred gate until dawn while the drover waits to buy what is '
+    + 'left. A held fold wins the village\'s regard, leaves it Under Watch, and puts the drover\'s '
+    + 'secret in the mortal\'s hands to keep or spend. A fallen fold costs the village\'s regard and '
+    + 'sells the flock cheap.',
+  locationSubtypes: expandSettings(['rural']),
+  consequenceDraw: ['secret', 'place'],
+};
+
+export const WOLF_WINTER_WATCH_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

@@ -1,0 +1,317 @@
+# Encounter Pipeline: Calling the Harvest
+> Scale: short | Slug: harvest-almanac | Pass: draft
+> Date: 2026-09-30 | Pipeline version: 2.0
+> Template: `encounter.town.harvest_almanac` (final) · Batch: expert-everyday-2, slot 5 (THR-1679)
+
+---
+
+## 0. Mechanical design block (fixed before any prose)
+
+| Row | Decision |
+|---|---|
+| **Crux** | A village asks {actor} to name the day its harvest starts, and a storm is coming. |
+| **Title** | *Calling the Harvest*: a reader calls the day the village cuts. The glance test gives the objective (call the harvest). The id keeps its brief spelling `harvest_almanac`, and the almanac comes back as the success ambition. |
+| **id** | `encounter.town.harvest_almanac` (binding, brief row 5) |
+| **Shape** | Single Test (brief). One step, one call, one roll. |
+| **Reach = theme** | Star 0.64 (`steep`), one step. Star covers fate, navigation and the far pattern. The whole scene is one reading of the sky, and the step is about how far to trust it when the weather disagrees. Mean 0.64, window fit 0.78: expert. |
+| **Setting** | `rural` only (brief). One opening. The spine names only fields and barley, which read honestly at `hamlet` and `farmland`. See Concern 3 for `mining`. |
+| **Whose problem** | The agent's, by construction. The village cuts on their word, so the result is theirs (rolled role **suspect or cause**: the reader is the *cause*). |
+| **Why here** | `mission` (the elder sent for a reader) and `chance` (a reader passing through at harvest-time). |
+| **Rolled dice** | p3 **opportunity** (a reader who calls it right is wanted all down the valley: something valuable, won at the cost of their name) · opposition **own trait**: stubbornness, read from the graph as **Proud** (`trait.core.core_humility.vice`) and **Judgemental** (`trait.personality.eye.vice`, *"Has already decided, and is only gathering proof."*). A reader holding either finds the stars' day harder to give up. · disposition **friendly** (the village wants them there) · role **suspect or cause** (their word causes the outcome) · scale **personal** (their name, one village's year). |
+| **The knot** | The stars say the grain wants a few more days, and the storm may not give them. A reader who trusts only the stars cuts too late; the Proud and Judgemental poles make that easier to do. The opposition is never asserted in base prose (prose rule 7): it lives in trait variants, in a trait-gated card, and in the failure afterimages, which say only what the reader did. |
+| **Consequence hand (binding, THR-1145)** | `drive` + `movement`, no swap (confirmed with `npm run draw:consequences -- encounter.town.harvest_almanac --reach star --rarity 2`, weights 8 and 7). |
+| `movement` | Success half: `agent_relocation` `$actor` → `{ kind: 'nearest_settlement' }`, `mode: 'travel'`. The next village has heard and sends for the reader who called it right. The resolver skips distance 0, so "the next village" is honestly somewhere else. |
+| `drive` | Success half: `assign_ambition` **`ambition_great_work`** ("Build a Great Work", `AMBITION_TEMPLATES`, `ambition-templates.ts:880`, `boostingTraits` includes `trait.personality.star.virtue`). A reader who called a village's harvest right means to write an almanac the whole valley can farm by, which is the title's almanac. No shipped encounter assigns it yet, so there is no batch collision with the two ambitions batch 1 used. Failure half: `plant_compulsion` `$actor`, `encounterBias: { assist: 0.5 }`, 72 ticks. The reader who called it wrong helps bring in what is left. `assist` is a member of the closed `EncounterType` union. This deliberately avoids batch 1's two `explore` compulsions. |
+| Standing (the expert penalty) | `reputation_with` `targetLocationId: '$here'`: +0.06 on the success half, −0.06 on the failure half. Reputation before money. |
+| Rewards block | `assign_ambition` is a `PERSISTENT_EFFECT_KINDS` member, so the success half persists. Note: neither `agent_relocation` nor `plant_compulsion` is in that set; both are chip-backing kinds only. The ambition is what satisfies the Rewards block. |
+| Cool failure | Nobody is killed, jailed or branded. The storm takes part of the crop, the village trusts the reader less, and the reader stays to help. Pleasure register: the village never turns on them. The worst band says plainly what the reader's name cost. |
+| Systems quota | cast (`elder`) + rewards (`assign_ambition`) + reputation (`reputation_with`) = 3, the floor. Relocation and the compulsion are further connections that the quota does not count. |
+| Trait hooks | **Gate:** none (everyday board, no rule gates per the brief). **Variants:** Proud −0.05 (plus `addNudgeIds` for the trait card), Judgemental −0.04, Humble (`trait.core.core_humility.virtue`) +0.04. **Trait-only nudge:** `harvest.sting_their_pride`, gated on Proud, cost 0. The god turns the flaw into fuel. **Trait fragment:** carried by the trait card's own band fragments. |
+| Mortal choice | None; this is a test. The own-trait opposition acts on the odds, not on a fork (brief override: slot 5's rolled `forks` system is exercised by slot 2). |
+| Specials | **Hasten The Signs** (Omen, time, 2 essence) acts on the storm the spine establishes. **Sting Their Pride** (Trait card, Proud-gated, 0 essence) acts on the opposition the dice rolled. No rider, no Boost special, no over-exposed card, no Heavy Hand, no grants. Deal 4 with `tags: ['lore', 'labor']`. |
+| Promise → payoff | P3 promises that a right call makes the next village want this reader. That promise is paid by the success half's `agent_relocation` (prose rule 7b backed on the only path that makes the promise true). The storm is paid off in every band. |
+| Prose rule 7 / 7b | No agent history is asserted. The elder, the barley, the storm and the stars' reading are scene-local. The only forward claims are the relocation (success half), the ambition and the compulsion, and each chip says only what the effect performs. |
+| Tier | `rarityTier: 2`, `scale: 'local'`, `intrinsicTier: 'shaping'` (brief). |
+| Motivations | `courage_prudence` (cut early before the storm, or wait for the grain) · `tradition_novelty` (the stars' old reading against the weather in front of them). |
+
+**plotHookRolled:** hook.trial_by_combat, hook.siege_and_hold, hook.natural_disaster
+**plotHookTaken:** hook.natural_disaster. The storm is the disaster, kept at village scale and weather speed. The Event Archetypes page's core concept for it is *Hubris vs. Humility*, which is exactly the Proud/Humble opposition the dice rolled. Trial by combat and siege-and-hold fought the brief's "this is the batch's pleasure" register and slot 5's everyday, no-fight constraint.
+
+## 1. Inspiration Anchors
+
+- **Event Archetypes → Natural Disaster (The World Shakes)** (`TheFantasyWorldSimulator/Archetypes/Event Archetypes.md`). The core concept, *"Hubris vs. Humility. We're not in control of this"*, became the whole mechanical spine. The storm does not care what the stars say, and the reader's own pride is the opposition. It changed the encounter by moving the opposition from the weather (which the god can nudge) into the mortal (whom the god can only lean on). The Humble variant and the Proud trait card come straight from it.
+- **Thematic Pillars → Compassion vs. Power**. The pleasure register comes from "community, friendship, and growth": a village that sent for someone good and wants them there. On failure the reader stays to help (compulsion `assist`), not to be punished.
+- **Anti-Patterns avoided:**
+  - **#5 Prophecy as Railroad.** The stars' reading can be wrong. It is one input the reader must weigh, never a fate the encounter enacts.
+  - **#6 Grimdark for Shock Value.** Nobody dies, and the worst band is a lost crop and a lost name.
+  - **#10 Player as Savior.** The god hastens the signs or stings a pride. The reader still makes the call, and fate rolls it.
+  - **#8 Helpful Exposition NPCs.** The elder asks one question and says nothing else.
+- **Structural models:** `drowned-mans-testimony` (the one-step expert shape, success/failure-half effects, the reputation, ambition and compulsion chip forms); `feud-mediation` (a trait-gated zero-essence special unlocked by `addNudgeIds`); `the-sign-over-the-ruin` (the `nearest_settlement` relocation and its PATH chip).
+- **Difference from the Comet Disputation (same reach, same tier):** that one is a public argument against a rival institution, with a fork. This one is a private reading for a friendly village, with no rival and no fork. The opposition is inside the reader.
+- **Dilemma library:** not consulted. The encounter is not morally charged; the knot is judgement under time, not a moral choice.
+
+## 2. Scale Justification
+
+Short, one beat. The whole encounter is one decision the reader makes and one storm that proves it right or wrong. A second beat (cutting the harvest) would test a different reach and repeat what the bands already say. The expert weight comes from the stake, not the length: a village cuts on one word.
+
+## 3. Pressure Knot
+
+The barley around {location} is nearly ripe. A storm is building in the west and will arrive within days. The stars say the grain wants a few more days to fill. Every household in the village will start cutting on the same morning, because the reapers, carts and threshing floor are shared. The elder has sent for the best star-reader within reach to name that morning.
+
+## 4. Intervention Fantasy
+
+The god works in the two places the reader cannot reach. The first is the weather, whose warnings the god can bring forward so there is more to read before the call. The second is the reader's own pride, which the god can sting until they check their reading again just to prove the doubters wrong. The god never names the day. The mortal names it, and fate still rolls whether the storm agrees.
+
+## 5. Cast and World Objects
+
+| Object | What it is | Wiring |
+|---|---|---|
+| `{cast:elder}`: Mael Harrow (spawn name) | The village elder who sends for the reader | `supportBundle` actor, `lazy-materialize-on-trigger`, `must-persist`, `reuseNpcRoles: ['elder']`, `spawnNpcRole: 'elder'`, `supportRole: 'harvest_elder'`. Hamlets roster `elder` at 1.0. Never gendered in prose. Named in the spine and in two overviews. |
+| The village | The people of `{location}` | `$here`: the `reputation_with` anchor and the reputation chips' `stateNoun.entityId`. |
+| The barley / the harvest | The standing crop | Scene fiction. Named in overviews only; no chip claims it. |
+| The storm | Weather building in the west | Scene fiction. The target the Hasten The Signs special acts on. |
+| The stars' reading | The sky says wait a few more days | Scene fiction, stated in the spine. The trait variants act on the reader's hold on it. |
+| The next village | Wherever `nearest_settlement` resolves (distance ≥1) | `agent_relocation` destination. The chip names it generically ("the next village"), because the name is not known at authoring. |
+| Ambition | `ambition_great_work`, "Build a Great Work" | `assign_ambition`, success half. |
+| Compulsion | `{ assist: 0.5 }`, 72 ticks | `plant_compulsion`, failure half. |
+
+## 6. Beat Structure
+
+1. **Name the harvest day**: star 0.64, `fail_action`, `duration { min: 1, max: 2 }`. The reader reads the stars and the storm and names one morning. The village cuts on it. The storm then proves it right or wrong.
+   - `successMetadata` (crit, success, success_at_cost, near_miss): `reputation_with $here +0.06`; `agent_relocation` `$actor` → nearest settlement, travel; `assign_ambition ambition_great_work`.
+   - `failureMetadata` (failure, critical_failure): `reputation_with $here −0.06`; `plant_compulsion { assist: 0.5 }`, 72 ticks.
+   - `deal: { count: 4, tags: ['lore', 'labor'] }` + 2 specials. The composed hand is 6 for a Proud reader and 5 for everyone else.
+
+## 7. Branching Profile
+
+Linear, no branching. Single Test.
+
+## 8. Branching Map
+
+N/A: linear encounter.
+
+## 9. Outcome Ladder
+
+| Band | Progress made | What was spent | New burden / opening |
+|---|---|---|---|
+| critical_success | The last cart is in the barn when the storm breaks. The elder brings the whole village out to thank the reader. | Nothing | Town trust up; sent for by the next village; ambition (the almanac) |
+| success | The barley is in before the storm; the last carts come home wet | A wet last load | Same as above |
+| success_at_cost | The reader changed the day at the last hour. One field was cut half green, and the rest came in dry. | A field of grain; the village's first trust | Same chips; the cost is carried in the overview |
+| failure | The storm came first and flattened the south fields. Half the barley is lost. | The reader's name as a reader in this village | Town trust down; a compulsion to help others for a while |
+| critical_failure | The storm broke days before the cut. Most of the crop lies flat, and the village must buy grain this winter. | Their name, plainly: they sent for the best, and the best got it wrong | Same as failure |
+
+Cool failure: nobody dies, is jailed or branded. The penalty is standing before money.
+
+## 10. Sample Opening
+
+> {actor} arrives at {location} in the last days of summer.
+>
+> The barley around {location} is nearly ripe, and a storm is building in the west. The stars say the grain wants a few more days. The storm may not give them. {cast:elder}, the village elder, asks {actor} to name the day the harvest starts.
+>
+> The whole village will cut on that one word. If the call is right, the next village will want this reader too.
+
+`openings.rural` = P1. P2 + P3 is the step's `narrativeTemplate` (the spine). Counts: opening 10 + spine 65 = **75 words** (≤80).
+
+## 11. The Hand Per Step
+
+### Step 0: Name the harvest day (star 0.64) · `deal: { count: 4, tags: ['lore', 'labor'] }` + 2 specials
+
+| Card | Library type | Sphere | Cost | Δ | Image | Effect line |
+|---|---|---|---|---|---|---|
+| **Hasten The Signs** `harvest.hasten_the_signs` | Omen | time | 2 essence | 0.12 | `generic.dark` | Bring a coming change forward, so its warnings show a day early and can be read. |
+| **Sting Their Pride** `harvest.sting_their_pride` | Trait card (`requiredTrait: 'trait.core.core_humility.vice'`, unlocked by the Proud variant's `addNudgeIds`) | none | 0 essence (the price is being Proud) | 0.08 | `generic.focus` | Make every doubting murmur rankle, so they check the work again to prove the doubters wrong. |
+
+No effect line shares a word with its card's name. Both lines are ≤25 words and contain no digits. Neither card decides the day: one changes what there is to read, the other changes how hard the reader looks.
+
+**The two answer different questions.** Hasten The Signs asks whether there is enough to read (the world). Sting Their Pride asks whether the reader will look again (the mortal, and specifically the opposition the dice rolled). The dealt fill brings the plain boost, the rider and sphere breadth. Neither special is a Boost, so the dealer never has to skip a type.
+
+**Band fragments.**
+
+*Hasten The Signs*
+- critical_success: "The swallows flew low a day early, and {actor} read the storm in them at once."
+- success: "The warnings came a day early, and {actor} had counted every one before naming the day."
+- near_miss: "The warnings came early, but the wind turned twice before dawn."
+- failure: "The warnings came early, and {actor} took them for a passing shower."
+- critical_failure: "The warnings came early and loud, and {actor} named a later day all the same."
+
+*Sting Their Pride*
+- success_at_cost: "{actor} went back to the stars again and again to prove the doubters wrong, and did not sleep."
+- failure: "{actor} checked the stars again to prove the doubters wrong, and saw only the day already named."
+- critical_failure: "Every murmur made {actor} surer, and {actor} would not hear another word about the storm."
+
+Between them the specials cover all six `StepOutcome`s. Each has ≥1 failure-band fragment. Neither is big-delta (<0.15), so no dual-failure obligation applies, though Hasten carries both anyway. Fragments are ≤25 words.
+
+**Sphere coverage.** The specials bring time plus one sphere-less trait card. The deal is required to bring ≥3 more spheres and the common option (the dealer guarantees breadth). `check:encounter`'s `checkComposedHand()` must confirm ≥4 spheres on the composed hand for a god with a narrow repertoire; see Concern 4.
+
+## 12. Linear continuation (afterimages)
+
+- critical_success: *{actor} saw the storm in the west would not wait, and named the next morning.*
+- success: *{actor} weighed the stars against the storm, and named a day early enough.*
+- success_at_cost: *{actor} named a day, then brought it forward at the last hour.*
+- failure: *{actor} held to the stars and named a day too late.*
+- critical_failure: *{actor} kept the stars' day, even when the wind turned.*
+
+## 13. Aftermath Paragraph
+
+Fallback overview: *The storm has come and gone over {location}.*
+
+Each band overrides it:
+
+- **critical_success:** *The last cart was in the barn when the storm broke. {cast:elder} brought the whole village out to thank {actor}, and the first loaf from the new grain went to the reader.* (35 words)
+- **success:** *The barley was in before the storm, though the last carts came home wet. {location} will eat this winter.* (19)
+- **success_at_cost:** *The changed day cost the village a field, cut half green. The rest came in dry. {cast:elder} thanked {actor}, and meant it, but the village will remember the field.* (30)
+- **failure:** *The storm came first. It flattened the south fields, and half the barley is lost. No one in {location} says so to {actor}'s face.* (25)
+- **critical_failure:** *The storm broke days before the cut. Most of the barley lies flat in the mud, and {location} will buy grain this winter. The village sent for the best reader it could find, and the best reader got it wrong.* (40)
+
+The critical_failure overview states plainly why the loss costs more for someone this good (brief § Cool failure). Every overview is ≤60 words.
+
+## 14. Aftermath Reaction Choices
+
+No reaction choices: the consequence is clean. The scene is short and local, every write fires from step metadata, and the player's decisions were the cards.
+
+## 15. Aftermath Kit Summary
+
+Chips per band, in `scar · bond · boon · path` order. Every chip is backed by a write on that band's metadata half. Each chip sentence (`causeClause` + `detail`) is ≤15 words.
+
+**Success side (critical_success, success, success_at_cost), identical chips:**
+
+| id | Category · noun | Kind | Anchor | causeClause | detail | Backing write |
+|---|---|---|---|---|---|---|
+| `harvest.<band>.town_trust` | BOND · `reputation with {location}` (gain) | `reputation` | `stateNoun { text: 'reputation with {location}', entityId: '$here', visualKind: 'location', tooltipId: 'ui.reputation_with' }`; concept "trusts" → `ui.standing` | none | "{location} trusts {actor}'s reading of the sky." | `reputation_with $here +0.06` |
+| `harvest.<band>.sent_for` | PATH · `seed` (opens) | `future_hook` | `stateNoun { text: 'seed', tooltipId: 'ui.aftermath_seed' }`; concept "the next village" (the `the-sign-over-the-ruin` form) | "Sent for" | "{actor} is travelling to the next village now." | `agent_relocation` nearest_settlement |
+| `harvest.<band>.ambition` | PATH · `ambition` (opens) | `growth` | `stateNoun { text: 'ambition', tooltipId: 'ui.ambition' }`; concept "Build a Great Work" → `ui.ambition` | "Means to write an almanac" | "{actor} is pursuing Build a Great Work now." | `assign_ambition ambition_great_work` |
+
+**Failure side (failure, critical_failure), identical chips:**
+
+| id | Category · noun | Kind | Anchor | causeClause | detail | Backing write |
+|---|---|---|---|---|---|---|
+| `harvest.<band>.town_trust` | SCAR · `reputation with {location}` (loss) | `reputation` | same `$here` stateNoun; concept "trusts" → `ui.standing` | none | "{location} trusts {actor}'s reading of the sky less." | `reputation_with $here −0.06` |
+| `harvest.<band>.compulsion` | SCAR · `compulsion` | `shell_state` | `stateNoun { text: 'compulsion', tooltipId: 'ui.compulsion' }`; concept "helping others" → `ui.compulsion` | none | "For a while {actor} puts helping others before their own work." | `plant_compulsion { assist: 0.5 }` |
+
+**Fallback:** one growth chip, `harvest.a_call_made`: title "A call made", detail "Naming a harvest day against a storm teaches the star reach.", concept "star reach" → `reach.star`. This follows the drowned-man fallback shape.
+
+**Effect strings (player-adjacent):**
+- `assign_ambition.narrativeHook`: "They called the harvest right, and mean to write an almanac the whole valley can farm by."
+- `plant_compulsion.narrativeHook`: "They called the harvest wrong, and they mean to help bring in what is left."
+
+**Page read.** I read each band as one page (overview → chips → no reactions):
+
+- **critical_success:** the overview carries the thanks and the loaf. The chips add trust, travel and the almanac. None of the chips repeats the overview.
+- **success_at_cost:** the overview says the village "will remember the field". The trust chip still reads "trusts" as a gain. That is consistent, not contradictory, because the write is a net gain and the overview names a reservation, not a loss.
+- **failure:** the overview's "No one says so to {actor}'s face" and the SCAR trust chip do not share a four-word run.
+- The compulsion chip adds the forward beat that the overview deliberately leaves out.
+
+## 16. Support Bundle Contract
+
+| Support object | Delivery mode | Source | Persistence | Future references | Status |
+|---|---|---|---|---|---|
+| `elder` (village elder) | lazy-materialize-on-trigger | reuse `elder`, else spawn `elder` "Mael Harrow" | must-persist | named in the spine and in two overviews | ready (hamlet roster seeds `elder` at 1.0; farmland/mining fall back to spawn) |
+| Reputation with the village | written at resolution | `reputation_with $here` | must-persist (edge) | the location's standing row | ready |
+| Travel intent | written at resolution | `agent_relocation` nearest_settlement | intent TTL (`RELOCATION_INTENT_TTL_TICKS`) | the map; the agent's movement | ready (null-safe when no settlement is in range; see Concern 1) |
+| Ambition | written at resolution | `ambition_great_work` | must-persist | the actor's sheet | ready (subject to the corpus-wide `no_free_slot` refusal; see Concern 2) |
+| Compulsion | written at resolution | `plant_compulsion` | 72 ticks | the actor's decision bias | ready |
+
+## 17. Self-Audit
+
+| Item | Verdict | Note |
+|---|---|---|
+| Steps and difficulty as brief | PASS | star 0.64, one step; `shaping`, so the 0.45 open-draw cap does not bind |
+| Setting envelope with one opening per class | PASS | `rural`, one opening. FLAG on `mining` honesty (Concern 3) |
+| Opening ≤80 words, skeleton P1/P2/P3 | PASS | 75 |
+| Cast bound, token keys declared | PASS | `elder` |
+| Hand: 2 specials + deal, 4–8 composed | PASS | 6 for Proud, 5 otherwise |
+| Every special has a failure fragment; six outcomes covered | PASS | |
+| Zero-essence card legal | PASS | trait card only |
+| ≤1 rider per hand | PASS | none authored; the dealer may bring one |
+| Sphere coverage ≥4, ≥1 common option | FLAG | depends on the dealt fill; confirm with `checkComposedHand()` (Concern 4) |
+| Effect lines: no digits, no name word repeated | PASS | |
+| Card names: imperative verb + noun | PASS | Hasten, Sting |
+| Over-exposed cards avoided | PASS | no `card.boost.*` special, no Undertow, Kindled Ambition, Heavy Hand, Mercy or Compulsion card |
+| Consequence hand wired | PASS | movement → `agent_relocation`; drive → `assign_ambition` + `plant_compulsion`; no swap |
+| Rewards persist | PASS | `assign_ambition` |
+| Systems quota ≥3 | PASS | cast + rewards + reputation |
+| byOutcome floor | PASS | all five bands |
+| Chip nouns = sheet words | PASS with FLAG | `reputation with {location}`, `ambition`, `compulsion`; the relocation chip uses the corpus's `seed` noun (Concern 5) |
+| THR-1685: no person-anchored reputation chip | PASS | the town only |
+| Law 56 backing per chip per band | PASS | kit table; see Concerns 1–2 for fail-soft refusals |
+| Prose rule 7 / 7b | PASS | the P3 promise is backed by the success-half relocation; no stubbornness is asserted in base prose |
+| No personal condition on `$actor`, no rule gate, no death/jail/brand | PASS | |
+| Trait refs live | PASS (expected), verify | Proud and Humble are used by comet-disputation, fair-bout and pilots-reckoning. Judgemental (`trait.personality.eye.vice`) is a built personality trait with no encounter use yet. `check:encounter` runs `validateTraitRefs` |
+| Detectors | PASS (by read) | no evasive terms; no outcome-class indefinites (`nothing`, `someone`, `anything` avoided in overviews and afterimages); annotation count 0; no divine outcome-authorship |
+| Word budgets | PASS | opening 75; overviews ≤40; fragments ≤20; effect lines ≤16; chips ≤11; factor lines 12 |
+
+### Concerns for Pass 2 / Pass 3
+
+1. **Relocation can resolve to null.** `nearest_settlement` returns null when no hamlet, town, city, capital or camp lies within `RELOCATION_NEAREST_SETTLEMENT_MAX_HEXES` of the reader (distance 0 excluded). On that run the PATH · seed chip claims a write that did not land. This is the same class as the corpus-wide ambition refusal. The alternative, `away`, is dishonest to "the next village". Systems should measure the null rate on a seeded rural sweep.
+2. **Ambition `no_free_slot`.** This is corpus-wide: about 21% of mature-world actors hold 2 active ambitions. It is shared with every `assign_ambition` encounter.
+3. **`rural` includes `mining`.** The spine names barley fields. A mining settlement with fields around it is plausible, but thin. If Pass 2 judges it dishonest, the fix is `locationTypes: ['hamlet', 'farmland']`, the spec's exact-subtype override. I kept the brief's envelope.
+4. **Composed-hand sphere floor.** The specials bring one sphere (time) plus a sphere-less trait card. The rule binds the composed hand, so the dealt 4 must supply ≥3 more spheres. If `checkComposedHand()` reports short, give Sting Their Pride no sphere change (trait cards are sphere-less by type) and move Hasten to a sphere the deal rarely brings, or raise `count` to 5.
+5. **The relocation chip noun is `seed`** with `ui.aftermath_seed`. This follows the-sign-over-the-ruin, the-broken-seal and assize-letter, because no travel or journey tooltip exists (`journey` is an engine-report kind, not an authored anchor). It passes the gate, but it is the weakest cover-the-title read on the page. Not fixed here; noted for the batch report.
+6. **Trait variant arithmetic.** Proud −0.05 with the free card at +0.08 nets +0.03 for a Proud reader whose god plays it. That is intended (the god turns the flaw), but systems may want the card at 0.07 so a Proud reader never out-rolls a neutral one on a free card alone.
+
+## 18. Concept Art Direction
+
+- **Emotions:** a whole village trusting one person's word; the weight of a single day; relief, or its absence.
+- **Image:** a barn door at dusk with its two leaves open on an empty threshing floor. One bound sheaf hangs from a nail beside it. Beyond the door is gold stubble cut in rows, and behind that a dark bank of cloud low on the western edge of the sky. On a bench by the door lies an open almanac with a single day ringed in charcoal. No people. The image shows the harvest in, or about to be, and never which.
+
+## 19. Package field spec
+
+**Template:**
+- `id: 'encounter.town.harvest_almanac'` · `name: 'Calling the Harvest'` · `reach: 'star'` · `rarityTier: 2` · `intrinsicTier: 'shaping'` · `scale: 'local'` · `apCost: 1` · `crudType: 'read'`
+- `actorAffinities: ['individual']` · `motivations: ['courage_prudence', 'tradition_novelty']` · `settings: ['rural']` · `openings.rural` as § 10 P1
+- `consequenceDraw: ['drive', 'movement']` (no swap)
+- `traitVariants`:
+  - `{ traitId: 'trait.core.core_humility.vice', forecastDelta: -0.05, factorLine: 'Being Proud, they will not easily take back a day once named.', addNudgeIds: ['harvest.sting_their_pride'] }`
+  - `{ traitId: 'trait.personality.eye.vice', forecastDelta: -0.04, factorLine: 'Being Judgemental, they take every sign as proof of their first reading.' }`
+  - `{ traitId: 'trait.core.core_humility.virtue', forecastDelta: 0.04, factorLine: 'Being Humble, they will change the day if the storm says so.' }`
+- `narrativeTemplates`:
+  - initiation: "A village asks a star-reader to name the day its harvest starts, with a storm coming."
+  - success: "The call was right, and the harvest came in before the storm."
+  - failure: "The call was wrong, and the storm took part of the harvest."
+- `description`: "A one-step Star test for an expert in a village: the elder asks the best star-reader within reach to name the day the harvest starts, with a storm coming. A right call raises their standing, sends the next village after them and gives them an ambition to write an almanac; a wrong one costs their standing and leaves them helping others for a while. Proud and Judgemental readers find it harder to give up the stars' day."
+
+**Step 0:** `reach: 'star'` · `difficulty: 0.64` · `purposeLine: 'Name the harvest day'` · `duration: { min: 1, max: 2 }` · `failBehavior: 'fail_action'` · `onSuccess: []` · `onFailure: []` · `narrativeTemplate` = § 10 P2 + P3 · afterimages § 12 · `deal: { count: 4, tags: ['lore', 'labor'] }` · `nudges`: the two specials in § 11.
+
+```
+successMetadata.effects:
+  { kind: 'reputation_with', targetLocationId: '$here', delta: 0.06 }
+  { kind: 'agent_relocation', targetAgentId: '$actor', destination: { kind: 'nearest_settlement' }, mode: 'travel' }
+  { kind: 'assign_ambition', templateId: 'ambition_great_work', priority: 'secondary', targetAgentId: '$actor', narrativeHook: <§ 15> }
+failureMetadata.effects:
+  { kind: 'reputation_with', targetLocationId: '$here', delta: -0.06 }
+  { kind: 'plant_compulsion', targetAgentId: '$actor', encounterBias: { assist: 0.5 }, durationTicks: 72, narrativeHook: <§ 15> }
+```
+
+**supportBundle:** `{ kind: 'actor', key: 'elder', delivery: 'lazy-materialize-on-trigger', persistence: 'must-persist', reuseNpcRoles: ['elder'], supportRole: 'harvest_elder', spawnNpcRole: 'elder', spawnName: 'Mael Harrow' }`
+
+**aftermathConfig:** `branchOnStep: 0` · `variants: {}` · `reactions: []` · `fallback` as § 13 and § 15, with `byOutcome` on all five bands.
+
+## Experience Differentiator Gate
+
+**Scene & Prose**
+1. Narrator-mode skeleton, ≤80 words, real graph names, facts stated plainly? **YES.** The opening has arrival, then the barley, storm, stars and the elder's ask, then the one-word stake. 75 words, `{actor}` / `{location}` / `{cast:elder}`.
+2. Every sentence doing challenge/test/outcome work? **YES.** No sensation, no camera, no weather-for-mood: the storm is the clock.
+3. Scene names the elements the hand acts on? **YES.** The storm (Hasten The Signs) and the stars' reading the reader must weigh (Sting Their Pride; the variants).
+4. Could a player retell situation and stakes after one read? **YES.** "Name the harvest day before the storm; the village cuts on it; get it right and you are wanted elsewhere."
+
+**Choices & Intervention**
+5. Every card a spell (verb + noun, 1–2 direct sentences), no flavor quote, no scene prose on the face? **YES.** Both faces are generic: Hasten reads in any weather, siege or tide scene, and Sting in any scene with doubters.
+6. Every price real and legible? **YES.** Essence 2, or zero on a trait card whose price is being Proud.
+7. Every card pays off in failure? **YES.** Both have failure fragments, and Hasten has both failure depths.
+8. Hand grounded? **YES.** Delete the storm and Hasten is senseless; delete the stars' reading and Sting has nothing to re-check.
+9. Cards answer different questions? **YES.** The world (more to read) against the mortal (looks again).
+9b. Every nudge-bearing step fully authored, no branch or ending picked by the player? **YES.** One step, 2 specials + deal 4, no fork.
+
+**Aftermath & Consequence**
+10. Aftermath has its own prose? **YES.** Five band overviews plus the fallback.
+11. Actor-centred consequences with names and faces? **YES.** {actor}, {cast:elder}, {location}; the ambition by name.
+11b. Each band read as one page, nothing told twice, nothing contradicting? **YES.** See § 15, Page read.
+12. Medium+ reaction choices? **N/A.** Short.
+13. Reaction stances differ philosophically? **N/A.**
+
+**Presentation**
+14. Concept art evocative, not illustrative (residue, absence, mood)? **YES.** An empty threshing floor, a ringed day and a cloud bank; no people and no outcome shown.
+
+## Branch Seduction Self-Check
+
+N/A: linear encounter. The seduction lives in the hand instead. A god chooses **Hasten The Signs** to buy the reader more truth from the world. A god chooses **Sting Their Pride** because it turns the reader's worst habit into the reason they check again, and it is free. It is the one card in the game that only a Proud reader's god is offered.

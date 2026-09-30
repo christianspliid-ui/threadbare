@@ -1,0 +1,509 @@
+{
+  "slug": "harvest-almanac",
+  "doc": [
+    "Calling the Harvest (slug harvest-almanac) - slot 5 of the expert-everyday-2 batch (THR-1679).",
+    "",
+    "Brief: `Docs/plans/encounters/expert-everyday-2-brief.md`.",
+    "Final: `Docs/plans/encounters/harvest-almanac-final.md`. Package critic: `harvest-almanac-package.md`.",
+    "plotHookRolled: hook.trial_by_combat, hook.siege_and_hold, hook.natural_disaster",
+    "plotHookTaken: hook.natural_disaster - the storm is the disaster, kept at village scale; Hubris vs. Humility",
+    "  is the Proud/Humble opposition the dice rolled.",
+    "",
+    "Mechanical design block:",
+    "  Crux            A village asks {actor} to name the day its harvest starts, and a storm is coming.",
+    "  Shape           Single Test, one step, Star 0.64 (steep), fail_action.",
+    "  Rolled dice     p3 opportunity - opposition own trait (Proud / Judgemental) - disposition friendly -",
+    "                  role suspect or cause - scale personal.",
+    "  Consequence     (THR-1145) drive + movement, no swap. Success half: reputation_with $here +0.06,",
+    "                  agent_relocation nearest_settlement (travel; a lean that lapses), assign_ambition",
+    "                  ambition_great_work. Failure half: reputation_with $here -0.06, plant_compulsion",
+    "                  assist 0.5 for 72 ticks.",
+    "  Cool failure    Nobody is hurt, jailed or branded: a lost crop and a lost name.",
+    "  Systems quota   cast (elder) + rewards (assign_ambition) + reputation = three, the floor.",
+    "  Trait hooks     Proud -0.05 (+ Stoke Their Pride, Delta 0.05, cancels it exactly), Judgemental -0.04,",
+    "                  Humble +0.04.",
+    "  Deal            count 5 (common-option starvation measured at count 4: 6 of 132 god shapes).",
+    "  Fiction note    The almanac survives only in the concept art; the ambition is builder-civic and no",
+    "                  chip claims an almanac (Pass 3b fold).",
+    "",
+    "Critic loop: editorial PASS WITH REVISIONS, systems READY WITH CAVEATS, package PASS."
+  ],
+  "template": {
+    "id": "encounter.town.harvest_almanac",
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "Calling the Harvest",
+    "reach": "star",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "courage_prudence",
+      "tradition_novelty"
+    ],
+    "settings": [
+      "rural"
+    ],
+    "openings": {
+      "rural": "{actor} arrives at {location} at the end of summer."
+    },
+    "steps": [
+      {
+        "reach": "star",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.64,
+        "purposeLine": "Name the harvest day",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "The barley is nearly ripe. The stars say it needs a few more days to fill, but a storm is building in the west and may not give them.\n\n{cast:elder}, the village elder, asks {actor} to read the sky and name the day the harvest starts. Every household cuts on that one word. Villages all down the valley send for a reader who gets that call right.",
+        "criticalSuccessAfterimage": "{actor} judged the storm would not wait, and named the next morning.",
+        "successAfterimage": "{actor} weighed the stars against the storm, and named a day early enough.",
+        "successAtCostAfterimage": "{actor} named a day, then brought it forward at the last hour.",
+        "failureAfterimage": "{actor} held to the stars and named a day too late.",
+        "criticalFailureAfterimage": "{actor} kept the stars' day, even when the wind turned.",
+        "successMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": 0.06
+            },
+            {
+              "kind": "agent_relocation",
+              "targetAgentId": "$actor",
+              "destination": {
+                "kind": "nearest_settlement"
+              },
+              "mode": "travel"
+            },
+            {
+              "kind": "assign_ambition",
+              "templateId": "ambition_great_work",
+              "priority": "secondary",
+              "targetAgentId": "$actor",
+              "narrativeHook": "They called the harvest right, and mean to build something the whole valley can lean on."
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.06
+            },
+            {
+              "kind": "plant_compulsion",
+              "targetAgentId": "$actor",
+              "encounterBias": {
+                "assist": 0.5
+              },
+              "durationTicks": 72,
+              "narrativeHook": "They called the harvest wrong, and they mean to help bring in what is left."
+            }
+          ]
+        },
+        "deal": {
+          "count": 5,
+          "tags": [
+            "lore",
+            "labor"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "harvest.hasten_the_signs",
+            "name": "Hasten The Signs",
+            "sphere": "time",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "imageTag": "generic.dark",
+            "effectLine": "Make the warnings of a coming change show early, so there is more to read before the choice.",
+            "bandProse": {
+              "critical_success": "The swallows flew low a day early, and {actor} read the storm in them at once.",
+              "success": "The warnings came a day early, and {actor} had weighed every one before the call.",
+              "success_at_cost": "The warnings came early enough for {actor} to change the day, though not for every field.",
+              "near_miss": "The warnings came early, but they did not agree, and {actor} had to guess between them.",
+              "failure": "The warnings came early, and {actor} took them for a passing shower.",
+              "critical_failure": "The warnings came early and loud, and {actor} named a later day all the same."
+            }
+          },
+          {
+            "id": "harvest.stoke_their_pride",
+            "name": "Stoke Their Pride",
+            "requiredTrait": "trait.core.core_humility.vice",
+            "essenceCost": 0,
+            "forecastDelta": 0.05,
+            "imageTag": "generic.focus",
+            "effectLine": "Make every murmur of doubt rankle, so they go over the work again to prove it right.",
+            "bandProse": {
+              "success": "Every murmur sent {actor} back to the sky, and the second reading caught the storm.",
+              "success_at_cost": "{actor} went back to the stars again and again to prove the doubters wrong, and did not sleep.",
+              "failure": "{actor} checked the stars again to prove the doubters wrong, and saw only the day already named.",
+              "critical_failure": "Every murmur made {actor} surer, and {actor} would not hear another word about the storm."
+            }
+          }
+        ]
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_humility.vice",
+        "forecastDelta": -0.05,
+        "factorLine": "Being Proud, they will not easily take back a day once named.",
+        "addNudgeIds": [
+          "harvest.stoke_their_pride"
+        ]
+      },
+      {
+        "traitId": "trait.personality.eye.vice",
+        "forecastDelta": -0.04,
+        "factorLine": "Being Judgemental, they take every sign as proof of their first reading."
+      },
+      {
+        "traitId": "trait.core.core_humility.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Humble, they will change the day if the storm says so."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "elder",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "elder"
+        ],
+        "supportRole": "harvest_elder",
+        "spawnNpcRole": "elder",
+        "spawnName": "Mael Harrow"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A village asks a star-reader to name the day its harvest starts, with a storm coming.",
+      "success": "The call was right, and the harvest came in before the storm.",
+      "failure": "The call was wrong, and the storm took part of the harvest."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The storm has come and gone over {location}.",
+        "changes": [
+          {
+            "id": "harvest.a_call_made",
+            "kind": "growth",
+            "title": "A call made",
+            "detail": "Naming a harvest day against a storm teaches the star reach.",
+            "polarity": "gain",
+            "concepts": [
+              {
+                "text": "star reach",
+                "tooltipId": "reach.star"
+              }
+            ]
+          }
+        ],
+        "reactions": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The last cart was in the barn when the storm broke. {cast:elder} brought the whole village out to thank {actor} with the first loaf of the new grain.",
+            "changes": [
+              {
+                "id": "harvest.crit.town_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A reader the valley trusts",
+                "detail": "{location} trusts {actor}'s reading of the sky.",
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.crit.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for down the valley",
+                "causeClause": "Sent for by the nearest settlement",
+                "detail": "{actor} is set on the road there.",
+                "concepts": [
+                  {
+                    "text": "the nearest settlement"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.crit.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "title": "Something to lean on",
+                "causeClause": "Means to build for the valley",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The barley was in before the storm, though the last carts came home wet. {location} has its grain for the winter.",
+            "changes": [
+              {
+                "id": "harvest.success.town_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A reader the valley trusts",
+                "detail": "{location} trusts {actor}'s reading of the sky.",
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.success.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for down the valley",
+                "causeClause": "Sent for by the nearest settlement",
+                "detail": "{actor} is set on the road there.",
+                "concepts": [
+                  {
+                    "text": "the nearest settlement"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.success.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "title": "Something to lean on",
+                "causeClause": "Means to build for the valley",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The changed day cost the village one field, cut half green. The rest came in dry, and {cast:elder} thanked {actor} all the same.",
+            "changes": [
+              {
+                "id": "harvest.cost.town_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A reader the valley trusts",
+                "detail": "{location} trusts {actor}'s reading of the sky.",
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.cost.sent_for",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "title": "Sent for down the valley",
+                "causeClause": "Sent for by the nearest settlement",
+                "detail": "{actor} is set on the road there.",
+                "concepts": [
+                  {
+                    "text": "the nearest settlement"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.cost.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "title": "Something to lean on",
+                "causeClause": "Means to build for the valley",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The storm came first. It flattened the south fields, and half the barley is lost. No one in {location} blames {actor} out loud.",
+            "changes": [
+              {
+                "id": "harvest.fail.town_trust",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A call the village regrets",
+                "detail": "{location} trusts {actor}'s reading of the sky less.",
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.fail.compulsion",
+                "kind": "shell_state",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "compulsion",
+                  "tooltipId": "ui.compulsion"
+                },
+                "title": "Bringing in what is left",
+                "detail": "For a while {actor} puts helping others before their own work.",
+                "concepts": [
+                  {
+                    "text": "helping others",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "The storm broke days before the cut. Most of the barley lies flat in the mud, and {location} has too little grain for the winter. The village staked its year on the best reader it could find, and the best reader got it wrong.",
+            "changes": [
+              {
+                "id": "harvest.critfail.town_trust",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "title": "A call the village regrets",
+                "detail": "{location} trusts {actor}'s reading of the sky less.",
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "harvest.critfail.compulsion",
+                "kind": "shell_state",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "compulsion",
+                  "tooltipId": "ui.compulsion"
+                },
+                "title": "Bringing in what is left",
+                "detail": "For a while {actor} puts helping others before their own work.",
+                "concepts": [
+                  {
+                    "text": "helping others",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A one-step Star test for an expert in a village: the elder asks a star-reader to name the day the harvest starts, with a storm coming. A right call raises their standing, sends them on the road to the nearest settlement and gives them the Build a Great Work ambition; a wrong one costs their standing and leaves them helping others for a while. Proud and Judgemental readers find it harder to give up the stars' day."
+  }
+}
