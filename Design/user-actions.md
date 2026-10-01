@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-01 12:58 local (10:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,9 +13,9 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### Your local copy of the game is stuck on 28 September (218 changes behind)
+### Your local copy of the game is stuck on 28 September (221 changes behind)
 
-- **Your local copy of the game has not updated since 28 September.** It is 218 changes behind. The hourly auto-update refuses to run because two files on your machine would be overwritten: a draft copy of the faith-and-politics plan (`Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md`, which has since been merged in a different version) and a local settings edit. Nothing is broken online, and the lanes all work from fresh copies, so this only matters if you run the game locally. Next time you are in a session, say "fix my home tree" and an attended session can set the draft aside and catch it up. No lane will touch it on its own.
+- **Your local copy of the game has not updated since 28 September.** It is 221 changes behind. The hourly auto-update refuses to run because two files on your machine would be overwritten: a draft copy of the faith-and-politics plan (`Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md`, which has since been merged in a different version) and a local settings edit. Nothing is broken online, and the lanes all work from fresh copies, so this only matters if you run the game locally. Next time you are in a session, say "fix my home tree" and an attended session can set the draft aside and catch it up. No lane will touch it on its own.
 
 *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). The merged plan: [faith-and-politics settings](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md).*
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-01: the pilgrim way is designed**: a faith-spreader can make a town a place of pilgrimage ([THR-1660](https://linear.app/threadbare/issue/THR-1660)). Plan merged via [#2163](https://github.com/christianspliid-ui/threadbare/pull/2163); builds after its veto window.
 - **2026-10-01: the shortlist fix is designed**: an expert in town now gets to consider the expert work there ([THR-1687](https://linear.app/threadbare/issue/THR-1687)). Plan merged via [#2161](https://github.com/christianspliid-ui/threadbare/pull/2161); builds after its veto window.
 - **2026-10-01: the master level is switched on** ([THR-1681](https://linear.app/threadbare/issue/THR-1681)). Merged via [#2160](https://github.com/christianspliid-ui/threadbare/pull/2160). The master encounters themselves are not written yet; they are now tracked as [THR-1688](https://linear.app/threadbare/issue/THR-1688) and wait on the shortlist fix.
 - **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158), and live on the site.
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-30: six everyday encounters for experts**: the first expert-level batch of town encounters ([THR-1678](https://linear.app/threadbare/issue/THR-1678)). Merged via [#2155](https://github.com/christianspliid-ui/threadbare/pull/2155), and live on the site.
 - **2026-09-30: a mortal who hears of a ruin goes to see it** ([THR-1664](https://linear.app/threadbare/issue/THR-1664)). Merged via [#2151](https://github.com/christianspliid-ui/threadbare/pull/2151) after a 30-hour stall, and live on the site.
 - **2026-09-30: the spell generator is designed**: each school of magic gets its own book of spells per world ([THR-1572](https://linear.app/threadbare/issue/THR-1572)). Plan merged via [#2154](https://github.com/christianspliid-ui/threadbare/pull/2154); ready to build.
-- **2026-09-29: two expert-level monsters**: monster families now field apex elites ([THR-1682](https://linear.app/threadbare/issue/THR-1682)). Merged via [#2153](https://github.com/christianspliid-ui/threadbare/pull/2153), and live on the site.
 
 ---
 
