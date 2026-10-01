@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 06:58 local (04:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 07:55 local (05:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -48,4 +48,4 @@ Say "veto <title>" to reverse any of these.
 ## Health
 
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked today, and which factions are hit changes from day to day. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). This is a builder's job.
-- The slow simulation tests are passing again. The live site is serving the latest `main` (#2160). The simulation's speed is normal (89 ms per tick, +4% on the week).
+- The slow simulation tests are passing again. The live site is serving the latest `main` (#2160). The simulation's speed is normal (90 ms per tick, +5% on the week).
