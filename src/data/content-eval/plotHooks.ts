@@ -208,7 +208,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'betrayal'],
     reaches: ['shadow', 'gold'],
     source: 'Hook #206 — vertical-slice.ts (A Bargain at the Crossroads)',
-    usedBy: ['encounter.slice.bargain_at_crossroads'],
+    usedBy: ['encounter.slice.bargain_at_crossroads', 'encounter.town.inheritance_wake'],
   },
   {
     id: 'hook.followed_on_the_road',
@@ -417,7 +417,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['power', 'conflict'],
     reaches: ['gold', 'iron'],
     source: 'vault: Archetypes/Event — Succession Crisis',
-    usedBy: [],
+    usedBy: ['encounter.town.mill_lease_auction'],
   },
   {
     id: 'hook.betrayal_revealed',
@@ -529,7 +529,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['scarcity', 'justice'],
     reaches: ['stone', 'heart'],
     source: 'vault: Archetypes/Event — The Harvest Reckoning',
-    usedBy: [],
+    usedBy: ['encounter.town.flood_dyke_mending'],
   },
   {
     id: 'hook.masterwork_completion',

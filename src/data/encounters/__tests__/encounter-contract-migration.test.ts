@@ -103,6 +103,9 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.pawnbrokers_strongroom',
   'encounter.town.harvest_almanac',
   'encounter.town.oath_breaker_rite',
+  'encounter.town.mill_lease_auction',
+  'encounter.town.inheritance_wake',
+  'encounter.town.flood_dyke_mending',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {
