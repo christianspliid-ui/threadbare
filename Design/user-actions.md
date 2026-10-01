@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-01 02:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,7 +37,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158); publishing to the site now.
+- **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158), and live on the site.
 - **2026-10-01: ruins get looked at, and waiting mortals keep their meetings**: the lead climb is re-planned ([THR-1684](https://linear.app/threadbare/issue/THR-1684)). Plan merged via [#2159](https://github.com/christianspliid-ui/threadbare/pull/2159); ready to build as [THR-1686](https://linear.app/threadbare/issue/THR-1686).
 - **2026-10-01: a reputation chip names the town, not the person** ([THR-1685](https://linear.app/threadbare/issue/THR-1685)). Merged via [#2156](https://github.com/christianspliid-ui/threadbare/pull/2156), and live on the site.
 - **2026-10-01: six more everyday encounters for experts** (batch 2, [THR-1679](https://linear.app/threadbare/issue/THR-1679)). Merged via [#2157](https://github.com/christianspliid-ui/threadbare/pull/2157), and live on the site.

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 02:57 local (00:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 03:56 local (01:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,7 +19,7 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Decided for you
 
-- [The seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): **each school of magic gets its own book of about six spells, written fresh for every world from the ideas you judged in the twenty-spell sample.** Today all 109 casters on the test world carry the same spell. Calls made:
+- [The seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): **each school of magic gets its own book of about six spells, written fresh for every world from the ideas you judged in the twenty-spell sample.** Today all casters on the test world carry the same spell. Calls made:
   - A caster's school comes from their work and the people they serve, not their sphere.
   - No mortal gets a spell of their own.
   - No spell speeds up the end of the world; a dark art costs the caster part of their soul, and leaves a hidden mark a later encounter can bring out.
@@ -38,14 +38,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 2 jobs ready to build, none being built.** Expert everyday encounters, batch 3 merged a few minutes ago. The pickup lane runs next at ~03:10, so the shelf is being worked.
+**Healthy: 3 jobs ready to build, none being built.** The pickup lane runs next at ~04:10.
 
 - **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
-- **Ready:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) (new this hour).
+- **Ready:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the).
+- **Ready:** [master-level everyday encounters, one per reach](https://linear.app/threadbare/issue/THR-1681/content-above-novice-s7-master-everyday-encounters-1-per-reach-and-the) (new this hour; the last batch of the skill-ladder work).
 
 ## Health
 
 - **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs. It is scheduled, it is starting, and it is breaking every time — so whatever it was supposed to be doing has not happened for a while." It is also red on the latest `main`. This is a builder's job.
 - **A third of some factions' senior and elite jobs are still unreachable in a long game** (14 of 60 gated encounters blocked). Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-30.md). This is a builder's job.
 - **The home checkout is 210 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
-- The latest merge (batch 3 encounters) is still publishing to the live site; it was pushed under 20 minutes ago. The simulation's speed is normal (91 ms per tick, +8% on the week).
+- The live site is serving the latest `main`, including expert encounters batch 3. The simulation's speed is normal (89 ms per tick, +6% on the week).
