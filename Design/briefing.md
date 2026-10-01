@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 04:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 05:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -38,15 +38,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 2 jobs ready to build, none being built.** The pickup lane runs next at ~05:11.
+**Healthy but thin: 2 jobs ready, none being built.** Both are waiting out your veto windows above, so nothing gets built until the first window closes around 20:45 tonight.
 
-- **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
-- **Ready:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the).
-- **Shipped this hour:** [master-level everyday encounters, one per reach](https://linear.app/threadbare/issue/THR-1681/content-above-novice-s7-master-everyday-encounters-1-per-reach-and-the), merged via [#2160](https://github.com/christianspliid-ui/threadbare/pull/2160) and live. The last batch of the skill-ladder work; the master "rise" moment waits on [THR-1687](https://linear.app/threadbare/issue/THR-1687).
+- **Ready from ~20:45 tonight:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
+- **Ready from ~03:00 tomorrow:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the).
+- The design lane runs next at ~08:17 and can add work to the shelf.
 
 ## Health
 
-- **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs. It is scheduled, it is starting, and it is breaking every time — so whatever it was supposed to be doing has not happened for a while." This is a builder's job.
 - **A third of some factions' senior and elite jobs are still unreachable in a long game** (14 of 60 gated encounters blocked). Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-30.md). This is a builder's job.
 - **The home checkout is 213 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
-- The live site is serving the latest `main` (#2160). The simulation's speed is normal (89 ms per tick, +5% on the week).
+- The slow simulation tests are passing again. The live site is serving the latest `main` (#2160). The simulation's speed is normal (89 ms per tick, +4% on the week).
