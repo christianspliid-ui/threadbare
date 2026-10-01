@@ -25,12 +25,12 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
 | `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 186 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 122 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 124 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 125 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 121 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 143 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 145 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 163 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 97 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 98 |  |
 | `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 124 |  |
 
 ## sphere
@@ -126,7 +126,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#survival` | Of staying alive where staying alive is the work. | item 10 · power 2 | 12 |  |
 | `#stealth` | Of going unseen and unheard. | item 6 · trait 3 · power 2 | 11 |  |
 | `#social` | Of people and standing — it works through others. | condition 5 · item 5 · trait 3 · power 2 | 15 |  |
-| `#trade` | Of buying and selling. | item 5 · condition 1 · trait 1 | 23 |  |
+| `#trade` | Of buying and selling. | item 5 · condition 1 · encounter 1 · trait 1 | 24 |  |
 | `#commercial` | Of the counting-house — contracts, ledgers, and terms. | item 3 | 3 |  |
 | `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 · power 1 | 11 |  |
 | `#discovery` | Of finding what nobody had found. | item 5 · power 1 | 6 |  |
@@ -168,7 +168,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#assist` | A hand lent to someone who needs one, for thanks or for pay. | — | 20 |  |
 | `#duel` | A contest of arms, one against one or side against side. | — | 23 |  |
 | `#lead` | Others to be taken somewhere — rallied, organised, or talked round. | — | 17 |  |
-| `#build` | Something to be raised or mended where people will use it. | encounter 2 | 23 |  |
+| `#build` | Something to be raised or mended where people will use it. | encounter 3 | 24 |  |
 | `#steal` | Something to be taken that its keeper means to keep. | — | 9 |  |
 | `#create` | A made thing, worked from nothing by skill or by art. | — | 15 |  |
 | `#acquire` | A thing to be got hold of, by whatever means will get it. | — | 14 |  |

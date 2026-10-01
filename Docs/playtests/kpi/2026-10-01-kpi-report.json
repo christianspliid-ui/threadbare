@@ -1,0 +1,3083 @@
+{
+  "date": "2026-10-01",
+  "seeds": [
+    42,
+    99,
+    7
+  ],
+  "ticks": 120,
+  "ascendants": null,
+  "results": [
+    {
+      "ascendant": null,
+      "report": {
+        "tick": 120,
+        "seed": 42,
+        "outcomes": {
+          "total": 91,
+          "byOutcome": {
+            "failure": 25,
+            "critical_success": 6,
+            "success_at_cost": 27,
+            "critical_failure": 6,
+            "success": 27
+          },
+          "failureRate": 0.34065934065934067,
+          "critFailRate": 0.06593406593406594,
+          "cleanSuccessRate": 0.27796610169491526,
+          "totalSuccessRate": 0.6593406593406593,
+          "atCostShare": 0.2967032967032967,
+          "critSuccessRate": 0.05423728813559322,
+          "failureStoryRate": 1,
+          "insufficientData": false
+        },
+        "templateConcentration": {
+          "totalSelections": 652,
+          "byTemplate": [
+            {
+              "templateId": "encounter.slice.swindled_family",
+              "count": 26,
+              "share": 0.03987730061349693
+            },
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 20,
+              "share": 0.03067484662576687
+            },
+            {
+              "templateId": "encounter.recruit_militia",
+              "count": 20,
+              "share": 0.03067484662576687
+            },
+            {
+              "templateId": "encounter.aid_refugees",
+              "count": 17,
+              "share": 0.02607361963190184
+            },
+            {
+              "templateId": "encounter.anomaly.singing_dark",
+              "count": 17,
+              "share": 0.02607361963190184
+            },
+            {
+              "templateId": "encounter.festival_of_spheres",
+              "count": 16,
+              "share": 0.024539877300613498
+            },
+            {
+              "templateId": "encounter.court_noble",
+              "count": 15,
+              "share": 0.023006134969325152
+            },
+            {
+              "templateId": "encounter.council_mediation",
+              "count": 13,
+              "share": 0.019938650306748466
+            },
+            {
+              "templateId": "eye.reckoning.verdict_that_burns",
+              "count": 13,
+              "share": 0.019938650306748466
+            },
+            {
+              "templateId": "encounter.knowledge_test",
+              "count": 12,
+              "share": 0.018404907975460124
+            },
+            {
+              "templateId": "encounter.honor_duel",
+              "count": 11,
+              "share": 0.01687116564417178
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 11,
+              "share": 0.01687116564417178
+            },
+            {
+              "templateId": "encounter.merchants_gambit",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.trial_by_combat",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.pickpocket",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.night_watch",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.shore_up_shelter",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.rally_the_locals",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "veil.truth.page_beneath_saint",
+              "count": 10,
+              "share": 0.015337423312883436
+            },
+            {
+              "templateId": "encounter.barter_supplies",
+              "count": 9,
+              "share": 0.013803680981595092
+            },
+            {
+              "templateId": "encounter.tend_the_weary",
+              "count": 9,
+              "share": 0.013803680981595092
+            },
+            {
+              "templateId": "encounter.decipher_old_markings",
+              "count": 9,
+              "share": 0.013803680981595092
+            },
+            {
+              "templateId": "encounter.investigate_anomaly",
+              "count": 9,
+              "share": 0.013803680981595092
+            },
+            {
+              "templateId": "encounter.steal_secrets",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.master_craftsman_challenge",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.listen_for_rumors",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.rest_and_recover",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.forage_provisions",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.shadow_in_the_night",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.case_the_joint",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.dead_drop",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.slice.bargain_at_crossroads",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.forge_construction",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.shadow_hunt",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.anomaly.gleaming_vein",
+              "count": 8,
+              "share": 0.012269938650306749
+            },
+            {
+              "templateId": "encounter.vault_heist",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.guild_aid",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.local_tales",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.study_surroundings",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.mend_equipment",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.commune_with_stars",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.forage_the_land",
+              "count": 7,
+              "share": 0.010736196319018405
+            },
+            {
+              "templateId": "encounter.raise_monument",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.faction_unification",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.barter_with_travelers",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.confront_the_unknown",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.arcane_resonance_study",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.trade_caravan_escort",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.realm.border_levy",
+              "count": 6,
+              "share": 0.009202453987730062
+            },
+            {
+              "templateId": "encounter.assess_holdings",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.trace_ley_lines",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.local_gossip",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.negotiate_dispute",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.tend_to_wounds",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.scout_the_perimeter",
+              "count": 5,
+              "share": 0.007668711656441718
+            },
+            {
+              "templateId": "encounter.grand_tournament",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "encounter.starborn_vigil",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "gold.famine.merchant_granaries",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "encounter.ward_the_camp",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "encounter.offer_small_prayer",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "encounter.rally_faithful",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "hod.quest.deliver_judgment",
+              "count": 4,
+              "share": 0.006134969325153374
+            },
+            {
+              "templateId": "encounter.tribute_exchange",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.patrol_perimeter",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.master_local_craft",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.barter_survival",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.blessing_of_passage",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.negotiate_passage",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.spell_bargain",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "social.investigate_reputation",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "lk.quest.map_ley_lines",
+              "count": 3,
+              "share": 0.004601226993865031
+            },
+            {
+              "templateId": "encounter.forbidden_tome",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.defend_against_predators",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "reputation.stone.the_jury_of_the_ruined",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.guild_initiation_trial",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.inscribe_ward",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "reputation.veil.the_veiled_consultation",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.smuggle_goods",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.merchant_caravan",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "enc.letters_of_introduction",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.scholar_aid",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.sacred_text_study",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "lk.join",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.border.one_body_short",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "hod.join",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.the_fence",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "ag.join",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "mct.join",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "rb.social.equipment_trade",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "ac.senior.ruin_expedition",
+              "count": 2,
+              "share": 0.003067484662576687
+            },
+            {
+              "templateId": "encounter.compose_saga",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.guild_negotiation",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.trial_of_flame",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.realm.court_summons",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.town.cunning_fair",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.town.drowned_mans_testimony",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.town.toll_gate_writ",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.pilgrimage_trial",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.harvest_bounty",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.tavern_brawl",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.sharpen_blades",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.rest_and_reflect",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.mend_fishing_nets",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.mystic_trade",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.library_expansion",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.caravan_deal",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.spirit_walk",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.anomaly.bones_old_world",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "social.forge_alliance",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.rare_material",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.shadow_ambush",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.beast_hunt",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.bandit_ambush",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "cg.join",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "uk.join",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "encounter.black_market_deal",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "hod.quest.purify_shrine",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "ts.social.evening_prayer",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "rb.join",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "rb.social.campfire_tales",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "rb.quest.clear_threat",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "rb.quest.wilderness_rescue",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "bf.join",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "rb.social.tracking_lesson",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "ac.social.lecture_hall",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "mct.social.wine_tasting",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "mct.social.guild_feast",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "hod.promotion",
+              "count": 1,
+              "share": 0.0015337423312883436
+            },
+            {
+              "templateId": "cg.social.training_yard",
+              "count": 1,
+              "share": 0.0015337423312883436
+            }
+          ],
+          "topShare": 0.03987730061349693,
+          "entropy": 0.9218186472848491,
+          "insufficientData": false
+        },
+        "branchingFire": {
+          "totalFires": 32,
+          "firesPerChunk": 8,
+          "topBranchingTemplates": [
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 4
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 1
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 1
+            },
+            {
+              "templateId": "veil.truth.page_beneath_saint",
+              "count": 1
+            }
+          ]
+        },
+        "threadedBeats": {
+          "totalBeats": 129,
+          "beatsPerChunk": 10.75
+        },
+        "eligibilityFunnel": {
+          "available": true,
+          "sinceTick": 0,
+          "topConsidered": [
+            {
+              "templateId": "encounter.knowledge_test",
+              "considered": 652,
+              "selected": 12,
+              "conversionRate": 0.018404907975460124,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.patrol_perimeter",
+              "considered": 652,
+              "selected": 3,
+              "conversionRate": 0.004601226993865031,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.barter_supplies",
+              "considered": 652,
+              "selected": 9,
+              "conversionRate": 0.013803680981595092,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.assess_holdings",
+              "considered": 652,
+              "selected": 5,
+              "conversionRate": 0.007668711656441718,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.night_watch",
+              "considered": 652,
+              "selected": 10,
+              "conversionRate": 0.015337423312883436,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.listen_for_rumors",
+              "considered": 652,
+              "selected": 8,
+              "conversionRate": 0.012269938650306749,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.trace_ley_lines",
+              "considered": 652,
+              "selected": 5,
+              "conversionRate": 0.007668711656441718,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.local_tales",
+              "considered": 652,
+              "selected": 7,
+              "conversionRate": 0.010736196319018405,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.tend_the_weary",
+              "considered": 652,
+              "selected": 9,
+              "conversionRate": 0.013803680981595092,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.study_surroundings",
+              "considered": 652,
+              "selected": 7,
+              "conversionRate": 0.010736196319018405,
+              "topGate": "cap"
+            }
+          ],
+          "mostGatedBranching": [
+            {
+              "templateId": "encounter.slice.the_table_that_holds",
+              "considered": 652,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "prerequisites"
+            },
+            {
+              "templateId": "reputation.heart.pilgrims_offering",
+              "considered": 652,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "reputation.eye.the_oracle_consulted",
+              "considered": 652,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "reputation.star.the_star_pilgrim",
+              "considered": 652,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.town.fair_bout",
+              "considered": 652,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            }
+          ],
+          "truncated": false
+        },
+        "resolutionGap": {
+          "meanCapabilityMargin": 0.13297872340425532,
+          "stepCount": 188,
+          "insufficientData": false
+        },
+        "engagement": {
+          "bands": [
+            {
+              "band": "novice",
+              "engagements": 239,
+              "successRate": 0.5230125523012552,
+              "meanAttemptedDifficulty": 0.11487447698744749,
+              "covered": true
+            },
+            {
+              "band": "journeyman",
+              "engagements": 149,
+              "successRate": 0.5704697986577181,
+              "meanAttemptedDifficulty": 0.16879194630872457,
+              "covered": true
+            },
+            {
+              "band": "expert",
+              "engagements": 59,
+              "successRate": 0.6101694915254238,
+              "meanAttemptedDifficulty": 0.1274576271186441,
+              "covered": true
+            },
+            {
+              "band": "master",
+              "engagements": 49,
+              "successRate": 0.5918367346938775,
+              "meanAttemptedDifficulty": 0.12602040816326535,
+              "covered": true
+            },
+            {
+              "band": "unknown",
+              "engagements": 19,
+              "successRate": 0.631578947368421,
+              "meanAttemptedDifficulty": 0,
+              "covered": false
+            }
+          ],
+          "inWindowShare": 0.47491039426523296,
+          "freeChoiceCommits": 558,
+          "idleRate": 0,
+          "boardDecisions": 652,
+          "retryAfterFailureRate": 0,
+          "failedFreeChoice": 221,
+          "maxFailureStreakP95": 4,
+          "attemptedDifficultyTrend": 0.0007102472039948826,
+          "trendMortals": 21
+        },
+        "thresholds": [
+          {
+            "metric": "failure_rate",
+            "label": "Failure Rate",
+            "value": 0.34065934065934067,
+            "threshold": 0.5,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "critfail_rate",
+            "label": "Crit-Fail Rate (ceiling)",
+            "value": 0.06593406593406594,
+            "threshold": 0.15,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "clean_success_rate",
+            "label": "Clean Success Rate",
+            "value": 0.27796610169491526,
+            "threshold": 0.03,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_min",
+            "label": "Total Success ≥",
+            "value": 0.6593406593406593,
+            "threshold": 0.5,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_max",
+            "label": "Total Success ≤",
+            "value": 0.6593406593406593,
+            "threshold": 0.65,
+            "direction": "above_is_bad",
+            "status": "amber"
+          },
+          {
+            "metric": "at_cost_min",
+            "label": "At-Cost Share ≥",
+            "value": 0.2967032967032967,
+            "threshold": 0.3,
+            "direction": "below_is_bad",
+            "status": "amber"
+          },
+          {
+            "metric": "at_cost_max",
+            "label": "At-Cost Share ≤",
+            "value": 0.2967032967032967,
+            "threshold": 0.7,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "crit_success_rate",
+            "label": "Crit-Success Tail (advisory)",
+            "value": 0.05423728813559322,
+            "threshold": 0.005,
+            "direction": "below_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "crit_failure_rate",
+            "label": "Crit-Failure Tail",
+            "value": 0.06593406593406594,
+            "threshold": 0.02,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_top_share",
+            "label": "Top Template Share",
+            "value": 0.03987730061349693,
+            "threshold": 0.08,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_entropy",
+            "label": "Template Entropy",
+            "value": 0.9218186472848491,
+            "threshold": 0.7,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "branching_fire_per_30t",
+            "label": "Branching Fires/30t",
+            "value": 8,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "threaded_beats_per_10t",
+            "label": "Threaded Beats/10t",
+            "value": 10.75,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "failure_story_rate",
+            "label": "Failure→Story Rate",
+            "value": 1,
+            "threshold": 0.9,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "retry_after_failure_rate",
+            "label": "Retry After Failure (advisory)",
+            "value": 0,
+            "threshold": 0.1,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "max_failure_streak_p95",
+            "label": "Failure Streak p95 (advisory)",
+            "value": 4,
+            "threshold": 4,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "in_window_share",
+            "label": "In-Window Share (advisory)",
+            "value": 0.47491039426523296,
+            "threshold": 0.6,
+            "direction": "below_is_bad",
+            "status": "red",
+            "advisory": true
+          }
+        ]
+      }
+    },
+    {
+      "ascendant": null,
+      "report": {
+        "tick": 120,
+        "seed": 99,
+        "outcomes": {
+          "total": 102,
+          "byOutcome": {
+            "failure": 33,
+            "success": 36,
+            "success_at_cost": 18,
+            "critical_failure": 9,
+            "critical_success": 6
+          },
+          "failureRate": 0.4117647058823529,
+          "critFailRate": 0.08823529411764706,
+          "cleanSuccessRate": 0.35602094240837695,
+          "totalSuccessRate": 0.5882352941176471,
+          "atCostShare": 0.17647058823529413,
+          "critSuccessRate": 0.055846422338568937,
+          "failureStoryRate": 1,
+          "insufficientData": false
+        },
+        "templateConcentration": {
+          "totalSelections": 705,
+          "byTemplate": [
+            {
+              "templateId": "veil.truth.page_beneath_saint",
+              "count": 29,
+              "share": 0.04113475177304964
+            },
+            {
+              "templateId": "encounter.realm.court_summons",
+              "count": 29,
+              "share": 0.04113475177304964
+            },
+            {
+              "templateId": "encounter.slice.bargain_at_crossroads",
+              "count": 25,
+              "share": 0.03546099290780142
+            },
+            {
+              "templateId": "encounter.realm.border_levy",
+              "count": 23,
+              "share": 0.032624113475177303
+            },
+            {
+              "templateId": "encounter.compose_saga",
+              "count": 22,
+              "share": 0.031205673758865248
+            },
+            {
+              "templateId": "encounter.guild_aid",
+              "count": 22,
+              "share": 0.031205673758865248
+            },
+            {
+              "templateId": "encounter.slice.swindled_family",
+              "count": 22,
+              "share": 0.031205673758865248
+            },
+            {
+              "templateId": "encounter.anomaly.singing_dark",
+              "count": 17,
+              "share": 0.024113475177304965
+            },
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 14,
+              "share": 0.019858156028368795
+            },
+            {
+              "templateId": "encounter.library_expansion",
+              "count": 12,
+              "share": 0.01702127659574468
+            },
+            {
+              "templateId": "encounter.local_tales",
+              "count": 12,
+              "share": 0.01702127659574468
+            },
+            {
+              "templateId": "encounter.merchant_caravan",
+              "count": 11,
+              "share": 0.015602836879432624
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 11,
+              "share": 0.015602836879432624
+            },
+            {
+              "templateId": "encounter.rally_faithful",
+              "count": 11,
+              "share": 0.015602836879432624
+            },
+            {
+              "templateId": "encounter.anomaly.gleaming_vein",
+              "count": 11,
+              "share": 0.015602836879432624
+            },
+            {
+              "templateId": "encounter.forage_the_land",
+              "count": 10,
+              "share": 0.014184397163120567
+            },
+            {
+              "templateId": "encounter.barter_with_travelers",
+              "count": 10,
+              "share": 0.014184397163120567
+            },
+            {
+              "templateId": "gold.famine.merchant_granaries",
+              "count": 10,
+              "share": 0.014184397163120567
+            },
+            {
+              "templateId": "encounter.aid_refugees",
+              "count": 10,
+              "share": 0.014184397163120567
+            },
+            {
+              "templateId": "encounter.anomaly.dreaming_light",
+              "count": 10,
+              "share": 0.014184397163120567
+            },
+            {
+              "templateId": "encounter.plague_outbreak",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.assess_holdings",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.decipher_old_markings",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.commune_with_stars",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.rally_the_locals",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.recruit_militia",
+              "count": 9,
+              "share": 0.01276595744680851
+            },
+            {
+              "templateId": "encounter.merchants_gambit",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "encounter.barter_supplies",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "encounter.night_watch",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "encounter.local_gossip",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "encounter.investigate_anomaly",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "ac.quest.translate_tome",
+              "count": 8,
+              "share": 0.011347517730496455
+            },
+            {
+              "templateId": "encounter.trace_ley_lines",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "encounter.shore_up_shelter",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "encounter.rest_and_recover",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "encounter.ward_the_camp",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "ts.quest.consecrate_ground",
+              "count": 7,
+              "share": 0.009929078014184398
+            },
+            {
+              "templateId": "encounter.harbor_construction",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.council_mediation",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.festival_of_spheres",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.tend_the_weary",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.shadow_in_the_night",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "reputation.star.the_star_pilgrim",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.vault_heist",
+              "count": 6,
+              "share": 0.00851063829787234
+            },
+            {
+              "templateId": "encounter.shadow_hunt",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.smuggle_goods",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.master_craftsman_challenge",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.patrol_perimeter",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.listen_for_rumors",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.confront_the_unknown",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "eye.reckoning.verdict_that_burns",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.realm.tithe_demanded",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.faction_unification",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.honor_duel",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "tg.quest.case_the_mark",
+              "count": 5,
+              "share": 0.0070921985815602835
+            },
+            {
+              "templateId": "encounter.mend_equipment",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.master_local_craft",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.dead_drop",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.tavern_brawl",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.knowledge_test",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.anomaly.fallen_star",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "tg.quest.pocket_run",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "tg.quest.blackmail_ledger",
+              "count": 4,
+              "share": 0.005673758865248227
+            },
+            {
+              "templateId": "encounter.pickpocket",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.guild_initiation_trial",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "reputation.heart.pilgrims_offering",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "reputation.eye.the_oracle_consulted",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.offer_small_prayer",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.hire_guide",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.caravan_guard",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.sharpen_blades",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.rest_and_reflect",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.scout_the_perimeter",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.forbidden_tome",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "ac.quest.ward_inspection",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "ts.quest.heal_the_sick",
+              "count": 3,
+              "share": 0.00425531914893617
+            },
+            {
+              "templateId": "encounter.raise_monument",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.guild_negotiation",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.trade_caravan_escort",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.grand_tournament",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.forage_provisions",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.negotiate_dispute",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.arcane_resonance_study",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.starborn_vigil",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.town.fair_bout",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.town.toll_gate_writ",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.caravan_deal",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "enc.letters_of_introduction",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.mystic_trade",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.tend_to_wounds",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.minor_cantrip",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.barter_survival",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.border.standing_the_line",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.hunt.the_beast_in_the_granary",
+              "count": 2,
+              "share": 0.0028368794326241137
+            },
+            {
+              "templateId": "encounter.court_noble",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.study_surroundings",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.defend_against_predators",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.case_the_joint",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.trial_of_flame",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.healers_oath",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.town.cunning_fair",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.town.bell_tower_shoring",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.tribute_exchange",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.sacred_text_study",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.shrine_offering",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ts.elite.sphere_convergence",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.rare_material",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.shadow_ambush",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.beast_hunt",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.bandit_ambush",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.mend_fishing_nets",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.map_the_passages",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.relic_hunt",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.steal_secrets",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.harvest_bounty",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.dragons_challenge",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.tend_the_dead",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.trial_by_combat",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "rb.join",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ts.join",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "lk.join",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "encounter.black_market_deal",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "mct.join",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "mct.social.wine_tasting",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "mct.social.guild_feast",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ag.quest.ruin_delve",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ag.quest.monster_hunt",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ag.quest.escort_caravan",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "tg.join",
+              "count": 1,
+              "share": 0.0014184397163120568
+            },
+            {
+              "templateId": "ts.senior.craft_relic",
+              "count": 1,
+              "share": 0.0014184397163120568
+            }
+          ],
+          "topShare": 0.04113475177304964,
+          "entropy": 0.9107085866394811,
+          "insufficientData": false
+        },
+        "branchingFire": {
+          "totalFires": 30,
+          "firesPerChunk": 7.5,
+          "topBranchingTemplates": [
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 4
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 1
+            },
+            {
+              "templateId": "encounter.slice.swindled_family",
+              "count": 1
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 1
+            }
+          ]
+        },
+        "threadedBeats": {
+          "totalBeats": 117,
+          "beatsPerChunk": 9.75
+        },
+        "eligibilityFunnel": {
+          "available": true,
+          "sinceTick": 0,
+          "topConsidered": [
+            {
+              "templateId": "encounter.merchants_gambit",
+              "considered": 705,
+              "selected": 8,
+              "conversionRate": 0.011347517730496455,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.compose_saga",
+              "considered": 705,
+              "selected": 22,
+              "conversionRate": 0.031205673758865248,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.pickpocket",
+              "considered": 705,
+              "selected": 3,
+              "conversionRate": 0.00425531914893617,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.guild_negotiation",
+              "considered": 705,
+              "selected": 2,
+              "conversionRate": 0.0028368794326241137,
+              "topGate": "prerequisites"
+            },
+            {
+              "templateId": "encounter.guild_aid",
+              "considered": 705,
+              "selected": 22,
+              "conversionRate": 0.031205673758865248,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.harbor_construction",
+              "considered": 705,
+              "selected": 6,
+              "conversionRate": 0.00851063829787234,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.guild_initiation_trial",
+              "considered": 705,
+              "selected": 3,
+              "conversionRate": 0.00425531914893617,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.master_craftsman_challenge",
+              "considered": 705,
+              "selected": 5,
+              "conversionRate": 0.0070921985815602835,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.trade_caravan_escort",
+              "considered": 705,
+              "selected": 2,
+              "conversionRate": 0.0028368794326241137,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.festival_of_spheres",
+              "considered": 705,
+              "selected": 6,
+              "conversionRate": 0.00851063829787234,
+              "topGate": "cap"
+            }
+          ],
+          "mostGatedBranching": [
+            {
+              "templateId": "encounter.slice.the_table_that_holds",
+              "considered": 705,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "prerequisites"
+            },
+            {
+              "templateId": "reputation.veil.the_veiled_consultation",
+              "considered": 705,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "reputation.stone.the_stones_judgement",
+              "considered": 705,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "reputation.veil.the_silent_chamber",
+              "considered": 705,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "reputation.stone.the_jury_of_the_ruined",
+              "considered": 705,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            }
+          ],
+          "truncated": false
+        },
+        "resolutionGap": {
+          "meanCapabilityMargin": 0.15753424657534243,
+          "stepCount": 219,
+          "insufficientData": false
+        },
+        "engagement": {
+          "bands": [
+            {
+              "band": "novice",
+              "engagements": 187,
+              "successRate": 0.6524064171122995,
+              "meanAttemptedDifficulty": 0.11264705882352927,
+              "covered": true
+            },
+            {
+              "band": "journeyman",
+              "engagements": 163,
+              "successRate": 0.6012269938650306,
+              "meanAttemptedDifficulty": 0.1783742331288341,
+              "covered": true
+            },
+            {
+              "band": "expert",
+              "engagements": 76,
+              "successRate": 0.5921052631578947,
+              "meanAttemptedDifficulty": 0.15585526315789472,
+              "covered": true
+            },
+            {
+              "band": "master",
+              "engagements": 45,
+              "successRate": 0.6666666666666666,
+              "meanAttemptedDifficulty": 0.14311111111111113,
+              "covered": true
+            },
+            {
+              "band": "unknown",
+              "engagements": 22,
+              "successRate": 0.5454545454545454,
+              "meanAttemptedDifficulty": 0,
+              "covered": false
+            }
+          ],
+          "inWindowShare": 0.4648956356736243,
+          "freeChoiceCommits": 527,
+          "idleRate": 0,
+          "boardDecisions": 705,
+          "retryAfterFailureRate": 0,
+          "failedFreeChoice": 176,
+          "maxFailureStreakP95": 4,
+          "attemptedDifficultyTrend": 0.00018777292576419212,
+          "trendMortals": 23
+        },
+        "thresholds": [
+          {
+            "metric": "failure_rate",
+            "label": "Failure Rate",
+            "value": 0.4117647058823529,
+            "threshold": 0.5,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "critfail_rate",
+            "label": "Crit-Fail Rate (ceiling)",
+            "value": 0.08823529411764706,
+            "threshold": 0.15,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "clean_success_rate",
+            "label": "Clean Success Rate",
+            "value": 0.35602094240837695,
+            "threshold": 0.03,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_min",
+            "label": "Total Success ≥",
+            "value": 0.5882352941176471,
+            "threshold": 0.5,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_max",
+            "label": "Total Success ≤",
+            "value": 0.5882352941176471,
+            "threshold": 0.65,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "at_cost_min",
+            "label": "At-Cost Share ≥",
+            "value": 0.17647058823529413,
+            "threshold": 0.3,
+            "direction": "below_is_bad",
+            "status": "red"
+          },
+          {
+            "metric": "at_cost_max",
+            "label": "At-Cost Share ≤",
+            "value": 0.17647058823529413,
+            "threshold": 0.7,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "crit_success_rate",
+            "label": "Crit-Success Tail (advisory)",
+            "value": 0.055846422338568937,
+            "threshold": 0.005,
+            "direction": "below_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "crit_failure_rate",
+            "label": "Crit-Failure Tail",
+            "value": 0.08823529411764706,
+            "threshold": 0.02,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_top_share",
+            "label": "Top Template Share",
+            "value": 0.04113475177304964,
+            "threshold": 0.08,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_entropy",
+            "label": "Template Entropy",
+            "value": 0.9107085866394811,
+            "threshold": 0.7,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "branching_fire_per_30t",
+            "label": "Branching Fires/30t",
+            "value": 7.5,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "threaded_beats_per_10t",
+            "label": "Threaded Beats/10t",
+            "value": 9.75,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "failure_story_rate",
+            "label": "Failure→Story Rate",
+            "value": 1,
+            "threshold": 0.9,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "retry_after_failure_rate",
+            "label": "Retry After Failure (advisory)",
+            "value": 0,
+            "threshold": 0.1,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "max_failure_streak_p95",
+            "label": "Failure Streak p95 (advisory)",
+            "value": 4,
+            "threshold": 4,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "in_window_share",
+            "label": "In-Window Share (advisory)",
+            "value": 0.4648956356736243,
+            "threshold": 0.6,
+            "direction": "below_is_bad",
+            "status": "red",
+            "advisory": true
+          }
+        ]
+      }
+    },
+    {
+      "ascendant": null,
+      "report": {
+        "tick": 120,
+        "seed": 7,
+        "outcomes": {
+          "total": 106,
+          "byOutcome": {
+            "success_at_cost": 19,
+            "success": 37,
+            "failure": 30,
+            "critical_failure": 3,
+            "critical_success": 14,
+            "contested_won": 2,
+            "contested_lost": 1
+          },
+          "failureRate": 0.3113207547169811,
+          "critFailRate": 0.02830188679245283,
+          "cleanSuccessRate": 0.3592814371257485,
+          "totalSuccessRate": 0.660377358490566,
+          "atCostShare": 0.1792452830188679,
+          "critSuccessRate": 0.07784431137724551,
+          "failureStoryRate": 1,
+          "insufficientData": false
+        },
+        "templateConcentration": {
+          "totalSelections": 781,
+          "byTemplate": [
+            {
+              "templateId": "encounter.realm.court_summons",
+              "count": 30,
+              "share": 0.03841229193341869
+            },
+            {
+              "templateId": "encounter.slice.bargain_at_crossroads",
+              "count": 23,
+              "share": 0.029449423815621
+            },
+            {
+              "templateId": "encounter.slice.swindled_family",
+              "count": 22,
+              "share": 0.028169014084507043
+            },
+            {
+              "templateId": "encounter.compose_saga",
+              "count": 21,
+              "share": 0.026888604353393086
+            },
+            {
+              "templateId": "encounter.realm.tithe_demanded",
+              "count": 21,
+              "share": 0.026888604353393086
+            },
+            {
+              "templateId": "encounter.sharpen_blades",
+              "count": 18,
+              "share": 0.023047375160051217
+            },
+            {
+              "templateId": "encounter.local_gossip",
+              "count": 17,
+              "share": 0.02176696542893726
+            },
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 17,
+              "share": 0.02176696542893726
+            },
+            {
+              "templateId": "encounter.patrol_perimeter",
+              "count": 15,
+              "share": 0.019206145966709345
+            },
+            {
+              "templateId": "encounter.rally_the_locals",
+              "count": 15,
+              "share": 0.019206145966709345
+            },
+            {
+              "templateId": "encounter.political_intrigue",
+              "count": 14,
+              "share": 0.01792573623559539
+            },
+            {
+              "templateId": "encounter.shore_up_shelter",
+              "count": 13,
+              "share": 0.016645326504481434
+            },
+            {
+              "templateId": "encounter.rest_and_recover",
+              "count": 13,
+              "share": 0.016645326504481434
+            },
+            {
+              "templateId": "lk.quest.recover_tome",
+              "count": 13,
+              "share": 0.016645326504481434
+            },
+            {
+              "templateId": "encounter.forage_the_land",
+              "count": 12,
+              "share": 0.015364916773367477
+            },
+            {
+              "templateId": "encounter.recruit_militia",
+              "count": 12,
+              "share": 0.015364916773367477
+            },
+            {
+              "templateId": "encounter.ward_the_camp",
+              "count": 12,
+              "share": 0.015364916773367477
+            },
+            {
+              "templateId": "encounter.council_mediation",
+              "count": 11,
+              "share": 0.014084507042253521
+            },
+            {
+              "templateId": "encounter.barter_supplies",
+              "count": 11,
+              "share": 0.014084507042253521
+            },
+            {
+              "templateId": "encounter.decipher_old_markings",
+              "count": 11,
+              "share": 0.014084507042253521
+            },
+            {
+              "templateId": "tg.quest.pocket_run",
+              "count": 11,
+              "share": 0.014084507042253521
+            },
+            {
+              "templateId": "encounter.forage_provisions",
+              "count": 10,
+              "share": 0.012804097311139564
+            },
+            {
+              "templateId": "encounter.barter_with_travelers",
+              "count": 10,
+              "share": 0.012804097311139564
+            },
+            {
+              "templateId": "tg.quest.blackmail_ledger",
+              "count": 10,
+              "share": 0.012804097311139564
+            },
+            {
+              "templateId": "encounter.raise_monument",
+              "count": 9,
+              "share": 0.011523687580025609
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 9,
+              "share": 0.011523687580025609
+            },
+            {
+              "templateId": "encounter.scout_the_perimeter",
+              "count": 9,
+              "share": 0.011523687580025609
+            },
+            {
+              "templateId": "encounter.anomaly.fallen_star",
+              "count": 9,
+              "share": 0.011523687580025609
+            },
+            {
+              "templateId": "encounter.merchants_gambit",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.court_noble",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.assess_holdings",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.night_watch",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.forge_construction",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.brew_potion",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.prisoner_interrogation",
+              "count": 8,
+              "share": 0.010243277848911651
+            },
+            {
+              "templateId": "encounter.guild_aid",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.guild_initiation_trial",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.listen_for_rumors",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.mend_equipment",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.arcane_resonance_study",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "bf.elite.grand_monument",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.aid_refugees",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.offer_small_prayer",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.rest_and_reflect",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.tend_to_wounds",
+              "count": 7,
+              "share": 0.008962868117797696
+            },
+            {
+              "templateId": "encounter.shadow_hunt",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "encounter.pickpocket",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "encounter.plague_outbreak",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "encounter.trace_ley_lines",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "encounter.negotiate_dispute",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "veil.truth.page_beneath_saint",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "lk.quest.translate_text",
+              "count": 6,
+              "share": 0.0076824583866837385
+            },
+            {
+              "templateId": "encounter.temple_expansion",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.master_craftsman_challenge",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.festival_of_spheres",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.grand_tournament",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.study_surroundings",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.investigate_anomaly",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.case_the_joint",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.dead_drop",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "eye.reckoning.verdict_that_burns",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.rally_faithful",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.realm.border_levy",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.trial_by_combat",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "tg.senior.smuggler_route",
+              "count": 5,
+              "share": 0.006402048655569782
+            },
+            {
+              "templateId": "encounter.guild_negotiation",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "encounter.trade_caravan_escort",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "encounter.local_tales",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "encounter.barter_survival",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "encounter.frontier_settlement",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "bf.join",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "lk.senior.decipher_prophecy",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "uk.quest.pickpocket_run",
+              "count": 4,
+              "share": 0.005121638924455826
+            },
+            {
+              "templateId": "encounter.smuggle_goods",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.tend_the_weary",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.commune_with_stars",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.shadow_in_the_night",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.starborn_vigil",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "gold.famine.merchant_granaries",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "reputation.eye.the_oracle_consulted",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "enc.letters_of_introduction",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.harvest_bounty",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.blessing_of_passage",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.negotiate_passage",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.bandit_ambush",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "lk.quest.catalogue_ruins",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "lk.quest.map_ley_lines",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "tg.social.fence_deal",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "cg.join",
+              "count": 3,
+              "share": 0.0038412291933418692
+            },
+            {
+              "templateId": "encounter.arena_combat",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.master_local_craft",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.confront_the_unknown",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.town.fair_bout",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.tavern_brawl",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.caravan_deal",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.smuggler_pact",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.hedge_remedy",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.shadow_ambush",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.hire_guide",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.toll_bridge",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "lk.join",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "ts.join",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.the_fence",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "lk.senior.excavate_archive",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "lk.elite.cosmic_revelation",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "tg.promotion",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "bf.social.guild_feast",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "bf.quest.repair_wall",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "bf.social.workshop_tour",
+              "count": 2,
+              "share": 0.002560819462227913
+            },
+            {
+              "templateId": "encounter.merchant_caravan",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.defend_against_predators",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.weave_political_alliance",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "reputation.heart.pilgrims_offering",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "reputation.star.the_star_pilgrim",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "reputation.stone.the_jury_of_the_ruined",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "reputation.eye.the_blinded_oracle",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.town.drowned_mans_testimony",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.mend_fishing_nets",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.town.smugglers_ford",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.forbidden_tome",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.rare_material",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.mystic_trade",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.anomaly.bones_old_world",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "ac.join",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "mct.join",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "ag.join",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.black_market_deal",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "encounter.hermits_wisdom",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "lk.quest.interview_elder",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "ac.social.lecture_hall",
+              "count": 1,
+              "share": 0.0012804097311139564
+            },
+            {
+              "templateId": "ac.social.spell_exchange",
+              "count": 1,
+              "share": 0.0012804097311139564
+            }
+          ],
+          "topShare": 0.03841229193341869,
+          "entropy": 0.9304336029665817,
+          "insufficientData": false
+        },
+        "branchingFire": {
+          "totalFires": 38,
+          "firesPerChunk": 9.5,
+          "topBranchingTemplates": [
+            {
+              "templateId": "crafting.quest.flawed_steel",
+              "count": 4
+            },
+            {
+              "templateId": "star.turning.comet_omen",
+              "count": 3
+            },
+            {
+              "templateId": "stone.permanence.mason_lord_wall",
+              "count": 2
+            },
+            {
+              "templateId": "eye.reckoning.verdict_that_burns",
+              "count": 1
+            }
+          ]
+        },
+        "threadedBeats": {
+          "totalBeats": 113,
+          "beatsPerChunk": 9.416666666666666
+        },
+        "eligibilityFunnel": {
+          "available": true,
+          "sinceTick": 0,
+          "topConsidered": [
+            {
+              "templateId": "encounter.merchant_caravan",
+              "considered": 781,
+              "selected": 1,
+              "conversionRate": 0.0012804097311139564,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.guild_initiation_trial",
+              "considered": 781,
+              "selected": 7,
+              "conversionRate": 0.008962868117797696,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.trade_caravan_escort",
+              "considered": 781,
+              "selected": 4,
+              "conversionRate": 0.005121638924455826,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.plague_outbreak",
+              "considered": 781,
+              "selected": 6,
+              "conversionRate": 0.0076824583866837385,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.patrol_perimeter",
+              "considered": 781,
+              "selected": 15,
+              "conversionRate": 0.019206145966709345,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.barter_supplies",
+              "considered": 781,
+              "selected": 11,
+              "conversionRate": 0.014084507042253521,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.assess_holdings",
+              "considered": 781,
+              "selected": 8,
+              "conversionRate": 0.010243277848911651,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.night_watch",
+              "considered": 781,
+              "selected": 8,
+              "conversionRate": 0.010243277848911651,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.listen_for_rumors",
+              "considered": 781,
+              "selected": 7,
+              "conversionRate": 0.008962868117797696,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.trace_ley_lines",
+              "considered": 781,
+              "selected": 6,
+              "conversionRate": 0.0076824583866837385,
+              "topGate": "cap"
+            }
+          ],
+          "mostGatedBranching": [
+            {
+              "templateId": "encounter.slice.the_table_that_holds",
+              "considered": 781,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "prerequisites"
+            },
+            {
+              "templateId": "reputation.veil.the_silent_chamber",
+              "considered": 781,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.hunt.the_beast_in_the_granary",
+              "considered": 781,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.town.tithe_barn_raid",
+              "considered": 781,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            },
+            {
+              "templateId": "encounter.town.inheritance_wake",
+              "considered": 781,
+              "selected": 0,
+              "conversionRate": 0,
+              "topGate": "cap"
+            }
+          ],
+          "truncated": false
+        },
+        "resolutionGap": {
+          "meanCapabilityMargin": 0.2018348623853211,
+          "stepCount": 218,
+          "insufficientData": false
+        },
+        "engagement": {
+          "bands": [
+            {
+              "band": "novice",
+              "engagements": 220,
+              "successRate": 0.5909090909090909,
+              "meanAttemptedDifficulty": 0.10643181818181795,
+              "covered": true
+            },
+            {
+              "band": "journeyman",
+              "engagements": 164,
+              "successRate": 0.6524390243902439,
+              "meanAttemptedDifficulty": 0.15289634146341452,
+              "covered": true
+            },
+            {
+              "band": "expert",
+              "engagements": 87,
+              "successRate": 0.6896551724137931,
+              "meanAttemptedDifficulty": 0.12153256704980836,
+              "covered": true
+            },
+            {
+              "band": "master",
+              "engagements": 56,
+              "successRate": 0.6071428571428571,
+              "meanAttemptedDifficulty": 0.17949404761904755,
+              "covered": true
+            },
+            {
+              "band": "unknown",
+              "engagements": 14,
+              "successRate": 0.7857142857142857,
+              "meanAttemptedDifficulty": 0,
+              "covered": false
+            }
+          ],
+          "inWindowShare": 0.4503937007874016,
+          "freeChoiceCommits": 635,
+          "idleRate": 0,
+          "boardDecisions": 779,
+          "retryAfterFailureRate": 0,
+          "failedFreeChoice": 196,
+          "maxFailureStreakP95": 4,
+          "attemptedDifficultyTrend": 0.0001821495442494331,
+          "trendMortals": 22
+        },
+        "thresholds": [
+          {
+            "metric": "failure_rate",
+            "label": "Failure Rate",
+            "value": 0.3113207547169811,
+            "threshold": 0.5,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "critfail_rate",
+            "label": "Crit-Fail Rate (ceiling)",
+            "value": 0.02830188679245283,
+            "threshold": 0.15,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "clean_success_rate",
+            "label": "Clean Success Rate",
+            "value": 0.3592814371257485,
+            "threshold": 0.03,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_min",
+            "label": "Total Success ≥",
+            "value": 0.660377358490566,
+            "threshold": 0.5,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "total_success_max",
+            "label": "Total Success ≤",
+            "value": 0.660377358490566,
+            "threshold": 0.65,
+            "direction": "above_is_bad",
+            "status": "amber"
+          },
+          {
+            "metric": "at_cost_min",
+            "label": "At-Cost Share ≥",
+            "value": 0.1792452830188679,
+            "threshold": 0.3,
+            "direction": "below_is_bad",
+            "status": "red"
+          },
+          {
+            "metric": "at_cost_max",
+            "label": "At-Cost Share ≤",
+            "value": 0.1792452830188679,
+            "threshold": 0.7,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "crit_success_rate",
+            "label": "Crit-Success Tail (advisory)",
+            "value": 0.07784431137724551,
+            "threshold": 0.005,
+            "direction": "below_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "crit_failure_rate",
+            "label": "Crit-Failure Tail",
+            "value": 0.02830188679245283,
+            "threshold": 0.02,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_top_share",
+            "label": "Top Template Share",
+            "value": 0.03841229193341869,
+            "threshold": 0.08,
+            "direction": "above_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "template_entropy",
+            "label": "Template Entropy",
+            "value": 0.9304336029665817,
+            "threshold": 0.7,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "branching_fire_per_30t",
+            "label": "Branching Fires/30t",
+            "value": 9.5,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "threaded_beats_per_10t",
+            "label": "Threaded Beats/10t",
+            "value": 9.416666666666666,
+            "threshold": 1,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "failure_story_rate",
+            "label": "Failure→Story Rate",
+            "value": 1,
+            "threshold": 0.9,
+            "direction": "below_is_bad",
+            "status": "green"
+          },
+          {
+            "metric": "retry_after_failure_rate",
+            "label": "Retry After Failure (advisory)",
+            "value": 0,
+            "threshold": 0.1,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "max_failure_streak_p95",
+            "label": "Failure Streak p95 (advisory)",
+            "value": 4,
+            "threshold": 4,
+            "direction": "above_is_bad",
+            "status": "green",
+            "advisory": true
+          },
+          {
+            "metric": "in_window_share",
+            "label": "In-Window Share (advisory)",
+            "value": 0.4503937007874016,
+            "threshold": 0.6,
+            "direction": "below_is_bad",
+            "status": "red",
+            "advisory": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -257,6 +257,10 @@ import { PAWNBROKERS_STRONGROOM_TEMPLATE } from './encounters/pawnbrokers-strong
 import { TOLL_GATE_WRIT_TEMPLATE } from './encounters/toll-gate-writ';
 import { BOUNDARY_SURVEY_SEQUELS } from './encounters/boundary-survey-sequels';
 import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
+import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
+import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
+import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
+import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5752,6 +5756,11 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   BOUNDARY_SURVEY_TEMPLATE,
   // THR-1679 — the boundary survey appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
   ...BOUNDARY_SURVEY_SEQUELS,
+  // THR-1680 — the mill lease appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...MILL_LEASE_SEQUELS,
+  MILL_LEASE_AUCTION_TEMPLATE,
+  INHERITANCE_WAKE_TEMPLATE,
+  FLOOD_DYKE_MENDING_TEMPLATE,
 ];
 
 /**
@@ -5896,6 +5905,9 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   PAWNBROKERS_STRONGROOM_TEMPLATE,
   TOLL_GATE_WRIT_TEMPLATE,
   BOUNDARY_SURVEY_TEMPLATE,
+  MILL_LEASE_AUCTION_TEMPLATE,
+  INHERITANCE_WAKE_TEMPLATE,
+  FLOOD_DYKE_MENDING_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**
