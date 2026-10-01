@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 15:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 16:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -64,5 +64,4 @@ Say "veto <title>" to reverse any of these.
 ## Health
 
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked today. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). This is a builder's job.
-- The automatic issue-closer failed once at 12:44 UTC because GitHub's servers were overloaded (error 500). That merge only added the pilgrim-way plan and closed nothing, so nothing was missed. No action.
-- Everything else is green. The live site is up to date (only notes changed since the last build). The simulation's speed is normal (90 ms per tick, +4% on the week).
+- Everything else is green. The live site is up to date (only notes changed since the last build). The simulation's speed is normal (89 ms per tick, +2% on the week).
