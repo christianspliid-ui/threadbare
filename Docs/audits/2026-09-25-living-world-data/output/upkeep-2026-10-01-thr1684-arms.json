@@ -1,0 +1,480 @@
+{
+ "_about": "THR-1684 re-plan census (design lane, 2026-10-01, main 218cdfa7). Medium map, 300 ticks, unattended. Reader: readers/upkeep.ts + engagement/undertaking/appointment counters. Arms via an uncommitted, reverted patch: base = main; leadnowait = a lead survey (strategic candidate with leadPull, executionMode instant) skips the forecast window (advanceProbability 1, fit 1); lead = leadnowait + the waiting-regime drop filter (non-local candidates that overrun dueTick-tick dropped while regime is waiting); all = every instant cell skips the window + the waiting filter.",
+ "arms": {
+  "base": {
+   "4": {
+    "surveyByBand": {
+     "success": 1
+    },
+    "visit": {
+     "arranged": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 24,
+     "decider": 7
+    },
+    "extra": {
+     "engagements": 2250,
+     "undertakings": 117,
+     "instant:observe": 44,
+     "instant:use": 18,
+     "appointment_missed:?": 2
+    }
+   },
+   "8": {
+    "surveyByBand": {},
+    "visit": {},
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "decider": 3,
+     "ambient": 22
+    },
+    "extra": {
+     "engagements": 1855,
+     "undertakings": 187,
+     "instant:observe": 75,
+     "instant:use": 20,
+     "appointment_kept:?": 7,
+     "appointment_missed:?": 4
+    }
+   },
+   "42": {
+    "surveyByBand": {},
+    "visit": {},
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 27,
+     "decider": 7
+    },
+    "extra": {
+     "engagements": 1618,
+     "undertakings": 80,
+     "instant:use": 7,
+     "instant:observe": 17
+    }
+   },
+   "99": {
+    "surveyByBand": {},
+    "visit": {},
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 34,
+     "decider": 3
+    },
+    "extra": {
+     "engagements": 1811,
+     "undertakings": 170,
+     "instant:observe": 73,
+     "instant:use": 6,
+     "appointment_kept:?": 1,
+     "appointment_missed:?": 1
+    }
+   }
+  },
+  "leadnowait": {
+   "4": {
+    "surveyByBand": {
+     "success": 17
+    },
+    "visit": {
+     "arranged": 7,
+     "refused:lead_visit_visit_pending": 10,
+     "regime:far": 4,
+     "regime:leaning": 5,
+     "regime:lost": 4,
+     "appointment_missed:absent": 4,
+     "sharpen:success>cold": 2,
+     "regime:departing": 2,
+     "regime:waiting": 1,
+     "sharpen_noop:no_lead": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 28,
+     "decider": 6
+    },
+    "extra": {
+     "engagements": 1805,
+     "undertakings": 135,
+     "instant:observe": 65,
+     "instant:use": 15,
+     "appointment_missed:?": 5
+    }
+   },
+   "8": {
+    "surveyByBand": {
+     "success": 6
+    },
+    "visit": {
+     "arranged": 3,
+     "refused:lead_visit_visit_pending": 3,
+     "regime:waiting": 3,
+     "regime:leaning": 1,
+     "regime:departing": 1,
+     "appointment_kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:success_at_cost>narrowed": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "decider": 1,
+     "ambient": 19
+    },
+    "extra": {
+     "engagements": 1970,
+     "undertakings": 175,
+     "instant:observe": 66,
+     "instant:use": 19,
+     "appointment_kept:?": 6,
+     "appointment_missed:?": 1
+    }
+   },
+   "42": {
+    "surveyByBand": {
+     "success": 13
+    },
+    "visit": {
+     "arranged": 6,
+     "regime:far": 5,
+     "regime:leaning": 4,
+     "refused:lead_visit_visit_pending": 7,
+     "regime:departing": 5,
+     "regime:waiting": 3,
+     "regime:lost": 3,
+     "appointment_missed:absent": 3,
+     "sharpen:success>cold": 1,
+     "sharpen:critical_failure>cold": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 25,
+     "decider": 6
+    },
+    "extra": {
+     "engagements": 1763,
+     "undertakings": 107,
+     "instant:use": 11,
+     "instant:observe": 26,
+     "appointment_missed:?": 3
+    }
+   },
+   "99": {
+    "surveyByBand": {
+     "success": 6
+    },
+    "visit": {
+     "arranged": 4,
+     "regime:far": 3,
+     "regime:leaning": 2,
+     "refused:lead_visit_visit_pending": 2,
+     "regime:departing": 3,
+     "regime:lost": 2,
+     "appointment_missed:absent": 1,
+     "sharpen_noop:no_lead": 1,
+     "regime:waiting": 1,
+     "appointment_kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:success_at_cost>narrowed": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 34,
+     "decider": 4
+    },
+    "extra": {
+     "engagements": 1758,
+     "undertakings": 181,
+     "instant:observe": 94,
+     "instant:use": 4,
+     "appointment_missed:?": 1,
+     "appointment_kept:?": 3
+    }
+   }
+  },
+  "lead": {
+   "4": {
+    "surveyByBand": {
+     "success": 10
+    },
+    "visit": {
+     "arranged": 4,
+     "refused:lead_visit_visit_pending": 6,
+     "regime:far": 3,
+     "regime:leaning": 3,
+     "regime:departing": 3,
+     "regime:lost": 1,
+     "appointment_missed:absent": 1,
+     "sharpen:success>cold": 1,
+     "appointment_kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:failure>cold": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 29,
+     "decider": 4
+    },
+    "extra": {
+     "engagements": 1875,
+     "undertakings": 131,
+     "instant:observe": 72,
+     "instant:use": 16,
+     "appointment_missed:?": 1,
+     "appointment_kept:?": 1
+    }
+   },
+   "8": {
+    "surveyByBand": {
+     "success": 5
+    },
+    "visit": {
+     "arranged": 3,
+     "regime:far": 2,
+     "regime:leaning": 1,
+     "refused:lead_visit_visit_pending": 2,
+     "regime:lost": 1,
+     "appointment_missed:absent": 1,
+     "sharpen:success>cold": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "decider": 3,
+     "ambient": 24
+    },
+    "extra": {
+     "engagements": 1907,
+     "undertakings": 182,
+     "instant:observe": 73,
+     "instant:use": 19,
+     "appointment_missed:?": 6,
+     "appointment_kept:?": 2
+    }
+   },
+   "42": {
+    "surveyByBand": {
+     "success": 10
+    },
+    "visit": {
+     "arranged": 4,
+     "regime:far": 3,
+     "regime:leaning": 3,
+     "refused:lead_visit_visit_pending": 5,
+     "regime:departing": 2,
+     "regime:waiting": 4,
+     "appointment_kept": 2,
+     "sharpen:success>located": 1,
+     "refused:lead_visit_not_narrowed": 1,
+     "regime:lost": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:failure>cold": 1,
+     "appointment_missed:absent": 1,
+     "sharpen:success>cold": 1
+    },
+    "located": 1,
+    "delveTraces": {
+     "ruins.delve_admitted": 1,
+     "ruins.delve_start": 1,
+     "ruins.delve_beat": 2,
+     "ruins.delve_tick": 2,
+     "ruins.delve_partial": 1,
+     "ruins.delve_consequence": 1,
+     "ruins.delve_emergence": 1
+    },
+    "clueHolderTier": {
+     "ambient": 27,
+     "decider": 4
+    },
+    "extra": {
+     "engagements": 1765,
+     "undertakings": 103,
+     "instant:use": 13,
+     "instant:observe": 32,
+     "appointment_kept:?": 2,
+     "appointment_missed:?": 1
+    }
+   },
+   "99": {
+    "surveyByBand": {
+     "success": 16
+    },
+    "visit": {
+     "arranged": 6,
+     "regime:far": 4,
+     "regime:leaning": 3,
+     "refused:lead_visit_visit_pending": 10,
+     "regime:departing": 3,
+     "appointment_missed:absent": 3,
+     "regime:lost": 2,
+     "sharpen:success>cold": 1,
+     "sharpen:failure>cold": 3,
+     "regime:waiting": 1,
+     "appointment_kept": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 34,
+     "decider": 4
+    },
+    "extra": {
+     "engagements": 1719,
+     "undertakings": 183,
+     "instant:observe": 78,
+     "instant:use": 8,
+     "appointment_kept:?": 2,
+     "appointment_missed:?": 4
+    }
+   }
+  },
+  "all": {
+   "4": {
+    "surveyByBand": {
+     "success": 33
+    },
+    "visit": {
+     "arranged": 11,
+     "regime:far": 6,
+     "regime:leaning": 5,
+     "refused:lead_visit_visit_pending": 22,
+     "regime:departing": 4,
+     "regime:waiting": 6,
+     "appointment_kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:failure>cold": 1,
+     "appointment_missed:absent": 5,
+     "sharpen:success>cold": 3,
+     "regime:lost": 4,
+     "sharpen:critical_success>cold": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "decider": 3,
+     "ambient": 33
+    },
+    "extra": {
+     "engagements": 2379,
+     "undertakings": 733,
+     "instant:use": 76,
+     "instant:observe": 602,
+     "appointment_kept:?": 2,
+     "appointment_missed:?": 5
+    }
+   },
+   "8": {
+    "surveyByBand": {
+     "success": 29
+    },
+    "visit": {
+     "arranged": 13,
+     "regime:waiting": 1,
+     "refused:lead_visit_visit_pending": 16,
+     "regime:far": 1,
+     "regime:leaning": 2,
+     "regime:lost": 2,
+     "regime:departing": 2,
+     "appointment_missed:absent": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "decider": 7,
+     "ambient": 23
+    },
+    "extra": {
+     "engagements": 2395,
+     "undertakings": 840,
+     "instant:observe": 662,
+     "instant:use": 86,
+     "appointment_missed:?": 2,
+     "appointment_kept:?": 1
+    }
+   },
+   "42": {
+    "surveyByBand": {
+     "success": 20
+    },
+    "visit": {
+     "arranged": 9,
+     "regime:far": 3,
+     "regime:leaning": 1,
+     "refused:lead_visit_visit_pending": 11,
+     "regime:departing": 4,
+     "regime:waiting": 3,
+     "appointment_kept": 2,
+     "sharpen:success_at_cost>narrowed": 1,
+     "appointment_missed:absent": 2,
+     "sharpen:success>cold": 1,
+     "sharpen:failure>cold": 1,
+     "sharpen:critical_success>cold": 1
+    },
+    "located": 0,
+    "delveTraces": {},
+    "clueHolderTier": {
+     "ambient": 26,
+     "decider": 5
+    },
+    "extra": {
+     "engagements": 1681,
+     "undertakings": 451,
+     "instant:observe": 378,
+     "instant:use": 22,
+     "appointment_kept:?": 3,
+     "appointment_missed:?": 3
+    }
+   },
+   "99": {
+    "surveyByBand": {
+     "success": 54
+    },
+    "visit": {
+     "arranged": 22,
+     "regime:waiting": 3,
+     "regime:departing": 6,
+     "refused:lead_visit_visit_pending": 32,
+     "regime:far": 4,
+     "regime:lost": 2,
+     "regime:leaning": 5,
+     "appointment_missed:absent": 3,
+     "sharpen:success>cold": 3,
+     "appointment_kept": 2,
+     "sharpen:critical_success>located": 1,
+     "sharpen:failure>cold": 1
+    },
+    "located": 1,
+    "delveTraces": {
+     "ruins.delve_admitted": 1,
+     "ruins.delve_start": 1,
+     "ruins.delve_beat": 5,
+     "ruins.delve_tick": 5,
+     "ruins.delve_partial": 1,
+     "ruins.delve_consequence": 1,
+     "ruins.delve_emergence": 1
+    },
+    "clueHolderTier": {
+     "ambient": 34,
+     "decider": 6
+    },
+    "extra": {
+     "engagements": 2170,
+     "undertakings": 619,
+     "instant:observe": 481,
+     "instant:use": 72,
+     "appointment_missed:?": 4,
+     "appointment_kept:?": 2
+    }
+   }
+  }
+ }
+}
