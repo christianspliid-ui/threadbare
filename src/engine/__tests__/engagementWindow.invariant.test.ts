@@ -10,8 +10,8 @@
 // difficulty rises strictly across those bands, and the in-window share is at
 // least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; THR-1627
 // (local offset ruling) un-skips journeyman and expert level success; THR-1676 arms the
-// rise's novice→journeyman rung. Master level success, the rest of the rise and the
-// in-window share wait on content (THR-1677…THR-1681).
+// rise's novice→journeyman rung; THR-1681 un-skips master level success. The rest of
+// the rise and the in-window share wait on the board, not content (THR-1687).
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
@@ -91,8 +91,12 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1681): un-skip when the master everyday batch lands — 0.74 on seed 42 at the ruling.
-  it.skip('the master band succeeds level', () => {
+  // THR-1681 (plan § D4, S7's re-arm): the master band runs live once it is covered and
+  // inside the range on both seeds. Measured at THR-1681's pickup (seed 42 / 99 / 7, the
+  // gameplay report): 0.59 / 0.67 / 0.61. Master mortals reach that level on content
+  // below their band — no master-fit everyday template survives to their board yet —
+  // so this clause pins *level success*, not a rise; the rise stays skipped below.
+  it('the master band succeeds level (THR-1681)', () => {
     for (const seed of [42, 99]) {
       const b = reportFor(seed).bands.find(x => x.band === 'master')!;
       expect(b.covered, `seed ${seed} master coverage (${b.engagements} engagements)`).toBe(true);
@@ -116,9 +120,12 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1681): un-skip when the master everyday batch lands (plan § D4: S7 re-arms
-  // the in-window clause). After THR-1676 on seed 42 the band means are 0.12 / 0.17 /
-  // 0.11 / 0.14 (expert does not rise) and in-window is 0.47.
+  // TODO(THR-1687): un-skip when above-journeyman content reaches the board. S7's re-arm
+  // (THR-1681) found the rise and the in-window share still failing with the expert
+  // floor met on every reach: band means 0.11 / 0.17 / 0.13 / 0.13 on seed 42, in-window
+  // 0.47 / 0.46 / 0.45 on 42 / 99 / 7 — the plan's kill criterion ("the window or the
+  // board, not content"). Measured cause: the candidate cap cuts expert everyday
+  // templates on ~99% of the decisions that could see them (THR-1687).
   it.skip('attempted difficulty rises with proficiency, and most choices are in-window', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
