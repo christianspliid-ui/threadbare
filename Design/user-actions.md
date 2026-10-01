@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-01 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 02:57 local (00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158); publishing to the site now.
+- **2026-10-01: ruins get looked at, and waiting mortals keep their meetings**: the lead climb is re-planned ([THR-1684](https://linear.app/threadbare/issue/THR-1684)). Plan merged via [#2159](https://github.com/christianspliid-ui/threadbare/pull/2159); ready to build as [THR-1686](https://linear.app/threadbare/issue/THR-1686).
 - **2026-10-01: a reputation chip names the town, not the person** ([THR-1685](https://linear.app/threadbare/issue/THR-1685)). Merged via [#2156](https://github.com/christianspliid-ui/threadbare/pull/2156), and live on the site.
 - **2026-10-01: six more everyday encounters for experts** (batch 2, [THR-1679](https://linear.app/threadbare/issue/THR-1679)). Merged via [#2157](https://github.com/christianspliid-ui/threadbare/pull/2157), and live on the site.
 - **2026-09-30: six everyday encounters for experts**: the first expert-level batch of town encounters ([THR-1678](https://linear.app/threadbare/issue/THR-1678)). Merged via [#2155](https://github.com/christianspliid-ui/threadbare/pull/2155), and live on the site.
@@ -45,8 +47,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-29: two expert-level monsters**: monster families now field apex elites ([THR-1682](https://linear.app/threadbare/issue/THR-1682)). Merged via [#2153](https://github.com/christianspliid-ui/threadbare/pull/2153), and live on the site.
 - **2026-09-29: the second batch of journeyman encounters** ([THR-1677](https://linear.app/threadbare/issue/THR-1677)). Merged via [#2152](https://github.com/christianspliid-ui/threadbare/pull/2152), and live on the site.
 - **2026-09-29: six everyday encounters for journeymen**: the first batch of mid-skill town encounters ([THR-1676](https://linear.app/threadbare/issue/THR-1676)). Merged via [#2150](https://github.com/christianspliid-ui/threadbare/pull/2150), and live on the site.
-- **2026-09-29: The First no longer walks back for the same encounter** ([THR-1674](https://linear.app/threadbare/issue/THR-1674)). Merged via [#2148](https://github.com/christianspliid-ui/threadbare/pull/2148), and live on the site.
-- **2026-09-29: monsters are born with a power**: each of the eight monster families starts with one power of its kind (step three of [the power runtime](https://linear.app/threadbare/issue/THR-1671)). Merged via [#2147](https://github.com/christianspliid-ui/threadbare/pull/2147), and live on the site.
 
 ---
 

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 01:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 02:57 local (00:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,19 +27,25 @@ Everything from your four feedback batches is live. The one question is: **playe
   - Elder magic (Order, Chaos, Light, Darkness) exists only in a school's two highest spells, so it stays something to find.
 
   Plan: [the seeded spell generator](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-30-thr-1572-seeded-spell-generator.md). Spells are still not ready for you to look at. *— from tb-design-lane* (veto window closes around 20:45 today)
+- [Re-plan the lead climb's survey and visit rungs](https://linear.app/threadbare/issue/THR-1684/re-plan-the-lead-climbs-survey-and-visit-rungs-on-current-main-no-seed): **a mortal who has heard of a ruin now goes to look at it, and a mortal waiting at a meeting stays for it.** Today no ruin on the two test worlds is ever surveyed, so no secret is ever found. Calls made:
+  - **Looking at a ruin you already know about is not a gamble**, so it no longer has to pass your 50–65% test. The visit to the ruin is the real gamble, and its dice are unchanged.
+  - This only covers ruins someone holds a lead on; freeing every survey would have made surveys 6 to 22 times more common.
+  - A mortal waiting at a meeting place no longer wanders off on a trip it cannot get back from in time. Hunters waiting to confront a beast get the same hold.
+
+  Plan: [Seeded things that stay alive, § Re-plan after S3](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md). To reverse the main call, say that a survey of a lead should face the same 50–65% test as any other work. Ruins are not ready for you to look at until it is built. *— from tb-design-lane* (veto window closes around 03:00 tomorrow)
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 2 jobs ready to build, none being built.** Both jobs from last hour merged. The pickup lane runs next at ~02:10 and the design lane at ~02:15, so the shelf refills on its own.
+**Thin: 2 jobs ready to build, none being built.** Expert everyday encounters, batch 3 merged a few minutes ago. The pickup lane runs next at ~03:10, so the shelf is being worked.
 
 - **Ready:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
-- **Ready:** [expert everyday encounters, batch 3](https://linear.app/threadbare/issue/THR-1680/content-above-novice-s6-expert-everyday-encounters-batch-3-up-to-4).
+- **Ready:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) (new this hour).
 
 ## Health
 
 - **Slow simulation tests:** "\"Heavy simulation tests\" has failed every one of its last 4 scheduled runs. It is scheduled, it is starting, and it is breaking every time — so whatever it was supposed to be doing has not happened for a while." It is also red on the latest `main`. This is a builder's job.
 - **A third of some factions' senior and elite jobs are still unreachable in a long game** (14 of 60 gated encounters blocked). Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-09-30.md). This is a builder's job.
-- **The home checkout is 203 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
-- The simulation's speed is normal (85 ms per tick, +2% on the week). The live site serves the latest `main`.
+- **The home checkout is 210 commits behind `main`** and has been stuck since Monday morning. A stray untracked copy of the faith-and-politics plan there probably blocks the update. This is a builder's job.
+- The latest merge (batch 3 encounters) is still publishing to the live site; it was pushed under 20 minutes ago. The simulation's speed is normal (91 ms per tick, +8% on the week).
