@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 07:55 local (05:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 08:55 local (06:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -12,7 +12,7 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Also waiting (5)
 
-- **New: your local copy of the game is stuck on 28 September, 213 changes behind.** Two files on your machine block the hourly update: an old draft of the faith-and-politics plan and a local settings edit. This only matters if you run the game locally. Next time you're in a session, say **"fix my home tree"**. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md)*
+- **Your local copy of the game is stuck on 28 September, now 216 changes behind.** Two files on your machine block the hourly update: an old draft of the faith-and-politics plan and a local settings edit. This only matters if you run the game locally. Next time you're in a session, say **"fix my home tree"**. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md)*
 - **Were you away from Tuesday evening until Wednesday evening?** No lane ran for about 25 hours, from Tuesday ~19:30 to Wednesday ~20:20 your time, and nothing recorded a pause. If you were away or the app was closed, just say so. *— from the lane-silence check*
 - **Turn off Linear's auto-complete for sub-issues** at [Team settings → General](https://linear.app/threadbare/settings/teams/THR/general). It marks unbuilt work as finished. *— from tb-orchestrator*
 - **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
@@ -34,18 +34,25 @@ Everything from your four feedback batches is live. The one question is: **playe
   - A mortal waiting at a meeting place no longer wanders off on a trip it cannot get back from in time. Hunters waiting to confront a beast get the same hold.
 
   Plan: [Seeded things that stay alive, § Re-plan after S3](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1636-seeded-things-stay-alive.md). To reverse the main call, say that a survey of a lead should face the same 50–65% test as any other work. Ruins are not ready for you to look at until it is built. *— from tb-design-lane* (veto window closes around 03:00 tomorrow)
+- [The candidate cap starves newly written everyday content](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert): **an expert in a town now gets to consider the expert work on offer there.** Today she almost never does (about 1 time in 20). Each mortal has a shortlist of about 30 things it can do where it stands, and that list is filled in the order the encounters were written. All the harder content was written last, so it was always cut. The calls made:
+  - **The shortlist becomes a fair draw.** Every encounter in the mortal's town gets the same chance each turn, whatever order it was written in. A mortal who stays put sees the whole town's work over a few turns.
+  - **It does not favour work that suits the mortal.** Choosing suited work is what the mortal's own judgement already does, one step later. Doing it twice would hide which of the two made the choice.
+  - **The test is fairness, not a target score.** Expert work now survives the shortlist at about 0.8 the rate of novice work (from 0.1).
+  - **In a trial build (thrown away afterwards), experts started choosing harder work than journeymen** on all three test worlds.
+
+  Plan: [the shortlist's local draw](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-01-thr-1687-cap-local-order.md). To reverse the main call, say that the shortlist should keep some places for work at the mortal's level. This is not ready for you to look at until it is built. *— from tb-design-lane* (veto window closes around 08:45 tomorrow)
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 2 jobs ready, none being built.** Both are waiting out your veto windows above, so nothing gets built until the first window closes around 20:45 tonight.
+**Healthy but thin: 3 jobs ready, none being built.** All three are waiting out your veto windows above, so nothing gets built until the first window closes around 20:45 tonight.
 
 - **Ready from ~20:45 tonight:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and).
 - **Ready from ~03:00 tomorrow:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the).
-- **Being designed:** [the candidate cap starves newly written everyday content](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert). The orchestrator handed it to the design lane, which runs next at ~08:17. It is what is holding back the new expert and master encounters.
+- **Ready from ~08:45 tomorrow:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert). It is what holds back the new expert work, and the [master-level encounters](https://linear.app/threadbare/issue/THR-1688/content-above-novice-s7b-master-everyday-encounters-1-per-reach-once) wait behind it.
 
 ## Health
 
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked today, and which factions are hit changes from day to day. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). This is a builder's job.
-- The slow simulation tests are passing again. The live site is serving the latest `main` (#2160). The simulation's speed is normal (90 ms per tick, +5% on the week).
+- Everything else is green. The live site is up to date (only notes changed since the last build). The simulation's speed is normal (90 ms per tick, +5% on the week).
