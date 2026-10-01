@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-01 05:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 06:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,6 +12,12 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
+
+### Your local copy of the game is stuck on 28 September (213 changes behind)
+
+- **Your local copy of the game has not updated since 28 September.** It is 213 changes behind. The hourly auto-update refuses to run because two files on your machine would be overwritten: a draft copy of the faith-and-politics plan (`Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md`, which has since been merged in a different version) and a local settings edit. Nothing is broken online, and the lanes all work from fresh copies, so this only matters if you run the game locally. Next time you are in a session, say "fix my home tree" and an attended session can set the draft aside and catch it up. No lane will touch it on its own.
+
+*— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). The merged plan: [faith-and-politics settings](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-28-thr-1632-faith-and-politics-settings.md).*
 
 ### Were you away from Tuesday evening to Wednesday evening? (lane silence, 29–30 September, ended)
 
