@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-01 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-01 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -37,6 +37,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-01: master-level everyday encounters, one per reach** (the last skill-ladder batch, [THR-1681](https://linear.app/threadbare/issue/THR-1681)). Merged via [#2160](https://github.com/christianspliid-ui/threadbare/pull/2160), and live on the site.
 - **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158), and live on the site.
 - **2026-10-01: ruins get looked at, and waiting mortals keep their meetings**: the lead climb is re-planned ([THR-1684](https://linear.app/threadbare/issue/THR-1684)). Plan merged via [#2159](https://github.com/christianspliid-ui/threadbare/pull/2159); ready to build as [THR-1686](https://linear.app/threadbare/issue/THR-1686).
 - **2026-10-01: a reputation chip names the town, not the person** ([THR-1685](https://linear.app/threadbare/issue/THR-1685)). Merged via [#2156](https://github.com/christianspliid-ui/threadbare/pull/2156), and live on the site.
@@ -46,7 +47,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-09-30: the spell generator is designed**: each school of magic gets its own book of spells per world ([THR-1572](https://linear.app/threadbare/issue/THR-1572)). Plan merged via [#2154](https://github.com/christianspliid-ui/threadbare/pull/2154); ready to build.
 - **2026-09-29: two expert-level monsters**: monster families now field apex elites ([THR-1682](https://linear.app/threadbare/issue/THR-1682)). Merged via [#2153](https://github.com/christianspliid-ui/threadbare/pull/2153), and live on the site.
 - **2026-09-29: the second batch of journeyman encounters** ([THR-1677](https://linear.app/threadbare/issue/THR-1677)). Merged via [#2152](https://github.com/christianspliid-ui/threadbare/pull/2152), and live on the site.
-- **2026-09-29: six everyday encounters for journeymen**: the first batch of mid-skill town encounters ([THR-1676](https://linear.app/threadbare/issue/THR-1676)). Merged via [#2150](https://github.com/christianspliid-ui/threadbare/pull/2150), and live on the site.
 
 ---
 
