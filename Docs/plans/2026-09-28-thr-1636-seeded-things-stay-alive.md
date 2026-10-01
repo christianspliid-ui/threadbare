@@ -31,6 +31,7 @@ This is carve-up plan 7 of 7 from that map. Its sibling plans seed people, ties,
 4. **The clue climb follows the hunt's shape** (§ S2, S3). A survey of a ruin you hold a lead on arranges a visit, an appointment at the ruin, exactly as a hunt arranges the confront at the den ([THR-1560](https://linear.app/threadbare/issue/THR-1560)). The visit's own dice decide whether the lead becomes `located`.
 5. **Leads lean toward the mortals who can act on them** (§ S2). Rumours still reach anyone in the settlement, but a deciding mortal who is present is weighted up.
 6. **After S2: the decider share is reported, not gated** (§ Re-plan after S2, added 2026-09-29). The 30% target was a stand-in for "a decider surveys the ruin they hold a lead on", which S2 achieved. Lead hand-off waits for evidence that S3 starves.
+7. **After S3: a survey of a ruin you hold a lead on is not a dice challenge, so the forecast window does not judge it; and a mortal waiting at an appointment does not wander off on a trip it cannot return from** (§ Re-plan after S3, added 2026-10-01). Lead hand-off is still not needed: every seed arranges at least 3 visits once the survey can win.
 
 ## Re-measured on current `main` (2026-09-28, `50cc9bc2`)
 
@@ -198,11 +199,15 @@ Wiring checklist rows: none new. Every module above is already called from its p
 | `LANE_TRAFFIC_SETTLE_INTERVAL_TICKS` | `12` | One day: how often volume steps one toward its level |
 | `CLUE_BIAS_DECIDER` | `4.0` | Recipient weight for a deciding mortal: a `(1 + bias)` factor, so ×5 (`CLUE_BIAS_BONDED_AGENT` 5.0 is ×6) |
 | `CLUE_LEAD_SURVEY_CANDIDATES_MAX` | `2` | Lead ruins a holder may walk as survey candidates, freshest first |
-| `CLUE_LEAD_SURVEY_PULL_MULT` | `1.5` | Desire multiplier on a survey of one's own lead's ruin (mirrors `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER`) |
+| `CLUE_LEAD_SURVEY_PULL_MULT` | `2.5` (drafted 1.5; raised by THR-1663's executor, `ruins/constants.ts:63-66`) | Desire multiplier on a survey of one's own lead's ruin (mirrors `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER`) |
 | `CLUE_LEAD_VISIT_DELAY_TICKS` | `48` | When the visit falls due (mirrors `HUNT_APPOINTMENT_DELAY_TICKS`: ruins, like dens, can be far) |
 | `CLUE_LEAD_VISIT_PULL_MULT` | `1.0` | The visit's travel pull (mirrors `HUNT_APPOINTMENT_PULL_MULT`) |
 | `CLUE_LEAD_VISIT_GRACE_TICKS` | `12` | How long past its due tick a lead with a pending visit is spared decay |
 | `CLUE_VISIT_PRECISION_BY_BAND` | table above | What the visit's band makes of the lead |
+| `CLUE_LEAD_SURVEY_SKIPS_WINDOW` | `true` | Re-plan after S3, part 1: an instant survey of a held lead takes forecast 1 and fit 1 on the board (zone `'certain'`). `false` restores the window |
+| `APPOINTMENT_WAITING_HOLD_ENABLED` | `true` | Re-plan after S3, part 2: in `waiting`, non-local candidates that overrun the time to the due tick are dropped. `false` restores today |
+| `APPOINTMENT_DISCOUNT_ON_BOARD` | `true` | Re-plan after S3, part 3: the `leaning` discount reaches the live board. `false` restores today |
+| `APPOINTMENT_OVERRUN_DISCOUNT` | `0.25` (existing) | Re-plan after S3, part 3: now also reaches the live board through `appointmentDiscount`. Its value is unchanged |
 
 A test asserts `CLUE_LEAD_VISIT_DELAY_TICKS + CLUE_LEAD_VISIT_GRACE_TICKS` is at least the narrowed lead's life, so the constants cannot be tuned into a lead that always dies on the road.
 
@@ -275,7 +280,8 @@ S1 is independent of S2 and S3. S3 needs S2 (a survey must reach a ruin before i
 
 - **S1:** if the A/B census shows lanes standing at t300 beyond seeded + founded, or a prosperity runaway on lane-dense capitals, lower `LANE_TRAFFIC_MAX_VOLUME` first. If that fails, ship with `LANE_TRAFFIC_ENABLED = false` and reopen the design on the ticket.
 - **S2:** ~~if the decider share of leads stays under 30% after tuning `CLUE_BIAS_DECIDER`, or the budget line breaks, stop before S3 and re-plan (the next lever is lead hand-off).~~ **Fired and re-planned 2026-09-29, see § Re-plan after S2.** The criterion now reads: if a seed has no survey that leaves a lead holder with a `narrowed` lead on a ruin in 300 ticks, or the budget line breaks, stop before S3 and re-plan.
-- **S3:** if no seed produces a `located` lead and a delve in 300 ticks after tuning `CLUE_LEAD_VISIT_PULL_MULT`, report the starving rung and re-plan. Never widen the dice to force it. If the rung that starves is the supply of visits (fewer than 2 visits arranged on a seed), the next lever is lead hand-off (§ Re-plan after S2), not a bigger decider weight.
+- **S3:** ~~if no seed produces a `located` lead and a delve in 300 ticks after tuning `CLUE_LEAD_VISIT_PULL_MULT`, report the starving rung and re-plan.~~ **Fired and re-planned 2026-10-01, see § Re-plan after S3.** Never widen the dice to force it. If the rung that starves is the supply of visits (fewer than 2 visits arranged on a seed), the next lever is lead hand-off (§ Re-plan after S2), not a bigger decider weight.
+- **S3 follow-up ([the lead survey and the kept visit](#re-plan-after-s3-2026-10-01-thr-1684)):** if, after it ships, fewer than a third of the visits that resolve in the four-seed census are kept, the next rung to re-plan is the walk to the place (the `far → leaning → departing → lost` path), not the dice and not the window. If any seed arranges fewer than 2 visits, lead hand-off comes forward.
 
 ## Re-plan after S2 (2026-09-29, THR-1675)
 
@@ -305,12 +311,111 @@ Survey `success` writes `narrowed` (`OBSERVE_CLUE_PRECISION_BY_BAND`, `strategic
 
 **Would change the call.** An S3 census showing fewer than 2 visits arranged on a seed, or Christian saying leads should mostly reach the people who can use them. Either brings lead hand-off forward.
 
+## Re-plan after S3 (2026-10-01, THR-1684)
+
+*Lane decision 7, design lane run 2026-10-01a, under delegation (process.md rule 4). Veto in chat.*
+
+**What fired.** S3 shipped the visit (THR-1664, PR #2151). Its census then showed two starving rungs. Re-measured on main `218cdfa7` with `readers/upkeep.ts`, seeds 42 · 99 · 4, 300 ticks: **0 · 0 · 1 ruin surveys**, while deciders held **7 · 3 · 7** leads. On seed 4 the one visit was arranged and missed. Across seeds 1–8, 42 and 99, the ruin visit was kept 2 times and missed 5, and 9 of all 19 missed appointments of every kind had stood at the place and then left.
+
+### Rung 2: the survey loses to the forecast window, not to a gate
+
+A replay of `generateStrategicCandidates` on every decision a lead-holding decider made (seeds 42 · 99) found the following. *Provenance: a throwaway reader (`leadsurvey.ts`) run on main `218cdfa7`; its raw output is uncommitted scratch, and the board ranks and scores come from the real `decision_board_comparison` traces of that run.*
+
+| | seed 42 | seed 99 |
+|---|---|---|
+| Decisions while holding a lead | 63 | 30 |
+| The lead survey was a candidate | 61 (2 hit `active_cap`) | 30 |
+| It reached the board's top five | 12 (rank 3–4) | 6 |
+| It won | **0** | **0** |
+
+So nothing gates it out: leads live about 40 ticks, and holders decide 8–11 times in that span. It loses on the board's score. That score is `evt × desire × temperament × variety × engagement.fit` (`decisionBoard.ts:630`), and `engagement.fit` comes from the forecast window (`computeEngagementFit`, `:579`). The window treats the survey's checkpoint advance probability (difficulty 0.35, so about the holder's proficiency in the Reach) as the odds of a challenge:
+
+```
+42: ind_4 adv=0.89 zone=above fit=0.10 | born_lc_2 adv=0.42 below fit=0.75 | ind_11 adv=0.23 zone=refused fit=0.00
+99: ind_1 adv=0.75 zone=above fit=0.10 | ind_3 adv=0.22 refused fit=0.00
+```
+
+On main no lead holder lands between 0.43 and 0.67, so the survey scores 0.05–0.11 against a median winner of 0.44. At `4eb75754`, before PR #2143, all five survey wins went to two holders whose forecast happened to sit inside the window (0.52–0.65). PR #2143 did not touch the survey: it set the local scale offset to 0, which pulled more encounters into the window (in-window encounter winners on seed 42 went from 11 of 62 to 31 of 63) and moved the leads to other holders. The survey only ever won by lottery.
+
+**But a survey has no dice.** `observe` is an instant cell (`UNDERTAKING_VERB_DURATION` `[0,0,0]`). It has no checkpoint and always completes at `INSTANT_COMPLETION_BAND` (`strategic-action-constants.ts:1434`; the instant arm at `strategicActionLifecycle.ts:531`). The board forecasts a roll that never happens. The visit is where the climb's dice live (§ S3), and the visit's dice stay exactly as they are.
+
+**Decision, part 1: a survey of a ruin you hold a lead on skips the forecast window.** On the board, a strategic candidate that is `executionMode: 'instant'` **and** carries `leadPull` (only the lead survey does today) takes `advanceProbability = 1` for its EVT and `fit = 1`, with a new zone value `'certain'` on its entry so the trace says why. Every other term (desire with the 2.5 lead pull, temperament, variety, the active cap) still decides whether it wins. This follows two existing exemptions: quests skip the too-easy side of the window (`exemptTooEasy`, `encounterScoring.ts:1494`), and forced arrivals bypass it entirely (`engagement.bypass`). Kill switch: `CLUE_LEAD_SURVEY_SKIPS_WINDOW` (default `true`).
+
+**Why only the lead survey, not every instant cell.** Measured, the same exemption for every instant cell turns the window off as the only brake on instant work: `observe` undertakings went from 17 · 73 · 44 · 75 on main to **378 · 481 · 602 · 662** per 300 ticks (seeds 42 · 99 · 4 · 8), which is +560% to +2120%. That would be a world of surveyors. Whether instant work should be forecast at all belongs with the forecast-window design ([the forecast window](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-09-24-thr-1575-forecast-window.md)). It is recorded here as an observation, not decided. A held lead is different. It is the "reason to look" that § S2 names, the same standing as an arrival goal.
+
+**What this does not do.** It does not touch the dice, scale any difficulty to the actor, or restore any floor (the THR-1575 ruling). It does not raise `CLUE_LEAD_SURVEY_PULL_MULT`. At 5, 10 and 25 that would win 3, 10 and 22 of seed 42's 42 non-zero rows, and nothing for holders the window refuses (fit 0, 21 of 63 decisions on seed 42 and 22 of 30 on seed 99).
+
+### Rung 3: a waiting mortal takes a far trip off the board
+
+Seed 8's ruin visit (Nael, Temple Ruin, due 243, window 12), traced. *Provenance: a throwaway reader (`appt-hold.ts`) run on main `218cdfa7` over seeds 1–8, 42 and 99; its raw output is uncommitted scratch. The committed artifact for this re-plan is the four-arm census JSON below.*
+
+```
+238 movement | Nael arrives at Temple Ruin
+239 appointment_regime | Nael is waiting on the meeting at Temple Ruin — slack 4.0, margin 14.3
+239 engagement_decision | ind_4 took encounter.confront_the_unknown at forecast 0.58 (in, fit 1.00)
+239 movement | Nael departs for Greyborough (5 hops, encounter: encounter.confront_the_unknown)
+256 appointment_missed (absent)
+```
+
+The regime block in `phaseAgentDecision.ts:1059` runs only for `leaning` and `departing`. In `waiting` nothing filters the candidates, and the live board picks a five-hop trip with four ticks of slack. The same shape missed a hunt on seed 1 (`forage_provisions`, 5 hops) and an agreement on seed 99 (`offer_small_prayer`, 3 hops). Nothing else moved a waiting mortal: no idle drift, flight, summons or undertaking. It also explains the uncommitted experiment the ticket describes. The board scores `valuePerTick × desire × forecastFit × arrivalCommitment` (`decisionBoard.ts:559`) and never reads `finalScore`, so a pull added to `finalScore` cannot change the winner. That also makes **`leaning`'s overrun discount (`APPOINTMENT_OVERRUN_DISCOUNT`, 0.25) dead under the live board**: it scales `finalScore` only.
+
+**Decision, part 2: hold the waiting mortal.** In `waiting`, drop every candidate that is not on the mortal's own hex (`hexDistanceToEntry > 0`) and would overrun the time left (`dueTick − tick`), using the same `overruns` predicate `departing` uses. Local work stays open, and so does a far trip the mortal can be back from, so a mortal planted 130 ticks early (the full-moon collection) is not pinned. Hunts' confront uses the same regime and gets the same hold, which is intended: the seed-1 hunt would have been kept. Kill switch: `APPOINTMENT_WAITING_HOLD_ENABLED` (default `true`).
+
+**Decision, part 3: make `leaning`'s discount reach the board.** `ScoredCandidate` gains an optional `appointmentDiscount`, which the regime block sets instead of (as well as) scaling `finalScore`, and `scoreUnifiedBoard` multiplies it into the encounter entry's score beside `arrivalCommitment`. This is a defect in the shipped appointment design (THR-1479): a named constant that does nothing. It is not a new rule. It was not measured in this re-plan, so the build reports its effect separately (Done-when). Kill switch: `APPOINTMENT_DISCOUNT_ON_BOARD` (default `true`); `false` restores today's board exactly.
+
+### Measured with an uncommitted patch (reverted)
+
+Parts 1 and 2 were prototyped as a local patch, run, and reverted; nothing reached `main`. Medium, 300 ticks, `readers/upkeep.ts` plus engagement, undertaking and appointment counters. Output: `output/upkeep-2026-10-01-thr1684-arms.json`. Seeds 42 · 99 · 4 · 8:
+
+| Arm | Ruin surveys | Visits arranged | Visits kept / missed | `located` · delve admitted | Encounter engagements | `observe` undertakings |
+|---|---|---|---|---|---|---|
+| main | 0 · 0 · 1 · 0 | 0 · 0 · 1 · 0 | 0 / 0 (1 open) | 0 · 0 | 1618 · 1811 · 2250 · 1855 | 17 · 73 · 44 · 75 |
+| part 1 only | 13 · 6 · 17 · 6 | 6 · 4 · 7 · 3 | 2 / 8 | 0 · 0 | 1763 · 1758 · 1805 · 1970 | 26 · 94 · 65 · 66 |
+| **parts 1 + 2** | **10 · 16 · 10 · 5** | **4 · 6 · 4 · 3** | **4 / 6** | **1 · 1** (seed 42) | 1765 · 1719 · 1875 · 1907 | 32 · 78 · 72 · 73 |
+| every instant cell + part 2 (rejected) | 20 · 54 · 33 · 29 | 9 · 22 · 11 · 13 | 5 / 11 | 1 · 1 (seed 99) | 1681 · 2170 · 2379 · 2395 | 378 · 481 · 602 · 662 |
+
+With parts 1 and 2, every seed arranges at least 3 visits, so lead hand-off stays parked (the S3 kill line is 2). The whole chain, hear → survey → visit → `located` → delve, ran to its end once, on seed 42. The remaining loss is the walk: of 10 resolved visits, 4 were kept and 6 missed on the walk (`far → leaning`, then `departing` or straight to `lost`). Part 3 is the cheapest lever on that path. Encounter engagements moved +9 · −5 · −17 · +3%. Seed 4's drop is larger than its 9 extra surveys could cause directly (about 20 deciders among 550+ mortals), so it reads as a butterfly effect of the shifted world, not a cost of the change. The budget harness checks it either way.
+
+### The S3 Done-when, re-baselined
+
+"At least one `located` lead and one delve on **each** seed in 300 ticks" asked the visit's fair dice for a result on every seed. With 3–6 visits arranged per seed and the dice untouched, that is not guaranteed, and the plan forbids widening the dice. The gate becomes the rungs the design controls, and the dice's result is reported:
+
+- each of seeds 42 · 99 · 4 · 8 surveys a ruin and arranges **at least 2 visits** in 300 ticks;
+- **at least one `located` lead and one `ruins.delve_admitted`** across the four-seed census;
+- kept and missed visits are reported, with the `waiting → lost` count expected to be 0 with part 2 on;
+- `observe` undertakings **other than ruin surveys** stay within +50% of the same-run baseline on each seed. That is the guard that the exemption stays narrow. A lead survey is itself an `observe` undertaking, so the raw count rises by design: the chosen arm is +88% · +7% · +64% · −3% raw, but +29% · −15% · +44% · −9% with ruin surveys netted out of both sides. The rejected arm fails it on every seed (seed 42: 358 against 17).
+
+**Would change the call.** Christian saying that a survey of a lead should face the forecast window like any other work (it would then need a lead hand-off to a holder who forecasts in the window, or a fairer survey, both slower). Or the census after the build showing a seed under 2 visits, which brings lead hand-off forward.
+
+### Interface, tracing and fail-soft for the re-plan
+
+| Contract | Disposition | Producer → reader |
+|---|---|---|
+| strategic candidate `leadPull` → board forecast and fit | **extend**: new reader | `strategicActionCandidates` → `scoreUnifiedBoard` (part 1) |
+| appointment regime → encounter candidates | **extend**: one more regime (`waiting`) | `appointmentCtx` → the regime block (part 2) |
+| `ScoredCandidate.appointmentDiscount` → board score | **add**: register in `scripts/interface-contracts.ts` | the `leaning` rerank → `scoreUnifiedBoard` (part 3), behind `APPOINTMENT_DISCOUNT_ON_BOARD` |
+
+Tracing is additive: the board entry's `forecastZone` gains `'certain'`, and an encounter entry carries `appointmentDiscount` when one applied, both read through the existing `decision_board_comparison` trace. No new trace category.
+
+| Failure case | Fallback |
+|---|---|
+| The candidate's template is missing or its mode unknown | Not exempt: the window applies as today |
+| `appointmentCtx` has no resolvable place hex | `overruns` already returns `true` for an unknown onward distance; in `waiting` only non-local candidates are dropped, so local work always survives |
+| Every candidate is dropped in `waiting` | `selected = null`. The mortal idles at the place, which is what waiting means |
+| `appointmentDiscount` absent | Treated as 1 |
+
+**Pillars.** Engine: the three parts above. **Content: N/A**, because no template or prose changes; the two seed-only templates shipped in THR-1664 and are what a kept or missed visit now reaches more often. **UI: N/A**, because no component changes. The player sees the effect on surfaces that already exist: the visit encounter (`?spawn=ruins.lead.visit`), the lead line on the sheet (*"knows where it lies"*), and the delve beats. The new zone and discount are trace fields for `getTraces` and the debug board readout. **Wiring:** no new module, phase or GameState field. The wiring checklist is unchanged. The systemic wiring guide gains one line saying a held lead's instant survey is not judged by the forecast window.
+
+No PRNG is added: all three parts are deterministic filters and multipliers. No file over 100 importers is touched. The two shape changes are one additive union value (`EngagementZone`, `engagementWindow.ts`, 4 importers by grep) and one optional field (`ScoredCandidate`, `encounterScoring.ts`, 25 importers by grep).
+
+**Implementing ticket:** [The lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686) (filed with this re-plan).
+
 ## Three-pillar check
 
-- [x] Engine pillar present (S1–S3)
+- [x] Engine pillar present (S1–S3, and the three parts of § Re-plan after S3)
 - [x] Content pillar present (two seed-only templates; lane prose N/A with reason)
 - [x] UI pillar present (tooltip words; existing map, sheet and encounter surfaces)
-- [x] Wiring section connects them
+- [x] Wiring section connects them (the re-plan adds no module; its pillar and wiring lines are in its own section)
 
 ## Vision audit
 
@@ -339,7 +444,7 @@ Survey `success` writes `narrowed` (`OBSERVE_CLUE_PRECISION_BY_BAND`, `strategic
 - [ ] **S1:** `readers/upkeep.ts` 42,99 300 with `LANE_TRAFFIC_ENABLED` on shows every worldgen lane standing at t300 unless a traced cause (razed end, cursed roads) killed it, and a same-run arm with it off reproduces today's t36 deaths. Lanes standing at t300 ≤ lanes seeded + lanes founded. The seed 42 settlement prosperity delta (on vs off) at t300 is reported in the PR.
 - [ ] **S1:** a route-event trace (`route_event_scan` with `seedsPlanted > 0`) appears after t36 on at least one seed.
 - [x] **S2** (re-baselined 2026-09-29, § Re-plan after S2): at least one `cell.observe.location` survey targets a ruin on each seed, and it leaves its surveyor holding a `narrowed` lead. Shipped in PR #2140: 6 · 3 successful ruin surveys, 3 · 2 distinct surveyor–ruin pairs at `narrowed`. The decider share of leads (13% · 14%) is reported, not gated. ~~The decider share of newly minted leads is ≥ 30% on each seed.~~
-- [ ] **S3:** at least one `located` lead and one `ruins.delve_admitted` on each seed in 300 ticks. If a seed shows none, the PR reports which rung starved (survey, visit kept or missed, band) from the traces. Both templates open from `?view=game&seeded&size=medium&spawn=ruins.lead.visit` and `…spawn=ruins.lead.cold`, and `?outcome=` shows every band. **Shipped 2026-09-29 (THR-1664): the mechanism, both templates and their review links. The census kill criterion fired:** on current main, seeds 42 and 99 survey no ruin (the S2 supply dropped to 0 at PR #2143, a global odds retune), and seed 4's one visit was arranged, then missed because a `waiting` mortal is not held at the place. The re-plan is [THR-1684](https://linear.app/threadbare/issue/THR-1684).
+- [ ] **S3:** ~~at least one `located` lead and one `ruins.delve_admitted` on each seed in 300 ticks.~~ **Re-baselined 2026-10-01 (§ Re-plan after S3): each of seeds 42 · 99 · 4 · 8 surveys a ruin and arranges ≥ 2 visits; ≥ 1 `located` lead and ≥ 1 delve admitted across the four; `observe` undertakings other than ruin surveys within +50% of baseline; built by [THR-1686](https://linear.app/threadbare/issue/THR-1686).** If a seed shows none, the PR reports which rung starved (survey, visit kept or missed, band) from the traces. Both templates open from `?view=game&seeded&size=medium&spawn=ruins.lead.visit` and `…spawn=ruins.lead.cold`, and `?outcome=` shows every band. **Shipped 2026-09-29 (THR-1664): the mechanism, both templates and their review links. The census kill criterion fired:** on current main, seeds 42 and 99 survey no ruin (the S2 supply dropped to 0 at PR #2143, a global odds retune), and seed 4's one visit was arranged, then missed because a `waiting` mortal is not held at the place. The re-plan is [THR-1684](https://linear.app/threadbare/issue/THR-1684).
 - [ ] **Budget (S1 and S2 PRs):** the THR-1592 harness (`readers/liveness-cost.ts`), baseline vs change, medium, seeds 42 and 99, median of ≥ 3 interleaved runs: steady-state (t21–200) within +10%, and deciders at t200 within +10%.
 - [ ] `npm test`, `npm run check:typecheck`, `npx vite build`, `npm run test:heavy` (engine files touched), and a 30-tick CLI smoke pass. Browser-verify four-part evidence for the tooltip (S1) and the visit encounter (S3).
 - [ ] The rulebook `[IMPL]` lines, systemic wiring guide, interface-map rows and the Design Reference Wiki pages whose `sources` globs match are updated in the slice that changes them.
@@ -391,3 +496,13 @@ Survey `success` writes `narrowed` (`OBSERVE_CLUE_PRECISION_BY_BAND`, `strategic
 **Intent-judge: Revise → Allow** (fable, cold context, 2026-09-29). Run 1 found that the visit estimate was an upper bound, since the sharpen path emits the same trace (distinct pairs are 3 · 2, not 6 · 3). It also found the holder-share denominator mislabelled, the option-(b) cost wording wrong, and a duplicate-visit hole in S3.1 (tick-keyed seed id). All four were fixed. Run 2 re-verified every changed claim, including that only deciders survey (`phaseAgentDecision.ts:523`), and found no Christian-reserved fork.
 
 **Forked audit: skipped, with rationale.** The re-plan changes one measurement target and adds one refusal rule to S3.1. No engine system, content item or UI surface is added or removed, so the NFP, three-pillar and Vision verdicts above stand unchanged. The new refusal is additive and fail-soft: with no pending visit, the planter behaves as written.
+
+### Re-plan after S3 (2026-10-01): gates
+
+**Intent-judge: Revise → Allow** (fable, cold context, 2026-10-01). Run 1 found that the first narrowness guard (raw `observe` within +50%) failed the chosen arm on seeds 42 and 4, because a lead survey is itself an `observe` undertaking. It also found the rejected-arm range mislabelled, the `CLUE_LEAD_SURVEY_PULL_MULT` row stale (1.5, live 2.5), and the replay and trace lacking provenance. All were fixed, and the guard now nets ruin surveys out of both sides. Run 2 re-verified every table cell against the committed JSON and the cited source lines. It ruled, as run 1 did, that letting an instant lead survey skip the forecast window is the *how* of an agreed design, not a fork reserved for Christian. The veto line stays in the section.
+
+**Forked audit** (three independent sonnet auditors, scoped to the re-plan):
+
+- **NFP: PASS-with-notes.** Part 3 had no kill switch, so `APPOINTMENT_DISCOUNT_ON_BOARD` was added. The exemption's `fit = 1` and forecast `1` are definitional literals, not tunables.
+- **Three-pillar: PASS-with-notes.** The Content/UI N/A rationale and the wiring line were not in the section, and the S3 Done-when and Three-pillar check were not reconciled with it. All three are now fixed. Substrate: it extends the decision board, the forecast window and the appointment regime. No duplication.
+- **Vision: PASS-with-notes.** No contradictions. God/protagonist separation holds, and the dice stay the mortal's. Note: a survey of a held lead has no player-facing line of its own. The player meets it as the visit encounter and the sheet's lead line, which already exist.
