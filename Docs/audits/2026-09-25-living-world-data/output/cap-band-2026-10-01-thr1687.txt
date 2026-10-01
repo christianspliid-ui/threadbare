@@ -1,0 +1,52 @@
+# THR-1687 cap-band A/B — main @ e5118533 + throwaway prototype (own-hex pass in hash(agent:tick:template) order). Medium, ?seeded identity, 120 ticks, sampled every 10.
+# walk = shipped THR-1633 own-hex pass; hash = prototype; filterOnly = each own-hex template alone through runFilterPipeline (never reaches the cap).
+# Seed 42 walk/hash/filterOnly from the first (sort-all) prototype form; seeds 99 and 7 hash from the one-pass form described in the plan.
+JSON {"seed42":{"boards":1636,"localDistinctTemplates":{"p10":77,"p50":117,"p90":121,"max":143},"walk":{"expert<-expert":"4.4% (22/496)","expert<-journeyman":"8.0% (67/835)","expert<-master":"20.3% (57/281)","expert<-novice":"6.8% (1222/18098)","journeyman<-expert":"15.7% (182/1156)","journeyman<-journeyman":"21.1% (497/2357)","journeyman<-master":"16.5% (187/1130)","journeyman<-novice":"24.5% (12913/52625)","novice<-expert":"44.9% (884/1971)","novice<-journeyman":"49.1% (1797/3663)","novice<-master":"53.6% (744/1387)","novice<-novice":"48.7% (43340/89074)"},"hash":{"expert<-expert":"21.4% (106/496)","expert<-journeyman":"24.2% (202/835)","expert<-master":"29.9% (84/281)","expert<-novice":"27.4% (4962/18098)","journeyman<-expert":"30.2% (349/1156)","journeyman<-journeyman":"31.6% (744/2357)","journeyman<-master":"29.2% (330/1130)","journeyman<-novice":"31.6% (16635/52625)","novice<-expert":"41.5% (818/1971)","novice<-journeyman":"40.9% (1497/3663)","novice<-master":"42.0% (583/1387)","novice<-novice":"40.1% (35710/89074)"},"filterOnly":{"expert<-expert":"59.9% (297/496)","expert<-journeyman":"79.0% (660/835)","expert<-master":"82.6% (232/281)","expert<-novice":"78.1% (14138/18098)","journeyman<-expert":"85.6% (990/1156)","journeyman<-journeyman":"76.7% (1807/2357)","journeyman<-master":"67.0% (757/1130)","journeyman<-novice":"66.5% (35010/52625)","novice<-expert":"90.1% (1775/1971)","novice<-journeyman":"87.5% (3206/3663)","novice<-master":"85.4% (1185/1387)","novice<-novice":"73.8% (65765/89074)"},"pipelineMsPerBoard":{"walk":1.271,"hash":1.514},"registrationQuartile":{"walk":["59.0% (54527/92487)","19.1% (1971/10327)","0.8% (52/6700)","8.4% (5362/63559)"],"hash":["40.2% (37196/92487)","18.3% (1889/10327)","8.4% (561/6700)","35.2% (22374/63559)"]}}}
+JSON {"seed99":{"boards":1389,"localDistinctTemplates":{"p10":81,"p50":97,"p90":117,"max":145},"walk":{"expert<-expert":"5.9% (22/376)","expert<-journeyman":"3.4% (23/681)","expert<-master":"12.7% (48/377)","expert<-novice":"3.9% (501/12797)","journeyman<-expert":"18.3% (202/1102)","journeyman<-journeyman":"20.6% (515/2499)","journeyman<-master":"19.7% (271/1375)","journeyman<-novice":"22.8% (9506/41682)","novice<-expert":"51.6% (964/1870)","novice<-journeyman":"53.6% (2146/4000)","novice<-master":"54.8% (1117/2038)","novice<-novice":"52.1% (35438/67981)"},"hash":{"expert<-expert":"31.1% (117/376)","expert<-journeyman":"27.0% (184/681)","expert<-master":"32.6% (123/377)","expert<-novice":"31.1% (3983/12797)","journeyman<-expert":"32.8% (362/1102)","journeyman<-journeyman":"36.3% (906/2499)","journeyman<-master":"31.3% (431/1375)","journeyman<-novice":"33.2% (13842/41682)","novice<-expert":"45.8% (856/1870)","novice<-journeyman":"40.2% (1608/4000)","novice<-master":"40.4% (824/2038)","novice<-novice":"40.6% (27610/67981)"},"filterOnly":{"expert<-expert":"80.3% (302/376)","expert<-journeyman":"83.6% (569/681)","expert<-master":"86.2% (325/377)","expert<-novice":"90.3% (11562/12797)","journeyman<-expert":"81.0% (893/1102)","journeyman<-journeyman":"88.5% (2212/2499)","journeyman<-master":"80.7% (1109/1375)","journeyman<-novice":"67.3% (28037/41682)","novice<-expert":"92.8% (1735/1870)","novice<-journeyman":"93.1% (3725/4000)","novice<-master":"92.5% (1885/2038)","novice<-novice":"74.8% (50876/67981)"},"pipelineMsPerBoard":{"walk":1.717,"hash":1.622},"registrationQuartile":{"walk":["62.2% (45284/72860)","15.9% (1393/8773)","1.4% (47/3355)","7.8% (4029/51790)"],"hash":["40.7% (29652/72860)","22.9% (2011/8773)","12.6% (423/3355)","36.2% (18760/51790)"]}}}
+JSON {"seed7":{"boards":1766,"localDistinctTemplates":{"p10":71,"p50":87,"p90":119,"max":143},"walk":{"expert<-expert":"4.8% (23/475)","expert<-journeyman":"6.7% (50/748)","expert<-master":"13.1% (43/328)","expert<-novice":"4.2% (625/14851)","journeyman<-expert":"17.5% (262/1499)","journeyman<-journeyman":"19.2% (467/2434)","journeyman<-master":"20.7% (267/1289)","journeyman<-novice":"21.0% (10826/51430)","novice<-expert":"49.6% (1338/2698)","novice<-journeyman":"53.8% (2201/4089)","novice<-master":"39.5% (679/1719)","novice<-novice":"57.2% (46556/81461)"},"hash":{"expert<-expert":"30.5% (145/475)","expert<-journeyman":"30.9% (231/748)","expert<-master":"36.6% (120/328)","expert<-novice":"31.9% (4740/14851)","journeyman<-expert":"33.0% (494/1499)","journeyman<-journeyman":"32.5% (791/2434)","journeyman<-master":"27.8% (358/1289)","journeyman<-novice":"36.0% (18494/51430)","novice<-expert":"39.5% (1065/2698)","novice<-journeyman":"39.8% (1628/4089)","novice<-master":"37.4% (643/1719)","novice<-novice":"42.6% (34678/81461)"},"filterOnly":{"expert<-expert":"86.9% (413/475)","expert<-journeyman":"89.8% (672/748)","expert<-master":"94.2% (309/328)","expert<-novice":"89.6% (13310/14851)","journeyman<-expert":"83.5% (1252/1499)","journeyman<-journeyman":"87.8% (2136/2434)","journeyman<-master":"81.5% (1051/1289)","journeyman<-novice":"61.1% (31405/51430)","novice<-expert":"91.1% (2457/2698)","novice<-journeyman":"93.0% (3803/4089)","novice<-master":"93.2% (1602/1719)","novice<-novice":"63.2% (51495/81461)"},"pipelineMsPerBoard":{"walk":1.723,"hash":1.642},"registrationQuartile":{"walk":["63.3% (58111/91796)","11.9% (1216/10184)","1.1% (44/4129)","7.0% (3966/56912)"],"hash":["43.1% (39529/91796)","23.5% (2397/10184)","12.0% (494/4129)","36.8% (20967/56912)"]}}}
+
+# gameplay-report --seeds 42,99,7 (120 ticks): shipped (walk) vs prototype (hash), same session
+## walk
+  Seed 42  tick 120
+    total_success:65.9%  clean:27.8%  at_cost:29.7%  failure:34.1%
+       novice      n=  239  success: 52.3%  mean_attempted_difficulty:0.11
+       journeyman  n=  149  success: 57.0%  mean_attempted_difficulty:0.17
+       expert      n=   59  success: 61.0%  mean_attempted_difficulty:0.13
+       master      n=   49  success: 59.2%  mean_attempted_difficulty:0.13
+      in_window:47.5% (of 558)  idle_rate:0.0% (of 652)
+  Seed 99  tick 120
+    total_success:58.8%  clean:35.6%  at_cost:17.6%  failure:41.2%
+       novice      n=  187  success: 65.2%  mean_attempted_difficulty:0.11
+       journeyman  n=  163  success: 60.1%  mean_attempted_difficulty:0.18
+       expert      n=   76  success: 59.2%  mean_attempted_difficulty:0.16
+       master      n=   45  success: 66.7%  mean_attempted_difficulty:0.14
+      in_window:46.5% (of 527)  idle_rate:0.0% (of 705)
+  Seed 7  tick 120
+    total_success:66.0%  clean:35.9%  at_cost:17.9%  failure:31.1%
+       novice      n=  220  success: 59.1%  mean_attempted_difficulty:0.11
+       journeyman  n=  164  success: 65.2%  mean_attempted_difficulty:0.15
+       expert      n=   87  success: 69.0%  mean_attempted_difficulty:0.12
+       master      n=   56  success: 60.7%  mean_attempted_difficulty:0.18
+      in_window:45.0% (of 635)  idle_rate:0.0% (of 779)
+## hash
+  Seed 42  tick 120
+    total_success:66.4%  clean:34.9%  at_cost:20.7%  failure:33.6%
+       novice      n=  213  success: 59.2%  mean_attempted_difficulty:0.09
+       journeyman  n=  172  success: 66.9%  mean_attempted_difficulty:0.20
+       expert      n=   93  success: 67.7%  mean_attempted_difficulty:0.24
+       master      n=   71  success: 73.2%  mean_attempted_difficulty:0.18
+      in_window:44.6% (of 581)  idle_rate:0.0% (of 658)
+  Seed 99  tick 120
+    total_success:62.0%  clean:34.3%  at_cost:15.7%  failure:34.7%
+       novice      n=  172  success: 59.9%  mean_attempted_difficulty:0.09
+       journeyman  n=  204  success: 64.2%  mean_attempted_difficulty:0.21
+       expert      n=  130  success: 71.5%  mean_attempted_difficulty:0.23
+       master      n=   75  success: 78.7%  mean_attempted_difficulty:0.17
+      in_window:45.2% (of 628)  idle_rate:0.0% (of 763)
+  Seed 7  tick 120
+    total_success:65.5%  clean:39.9%  at_cost:19.3%  failure:34.5%
+       novice      n=  199  success: 65.8%  mean_attempted_difficulty:0.10
+       journeyman  n=  192  success: 64.6%  mean_attempted_difficulty:0.19
+       expert      n=  130  success: 69.2%  mean_attempted_difficulty:0.23
+       master      n=   72  success: 70.8%  mean_attempted_difficulty:0.16
+      in_window:42.7% (of 647)  idle_rate:0.0% (of 724)
