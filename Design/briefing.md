@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-01 12:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-01 14:00 local (12:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -12,7 +12,7 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Also waiting (5)
 
-- **Your local copy of the game is stuck on 28 September, now 216 changes behind.** Two files on your machine block the hourly update: an old draft of the faith-and-politics plan and a local settings edit. This only matters if you run the game locally. Next time you're in a session, say **"fix my home tree"**. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md)*
+- **Your local copy of the game is stuck on 28 September, now 218 changes behind.** Two files on your machine block the hourly update: an old draft of the faith-and-politics plan and a local settings edit. This only matters if you run the game locally. Next time you're in a session, say **"fix my home tree"**. *— from [tb-orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md)*
 - **Were you away from Tuesday evening until Wednesday evening?** No lane ran for about 25 hours, from Tuesday ~19:30 to Wednesday ~20:20 your time, and nothing recorded a pause. If you were away or the app was closed, just say so. *— from the lane-silence check*
 - **Turn off Linear's auto-complete for sub-issues** at [Team settings → General](https://linear.app/threadbare/settings/teams/THR/general). It marks unbuilt work as finished. *— from tb-orchestrator*
 - **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
@@ -55,4 +55,4 @@ Say "veto <title>" to reverse any of these.
 ## Health
 
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked today, and which factions are hit changes from day to day. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-01b.md). This is a builder's job.
-- Everything else is green. The live site is up to date (only notes changed since the last build). The simulation's speed is normal (89 ms per tick, +3% on the week).
+- Everything else is green. The live site is up to date (only notes changed since the last build). The simulation's speed is normal (90 ms per tick, +4% on the week).
