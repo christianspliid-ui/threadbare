@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-02 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-02 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-02: the encounter factory's checks now read the right side of each step** ([THR-1693](https://linear.app/threadbare/issue/THR-1693/encounter-factory-gates-live-proof-stops-reading-success-side-step)). Merged 18:50 via [#2167](https://github.com/christianspliid-ui/threadbare/pull/2167).
 - **2026-10-02: every code change now gets a cold review before it merges** ([THR-1691](https://linear.app/threadbare/issue/THR-1691/automatic-code-review-gate-a-cold-suspicious-reviewer-runs-before)). Merged via [#2166](https://github.com/christianspliid-ui/threadbare/pull/2166); its first backtest already found the Wolf-Winter Watch bug ([THR-1697](https://linear.app/threadbare/issue/THR-1697)).
 - **2026-10-02: the builder lane is running again.** It ran at 16:11 and picked up the top job ([THR-1691](https://linear.app/threadbare/issue/THR-1691)). The stall was the same outage as the silence above.
 - **2026-10-02: your local copy caught up by itself**; the "fix my home tree" ask is withdrawn ([orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-02.md)).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-01: the master level is switched on** ([THR-1681](https://linear.app/threadbare/issue/THR-1681)). Merged via [#2160](https://github.com/christianspliid-ui/threadbare/pull/2160). The master encounters themselves are not written yet; they are now tracked as [THR-1688](https://linear.app/threadbare/issue/THR-1688) and wait on the shortlist fix.
 - **2026-10-01: six more everyday encounters for experts** (batch 3, [THR-1680](https://linear.app/threadbare/issue/THR-1680)). Merged via [#2158](https://github.com/christianspliid-ui/threadbare/pull/2158), and live on the site.
 - **2026-10-01: ruins get looked at, and waiting mortals keep their meetings**: the lead climb is re-planned ([THR-1684](https://linear.app/threadbare/issue/THR-1684)). Plan merged via [#2159](https://github.com/christianspliid-ui/threadbare/pull/2159); ready to build as [THR-1686](https://linear.app/threadbare/issue/THR-1686).
-- **2026-10-01: a reputation chip names the town, not the person** ([THR-1685](https://linear.app/threadbare/issue/THR-1685)). Merged via [#2156](https://github.com/christianspliid-ui/threadbare/pull/2156), and live on the site.
 
 ---
 
