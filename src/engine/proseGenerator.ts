@@ -30,6 +30,7 @@ import {
   locationEncounterHistoryResolver,
   agentEncounterBiographyResolver,
   settlementGenomeResolver,
+  locationTraitResolver,
 } from './proseResolvers';
 
 // ─── Resolver Registry ──────────────────────────────────────────────
@@ -38,6 +39,9 @@ const LOCATION_RESOLVERS: ProseResolver[] = [
   subtypeResolver,
   biomeResolver,
   settlementGenomeResolver,
+  // THR-1522 — registered before cultureResolver: both sit at priority 80 and the
+  // composer's sort is stable, so a minted trait is said ahead of culture.
+  locationTraitResolver,
   resourcesResolver,
   cultureResolver,
   sphereResolver,

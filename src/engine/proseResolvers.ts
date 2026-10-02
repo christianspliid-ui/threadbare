@@ -40,7 +40,11 @@ import {
   AGENT_ENCOUNTER_BIOGRAPHY_PROSE,
   SETTLEMENT_ARCHETYPE_PROSE,
   SETTLEMENT_TAG_PROSE,
+  LOCATION_TRAIT_PROSE,
+  LOCATION_TRAIT_PROSE_MAX,
+  LOCATION_TRAIT_PROSE_PRIORITY,
 } from '../data/prose-layer-content';
+import { LOCATION_TRAIT_IDS } from '../data/location-trait-constants';
 import {
   getLocationEncounterHistory,
   getAgentEncounterHistory,
@@ -1268,4 +1272,45 @@ export function settlementGenomeResolver(nodeId: string, graph: WorldGraph, seed
     category: 'character',
     source: 'settlementGenomeResolver',
   }];
+}
+
+// ─── Location Trait Resolver (THR-1522) ────────────────────────────
+// Seed offset range: 4100-4199
+
+/** Trait ids in saying order — the order `LOCATION_TRAIT_IDS` declares them. */
+const LOCATION_TRAIT_PROSE_ORDER: readonly string[] = Object.values(LOCATION_TRAIT_IDS);
+
+/**
+ * locationTraitResolver — says a place's minted traits (Welcoming, Lawless,
+ * Veil-thin, Haunted, Blood-soaked) in its prose.
+ * Priority: `LOCATION_TRAIT_PROSE_PRIORITY` (80) · Category: 'tension'
+ *
+ * Reads the Location's live `has_trait` edges — the same edges the movement tax,
+ * the step terms, the pool and the location sheet's Conditions section read — so
+ * the prose cannot disagree with the chip. At most `LOCATION_TRAIT_PROSE_MAX`
+ * layers, in `LOCATION_TRAIT_IDS` order. Fail-soft: a missing node, no traits,
+ * or a trait with no `LOCATION_TRAIT_PROSE` row contributes nothing.
+ */
+export function locationTraitResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  const held = new Set(graph.getOutgoingEdges(nodeId, 'has_trait').map(e => e.target));
+  if (held.size === 0) return [];
+
+  const layers: ProseLayer[] = [];
+  for (let i = 0; i < LOCATION_TRAIT_PROSE_ORDER.length; i++) {
+    if (layers.length >= LOCATION_TRAIT_PROSE_MAX) break;
+    const traitId = LOCATION_TRAIT_PROSE_ORDER[i];
+    if (!held.has(traitId)) continue;
+    const template = pickTemplate(LOCATION_TRAIT_PROSE[traitId] ?? [], seed + 4100 + i);
+    if (!template) continue;
+    layers.push({
+      text: replacePlaceholder(template, 'name', node.name),
+      priority: LOCATION_TRAIT_PROSE_PRIORITY,
+      category: 'tension',
+      source: 'locationTraitResolver',
+    });
+  }
+  return layers;
 }
