@@ -739,7 +739,7 @@ export default function StyleGuide() {
               <GameErrorBoundary>
                 <Label>
                   Colour says what kind of moment a dialog is. Reference surfaces stay
-                  neutral, so colour keeps meaning *this is a moment*. Pass
+                  neutral, so colour keeps meaning <em>this is a moment</em>. Pass
                   {' '}<code>context</code> to <code>Modal</code>; divine and encounter own their palette.
                 </Label>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
