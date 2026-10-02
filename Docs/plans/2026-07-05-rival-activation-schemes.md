@@ -1,6 +1,8 @@
 # THR-66 — Rival Activation via Multi-Phase Schemes
 
 **Status:** Design (→ Ready for Dev)
+
+> **lint_plan_doc:** exempt — shipped THR-66 plan (2026-07-05) that predates the plan-doc template; kept as a historical record and amended in place (THR-829 retired its `sponsors_scheme` attribution leg).
 **Project:** Thematic Pressure & Living World
 **Author:** Cowork (autonomous scheduled session, 2026-07-05)
 **Issue:** [THR-66](https://linear.app/threadbare/issue/THR-66)

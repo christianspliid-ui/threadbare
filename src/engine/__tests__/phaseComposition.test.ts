@@ -177,6 +177,21 @@ describe('phaseComposition', () => {
       const activated = updatedAll.filter((c) => c.activatedPhaseIds.includes('p1'));
       expect(activated.length).toBe(PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK);
     });
+
+    it('finished compositions do not occupy cap slots (THR-829)', () => {
+      // A full cap's worth of completed entries that sort first must not starve
+      // a live composition sorting after them.
+      const finished = Array.from({ length: PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK }, (_, i) => ({
+        ...makeActiveComposition(`a-done-${i.toString().padStart(3, '0')}`, [makePhase('p1', 1)]),
+        status: 'completed' as const,
+      }));
+      const live = makeActiveComposition('z-live', [makePhase('p1', 1)]);
+      const state = makeState([...finished, live], 2);
+      const result = phaseComposition(state);
+
+      const zLive = (result.activeCompositions ?? []).find((c) => c.compositionId === 'z-live');
+      expect(zLive?.activatedPhaseIds).toContain('p1');
+    });
   });
 
   describe('composition GC', () => {
