@@ -42,6 +42,15 @@
           "timeout": 120,
           "statusMessage": "Verifying Definition of Done (docs + build)..."
         }]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/review-gate.sh",
+          "timeout": 60,
+          "statusMessage": "Review gate: checking for a clean review receipt..."
+        }]
       }
     ],
     "Stop": [

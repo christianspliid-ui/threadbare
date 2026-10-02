@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-02
 ---
 
 # Pull Work
@@ -892,8 +892,11 @@ this gate is the audit.
 
 **Re-run the duplicate-PR sweep immediately before `gh pr create` — every ship, not only the hand-created-`In Dev` path (impediment #763).** The orientation sweep at Step 1.5 was honest when it ran and says nothing about now; a concurrent lane's PR can appear in the gap between the two. The command and the disposition are in Step 1.8 § *point-of-commitment re-read*. A hit that is not your own branch means the work already shipped: comment their PR number and exit clean rather than opening a second PR for the same id.
 
+**Code PRs pass the review gate before arming (THR-1691).** After the local gates are green and every closeout edit is committed, run the `review-gate` skill (`.claude/skills/review-gate/SKILL.md`): a cold reviewer subagent, a refuting verifier, fix-or-rebut, at most two rounds, then `write-receipt`. The PreToolUse hook `.claude/hooks/review-gate.sh` **denies `gh pr merge`** on a code diff with no clean receipt for the head — so this is not optional, and a denial means "run the review", never "find a way round the hook". Docs-only diffs skip it. Findings still open after round 2 → do not arm; park the ticket naming them.
+
 ```bash
 gh pr create --title "<type>(thr-XXX): <summary>" --body "$(printf 'Summary line.\n\nFixes THR-XXX\n')"
+gh pr comment <N> --body-file "$SCRATCH/review-comment.md"   # code PRs: the receipt comment from the review-gate skill
 gh pr merge --auto --merge
 ```
 

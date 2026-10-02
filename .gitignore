@@ -196,3 +196,6 @@ Design/retros/retro-*-draft.md
 /Terrain/
 /Traits/
 /Index.md
+
+# THR-1691 — review-gate receipts are per-tree evidence; the PR comment is the durable record
+.claude/review-receipts/
