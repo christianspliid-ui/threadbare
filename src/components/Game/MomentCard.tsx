@@ -153,6 +153,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
       onClose={onAcknowledge}
       maxWidth={560}
       zIndex={MODAL_Z_DEFAULT}
+      context="gain"
       aria-label={`${model.title}: ${model.undertakingName}`}
     >
       {/* Identity chrome (Law 37): portrait, undertaking, class word, checkpoint position, band. */}
@@ -167,7 +168,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
           borderTopLeftRadius: '12px',
           borderTopRightRadius: '12px',
           borderBottom: `2px solid ${accent}`,
-          background: 'linear-gradient(160deg, var(--bg-raised), var(--bg-abyss))',
+          background: 'var(--dlg-bg, linear-gradient(160deg, var(--bg-raised), var(--bg-abyss)))',
         }}
       >
         <EntityVisual

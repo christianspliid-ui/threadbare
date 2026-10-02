@@ -72,7 +72,7 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
   const reactions = receipt.reactions ?? [];
 
   return (
-    <Modal open={open} onClose={onAcknowledge} maxWidth={560} aria-label={`Divine receipt: ${receipt.templateName}`}>
+    <Modal open={open} onClose={onAcknowledge} maxWidth={560} context="gain" aria-label={`Divine receipt: ${receipt.templateName}`}>
       {/* Art header — band-accented, with graceful fallback when art is missing. */}
       <div
         data-testid="divine-receipt-header"
@@ -85,7 +85,7 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
           overflow: 'hidden',
           background: art
             ? `linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.75)), url(${art}) center/cover`
-            : `linear-gradient(160deg, var(--bg-raised), var(--bg-abyss))`,
+            : `var(--dlg-bg, linear-gradient(160deg, var(--bg-raised), var(--bg-abyss)))`,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',

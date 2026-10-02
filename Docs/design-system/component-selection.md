@@ -62,7 +62,7 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height 75vh (stricter than Law 33's 85vh cap). Escape to close. |
+| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height 75vh (stricter than Law 33's 85vh cap). Escape to close. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
 | Encounter dialogue with branching | `MeetingEncounterModal` | Auto-triggered on encounter. Full encounter UI. |
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |

@@ -24,7 +24,7 @@ interface StoryBeatModalProps {
 function ReachBadge({ reach }: { reach: string }) {
   return (
     <span style={{
-      background: 'var(--bg-surface)',
+      background: 'var(--dlg-inset, var(--bg-surface))',
       border: '1px solid var(--border-subtle)',
       borderRadius: '4px',
       padding: '2px 8px',
@@ -53,6 +53,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
     <Modal
       open={open}
       onClose={onDismiss}
+      context="story"
       aria-label={`Story beat: ${template.name}`}
     >
       <Modal.Header>
@@ -69,7 +70,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
             fontSize: 'var(--text-xs)',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color: 'var(--accent-gold)',
+            color: 'var(--dlg-accent-text, var(--accent-gold))',
           }}>
             Story Beat
           </span>
@@ -114,7 +115,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
         )}
 
         <div style={{
-          background: 'var(--bg-surface)',
+          background: 'var(--dlg-inset, var(--bg-surface))',
           border: '1px solid var(--border-subtle)',
           borderRadius: '6px',
           padding: 'var(--space-3)',
@@ -131,7 +132,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
             onClick={onDismiss}
             style={{
               background: 'var(--accent-gold)',
-              color: 'var(--bg-base)',
+              color: 'var(--bg-deep)',
               border: 'none',
               borderRadius: '4px',
               padding: 'var(--space-2) var(--space-6)',

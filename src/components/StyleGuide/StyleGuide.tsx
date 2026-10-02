@@ -12,7 +12,8 @@ import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
 import { ListRow } from '../shared/ListRow';
-import { Modal } from '../shared/Modal';
+import { Modal, modalPanelStyle } from '../shared/Modal';
+import { dialogContextClass, type DialogContext } from '../shared/dialogContext';
 import { Medallion } from '../shared/Medallion';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { RevealCard } from '../shared/RevealCard';
@@ -114,6 +115,7 @@ const SECTIONS = [
   { id: 'card', label: 'Card' },
   { id: 'listrow', label: 'ListRow' },
   { id: 'modal', label: 'Modal' },
+  { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
   { id: 'revealcard', label: 'RevealCard (THR-799)' },
@@ -349,6 +351,103 @@ const STYLEGUIDE_ACTION_FACE: CardFaceModel = {
   disabled: false,
   designerLine: 'P 0.720 · eff 0.000 · local',
 };
+
+// ── Dialogue contexts (THR-1586) ───────────────────────────────────
+
+/**
+ * One static panel per dialogue context, side by side. Rendered with Modal's own
+ * panel style (`modalPanelStyle`, Law 27) and the context class — not through a
+ * portal, so all six sit on one screen. The two palette-owning contexts map their
+ * own tokens onto the same local `--dlg-*` properties, so the preview shows them
+ * on the shared frame without touching their tokens. Previews carry
+ * `data-dialog-preview`, never `data-dialog-context`, so
+ * `__DEBUG.getDialogContexts().open` lists only real dialogs.
+ */
+interface DialogContextPreviewSpec {
+  readonly key: string;
+  readonly label: string;
+  readonly tokens: string;
+  /** Worst-case ratio of a text tone on this ground, as recorded beside its tokens. */
+  readonly worst: string;
+  readonly context?: DialogContext;
+  readonly vars?: Readonly<Record<string, string>>;
+}
+
+const DIALOG_CONTEXT_PREVIEWS: readonly DialogContextPreviewSpec[] = [
+  { key: 'neutral', label: 'Information', tokens: '--bg-* (neutral)', worst: 'unchanged' },
+  { key: 'story', label: 'Story', tokens: '--dialog-story-*', worst: '5.0:1', context: 'story' },
+  { key: 'elder', label: 'Elder', tokens: '--dialog-elder-*', worst: '4.9:1', context: 'elder' },
+  { key: 'gain', label: 'Gain', tokens: '--dialog-gain-*', worst: '4.9:1', context: 'gain' },
+  {
+    key: 'divine-whisper', label: 'Divine — whisper', tokens: '--premonition-whisper-*', worst: '5.2:1',
+    vars: {
+      '--dlg-bg': 'var(--premonition-whisper-bg)',
+      '--dlg-text': 'rgb(var(--premonition-whisper-text-rgb))',
+      '--dlg-text-dim': 'rgb(var(--premonition-whisper-text-rgb) / var(--premonition-text-dim-alpha))',
+      '--dlg-accent-text': 'rgb(var(--premonition-whisper-rgb) / var(--premonition-accent-text-alpha))',
+      '--dlg-rule': 'rgb(var(--premonition-whisper-rgb) / var(--premonition-accent-rule-alpha))',
+      '--dlg-border': 'rgb(var(--premonition-whisper-rgb) / var(--premonition-accent-rule-alpha))',
+    },
+  },
+  {
+    key: 'divine-compulsion', label: 'Divine — compulsion', tokens: '--premonition-compulsion-*', worst: '4.6:1',
+    vars: {
+      '--dlg-bg': 'var(--premonition-compulsion-bg)',
+      '--dlg-text': 'rgb(var(--premonition-compulsion-text-rgb))',
+      '--dlg-text-dim': 'rgb(var(--premonition-compulsion-text-rgb) / var(--premonition-text-dim-alpha))',
+      '--dlg-accent-text': 'rgb(var(--premonition-compulsion-rgb) / var(--premonition-accent-text-alpha))',
+      '--dlg-rule': 'rgb(var(--premonition-compulsion-rgb) / var(--premonition-accent-rule-alpha))',
+      '--dlg-border': 'rgb(var(--premonition-compulsion-rgb) / var(--premonition-accent-rule-alpha))',
+    },
+  },
+  {
+    key: 'encounter', label: 'Encounter', tokens: '--veil-*', worst: '4.9:1',
+    vars: {
+      '--dlg-bg': 'var(--veil-void)',
+      '--dlg-text': 'var(--veil-text-bright)',
+      '--dlg-text-dim': 'var(--veil-text-warm)',
+      '--dlg-accent-text': 'var(--veil-gold-text)',
+      '--dlg-rule': 'var(--veil-gold-dim)',
+      '--dlg-border': 'var(--veil-gold-dim)',
+    },
+  },
+];
+
+function DialogContextPreview({ spec }: { spec: DialogContextPreviewSpec }) {
+  const style = {
+    ...modalPanelStyle(260),
+    width: 260,
+    maxHeight: 'none',
+    flexShrink: 0,
+    ...(spec.vars ?? {}),
+  } as React.CSSProperties;
+  return (
+    <div className={dialogContextClass(spec.context)} data-dialog-preview={spec.key} style={style}>
+      <Modal.Header>{spec.label}</Modal.Header>
+      <div style={{ padding: 'var(--panel-padding)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <span style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'var(--dlg-accent-text, var(--accent-gold))',
+        }}>
+          Eyebrow
+        </span>
+        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+          Body line in --text-primary.
+        </span>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--dlg-text-dim, var(--text-muted))' }}>
+          A dim line, for the quieter facts.
+        </span>
+        <span style={{ height: 1, background: 'var(--dlg-rule, var(--border-gold))' }} />
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+          <code>{spec.tokens}</code> · worst {spec.worst}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -629,6 +728,48 @@ export default function StyleGuide() {
                     <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>Acknowledge</Button>
                   </Modal.Footer>
                 </Modal>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Dialogue contexts (THR-1586) ─────────────────────── */}
+          <section id="section-dialog-contexts" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Dialogue contexts (THR-1586)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Colour says what kind of moment a dialog is. Reference surfaces stay
+                  neutral, so colour keeps meaning *this is a moment*. Pass
+                  {' '}<code>context</code> to <code>Modal</code>; divine and encounter own their palette.
+                </Label>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                  {DIALOG_CONTEXT_PREVIEWS.map((spec) => (
+                    <DialogContextPreview key={spec.key} spec={spec} />
+                  ))}
+                </div>
+                <Label>Sphere tint — resting edge and ground only; a selected card keeps its own border</Label>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <CardFace
+                    model={{ ...STYLEGUIDE_NUDGE_FACE, id: 'sg.tint.untinted' }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                  <CardFace
+                    model={{ ...STYLEGUIDE_NUDGE_FACE, id: 'sg.tint.force', sphereTint: 'force' }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                  <CardFace
+                    model={{ ...STYLEGUIDE_ACTION_FACE, id: 'sg.tint.life', sphereTint: 'life' }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                  <CardFace
+                    model={{ ...STYLEGUIDE_ACTION_FACE, id: 'sg.tint.selected', sphereTint: 'life', selected: true }}
+                    designerView={false}
+                    onToggle={() => {}}
+                  />
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

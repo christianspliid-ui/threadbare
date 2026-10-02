@@ -139,6 +139,50 @@ hero `Medallion` ring. Titles stay `--text-primary`.
 
 ---
 
+## Dialogue Contexts (THR-1586)
+
+Each kind of moment gets its own colour family, so the colour of a dialog tells
+the player what kind of moment it is before they read a word. Reference surfaces
+stay neutral so that signal keeps its meaning (Law 30, amended 2026-10-02).
+
+| Context | The player is… | Surfaces | Tokens |
+|---|---|---|---|
+| Divine will | steering a mortal | `PremonitionModal` | `--premonition-whisper-*` / `--premonition-compulsion-*` (own palette) |
+| Encounter | watching fate resolve a step | `EncounterVeil` | `--veil-*` (own palette) |
+| Story | reading a story beat | `StoryBeatModal`, `AscendantBeatModal`, `JourneyVignetteModal` | `--dialog-story-*` — hearth umber, terracotta-amber accent |
+| Elder | forced to choose by an elder power | `EmergenceDilemmaModal` | `--dialog-elder-*` — verdigris |
+| Gain | receiving the god's act | `DivineReceiptModal`, `MomentCard` | `--dialog-gain-*` — dark gilt; accent is `--veil-gold-rgb` |
+| Information | consulting a reference | sheets, `EventPopup`, Omen/Mandate/Doom, settings | neutral `--bg-*` ramp |
+
+**Mechanism.** `<Modal context="story">` applies `.dialog-ctx-story`, which sets
+local `--dlg-bg`, `--dlg-text`, `--dlg-text-dim`, `--dlg-accent`, `--dlg-accent-text`,
+`--dlg-rule`, `--dlg-border` and `--dlg-inset`. The panel and anything inside it
+read them with the neutral value as fallback (`var(--dlg-accent-text, var(--accent-gold))`),
+so a modal with no context is unchanged. The registry is
+`src/components/shared/dialogContext.ts`; `__DEBUG.getDialogContexts()` reads it.
+
+**Shared alphas.** `--dialog-text-dim-alpha` 0.75, `--dialog-accent-text-alpha` 0.8,
+`--dialog-accent-rule-alpha` 0.35, `--dialog-accent-border-alpha` 0.4; inset boxes use
+`--dialog-inset` (black at 0.22 — they darken the ground, never lighten it).
+
+**Contrast.** Every tone clears AA on both stops of every ground, including the
+neutral `--text-*` and `--accent-gold` tokens children keep using; the ratios sit
+beside each token in `index.css` and are locked by `dialogContextTokens.test.ts`.
+
+**State keeps its colour.** Step dots, selected options and outcome-band accents stay
+on `--accent-gold` / polarity tokens on any ground — only decoration (eyebrow, rule,
+edge, ground) takes the context hue. On a gain ground the gold accent appears only at
+rule / edge / accent-text alphas; the single full-gold element stays what it was.
+
+**Sphere tint.** The Premonition's per-option recipe lives in
+`src/components/shared/sphereTint.ts` (border 25% · ground 3% · text 87% via
+`color-mix`). `CardFace` takes `sphereTint` when a card draws essence from a named
+sphere and tints its *resting* edge and ground from `--sphere-<name>-bright`;
+selected, resolved and disabled cards keep their own border, and the price is never
+tinted. Tinted cards carry `data-sphere-tint`.
+
+---
+
 ## Shadows & Glows
 
 | Use case | Value |

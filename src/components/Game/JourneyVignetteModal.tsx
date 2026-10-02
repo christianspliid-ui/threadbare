@@ -37,7 +37,7 @@ function PhaseBadge({ phase }: { phase: string }) {
       justifyContent: 'center',
     }}>
       <span style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--dlg-inset, var(--bg-surface))',
         border: '1px solid var(--accent-gold)',
         borderRadius: '4px',
         padding: '2px 10px',
@@ -70,7 +70,7 @@ function ChoiceButton({
 
   const essenceCost = choice.effects.essenceCost ?? 0;
   const borderColor = isOrdeal
-    ? (choice.effects.ordealOutcome === 'triumph' ? '#ffd700' : choice.effects.ordealOutcome === 'broken' ? '#a44' : 'var(--accent-gold)')
+    ? (choice.effects.ordealOutcome === 'triumph' ? 'var(--accent-gold)' : choice.effects.ordealOutcome === 'broken' ? 'var(--negative)' : 'var(--accent-gold)')
     : 'var(--accent-gold)';
 
   return (
@@ -84,8 +84,8 @@ function ChoiceButton({
         width: '100%',
         padding: 'var(--space-3)',
         marginBottom: 'var(--space-2)',
-        background: hovered ? 'rgba(255, 215, 0, 0.08)' : 'var(--bg-surface)',
-        border: `1px solid ${hovered ? borderColor : 'rgba(255, 215, 0, 0.2)'}`,
+        background: hovered ? 'rgb(var(--veil-gold-rgb) / 0.08)' : 'var(--dlg-inset, var(--bg-surface))',
+        border: `1px solid ${hovered ? borderColor : 'rgb(var(--veil-gold-rgb) / 0.2)'}`,
         borderRadius: '6px',
         cursor: disabled ? 'not-allowed' : 'pointer',
         textAlign: 'left',
@@ -151,13 +151,14 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       open={open}
       onClose={onClose}
       size="md"
+      context="story"
     >
       <Modal.Header>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             fontFamily: 'var(--font-display)',
             fontSize: '1.3rem',
-            color: vignette.isOrdeal ? '#ffd700' : 'var(--text-primary)',
+            color: vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--text-primary)',
             letterSpacing: '0.05em',
           }}>
             {vignette.isOrdeal ? 'THE ORDEAL' : `${vignette.agentName}'s Journey`}
@@ -186,7 +187,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           lineHeight: 1.7,
           marginBottom: 'var(--space-4)',
           paddingLeft: 'var(--space-3)',
-          borderLeft: `2px solid ${vignette.isOrdeal ? '#ffd700' : 'var(--accent-gold)'}`,
+          borderLeft: `2px solid ${vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--accent-gold)'}`,
         }}>
           {vignette.tensionProse}
         </div>
@@ -194,8 +195,8 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
         {/* Ordeal warning */}
         {vignette.isOrdeal && (
           <div style={{
-            background: 'rgba(255, 215, 0, 0.06)',
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            background: 'rgb(var(--veil-gold-rgb) / 0.06)',
+            border: '1px solid rgb(var(--veil-gold-rgb) / 0.2)',
             borderRadius: '6px',
             padding: 'var(--space-2) var(--space-3)',
             marginBottom: 'var(--space-3)',

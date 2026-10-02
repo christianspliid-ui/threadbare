@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import { useDialogFocus } from './useDialogFocus';
+import { dialogContextClass, type DialogContext } from './dialogContext';
 
 /**
  * The modal band (Law 35 — z-index comes from the stacking table, never invented).
@@ -35,7 +36,33 @@ interface ModalProps {
    * border becomes that frame's outer edge.
    */
   panelClassName?: string;
+  /**
+   * Dialogue context (THR-1586) — which kind of moment this dialog is. Applies the
+   * matching `.dialog-ctx-*` class, whose local `--dlg-*` properties the panel
+   * reads. Omitted (neutral) renders exactly as before: no class, and every
+   * `var(--dlg-*)` falls back to the neutral value. Reference surfaces pass none.
+   */
+  context?: DialogContext;
   children: React.ReactNode;
+}
+
+/**
+ * The panel look, shared by `Modal` and the StyleGuide's static context previews
+ * (Law 27 — one copy of the panel). Every `--dlg-*` read carries today's neutral
+ * value as its fallback, so a panel with no context class is unchanged.
+ */
+export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
+  return {
+    background: 'var(--dlg-bg, linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)))',
+    border: '1px solid var(--dlg-border, var(--border-gold))',
+    borderRadius: '12px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px var(--border-gold-strong)',
+    maxWidth: `${maxWidth}px`,
+    width: '90%',
+    maxHeight: '75vh',
+    display: 'flex',
+    flexDirection: 'column',
+  };
 }
 
 /**
@@ -46,7 +73,7 @@ interface ModalProps {
  * a new containing block). Instead, the backdrop div handles its own
  * mount/unmount lifecycle and applies animation classes directly.
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, 'aria-label': ariaLabel, panelClassName, children }: ModalProps) {
+function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,17 +137,8 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     paddingTop: '5vh',
   };
 
-  const panel: React.CSSProperties = {
-    background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-    border: '1px solid var(--border-gold)',
-    borderRadius: '12px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px var(--border-gold-strong)',
-    maxWidth: `${maxWidth}px`,
-    width: '90%',
-    maxHeight: '75vh',
-    display: 'flex',
-    flexDirection: 'column',
-  };
+  const panel = modalPanelStyle(maxWidth);
+  const panelClasses = [dialogContextClass(context), panelClassName].filter(Boolean).join(' ') || undefined;
 
   return createPortal(
     <div
@@ -133,7 +151,8 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     >
       <div
         ref={panelRef}
-        className={panelClassName}
+        className={panelClasses}
+        data-dialog-context={context}
         style={panel}
         tabIndex={-1}
         onKeyDown={handlePanelKeyDown}
@@ -153,10 +172,10 @@ function Header({ children, onClose }: { children: React.ReactNode; onClose?: ()
         display: 'flex',
         alignItems: 'center',
         padding: 'var(--panel-padding)',
-        borderBottom: '1px solid var(--border-gold)',
+        borderBottom: '1px solid var(--dlg-rule, var(--border-gold))',
         fontFamily: 'var(--font-display)',
         fontSize: 'var(--text-lg)',
-        color: 'var(--text-primary)',
+        color: 'var(--dlg-text, var(--text-primary))',
       }}
     >
       <span style={{ flex: 1 }}>{children}</span>

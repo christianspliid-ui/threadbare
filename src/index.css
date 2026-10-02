@@ -184,6 +184,45 @@
     --premonition-accent-text-alpha: 0.8;
     --premonition-accent-rule-alpha: 0.35;
 
+    /* ── Dialogue contexts — story · elder · gain (Law 30/45, THR-1586) ─────────
+       Each kind of moment gets its own colour family, so the colour of a dialog
+       says what kind of moment it is before the player reads a word. Applied
+       through Modal's `context` prop → .dialog-ctx-* (below) → the local
+       --dlg-* properties the panel reads. Reference surfaces stay neutral.
+
+       Same channel pattern as the Premonition: -rgb channels so one hue serves
+       many alphas. Gradients run top → bottom. Ratios are WCAG, composited,
+       worst of the two stops, and locked by dialogContextTokens.test.ts.
+
+       Grounds are lifted to the Premonition's level (lightest stop L ≈ 0.016 vs
+       compulsion's 0.018) — legal under Law 32 as clarified 2026-10-02. */
+
+    /* Story — hearth: firelit umber ground, terracotta-amber accent.
+       text 11.9:1 · dim 7.3:1 · accent-text 5.2:1 · accent 7.3:1 */
+    --dialog-story-bg: linear-gradient(180deg, #1c1613 0%, #2a201a 100%);
+    --dialog-story-accent-rgb: 222 164 120;
+    --dialog-story-text-rgb: 236 220 204;
+
+    /* Elder — verdigris: old-copper green-black ground, verdigris accent.
+       text 11.9:1 · dim 7.3:1 · accent-text 5.4:1 · accent 7.7:1 */
+    --dialog-elder-bg: linear-gradient(180deg, #0f1816 0%, #172522 100%);
+    --dialog-elder-accent-rgb: 112 196 170;
+    --dialog-elder-text-rgb: 206 228 218;
+
+    /* Gain — gilt: dark gilt ground; the accent is the one game gold, never a second.
+       text 12.3:1 · dim 7.5:1 · accent-text 4.9:1 · accent 6.9:1 */
+    --dialog-gain-bg: linear-gradient(180deg, #19160f 0%, #262012 100%);
+    --dialog-gain-accent-rgb: var(--veil-gold-rgb);
+    --dialog-gain-text-rgb: 236 224 196;
+
+    /* Shared alphas — the Premonition's measured steps, reused rather than re-derived. */
+    --dialog-text-dim-alpha: 0.75;
+    --dialog-accent-text-alpha: 0.8;
+    --dialog-accent-rule-alpha: 0.35;
+    --dialog-accent-border-alpha: 0.4;
+    /* Inset boxes inside a context dialog darken the ground; they never lighten it (Law 32). */
+    --dialog-inset: rgb(0 0 0 / 0.22);
+
     /* Borders — subtle warmth with gold threading */
     --border-subtle: #2a2520;
     --border-medium: #3a3530;
@@ -582,9 +621,43 @@
      surface (gold budget, THR-799 § UI pillar). The inner hairline is drawn
      with outline + negative offset so it needs no extra element. */
   .frame-ceremonial {
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--dlg-border, var(--border-gold));
     outline: 1px solid var(--border-subtle);
     outline-offset: -4px;
+  }
+
+  /* Dialogue contexts (THR-1586). Each sets the local --dlg-* properties that
+     Modal's panel (and anything inside it) reads with neutral fallbacks — so a
+     panel without one of these classes renders exactly as before. */
+  .dialog-ctx-story {
+    --dlg-bg: var(--dialog-story-bg);
+    --dlg-text: rgb(var(--dialog-story-text-rgb));
+    --dlg-text-dim: rgb(var(--dialog-story-text-rgb) / var(--dialog-text-dim-alpha));
+    --dlg-accent: rgb(var(--dialog-story-accent-rgb));
+    --dlg-accent-text: rgb(var(--dialog-story-accent-rgb) / var(--dialog-accent-text-alpha));
+    --dlg-rule: rgb(var(--dialog-story-accent-rgb) / var(--dialog-accent-rule-alpha));
+    --dlg-border: rgb(var(--dialog-story-accent-rgb) / var(--dialog-accent-border-alpha));
+    --dlg-inset: var(--dialog-inset);
+  }
+  .dialog-ctx-elder {
+    --dlg-bg: var(--dialog-elder-bg);
+    --dlg-text: rgb(var(--dialog-elder-text-rgb));
+    --dlg-text-dim: rgb(var(--dialog-elder-text-rgb) / var(--dialog-text-dim-alpha));
+    --dlg-accent: rgb(var(--dialog-elder-accent-rgb));
+    --dlg-accent-text: rgb(var(--dialog-elder-accent-rgb) / var(--dialog-accent-text-alpha));
+    --dlg-rule: rgb(var(--dialog-elder-accent-rgb) / var(--dialog-accent-rule-alpha));
+    --dlg-border: rgb(var(--dialog-elder-accent-rgb) / var(--dialog-accent-border-alpha));
+    --dlg-inset: var(--dialog-inset);
+  }
+  .dialog-ctx-gain {
+    --dlg-bg: var(--dialog-gain-bg);
+    --dlg-text: rgb(var(--dialog-gain-text-rgb));
+    --dlg-text-dim: rgb(var(--dialog-gain-text-rgb) / var(--dialog-text-dim-alpha));
+    --dlg-accent: rgb(var(--dialog-gain-accent-rgb));
+    --dlg-accent-text: rgb(var(--dialog-gain-accent-rgb) / var(--dialog-accent-text-alpha));
+    --dlg-rule: rgb(var(--dialog-gain-accent-rgb) / var(--dialog-accent-rule-alpha));
+    --dlg-border: rgb(var(--dialog-gain-accent-rgb) / var(--dialog-accent-border-alpha));
+    --dlg-inset: var(--dialog-inset);
   }
 
   /* Card with gold top-edge accent (LoL character card style) */

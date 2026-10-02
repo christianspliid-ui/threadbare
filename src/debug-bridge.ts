@@ -1149,6 +1149,21 @@ if (import.meta.env.DEV) {
       return { worldRef: SURFACE_BY_WORLD_REF, content: SURFACE_BY_CONTENT_KIND };
     },
     /**
+     * Dialogue contexts (THR-1586): the surface → context registry as shipped, plus the
+     * `data-dialog-context` of every dialog panel mounted right now. The state assertion
+     * for a palette browser-verify run — it proves which context the on-screen dialog
+     * *declared*, which a screenshot cannot.
+     */
+    getDialogContexts: async () => {
+      const { DIALOG_CONTEXT_SURFACES } = await import('./components/shared/dialogContext');
+      const open = typeof document === 'undefined'
+        ? []
+        : Array.from(document.querySelectorAll('[data-dialog-context]'))
+          .map((el) => el.getAttribute('data-dialog-context') ?? '')
+          .filter(Boolean);
+      return { surfaces: DIALOG_CONTEXT_SURFACES, open };
+    },
+    /**
      * Drive the router headlessly. Returns what it resolved, so a verification run can
      * assert the *routing decision* rather than infer it from pixels.
      *
