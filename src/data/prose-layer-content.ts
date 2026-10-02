@@ -1315,6 +1315,59 @@ export const SETTLEMENT_TAG_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Location Trait Prose (THR-1522) ────────────────────────────
+
+/**
+ * Most trait lines one place's prose carries. A place can hold several minted
+ * traits at once (a Haunted town is usually Blood-soaked too); two is enough to
+ * say what the place is now without the page reading like a condition list.
+ */
+export const LOCATION_TRAIT_PROSE_MAX = 2;
+
+/**
+ * Composer priority for a trait line. 80 sits beside the culture layer and below
+ * the settlement genome (85): what a place has *become* reads after what it *is*,
+ * and ahead of sphere, resources and faction, so a minted trait is never cut by
+ * the six-paragraph cap. Category `tension` — a trait is the place's live state,
+ * and it must not take one of the two `character` slots from genome or culture.
+ */
+export const LOCATION_TRAIT_PROSE_PRIORITY = 80;
+
+/**
+ * One line per minted location trait (`phaseLocationTraits`), keyed by trait id
+ * (`LOCATION_TRAIT_IDS`). Game-master narration: state what is true of the place
+ * and what people do about it, and say the trait's word so the line and the
+ * Conditions chip on the location page agree. Placeholder: {name}.
+ * A trait with no row here contributes no prose (fail-soft).
+ */
+export const LOCATION_TRAIT_PROSE: Record<string, string[]> = {
+  'trait.condition.location.welcoming': [
+    '{name} is welcoming these days. Good years have made it generous, and strangers are fed before anyone asks their business.',
+    'Times are good in {name}, and it shows. The town is welcoming: the market runs late and the inns rarely turn anyone away.',
+    '{name} has grown welcoming on its prosperity. Travellers stop here when they could press on, and many stay longer than they meant to.',
+  ],
+  'trait.condition.location.lawless': [
+    '{name} is lawless now. Nobody enforces anything, and every deal is only as good as the person on the other side of it.',
+    'The law has left {name}. The watch is gone, and the lawless streets belong to whoever is strongest tonight.',
+    'Unrest has made {name} lawless. Quiet work is easy here, and honest folk keep their doors barred after dark.',
+  ],
+  'trait.condition.location.veil_thin': [
+    'The veil is thin at {name}. Rites take hold easily here, and stranger things than rites come looking for the gap.',
+    'Magic has soaked into the ground at {name} and stayed. The veil is thin, and the locals no longer remark on what they see at dusk.',
+    '{name} stands where the veil is thin. Spellcasters seek it out, and sensible people do not linger after nightfall.',
+  ],
+  'trait.condition.location.haunted': [
+    '{name} is haunted. Many died here, and something of them stayed. Travellers hurry through and do not stop to talk.',
+    'The dead do not rest at {name}. The place is haunted, and the living speak quietly and keep their own counsel.',
+    'People call {name} haunted, and they are right. Doors close early, and nobody walks the old streets alone.',
+  ],
+  'trait.condition.location.blood_soaked': [
+    '{name} is blood-soaked from recent fighting. Travellers take the long way around, and the talk is all of the battle.',
+    'A battle was fought at {name}, and the ground is still blood-soaked. Graves are fresh, and the survivors watch the roads.',
+    'Blood has been spilled at {name} again and again. The blood-soaked ground keeps traders away and draws the hungry.',
+  ],
+};
+
 /** Agent biography prose — references an agent's encounter history */
 export const AGENT_ENCOUNTER_BIOGRAPHY_PROSE: Record<string, string[]> = {
   veteran: [
