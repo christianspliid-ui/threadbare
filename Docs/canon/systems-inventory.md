@@ -263,7 +263,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
 | `context` (1) | `contextBuilder.ts` | — |
-| `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518` |
+| `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518`, `THR-662` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | — |
