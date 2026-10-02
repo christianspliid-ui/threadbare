@@ -25,7 +25,7 @@ player, the batch is not ready to run.
 
 ## Family and setting envelope
 
-- **Family:** `encounter.<family>.*`
+- **Family:** `encounter.<family>.*` — **never `encounter.slice.*`**: that prefix is Christian's reserved vertical-slice set (held out of opening coloration by `COLORATION_EXCLUDED_TEMPLATE_PREFIXES`, pinned at ten templates by test). Pick the family before drafting — the consequence hand is drawn from the id, so renaming later re-rolls every hand (impediment #1112, ~45 min).
 - **Setting classes:** <the envelope classes each encounter must author an opening for>
 - **Excluded:** <settings this batch deliberately does not enter, and why>
 
