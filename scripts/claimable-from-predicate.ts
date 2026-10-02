@@ -33,14 +33,21 @@
  * that `Date.parse` accepts; anything else is treated as no hold.
  */
 export const CLAIMABLE_FROM_LINE_PATTERN =
-  /^[ \t>*_-]*\**Claimable from:\**[ \t]*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|[+-][0-9]{2}:?[0-9]{2}))`?/im;
+  /^[ \t>*_-]*\**Claimable from:\**[ \t]*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(?:Z|[+-][0-9]{2}:?[0-9]{2}))`?/gim;
 
-/** The hold time a description declares, or `null` when it declares none (or an unparseable one). */
+/**
+ * The hold time a description declares, or `null` when it declares none (or only unparseable ones).
+ * Writers replace an existing line, but if a re-handoff leaves a stale one behind, the **latest**
+ * time wins: honouring the longer hold costs at most a delayed pickup, while honouring the older one
+ * would build the ticket inside a veto window that is still open.
+ */
 export function parseClaimableFrom(description: string | null | undefined): Date | null {
-  const match = CLAIMABLE_FROM_LINE_PATTERN.exec(description ?? "");
-  if (!match) return null;
-  const ms = Date.parse(match[1]);
-  return Number.isNaN(ms) ? null : new Date(ms);
+  let latest: number | null = null;
+  for (const match of (description ?? "").matchAll(CLAIMABLE_FROM_LINE_PATTERN)) {
+    const ms = Date.parse(match[1]);
+    if (!Number.isNaN(ms) && (latest === null || ms > latest)) latest = ms;
+  }
+  return latest === null ? null : new Date(latest);
 }
 
 /** True when the description holds the ticket past `now`. The boundary instant is claimable. */

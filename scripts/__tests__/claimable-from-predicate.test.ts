@@ -89,6 +89,12 @@ describe("parseClaimableFrom", () => {
     expect(isHeld(description, NOW)).toBe(false);
   });
 
+  it("takes the latest hold when a re-handoff left a stale line behind", () => {
+    const description = `Claimable from: ${HOUR_BEHIND}\n\nre-handed off\n\nClaimable from: ${HOUR_AHEAD}`;
+    expect(parseClaimableFrom(description)?.toISOString()).toBe("2026-10-02T21:00:00.000Z");
+    expect(isHeld(description, NOW)).toBe(true);
+  });
+
   it("treats the boundary instant as claimable", () => {
     expect(isHeld("Claimable from: 2026-10-02T20:00:00Z", NOW)).toBe(false);
   });
