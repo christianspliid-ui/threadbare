@@ -1,7 +1,7 @@
 ---
 name: design-lane
 description: The unattended design lane (tb-design-lane, four runs a day). Progresses agreed design work without Christian present — decides a wayfinder map's frontier ticket under the 2026-09-11 delegation with outputs attached and a veto invited, closes a cleared map with its carve-up, or authors, gates and hands off one plan doc for agreed-but-undesigned work. Never charts a map, never picks direction, never touches a ticket reserved for Christian. Christian's ruling 2026-09-25 (THR-1611).
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-02
 ---
 
 # Design lane
@@ -176,6 +176,11 @@ block after `check:plan-doc-liveness` says `LIVE`. Two lane-specific rules:
   state in the plan doc which of them the lane decided under delegation.
 
 Handoff moves the ticket to `Ready for Dev`, unassigned, with the coordination block as the latest comment.
+**If any decision the plan doc builds on is still inside its veto window, the handoff writes
+`Claimable from: <ISO-8601 UTC>` into the issue description** — the youngest such decision's time plus
+`DESIGN_LANE_VETO_WINDOW_HOURS` (design-session Step 5 item 2a, THR-1694). The hourly pickup reads descriptions
+before it claims and skips the ticket until then; a hold stated only in a comment cost six claim/release round
+trips on THR-1687 on 2026-10-01.
 If the run ends first, post a `design-lane checkpoint` comment (done / remaining / branch / next step) and keep
 the claim; Step 1 resumes it.
 

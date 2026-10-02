@@ -25,7 +25,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Partition candidates by **Rule 0** (flow impediments with demonstrated cost outrank everything, whatever their `priority` field — see Step 1), then sort each partition by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top of partition 1 if non-empty, else the top of partition 2 — considering **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Drop candidates whose description carries a future `Claimable from:` time (THR-1694, see Step 1). Partition candidates by **Rule 0** (flow impediments with demonstrated cost outrank everything, whatever their `priority` field — see Step 1), then sort each partition by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top of partition 1 if non-empty, else the top of partition 2 — considering **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -245,6 +245,14 @@ Instead, **count it and say so.** Partition the queue response and emit one line
 ```
 
 `A > 0` means the writer-side leak has reopened (the create path in the orchestrator prompt's T1 step 5a, or a new filer that does not know the rule). Treat those issues as **candidates anyway**, and clear the stray assignee with `save_issue(id, assignee:null)` on the one you pick — it is a one-line repair, and `stale-claim-sweep`'s queue-assignee pass will catch the rest within 12 hours. Do not skip them and do not stop; a non-zero `A` is a number to report, not a blocker.
+
+**Drop held candidates before anything else is decided (THR-1694).** A ticket handed off under a veto window carries one line in its **description**: `Claimable from: <ISO-8601 UTC>`. Read it from the board-scan response — the default `list_issues` result includes `description`; if you pass `fields`, include `"description"` — and drop every candidate whose time is still in the future, one trace line each:
+
+```
+[pull-work] skipped THR-1687 — claimable from 2026-10-02T12:30:00.000Z
+```
+
+The rule's one definition is `scripts/claimable-from-predicate.ts` (`partitionHeldCandidates`, pinned by its test): the line must start the line (a mid-sentence mention is not a hold), and a missing or unparseable time means **claimable** — a malformed hold must never hide work. This is a filter on data already read, so claim-before-read is untouched. **If every candidate is held, the run's output is `[pull-work] Step 1: queue held until <earliest time> — no claimable work.`, not "queue empty"** — the two need different responses from whoever reads the report (a held shelf opens by itself; an empty one needs supply). Why it exists: a hold stated only in a comment is read *after* the claim, so on 2026-10-01 the pickup claimed, read, and released THR-1687 six hours running while the whole queue (THR-1572, THR-1686, THR-1687) was held (impediment row 1121). A held ticket whose description lacks the line still costs one claim/release — release it, and add the line to its description in the same pass so the next run is told.
 
 Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
 
