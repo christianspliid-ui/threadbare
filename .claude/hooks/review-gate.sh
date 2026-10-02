@@ -13,8 +13,11 @@ PAYLOAD="$(cat)"
 
 # Fast path: neither a merge nor a push → allow, no node spawn. (A push is judged
 # only when its PR already has auto-merge armed — that push merges with no further
-# `gh pr merge`. The node side tokenises, so quoted mentions never match.)
-if ! printf '%s' "$PAYLOAD" | grep -Eq 'gh[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push'; then
+# `gh pr merge`. The push test is loose — `git` and `push` anywhere — so `git -C <dir>
+# push` still reaches node; the node side tokenises, so quoted mentions never match.)
+if ! printf '%s' "$PAYLOAD" | grep -Eq 'gh[[:space:]]+pr[[:space:]]+merge' \
+  && ! { printf '%s' "$PAYLOAD" | grep -Eq '(^|[^[:alnum:]_-])git([^[:alnum:]_-]|$)' \
+         && printf '%s' "$PAYLOAD" | grep -Eq '(^|[^[:alnum:]_-])push([^[:alnum:]_-]|$)'; }; then
   exit 0
 fi
 

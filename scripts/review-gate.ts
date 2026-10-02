@@ -77,77 +77,17 @@ const SEPARATORS = new Set([";", "&", "|"]);
 const ENV_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
 
 /**
- * Index of `seq` (e.g. `gh pr merge`) at a **command position** — the start of the
- * line or right after `;`, `&`, `|`, past any `VAR=value` prefixes — or -1. Tokenised,
- * so the same text inside a quoted commit message or PR body never matches (a raw
- * substring test denied `git commit -m "… gh pr merge …"` on every code branch).
+ * Minimal shell-word splitter: respects single and double quotes, enough for argv
+ * inspection. `;`, `&`, `|` and **newlines** come back as separator words (a newline
+ * as `;`), so every line of a multi-line call is its own command; a backslash-newline
+ * continuation joins lines first.
  */
-export function findCommand(words: readonly string[], seq: readonly string[]): number {
-  for (let i = 0; i + seq.length <= words.length; i++) {
-    if (!seq.every((w, k) => words[i + k] === w)) continue;
-    let j = i - 1;
-    while (j >= 0 && ENV_ASSIGNMENT.test(words[j])) j--;
-    if (j < 0 || SEPARATORS.has(words[j])) return i;
-  }
-  return -1;
-}
-
-/** The words of the command that starts at `start`, up to the next separator. */
-function commandSegment(words: readonly string[], start: number): string[] {
-  const out: string[] = [];
-  for (let j = start; j < words.length && !SEPARATORS.has(words[j]); j++) out.push(words[j]);
-  return out;
-}
-
-/** Does this shell command arm (or perform) a PR merge? Disarming is never gated. */
-export function isMergeCommand(command: string): boolean {
-  const words = shellWords(command);
-  const i = findCommand(words, ["gh", "pr", "merge"]);
-  if (i < 0) return false;
-  return !commandSegment(words, i).includes("--disable-auto");
-}
-
-/** Is this shell command a `git push`? (Gated only when the target PR already has auto-merge armed.) */
-export function isPushCommand(command: string): boolean {
-  return findCommand(shellWords(command), ["git", "push"]) >= 0;
-}
-
-/** `git push` flags that consume the next word as their value. */
-const PUSH_VALUE_FLAGS = new Set(["-o", "--push-option", "--repo", "--receive-pack", "--exec"]);
-
-/**
- * What a `git push` sends where: the local `source` rev (default `HEAD`) and the remote
- * branch `dest` (null = the current branch's upstream). `git push origin HEAD:topic`
- * → `{ source: "HEAD", dest: "topic" }`.
- */
-export function extractPushTarget(command: string): { source: string; dest: string | null } {
-  const words = shellWords(command);
-  const i = findCommand(words, ["git", "push"]);
-  if (i < 0) return { source: "HEAD", dest: null };
-  const positional: string[] = [];
-  const segment = commandSegment(words, i + 2);
-  for (let j = 0; j < segment.length; j++) {
-    const w = segment[j];
-    if (PUSH_VALUE_FLAGS.has(w)) { j++; continue; }
-    if (w.startsWith("-")) continue;
-    positional.push(w);
-  }
-  const refspec = positional[1];
-  if (!refspec) return { source: "HEAD", dest: null };
-  const spec = refspec.replace(/^\+/, "");
-  const colon = spec.indexOf(":");
-  const source = colon >= 0 ? spec.slice(0, colon) || "HEAD" : spec;
-  const rawDest = colon >= 0 ? spec.slice(colon + 1) : spec;
-  return { source, dest: rawDest.replace(/^refs\/heads\//, "") || null };
-}
-
-/** Minimal shell-word splitter: respects single and double quotes, enough for argv inspection. */
 export function shellWords(command: string): string[] {
   const words: string[] = [];
   let current = "";
   let quote: '"' | "'" | null = null;
   let inWord = false;
-  for (const ch of command) {
+  for (const ch of command.replace(/\\\r?\n/g, " ")) {
     if (quote) {
       if (ch === quote) quote = null;
       else current += ch;
@@ -158,11 +98,12 @@ export function shellWords(command: string): string[] {
       inWord = true;
       continue;
     }
-    if (/\s/.test(ch) || ch === ";" || ch === "&" || ch === "|") {
+    if (/\s/.test(ch) || SEPARATORS.has(ch)) {
       if (inWord) words.push(current);
       current = "";
       inWord = false;
-      if (ch !== " " && ch !== "\t" && ch !== "\n") words.push(ch);
+      if (SEPARATORS.has(ch)) words.push(ch);
+      else if (ch === "\n" || ch === "\r") words.push(";");
       continue;
     }
     current += ch;
@@ -172,6 +113,97 @@ export function shellWords(command: string): string[] {
   return words;
 }
 
+/**
+ * The simple commands of a shell line, each as its argv with any leading `VAR=value`
+ * assignments dropped. Tokenised, so text inside a quoted commit message or PR body is
+ * one word and never reads as a command (a raw substring test denied
+ * `git commit -m "… gh pr merge …"` on every code branch).
+ */
+export function commandsOf(command: string): string[][] {
+  const out: string[][] = [];
+  let seg: string[] = [];
+  const flush = () => {
+    let k = 0;
+    while (k < seg.length && ENV_ASSIGNMENT.test(seg[k])) k++;
+    if (k < seg.length) out.push(seg.slice(k));
+    seg = [];
+  };
+  for (const w of shellWords(command)) {
+    if (SEPARATORS.has(w)) flush();
+    else seg.push(w);
+  }
+  flush();
+  return out;
+}
+
+const isGhPrMerge = (argv: readonly string[]) => argv[0] === "gh" && argv[1] === "pr" && argv[2] === "merge";
+const isArmingMerge = (argv: readonly string[]) => isGhPrMerge(argv) && !argv.includes("--disable-auto");
+
+/**
+ * Does this shell command arm (or perform) a PR merge? Every command on the line is
+ * checked, so a disarm earlier in the line cannot hide a later re-arm. Disarming
+ * alone is never gated.
+ */
+export function isMergeCommand(command: string): boolean {
+  return commandsOf(command).some(isArmingMerge);
+}
+
+/** git global options that take the next word as their value (`git -C <dir> push`). */
+const GIT_VALUE_OPTIONS = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env"]);
+
+/** The first `git … push` on the line: its push args and any `-C` directory. */
+function findPush(command: string): { args: string[]; dir: string | null } | null {
+  for (const argv of commandsOf(command)) {
+    if (argv[0] !== "git") continue;
+    let dir: string | null = null;
+    let k = 1;
+    while (k < argv.length && argv[k].startsWith("-")) {
+      if (GIT_VALUE_OPTIONS.has(argv[k])) {
+        if (argv[k] === "-C") dir = dir ? `${dir}/${argv[k + 1]}` : argv[k + 1] ?? null;
+        k += 2;
+      } else {
+        k += 1;
+      }
+    }
+    if (argv[k] === "push") return { args: argv.slice(k + 1), dir };
+  }
+  return null;
+}
+
+/** Is this shell command a `git push`? (Gated only when the target PR already has auto-merge armed.) */
+export function isPushCommand(command: string): boolean {
+  return findPush(command) !== null;
+}
+
+/** `git push` flags that consume the next word as their value. */
+const PUSH_VALUE_FLAGS = new Set(["-o", "--push-option", "--repo", "--receive-pack", "--exec"]);
+
+/**
+ * What a `git push` sends where: the local `source` rev (default `HEAD`), the remote
+ * branch `dest` (null = the current branch — which is also what `HEAD` means as a
+ * destination, so `git push -u origin HEAD` looks up the current branch's PR, not a
+ * branch named HEAD), and the `-C` directory it runs in. `git push origin HEAD:topic`
+ * → `{ source: "HEAD", dest: "topic", dir: null }`.
+ */
+export function extractPushTarget(command: string): { source: string; dest: string | null; dir: string | null } {
+  const push = findPush(command);
+  if (!push) return { source: "HEAD", dest: null, dir: null };
+  const positional: string[] = [];
+  for (let j = 0; j < push.args.length; j++) {
+    const w = push.args[j];
+    if (PUSH_VALUE_FLAGS.has(w)) { j++; continue; }
+    if (w.startsWith("-")) continue;
+    positional.push(w);
+  }
+  const refspec = positional[1];
+  if (!refspec) return { source: "HEAD", dest: null, dir: push.dir };
+  const spec = refspec.replace(/^\+/, "");
+  const colon = spec.indexOf(":");
+  const source = colon >= 0 ? spec.slice(0, colon) || "HEAD" : spec;
+  const dest = (colon >= 0 ? spec.slice(colon + 1) : spec).replace(/^refs\/heads\//, "");
+  return { source, dest: dest && dest !== "HEAD" ? dest : null, dir: push.dir };
+}
+
 /** `gh pr merge` flags that consume the next word as their value. */
 const VALUE_FLAGS = new Set([
   "-t", "--subject", "-b", "--body", "-F", "--body-file",
@@ -179,32 +211,26 @@ const VALUE_FLAGS = new Set([
 ]);
 
 /**
- * The PR the command names (`gh pr merge 123 --auto`, a URL, or a branch), or null
- * when it targets the current branch. Also returns `--repo` when given.
+ * The PR the first arming `gh pr merge` names (`gh pr merge 123 --auto`, a URL, or a
+ * branch), or null when it targets the current branch. Also returns `--repo` when given.
  */
 export function extractMergeTarget(command: string): { target: string | null; repo: string | null } {
-  const words = shellWords(command);
-  const start = findCommand(words, ["gh", "pr", "merge"]);
-  for (let i = Math.max(start, 0); start >= 0 && i + 2 < words.length; i++) {
-    if (words[i] === "gh" && words[i + 1] === "pr" && words[i + 2] === "merge") {
-      let target: string | null = null;
-      let repo: string | null = null;
-      for (let j = i + 3; j < words.length; j++) {
-        const w = words[j];
-        if (w === ";" || w === "&" || w === "|") break;
-        if (VALUE_FLAGS.has(w)) {
-          if (w === "-R" || w === "--repo") repo = words[j + 1] ?? null;
-          j++;
-          continue;
-        }
-        if (w.startsWith("--repo=")) { repo = w.slice("--repo=".length); continue; }
-        if (w.startsWith("-")) continue;
-        if (target === null) target = w;
-      }
-      return { target, repo };
+  const argv = commandsOf(command).find(isArmingMerge);
+  if (!argv) return { target: null, repo: null };
+  let target: string | null = null;
+  let repo: string | null = null;
+  for (let j = 3; j < argv.length; j++) {
+    const w = argv[j];
+    if (VALUE_FLAGS.has(w)) {
+      if (w === "-R" || w === "--repo") repo = argv[j + 1] ?? null;
+      j++;
+      continue;
     }
+    if (w.startsWith("--repo=")) { repo = w.slice("--repo=".length); continue; }
+    if (w.startsWith("-")) continue;
+    if (target === null) target = w;
   }
-  return { target: null, repo: null };
+  return { target, repo };
 }
 
 /**
@@ -453,9 +479,21 @@ function evaluateMerge(command: string, cwd: string): GateDecision {
       };
     }
   } else {
-    headSha = git(cwd, ["rev-parse", "HEAD"]);
-    const view = viewPr(cwd, null, null, "comments");
+    // `gh pr merge` with no argument arms the current branch's PR — whose head is the
+    // REMOTE head. Judge that, not a local HEAD another tree may have pushed past.
+    const view = viewPr(cwd, null, null, "number,headRefOid,comments");
     prComments = (view?.comments ?? []).map((c) => c.body);
+    if (view?.headRefOid) {
+      headSha = view.headRefOid;
+      if (!ensureCommit(cwd, headSha, view.number)) {
+        return {
+          verdict: "deny",
+          reason: `this branch's PR head ${headSha.slice(0, 10)} is not in this repo even after a fetch — git fetch origin, then retry`,
+        };
+      }
+    } else {
+      headSha = git(cwd, ["rev-parse", "HEAD"]);
+    }
   }
   return decideReviewGate(gatherGateInputs(cwd, headSha, prComments));
 }
@@ -465,8 +503,10 @@ function evaluateMerge(command: string, cwd: string): GateDecision {
  * further `gh pr merge` — so the gate has to stand here too, or a fix pushed after a
  * red CI ships unreviewed. Pushes to unarmed or PR-less branches are not judged.
  */
-function evaluatePush(command: string, cwd: string): GateDecision {
-  const { source, dest } = extractPushTarget(command);
+function evaluatePush(command: string, hookCwd: string): GateDecision {
+  const { source, dest, dir } = extractPushTarget(command);
+  // `git -C <dir> push` runs in <dir>: judge that repo, not the hook's cwd.
+  const cwd = dir ? path.resolve(hookCwd, normalizeCwd(dir)) : hookCwd;
   const view = viewPr(cwd, dest, null, "number,state,autoMergeRequest,comments");
   if (!view || !view.autoMergeRequest || (view.state && view.state !== "OPEN")) {
     return { verdict: "allow", reason: "push to a branch with no armed PR — not judged" };

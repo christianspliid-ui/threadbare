@@ -75,16 +75,30 @@ describe("review gate — pure verdict", () => {
     expect(isMergeCommand("gh pr create --body 'then gh pr merge --auto --merge'")).toBe(false);
     expect(isMergeCommand('git log --grep "gh pr merge"')).toBe(false);
     expect(isMergeCommand("GH_TOKEN=x gh pr merge 5 --auto")).toBe(true);
-    expect(isMergeCommand("gh pr merge 5 --disable-auto; gh pr merge 6 --auto")).toBe(false);
+    expect(isMergeCommand("gh pr merge 5 --disable-auto")).toBe(false);
+    // A disarm earlier in the line must not hide a later re-arm.
+    expect(isMergeCommand("gh pr merge 5 --disable-auto; gh pr merge 6 --auto")).toBe(true);
+    expect(extractMergeTarget("gh pr merge 5 --disable-auto; gh pr merge 6 --auto")).toEqual({ target: "6", repo: null });
+  });
+
+  it("treats every line of a multi-line call as its own command", () => {
+    expect(isMergeCommand('gh pr create --title t --body "x"\ngh pr comment 9 --body-file c.md\ngh pr merge --auto --merge')).toBe(true);
+    expect(isMergeCommand("git status\r\ngh pr merge --auto")).toBe(true);
+    expect(isPushCommand('git add -A\ngit commit -m "wip"\ngit push -u origin HEAD')).toBe(true);
+    expect(isMergeCommand("gh pr merge \\\n  --auto --merge")).toBe(true);
   });
 
   it("recognises pushes and reads what they send where", () => {
     expect(isPushCommand("git push")).toBe(true);
     expect(isPushCommand('git commit -m "then git push"')).toBe(false);
-    expect(extractPushTarget("git push")).toEqual({ source: "HEAD", dest: null });
-    expect(extractPushTarget("git push -u origin HEAD")).toEqual({ source: "HEAD", dest: "HEAD" });
-    expect(extractPushTarget("git push origin HEAD:claude/topic")).toEqual({ source: "HEAD", dest: "claude/topic" });
-    expect(extractPushTarget("git push -o ci.skip origin +abc123:refs/heads/topic")).toEqual({ source: "abc123", dest: "topic" });
+    expect(isPushCommand("git -C C:/x/tree push")).toBe(true);
+    expect(isPushCommand("git -c core.x=1 --no-pager push origin HEAD")).toBe(true);
+    expect(extractPushTarget("git push")).toEqual({ source: "HEAD", dest: null, dir: null });
+    // HEAD as a destination means the current branch — never a branch named "HEAD".
+    expect(extractPushTarget("git push -u origin HEAD")).toEqual({ source: "HEAD", dest: null, dir: null });
+    expect(extractPushTarget("git push origin HEAD:claude/topic")).toEqual({ source: "HEAD", dest: "claude/topic", dir: null });
+    expect(extractPushTarget("git push -o ci.skip origin +abc123:refs/heads/topic")).toEqual({ source: "abc123", dest: "topic", dir: null });
+    expect(extractPushTarget("git -C ../tree push origin topic")).toEqual({ source: "topic", dest: "topic", dir: "../tree" });
   });
 
   it("counts only the PR's own files in a carried receipt's delta", () => {
@@ -322,6 +336,43 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     expect(runHook("git push", armed).status).toBe(0);
     clearReceipts();
     expect(runHook("git push", { ...armed, autoMergeRequest: null }).status).toBe(0);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges the PR's remote head on a bare `gh pr merge`, not a stale local HEAD", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const reviewed = head();
+    writeReceipt(reviewed, null);
+    // Another tree pushed an unreviewed fix; this tree is still at the reviewed commit.
+    commit("src/fix.ts", "fix: pushed from elsewhere");
+    const remoteHead = head();
+    resetTo(reviewed);
+    expect(runHook("gh pr merge --auto --merge").status).toBe(0);
+    const r = runHook("gh pr merge --auto --merge", { number: 9, headRefOid: remoteHead, comments: [] });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain(remoteHead.slice(0, 10));
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges a multi-line call whose last line arms the merge", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    expect(runHook('gh pr comment 9 --body-file c.md\ngh pr merge --auto --merge').status).toBe(2);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges `git -C <dir> push` to an armed PR in <dir>", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const armed = { number: 9, state: "OPEN", autoMergeRequest: { mergeMethod: "MERGE" }, comments: [] };
+    const result = spawnSync(BASH as string, [HOOK], {
+      input: JSON.stringify({ tool_name: "Bash", tool_input: { command: `git -C "${repo}" push -u origin HEAD` }, cwd: tmpdir() }),
+      encoding: "utf8",
+      env: { ...process.env, REVIEW_GATE_NO_GH: "1", REVIEW_GATE_PR_FIXTURE: JSON.stringify(armed) },
+    });
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("auto-merge armed");
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("fails soft (allows) when the gate itself errors", () => {
