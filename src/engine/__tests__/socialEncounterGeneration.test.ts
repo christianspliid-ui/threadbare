@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateSocialCandidates,
+  collectBlessedHearthIds,
   computeBondModifier,
   computeReputationBondShift,
   STRONG_BOND_THRESHOLD,
@@ -18,6 +19,7 @@ import {
   REPUTATION_BOND_SHIFT_MAX,
 } from '../socialEncounterGeneration';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
+import { HEARTH_BLESSING_SOCIAL_BOOST } from '../../data/ascendant-expression-constants';
 import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
 import { TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
 import { generateTavernName } from '../../data/tavern-names';
@@ -283,6 +285,52 @@ describe('socialEncounterGeneration', () => {
       for (const c of candidates) {
         expect(c.questPriority).toBeGreaterThanOrEqual(minExpected);
       }
+    });
+
+    it('a blessed hearth raises the tavern multiplier by HEARTH_BLESSING_SOCIAL_BOOST (THR-662)', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+
+      const plain = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm, 0);
+      const blessed = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm, 0, new Set(['tavern-1']));
+      expect(plain.length).toBeGreaterThan(0);
+      expect(blessed.length).toBe(plain.length);
+      for (let i = 0; i < plain.length; i++) {
+        expect(blessed[i].questPriority).toBeCloseTo(plain[i].questPriority + HEARTH_BLESSING_SOCIAL_BOOST);
+      }
+    });
+
+    it('a blessing on another tavern, or outside any tavern, changes nothing (THR-662)', () => {
+      addLocation(graph, 'town-1', 'town');
+      addTavernSublocation(graph, 'tavern-1', 'town-1');
+      addAgent(graph, 'agent-a', 'tavern-1');
+      addAgent(graph, 'agent-b', 'town-1');
+      const dm = makeDistanceMatrix([['town-1', 'town-1', 0]]);
+      const plain = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm, 0);
+      const elsewhere = generateSocialCandidates(graph, 'agent-a', 'tavern-1', dm, 0, new Set(['tavern-9']));
+      expect(elsewhere.map(c => c.questPriority)).toEqual(plain.map(c => c.questPriority));
+      // An agent in the open town is never at a tavern, so a blessed id on its location is inert.
+      const outside = generateSocialCandidates(graph, 'agent-b', 'town-1', dm, 0, new Set(['town-1']));
+      const outsidePlain = generateSocialCandidates(graph, 'agent-b', 'town-1', dm, 0);
+      expect(outside.map(c => c.questPriority)).toEqual(outsidePlain.map(c => c.questPriority));
+    });
+
+    it('collectBlessedHearthIds keeps only active sub.sanctify_tavern effects (THR-662)', () => {
+      const base = {
+        ownerId: 'asc-1', targetHexCol: 0, targetHexRow: 0, establishedTick: 0,
+        ritualEssenceInvested: 0, perTickCost: {}, perTickMutations: [], perTickGraphOps: [],
+        ticksActive: 0, narrativeTemplates: { established: '', active: '', lapsed: '' },
+      };
+      const ids = collectBlessedHearthIds([
+        { ...base, effectId: 'e1', templateId: 'sub.sanctify_tavern', targetNodeId: 'tavern-1', active: true },
+        { ...base, effectId: 'e2', templateId: 'sub.sanctify_tavern', targetNodeId: 'tavern-2', active: false },
+        { ...base, effectId: 'e3', templateId: 'sub.sanctify', targetNodeId: 'shrine-1', active: true },
+      ] as never);
+      expect([...ids]).toEqual(['tavern-1']);
+      expect(collectBlessedHearthIds(undefined).size).toBe(0);
     });
 
     it('expands colocation to parent location when agent is at tavern', () => {

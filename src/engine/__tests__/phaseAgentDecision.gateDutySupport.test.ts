@@ -12,6 +12,7 @@ vi.mock('../encounterFilterPipeline', () => ({
 
 vi.mock('../socialEncounterGeneration', () => ({
   generateSocialCandidates: () => [],
+  collectBlessedHearthIds: () => new Set<string>(),
 }));
 
 vi.mock('../factionQuestGeneration', () => ({

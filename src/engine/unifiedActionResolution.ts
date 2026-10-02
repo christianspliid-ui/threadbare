@@ -3989,7 +3989,10 @@ export function phaseUnifiedActionProgress(
 
     // Spawn ControlEffect for successful sustained actions (TB-044)
     if (updatedAction.resolved && isActionSuccess(updatedAction.outcome)) {
-      const spawnResult = spawnControlEffect(updatedAction, template, state.tick, state.graph);
+      const spawnResult = spawnControlEffect(
+        updatedAction, template, state.tick, state.graph,
+        [...(state.controlEffects ?? []), ...spawnedEffects],
+      );
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
