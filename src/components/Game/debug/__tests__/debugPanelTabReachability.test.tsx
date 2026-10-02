@@ -54,8 +54,9 @@ describe('debug panel tab strip (THR-1412)', () => {
     }
 
     // Guard the guard: a TABS list that had silently shrunk to the six
-    // mouse-reachable tabs would satisfy the loop above vacuously.
-    expect(TABS.length).toBeGreaterThanOrEqual(43);
+    // mouse-reachable tabs would satisfy the loop above vacuously. (42, not the
+    // 43 measured above: THR-964 retired the Choices tab with its pipeline.)
+    expect(TABS.length).toBeGreaterThanOrEqual(42);
     expect(TABS.map(t => t.label)).toContain('Tallies');
   });
 
