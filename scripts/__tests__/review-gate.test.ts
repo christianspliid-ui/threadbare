@@ -21,6 +21,7 @@ import {
   decideReviewGate,
   extractMergeTarget,
   isMergeCommand,
+  normalizeCwd,
   parseCommentMarker,
   parseExemptReason,
   renderReceiptComment,
@@ -106,6 +107,14 @@ describe("review gate — pure verdict", () => {
 
   it("honors the exemption line", () => {
     expect(decideReviewGate({ ...base, commitBodies: "x\n\nReview-gate exempt: emergency revert\n" }).verdict).toBe("allow");
+  });
+
+  it("normalises an MSYS cwd on Windows only", () => {
+    expect(normalizeCwd("/c/Users/x/repo", "win32")).toBe("C:/Users/x/repo");
+    expect(normalizeCwd("/d", "win32")).toBe("D:/");
+    expect(normalizeCwd("C:\\Users\\x", "win32")).toBe("C:\\Users\\x");
+    expect(normalizeCwd("/c/Users/x/repo", "linux")).toBe("/c/Users/x/repo");
+    expect(normalizeCwd("/home/x", "win32")).toBe("/home/x");
   });
 
   it("round-trips the PR-comment marker", () => {

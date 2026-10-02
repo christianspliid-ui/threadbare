@@ -278,8 +278,20 @@ function findCarriedReceipt(cwd: string, receiptDir: string, headSha: string): R
   return null;
 }
 
+/**
+ * An MSYS-style `/c/Users/…` path (what Git Bash hands around) is meaningless to a
+ * native `git.exe` spawned from node — every `git -C` then throws and the gate
+ * fail-softs into ALLOW. Normalise it to `C:/Users/…` on Windows.
+ */
+export function normalizeCwd(cwd: string, platform: string = process.platform): string {
+  if (platform !== "win32") return cwd;
+  const m = cwd.match(/^\/([a-zA-Z])(\/.*)?$/);
+  return m ? `${m[1].toUpperCase()}:${m[2] ?? "/"}` : cwd;
+}
+
 export function evaluateHookPayload(payload: { command: string; cwd: string }): GateDecision {
-  const { command, cwd } = payload;
+  const { command } = payload;
+  const cwd = normalizeCwd(payload.cwd);
   if (!isMergeCommand(command)) return { verdict: "allow", reason: "not a merge command" };
 
   const { target, repo } = extractMergeTarget(command);
@@ -340,7 +352,7 @@ function runHook(): number {
   try {
     const parsed = JSON.parse(raw) as { tool_input?: { command?: string }; cwd?: string };
     command = parsed.tool_input?.command ?? "";
-    if (parsed.cwd) cwd = parsed.cwd;
+    if (parsed.cwd) cwd = normalizeCwd(parsed.cwd);
   } catch {
     return 0; // Not a payload we understand — not ours to judge.
   }
