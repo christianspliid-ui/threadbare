@@ -65,6 +65,7 @@ import { ReachIcon } from '../icons';
 import { CardKeywordChip } from './CardKeywordChip';
 import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
+import { sphereTint, sphereBrightToken } from './sphereTint';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
 // These name the same tokens `EncounterVeil.tsx` and `NudgePhaseShell.tsx` use;
@@ -237,6 +238,14 @@ export interface CardFaceModel {
    * not touch.
    */
   readonly markTooltips?: boolean;
+  /**
+   * Sphere tint (THR-1586) — the Premonition's per-option recipe, shared. Set by
+   * the producers when the card draws essence from a named sphere
+   * (`sphere && essenceCost > 0`, the THR-1607 predicate). Colours the *resting*
+   * edge and ground only: selected, resolved and disabled states keep their own
+   * border, and the price is never tinted (its colour carries affordability).
+   */
+  readonly sphereTint?: SphereName;
   /** Effective essence price, after any discount. */
   readonly cost: number;
   /** Emphasise the price, as an unaffordable card does. */
@@ -312,6 +321,17 @@ function cardTint(selected: boolean): string {
   return selected ? 'rgb(var(--veil-gold-rgb) / 0.12)' : 'rgba(255, 255, 255, 0.02)';
 }
 
+/** The resting edge every untinted card wears. */
+const RESTING_BORDER = 'rgb(var(--veil-gold-rgb) / 0.18)';
+
+/**
+ * Whether the sphere tint shows right now. State wins over tint: a selected,
+ * resolved or disabled card keeps the border it has always had (THR-1586).
+ */
+export function cardSphereTintActive(model: Pick<CardFaceModel, 'sphereTint' | 'selected' | 'disabled' | 'resolvedBand'>): boolean {
+  return !!model.sphereTint && !model.selected && !model.disabled && !model.resolvedBand;
+}
+
 export function CardFace({
   model,
   designerView,
@@ -322,6 +342,8 @@ export function CardFace({
   onToggle: () => void;
 }) {
   const { id, testIdPrefix: p, dimmed } = model;
+  const tintColor = model.sphereTint && cardSphereTintActive(model) ? sphereBrightToken(model.sphereTint) : null;
+  const groundTint = tintColor ? sphereTint(tintColor, 'bg') : cardTint(model.selected);
 
   return (
     <button
@@ -332,6 +354,7 @@ export function CardFace({
       disabled={model.disabled}
       onClick={onToggle}
       {...(model.dataAttributes ?? {})}
+      {...(model.sphereTint ? { 'data-sphere-tint': model.sphereTint } : {})}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -350,8 +373,8 @@ export function CardFace({
         // its own, so the location page painted straight through every card body.
         // The gradient does not interpolate, so the selection tint snaps rather
         // than fades; the gold border and glow still carry the transition.
-        background: `linear-gradient(${cardTint(model.selected)}, ${cardTint(model.selected)}), var(--bg-surface)`,
-        border: `1px solid ${model.selected ? GOLD : 'rgb(var(--veil-gold-rgb) / 0.18)'}`,
+        background: `linear-gradient(${groundTint}, ${groundTint}), var(--bg-surface)`,
+        border: `1px solid ${model.selected ? GOLD : tintColor ? sphereTint(tintColor, 'border') : RESTING_BORDER}`,
         boxShadow: model.selected ? `0 0 12px rgb(var(--veil-gold-rgb) / 0.22)` : undefined,
         filter: dimmed ? CARD_DIMMED_FILTER : undefined,
         cursor: model.disabled ? 'not-allowed' : 'pointer',

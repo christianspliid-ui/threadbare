@@ -2983,3 +2983,12 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/agentAttachments.ts` (`innate_power` branch, `powerClass: 'innate'`) · `data/attachment-slot-constants.ts` · `components/Game/attachmentGlyphs.ts` | sheet build | `AttachmentsTab` | — | — | — |
 
 **Wired and asserted:** `monsters/__tests__/innatePower.test.ts` (16 tests) — eight definitions, one per family, sphere-true, stateless, every primitive `live`; no `enemies` aura (a lair elite has no faction, so it could never apply); an elite of each family minted through `phaseLairEscalation` carries exactly one innate edge to its family's power; the sheet lists it as Innate; on-demand definition, idempotent stamp, fail-soft unknown family. `fightStepInputs.test.ts`: Thick Hide adds +0.05 to a beast's clash difficulty; Crackling Air thins the fighter's standing by 0.03. Census (CLI 150 ticks, seed 42 medium): 22 elites, 22 stamped, 8 definitions.
+
+## Dialogue contexts (THR-1586)
+
+Presentation only: no orchestrator phase, no GameState field and no trace.
+- **Registry:** `src/components/shared/dialogContext.ts`. The surface → context map, including the palette-owning Premonition (`divine`) and veil (`encounter`).
+- **Modal:** `context` prop → `.dialog-ctx-*` class + `data-dialog-context`. Adopters are StoryBeatModal, AscendantBeatModal and JourneyVignetteModal (story), EmergenceDilemmaModal (elder), and DivineReceiptModal and MomentCard (gain). `RevealCard` forwards `context`.
+- **Card tint:** `CardFace` reads `model.sphereTint`. It is set by `actionCardModel` and by the nudge-card model in `NudgePhaseShell` (when `sphere && essenceCost > 0`). Tinted cards carry `data-sphere-tint`.
+- **Debug:** `__DEBUG.getDialogContexts()` returns `{ surfaces, open }`.
+- **StyleGuide:** `section-dialog-contexts`.

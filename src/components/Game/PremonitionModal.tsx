@@ -20,6 +20,7 @@ import type { WorldGraph } from '../../engine/graph';
 import { resolveTooltip, type TooltipResolverContext } from '../../engine/tooltipResolver';
 import { SPHERE_COLORS, QUINTESSENCE_COLOR } from '../../data/premonition-constants';
 import { formatEssence } from '../shared/formatEssence';
+import { sphereTint } from '../shared/sphereTint';
 
 // ─── Props ──────────────────────────────────────────────────────
 
@@ -69,16 +70,9 @@ const accent = (isWhisper: boolean, alphaToken: string) =>
   `rgb(var(${isWhisper ? '--premonition-whisper-rgb' : '--premonition-compulsion-rgb'}) / var(${alphaToken}))`;
 
 /**
- * Sphere-tinted option chrome. `color-mix` rather than the hex-suffix
- * concatenation this file used (`${color}40`), which silently produced invalid
- * CSS the moment `color` was not a 6-digit hex — the no-sphere fallback was
- * `'#888'`, so that path was emitting `#88840` and painting nothing. The
- * percentages reproduce the shipped alphas (0x40 ≈ 25%, 0x08 ≈ 3%, 0xdd ≈ 87%).
+ * Sphere-tinted option chrome — the recipe lives in `shared/sphereTint` (THR-1586)
+ * so cards share it; output here is unchanged (pinned by `sphereTint.test.tsx`).
  */
-const OPTION_BORDER_PCT = 25;
-const OPTION_BG_PCT = 3;
-const OPTION_TEXT_PCT = 87;
-const tint = (color: string, pct: number) => `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 // ─── Subject header (THR-1139) ──────────────────────────────────
 
@@ -130,15 +124,15 @@ function WhisperOptionRow({
     <button
       className="w-full text-left rounded-md border transition-colors duration-200 hover:brightness-125 disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
-        borderColor: tint(color, OPTION_BORDER_PCT),
-        background: tint(color, OPTION_BG_PCT),
+        borderColor: sphereTint(color, 'border'),
+        background: sphereTint(color, 'bg'),
         padding: '12px 16px',
       }}
       disabled={!affordable}
       onClick={onClick}
     >
       <div className="flex justify-between items-center">
-        <span className="text-sm" style={{ color: tint(color, OPTION_TEXT_PCT) }}>
+        <span className="text-sm" style={{ color: sphereTint(color, 'text') }}>
           {nudge.prose}
         </span>
         <span className="text-xs ml-2 whitespace-nowrap" style={{ color }}>
@@ -172,8 +166,8 @@ function CompulsionOptionRow({
     <button
       className="w-full text-left rounded-md border transition-colors duration-200 hover:brightness-125 disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
-        borderColor: tint(color, OPTION_BORDER_PCT),
-        background: tint(color, OPTION_BG_PCT),
+        borderColor: sphereTint(color, 'border'),
+        background: sphereTint(color, 'bg'),
         padding: '12px 16px',
       }}
       disabled={!affordable}

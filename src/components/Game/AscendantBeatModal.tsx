@@ -201,7 +201,7 @@ function unlockRowMaxWidth(cardCount: number): number {
 }
 
 const TEXT_FALLBACK_STYLE: React.CSSProperties = {
-  background: 'var(--bg-surface)',
+  background: 'var(--dlg-inset, var(--bg-surface))',
   border: '1px solid var(--border-subtle)',
   borderRadius: '6px',
   padding: 'var(--space-3)',
@@ -275,7 +275,7 @@ function UnlockCardRow({
 
 const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   background: 'var(--accent-gold)',
-  color: 'var(--bg-base)',
+  color: 'var(--bg-deep)',
   border: 'none',
   borderRadius: '4px',
   padding: 'var(--space-2) var(--space-6)',
@@ -327,6 +327,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
       onClose={handleClose}
       maxWidth={maxWidth}
       aria-label={`Ascendant beat: ${title}`}
+      context="story"
       panelClassName="frame-ceremonial"
     >
       {/* Zones scroll; the resolve button is pinned below so a tall card row can

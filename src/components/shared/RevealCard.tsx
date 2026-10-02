@@ -23,6 +23,7 @@
 
 import React from 'react';
 import { Modal } from './Modal';
+import type { DialogContext } from './dialogContext';
 import { Button } from './Button';
 import { Medallion } from './Medallion';
 import { FlavorQuote } from './FlavorQuote';
@@ -47,7 +48,7 @@ function Title({ children }: { children?: React.ReactNode }) {
       data-testid="reveal-title"
       style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', width: '100%' }}
     >
-      <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, var(--border-gold-strong))' }} />
+      <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, var(--dlg-rule, var(--border-gold-strong)))' }} />
       <h2
         style={{
           fontFamily: 'var(--font-display)',
@@ -61,7 +62,7 @@ function Title({ children }: { children?: React.ReactNode }) {
       >
         {children}
       </h2>
-      <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, var(--border-gold-strong), transparent)' }} />
+      <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, var(--dlg-rule, var(--border-gold-strong)), transparent)' }} />
     </div>
   );
 }
@@ -255,6 +256,12 @@ export interface RevealCardProps {
   onClose: () => void;
   maxWidth?: number;
   'aria-label'?: string;
+  /**
+   * Dialogue context, forwarded to `Modal` (THR-1586). Default neutral — the sole
+   * standalone caller, `EventPopup`, is an information surface and passes none;
+   * a reveal of a gain passes `context="gain"`.
+   */
+  context?: DialogContext;
   children: React.ReactNode;
 }
 
@@ -263,6 +270,7 @@ function RevealCardRoot({
   onClose,
   maxWidth = REVEAL_CARD_MAX_WIDTH,
   'aria-label': ariaLabel,
+  context,
   children,
 }: RevealCardProps) {
   // The zones scroll; the frame and the dismiss stay put. Splitting them is what
@@ -278,6 +286,7 @@ function RevealCardRoot({
       onClose={onClose}
       maxWidth={maxWidth}
       aria-label={ariaLabel}
+      context={context}
       panelClassName="frame-ceremonial"
     >
       <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>

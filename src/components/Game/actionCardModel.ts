@@ -173,6 +173,9 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
       : {}),
     ...(slot.reach ? { reach: slot.reach } : {}),
     ...(slot.sphere ? { sphere: slot.sphere } : {}),
+    // THR-1586: the Premonition's sphere tint on any card that draws essence from
+    // a named sphere — the same predicate as THR-1607's essence-row preview.
+    ...(slot.sphere && slot.essenceCost > 0 ? { sphereTint: slot.sphere } : {}),
     // Laws 1 + 17: the reach and sphere marks carry their registry tooltips here.
     // Opt-in on the face because the nudge card's DOM is pinned; see `CardFace`.
     markTooltips: true,

@@ -37,6 +37,22 @@
  * not move. "It should be a no-op" is not that demonstration — the measurement is.
  * Absent one, the failing snapshot still means the primitive is wrong.
  *
+ * ─── The second update — a deliberate colour change (THR-1586) ──────────
+ *
+ * Re-recorded 2026-10-02. This one is not an extraction: THR-1586's plan decided
+ * (director direction 2026-09-25, veto invited) that the Premonition's sphere tint
+ * spreads to the card face, so a resting card that draws essence from a named
+ * sphere now wears a sphere-coloured edge and ground, and every card carrying
+ * `sphereTint` gains `data-sphere-tint`. The fixture's card is a Force nudge that
+ * costs essence, so the five resting cases changed their border and background
+ * colour strings; the selected and dimmed/disabled cases kept their style exactly
+ * (state wins over tint) and gained only the attribute.
+ *
+ * Geometry was measured, not argued, against the bar above: on the styleguide at
+ * 1920×1080 an untinted and a tinted card both measured 210×333.75 px with a 1px
+ * border. Only colour values moved. Any future failure that is not a colour string
+ * still means the primitive is wrong.
+ *
  * ─── Why a hand-built card model is correct here, unusually ───
  *
  * This repo's `fixture_invents_both_sides` trap says a fixture that supplies

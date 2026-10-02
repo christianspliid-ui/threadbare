@@ -169,6 +169,8 @@ export function NudgeCard({
         },
         ...(card.keyword ? { keyword: { label: card.keyword, icon: card.keywordIcon } } : {}),
         ...(card.sphere ? { sphere: card.sphere } : {}),
+        // THR-1586: sphere tint when the nudge draws essence from a named sphere.
+        ...(card.sphere && card.essenceCost > 0 ? { sphereTint: card.sphere } : {}),
         cost: card.essenceCost,
         costEmphasised: dimmed && card.blockedCode === 'essence_unavailable',
         ...(card.costChannels ? { costChannels: card.costChannels } : {}),

@@ -60,7 +60,7 @@ const BODY: React.CSSProperties = {
 const HEADER: React.CSSProperties = {
   font: 'var(--type-section-label, 700 11px/1.2 var(--font-display, serif))',
   letterSpacing: '0.1em',
-  color: 'var(--accent-gold, #c9a227)',
+  color: 'var(--dlg-accent-text, var(--accent-gold))',
   textTransform: 'uppercase',
   display: 'flex',
   justifyContent: 'space-between',
@@ -71,7 +71,7 @@ const TIMER: React.CSSProperties = {
   fontFamily: 'var(--font-body, sans-serif)',
   fontSize: '11px',
   letterSpacing: 'normal',
-  color: 'var(--text-muted, #8a7d6b)',
+  color: 'var(--text-muted)',
   textTransform: 'none',
 };
 
@@ -97,7 +97,7 @@ const CARD_BASE: React.CSSProperties = {
 
 const CARD_TITLE: React.CSSProperties = {
   font: '600 13px/1.2 var(--font-display, serif)',
-  color: 'var(--accent-gold, #c9a227)',
+  color: 'var(--dlg-accent-text, var(--accent-gold))',
   letterSpacing: '0.04em',
   textTransform: 'uppercase',
 };
@@ -106,13 +106,13 @@ const CARD_PROSE: React.CSSProperties = {
   fontFamily: 'var(--font-display, serif)',
   fontStyle: 'italic',
   fontSize: '12px',
-  color: 'var(--text-primary, #e8dcc8)',
+  color: 'var(--text-primary)',
   lineHeight: 1.4,
 };
 
 const CARD_COST: React.CSSProperties = {
   fontSize: '11px',
-  color: 'var(--text-muted, #8a7d6b)',
+  color: 'var(--text-muted)',
   marginTop: 'auto',
 };
 
@@ -200,6 +200,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
       onClose={() => onResolve(CLOSE_RESOLVES_TO)}
       maxWidth={PANEL_MAX_WIDTH_PX}
       aria-label="Emergence Dilemma"
+      context="elder"
     >
       <Modal.Body>
         <div style={BODY}>
@@ -214,7 +215,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
               {ticksRemaining === 0 ? 'Auto-firing now' : `Auto-fires ${getDurationWord(ticksRemaining)}`}
             </span>
           </div>
-          <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary, #e8dcc8)', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
             The delve has reached its last breath. What do you do with what remains?
           </div>
           <div style={GRID}>

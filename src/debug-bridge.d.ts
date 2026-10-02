@@ -1737,6 +1737,27 @@ export interface DebugBridge {
     content: Record<string, { card: string; sheet: string | null; note?: string }>;
   }>;
   /**
+   * Dialogue contexts (THR-1586) — which kind of moment each dialog is.
+   *
+   * `surfaces` is the surface → context registry this build shipped
+   * (`src/components/shared/dialogContext.ts`): every surface that is not neutral,
+   * including the two that own their palette outside `Modal`'s `context` prop
+   * (`PremonitionModal` → `divine`, `EncounterVeil` → `encounter`, `ownsPalette: true`).
+   *
+   * `open` lists the `data-dialog-context` value of every `Modal` panel mounted right
+   * now — `'neutral'` for a reference surface, `'story'` / `'elder'` / `'gain'` for a
+   * moment. `[]` when no dialog is open. The state assertion for a palette browser-verify
+   * run: it proves the context the on-screen dialog *declared*.
+   */
+  getDialogContexts(): Promise<{
+    surfaces: ReadonlyArray<{
+      surface: string;
+      context: 'neutral' | 'story' | 'elder' | 'gain' | 'divine' | 'encounter';
+      ownsPalette: boolean;
+    }>;
+    open: string[];
+  }>;
+  /**
    * Open a reference through the live router, headlessly.
    *
    * `kind` may be a `WorldRefKind` **or** a `ContentObjectKindId` (THR-1491) — the two
