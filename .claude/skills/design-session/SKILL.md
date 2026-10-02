@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-02
 ---
 
 # design-session
@@ -247,6 +247,15 @@ Only after the plan doc is merged to `main`:
 1. Verify the Implementation-Planning → Ready-for-Dev exit criteria (coordination protocol § Exit Criteria):
    every pillar has numbered action items or an explicit N/A.
 2. Put the plan-doc path in the issue **description** too: `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``.
+2a. **Handing off under a veto window? Write the hold into the description, not only a comment (THR-1694).**
+   When the ticket must not be built before Christian has had his say — a decision this session or the design
+   lane made under delegation and invited a veto on, or any "wait until <time>" — add one line to the issue
+   **description**: `Claimable from: <ISO-8601 UTC>` (e.g. `Claimable from: 2026-10-03T14:00:00Z`; the design
+   lane's window is `DESIGN_LANE_VETO_WINDOW_HOURS` from the decision). `pull-work` Step 1 reads descriptions
+   *before* claiming and skips a ticket whose time is in the future; a hold stated only in a comment is read
+   *after* the claim, so the pickup lane claimed and released THR-1687 six times on 2026-10-01 (impediment row
+   1121). On a re-handoff, **replace** an existing line rather than adding a second (the predicate honours
+   the latest time if two survive). No window → no line. The predicate is `scripts/claimable-from-predicate.ts`.
 3. Move the issue: In Design → Implementation Planning → Ready for Dev. Verify each write stuck (`get_issue`).
 4. Post the handoff comment (coordination protocol § handoff template). **Every section present**; the
    coordination block is mandatory:
