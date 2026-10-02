@@ -69,6 +69,7 @@ Paste raw terminal output for 1–3 (and 4/5 when applicable) into the closing c
 
 Commit with Fixes THR-XX in the commit body.
 Open a PR. Put Fixes THR-XX in the PR description body too, not just the commit — on a non-squash merge the merge commit drops the body and Linear's auto-close misses it (impediment #140).
+Code PRs pass the review gate before arming (THR-1691): run the review-gate skill (.claude/skills/review-gate/SKILL.md) — cold reviewer subagent, refuting verifier, fix or rebut, max 2 rounds — write the receipt, and post its comment on the PR. The PreToolUse hook denies gh pr merge on a code diff without a clean receipt for the head; a denial means run the review, never route around the hook. Findings still open after round 2: do not arm — park the ticket naming them. Docs-only PRs skip it.
 Queue the merge with gh pr merge --auto --merge, then move on — do NOT poll-wait for CI (THR-675). GitHub holds the merge until the required Test · Typecheck · Build check is green and merges it with no session present, saving 3–8 min of session wall-clock per ship. Branch protection and the required check are unchanged; auto-merge removes the waiting, not the gate. A merged PR carrying the keyword is Done — do not manually save_issue(state:"Done"); let the merge-to-main auto-close fire. If the check later goes red the PR simply never merges: the issue stays In Dev and the next hourly run resumes it.
 Run the pull-work closeout: remove the temporary worktree immediately after push.
 
