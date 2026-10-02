@@ -1630,6 +1630,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       layer.signifierGroup.visible = locGroup?.visible ?? false;
     }, [zoomTier]);
 
+    // Rival-influence zoom sync — same visibility tier as locations (THR-829).
+    // Without it the layer's visibility froze at whatever tier it was built in,
+    // so zooming in on a paused map never revealed a scheme marker.
+    useEffect(() => {
+      const layer = rivalInfluenceLayerRef.current;
+      const locGroup = locationGroupRef.current;
+      if (!layer) return;
+      layer.group.visible = locGroup?.visible ?? false;
+    }, [zoomTier]);
+
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {
       if (coastlineRef.current) {

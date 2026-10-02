@@ -526,6 +526,7 @@ export type TraceCategory =
   | 'chronicle.aggregate_failed'
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced'
+  | 'rival.scheme_materialized'
   // Effect vocabulary activation (THR-1239)
   | 'effect.event_raised'
   | 'effect.charge_spent'
@@ -1024,6 +1025,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chronicle.aggregate_failed',
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
+  'rival.scheme_materialized',
   'effect.event_raised',
   'effect.charge_spent',
   'effect.overlay_applied',
