@@ -298,15 +298,14 @@ describe('the halt ratchet', () => {
 // ─── The gates (§5) ─────────────────────────────────────────────────
 
 describe('per-verb gates', () => {
-  // The gates are opt-in: `UNDERTAKING_DEFAULT_REQUIRES_LOCATION` ships `false`
-  // (THR-1294 — nothing walks an agent to its stage yet, so `true` left 93–97% of
-  // checkpoints unrolled), and `canRunBeside` defaults `true`. **No shipped
-  // template authors either flag**, so these tests supply templates that do.
+  // The gates are opt-in: every shipped multi-tick template authors
+  // `requiresLocation: false` (THR-1294 — nothing walks an agent to its stage, so
+  // `true` left 93–97% of checkpoints unrolled), and `canRunBeside` defaults
+  // `true`. **No shipped template turns either gate on**, so these tests supply
+  // templates that do.
   //
   // Mocking the one registry lookup keeps the rest of the path real, and makes
-  // the dependency explicit rather than riding a default that is going to change
-  // under them: when doc 2 authors real per-kind values, the mock deletes and the
-  // assertions stand.
+  // the dependency explicit rather than riding pack values that may change.
 
   it('defers rather than halts when a stage-bound undertaking’s actor is away', () => {
     const graph = buildGraph();

@@ -75,9 +75,9 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     // ── T2 seams (THR-1308) ──
     checkpointDifficulty: 0.5,
     // `false`, on THR-1310's evidence rather than on preference. Proximity landed and
-    // presence still starves the checkpoint: nothing moves an agent to its stage until
-    // doc 3's binder ships (TODO(THR-1294)), so `true` would make the whole route kind
-    // inert the way it made the wanderer family inert. Re-measure when the binder lands.
+    // presence still starves the checkpoint: nothing moves an agent to its stage (the
+    // binder shipped without a stage mover — THR-1294), so `true` would make the whole
+    // route kind inert the way it made the wanderer family inert.
     requiresLocation: false,
     payoffValue: 1.2,
     motivations: ['asceticism_extravagance', 'loyalty_ambition', 'tradition_novelty'],
@@ -118,6 +118,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     displayName: 'Build Warehouse',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'merchant-expansion',
     reachProfile: { gold: 0.5, stone: 0.4, eye: 0.1 },
     projectDuration: 8,
@@ -141,6 +142,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     displayName: 'Found Guild Chapter',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'merchant-expansion',
     reachProfile: { gold: 0.5, heart: 0.3, star: 0.2 },
     projectDuration: 10,

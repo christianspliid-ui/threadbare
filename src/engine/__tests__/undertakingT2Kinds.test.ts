@@ -431,9 +431,9 @@ describe('the T2 rows', () => {
   it('authors every multi-tick T2 verb `requiresLocation: false`, on THR-1310’s evidence', () => {
     // Not a preference. THR-1310 landed proximity-bounded targeting and re-measured:
     // the wanderer family still reported 0/115 rolled at `true` on seed 42, 100%
-    // `actor_absent`, because nothing moves an agent to its stage until doc 3's
-    // binder ships (TODO(THR-1294)). Authoring `true` here would make the whole T2
-    // tier inert the same way. Re-measure when the binder lands, not before.
+    // `actor_absent`, because nothing moves an agent to its stage (the binder shipped
+    // without a stage mover — THR-1294). Authoring `true` here would make the whole T2
+    // tier inert the same way. Re-measure if a stage mover ever lands.
     for (const row of t2) {
       for (const id of [...row.createTemplateIds, ...row.updateTemplateIds, ...row.destroyTemplateIds]) {
         const template = getStrategicTemplate(id)!;
