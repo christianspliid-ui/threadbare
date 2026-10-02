@@ -3132,7 +3132,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 2,
     intrinsicTier: 'shaping',
     description: 'Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and strangers find it easier to talk. For as long as you sustain the blessing, everyone gathered there meets and mingles more readily.',
-    technicalEffect: 'Sustained control effect anchored on the tavern Place (THR-662): each tick it costs HEARTH_BLESSING_PERTICK life. While active, every agent deciding at that tavern gets HEARTH_BLESSING_SOCIAL_BOOST added to the tavern social multiplier (×1.3 → ×1.6) on its agent-to-agent social candidates. Consumed by phaseAgentDecision → generateSocialCandidates. Lapses when the upkeep is not paid. Fail-soft: no active blessing leaves the multiplier unchanged.',
+    technicalEffect: 'Sustained control effect anchored on the tavern Place (THR-662): each tick it costs HEARTH_BLESSING_PERTICK life. While active, every agent deciding at that tavern gets HEARTH_BLESSING_SOCIAL_BOOST added to the tavern social multiplier (×1.3 → ×1.6) on its agent-to-agent social candidates. Consumed by phaseAgentDecision → generateSocialCandidates. Lapses when the upkeep is not paid. Does not stack: re-blessing a tavern you already hold establishes nothing (NON_STACKING_CONTROL_TEMPLATE_IDS). Fail-soft: no active blessing leaves the multiplier unchanged.',
     reach: 'heart',
     crudType: 'update',
     scale: 'local',

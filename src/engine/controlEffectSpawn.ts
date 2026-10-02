@@ -27,6 +27,19 @@ import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 
 let effectCounter = 0;
 
+/**
+ * Sustained templates whose effect does not stack (THR-662). A second
+ * establishment by the same owner on the same node, while the first is still
+ * active, would add upkeep and give nothing back — the hearth blessing's
+ * consumer (`collectBlessedHearthIds`) reads a set of tavern ids, so two
+ * blessings on one tavern are one blessing. Such a re-cast spawns nothing and
+ * emits a `control_effect_already_held` trace. Templates whose per-tick
+ * effects add up (consecrate's thread auras) are deliberately not listed.
+ */
+export const NON_STACKING_CONTROL_TEMPLATE_IDS: ReadonlySet<string> = new Set([
+  'sub.sanctify_tavern',
+]);
+
 /** Reset counter for deterministic testing. */
 export function resetEffectCounter(): void {
   effectCounter = 0;
@@ -65,6 +78,8 @@ export function spawnControlEffect(
   template: UnifiedActionTemplate,
   tick: number,
   graph?: WorldGraph,
+  /** Effects already in play — consulted only for non-stacking templates (THR-662). */
+  existingEffects?: readonly ControlEffect[],
 ): { effect: ControlEffect; event: TickEvent } | null {
   // Guard: only sustained actions with a controlSpec spawn effects
   if (template.durationMode !== 'sustained' || !template.controlSpec) {
@@ -103,6 +118,28 @@ export function spawnControlEffect(
   } else {
     // No graph available to resolve a non-hex target — fail-soft, no effect.
     return null;
+  }
+
+  // THR-662: a non-stacking effect already held on this node by this owner →
+  // no duplicate (it would only double the upkeep).
+  if (targetNodeId && NON_STACKING_CONTROL_TEMPLATE_IDS.has(action.templateId)) {
+    const held = existingEffects?.find(e =>
+      e.active && e.templateId === action.templateId
+      && e.ownerId === action.actorId && e.targetNodeId === targetNodeId);
+    if (held) {
+      emitTrace({
+        id: 0,
+        category: 'control_effect',
+        tick,
+        timestamp: tick,
+        summary: `${template.name} already held on ${targetNodeId} (${held.effectId}) — not established twice`,
+        type: 'control_effect_already_held',
+        effectId: held.effectId,
+        templateId: action.templateId,
+        targetNodeId,
+      } as never);
+      return null;
+    }
   }
 
   const spec: ControlSpec = template.controlSpec;

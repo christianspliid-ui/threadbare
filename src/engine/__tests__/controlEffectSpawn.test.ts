@@ -487,6 +487,26 @@ describe('controlEffectSpawn', () => {
       expect(thread.properties.ticksAtCurrentTier as number).toBe(SANCTIFY_DEVOTION_PER_TICK);
     });
 
+    it('a second hearth blessing on an already-blessed tavern spawns nothing (non-stacking)', () => {
+      const graph = makeGraphWithShrinePlace();
+      graph.addNode({
+        id: 'tavern-1', type: 'location', name: 'The Gilded Flagon',
+        properties: { parentLocationId: 'town-1', sublocationTypeId: 'sublocation-type.tavern' },
+      });
+      const template = getUnifiedTemplateById('sub.sanctify_tavern')!;
+      const action = makeResolvedAction({ templateId: 'sub.sanctify_tavern', targetId: 'tavern-1' });
+      const first = spawnControlEffect(action, template, 10, graph, []);
+      expect(first).not.toBeNull();
+      expect(spawnControlEffect(action, template, 11, graph, [first!.effect])).toBeNull();
+      // A lapsed blessing does not block a fresh one.
+      expect(spawnControlEffect(action, template, 12, graph, [{ ...first!.effect, active: false }])).not.toBeNull();
+      // Sanctify's auras add up, so it is not guarded.
+      const sanctify = getUnifiedTemplateById('sub.sanctify')!;
+      const sAction = makeResolvedAction({ templateId: 'sub.sanctify', targetId: 'shrine-1' });
+      const s1 = spawnControlEffect(sAction, sanctify, 10, graph, []);
+      expect(spawnControlEffect(sAction, sanctify, 11, graph, [s1!.effect])).not.toBeNull();
+    });
+
     it('a hearth blessing spawns on the tavern Place with life upkeep', () => {
       const graph = makeGraphWithShrinePlace();
       graph.addNode({
