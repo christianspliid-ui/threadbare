@@ -358,7 +358,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `premonition` (2) | `premonitionActions.ts`, `premonitionCompulsion.ts` | — |
 | `profile` (1) | `profileGenerator.ts` | `THR-872` |
-| `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1545`, `THR-1656`, `THR-456` |
+| `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1522`, `THR-1545`, `THR-1656`, `THR-456` |
 | `quest` (1) | `questVisibility.ts` | `TB-061` |
 | `quintessence` (1) | `quintessenceActions.ts` | `Phase 2`, `Phase 3` |
 | `rarity` (2) | `rarity.ts`, `raritySeeding.ts` | — |

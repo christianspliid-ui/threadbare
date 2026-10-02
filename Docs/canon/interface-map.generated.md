@@ -1304,10 +1304,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 126 total — 1 write, 1 read, 124 unclassified
+- **Production hits:** 127 total — 1 write, 1 read, 125 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +119 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +120 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1789,10 +1789,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 22 total — 2 write, 5 read, 15 unclassified
+- **Production hits:** 23 total — 2 write, 5 read, 16 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +10 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +11 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-trait-tags-have-bearers` — 🟢 LIVE
@@ -1813,10 +1813,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Location Trait*, *Trait*, *Encounter*
 - **Module:** `src/engine/phaseLocationTraits.ts`
-- **Production hits:** 10 total — 1 write, 3 read, 6 unclassified
+- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterScoring.ts`, `src/engine/locationTraitBonus.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/engine/battleRecord.ts`, `src/engine/fights/fightRecord.ts`, `src/engine/orchestrator.ts` +1 more
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/fights/fightRecord.ts` +2 more
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -1952,10 +1952,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 100 total — 2 write, 3 read, 95 unclassified
+- **Production hits:** 101 total — 2 write, 3 read, 96 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +90 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +91 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
