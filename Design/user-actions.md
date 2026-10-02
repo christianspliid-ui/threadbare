@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-02 23:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 00:54 local (22:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: Sanctify and Hearthfire Blessing now do something lasting** ([THR-662](https://linear.app/threadbare/issue/THR-662/wire-the-two-remaining-no-op-sanctify-actions-subsanctify-subsanctify)): a blessed place keeps its blessing, and a tavern's owner cannot stack it twice. Merged 00:46 via [#2174](https://github.com/christianspliid-ui/threadbare/pull/2174).
 - **2026-10-02: dialogue cards now take their colour from the moment** ([THR-1586](https://linear.app/threadbare/issue/THR-1586)): story, elder and gain palettes, and the sphere tint on the card face. Merged ~23:45 via [#2173](https://github.com/christianspliid-ui/threadbare/pull/2173).
 - **2026-10-02: jobs inside a veto window now wait their turn** ([THR-1694](https://linear.app/threadbare/issue/THR-1694)): the builder will not start a design you could still veto. Merged 22:39 via [#2172](https://github.com/christianspliid-ui/threadbare/pull/2172).
 - **2026-10-02: undertakings now say where they must happen** ([THR-1294](https://linear.app/threadbare/issue/THR-1294/requireslocation-defaults-off-make-it-an-authored-flag-on-every-multi)): every multi-turn undertaking carries the flag instead of a hidden default. Merged 21:31 via [#2171](https://github.com/christianspliid-ui/threadbare/pull/2171).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-02: the encounter factory's checks now read the right side of each step** ([THR-1693](https://linear.app/threadbare/issue/THR-1693/encounter-factory-gates-live-proof-stops-reading-success-side-step)). Merged 18:50 via [#2167](https://github.com/christianspliid-ui/threadbare/pull/2167).
 - **2026-10-02: every code change now gets a cold review before it merges** ([THR-1691](https://linear.app/threadbare/issue/THR-1691/automatic-code-review-gate-a-cold-suspicious-reviewer-runs-before)). Merged via [#2166](https://github.com/christianspliid-ui/threadbare/pull/2166); its first backtest already found the Wolf-Winter Watch bug ([THR-1697](https://linear.app/threadbare/issue/THR-1697)).
 - **2026-10-02: the builder lane is running again.** It ran at 16:11 and picked up the top job ([THR-1691](https://linear.app/threadbare/issue/THR-1691)). The stall was the same outage as the silence above.
-- **2026-10-02: your local copy caught up by itself**; the "fix my home tree" ask is withdrawn ([orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-02.md)).
 
 ---
 
