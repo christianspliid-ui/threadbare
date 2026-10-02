@@ -38,16 +38,17 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
   // completed recruitment produces a real company node carrying `groupKind: 'company'`
   // with `member_of` and `commanded_by` edges.
   //
-  // `requiresLocation` is deliberately absent (⇒ false). THR-1310's re-measurement
-  // found the wanderer family at 0/115 rolled on seed 42 with `true` — 100%
-  // `actor_absent` — because `isActorAtStage` demands presence and the mover that would
-  // deliver it is doc 3's binder, unshipped. This verb does not need stage presence:
-  // it recruits at the commander's own completion-time location.
+  // `requiresLocation: false`. THR-1310's re-measurement found the wanderer family at
+  // 0/115 rolled on seed 42 with `true` — 100% `actor_absent` — because
+  // `isActorAtStage` demands presence and nothing moves an agent to its stage. This
+  // verb does not need stage presence: it recruits at the commander's own
+  // completion-time location.
   {
     id: 'strategic_recruit_warband',
     displayName: 'Recruit Warband',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.5, heart: 0.3, gold: 0.2 },
     projectDuration: 6,
@@ -108,6 +109,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     displayName: 'Fortify Position',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.4, stone: 0.5, eye: 0.1 },
     projectDuration: 7,
@@ -131,6 +133,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     displayName: 'Establish Garrison',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.6, heart: 0.2, stone: 0.2 },
     projectDuration: 8,
@@ -184,6 +187,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     displayName: 'Recruit Companions',
     verb: 'create',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'warlord-expansion',
     reachProfile: { heart: 0.5, iron: 0.3, gold: 0.2 },
     projectDuration: 6,
@@ -236,7 +240,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { wealthCost: 20, reachFloor: { iron: 0.3, eye: 0.2 } },
     checkpointDifficulty: 0.5,
     // Same measured reason as every other multi-tick verb in the corpus — see the
-    // wanderer pack header and TODO(THR-1294).
+    // wanderer pack header and THR-1294.
     requiresLocation: false,
     payoffValue: 1.1,
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
@@ -288,6 +292,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     displayName: 'Reinforce the Warband',
     verb: 'change',
     executionMode: 'multi_tick_project',
+    requiresLocation: false,
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.5, heart: 0.4, gold: 0.1 },
     projectDuration: 4,

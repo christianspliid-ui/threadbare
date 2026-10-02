@@ -326,6 +326,10 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
       ? UNDERTAKING_VERB_DURATION[variant][tierIndex] * UNDERTAKING_PROGRESS_PER_ADVANCE
       : undefined,
     checkpointDifficulty: UNDERTAKING_VERB_DIFFICULTY[variant][tierIndex],
+    // THR-1294: authored, never defaulted. Nothing moves an agent toward its stage,
+    // so `true` would leave the cell's checkpoints deferring `actor_absent` forever.
+    // Overrides (and so every factory template) inherit this through the spread.
+    requiresLocation: false,
     payoffValue: UNDERTAKING_VERB_PAYOFF[variant][tierIndex],
     motivations: CELL_MOTIVATIONS_BY_VERB[verb],
     activityProse: prose.activity,

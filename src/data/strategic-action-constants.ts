@@ -431,29 +431,16 @@ export const UNDERTAKING_CHECKPOINT_STREAM_MULTIPLIER = 97;
 /** Consecutive absence deferrals that convert to one halt — neglect with teeth, no new movement AI */
 export const UNDERTAKING_ABSENCE_DEFERRAL_LIMIT = 3;
 
-/**
- * Default for `requiresLocation` when a template authors none.
- *
- * **The plan (§5) names `true` here; this is `false`, and the reversal is
- * measured.** The plan's stated reason for the conversion default is to *preserve
- * today's parallel behaviour* — and today an undertaking advances wherever its
- * owner happens to be standing, because nothing moves an agent toward its stage.
- * Moving them is explicitly docs 3/5 territory (binder and board), so with `true`
- * the gate has nothing to wait for.
- *
- * Measured on a 150-tick medium run before the flip: of 736 checkpoints on seed 42
- * only **50 rolled** — 686 deferred `actor_absent`; on seed 99, 15 of 668. A probe
- * at tick 80 found **0 of 45** active undertakings with their owner at the stage.
- * That is not the variance §2 designs for ("today's expected duration, now with
- * variance"); it is a system whose dice are 93–97% inert, whose undertakings die
- * of absence rather than of failure, and whose band table would ship untested in
- * the world.
- *
- * The gate itself is fully implemented and tested — only its *default* is off.
- * Doc 2 turns it on per-kind once doc 3's binder can bring an actor to a stage —
- * TODO(THR-1294), which carries the census above as its acceptance evidence.
- */
-export const UNDERTAKING_DEFAULT_REQUIRES_LOCATION = false;
+// `requiresLocation` has no default constant (THR-1294): every multi-tick template
+// authors it, and a contract test (`undertakingRequiresLocation.test.ts`) holds that.
+// Every authored value is `false`, on measurement. The plan (§5) named `true`, but
+// nothing moves an agent toward its undertaking's stage — the binder (doc 3) shipped
+// 2026-08-27 without a stage mover, and the board (doc 5) shipped without one too —
+// so `true` gates the dice on presence nothing in the world can deliver. Measured on
+// 150-tick medium runs with `true`: seed 42 rolled 50 of 736 checkpoints (686
+// deferred `actor_absent`), seed 99 rolled 15 of 668; a tick-80 probe found 0 of 45
+// owners at their stage. The gate itself (`isActorAtStage`, the absence-deferral
+// halt) is implemented and unit-tested; a template that authors `true` gets it.
 
 /** Default for `canRunBeside` when a template authors none (preserves pre-flag behavior) */
 export const UNDERTAKING_DEFAULT_CAN_RUN_BESIDE = true;

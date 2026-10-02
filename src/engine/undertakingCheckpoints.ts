@@ -83,7 +83,6 @@ import {
   UNDERTAKING_ESCALATE_DIFFICULTY_DELTA,
   UNDERTAKING_CHECKPOINT_STREAM_MULTIPLIER,
   UNDERTAKING_ABSENCE_DEFERRAL_LIMIT,
-  UNDERTAKING_DEFAULT_REQUIRES_LOCATION,
   UNDERTAKING_DEFAULT_CAN_RUN_BESIDE,
   UNDERTAKING_INSPIRE_MODIFIER,
   UNDERTAKING_SABOTAGE_MODIFIER,
@@ -450,7 +449,8 @@ export function resolveUndertakingCheckpoint(
   }
 
   // ─── Gates ────────────────────────────────────────────────────────
-  const requiresLocation = template?.requiresLocation ?? UNDERTAKING_DEFAULT_REQUIRES_LOCATION;
+  // Authored per template (THR-1294); an absent flag reads as `false`, fail-soft.
+  const requiresLocation = template?.requiresLocation === true;
   const canRunBeside = template?.canRunBeside ?? UNDERTAKING_DEFAULT_CAN_RUN_BESIDE;
 
   // Read of the busy set, never a write — the busy gate itself is untouched

@@ -44,13 +44,14 @@
 //
 // The reason is that proximity and presence are different claims. A near target is not a
 // *present* one, and `isActorAtStage` demands presence; nothing in the engine moves an
-// agent toward its undertaking's stage, because that mover is doc 3's binder and has not
-// shipped (see `UNDERTAKING_DEFAULT_REQUIRES_LOCATION`'s note, and TODO(THR-1294)).
+// agent toward its undertaking's stage. Doc 3's binder shipped 2026-08-27 without such a
+// mover, and doc 5's board shipped without one too (THR-1294 made the flag authored on
+// every multi-tick template rather than defaulted).
 // Targeting was never the whole cause — it was the visible half of a two-part gap.
 //
 // So these verbs keep `false`, now on sharper evidence than slice 5 had: not "we could
 // not tell why presence starves the kind" but "presence starves it for a reason a
-// targeting fix provably cannot reach". Re-measure when the binder lands, not before.
+// targeting fix provably cannot reach". Re-measure if a stage mover ever lands.
 
 import type { StrategicActionTemplate } from '../../types/strategicAction';
 

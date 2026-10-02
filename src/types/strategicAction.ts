@@ -272,12 +272,14 @@ export interface StrategicActionTemplate {
 
   /**
    * Whether the actor must be *at* the undertaking's stage for a checkpoint to
-   * resolve (THR-1279 verdict 7). Absent ⇒ `true`.
+   * resolve (THR-1279 verdict 7). **Every `multi_tick_project` template authors
+   * it** (THR-1294 — a contract test enforces this); an absent value reads as
+   * `false`, fail-soft. Instant templates run no checkpoints, so it is inert there.
    *
    * When it holds and the actor is elsewhere the checkpoint defers rather than
    * halting; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` consecutive absences convert to
-   * one halt. That is deliberately not movement AI — moving an actor *toward* its
-   * stage is board/binder behaviour and belongs to docs 3/5.
+   * one halt. That is deliberately not movement AI — and nothing on `main` moves an
+   * actor *toward* its stage, so every shipped template authors `false`.
    */
   readonly requiresLocation?: boolean;
 
