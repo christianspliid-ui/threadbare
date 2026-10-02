@@ -79,7 +79,7 @@
  */
 
 import { readFileSync } from 'fs';
-import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
+import { UNIFIED_ACTION_TEMPLATES, withRegistryOverlays } from '../src/data/unified-action-templates';
 import { compilePackageInMemory } from '../src/data/content-eval/encounterPackage';
 import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
 import { runnableStepSites } from '../src/types/unifiedAction';
@@ -464,8 +464,12 @@ for (const packagePath of packagePaths) {
     packageRefusals.push({ path: packagePath, problems: compiled.problems });
     continue;
   }
-  population.push(compiled.template);
-  packageTemplateIds.add(compiled.template.id);
+  // The registry's overlays too, so the gate sees the object a real compile
+  // registers — the setting-class default cast above all, which an `encounter.*`
+  // package may lean on instead of authoring a bundle.
+  const registered = withRegistryOverlays(compiled.template);
+  population.push(registered);
+  packageTemplateIds.add(registered.id);
 }
 
 if (wantsAll) {

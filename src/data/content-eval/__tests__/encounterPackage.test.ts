@@ -31,6 +31,7 @@ import {
 } from '../encounterPackage';
 import { compileOpeningEnvelope, expandSettings } from '../../settingClasses';
 import { checkCompositionContract } from '../compositionContract';
+import { UNIFIED_ACTION_TEMPLATES, withRegistryOverlays } from '../../unified-action-templates';
 import { drawConsequenceHand, handAfterSwap } from '../consequenceDraw';
 import type { ActionStep, StepNudge, UnifiedActionTemplate } from '../../../types/unifiedAction';
 
@@ -455,6 +456,16 @@ describe('compilePackageInMemory', () => {
     expect(compiled.template).toEqual(compileOpeningEnvelope(assembleTemplate(pkg)));
     // The opening envelope ran: step 0 now carries the compiled opening slot.
     expect(compiled.template?.contextFragments?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('matches the registry entry once the registry overlays run (what --package gates)', () => {
+    // `check:encounter --package` applies `withRegistryOverlays` to this output, so
+    // an encounter that leans on the setting-class default cast is gated with the
+    // cast it will be registered with. Bell tower is unedited since its compile.
+    const compiled = compilePackageInMemory(readShipped());
+    const registered = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.town.bell_tower_shoring');
+    expect(registered).toBeDefined();
+    expect(withRegistryOverlays(compiled.template as UnifiedActionTemplate)).toEqual(registered);
   });
 
   it('hands the gate a 6-word purpose line the package validator does not refuse', () => {

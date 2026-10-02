@@ -857,7 +857,7 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
   const surfaces = systemSurfacesForOutcome(
     template,
     resolved?.outcome,
-    resolved ? resolved.stepOutcomes : undefined,
+    didResolve ? resolved?.stepOutcomes : undefined,
   );
   const scopeOf = (system: keyof typeof surfaces): DeclarationScope =>
     classifyDeclaration(surfaces[system], reactionApplied);
