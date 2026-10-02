@@ -87,6 +87,11 @@ export type DeclarationScope =
   | 'reachable'
   /** Authored only under a reaction nobody picked this run. */
   | 'reaction_scoped'
+  /**
+   * Authored only in step-outcome metadata on a side its step did not take —
+   * a `successMetadata` reward on a step that failed (THR-1693).
+   */
+  | 'step_scoped'
   /** Authored only on an outcome band fate did not roll. */
   | 'band_scoped'
   /** Not authored anywhere. */
@@ -97,6 +102,8 @@ export interface DeclarationSurface {
   readonly unconditional: boolean;
   readonly reactionIds: readonly string[];
   readonly otherBand: boolean;
+  /** Optional so a caller that never scopes step metadata keeps today's answer. */
+  readonly otherStepSide?: boolean;
 }
 
 /**
@@ -114,7 +121,9 @@ export interface DeclarationSurface {
  * the rolled band and on another band is reachable, not band-scoped. Only when
  * nothing on this run's path could deliver it do the excuses apply, and
  * `reaction_scoped` is checked before `band_scoped` because it is the more
- * specific fact about why this run did not see it.
+ * specific fact about why this run did not see it. `step_scoped` sits between
+ * them: a step outcome is a finer-grained fact about this run than its band,
+ * and coarser than which reaction somebody picked (THR-1693).
  */
 export function classifyDeclaration(
   surface: DeclarationSurface,
@@ -125,6 +134,7 @@ export function classifyDeclaration(
     const fired = appliedReactionId !== undefined && surface.reactionIds.includes(appliedReactionId);
     return fired ? 'reachable' : 'reaction_scoped';
   }
+  if (surface.otherStepSide === true) return 'step_scoped';
   if (surface.otherBand) return 'band_scoped';
   return 'absent';
 }
@@ -141,8 +151,9 @@ export function classifyDeclaration(
  */
 export function strongestScope(a: DeclarationScope, b: DeclarationScope): DeclarationScope {
   const rank: Readonly<Record<DeclarationScope, number>> = {
-    reachable: 3,
-    reaction_scoped: 2,
+    reachable: 4,
+    reaction_scoped: 3,
+    step_scoped: 2,
     band_scoped: 1,
     absent: 0,
   };

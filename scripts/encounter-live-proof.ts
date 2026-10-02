@@ -849,7 +849,16 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
   // this run could reach it" — the union answer is right for Stage 3, which never
   // runs the template, and wrong here, where one band rolled and one reaction was
   // picked. `scopeOf` turns that into the claim's disposition.
-  const surfaces = systemSurfacesForOutcome(template, resolved?.outcome);
+  //
+  // The step outcomes narrow it once more (THR-1693): step-outcome metadata fires
+  // on its own step's side, so a `successMetadata` reward on a step this run
+  // failed was never owed. Only passed for a resolved run — an unresolved one
+  // keeps the union answer, as the band scoping does.
+  const surfaces = systemSurfacesForOutcome(
+    template,
+    resolved?.outcome,
+    resolved ? resolved.stepOutcomes : undefined,
+  );
   const scopeOf = (system: keyof typeof surfaces): DeclarationScope =>
     classifyDeclaration(surfaces[system], reactionApplied);
 
@@ -861,6 +870,10 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
       return reactionApplied
         ? `rides reaction(s) ${carriers}; this run applied '${reactionApplied}'`
         : `rides reaction(s) ${carriers}, and this run applied none`;
+    }
+    if (scope === 'step_scoped') {
+      return `authored only in step metadata on a side its step did not take `
+        + `(step outcomes: ${resolved?.stepOutcomes.join(', ') || 'none'})`;
     }
     return `authored only on an outcome band this run did not roll `
       + `(rolled '${resolved?.outcome ?? 'none'}')`;

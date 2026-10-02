@@ -22,7 +22,9 @@ import {
 
 describe('strongestScope (THR-1518)', () => {
   it('prefers reachable over every excuse, and the more specific excuse over the vaguer', () => {
-    const order: readonly DeclarationScope[] = ['absent', 'band_scoped', 'reaction_scoped', 'reachable'];
+    const order: readonly DeclarationScope[] = [
+      'absent', 'band_scoped', 'step_scoped', 'reaction_scoped', 'reachable',
+    ];
     for (let i = 0; i < order.length; i++) {
       for (let j = 0; j < order.length; j++) {
         const expected = order[Math.max(i, j)];
@@ -183,6 +185,19 @@ describe('classifyDeclaration', () => {
     // `unsafe_bridge` authors its reward and conditions on bands other than the
     // `success_at_cost` it rolled. A claim on band X cannot arrive on band Y.
     expect(classifyDeclaration(surface({ otherBand: true }), undefined)).toBe('band_scoped');
+  });
+
+  it('scopes a claim authored only on a step side this run did not take (THR-1693)', () => {
+    // A `successMetadata` reward on a step the proof ascendant failed was never
+    // owed — reporting it as ✗ was the factory's commonest false failure.
+    expect(classifyDeclaration(surface({ otherStepSide: true }), undefined)).toBe('step_scoped');
+    // The finer fact wins over the band one, and reachable beats both.
+    expect(
+      classifyDeclaration(surface({ otherStepSide: true, otherBand: true }), undefined),
+    ).toBe('step_scoped');
+    expect(
+      classifyDeclaration(surface({ unconditional: true, otherStepSide: true }), undefined),
+    ).toBe('reachable');
   });
 
   it('prefers reachable over both excuses when the rolled band also delivers', () => {

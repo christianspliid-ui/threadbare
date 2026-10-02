@@ -17,6 +17,7 @@ import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import {
   assembleTemplate,
+  compilePackageInMemory,
   deriveConstName,
   emitEncounterModule,
   emitEncounterTest,
@@ -28,9 +29,10 @@ import {
   REGISTRATION_FILE_RELPATH,
   type EncounterContentPackage,
 } from '../encounterPackage';
-import { expandSettings } from '../../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../../settingClasses';
+import { checkCompositionContract } from '../compositionContract';
 import { drawConsequenceHand, handAfterSwap } from '../consequenceDraw';
-import type { ActionStep, StepNudge } from '../../../types/unifiedAction';
+import type { ActionStep, StepNudge, UnifiedActionTemplate } from '../../../types/unifiedAction';
 
 // ─── Fixture ─────────────────────────────────────────────────────────
 
@@ -434,5 +436,51 @@ export const SOME_ID_LIST: readonly string[] = [
       expect(span, arrayName).toContain('THE_TEST_CROSSING_TEMPLATE,');
     }
     expect(source.match(/THE_TEST_CROSSING_TEMPLATE,/g)).toHaveLength(REGISTRATION_ARRAYS.length);
+  });
+});
+
+// ─── THR-1693 — gating an uncompiled package ─────────────────────────
+
+describe('compilePackageInMemory', () => {
+  /** A shipped package, so the test runs the real assembly over real content. */
+  const SHIPPED = 'Docs/plans/encounters/bell-tower-shoring.package.json';
+  const readShipped = (): Record<string, unknown> =>
+    JSON.parse(readFileSync(path.resolve(SHIPPED), 'utf8')) as Record<string, unknown>;
+
+  it('yields the template the compiled module would export', () => {
+    const parsed = readShipped();
+    const compiled = compilePackageInMemory(parsed);
+    expect(compiled.problems).toEqual([]);
+    const pkg = parsed as unknown as EncounterContentPackage;
+    expect(compiled.template).toEqual(compileOpeningEnvelope(assembleTemplate(pkg)));
+    // The opening envelope ran: step 0 now carries the compiled opening slot.
+    expect(compiled.template?.contextFragments?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('hands the gate a 6-word purpose line the package validator does not refuse', () => {
+    // The impediment-1114 shape: `compile:encounter --dry-run` is green, so the
+    // only place this can fail is the gate run over the in-memory template.
+    const parsed = readShipped();
+    const template = parsed.template as { steps: { purposeLine?: string }[] };
+    template.steps[0].purposeLine = 'Find out what holds it up';
+    const compiled = compilePackageInMemory(parsed);
+    expect(compiled.problems).toEqual([]);
+    const report = checkCompositionContract(compiled.template as UnifiedActionTemplate);
+    expect(report.violations.map(v => v.message).join('\n')).toMatch(
+      /purposeLine is 6 words, over REACH_PURPOSE_MAX_WORDS/u,
+    );
+  });
+
+  it('refuses what compile:encounter refuses, and never throws', () => {
+    expect(compilePackageInMemory([]).problems).toHaveLength(1);
+    expect(compilePackageInMemory({ ...readShipped(), extra: true }).problems[0]).toMatch(/extra/u);
+    expect(compilePackageInMemory({ slug: 'x' }).template).toBeUndefined();
+  });
+
+  it('does not mutate the parsed package', () => {
+    const parsed = readShipped();
+    const before = JSON.stringify(parsed);
+    compilePackageInMemory(parsed);
+    expect(JSON.stringify(parsed)).toBe(before);
   });
 });
