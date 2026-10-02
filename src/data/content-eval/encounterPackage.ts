@@ -44,7 +44,8 @@
  */
 
 import type { ActionStep, StepNudge, UnifiedActionTemplate } from '../../types/unifiedAction';
-import { expandSettings, validateSettingEnvelope } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings, validateSettingEnvelope } from '../settingClasses';
+import { expandFightBlockSteps } from '../fights/fightBlock';
 import {
   HAND_COMMON_OPTIONS_MIN,
   HAND_SPHERE_COVERAGE_MIN,
@@ -358,6 +359,62 @@ export function assembleTemplate(pkg: EncounterContentPackage): UnifiedActionTem
       template.consequenceSwap,
     )],
   };
+}
+
+// ─── In-memory compile (THR-1693) ────────────────────────────────────
+
+/** What {@link compilePackageInMemory} returns: the template, or why there is none. */
+export interface InMemoryPackageCompile {
+  /** The template exactly as the compiled module would export it; absent when `problems` is non-empty. */
+  readonly template?: UnifiedActionTemplate;
+  /** Package-level refusals, in the order `compile:encounter` reports them. */
+  readonly problems: readonly string[];
+}
+
+/**
+ * Compile a parsed package to the template the game would hold, **writing
+ * nothing** — the uncompiled-package entry point for `check:encounter --package`.
+ *
+ * Runs the same front half as `compile:encounter` (unknown keys, fight-block
+ * expansion, package violations) and the same assembly the emitted module runs
+ * at load: `compileOpeningEnvelope(assembleTemplate(pkg))`. So the gates see
+ * the object a real compile would register, without the real compile's writes
+ * to the shared registration file — which is what stopped parallel critics from
+ * running the gate at all (impediment rows 1114, 1120: each built a scratch copy
+ * of `check-encounter.ts` instead).
+ *
+ * Never throws (NFP #4); a malformed package returns problems. The input is not
+ * mutated — fight-block expansion works on a copy.
+ */
+export function compilePackageInMemory(parsed: unknown): InMemoryPackageCompile {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return { problems: ['the package must be a JSON object'] };
+  }
+  const unknown = unknownPackageKeys(parsed);
+  if (unknown.length > 0) {
+    return {
+      problems: unknown.map(key => `unknown top-level package key '${key}' — refusing to guess`),
+    };
+  }
+
+  const raw = parsed as { template?: { steps?: unknown } };
+  let pkg = parsed as EncounterContentPackage;
+  if (raw.template && Array.isArray(raw.template.steps)) {
+    try {
+      const steps = expandFightBlockSteps(raw.template.steps);
+      pkg = { ...pkg, template: { ...pkg.template, steps } } as EncounterContentPackage;
+    } catch (error) {
+      return { problems: [`fight block is malformed: ${(error as Error).message}`] };
+    }
+  }
+
+  try {
+    const violations = encounterPackageViolations(pkg);
+    if (violations.length > 0) return { problems: violations };
+    return { template: compileOpeningEnvelope(assembleTemplate(pkg)), problems: [] };
+  } catch (error) {
+    return { problems: [`package could not be assembled: ${(error as Error).message}`] };
+  }
 }
 
 // ─── TS emission ─────────────────────────────────────────────────────

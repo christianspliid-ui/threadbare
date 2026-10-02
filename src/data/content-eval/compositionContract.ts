@@ -38,10 +38,11 @@ import type {
   EncounterAftermathConceptRef,
   EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
+  StepOutcome,
   UnifiedActionOutcome,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
-import { runnableStepSites } from '../../types/unifiedAction';
+import { isStepSuccess, runnableStepSites } from '../../types/unifiedAction';
 import type { EncounterSupportSpec } from '../../types/encounter';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
@@ -1246,6 +1247,21 @@ export interface SystemSurface {
   readonly reactionIds: readonly string[];
   /** Authored on some outcome band other than the one this run rolled. */
   readonly otherBand: boolean;
+  /**
+   * Authored in step-outcome metadata on a side its step did not take this run
+   * (THR-1693) — a `successMetadata` write on a step that failed, a
+   * `failureMetadata` write on one that succeeded, or either on a step the run
+   * never reached. Only ever set when the caller passes the run's step outcomes;
+   * without them step metadata stays band-agnostic, as it always was.
+   */
+  readonly otherStepSide: boolean;
+}
+
+/** Which side of a step's outcome a piece of step metadata fires on. */
+interface StepSide {
+  /** The step's index in `template.steps` — the index `stepOutcomes` is parallel to. */
+  readonly index: number;
+  readonly side: 'success' | 'failure';
 }
 
 /** One authored effect or change, tagged with where it sits. */
@@ -1266,6 +1282,8 @@ interface LocatedAuthoring {
   readonly conditionKinds?: readonly string[];
   /** Authored in a step's `failureMetadata`, so it fires only if that step failed. */
   readonly fromFailureMetadata?: boolean;
+  /** Authored in step-outcome metadata: the step and the side it fires on (THR-1693). */
+  readonly stepSide?: StepSide;
 }
 
 /**
@@ -1335,7 +1353,7 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
     systems: readonly SystemConnection[],
     reactionId?: string,
     band?: UnifiedActionOutcome,
-    tags?: { conditionKinds?: readonly string[]; fromFailureMetadata?: boolean },
+    tags?: { conditionKinds?: readonly string[]; fromFailureMetadata?: boolean; stepSide?: StepSide },
   ): void => {
     if (systems.length > 0) out.push({ systems, reactionId, band, ...tags });
   };
@@ -1395,26 +1413,32 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
   // Branch arms included (THR-1273). The band tagging below reads `failBehavior`
   // off the arm that actually runs, which is the arm's own field — a fork may
   // declare `fail_action` on one side and not the other.
-  for (const step of allRunnableSteps(template)) {
+  //
+  // Every step-metadata entry also records its step index and side (THR-1693), so
+  // a caller holding the run's `stepOutcomes` can scope it to the side the step
+  // actually took. Branch arms share their fork's index: whichever arm ran, its
+  // outcome is `stepOutcomes[index]`.
+  for (const { step, index } of runnableStepSites(template.steps)) {
+    const onSuccess: StepSide = { index, side: 'success' };
+    const onFailure: StepSide = { index, side: 'failure' };
     for (const effect of step.successMetadata?.effects ?? []) {
-      push(systemsOfEffect(effect), undefined, undefined, effectTags(effect));
+      push(systemsOfEffect(effect), undefined, undefined, { ...effectTags(effect), stepSide: onSuccess });
     }
     const failureResolvesAction = step.failBehavior === 'fail_action';
     for (const effect of step.failureMetadata?.effects ?? []) {
+      const tags = { ...effectTags(effect, true), stepSide: onFailure };
       if (failureResolvesAction) {
-        for (const band of failureOnlyBands) {
-          push(systemsOfEffect(effect), undefined, band, effectTags(effect, true));
-        }
+        for (const band of failureOnlyBands) push(systemsOfEffect(effect), undefined, band, tags);
       } else {
-        push(systemsOfEffect(effect), undefined, undefined, effectTags(effect, true));
+        push(systemsOfEffect(effect), undefined, undefined, tags);
       }
     }
-    if (step.successMetadata?.rewardPool) push(['rewards']);
+    if (step.successMetadata?.rewardPool) push(['rewards'], undefined, undefined, { stepSide: onSuccess });
     if (step.failureMetadata?.rewardPool) {
       if (failureResolvesAction) {
-        for (const band of failureOnlyBands) push(['rewards'], undefined, band);
+        for (const band of failureOnlyBands) push(['rewards'], undefined, band, { stepSide: onFailure });
       } else {
-        push(['rewards']);
+        push(['rewards'], undefined, undefined, { stepSide: onFailure });
       }
     }
   }
@@ -1480,6 +1504,21 @@ export function reachableConditionWritesCannotFire(
 }
 
 /**
+ * Whether a step-metadata entry fired on the step outcomes a run recorded.
+ *
+ * Mirrors the engine's own selector (`getStepOutcomeMetadata` in
+ * `unifiedActionResolution.ts`): `isStepSuccess` picks `successMetadata`, and it
+ * counts `near_miss` and `success_at_cost` as success; anything else picks
+ * `failureMetadata`. A step with no recorded outcome never ran — a `fail_action`
+ * failure earlier ended the action — so neither side fired.
+ */
+function stepSideFired(stepSide: StepSide, stepOutcomes: readonly StepOutcome[]): boolean {
+  const outcome = stepOutcomes[stepSide.index];
+  if (outcome === undefined) return false;
+  return isStepSuccess(outcome) === (stepSide.side === 'success');
+}
+
+/**
  * Where each system connection is authored, relative to the band a run rolled.
  *
  * `outcome === undefined` (the run never resolved) collapses to the union
@@ -1487,28 +1526,50 @@ export function reachableConditionWritesCannotFire(
  * keeps an unresolved run reporting the same failures it does today rather than
  * excusing them.
  *
+ * `stepOutcomes` (THR-1693) scopes step-outcome metadata to the side each step
+ * actually took. Without it a `successMetadata` reward reads as owed on a run
+ * whose step failed — at journeyman/expert difficulty the proof ascendant loses
+ * most natural runs, so the live proof reported 3/6, 2/6 and 4/6 of a batch
+ * failed when every block arrived on its path (impediment rows 1111, 1113,
+ * 1118). Like the `fail_action` band tagging this is a **tightening**: it only
+ * moves an entry from reachable to `otherStepSide`, never the reverse, and a
+ * write the step's own outcome did select stays reachable and asserted.
+ * Omitted, the answer is exactly what it was before.
+ *
  * A connection can be authored in several places at once — the returned flags
  * are independent, not a partition.
  */
 export function systemSurfacesForOutcome(
   template: UnifiedActionTemplate,
   outcome: UnifiedActionOutcome | undefined,
+  stepOutcomes?: readonly StepOutcome[],
 ): Readonly<Record<SystemConnection, SystemSurface>> {
   interface MutableSurface {
     unconditional: boolean;
     reactionIds: Set<string>;
     otherBand: boolean;
+    otherStepSide: boolean;
   }
   const building = {} as Record<SystemConnection, MutableSurface>;
   for (const system of SYSTEM_CONNECTIONS) {
-    building[system] = { unconditional: false, reactionIds: new Set(), otherBand: false };
+    building[system] = {
+      unconditional: false,
+      reactionIds: new Set(),
+      otherBand: false,
+      otherStepSide: false,
+    };
   }
 
   for (const entry of locatedAuthoring(template)) {
     const reachesThisRun = entry.band === undefined || outcome === undefined || entry.band === outcome;
+    const stepFired = entry.stepSide === undefined
+      || stepOutcomes === undefined
+      || stepSideFired(entry.stepSide, stepOutcomes);
     for (const system of entry.systems) {
       if (!reachesThisRun) {
         building[system].otherBand = true;
+      } else if (!stepFired) {
+        building[system].otherStepSide = true;
       } else if (entry.reactionId !== undefined) {
         building[system].reactionIds.add(entry.reactionId);
       } else {
@@ -1531,6 +1592,7 @@ export function systemSurfacesForOutcome(
       unconditional: building[system].unconditional,
       reactionIds: [...building[system].reactionIds].sort(),
       otherBand: building[system].otherBand,
+      otherStepSide: building[system].otherStepSide,
     };
   }
   return surfaces;

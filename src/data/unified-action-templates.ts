@@ -5806,11 +5806,21 @@ function withOpeningColoration(t: UnifiedActionTemplate): UnifiedActionTemplate 
  * `groupEligibility.ts`, not a list — content later authored into those families
  * is picked up without touching this file. Additive: authored affinities are
  * extended, never replaced, so solo agents keep every encounter they had.
+ *
+ * THR-1693: the chain is exported as {@link withRegistryOverlays} so a template
+ * that is not in the registry yet — `check:encounter --package` gating an
+ * uncompiled package — is gated as the object the registry would hold. Gating
+ * the bare module export instead failed an `encounter.*` package that leans on
+ * the setting-class default cast, which the registered template carries.
  */
-export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
-  RAW_UNIFIED_ACTION_TEMPLATES.map((t) =>
-    withOpeningColoration(withGroupAffinity(withDefaultSupportBundle(withTechnicalEffectOverlay(t)))),
+export function withRegistryOverlays(template: UnifiedActionTemplate): UnifiedActionTemplate {
+  return withOpeningColoration(
+    withGroupAffinity(withDefaultSupportBundle(withTechnicalEffectOverlay(template))),
   );
+}
+
+export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
+  RAW_UNIFIED_ACTION_TEMPLATES.map(withRegistryOverlays);
 
 /**
  * Location-based branching encounter templates authored in src/data/encounters/.

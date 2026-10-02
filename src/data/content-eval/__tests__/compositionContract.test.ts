@@ -652,6 +652,84 @@ describe('systemSurfacesForOutcome', () => {
   });
 });
 
+// ─── THR-1693 — step metadata is owed only on the side its step took ──
+
+describe('systemSurfacesForOutcome — step-outcome scoping', () => {
+  /**
+   * The factory's journeyman/expert shape: a reward on step 0's success side, a
+   * condition on step 1's failure side, both `continue_weakened` so neither is
+   * band-tagged. Before THR-1693 both read as owed on every resolved run.
+   */
+  const twoSided = {
+    id: 'encounter.test.two_sided',
+    steps: [
+      {
+        failBehavior: 'continue_weakened',
+        successMetadata: { effects: [{ kind: 'spawn_artifact' }] },
+      },
+      {
+        failBehavior: 'continue_weakened',
+        failureMetadata: {
+          effects: [
+            { kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' },
+          ],
+        },
+      },
+    ],
+  } as unknown as UnifiedActionTemplate;
+
+  it('does NOT owe a successMetadata reward on a step that failed', () => {
+    const surfaces = systemSurfacesForOutcome(twoSided, 'success_at_cost', ['failure', 'success']);
+    expect(surfaces.rewards.unconditional).toBe(false);
+    expect(surfaces.rewards.otherStepSide).toBe(true);
+  });
+
+  it('DOES owe a failureMetadata write on a step that failed', () => {
+    const surfaces = systemSurfacesForOutcome(twoSided, 'success_at_cost', ['success', 'failure']);
+    expect(surfaces.conditions.unconditional).toBe(true);
+    // …and the success-side reward on the step that succeeded is owed too: a real
+    // miss there still reports ✗, which is what keeps this a tightening.
+    expect(surfaces.rewards.unconditional).toBe(true);
+  });
+
+  it('reads near_miss as the success side, as the engine selector does', () => {
+    // `getStepOutcomeMetadata` picks `successMetadata` for every `isStepSuccess`
+    // outcome, which includes `near_miss` and `success_at_cost`.
+    const surfaces = systemSurfacesForOutcome(twoSided, 'success_at_cost', ['near_miss', 'near_miss']);
+    expect(surfaces.rewards.unconditional).toBe(true);
+    expect(surfaces.conditions.otherStepSide).toBe(true);
+    expect(surfaces.conditions.unconditional).toBe(false);
+  });
+
+  it('owes neither side on a step the run never reached', () => {
+    const surfaces = systemSurfacesForOutcome(twoSided, 'failure', ['failure']);
+    expect(surfaces.conditions.otherStepSide).toBe(true);
+    expect(surfaces.conditions.unconditional).toBe(false);
+  });
+
+  it('keeps the old band-agnostic answer when no step outcomes are passed', () => {
+    const surfaces = systemSurfacesForOutcome(twoSided, 'success_at_cost');
+    expect(surfaces.rewards.unconditional).toBe(true);
+    expect(surfaces.conditions.unconditional).toBe(true);
+    expect(surfaces.rewards.otherStepSide).toBe(false);
+  });
+
+  it('never excuses a write reachable by another route on the same run', () => {
+    // A reward authored both in step metadata and as a variant change is owed
+    // by the change, whatever the step rolled — the flags are independent.
+    const alsoChanged = {
+      ...twoSided,
+      aftermathConfig: {
+        branchOnStep: 0,
+        variants: {},
+        fallback: { changes: [{ kind: 'item' }], reactions: [], byOutcome: {} },
+      },
+    } as unknown as UnifiedActionTemplate;
+    const surfaces = systemSurfacesForOutcome(alsoChanged, 'failure', ['failure', 'failure']);
+    expect(surfaces.rewards.unconditional).toBe(true);
+  });
+});
+
 
 // ─── THR-1221 — a write that could not fire is not a missing write ───
 

@@ -390,6 +390,24 @@ template is a not-yet-retrofitted legacy encounter it may sit on the `RETROFIT_P
 ratchet; the ratchet only ever shrinks, and deleting a name from it is the retrofit's
 proof.
 
+**Gating a package before it is compiled — use `--package`, never a scratch copy (THR-1693).**
+
+```bash
+npm run check:encounter -- --package Docs/plans/encounters/<slug>.package.json
+```
+
+Runs the same gate stack over the package compiled **in memory** and writes nothing — no
+module, no test, no registration edit — so a critic or author working in parallel with the
+rest of a batch can gate their own package without touching the shared registration file.
+`--package` repeats, and a seed naming a sibling package from the same run by `templateId`
+resolves. A `query` seed resolves against registered content only, so one whose sole match
+is an uncompiled sibling fails until that sibling is compiled — compile sequel targets first. Use it
+before compiling: `compile:encounter --dry-run` checks only the package's own rules and
+passes purpose-line, card-name and composition-contract failures that this gate fails. Do
+**not** copy `scripts/check-encounter.ts` into a scratch harness — that was the workaround
+this flag retires (impediment rows 1114, 1120). After the real compile, re-run the gate by
+template id as above; that run is the one the PR cites.
+
 ### Step 4: Live proof
 
 ```bash
@@ -413,6 +431,15 @@ anchor (`stateNoun` or `concepts`) on every change.
 Stage 3's job, and failing it here would report one defect twice. But a batch of vacuous
 encounters is a batch that proved nothing, so the batch report counts them on their own
 line. Treat `vacuous` as unproved, never as a pass.
+
+**A failed step owes only its failure side (THR-1693).** A claim authored in a step's
+`successMetadata` is skipped (`·`, *"authored only in step metadata on a side its step did
+not take"*) when that step failed this run, and a `failureMetadata` write is skipped when
+its step succeeded — the engine fires exactly one side per step, `near_miss` counting as
+success. At journeyman and expert difficulty the proof ascendant loses most natural runs, so
+read those rows as *not exercised*, not as proved: to prove the success-side block, re-run
+with `--seed` or `--play all` until a run takes that side. A block missing on the side the
+run *did* take still reports ✗.
 
 **A template not in `UNIFIED_ACTION_TEMPLATES` cannot be proved.** The engine resolves
 templates by registry lookup, so an unregistered one stages fine and then never advances

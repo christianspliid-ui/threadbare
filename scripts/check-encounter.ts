@@ -67,6 +67,13 @@
  *   npm run check:encounter -- --all
  *   npm run check:encounter -- --all --json
  *   npm run check:encounter -- --all --list-failures   # regenerate the ratchet
+ *   npm run check:encounter -- --package Docs/plans/encounters/<slug>.package.json
+ *                            # an UNCOMPILED package, compiled in memory; writes
+ *                            # nothing (THR-1693). Repeatable; a seed naming a
+ *                            # sibling package by `templateId` resolves. A `query`
+ *                            # seed resolves against the registry only, so one
+ *                            # whose only match is an uncompiled sibling still
+ *                            # fails until that sibling is compiled.
  *
  * Exit codes:
  *   0  every checked template is clean, or fails only while on the ratchet
@@ -74,7 +81,9 @@
  *      ratchet entry is stale (listed but now passing)
  */
 
-import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
+import { readFileSync } from 'fs';
+import { UNIFIED_ACTION_TEMPLATES, withRegistryOverlays } from '../src/data/unified-action-templates';
+import { compilePackageInMemory } from '../src/data/content-eval/encounterPackage';
 import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
 import { runnableStepSites } from '../src/types/unifiedAction';
 import {
@@ -106,10 +115,40 @@ const argv = process.argv.slice(2);
 const wantsAll = argv.includes('--all');
 const wantsJson = argv.includes('--json');
 const wantsListFailures = argv.includes('--list-failures');
-const explicitIds = argv.filter(a => !a.startsWith('--'));
 
-if (!wantsAll && explicitIds.length === 0) {
-  console.error('Usage: npm run check:encounter -- <templateId> | --all [--json] [--list-failures]');
+/**
+ * `--package <path>` (repeatable; `--package=<path>` also accepted) — gate an
+ * **uncompiled** content package (THR-1693). The package is compiled in memory
+ * through the same assembly `compile:encounter` emits, and nothing is written:
+ * no module, no test, no registration edit. That is what lets parallel critics
+ * in a batch gate their own package without the shared-file write a real compile
+ * makes (impediment rows 1114, 1120).
+ */
+const packagePaths: string[] = [];
+const explicitIds: string[] = [];
+for (let i = 0; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === '--package') {
+    const next = argv[i + 1];
+    if (next !== undefined && !next.startsWith('--')) {
+      packagePaths.push(next);
+      i++;
+    } else {
+      console.error('--package needs a path: npm run check:encounter -- --package <package.json>');
+      process.exit(1);
+    }
+  } else if (arg.startsWith('--package=')) {
+    packagePaths.push(arg.slice('--package='.length));
+  } else if (!arg.startsWith('--')) {
+    explicitIds.push(arg);
+  }
+}
+
+if (!wantsAll && explicitIds.length === 0 && packagePaths.length === 0) {
+  console.error(
+    'Usage: npm run check:encounter -- <templateId> | --all | --package <package.json> '
+      + '[--json] [--list-failures]',
+  );
   process.exit(1);
 }
 
@@ -302,7 +341,15 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     // resolves to nothing. Fatal, because both are defects in content written after the
     // query exists. A legacy `encounterFamily` prefix matching nothing is the shipped
     // backlog rather than new rot, so it reports in `warnings` below instead.
-    ...validateEncounterSeedRefs([template]).dead.map(
+    // A seed naming a sibling package gated in the same `--package` run is not
+    // dead — it is registered by the same compile that registers this one. Only
+    // the literal `templateId` route is exempted: a `query` seed resolves against
+    // the static catalogs, which hold registered content only, so a query whose
+    // sole match is an uncompiled sibling still reports `empty_query` (red, never
+    // a false green — compile the sibling first).
+    ...validateEncounterSeedRefs([template]).dead.filter(
+      d => !(d.kind === 'dead_template' && packageTemplateIds.has(d.ref.replace(/ \(missed branch\)$/u, ''))),
+    ).map(
       d => `${d.site} encounter_seed → ${d.kind === 'dead_template'
         ? `unknown template '${d.ref}'`
         : d.kind === 'appointment_missing_branch'
@@ -404,6 +451,34 @@ function isEncounter(template: UnifiedActionTemplate): boolean {
 const missing: string[] = [];
 const population: UnifiedActionTemplate[] = [];
 
+// ── Uncompiled packages (THR-1693) ──
+//
+// A package that cannot be compiled is a hard failure, reported with the same
+// lines `compile:encounter` would print — the gate must never be greener than
+// the compile it stands in for.
+const packageRefusals: { path: string; problems: readonly string[] }[] = [];
+const packageTemplateIds = new Set<string>();
+for (const packagePath of packagePaths) {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(packagePath, 'utf8'));
+  } catch (error) {
+    packageRefusals.push({ path: packagePath, problems: [`cannot read: ${(error as Error).message}`] });
+    continue;
+  }
+  const compiled = compilePackageInMemory(parsed);
+  if (!compiled.template) {
+    packageRefusals.push({ path: packagePath, problems: compiled.problems });
+    continue;
+  }
+  // The registry's overlays too, so the gate sees the object a real compile
+  // registers — the setting-class default cast above all, which an `encounter.*`
+  // package may lean on instead of authoring a bundle.
+  const registered = withRegistryOverlays(compiled.template);
+  population.push(registered);
+  packageTemplateIds.add(registered.id);
+}
+
 if (wantsAll) {
   population.push(...UNIFIED_ACTION_TEMPLATES.filter(isEncounter));
 } else {
@@ -456,6 +531,7 @@ if (wantsJson) {
       {
         checked: results.length,
         missing,
+        packageRefusals,
         failures: unlistedFailures.length,
         pendingFailures: results.filter(r => r.failed && r.pending).length,
         warnings: results.reduce((sum, r) => sum + r.warnings.length, 0),
@@ -519,6 +595,15 @@ if (wantsJson) {
     console.log('');
   }
 
+  if (packageRefusals.length > 0) {
+    console.log(`  ── Packages that do not compile (${packageRefusals.length}) ──`);
+    for (const refusal of packageRefusals) {
+      console.log(`  ✗ ${refusal.path}`);
+      for (const line of refusal.problems) console.log(`      [package] ${line}`);
+    }
+    console.log('');
+  }
+
   if (staleEntries.length > 0) {
     console.log(`  ── Stale ratchet entries (${staleEntries.length}) ──`);
     console.log('  These pass now (or no longer exist). Delete them from');
@@ -527,10 +612,20 @@ if (wantsJson) {
     console.log('');
   }
 
-  const ok = unlistedFailures.length === 0 && missing.length === 0 && staleEntries.length === 0;
+  const ok = unlistedFailures.length === 0
+    && missing.length === 0
+    && staleEntries.length === 0
+    && packageRefusals.length === 0;
   console.log(`  ${ok ? 'OK' : 'FAILURES PRESENT'}`);
   console.log('══════════════════════════════════════════════════════════════');
   console.log('');
 }
 
-process.exit(unlistedFailures.length > 0 || missing.length > 0 || staleEntries.length > 0 ? 1 : 0);
+process.exit(
+  unlistedFailures.length > 0
+    || missing.length > 0
+    || staleEntries.length > 0
+    || packageRefusals.length > 0
+    ? 1
+    : 0,
+);
