@@ -21,6 +21,7 @@ import type { TickEvent } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import { isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 
 // ─── Counter ────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,9 @@ export function resetEffectCounter(): void {
  *   `targetNodeId` is set to the location id, so node-scoped per-tick effects
  *   (`perTickThreadAuras` faith-spread, `sustainThreshold` on `location`) resolve
  *   against the right node. Requires `graph` to resolve the location's coords.
+ *   A **Place** target (a sublocation — shrine, tavern; THR-662) carries no hex
+ *   coords of its own: the effect anchors on its parent Location's hex while
+ *   `targetNodeId` stays on the Place.
  *
  * The THR-509 spec fields (`perTickThreadAuras`, `upkeepArtifactId`) are carried
  * onto the effect for both shapes; the consumer side (`phaseControlEffects` +
@@ -83,9 +87,15 @@ export function spawnControlEffect(
     // Location-node target (THR-511): resolve the location's hex coords and
     // record the node id so node-scoped per-tick effects target it.
     const node = graph.getNode(action.targetId);
-    if (!node || node.type !== 'location') return null;
-    const hc = node.properties.hexCol;
-    const hr = node.properties.hexRow;
+    if (!node || !(node.type === 'location' || isPlaceNode(node))) return null;
+    // THR-662: Place-tier nodes carry no hexCol/hexRow — anchor the effect on the
+    // parent Location's hex, but keep `targetNodeId` on the Place itself so the
+    // node-scoped per-tick effects (thread auras, hearth blessing) read the Place.
+    const anchor = typeof node.properties.hexCol === 'number'
+      ? node
+      : resolveToParentLocation(graph, node);
+    const hc = anchor?.properties.hexCol;
+    const hr = anchor?.properties.hexRow;
     if (typeof hc !== 'number' || typeof hr !== 'number') return null;
     col = hc;
     row = hr;

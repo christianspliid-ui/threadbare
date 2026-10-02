@@ -69,14 +69,16 @@ describe('action-catalog generator — effect metadata (THR-604)', () => {
     expect(effectSourceFor(t!)).toBe('aftermath-only');
   });
 
-  it('derives none for a genuine no-op, and the badge tells the truth', () => {
-    // The plan named six no-ops; sub.sanctify / sub.sanctify_tavern are two more
-    // the plan missed (its "sub.sanctify sustained" claim was stale). Verify a
-    // representative genuine no-op derives none while still carrying authored text.
-    const t = getUnifiedTemplateById('sub.sanctify');
-    expect(t).toBeDefined();
-    expect(effectSourceFor(t!)).toBe('none');
-    const entry = data.entries.find((e) => e.id === 'sub.sanctify');
-    expect(entry?.technicalEffect).toContain('NOT YET WIRED');
+  it('has no genuine no-ops left — the last two sanctify verbs derive control-spec (THR-662)', () => {
+    // sub.sanctify / sub.sanctify_tavern were the last two `none` entries (the
+    // THR-605 plan missed them). THR-662 wired both as sustained control effects.
+    for (const id of ['sub.sanctify', 'sub.sanctify_tavern']) {
+      const t = getUnifiedTemplateById(id);
+      expect(t).toBeDefined();
+      expect(effectSourceFor(t!)).toBe('control-spec');
+      const entry = data.entries.find((e) => e.id === id);
+      expect(entry?.technicalEffect).not.toContain('NOT YET WIRED');
+    }
+    expect(data.entries.filter((e) => e.effectSource === 'none').map((e) => e.id)).toEqual([]);
   });
 });

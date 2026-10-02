@@ -36,7 +36,7 @@ import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
-import { generateSocialCandidates } from './socialEncounterGeneration';
+import { generateSocialCandidates, collectBlessedHearthIds } from './socialEncounterGeneration';
 import { generateFactionQuestCandidates, generateFactionLifecycleCandidates } from './factionQuestGeneration';
 import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
@@ -493,6 +493,9 @@ export function phaseAgentDecision(
     if (tile.coord.row >= mapRows) mapRows = tile.coord.row + 1;
   }
 
+  // THR-662: taverns under an active Hearthfire Blessing — built once per phase.
+  const blessedHearthIds = collectBlessedHearthIds(state.controlEffects);
+
   // A held town is a faction position (THR-1448): one reader per pass for the
   // `requiresHold` supply arm, the filter's `requiresHold` gate and the board's
   // held-town term. The political map is resolved lazily and at most once, and only
@@ -842,6 +845,7 @@ export function phaseAgentDecision(
         locationId,
         distanceMatrix,
         state.tick,
+        blessedHearthIds,
       );
 
       // Generate faction quest candidates (TB-060)

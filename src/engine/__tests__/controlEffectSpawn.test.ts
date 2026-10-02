@@ -20,6 +20,12 @@ import { WorldGraph } from '../graph';
 import { resetOpCounter } from '../graphOpExecutor';
 import { clearTraces } from '../traceBuffer';
 import { SPHERE_NAMES } from '../../types/index';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import {
+  SANCTIFY_PERTICK,
+  SANCTIFY_DEVOTION_PER_TICK,
+  HEARTH_BLESSING_PERTICK,
+} from '../../data/ascendant-expression-constants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -388,6 +394,110 @@ describe('controlEffectSpawn', () => {
       const thread = graph.getNode('mortal-1') && graph.getOutgoingEdges('asc-1', 'thread')[0];
       expect(thread).toBeDefined();
       expect((thread!.properties.ticksAtCurrentTier as number)).toBe(1);
+    });
+  });
+
+  // ─── THR-662: Place-tier targets (sanctify, hearth blessing) ─────────────────
+  describe('spawnControlEffect — Place targets (THR-662)', () => {
+    function makeGraphWithShrinePlace(): WorldGraph {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'asc-1', type: 'actor', name: 'Player God',
+        properties: { actorType: 'ascendant' },
+      });
+      graph.addNode({
+        id: 'town-1', type: 'location', name: 'Ashford',
+        properties: { locationSubtype: 'town', hexCol: 3, hexRow: 9 },
+      });
+      // The canonical Place shape: type 'location' + parentLocationId, no hex coords.
+      graph.addNode({
+        id: 'shrine-1', type: 'location', name: 'Wayside Shrine',
+        properties: { parentLocationId: 'town-1', sublocationTypeId: 'sublocation-type.shrine' },
+      });
+      graph.addEdge({
+        id: 'edge-contains', source: 'town-1', target: 'shrine-1',
+        type: 'contains', properties: {},
+      });
+      return graph;
+    }
+
+    it('regression: a sustained effect aimed at a Place spawns on its parent hex (was null)', () => {
+      const graph = makeGraphWithShrinePlace();
+      const template = getUnifiedTemplateById('sub.sanctify')!;
+      expect(template.durationMode).toBe('sustained');
+      const action = makeResolvedAction({ templateId: 'sub.sanctify', targetId: 'shrine-1' });
+
+      const result = spawnControlEffect(action, template, 10, graph);
+      expect(result).not.toBeNull();
+      expect(result!.effect.targetHexCol).toBe(3);
+      expect(result!.effect.targetHexRow).toBe(9);
+      // The effect stays on the Place, not its parent town.
+      expect(result!.effect.targetNodeId).toBe('shrine-1');
+      expect(result!.effect.perTickCost).toEqual({ spirit: SANCTIFY_PERTICK });
+      expect(result!.effect.perTickThreadAuras).toEqual([{ magnitude: SANCTIFY_DEVOTION_PER_TICK }]);
+    });
+
+    it('accepts the legacy sublocation node type and resolves through its parent', () => {
+      const graph = makeGraphWithShrinePlace();
+      graph.addNode({
+        id: 'cave-1', type: 'sublocation' as never, name: 'Old Cave',
+        properties: { parentLocationId: 'town-1' },
+      });
+      const action = makeResolvedAction({ templateId: 'sub.sanctify', targetId: 'cave-1' });
+      const result = spawnControlEffect(action, getUnifiedTemplateById('sub.sanctify')!, 10, graph);
+      expect(result?.effect.targetNodeId).toBe('cave-1');
+      expect(result?.effect.targetHexCol).toBe(3);
+    });
+
+    it('returns null for a Place whose parent is missing (fail-soft)', () => {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'orphan-1', type: 'location', name: 'Orphan Shrine',
+        properties: { parentLocationId: 'gone' },
+      });
+      const action = makeResolvedAction({ templateId: 'sub.sanctify', targetId: 'orphan-1' });
+      expect(spawnControlEffect(action, getUnifiedTemplateById('sub.sanctify')!, 10, graph)).toBeNull();
+    });
+
+    it('end-to-end: a sanctified shrine advances a thread standing in it', () => {
+      const graph = makeGraphWithShrinePlace();
+      graph.addNode({
+        id: 'mortal-1', type: 'actor', name: 'Pilgrim',
+        properties: { actorType: 'individual' },
+      });
+      graph.addEdge({
+        id: 'edge-loc', source: 'mortal-1', target: 'shrine-1',
+        type: 'located_at', properties: {},
+      });
+      graph.addEdge({
+        id: 'edge-thread', source: 'asc-1', target: 'mortal-1',
+        type: 'thread', properties: { tier: 1, ticksAtCurrentTier: 0 },
+      });
+      const action = makeResolvedAction({ templateId: 'sub.sanctify', targetId: 'shrine-1' });
+      const result = spawnControlEffect(action, getUnifiedTemplateById('sub.sanctify')!, 10, graph);
+      expect(result).not.toBeNull();
+
+      const state = createMinimalGameState();
+      (state as { graph: WorldGraph }).graph = graph;
+      state.essencePool.spirit = 10;
+      state.controlEffects = [result!.effect];
+      phaseControlEffects(state);
+
+      const thread = graph.getOutgoingEdges('asc-1', 'thread')[0];
+      expect(thread.properties.ticksAtCurrentTier as number).toBe(SANCTIFY_DEVOTION_PER_TICK);
+    });
+
+    it('a hearth blessing spawns on the tavern Place with life upkeep', () => {
+      const graph = makeGraphWithShrinePlace();
+      graph.addNode({
+        id: 'tavern-1', type: 'location', name: 'The Gilded Flagon',
+        properties: { parentLocationId: 'town-1', sublocationTypeId: 'sublocation-type.tavern' },
+      });
+      const template = getUnifiedTemplateById('sub.sanctify_tavern')!;
+      const action = makeResolvedAction({ templateId: 'sub.sanctify_tavern', targetId: 'tavern-1' });
+      const result = spawnControlEffect(action, template, 10, graph);
+      expect(result?.effect.targetNodeId).toBe('tavern-1');
+      expect(result?.effect.perTickCost).toEqual({ life: HEARTH_BLESSING_PERTICK });
     });
   });
 

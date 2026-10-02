@@ -28,9 +28,8 @@
     },
     "byEffectSource": {
       "template-ops": 113,
-      "control-spec": 17,
+      "control-spec": 19,
       "engine-bridge": 43,
-      "none": 2,
       "aftermath-only": 4
     },
     "beatGranted": 30,
@@ -4639,8 +4638,8 @@
       "intrinsicTier": "background",
       "apCost": 1,
       "essenceCost": 4,
-      "durationMode": "instant",
-      "hasControlSpec": false,
+      "durationMode": "sustained",
+      "hasControlSpec": true,
       "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
@@ -4656,9 +4655,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful and repels hostile forces. The consecration persists until deliberately broken or the sphere influence drains entirely.",
-      "technicalEffect": "INTENDED: consecrate a sublocation into a lasting point of divine presence that draws the faithful and repels hostiles. NOT YET WIRED — empty step ops, no engine bridge (only a sphere-alignment availability gate); deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "description": "Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful who gather there steadily closer to your design. The consecration holds for as long as you sustain it.",
+      "technicalEffect": "Sustained control effect anchored on the Place (THR-662, a Place-scale consecrate): each tick it costs SANCTIFY_PERTICK spirit and pushes a co_located_thread_aura of SANCTIFY_DEVOTION_PER_TICK onto every thread standing in the Place, advancing their tier-promotion clock. Consumed by phaseControlEffects via applyCoLocatedThreadAura. Lapses when the upkeep is not paid. Fail-soft: a Place with no resolvable parent hex spawns no effect.",
+      "effectSource": "control-spec"
     },
     {
       "id": "loc.awaken_spirit",
@@ -4711,8 +4710,8 @@
       "intrinsicTier": "shaping",
       "apCost": 1,
       "essenceCost": 15,
-      "durationMode": "instant",
-      "hasControlSpec": false,
+      "durationMode": "sustained",
+      "hasControlSpec": true,
       "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
@@ -4723,9 +4722,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and travelers feel an inexplicable pull toward its doors. The blessing concentrates social energy for a time, drawing agents from neighboring hexes and amplifying the social encounter rate for all present.",
-      "technicalEffect": "INTENDED: bless a tavern to concentrate social energy — drawing agents from neighbouring hexes and amplifying the local social-encounter rate. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "description": "Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and strangers find it easier to talk. For as long as you sustain the blessing, everyone gathered there meets and mingles more readily.",
+      "technicalEffect": "Sustained control effect anchored on the tavern Place (THR-662): each tick it costs HEARTH_BLESSING_PERTICK life. While active, every agent deciding at that tavern gets HEARTH_BLESSING_SOCIAL_BOOST added to the tavern social multiplier (×1.3 → ×1.6) on its agent-to-agent social candidates. Consumed by phaseAgentDecision → generateSocialCandidates. Lapses when the upkeep is not paid. Fail-soft: no active blessing leaves the multiplier unchanged.",
+      "effectSource": "control-spec"
     },
     {
       "id": "sub.vision",

@@ -52,6 +52,34 @@ export const CONSECRATE_PERTICK = 0.3;
  */
 export const CONSECRATE_RELIC_UPFRONT = 13;
 
+// ─── THR-662: Sanctify (Place-scale consecrate) + Hearthfire Blessing ─────────
+
+/**
+ * Per-tick spirit essence to sustain a sanctified Place (`sub.sanctify`).
+ * Half of `CONSECRATE_PERTICK`: a shrine or cave is a smaller holy site than a
+ * whole temple location, so it is cheaper to hold and spreads faith more slowly.
+ */
+export const SANCTIFY_PERTICK = 0.15;
+
+/**
+ * Per-tick faith-spread magnitude of a sanctified Place — the `co_located_thread_aura`
+ * pushed onto every thread standing in it. ≈ 0.5× `CONSECRATE_DEVOTION_PER_TICK`.
+ */
+export const SANCTIFY_DEVOTION_PER_TICK = 0.5;
+
+/**
+ * Per-tick life essence to sustain a blessed hearth (`sub.sanctify_tavern`).
+ * Matches `CONSECRATE_PERTICK`: the blessing is a held presence, not a one-shot.
+ */
+export const HEARTH_BLESSING_PERTICK = 0.3;
+
+/**
+ * Extra social-encounter priority at a blessed tavern, added on top of the
+ * ordinary tavern boost (`TAVERN_SOCIAL_ENCOUNTER_BOOST`, 0.3) — so a blessed
+ * hearth roughly doubles the tavern's social pull: ×1.3 → ×1.6.
+ */
+export const HEARTH_BLESSING_SOCIAL_BOOST = 0.3;
+
 // ─── THR-512: Bestow Power ────────────────────────────────────────────────────
 // `[bestow power] <threaded agent>` grants a threaded mortal two persistent
 // boons via a "divine gift" artifact the agent possesses (option (a) — reuses

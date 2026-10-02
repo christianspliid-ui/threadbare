@@ -60,6 +60,8 @@ import { getTrust } from './trustMechanics';
 import { computeCapabilityPreRefit } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { TAVERN_SUBLOCATION_TYPE_ID } from './sublocation';
+import { HEARTH_BLESSING_SOCIAL_BOOST } from '../data/ascendant-expression-constants';
+import type { ControlEffect } from '../types/controlEffect';
 import { isMonster } from './monsters/isMonster';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -140,6 +142,9 @@ const RESERVED_FACTION_SOCIAL_SLOTS = 1;
  *   - Tavern-exclusive encounter templates are added to the pool
  *   - questPriority is multiplied by (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST)
  *   - Social density bonus applied based on agent count at target location
+ *   - A blessed hearth (THR-662, an active `sub.sanctify_tavern` control effect on
+ *     this tavern, passed in as `blessedHearthIds`) adds HEARTH_BLESSING_SOCIAL_BOOST
+ *     on top of the tavern boost
  */
 export function generateSocialCandidates(
   graph: WorldGraph,
@@ -148,6 +153,11 @@ export function generateSocialCandidates(
   distanceMatrix: DistanceMatrix,
   /** Current tick — seeds the guild-slot rotation (THR-1641). Absent reads as 0. */
   tick?: number,
+  /**
+   * Tavern Place ids under an active Hearthfire Blessing (THR-662) — built once
+   * per decision phase by `collectBlessedHearthIds`. Absent or empty → no bonus.
+   */
+  blessedHearthIds?: ReadonlySet<string>,
 ): EncounterCacheEntry[] {
   // Fail-soft: missing agent node
   if (!graph.getNode(agentId)) return [];
@@ -184,7 +194,13 @@ export function generateSocialCandidates(
 
   if (visibleAgents.length === 0) return [];
 
-  const tavernBoostMultiplier = atTavern ? (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST) : 1;
+  // THR-662: a blessed hearth adds its boost on top of the ordinary tavern boost.
+  const hearthBlessingApplied = atTavern && (blessedHearthIds?.has(agentLocationId) ?? false)
+    ? HEARTH_BLESSING_SOCIAL_BOOST
+    : 0;
+  const tavernBoostMultiplier = atTavern
+    ? (1 + TAVERN_SOCIAL_ENCOUNTER_BOOST + hearthBlessingApplied)
+    : 1;
 
   const candidates: EncounterCacheEntry[] = [];
 
@@ -475,14 +491,36 @@ export function generateSocialCandidates(
     tick: 0,
     category: 'social_encounter_generation',
     agentId,
-    summary: `Social candidates for ${agentId}: ${candidates.length} entries from ${visibleAgents.length} visible agents${atTavern ? ' [tavern boost active]' : ''}`,
+    summary: `Social candidates for ${agentId}: ${candidates.length} entries from ${visibleAgents.length} visible agents${atTavern ? ' [tavern boost active]' : ''}${hearthBlessingApplied > 0 ? ' [blessed hearth]' : ''}`,
     candidateCount: candidates.length,
     visibleAgentCount: visibleAgents.length,
     atTavern,
     tavernBoostApplied: atTavern ? TAVERN_SOCIAL_ENCOUNTER_BOOST : 0,
+    hearthBlessingApplied,
   });
 
   return candidates;
+}
+
+/** The template whose active control effects bless a tavern hearth (THR-662). */
+export const HEARTH_BLESSING_TEMPLATE_ID = 'sub.sanctify_tavern';
+
+/**
+ * Collect the Place ids currently under an active Hearthfire Blessing (THR-662):
+ * every active `sub.sanctify_tavern` control effect's `targetNodeId`. Built once
+ * per decision phase and handed to `generateSocialCandidates`. Pure; an absent
+ * list yields an empty set (no bonus anywhere).
+ */
+export function collectBlessedHearthIds(
+  controlEffects: readonly ControlEffect[] | undefined,
+): Set<string> {
+  const ids = new Set<string>();
+  for (const effect of controlEffects ?? []) {
+    if (effect.active && effect.templateId === HEARTH_BLESSING_TEMPLATE_ID && effect.targetNodeId) {
+      ids.add(effect.targetNodeId);
+    }
+  }
+  return ids;
 }
 
 /**

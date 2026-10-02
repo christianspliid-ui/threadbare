@@ -251,13 +251,11 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, lowers the location's `populationHealth` and `magicalSaturation` and raises `unrest` by named deltas (LOC_SICKEN_WELLS_*) for LOC_SICKEN_WELLS_DURATION_TICKS.",
   'loc.curse_roads':
     "On success, raises the location's `unrest` by a named delta (LOC_CURSE_ROADS_UNREST_DELTA) for LOC_CURSE_ROADS_DURATION_TICKS.",
-  'sub.sanctify':
-    'INTENDED: consecrate a sublocation into a lasting point of divine presence that draws the faithful and repels hostiles. NOT YET WIRED — empty step ops, no engine bridge (only a sphere-alignment availability gate); deducts essence and narrates only (THR-605).',
   // sub.trap / sub.vision: THR-605 wired both (`plant_trap` via
   // unifiedActionResolution, `scry_sublocation` via graphOpExecutor); each
   // template authors its own `technicalEffect`. Removed here (THR-1075).
-  'sub.sanctify_tavern':
-    'INTENDED: bless a tavern to concentrate social energy — drawing agents from neighbouring hexes and amplifying the local social-encounter rate. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+  // sub.sanctify / sub.sanctify_tavern: THR-662 wired both as sustained control
+  // effects; each template authors its own `technicalEffect`. Removed here.
 
   // ─── hex.* — one-shot tile mutations & GraphOp bridges (hexActionBridge) ───
   'hex.bless_land':

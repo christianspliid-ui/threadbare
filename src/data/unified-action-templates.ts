@@ -168,7 +168,7 @@ import {
   KINDLE_CALLING_ESSENCE_COST,
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
-import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST } from './ascendant-expression-constants';
+import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST, SANCTIFY_PERTICK, SANCTIFY_DEVOTION_PER_TICK, HEARTH_BLESSING_PERTICK } from './ascendant-expression-constants';
 // THR-553: content-only reach signatures (Gold/Shadow/Star/Eye/Heart-stub),
 // authored on shipped primitives; reach-gated via each template's `requiresReach`.
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from './reach-signature-content';
@@ -3022,7 +3022,8 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Sacred Ground',
     rarityTier: 1,
     intrinsicTier: 'background',
-    description: 'Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful and repels hostile forces. The consecration persists until deliberately broken or the sphere influence drains entirely.',
+    description: 'Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful who gather there steadily closer to your design. The consecration holds for as long as you sustain it.',
+    technicalEffect: 'Sustained control effect anchored on the Place (THR-662, a Place-scale consecrate): each tick it costs SANCTIFY_PERTICK spirit and pushes a co_located_thread_aura of SANCTIFY_DEVOTION_PER_TICK onto every thread standing in the Place, advancing their tier-promotion clock. Consumed by phaseControlEffects via applyCoLocatedThreadAura. Lapses when the upkeep is not paid. Fail-soft: a Place with no resolvable parent hex spawns no effect.',
     reach: 'veil',
     trayTier: 'core',
     crudType: 'create',
@@ -3042,6 +3043,16 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['sublocation'],
     targetSubtypes: ['shrine', 'temple', 'ruin', 'cave'],
     motivations: ['tradition_novelty', 'loyalty_ambition'],
+    durationMode: 'sustained',
+    controlSpec: {
+      perTickCost: { spirit: SANCTIFY_PERTICK },
+      perTickThreadAuras: [{ magnitude: SANCTIFY_DEVOTION_PER_TICK }],
+      narrativeTemplates: {
+        established: 'the ground is sanctified — a small holy place now answers to you',
+        active: 'the sanctity holds — those who keep faith here are drawn closer to your design',
+        lapsed: 'the sanctity fades; the ground goes quiet again',
+      },
+    },
     narrativeTemplates: {
       initiation: 'consecrates this ground to divine purpose',
       success: 'the site is sanctified — the divine presence is felt here',
@@ -3120,7 +3131,8 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Hearthfire Blessing',
     rarityTier: 2,
     intrinsicTier: 'shaping',
-    description: 'Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and travelers feel an inexplicable pull toward its doors. The blessing concentrates social energy for a time, drawing agents from neighboring hexes and amplifying the social encounter rate for all present.',
+    description: 'Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and strangers find it easier to talk. For as long as you sustain the blessing, everyone gathered there meets and mingles more readily.',
+    technicalEffect: 'Sustained control effect anchored on the tavern Place (THR-662): each tick it costs HEARTH_BLESSING_PERTICK life. While active, every agent deciding at that tavern gets HEARTH_BLESSING_SOCIAL_BOOST added to the tavern social multiplier (×1.3 → ×1.6) on its agent-to-agent social candidates. Consumed by phaseAgentDecision → generateSocialCandidates. Lapses when the upkeep is not paid. Fail-soft: no active blessing leaves the multiplier unchanged.',
     reach: 'heart',
     crudType: 'update',
     scale: 'local',
@@ -3139,6 +3151,15 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['sublocation'],
     requiredNodeProperties: { sublocationTypeId: 'sublocation-type.tavern' },
     motivations: ['preservation_transformation', 'loyalty_ambition'],
+    durationMode: 'sustained',
+    controlSpec: {
+      perTickCost: { life: HEARTH_BLESSING_PERTICK },
+      narrativeTemplates: {
+        established: 'the hearth takes the blessing — the room is warmer than it was',
+        active: 'the blessed hearth burns on — strangers here talk more easily',
+        lapsed: 'the blessing goes out of the fire; the tavern is only a tavern again',
+      },
+    },
     narrativeTemplates: {
       initiation: 'breathes a whisper of warmth into this gathering place',
       success: 'the hearthfire blessing takes hold — laughter comes easier, strangers become friends',
