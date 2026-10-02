@@ -1,16 +1,18 @@
 /**
- * Rival-influence marker adapter tests (THR-66, THR-621).
+ * Rival-influence marker adapter tests (THR-66, THR-621, THR-829).
  *
- * The point of interest: the original `sponsors_scheme` input **cannot fire**,
- * because rivals are not graph nodes and `graph.addEdge` throws on an unknown
- * source node. The layer rendered nothing until THR-621 gave it a second input
- * that reads the essence-source bag instead. These tests pin both paths — the
- * live one by behavior, the dead one by construction.
+ * Rivals are not graph nodes, so the layer never reads an edge. Two inputs are
+ * pinned here: essence-source drains (THR-621, read off the source bag) and
+ * materialized schemes (THR-829, read off composition state + move-done flags,
+ * replacing the `sponsors_scheme` edge that could never bind).
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { RivalDefinition } from '../../types/rival';
-import { buildRivalInfluenceMarkers } from '../rivalInfluenceMarkers';
+import type { ActiveComposition } from '../../types/gameState';
+import { CORRUPTIVE_FAMILY } from '../../data/rival-schemes';
+import { schemeFlags } from '../rival';
+import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../rivalInfluenceMarkers';
 
 const RIVAL_ID = 'rival.ashen';
 
@@ -109,44 +111,78 @@ describe('buildRivalInfluenceMarkers — essence-source drains (THR-621)', () =>
   });
 });
 
-describe('buildRivalInfluenceMarkers — the sponsors_scheme path is dead by construction', () => {
-  it('cannot bind a sponsors_scheme edge, because rivals are not graph nodes', () => {
-    // This is the reason the layer rendered nothing before THR-621: the scheme
-    // `materialize` move attempts exactly this addEdge and the throw is swallowed
-    // by its fail-soft catch. Pinned so the day rivals become nodes, this fails
-    // loudly and the second marker input can be revisited.
-    const graph = graphWithSource({ kind: 'shrine', sanctity: 0.9, tier: 'flowering' });
-    expect(() =>
-      graph.addEdge({
-        id: 'edge_sponsors_scheme_test',
-        source: RIVAL_ID, // not a node
-        target: 'shrine-1',
-        type: 'sponsors_scheme',
-        properties: {},
-      }),
-    ).toThrow(/Source node not found/);
+describe('buildRivalSchemeTargets — materialized schemes from state (THR-829)', () => {
+  const MATERIALIZE_PHASE = CORRUPTIVE_FAMILY.beats.find((b) => b.move === 'materialize')!.phaseId;
+
+  function comp(extra: Partial<ActiveComposition> = {}): ActiveComposition {
+    return {
+      compositionId: 'rival-scheme-1',
+      firedAtTick: 0,
+      activatedPhaseIds: [MATERIALIZE_PHASE],
+      phaseActivationTicks: {},
+      resolvedNodes: { target: 'shrine-1' },
+      status: 'active',
+      lastEvaluationTick: 0,
+      sponsorRivalId: RIVAL_ID,
+      schemeFamily: CORRUPTIVE_FAMILY.id,
+      ...extra,
+    };
+  }
+  const doneFlags = { [schemeFlags.moveDone('rival-scheme-1', MATERIALIZE_PHASE)]: true };
+
+  it('returns a rival-sponsored composition once its materialize move has fired', () => {
+    expect(buildRivalSchemeTargets([comp()], doneFlags)).toEqual([
+      { rivalId: RIVAL_ID, targetId: 'shrine-1', compositionId: 'rival-scheme-1' },
+    ]);
   });
 
-  it('reads the edge when the rival *is* a node, and drain markers win the hex', () => {
+  it('skips schemes that have not materialized, have failed, lack a target, or are not rival-sponsored', () => {
+    expect(buildRivalSchemeTargets([comp()], {})).toEqual([]);
+    expect(buildRivalSchemeTargets([comp({ status: 'failed' })], doneFlags)).toEqual([]);
+    expect(buildRivalSchemeTargets([comp({ resolvedNodes: {} })], doneFlags)).toEqual([]);
+    expect(buildRivalSchemeTargets([comp({ sponsorRivalId: undefined })], doneFlags)).toEqual([]);
+    expect(buildRivalSchemeTargets([comp({ schemeFamily: 'no-such-family' })], doneFlags)).toEqual([]);
+    expect(buildRivalSchemeTargets(undefined, doneFlags)).toEqual([]);
+  });
+
+  it('marks the target hex with reason scheme, tinted and attributed to the rival', () => {
+    const graph = graphWithSource({ kind: 'shrine', sanctity: 0.9, tier: 'flowering' });
+    const markers = buildRivalInfluenceMarkers(
+      graph,
+      [makeRival()],
+      buildRivalSchemeTargets([comp()], doneFlags),
+    );
+    expect(markers).toHaveLength(1);
+    expect(markers[0]).toMatchObject({
+      col: 4,
+      row: 7,
+      rivalId: RIVAL_ID,
+      targetId: 'shrine-1',
+      reason: 'scheme',
+    });
+  });
+
+  it('a live drain wins a hex that is also schemed against', () => {
     const graph = graphWithSource({
       kind: 'shrine',
       sanctity: 0.5,
       tier: 'contested',
       contestedBy: RIVAL_ID,
     });
-    graph.addNode({ id: RIVAL_ID, type: 'actor', name: 'The Ashen', properties: {} });
-    graph.addEdge({
-      id: 'edge_sponsors_scheme_test',
-      source: RIVAL_ID,
-      target: 'shrine-1',
-      type: 'sponsors_scheme',
-      properties: {},
-    });
-
-    // One marker, not two: the hex is de-duped and the live drain is the stronger
-    // signal, so it is the one that survives.
-    const markers = buildRivalInfluenceMarkers(graph, [makeRival()]);
+    const markers = buildRivalInfluenceMarkers(
+      graph,
+      [makeRival()],
+      buildRivalSchemeTargets([comp()], doneFlags),
+    );
     expect(markers).toHaveLength(1);
     expect(markers[0].reason).toBe('source_contested');
+  });
+
+  it('skips a scheme target that is unplaceable or sponsored by an unknown rival', () => {
+    const graph = graphWithSource({ kind: 'shrine', sanctity: 0.9, tier: 'flowering' });
+    const ghost = [{ rivalId: RIVAL_ID, targetId: 'nowhere', compositionId: 'x' }];
+    expect(buildRivalInfluenceMarkers(graph, [makeRival()], ghost)).toEqual([]);
+    const stranger = [{ rivalId: 'rival.unknown', targetId: 'shrine-1', compositionId: 'x' }];
+    expect(buildRivalInfluenceMarkers(graph, [makeRival()], stranger)).toEqual([]);
   });
 });

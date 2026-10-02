@@ -1,31 +1,34 @@
 /**
- * Rival-influence markers (THR-66, THR-621) — graph → HexMapV2 overlay adapter.
+ * Rival-influence markers (THR-66, THR-621, THR-829) — state → HexMapV2 overlay adapter.
  *
  * Emits one marker per hex a rival is visibly working on, tinted by the
  * sponsoring rival's primary sphere. Mirrors the `buildReachSignatureMarkers`
  * adapter pattern. Pure + fail-soft: targets without hex coords are skipped; no
  * rivals → empty list.
  *
- * **Two sources, because one of them cannot fire.** The original THR-66 path
- * reads `sponsors_scheme` edges (rival → target location). Rivals are *not graph
- * nodes* — they live in `state.rivalDefinitions`, never in the graph — so
- * `graph.addEdge` throws `Source node not found` every time a scheme tries to
- * bind one, and the throw is swallowed by the move dispatcher's fail-soft catch.
- * That path is therefore dead by construction and this layer rendered nothing.
- * It is kept (cheap, and it starts working the day rivals become nodes) but it is
- * no longer the only input.
+ * **Two inputs, neither of them an edge.** Rivals are *not graph nodes* — they
+ * live in `state.rivalDefinitions` — so the original THR-66 design of reading
+ * `sponsors_scheme` edges (rival → target) could never fire: `graph.addEdge`
+ * threw on the missing source. THR-829 retired that edge for rival schemes and
+ * re-sourced this layer from state:
  *
- * The THR-621 path reads the **essence-source bag** instead: a source whose
- * `contestedBy` names a rival is a hex that rival is demonstrably bleeding, and
- * the host node is a real graph node with real hex coordinates. This is what
- * actually lights the layer up today, and it is what lets the player see *which
- * rival is draining which source* without reading code.
+ * - **Essence-source drains** (THR-621) — a source whose `contestedBy` names a
+ *   rival is a hex that rival is demonstrably bleeding. "Being bled."
+ * - **Scheme targets** (`buildRivalSchemeTargets`, THR-829) — compositions a
+ *   rival sponsors whose `materialize` move has fired, keyed on the
+ *   composition's `sponsorRivalId` + `resolvedNodes.target`. "Being schemed
+ *   against."
+ *
+ * A hex carrying both is marked once, and the drain wins (the stronger signal).
  */
 import type { WorldGraph } from './graph';
 import type { RivalDefinition } from '../types/rival';
+import type { ActiveComposition } from '../types/gameState';
 import { SPHERE_ICONS } from '../data/sphereIcons';
+import { getRivalSchemeFamily } from '../data/rival-schemes';
 import { readEssenceSource } from './essenceSources';
 import { resolveLocationToHex } from './encounterAwareness';
+import { schemeFlags } from './rival';
 
 /** Default marker color when a rival has no primary sphere. */
 const RIVAL_MARKER_DEFAULT_COLOR = '#cc4444';
@@ -38,12 +41,20 @@ export interface RivalInfluenceMarker {
   rivalId: string;
   targetId: string;
   /**
-   * Why this hex is marked (THR-621). `scheme` = a `sponsors_scheme` edge;
+   * Why this hex is marked (THR-621). `scheme` = a rival scheme has materialized
+   * at this target (THR-829 — read from composition state, not an edge);
    * `source_contested` / `source_desecrated` = a rival drain on one of the
    * player's essence sources. Lets the map distinguish "being schemed against"
    * from "actively being bled".
    */
   reason?: 'scheme' | 'source_contested' | 'source_desecrated';
+}
+
+/** A location a rival's scheme has materialized at (THR-829). */
+export interface RivalSchemeTarget {
+  rivalId: string;
+  targetId: string;
+  compositionId: string;
 }
 
 function rivalColor(rival: RivalDefinition): string {
@@ -53,9 +64,40 @@ function rivalColor(rival: RivalDefinition): string {
     : RIVAL_MARKER_DEFAULT_COLOR;
 }
 
+/**
+ * The graph-free attribution surface for rival schemes (THR-829): every
+ * rival-sponsored composition that has not failed, has a resolved target, and
+ * whose family's `materialize` phase has fired its move (the move-done world
+ * flag `phaseRivalActions` sets). Pure + fail-soft: an unknown family or a
+ * composition with no target yields nothing.
+ */
+export function buildRivalSchemeTargets(
+  compositions: readonly ActiveComposition[] | undefined,
+  worldFlags: Readonly<Record<string, unknown>> | undefined,
+): RivalSchemeTarget[] {
+  const out: RivalSchemeTarget[] = [];
+  if (!compositions || !worldFlags) return out;
+  for (const c of compositions) {
+    if (!c.sponsorRivalId || !c.schemeFamily || c.status === 'failed') continue;
+    const targetId = c.resolvedNodes?.target;
+    if (!targetId) continue;
+    const family = getRivalSchemeFamily(c.schemeFamily);
+    if (!family) continue;
+    const materialized = family.beats.some(
+      (b) =>
+        b.move === 'materialize' &&
+        worldFlags[schemeFlags.moveDone(c.compositionId, b.phaseId)] === true,
+    );
+    if (!materialized) continue;
+    out.push({ rivalId: c.sponsorRivalId, targetId, compositionId: c.compositionId });
+  }
+  return out;
+}
+
 export function buildRivalInfluenceMarkers(
   graph: WorldGraph,
   rivals: RivalDefinition[],
+  schemeTargets: readonly RivalSchemeTarget[] = [],
 ): RivalInfluenceMarker[] {
   const markers: RivalInfluenceMarker[] = [];
   // De-dupe: a hex both schemed against and drained is marked once, drain wins
@@ -86,20 +128,23 @@ export function buildRivalInfluenceMarkers(
     });
   }
 
-  // ── THR-66: locations under an active scheme (see the header note) ──
-  for (const rival of rivals) {
-    const edges = graph.getOutgoingEdges(rival.id, 'sponsors_scheme');
-    if (edges.length === 0) continue;
-    const color = rivalColor(rival);
-    for (const edge of edges) {
-      const target = graph.getNode(edge.target);
-      if (!target) continue;
-      const col = target.properties.hexCol as number | undefined;
-      const row = target.properties.hexRow as number | undefined;
-      if (col === undefined || row === undefined) continue;
-      if (seen.has(`${col},${row}`)) continue; // already marked by a live drain
-      markers.push({ col, row, color, rivalId: rival.id, targetId: target.id, reason: 'scheme' });
-    }
+  // ── THR-66 / THR-829: locations a rival scheme has materialized at ──
+  for (const st of schemeTargets) {
+    const rival = byId.get(st.rivalId);
+    if (!rival) continue; // sponsored by something that is not a known rival
+    const hex = resolveLocationToHex(graph, st.targetId);
+    if (!hex) continue; // fail-soft: unplaceable target is skipped
+    const key = `${hex.col},${hex.row}`;
+    if (seen.has(key)) continue; // already marked (a live drain wins the hex)
+    seen.add(key);
+    markers.push({
+      col: hex.col,
+      row: hex.row,
+      color: rivalColor(rival),
+      rivalId: rival.id,
+      targetId: st.targetId,
+      reason: 'scheme',
+    });
   }
 
   return markers;

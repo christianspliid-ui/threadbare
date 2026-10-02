@@ -48,7 +48,7 @@ No other ≥100-importer file is modified.
 A scheme is **not** a new graph node type (load-bearing rule: no inventing node types). It is:
 
 - an **`ActiveComposition`** instance (existing THR-225 type) of a `Composition` whose `kind: 'rival-scheme'`,
-- **attributed** to its rival via a new optional `ActiveComposition.sponsorRivalId` field **and** a `sponsors_scheme` edge from the rival actor node to each antagonist/location node the scheme materializes (relationships are edges, not property strings),
+- **attributed** to its rival via a new optional `ActiveComposition.sponsorRivalId` field and the composition's `resolvedNodes.target`, with a `rival.scheme_materialized` trace when the materialize beat lands. *(2026-10-02, THR-829: the `sponsors_scheme` edge originally specified here never bound — rivals are state, not graph nodes, and the `addEdge` throw also cost each materialize beat its sphere pressure. Retired for rival schemes; rivals stay off the graph by decision.)*
 - **linked back** from the rival via `RivalState.activeSchemeIds: string[]` (additive field).
 
 ### Scheme selection — upgrading `phaseRivalActions`
