@@ -4319,6 +4319,12 @@ release. `window.__DEBUG.getLocationTraits(placeOrName?)` and the CLI `traits [l
 every place's traits with the four sustain counters, so *how close is this town to Welcoming?* is
 answerable before the word appears.
 
+**The place's prose says it too** (THR-1522). `locationTraitResolver` adds one line per held
+trait (at most `LOCATION_TRAIT_PROSE_MAX`, 2) to the place's composed prose, drawn from
+`LOCATION_TRAIT_PROSE` in `src/data/prose-layer-content.ts` — *"Ardenmor Keep is welcoming these
+days."* To add a trait's voice, add a row keyed by its id; every line takes `{name}` and must say
+the trait's word so the prose and the chip agree. A trait with no row is silent, never an error.
+
 **Blood-soaked reads records, not a scalar** (THR-1528). Every resolved battle writes a
 `battle_fought` Event on the ground it was fought over (`battleRecord.recordBattleFought`), and the
 fifth rule mints `trait.condition.location.blood_soaked` from those records inside
