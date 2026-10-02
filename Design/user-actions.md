@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-02 16:00 local (14:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-02 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,17 +13,11 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### Was the app closed from Thursday ~17:00 to Friday ~15:30? (lane silence, 1–2 October, ended)
+### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
 
-No lane published anything for about 23 hours: the last brief went out Thursday 1 October 16:55, and the next lane output was the orchestrator at Friday 2 October 15:37, your time. The builder, design and grooming lanes all missed their slots. No pause marker covered it, and it was a weekday.
+No lane ran for about 21 hours: the last brief went out Thursday 1 October 16:55, and lanes resumed Friday 2 October ~13:48, your time. The builder, design and grooming lanes all missed their slots. No pause marker covered it, and it was a weekday.
 
 **If you were away or had the app closed:** nothing to do; just say so. **If you weren't:** say so, and it becomes a fault to chase.
-
-### The builder lane has not run since yesterday
-
-Heartbeat check, verbatim: "tb-opus-pickup has not run since 2026-10-01T14:11:01.861Z — 23+ hourly slots behind, while keep-work-flowing-cc kept firing. The lane is stalled, not idle."
-
-Most likely the same outage as above; its next slot is ~16:10 today. If it runs, this clears itself. If not, a session should look for a hung run holding its slot. Meanwhile 15 jobs sit ready and none is being built.
 
 ### Were you away from Tuesday evening to Wednesday evening? (lane silence, 29–30 September, ended)
 
@@ -49,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-02: the builder lane is running again.** It ran at 16:11 and picked up the top job ([THR-1691](https://linear.app/threadbare/issue/THR-1691)). The stall was the same outage as the silence above.
 - **2026-10-02: your local copy caught up by itself**; the "fix my home tree" ask is withdrawn ([orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-02.md)).
 - **2026-10-02: all four design calls passed their veto windows** with no veto: spell generator, lead survey, shortlist draw, pilgrim way. All are ready to build.
 - **2026-10-01: the pilgrim way is designed**: a faith-spreader can make a town a place of pilgrimage ([THR-1660](https://linear.app/threadbare/issue/THR-1660)). Plan merged via [#2163](https://github.com/christianspliid-ui/threadbare/pull/2163); builds after its veto window.
@@ -58,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-01: ruins get looked at, and waiting mortals keep their meetings**: the lead climb is re-planned ([THR-1684](https://linear.app/threadbare/issue/THR-1684)). Plan merged via [#2159](https://github.com/christianspliid-ui/threadbare/pull/2159); ready to build as [THR-1686](https://linear.app/threadbare/issue/THR-1686).
 - **2026-10-01: a reputation chip names the town, not the person** ([THR-1685](https://linear.app/threadbare/issue/THR-1685)). Merged via [#2156](https://github.com/christianspliid-ui/threadbare/pull/2156), and live on the site.
 - **2026-10-01: six more everyday encounters for experts** (batch 2, [THR-1679](https://linear.app/threadbare/issue/THR-1679)). Merged via [#2157](https://github.com/christianspliid-ui/threadbare/pull/2157), and live on the site.
-- **2026-09-30: six everyday encounters for experts**: the first expert-level batch of town encounters ([THR-1678](https://linear.app/threadbare/issue/THR-1678)). Merged via [#2155](https://github.com/christianspliid-ui/threadbare/pull/2155), and live on the site.
 
 ---
 
