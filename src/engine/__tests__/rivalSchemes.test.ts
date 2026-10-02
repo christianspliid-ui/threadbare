@@ -21,6 +21,7 @@ import type { GameState } from '../../types/gameState';
 import { RIVAL_GRACE_TICKS_AFTER_BOND } from '../../data/game-config';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import type { GraphNode } from '../../types/graph';
+import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../rivalInfluenceMarkers';
 
 // ─── Fixtures ──────────────────────────────────────────────────────
 
@@ -276,13 +277,79 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     // rumor, materialize, escalate, crack → ≥3 distinct.
     expect(moves.size).toBeGreaterThanOrEqual(3);
 
-    // The sponsors_scheme edge was bound by the materialize move.
-    const edges = state.graph.getOutgoingEdges('actor_rival_1', 'sponsors_scheme');
-    expect(edges.length).toBeGreaterThanOrEqual(1);
+    // THR-829: materialize is attributed through state (trace + composition),
+    // never a sponsors_scheme edge — rivals are not graph nodes.
+    const materialized = getTraces().filter((t) => t.category === 'rival.scheme_materialized');
+    expect(materialized.length).toBeGreaterThanOrEqual(1);
+    expect(state.graph.getEdgesByType('sponsors_scheme')).toHaveLength(0);
 
     // Scheme completed (all four phases fired).
     const completed = getTraces().filter((t) => t.category === 'rival.scheme_completed');
     expect(completed.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('materializes without a rival graph node: no move failure, pressure pushed, scheme attributable (THR-829)', () => {
+    // The real-world shape: `generateRivals` never adds rival nodes. Before
+    // THR-829 the materialize move's addEdge threw here, the catch swallowed it
+    // as `rival.scheme_move_failed`, and the phase lost its sphere pressure.
+    const rival = makeRival('actor_rival_1', 'subtle');
+    const rs = makeRivalState('actor_rival_1');
+    const state = makeState({
+      rivalDefinitions: [rival],
+      rivalStates: [rs],
+      doomClock: makeDoomClock(1),
+    });
+    addLocation(state.graph, 'loc-1', 3, 3);
+    expect(state.graph.getNode('actor_rival_1')).toBeUndefined();
+    const plan = buildRivalScheme(rival, rs, CORRUPTIVE_FAMILY, 0, state.tick, 'loc-1', 'loc-1', () => 0.5);
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    let rivalPressureOnTarget = 0;
+    let sawSeededTarget = false;
+    let sawSchemeMarker = false;
+    for (let i = 0; i < 100; i++) {
+      Object.assign(state, phaseComposition(state));
+      state.pendingSpherePressures = [];
+      const out = phaseRivalActions(state);
+      rivalPressureOnTarget += (out.pendingSpherePressures ?? []).filter(
+        (p) => p.source === 'rival' && p.sourceId === 'actor_rival_1' && p.targetEntityId === 'loc-1',
+      ).length;
+      Object.assign(state, out);
+      const targets = buildRivalSchemeTargets(state.activeCompositions, state.worldFlags);
+      if (targets.some((t) => t.compositionId === plan.composition.compositionId && t.targetId === 'loc-1')) {
+        sawSeededTarget = true;
+        sawSchemeMarker ||= buildRivalInfluenceMarkers(state.graph, [rival], targets).some(
+          (m) => m.rivalId === 'actor_rival_1' && m.reason === 'scheme' && m.col === 3 && m.row === 3,
+        );
+      }
+      state.tick += 1;
+    }
+
+    const failed = getTraces().filter(
+      (t) => t.category === 'engine_warning' && t.summary.includes('rival.scheme_move_failed'),
+    );
+    expect(failed).toEqual([]);
+
+    // The rival may launch a follow-up scheme inside 100 ticks, so pin the
+    // seeded composition's record rather than a global count.
+    const materialized = getTraces()
+      .filter((t) => t.category === 'rival.scheme_materialized')
+      .map((t) => t as unknown as Record<string, unknown>)
+      .filter((t) => t.compositionId === plan.composition.compositionId);
+    expect(materialized).toHaveLength(1);
+    expect(materialized[0].rivalId).toBe('actor_rival_1');
+    expect(materialized[0].targetId).toBe('loc-1');
+    // materialize + escalate + crack each push one; materialize's push is no
+    // longer lost to the swallowed throw.
+    expect(rivalPressureOnTarget).toBeGreaterThanOrEqual(3);
+
+    // The overlay's attribution surface read the seeded scheme back to its rival
+    // while it was live (finished compositions are pruned from the ledger, so
+    // this is sampled each tick rather than at the end).
+    expect(sawSeededTarget).toBe(true);
+    expect(sawSchemeMarker).toBe(true);
   });
 
   it('emits a launch toast + sphere pressure without a seeded scheme (probe path stays alive)', () => {

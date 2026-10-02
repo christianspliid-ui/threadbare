@@ -45,6 +45,10 @@ export function createRivalInfluenceLayer(markers: RivalInfluenceMarker[]): Riva
       transparent: true,
       opacity: RIVAL_MARKER_OPACITY,
       depthWrite: false,
+      // THR-829: scheme targets are settlements, whose models stand at z≈6 —
+      // depth-tested, this z≈0.08 outline was hidden under the city on exactly
+      // the hexes it marks. Draw it over them (renderOrder still sequences it).
+      depthTest: false,
     });
     const loop = new THREE.LineLoop(geo, mat);
     loop.position.set(wx, wy, LAYER_Z.REACH_SIGNATURE_SIGNIFIER);

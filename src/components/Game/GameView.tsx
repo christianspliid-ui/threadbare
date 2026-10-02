@@ -68,7 +68,10 @@ import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
-import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
+import {
+  buildRivalInfluenceMarkers,
+  buildRivalSchemeTargets,
+} from '../../engine/rivalInfluenceMarkers';
 import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { buildAppointmentBadges, type AppointmentBadgeModel } from './appointmentBadgeModel';
@@ -1170,14 +1173,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.controlEffects, runtime.worldVersion],
   );
 
-  // Rival-scheme influence markers → map overlay (THR-66, THR-621). Recomputed
-  // on graph mutation: a rival drain sets `contestedBy` on an essence source
-  // (THR-621 — the path that actually fires), and materialize adds a
-  // sponsors_scheme edge. `runtime.worldVersion` is the invalidation signal —
-  // the graph is mutated in place, so its identity never changes.
+  // Rival-scheme influence markers → map overlay (THR-66, THR-621, THR-829).
+  // Two inputs: a rival drain sets `contestedBy` on an essence source (graph,
+  // mutated in place — `runtime.worldVersion` is the invalidation signal), and a
+  // materialized scheme is read from `activeCompositions` + `worldFlags` (rivals
+  // are not graph nodes, so there is no edge to read).
+  const rivalSchemeTargets = useMemo(
+    () => buildRivalSchemeTargets(gameState.activeCompositions, gameState.worldFlags),
+    [gameState.activeCompositions, gameState.worldFlags],
+  );
   const rivalInfluenceMarkers = useMemo(
-    () => buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions),
-    [gameState.graph, gameState.rivalDefinitions, runtime.worldVersion],
+    () =>
+      buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions, rivalSchemeTargets),
+    [gameState.graph, gameState.rivalDefinitions, rivalSchemeTargets, runtime.worldVersion],
   );
 
   // Trade-route lines + per-endpoint cargo tooltips (THR-670). Recomputed on

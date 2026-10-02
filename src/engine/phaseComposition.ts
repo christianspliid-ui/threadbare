@@ -331,10 +331,14 @@ export function phaseComposition(state: GameState): Partial<GameState> {
   const compositions = state.activeCompositions;
   if (!compositions || compositions.length === 0) return {};
 
-  // Sort by compositionId for deterministic iteration
-  const sorted = [...compositions].sort((a, b) =>
-    a.compositionId.localeCompare(b.compositionId)
-  );
+  // Sort by compositionId for deterministic iteration. Only `active` entries are
+  // candidates (THR-829): the loop below skips anything else, and finished
+  // compositions stay on the ledger, so letting them into the cap starved live
+  // ones — ten completed notable agendas sorted ahead of every `rival-scheme-*`
+  // id and held all three seed-42 rival schemes at phase 0/4 for 145 ticks.
+  const sorted = compositions
+    .filter((c) => c.status === 'active')
+    .sort((a, b) => a.compositionId.localeCompare(b.compositionId));
 
   // Apply per-tick cap
   const toEvaluate = sorted.slice(0, PHASE_RUNNER_MAX_COMPOSITIONS_PER_TICK);

@@ -16,8 +16,10 @@ import type { SphereName } from '../../types/index';
 /**
  * The concrete world-move a phase performs when it activates.
  * - `rumor`      — narration only (chronicle beat); optional detection read.
- * - `materialize`— the counter-play surface: bind a `sponsors_scheme` edge to a
- *                  target location, push sphere pressure, emit an attributed toast.
+ * - `materialize`— the counter-play surface: the scheme takes hold at its target
+ *                  location (`rival.scheme_materialized` trace + hex-map overlay
+ *                  marker read from composition state — rivals are not graph
+ *                  nodes, so no edge is bound, THR-829) and pushes sphere pressure.
  * - `escalate`   — raise sphere pressure + rival hostility (the "response" beat).
  * - `crack`      — terminal payoff: large sphere push + terminal narration.
  * - `drain_stock`— (THR-619) sour the target's richest resource: reduce its

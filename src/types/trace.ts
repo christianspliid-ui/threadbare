@@ -526,6 +526,7 @@ export type TraceCategory =
   | 'chronicle.aggregate_failed'
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced'
+  | 'rival.scheme_materialized'
   // Effect vocabulary activation (THR-1239)
   | 'effect.event_raised'
   | 'effect.charge_spent'
@@ -1024,6 +1025,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chronicle.aggregate_failed',
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
+  'rival.scheme_materialized',
   'effect.event_raised',
   'effect.charge_spent',
   'effect.overlay_applied',
@@ -4446,6 +4448,7 @@ export type TraceEntry =
   | RivalSchemePhaseAdvancedTrace
   | RivalSchemeCounteredTrace
   | RivalSchemeCompletedTrace
+  | RivalSchemeMaterializedTrace
   // Economic scheme family traces (THR-619)
   | RivalSchemeStockDrainedTrace
   | RivalSchemeRouteSeveredTrace
@@ -5542,6 +5545,18 @@ export interface RivalSchemeCounteredTrace extends TraceBase {
 export interface RivalSchemeCompletedTrace extends TraceBase {
   category: 'rival.scheme_completed';
   rivalId: string;
+  compositionId: string;
+}
+
+/**
+ * Trace (THR-829): a scheme's `materialize` move took hold at its target. The
+ * graph-free attribution record — rivals are not graph nodes, so this (with the
+ * composition's `sponsorRivalId`) replaces the never-bound `sponsors_scheme` edge.
+ */
+export interface RivalSchemeMaterializedTrace extends TraceBase {
+  category: 'rival.scheme_materialized';
+  rivalId: string;
+  targetId: string;
   compositionId: string;
 }
 

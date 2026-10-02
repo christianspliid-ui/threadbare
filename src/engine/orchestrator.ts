@@ -95,6 +95,7 @@ import type {
   RivalSchemeRouteSeveredTrace,
   RivalSchemeSourceContestedTrace,
   RivalSchemeSourceDesecratedTrace,
+  RivalSchemeMaterializedTrace,
 } from '../types/trace';
 import {
   resolveEncounter,
@@ -1744,7 +1745,8 @@ type RivalTraceInput =
   | Omit<RivalSchemeStockDrainedTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeRouteSeveredTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeSourceContestedTrace, 'id' | 'timestamp'>
-  | Omit<RivalSchemeSourceDesecratedTrace, 'id' | 'timestamp'>;
+  | Omit<RivalSchemeSourceDesecratedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeMaterializedTrace, 'id' | 'timestamp'>;
 function emitRivalTrace(trace: RivalTraceInput): void {
   emitTrace(trace as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 }
@@ -2117,24 +2119,21 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
             case 'rumor':
               break; // narration only — the runner emits the Chronicle beat
             case 'materialize': {
+              // THR-829: rivals are state, not graph nodes, so there is no
+              // `sponsors_scheme` edge to bind here — the old `addEdge` threw on
+              // the missing source and took this phase's sphere pressure with it.
+              // Attribution lives on the composition (`sponsorRivalId` +
+              // `resolvedNodes.target`) and the materialize move-done flag, which
+              // `buildRivalSchemeTargets` reads for the hex-map overlay.
               if (targetNode && targetId) {
-                const edgeId = `edge_sponsors_scheme_${rival.id}_${compId}`;
-                const exists = state.graph
-                  .getOutgoingEdges(rival.id, 'sponsors_scheme')
-                  .some((e) => e.id === edgeId);
-                if (!exists) {
-                  state.graph.addEdge({
-                    id: edgeId,
-                    source: rival.id,
-                    target: targetId,
-                    type: 'sponsors_scheme',
-                    properties: {
-                      compositionId: compId,
-                      family: family.id,
-                      establishedTick: state.tick,
-                    },
-                  });
-                }
+                emitRivalTrace({
+                  category: 'rival.scheme_materialized' as const,
+                  tick: state.tick,
+                  summary: `${rival.name}'s ${family.id} scheme takes hold at ${targetName ?? targetId}`,
+                  rivalId: rival.id,
+                  targetId,
+                  compositionId: compId,
+                });
               }
               if (rival.primarySphere) {
                 spherePressures.push({
@@ -2351,11 +2350,6 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
           activeCompositions = activeCompositions.map((c) =>
             c.compositionId === compId ? { ...c, status: 'failed' as const } : c,
           );
-          try {
-            state.graph.removeEdge(`edge_sponsors_scheme_${rival.id}_${compId}`);
-          } catch {
-            /* fail-soft: edge may not exist yet */
-          }
           rivalState = {
             ...rivalState,
             activeSchemeIds: (rivalState.activeSchemeIds ?? []).filter((id) => id !== compId),
