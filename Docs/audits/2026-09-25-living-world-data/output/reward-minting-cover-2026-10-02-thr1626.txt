@@ -1,0 +1,35 @@
+ 94 t2 [#knowledge]            1 forbidden_book
+ 62 t2 [#heart]                9 bargain,oath_object,war_banner,made_past_skill,saints_relic,heirloom
+ 46 t2 []                      16 blood_hungry,shows_the_dead,bargain,nullstone,forbidden_book,oath_object
+ 34 t2 [#gold]                 8 bargain,oath_object,merchant,made_past_skill,heirloom,beast_trophy
+ 21 t3 [#knowledge]            1 forbidden_book
+ 15 t2 [#shadow]               7 bargain,oath_object,thieves_kit,made_past_skill,beast_trophy,disaster_salvage
+ 13 t3 []                      17 blood_hungry,shows_the_dead,bargain,nullstone,forbidden_book,oath_object
+ 12 t2 [#survival]             0 
+ 12 t2 [#divine]               1 saints_relic
+ 12 t2 [#stealth]              1 thieves_kit
+ 11 t2 [#combat]               3 blood_hungry,war_banner,made_past_skill
+ 10 t2 [#trade]                1 merchant
+  9 t2 [#healing]              1 saints_relic
+  9 t2 [#craft]                1 made_past_skill
+  7 t3 [#heart]                9 bargain,oath_object,war_banner,made_past_skill,saints_relic,heirloom
+  5 t3 [#shadow]               7 bargain,oath_object,made_past_skill,blight,beast_trophy,disaster_salvage
+  5 t3 [#gold]                 8 bargain,oath_object,merchant,made_past_skill,heirloom,beast_trophy
+  3 t3 [#divine]               1 saints_relic
+  3 t2 [#gem]                  0 
+  3 t3 [#ancient,#arcane]      0 
+  3 t3 [#craft]                1 made_past_skill
+  3 t2 [#iron,#combat]         3 blood_hungry,war_banner,made_past_skill
+  2 t2 [#veil]                 7 shows_the_dead,forbidden_book,oath_object,made_past_skill,beast_trophy,disaster_salvage
+  2 t2 [#eye]                  8 shows_the_dead,nullstone,forbidden_book,oath_object,made_past_skill,beast_trophy
+  2 t2 [#arcane]               1 forbidden_book
+  2 t2 [#stone]                7 nullstone,oath_object,made_past_skill,saints_relic,beast_trophy,disaster_salvage
+  1 t3 [#combat]               4 blood_hungry,war_banner,made_past_skill,chose_bearer
+  1 t2 [#relic]                4 bargain,oath_object,saints_relic,heirloom
+  1 t3 [#arcane]               1 forbidden_book
+  1 t3 [#iron,#combat]         4 blood_hungry,war_banner,made_past_skill,chose_bearer
+  1 t3 [#star_metal,#fate]     0 
+  1 t2 [#talisman]             7 bargain,nullstone,oath_object,merchant,heirloom,beast_trophy
+  1 t3 [#healing]              1 saints_relic
+  1 t3 [#eye]                  8 shows_the_dead,nullstone,forbidden_book,oath_object,made_past_skill,beast_trophy
+covered draws 389/408 = 95%
