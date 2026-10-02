@@ -70,7 +70,9 @@ function ChoiceButton({
 
   const essenceCost = choice.effects.essenceCost ?? 0;
   const borderColor = isOrdeal
-    ? (choice.effects.ordealOutcome === 'triumph' ? 'var(--accent-gold)' : choice.effects.ordealOutcome === 'broken' ? 'var(--negative)' : 'var(--accent-gold)')
+    // THR-1586: the polarity tokens, not a second gold (Law 30) — triumph and broken stay
+    // distinct from the scraped-through default.
+    ? (choice.effects.ordealOutcome === 'triumph' ? 'var(--positive)' : choice.effects.ordealOutcome === 'broken' ? 'var(--negative)' : 'var(--accent-gold)')
     : 'var(--accent-gold)';
 
   return (
@@ -187,7 +189,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           lineHeight: 1.7,
           marginBottom: 'var(--space-4)',
           paddingLeft: 'var(--space-3)',
-          borderLeft: `2px solid ${vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--accent-gold)'}`,
+          borderLeft: '2px solid var(--accent-gold)',
         }}>
           {vignette.tensionProse}
         </div>
