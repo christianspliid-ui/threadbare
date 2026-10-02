@@ -2,7 +2,7 @@
 
 > **Generated:** 2026-10-02 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 4c7d296722203bd7dfd87a65e00708f04fa1dceb)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 55659628b87420c5874aa0ed4969f94d8d236f30)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a9e866b16e82f019e80385eabd9327d31f4226b5)
 >   - Docs/canon/undertakings.md (sha1: 851d8660d4891fac0e8193531e6abac64d7881c4)
