@@ -13,11 +13,16 @@
  *
  * Verdicts (exit code is the PreToolUse contract — 0 allow, 2 deny):
  *   - not a merge-arming command, or `--disable-auto`            → allow
+ *   - a `git push` to a branch whose PR has NO auto-merge armed    → allow
+ *     (a push to an armed PR merges with no further `gh pr merge`, so it is
+ *     judged exactly like a merge of the pushed commit)
  *   - the PR diff classifies docs-only (the CI predicate)          → allow
  *   - a commit in the range carries `Review-gate exempt: <reason>` → allow (audited)
  *   - a receipt for the head SHA with zero `open` findings         → allow
- *   - a receipt for an ancestor SHA whose delta to head is
- *     docs-only (closeout docs written after the review)          → allow
+ *   - a receipt for an ancestor SHA whose delta to head — counting
+ *     only files in this PR's own diff, so a `git merge origin/main`
+ *     does not stale it — is docs-only                             → allow
+ *   - a PR head missing locally even after a fetch                 → deny
  *   - otherwise                                                    → deny
  *
  * Fail-soft (NFP #4): an error in the gate itself allows with a loud warning and an
@@ -68,10 +73,72 @@ export type GateDecision = { verdict: "allow" | "deny"; reason: string };
 // Pure parts
 // ---------------------------------------------------------------------------
 
+const SEPARATORS = new Set([";", "&", "|"]);
+const ENV_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
+
+/**
+ * Index of `seq` (e.g. `gh pr merge`) at a **command position** — the start of the
+ * line or right after `;`, `&`, `|`, past any `VAR=value` prefixes — or -1. Tokenised,
+ * so the same text inside a quoted commit message or PR body never matches (a raw
+ * substring test denied `git commit -m "… gh pr merge …"` on every code branch).
+ */
+export function findCommand(words: readonly string[], seq: readonly string[]): number {
+  for (let i = 0; i + seq.length <= words.length; i++) {
+    if (!seq.every((w, k) => words[i + k] === w)) continue;
+    let j = i - 1;
+    while (j >= 0 && ENV_ASSIGNMENT.test(words[j])) j--;
+    if (j < 0 || SEPARATORS.has(words[j])) return i;
+  }
+  return -1;
+}
+
+/** The words of the command that starts at `start`, up to the next separator. */
+function commandSegment(words: readonly string[], start: number): string[] {
+  const out: string[] = [];
+  for (let j = start; j < words.length && !SEPARATORS.has(words[j]); j++) out.push(words[j]);
+  return out;
+}
+
 /** Does this shell command arm (or perform) a PR merge? Disarming is never gated. */
 export function isMergeCommand(command: string): boolean {
-  if (!/\bgh\s+pr\s+merge\b/.test(command)) return false;
-  return !/--disable-auto\b/.test(command);
+  const words = shellWords(command);
+  const i = findCommand(words, ["gh", "pr", "merge"]);
+  if (i < 0) return false;
+  return !commandSegment(words, i).includes("--disable-auto");
+}
+
+/** Is this shell command a `git push`? (Gated only when the target PR already has auto-merge armed.) */
+export function isPushCommand(command: string): boolean {
+  return findCommand(shellWords(command), ["git", "push"]) >= 0;
+}
+
+/** `git push` flags that consume the next word as their value. */
+const PUSH_VALUE_FLAGS = new Set(["-o", "--push-option", "--repo", "--receive-pack", "--exec"]);
+
+/**
+ * What a `git push` sends where: the local `source` rev (default `HEAD`) and the remote
+ * branch `dest` (null = the current branch's upstream). `git push origin HEAD:topic`
+ * → `{ source: "HEAD", dest: "topic" }`.
+ */
+export function extractPushTarget(command: string): { source: string; dest: string | null } {
+  const words = shellWords(command);
+  const i = findCommand(words, ["git", "push"]);
+  if (i < 0) return { source: "HEAD", dest: null };
+  const positional: string[] = [];
+  const segment = commandSegment(words, i + 2);
+  for (let j = 0; j < segment.length; j++) {
+    const w = segment[j];
+    if (PUSH_VALUE_FLAGS.has(w)) { j++; continue; }
+    if (w.startsWith("-")) continue;
+    positional.push(w);
+  }
+  const refspec = positional[1];
+  if (!refspec) return { source: "HEAD", dest: null };
+  const spec = refspec.replace(/^\+/, "");
+  const colon = spec.indexOf(":");
+  const source = colon >= 0 ? spec.slice(0, colon) || "HEAD" : spec;
+  const rawDest = colon >= 0 ? spec.slice(colon + 1) : spec;
+  return { source, dest: rawDest.replace(/^refs\/heads\//, "") || null };
 }
 
 /** Minimal shell-word splitter: respects single and double quotes, enough for argv inspection. */
@@ -117,7 +184,8 @@ const VALUE_FLAGS = new Set([
  */
 export function extractMergeTarget(command: string): { target: string | null; repo: string | null } {
   const words = shellWords(command);
-  for (let i = 0; i + 2 < words.length; i++) {
+  const start = findCommand(words, ["gh", "pr", "merge"]);
+  for (let i = Math.max(start, 0); start >= 0 && i + 2 < words.length; i++) {
     if (words[i] === "gh" && words[i + 1] === "pr" && words[i + 2] === "merge") {
       let target: string | null = null;
       let repo: string | null = null;
@@ -260,16 +328,27 @@ function readReceipt(file: string): Receipt | null {
   }
 }
 
-function findCarriedReceipt(cwd: string, receiptDir: string, headSha: string): Receipt | null {
+/**
+ * The part of a receipt→head delta that is this PR's own work. A file counts only if
+ * it is also in the PR's diff against `origin/main`: after `git merge origin/main` (the
+ * prescribed fix for a DIRTY PR) the two-dot delta lists every file main changed, and
+ * those are main's reviewed code, not this PR's. A file both sides touched stays in.
+ */
+export function ownDelta(delta: readonly string[], prFiles: readonly string[]): string[] {
+  const own = new Set(prFiles);
+  return delta.filter((f) => own.has(f));
+}
+
+function findCarriedReceipt(cwd: string, receiptDir: string, headSha: string, prFiles: readonly string[]): Receipt | null {
   if (!existsSync(receiptDir)) return null;
   for (const name of readdirSync(receiptDir)) {
     if (!name.endsWith(".json")) continue;
     const receipt = readReceipt(path.join(receiptDir, name));
     if (!receipt || receipt.sha === headSha) continue;
     try {
-      // Ancestor of head, and the delta since it is docs-only.
+      // Ancestor of head, and this PR's own delta since it is docs-only.
       execFileSync("git", ["-C", cwd, "merge-base", "--is-ancestor", receipt.sha, headSha], { stdio: "ignore" });
-      const delta = git(cwd, ["diff", "--name-only", receipt.sha, headSha]).split("\n").filter(Boolean);
+      const delta = ownDelta(git(cwd, ["diff", "--name-only", receipt.sha, headSha]).split("\n").filter(Boolean), prFiles);
       if (delta.length === 0 || classifyDiff(delta) === "docs-only") return receipt;
     } catch {
       // Not an ancestor, or unknown object — not a candidate.
@@ -289,45 +368,127 @@ export function normalizeCwd(cwd: string, platform: string = process.platform): 
   return m ? `${m[1].toUpperCase()}:${m[2] ?? "/"}` : cwd;
 }
 
-export function evaluateHookPayload(payload: { command: string; cwd: string }): GateDecision {
-  const { command } = payload;
-  const cwd = normalizeCwd(payload.cwd);
-  if (!isMergeCommand(command)) return { verdict: "allow", reason: "not a merge command" };
+type PrView = {
+  number?: number;
+  state?: string;
+  headRefOid?: string;
+  autoMergeRequest?: unknown;
+  comments?: { body: string }[];
+};
 
-  const { target, repo } = extractMergeTarget(command);
-  let headSha: string;
-  let prComments: string[] = [];
-  if (target && ghAvailable()) {
-    const args = ["pr", "view", target, "--json", "headRefOid,comments"];
-    if (repo) args.push("--repo", repo);
-    const view = JSON.parse(gh(cwd, args)) as { headRefOid: string; comments: { body: string }[] };
-    headSha = view.headRefOid;
-    prComments = view.comments.map((c) => c.body);
-  } else {
-    headSha = git(cwd, ["rev-parse", "HEAD"]);
-    if (ghAvailable()) {
-      try {
-        const view = JSON.parse(gh(cwd, ["pr", "view", "--json", "comments"])) as { comments: { body: string }[] };
-        prComments = view.comments.map((c) => c.body);
-      } catch {
-        // No PR for this branch yet, or gh offline — the local receipt is the primary path.
-      }
-    }
+/**
+ * `gh pr view` — or, for the hermetic fixture tests, the JSON in
+ * `REVIEW_GATE_PR_FIXTURE` (the hook must be drivable without GitHub). Null when
+ * there is no PR or gh is unavailable.
+ */
+function viewPr(cwd: string, selector: string | null, repo: string | null, fields: string): PrView | null {
+  const fixture = process.env.REVIEW_GATE_PR_FIXTURE;
+  if (fixture) return JSON.parse(fixture) as PrView;
+  if (!ghAvailable()) return null;
+  const args = ["pr", "view", ...(selector ? [selector] : []), "--json", fields];
+  if (repo) args.push("--repo", repo);
+  try {
+    return JSON.parse(gh(cwd, args)) as PrView;
+  } catch {
+    return null;
   }
+}
 
+/** Is `sha` a commit this repo has? Fetches it once (and the PR's head ref) if not. */
+function ensureCommit(cwd: string, sha: string, prNumber: number | undefined): boolean {
+  const has = () => {
+    try {
+      execFileSync("git", ["-C", cwd, "cat-file", "-e", `${sha}^{commit}`], { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  if (has()) return true;
+  for (const ref of [sha, ...(prNumber ? [`pull/${prNumber}/head`] : [])]) {
+    try {
+      execFileSync("git", ["-C", cwd, "fetch", "-q", "origin", ref], { stdio: "ignore", timeout: 30_000 });
+    } catch {
+      // try the next ref
+    }
+    if (has()) return true;
+  }
+  return false;
+}
+
+/** Everything `decideReviewGate` needs for `headSha`, read from this tree. */
+function gatherGateInputs(cwd: string, headSha: string, prComments: readonly string[]): GateInputs {
   const top = git(cwd, ["rev-parse", "--show-toplevel"]);
   const receiptDir = path.join(top, RECEIPT_DIR);
   const files = git(cwd, ["diff", "--name-only", `${BASE_REF}...${headSha}`]).split("\n").filter(Boolean);
   const commitBodies = git(cwd, ["log", "--format=%B", `${BASE_REF}..${headSha}`]);
   const exactPath = path.join(receiptDir, `${headSha}.json`);
   const exactReceipt = existsSync(exactPath) ? readReceipt(exactPath) : null;
-  const carriedReceipt = exactReceipt ? null : findCarriedReceipt(cwd, receiptDir, headSha);
+  const carriedReceipt = exactReceipt ? null : findCarriedReceipt(cwd, receiptDir, headSha, files);
   let commentMarker: { sha: string; open: number } | null = null;
   for (const body of prComments) {
     const marker = parseCommentMarker(body);
     if (marker && marker.sha === headSha) commentMarker = marker;
   }
-  return decideReviewGate({ headSha, files, commitBodies, exactReceipt, carriedReceipt, commentMarker });
+  return { headSha, files, commitBodies, exactReceipt, carriedReceipt, commentMarker };
+}
+
+function evaluateMerge(command: string, cwd: string): GateDecision {
+  const { target, repo } = extractMergeTarget(command);
+  let headSha: string;
+  let prComments: string[] = [];
+  if (target && (ghAvailable() || process.env.REVIEW_GATE_PR_FIXTURE)) {
+    const view = viewPr(cwd, target, repo, "number,headRefOid,comments");
+    if (!view?.headRefOid) {
+      return { verdict: "deny", reason: `could not read PR ${target}'s head from GitHub — retry once gh can reach it` };
+    }
+    headSha = view.headRefOid;
+    prComments = (view.comments ?? []).map((c) => c.body);
+    // A head made on GitHub's side (Update branch) may be missing here; reading the
+    // diff would then throw and the fail-soft path would ALLOW an unreviewed merge.
+    if (!ensureCommit(cwd, headSha, view.number)) {
+      return {
+        verdict: "deny",
+        reason: `PR ${target}'s head ${headSha.slice(0, 10)} is not in this repo even after a fetch — git fetch origin, then retry`,
+      };
+    }
+  } else {
+    headSha = git(cwd, ["rev-parse", "HEAD"]);
+    const view = viewPr(cwd, null, null, "comments");
+    prComments = (view?.comments ?? []).map((c) => c.body);
+  }
+  return decideReviewGate(gatherGateInputs(cwd, headSha, prComments));
+}
+
+/**
+ * A push to a PR whose auto-merge is already armed merges the pushed commit with no
+ * further `gh pr merge` — so the gate has to stand here too, or a fix pushed after a
+ * red CI ships unreviewed. Pushes to unarmed or PR-less branches are not judged.
+ */
+function evaluatePush(command: string, cwd: string): GateDecision {
+  const { source, dest } = extractPushTarget(command);
+  const view = viewPr(cwd, dest, null, "number,state,autoMergeRequest,comments");
+  if (!view || !view.autoMergeRequest || (view.state && view.state !== "OPEN")) {
+    return { verdict: "allow", reason: "push to a branch with no armed PR — not judged" };
+  }
+  const headSha = git(cwd, ["rev-parse", `${source}^{commit}`]);
+  const decision = decideReviewGate(gatherGateInputs(cwd, headSha, (view.comments ?? []).map((c) => c.body)));
+  if (decision.verdict === "allow") return decision;
+  return {
+    verdict: "deny",
+    reason:
+      `PR #${view.number ?? "?"} has auto-merge armed, so this push would merge ${headSha.slice(0, 10)} unreviewed. ` +
+      `Review the new head and write its receipt before pushing, or disarm first ` +
+      `(\`gh pr merge ${view.number ?? "<N>"} --disable-auto\`) and re-arm after the review.\n${decision.reason}`,
+  };
+}
+
+export function evaluateHookPayload(payload: { command: string; cwd: string }): GateDecision {
+  const { command } = payload;
+  const cwd = normalizeCwd(payload.cwd);
+  if (isMergeCommand(command)) return evaluateMerge(command, cwd);
+  if (isPushCommand(command)) return evaluatePush(command, cwd);
+  return { verdict: "allow", reason: "not a merge command" };
 }
 
 function logGateError(cwd: string, message: string): void {
@@ -359,7 +520,7 @@ function runHook(): number {
   try {
     const decision = evaluateHookPayload({ command, cwd });
     if (decision.verdict === "deny") {
-      process.stderr.write(`Review gate BLOCKED the merge (THR-1691): ${decision.reason}\n`);
+      process.stderr.write(`Review gate BLOCKED this command (THR-1691): ${decision.reason}\n`);
       return 2;
     }
     if (decision.reason !== "not a merge command") {

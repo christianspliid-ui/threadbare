@@ -20,8 +20,11 @@ import { SUBPROCESS_TEST_TIMEOUT_MS } from "../../src/testing/testTimeouts";
 import {
   decideReviewGate,
   extractMergeTarget,
+  extractPushTarget,
   isMergeCommand,
+  isPushCommand,
   normalizeCwd,
+  ownDelta,
   parseCommentMarker,
   parseExemptReason,
   renderReceiptComment,
@@ -65,6 +68,29 @@ describe("review gate — pure verdict", () => {
     expect(isMergeCommand("gh pr merge 12 --disable-auto")).toBe(false);
     expect(isMergeCommand("gh pr view 12")).toBe(false);
     expect(isMergeCommand("git merge origin/main")).toBe(false);
+  });
+
+  it("ignores the merge text inside quotes — a commit message or PR body merges nothing", () => {
+    expect(isMergeCommand('git commit -m "arm with gh pr merge --auto after review"')).toBe(false);
+    expect(isMergeCommand("gh pr create --body 'then gh pr merge --auto --merge'")).toBe(false);
+    expect(isMergeCommand('git log --grep "gh pr merge"')).toBe(false);
+    expect(isMergeCommand("GH_TOKEN=x gh pr merge 5 --auto")).toBe(true);
+    expect(isMergeCommand("gh pr merge 5 --disable-auto; gh pr merge 6 --auto")).toBe(false);
+  });
+
+  it("recognises pushes and reads what they send where", () => {
+    expect(isPushCommand("git push")).toBe(true);
+    expect(isPushCommand('git commit -m "then git push"')).toBe(false);
+    expect(extractPushTarget("git push")).toEqual({ source: "HEAD", dest: null });
+    expect(extractPushTarget("git push -u origin HEAD")).toEqual({ source: "HEAD", dest: "HEAD" });
+    expect(extractPushTarget("git push origin HEAD:claude/topic")).toEqual({ source: "HEAD", dest: "claude/topic" });
+    expect(extractPushTarget("git push -o ci.skip origin +abc123:refs/heads/topic")).toEqual({ source: "abc123", dest: "topic" });
+  });
+
+  it("counts only the PR's own files in a carried receipt's delta", () => {
+    // After `git merge origin/main`, main's src/ files appear in the two-dot delta but not in the PR diff.
+    expect(ownDelta(["src/main-only.ts", "Docs/status/x.md"], ["src/feature.ts", "Docs/status/x.md"])).toEqual(["Docs/status/x.md"]);
+    expect(ownDelta(["src/feature.ts"], ["src/feature.ts"])).toEqual(["src/feature.ts"]);
   });
 
   it("extracts a PR target past value-taking flags and quotes", () => {
@@ -148,11 +174,14 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     writeFileSync(path.join(dir, `${sha}.json`), JSON.stringify({ sha, rounds: 1, findings, reviewedAt: "2026-10-02T00:00:00Z" }));
   };
   const clearReceipts = () => rmSync(path.join(repo, ".claude/review-receipts"), { recursive: true, force: true });
-  const runHook = (command = "gh pr merge --auto --merge") => {
+  const runHook = (command = "gh pr merge --auto --merge", prFixture?: object) => {
+    const env: NodeJS.ProcessEnv = { ...process.env, REVIEW_GATE_NO_GH: "1" };
+    delete env.REVIEW_GATE_PR_FIXTURE;
+    if (prFixture) env.REVIEW_GATE_PR_FIXTURE = JSON.stringify(prFixture);
     const result = spawnSync(BASH as string, [HOOK], {
       input: JSON.stringify({ tool_name: "Bash", tool_input: { command }, cwd: repo }),
       encoding: "utf8",
-      env: { ...process.env, REVIEW_GATE_NO_GH: "1" },
+      env,
     });
     return { status: result.status, stderr: result.stderr ?? "" };
   };
@@ -242,6 +271,57 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     git("add", "-A");
     git("commit", "-q", "-m", "fix: emergency revert", "-m", "Review-gate exempt: reverting a broken merge on main");
     expect(runHook().status).toBe(0);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("does not gate a commit whose message mentions the merge command", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    expect(runHook('git commit --allow-empty -m "arm with gh pr merge --auto after review"').status).toBe(0);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("keeps a clean receipt across a merge of origin/main that brings in main's code", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    writeReceipt(head(), null);
+    const reviewed = head();
+    // main moves on with its own code, and the branch merges it (the DIRTY-PR fix).
+    git("checkout", "-q", "-b", "main-tip", baseSha);
+    commit("src/main-only.ts", "feat: main's own work");
+    git("update-ref", "refs/remotes/origin/main", head());
+    git("checkout", "-q", "feature");
+    git("merge", "-q", "--no-edit", "main-tip");
+    expect(head()).not.toBe(reviewed);
+    expect(runHook().status).toBe(0);
+    git("update-ref", "refs/remotes/origin/main", baseSha);
+    git("branch", "-q", "-D", "main-tip");
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("denies a merge whose PR head is not in the repo, instead of failing soft into allow", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const r = runHook("gh pr merge 77 --auto --merge", { number: 77, headRefOid: "f".repeat(40), comments: [] });
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain("not in this repo");
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("denies a push of unreviewed code to a PR with auto-merge armed", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    writeReceipt(head(), null);
+    commit("src/fix.ts", "fix: after red CI");
+    const armed = { number: 9, state: "OPEN", autoMergeRequest: { mergeMethod: "MERGE" }, comments: [] };
+    const r = runHook("git push", armed);
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain("auto-merge armed");
+    // Reviewing the new head unblocks the push; an unarmed PR is never judged.
+    writeReceipt(head(), null);
+    expect(runHook("git push", armed).status).toBe(0);
+    clearReceipts();
+    expect(runHook("git push", { ...armed, autoMergeRequest: null }).status).toBe(0);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("fails soft (allows) when the gate itself errors", () => {
