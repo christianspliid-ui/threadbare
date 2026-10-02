@@ -2,13 +2,11 @@ import type { SphereName } from './index';
 // THR-1065: these payload interfaces are `TraceEntry` members. Type-only and
 // circular — they extend `TraceBase` declared here — which `import type` erases.
 import type {
-  ChoiceResolvedTrace,
   ForecastComputedTrace,
   HandFilteredTrace,
   DriftThresholdCrossedTrace,
   BranchDecidedTrace,
   DetectionThresholdCrossedTrace,
-  ItemConsumedByChoiceTrace,
   SpotlightChangedTrace,
   CallbackEligibilityComputedTrace,
 } from './traces/encounter-traces';
@@ -306,13 +304,11 @@ export type TraceCategory =
   // below as unregistered — which is how THR-928 came to be filed against
   // `forecast_computed`, a member present since 2026-05-07. Keep comments in
   // this union semicolon-free.
-  | 'choice_resolved'
   | 'forecast_computed'
   | 'hand_filtered'
   | 'drift_threshold_crossed'
   | 'axiological_mark_applied'
   | 'detection_threshold_crossed'
-  | 'item_consumed_by_choice'
   | 'spotlight_changed'
   | 'callback_eligibility_computed'
   // Ascendant self-action effects (THR-399)
@@ -801,13 +797,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Composition dual-voice story-beat wiring (THR-254)
   'composition.story_beat_template_missing',
   // Encounter Experience traces (THR-339)
-  'choice_resolved',
   'forecast_computed',
   'hand_filtered',
   'drift_threshold_crossed',
   'axiological_mark_applied',
   'detection_threshold_crossed',
-  'item_consumed_by_choice',
   'spotlight_changed',
   'callback_eligibility_computed',
   // Ascendant self-action effects (THR-399)
@@ -4601,13 +4595,11 @@ export type TraceEntry =
   | KpiSnapshotTrace
   | ClueRumorSweepTrace
   | ClueSharpenedTrace
-  | ChoiceResolvedTrace
   | ForecastComputedTrace
   | HandFilteredTrace
   | DriftThresholdCrossedTrace
   | BranchDecidedTrace
   | DetectionThresholdCrossedTrace
-  | ItemConsumedByChoiceTrace
   | SpotlightChangedTrace
   | CallbackEligibilityComputedTrace
   | MentorshipOfferedTrace

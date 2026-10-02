@@ -812,10 +812,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 87 total — 4 write, 7 read, 76 unclassified
+- **Production hits:** 88 total — 4 write, 7 read, 77 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx` +71 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx` +72 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -1589,10 +1589,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 78 total — 1 write, 2 read, 75 unclassified
+- **Production hits:** 77 total — 1 write, 2 read, 74 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +70 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +69 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1964,10 +1964,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Nudge*, *Detection Pressure*, *Doom Clock*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Production hits:** 5 total — 0 write, 2 read, 3 unclassified
 - **Write sites:** —
 - **Read sites:** `src/engine/doomClock.ts`, `src/engine/encounters/detectionPressure.ts`
-- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeCostChannels' src/engine/phases/phaseAutonomousAftermath.ts before treating this as a leak.
 
 ### `nudge-card-grants-dispatch-to-host-systems` — 🔵 UNVERIFIED-OK
@@ -1976,10 +1976,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 18 total — 1 write, 2 read, 15 unclassified
+- **Production hits:** 19 total — 1 write, 2 read, 16 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +10 more
+- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +11 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -2115,10 +2115,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 344 total — 1 write, 1 read, 342 unclassified
+- **Production hits:** 341 total — 1 write, 1 read, 339 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +337 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +334 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2367,10 +2367,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 105 total — 1 write, 1 read, 103 unclassified
+- **Production hits:** 104 total — 1 write, 1 read, 102 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +98 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +97 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2474,10 +2474,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 115 total — 2 write, 4 read, 109 unclassified
+- **Production hits:** 113 total — 2 write, 4 read, 107 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +104 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +102 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -2645,10 +2645,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 6 total — 1 write, 0 read, 5 unclassified
+- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
 - **Write sites:** `src/engine/encounters/branchDecision.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/engine/phases/phaseAutonomousAftermath.ts` +1 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `war-news-reaches-chronicle` — 🟢 LIVE
@@ -2751,10 +2751,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 270 total — 2 write, 6 read, 262 unclassified
+- **Production hits:** 268 total — 2 write, 6 read, 260 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +257 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +255 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

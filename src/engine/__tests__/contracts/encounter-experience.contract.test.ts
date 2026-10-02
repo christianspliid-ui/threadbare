@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { WorldGraph } from '../../graph';
-import type { GameState, PendingChoiceCommit, ArchetypeDrift } from '../../../types/gameState';
+import type { GameState, ArchetypeDrift } from '../../../types/gameState';
 import type { UnifiedAction, EncounterAftermathReaction, UnifiedActionTemplate } from '../../../types/unifiedAction';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../../traceBuffer';
-import { phaseChoiceResolution } from '../../orchestrator/phaseChoiceResolution';
-import { phaseDetectionPressure } from '../../orchestrator/phaseDetectionPressure';
+import { phaseDetectionPressure, recordDetectionCrossings } from '../../orchestrator/phaseDetectionPressure';
 import { applyEncounterAftermathReaction } from '../../encounterAftermath';
 import { createSimulationRuntime } from '../../simulationRuntime';
 import { isTemplateUnlocked } from '../../encounters/encounterTemplateGraph';
@@ -16,20 +15,6 @@ import { generateArchetypes } from '../../ascendant';
 import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 const AGENT_ID = 'actor.contract';
-
-function makeChoiceCommit(overrides: Partial<PendingChoiceCommit> = {}): PendingChoiceCommit {
-  return {
-    agentId: AGENT_ID,
-    encounterId: 'enc.contract',
-    beatIndex: 0,
-    reach: 'iron',
-    cost: 'small_breath',
-    moralAxisPole: 'virtue',
-    effectiveProbability: 0.7,
-    driftMagnitude: 0.05,
-    ...overrides,
-  };
-}
 
 function makeAction(overrides: Partial<UnifiedAction> = {}): UnifiedAction {
   return {
@@ -108,7 +93,6 @@ function createAftermathState(): GameState {
     echoStates: [],
     chronicle: {} as never,
     encounterNotifications: [],
-    pendingChoiceCommits: [],
     archetypeDrift: [],
     regionalDetectionPressure: [],
     regionDetection: [],
@@ -159,58 +143,21 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
     clearTraces();
   });
 
-  it('4.1 full run-through: two choice commits produce ordered traces and aftermath effects', () => {
-    const runtime = createSimulationRuntime();
-    const state = createAftermathState();
-
-    state.pendingChoiceCommits = [
-      makeChoiceCommit({ beatIndex: 0, encounterId: 'enc.contract.pipeline' }),
-      makeChoiceCommit({ beatIndex: 1, encounterId: 'enc.contract.pipeline', driftMagnitude: 0.07 }),
-    ];
-
-    const choicePhase = phaseChoiceResolution(state, () => 0.2);
-    state.archetypeDrift = choicePhase.archetypeDrift;
-    state.pendingChoiceCommits = choicePhase.pendingChoiceCommits;
-
-    const reaction: EncounterAftermathReaction = {
-      id: 'reaction.pipeline',
-      label: 'Pipeline aftermath',
-      effects: [{ kind: 'reputation_score', delta: 0.03 }],
-      closeAfterSelection: true,
-    };
-
-    applyEncounterAftermathReaction(state, makeAction({ templateId: 'enc.contract.pipeline' }), reaction, state.tick, runtime);
-
-    const choiceTraces = getTraces().filter((trace) => trace.category === 'choice_resolved') as Array<{ beatIndex: number }>;
-    expect(choiceTraces).toHaveLength(2);
-    expect(choiceTraces.map((trace) => trace.beatIndex)).toEqual([0, 1]);
-
-    const aftermathTraces = getTraces().filter((trace) => trace.category === 'encounter_aftermath_effect');
-    expect(aftermathTraces.length).toBeGreaterThan(0);
-    expect(state.pendingChoiceCommits).toEqual([]);
-    expect(state.archetypeDrift.some((entry) => Math.abs(entry.toPosition) > 0)).toBe(true);
-  });
-
   it('4.2 drift threshold crossing can trigger archetype drift registration', () => {
     const runtime = createSimulationRuntime();
     const state = createAftermathState();
 
-    // THR-559: drift is keyed by the canonical axis id (`iron_axis`); the choice
-    // pipeline accumulates onto this entry. The register effect below authors the
-    // bare reach `'iron'` on purpose — the handler canonicalizes it to match.
+    // THR-559: drift is keyed by the canonical axis id (`iron_axis`). The register
+    // effect below authors the bare reach `'iron'` on purpose — the handler
+    // canonicalizes it to match. (THR-964: the position past SOFT is seeded directly;
+    // the retired choice-commit phase used to accumulate it.)
     state.archetypeDrift = [{
       agentId: AGENT_ID,
       axisId: 'iron_axis',
       fromPosition: 0.29,
-      toPosition: 0.29,
+      toPosition: 0.34,
       lastUpdatedTick: 19,
     } as ArchetypeDrift];
-    state.pendingChoiceCommits = [
-      makeChoiceCommit({ reach: 'iron', moralAxisPole: 'virtue', driftMagnitude: 0.05 }),
-    ];
-
-    const choicePhase = phaseChoiceResolution(state, () => 0.3);
-    state.archetypeDrift = choicePhase.archetypeDrift;
 
     const reaction: EncounterAftermathReaction = {
       id: 'reaction.drift',
@@ -228,19 +175,20 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
 
     expect(driftEffect).toBeDefined();
     expect(driftEffect?.success).toBe(true);
-    expect(getTraces().some((trace) => trace.category === 'drift_threshold_crossed')).toBe(true);
   });
 
   it('4.3 detection threshold crossing queues exactly one rival-detection seed', () => {
     const state = createAftermathState();
-    // Two deep draughts: since THR-963 a single one only reaches NOTICE, so the
-    // encounter band — and the seed it queues — takes a second choice to reach.
-    state.pendingChoiceCommits = [
-      makeChoiceCommit({ cost: 'deep_draught' }),
-      makeChoiceCommit({ cost: 'deep_draught' }),
-    ];
-
-    const firstPass = phaseDetectionPressure(state);
+    // THR-964: a pressure writer reports its delta through the extracted helper;
+    // the phase that follows only decays, so it must not re-cross or re-seed.
+    // LEAKED until THR-1690: the helper is called by hand here — the live nudge
+    // writer does not call it yet.
+    const firstSeeds = recordDetectionCrossings(state.tick, 'region.contract', 0.9, 1, AGENT_ID, []);
+    const firstPass = {
+      regionalDetectionPressure: [{ regionId: 'region.contract', pressure: 1, lastUpdatedTick: state.tick }],
+      regionDetection: [{ regionId: 'region.contract', pressure: 1, lastUpdatedTick: state.tick }],
+      pendingEncounterSeeds: [...firstSeeds],
+    };
     const firstEncounterCrossings = getTraces().filter((trace) =>
       trace.category === 'detection_threshold_crossed'
       && (trace as { thresholdCrossed?: string }).thresholdCrossed === 'encounter',
@@ -253,7 +201,6 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
 
     const secondState = createAftermathState();
     secondState.tick = state.tick + 1;
-    secondState.pendingChoiceCommits = [];
     secondState.regionalDetectionPressure = firstPass.regionalDetectionPressure;
     secondState.regionDetection = firstPass.regionDetection;
     secondState.pendingEncounterSeeds = firstPass.pendingEncounterSeeds;
@@ -266,36 +213,6 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
 
     expect(secondPass.pendingEncounterSeeds).toHaveLength(1);
     expect(secondEncounterCrossings).toHaveLength(0);
-  });
-
-  it('4.4 item-consuming choice removes possession before follow-up aftermath processing', () => {
-    const runtime = createSimulationRuntime();
-    const state = createAftermathState();
-
-    state.graph.addNode({ id: 'artifact.contract.item', type: 'artifact', properties: {} });
-    state.graph.addEdge({
-      id: 'edge.possesses.contract',
-      source: AGENT_ID,
-      target: 'artifact.contract.item',
-      type: 'possesses',
-      properties: {},
-    });
-
-    state.pendingChoiceCommits = [makeChoiceCommit({ consumesItemId: 'artifact.contract.item' })];
-    phaseChoiceResolution(state, () => 0.2);
-
-    expect(state.graph.getOutgoingEdges(AGENT_ID, 'possesses')).toHaveLength(0);
-    const itemTrace = getTraces().find((trace) => trace.category === 'item_consumed_by_choice');
-    expect(itemTrace).toBeDefined();
-
-    const reaction: EncounterAftermathReaction = {
-      id: 'reaction.item.after',
-      label: 'After item use',
-      effects: [{ kind: 'reputation_score', delta: 0.01 }],
-      closeAfterSelection: true,
-    };
-
-    expect(() => applyEncounterAftermathReaction(state, makeAction(), reaction, state.tick, runtime)).not.toThrow();
   });
 
   it('4.5 gates_to hard-unlock respects per-agent completed-template sets', () => {

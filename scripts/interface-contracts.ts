@@ -2984,8 +2984,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/orchestrator/phaseDriftDecay.ts',
       'src/engine/encounterAftermath.ts',
     ],
-    // The decision writes through `applyDriftMagnitude` — the same accumulator
-    // `phaseChoiceResolution` writes — so decay, threshold crossings, and the
+    // The decision writes through `applyDriftMagnitude` — the shared drift
+    // accumulator — so decay, threshold crossings, and the
     // `archetype_drift_register` reveal all read it without a second path. The
     // meta pair `courage_prudence` has no canonical `${reach}_axis` id, so it
     // keys the drift store on its own pair name; canonical readers simply do

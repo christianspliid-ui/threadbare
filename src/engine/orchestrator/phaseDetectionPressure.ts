@@ -1,18 +1,15 @@
-import type { GameState, PendingChoiceCommit, RegionDetectionState } from '../../types/gameState';
-import type { DetectionThresholdBand, EncounterChoiceCost } from '../../types/traces/encounter-traces';
+import type { GameState, RegionDetectionState } from '../../types/gameState';
+import type { DetectionThresholdBand } from '../../types/traces/encounter-traces';
 import {
   DETECTION_DECAY_RATE_PER_TICK,
   DETECTION_THRESHOLD_ENCOUNTER,
 } from '../../data/encounter-experience-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import {
-  applyDetectionDelta,
   decayDetectionPressure,
   getDetectionThresholdCrossings,
 } from '../encounters/detectionPressure';
 import { emitTrace } from '../traceBuffer';
-import { resolveToParentLocation } from '../sublocationShape';
 
 const RIVAL_DETECTION_ENCOUNTER_FAMILY = 'shadow.rival_strike';
 const RIVAL_DETECTION_SEED_PREFIX = 'detection.escalation';
@@ -23,32 +20,6 @@ export interface DetectionPressurePhaseResult {
   regionDetection: RegionDetectionState[];
   pendingEncounterSeeds: PendingEncounterSeed[];
   updatedRegions: number;
-}
-
-function resolveRegionIdForAgent(state: GameState, agentId: string): string | null {
-  const locatedAt = state.graph.getOutgoingEdges(agentId, 'located_at')[0];
-  if (!locatedAt) return null;
-
-  // THR-1183: resolve through the shared discriminator. The old `node.type ===
-  // 'sublocation'` test skipped the resolve for a canonical sublocation (a `location`
-  // node with a `parentLocationId`), which then fell through and read `regionId` off the
-  // sublocation itself — a property the sublocation writers do not copy — so every agent
-  // standing in a worldgen sublocation resolved to no region at all.
-  const node = resolveToParentLocation(state.graph, state.graph.getNode(locatedAt.target));
-  if (!node || node.type !== 'location') return null;
-
-  const regionId = node.properties?.regionId;
-  return typeof regionId === 'string' && regionId.length > 0 ? regionId : null;
-}
-
-function resolveSphereVisibilityMultiplier(state: GameState, encounterId: string): number {
-  const template = getUnifiedTemplateById(encounterId);
-  if (!template?.sphereAffinity) return 1;
-  const identity = state.ascendantIdentity?.sphereAlignment;
-  if (!identity) return 1;
-  if (template.sphereAffinity === identity.primary) return 0.8;
-  if (template.sphereAffinity === identity.secondary) return 1;
-  return 1.2;
 }
 
 function buildDetectionSeed(
@@ -98,47 +69,54 @@ function emitThresholdTrace(
   });
 }
 
-export function phaseDetectionPressure(state: GameState): DetectionPressurePhaseResult {
-  const commits: readonly PendingChoiceCommit[] = state.pendingChoiceCommits ?? [];
-  const baseline = state.regionalDetectionPressure ?? state.regionDetection ?? [];
-  let pressure = [...baseline];
-  let pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? [])];
-  const touched = new Set<string>();
-
-  for (const commit of commits) {
-    const regionId = resolveRegionIdForAgent(state, commit.agentId);
-    if (!regionId) continue;
-
-    const visibility = resolveSphereVisibilityMultiplier(state, commit.encounterId);
-    const result = applyDetectionDelta(
-      pressure,
-      regionId,
-      commit.cost as EncounterChoiceCost,
-      visibility,
-      state.tick,
-    );
-    pressure = result.regionalDetectionPressure;
-    touched.add(regionId);
-
-    const crossings = getDetectionThresholdCrossings(result.fromPressure, result.toPressure);
-    for (const crossing of crossings) {
-      emitThresholdTrace(state.tick, regionId, result.fromPressure, result.toPressure, crossing);
-      if (
-        crossing === 'encounter'
-        && result.toPressure >= DETECTION_THRESHOLD_ENCOUNTER
-        && !hasPendingRegionDetectionSeed(pendingEncounterSeeds, regionId)
-      ) {
-        pendingEncounterSeeds = [...pendingEncounterSeeds, buildDetectionSeed(state.tick, regionId, commit.agentId)];
-      }
+/**
+ * Record the threshold crossings of one regional pressure write (THR-964).
+ *
+ * Emits a `detection_threshold_crossed` trace per band crossed and, when the write
+ * reaches ENCOUNTER, plants one `shadow.rival_strike` seed on `targetAgentId` —
+ * at most one pending per region. Returns the seed queue, new when a seed was
+ * planted and the input otherwise.
+ *
+ * Extracted from the retired choice-commit loop, which was its only caller and had
+ * no producer. A pressure writer calls it after applying a delta.
+ */
+// TODO(THR-1690): no production caller yet — nudgeDispatch writes regional pressure
+// through applyRawDetectionDelta without calling this, so nudge pressure never
+// crosses a band, emits a crossing trace, or plants a rival strike.
+export function recordDetectionCrossings(
+  tick: number,
+  regionId: string,
+  fromPressure: number,
+  toPressure: number,
+  targetAgentId: string,
+  pendingEncounterSeeds: readonly PendingEncounterSeed[],
+): readonly PendingEncounterSeed[] {
+  let seeds = pendingEncounterSeeds;
+  for (const crossing of getDetectionThresholdCrossings(fromPressure, toPressure)) {
+    emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing);
+    if (
+      crossing === 'encounter'
+      && toPressure >= DETECTION_THRESHOLD_ENCOUNTER
+      && !hasPendingRegionDetectionSeed(seeds, regionId)
+    ) {
+      seeds = [...seeds, buildDetectionSeed(tick, regionId, targetAgentId)];
     }
   }
+  return seeds;
+}
 
-  const decayed = decayDetectionPressure(pressure, DETECTION_DECAY_RATE_PER_TICK, state.tick);
+/**
+ * Passive decay of regional rival pressure. The writes come from nudge dispatch
+ * (`nudgeDispatch.dispatchNudgeCommitments`); this phase only relaxes them.
+ */
+export function phaseDetectionPressure(state: GameState): DetectionPressurePhaseResult {
+  const baseline = state.regionalDetectionPressure ?? state.regionDetection ?? [];
+  const decayed = decayDetectionPressure(baseline, DETECTION_DECAY_RATE_PER_TICK, state.tick);
 
   return {
     regionalDetectionPressure: decayed,
     regionDetection: decayed,
-    pendingEncounterSeeds,
-    updatedRegions: touched.size,
+    pendingEncounterSeeds: [...(state.pendingEncounterSeeds ?? [])],
+    updatedRegions: 0,
   };
 }

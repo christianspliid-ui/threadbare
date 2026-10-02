@@ -6,12 +6,10 @@ import type {
   DistanceMatrixRebuildTrace,
 } from '../types/trace';
 import type {
-  ChoiceResolvedTrace,
   ForecastComputedTrace,
   HandFilteredTrace,
   DriftThresholdCrossedTrace,
   DetectionThresholdCrossedTrace,
-  ItemConsumedByChoiceTrace,
   SpotlightChangedTrace,
   BranchDecidedTrace,
 } from '../types/traces/encounter-traces';
@@ -23,12 +21,10 @@ const FALLBACK_TRACE_CATEGORY = 'engine_warning';
 const FALLBACK_TRACE_SUMMARY_PREFIX = 'trace';
 
 export const TRACE_CATEGORIES = [
-  'choice_resolved',
   'forecast_computed',
   'hand_filtered',
   'drift_threshold_crossed',
   'detection_threshold_crossed',
-  'item_consumed_by_choice',
   'spotlight_changed',
   'consequence_applied',
   'branch_decided',
@@ -38,12 +34,10 @@ export const TRACE_CATEGORIES = [
 export type EncounterTraceCategory = typeof TRACE_CATEGORIES[number];
 
 export type EncounterTraceEntry =
-  | ChoiceResolvedTrace
   | ForecastComputedTrace
   | HandFilteredTrace
   | DriftThresholdCrossedTrace
   | DetectionThresholdCrossedTrace
-  | ItemConsumedByChoiceTrace
   | SpotlightChangedTrace
   | BranchDecidedTrace
   | MentorshipTraceEntry;

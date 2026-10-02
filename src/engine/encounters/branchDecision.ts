@@ -336,8 +336,7 @@ export function driftTowardPole(
   const signedMagnitude = pole === 'positive' ? magnitude : -magnitude;
   const result = applyDriftMagnitude(drift, agentId, driftAxisId, signedMagnitude, tick);
 
-  // Same emission shape as `phaseChoiceResolution`. Both emit uncast as of
-  // THR-1065 — `DriftThresholdCrossedTrace` is a `TraceEntry` member and
+  // Emitted uncast as of THR-1065 — `DriftThresholdCrossedTrace` is a `TraceEntry` member and
   // `emitTrace` takes a distributive input, so the payload type-checks as itself.
   for (const driftTrace of result.traces) {
     emitTrace({
