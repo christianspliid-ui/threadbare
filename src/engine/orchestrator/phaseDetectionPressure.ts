@@ -78,9 +78,11 @@ function emitThresholdTrace(
  * planted and the input otherwise.
  *
  * Extracted from the retired choice-commit loop, which was its only caller and had
- * no producer. A pressure writer calls it after applying a delta; THR-1690 wires
- * the nudge channel, which today writes pressure without reaching it.
+ * no producer. A pressure writer calls it after applying a delta.
  */
+// TODO(THR-1690): no production caller yet — nudgeDispatch writes regional pressure
+// through applyRawDetectionDelta without calling this, so nudge pressure never
+// crosses a band, emits a crossing trace, or plants a rival strike.
 export function recordDetectionCrossings(
   tick: number,
   regionId: string,

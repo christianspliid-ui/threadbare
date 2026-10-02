@@ -58,6 +58,7 @@ describe('phaseDetectionPressure', () => {
 });
 
 // THR-964: the crossing-and-seed block, extracted from the retired choice-commit loop.
+// LEAKED until THR-1690: these pin the helper alone; no production writer calls it yet.
 describe('recordDetectionCrossings', () => {
   beforeEach(() => {
     clearTraces();
