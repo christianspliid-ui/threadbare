@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-02 22:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-02 23:58 local (21:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,7 +28,7 @@ Say "veto found things" to reverse it.
 
 ## Queue
 
-**17 jobs ready** (backed up: more than 15). Nothing is being built right now. The builder just shipped a fix so jobs still inside their veto window are held back from pickup until the window closes (merged 22:39 via [#2172](https://github.com/christianspliid-ui/threadbare/pull/2172)). Next builder slot ~23:10.
+**16 jobs ready** (backed up: more than 15). Nothing is being built right now. The last merge was [dialogue palettes by context](https://github.com/christianspliid-ui/threadbare/pull/2173) (story, elder and gain colours on dialogue cards, sphere tint on the card face). Next builder slot ~00:10.
 
 - **Next in line:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and) · [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) · [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) · [the pilgrim way](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the) · [rival strikes from nudge pressure](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection). [Found things in the reward draw](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at) waits for its veto window (until Saturday ~20:45).
 - **Small bugs waiting:** [an apex monster's title missing from its fight header and lair card](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and), [the Wolf-Winter Watch's "Under Watch" never wears off](https://linear.app/threadbare/issue/THR-1697/the-wolf-winter-watch-puts-under-watch-on-a-village-forever-its-apply), [a refused visit leaves a phantom appointment](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed).
@@ -36,7 +36,8 @@ Say "veto found things" to reverse it.
 
 ## Health
 
-- **The simulation is still slower, fourth hour running.** A builder's job to check: tick cost 130 ms/tick steady, 47% above the 7-day median (89, 119 rows since ad4e940b); top phase agent_decision, 539 agents. Name the merges between ad4e940b and 8421c5e9: git log --oneline --merges ad4e940b..8421c5e9. The jump came at the [rival-scheme attribution merge](https://github.com/christianspliid-ui/threadbare/pull/2168).
-- **The post-merge slow-test run is red again on the latest main, and it is the same slowdown showing.** The [run for #2172](https://github.com/christianspliid-ui/threadbare/actions/runs/37062003656) failed on the same two tests that run out of time: `debugTickBatch` and `doomIdentityMilestones`. That makes 3 red runs out of the last 4. A builder's job: fix the tick-cost regression, or else raise the limits.
+- **The simulation is still slower, fifth hour running.** A builder's job to check: tick cost 126 ms/tick steady, 42% above the 7-day median (89, 119 rows since d2ac5031); top phase agent_decision, 539 agents. Name the merges between d2ac5031 and e3ad2b6e: git log --oneline --merges d2ac5031..e3ad2b6e. The jump came at the [rival-scheme attribution merge](https://github.com/christianspliid-ui/threadbare/pull/2168).
+- **The post-merge slow-test run is red on the latest finished main, and it is the same slowdown showing.** [Run for #2172](https://github.com/christianspliid-ui/threadbare/actions/runs/37062003656) and [run for #2171](https://github.com/christianspliid-ui/threadbare/actions/runs/37054692379) both failed; the [run for #2173](https://github.com/christianspliid-ui/threadbare/actions/runs/37068903012) is still going. A builder's job: fix the tick-cost regression, or else raise the limits.
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-02.md). A builder's job.
-- Everything else is green. The live site serves the latest commit (8421c5e9). All 10 scheduled tasks are on time. No pull requests are waiting.
+- **The worktree reaper has 6 worktrees waiting for a decision** (429 worktrees, 300 local branches on disk). The reaper's own job; noted for visibility.
+- Everything else is green. The live site serves the latest commit (e3ad2b6e). All 10 scheduled tasks are on time. No pull requests are waiting.
