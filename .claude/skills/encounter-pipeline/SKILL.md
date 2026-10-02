@@ -399,7 +399,9 @@ npm run check:encounter -- --package Docs/plans/encounters/<slug>.package.json
 Runs the same gate stack over the package compiled **in memory** and writes nothing — no
 module, no test, no registration edit — so a critic or author working in parallel with the
 rest of a batch can gate their own package without touching the shared registration file.
-`--package` repeats, and sibling packages named in one run may seed each other. Use it
+`--package` repeats, and a seed naming a sibling package from the same run by `templateId`
+resolves. A `query` seed resolves against registered content only, so one whose sole match
+is an uncompiled sibling fails until that sibling is compiled — compile sequel targets first. Use it
 before compiling: `compile:encounter --dry-run` checks only the package's own rules and
 passes purpose-line, card-name and composition-contract failures that this gate fails. Do
 **not** copy `scripts/check-encounter.ts` into a scratch harness — that was the workaround

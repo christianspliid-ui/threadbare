@@ -69,8 +69,11 @@
  *   npm run check:encounter -- --all --list-failures   # regenerate the ratchet
  *   npm run check:encounter -- --package Docs/plans/encounters/<slug>.package.json
  *                            # an UNCOMPILED package, compiled in memory; writes
- *                            # nothing (THR-1693). Repeatable; sibling packages in
- *                            # one run may seed each other.
+ *                            # nothing (THR-1693). Repeatable; a seed naming a
+ *                            # sibling package by `templateId` resolves. A `query`
+ *                            # seed resolves against the registry only, so one
+ *                            # whose only match is an uncompiled sibling still
+ *                            # fails until that sibling is compiled.
  *
  * Exit codes:
  *   0  every checked template is clean, or fails only while on the ratchet
@@ -339,7 +342,11 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     // query exists. A legacy `encounterFamily` prefix matching nothing is the shipped
     // backlog rather than new rot, so it reports in `warnings` below instead.
     // A seed naming a sibling package gated in the same `--package` run is not
-    // dead — it is registered by the same compile that registers this one.
+    // dead — it is registered by the same compile that registers this one. Only
+    // the literal `templateId` route is exempted: a `query` seed resolves against
+    // the static catalogs, which hold registered content only, so a query whose
+    // sole match is an uncompiled sibling still reports `empty_query` (red, never
+    // a false green — compile the sibling first).
     ...validateEncounterSeedRefs([template]).dead.filter(
       d => !(d.kind === 'dead_template' && packageTemplateIds.has(d.ref.replace(/ \(missed branch\)$/u, ''))),
     ).map(
