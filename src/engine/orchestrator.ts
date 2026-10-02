@@ -187,10 +187,8 @@ import { phaseAscendantBeatDirector } from './ascendantBeat';
 import { phaseAscendantProgression } from './phaseAscendantProgression';
 import { phaseEncounterVisibility, expireOverdueEncounterNotifications } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
-import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
 import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
 import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
-import { mulberry32 as libMulberry32 } from '../lib/prng';
 import { evaluateEncounterSeeds } from './encounterSeeding';
 import { seedApotheosisEncounters } from './aspects';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
@@ -2817,7 +2815,7 @@ function runInlinePhase(
  * `s = { ...s, ...phaseX(s) }` merge shape — the in-place mutators (`phaseSlotCaps`,
  * `emitColocationRevelations`, the TB-073 army/battle cluster) and the phases that
  * return a bespoke result object the caller destructures itself (`phaseEncounterVisibility`,
- * `phaseDetectionPressure`, `phaseChoiceResolution`). Those cannot be expressed as a
+ * `phaseDetectionPressure`). Those cannot be expressed as a
  * `Partial<GameState>` thunk, so before this helper they were the phases `tick_profile`
  * could not see at all.
  *
@@ -3169,7 +3167,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2a.605: Detection Pressure — regional escalation from committed choices + passive decay
+  // Phase 2a.605: Detection Pressure — passive decay of regional rival pressure (writes come from nudge dispatch)
   {
     const detectionResult = timeInlinePhase('detection_pressure', s, () => phaseDetectionPressure(s));
     s = {
@@ -3179,18 +3177,6 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       pendingEncounterSeeds: detectionResult.pendingEncounterSeeds,
     };
     phaseEventCounts['detection_pressure'] = detectionResult.updatedRegions;
-  }
-
-  // Phase 2a.61: Choice Resolution — process pending player choice commits (THR-323)
-  {
-    const choiceRng = libMulberry32(state.seed + state.tick * 89);
-    const choiceResult = timeInlinePhase('choice_resolution', s, () => phaseChoiceResolution(s, choiceRng));
-    s = {
-      ...s,
-      archetypeDrift: choiceResult.archetypeDrift,
-      pendingChoiceCommits: choiceResult.pendingChoiceCommits,
-    };
-    phaseEventCounts['choice_resolution'] = choiceResult.resolvedCount;
   }
 
   // Phase 2a.62: Ascendant Hand Filter — encounter-scoped hand partitioning

@@ -1379,8 +1379,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
-| 2a.605 | `phaseDetectionPressure` | Regional detection pressure accumulation/decay, threshold traces, and rival encounter-seed enqueue |
-| 2a.61 | `phaseChoiceResolution` | Process pending player choice commits → d100 roll, drift accumulation, item consumption, `choice_resolved` + `drift_threshold_crossed` + `item_consumed_by_choice` traces (THR-323) |
+| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964; nudge wiring is THR-1690) |
 | 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
@@ -1838,8 +1837,8 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
 | `UnifiedActionTemplate.narrativeTemplates` / `aftermathConfig` / `illustrationUrl` / `backgroundTrack` / `musicTrack` | Authored encounter templates (single unified format) | Encounter stage adapters + `useAmbientContext` consume unified template fields for prose, aftermath, concept-art, and audio overrides | ✅ (2026-04-29, THR-109 format baseline) |
 | `emittedOmens?: EmittedOmen[]` | `applyEncounterAftermathReaction` (`emit_omen` effect) + Phase 1.7a `phaseEmittedOmenDecay` | No dedicated player UI — omens influence encounter bias in `phaseAgentDecision` (invisible to player) + decay trace visible in DebugPanel feed. ⚠️ No UI readout for active emitted omens (tracked as THR-136 scope). | ⚠️ Engine-only (THR-115) |
-| `archetypeDrift: ArchetypeDrift[]` | `phaseChoiceResolution` (write), `phaseDriftDecay` (decay) | `DebugPanel` → `DriftVisualiser` (THR-339 inspector); player-facing scene-state indicators land in C4 (THR-333) | ✅ Engine + Debug (THR-339) |
-| `regionalDetectionPressure: RegionDetectionState[]` | `phaseDetectionPressure` (write + decay) | `DebugPanel` → `EncounterSeedsTab` and `DetectionStateInspector` (THR-339) | ✅ Engine + Debug (THR-339) |
+| `archetypeDrift: ArchetypeDrift[]` | `applyDriftMagnitude` via nudge dispatch, `branchDecision.driftTowardPole` and autonomous aftermath (write), `phaseDriftDecay` (decay) | `DebugPanel` → `DriftVisualiser` (THR-339 inspector). The unmounted C4 scene-state indicators were deleted with the choice-commit pipeline (THR-964) | ✅ Engine + Debug (THR-339) |
+| `regionalDetectionPressure: RegionDetectionState[]` | `nudgeDispatch` (write), `phaseDetectionPressure` (decay) | `DebugPanel` → `EncounterSeedsTab` and `DetectionStateInspector` (THR-339) | ✅ Engine + Debug (THR-339) |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
 
@@ -2281,7 +2280,7 @@ deliberately **no** parallel recorder and no second branch-resolution path. Any
 future surface that renders choice history sees these for free.
 
 **Drift write → existing accumulator.** The decided pole calls `applyDriftMagnitude`,
-the same function `phaseChoiceResolution` writes through — so decay
+the shared drift accumulator — so decay
 (`phaseDriftDecay`), threshold crossings, and the `archetype_drift_register` reveal
 all read it with no new store. Note `archetype_drift_register` *reveals* a held drift
 band; it does not write one. The write is the accumulator.
@@ -2289,7 +2288,7 @@ band; it does not write one. The write is the accumulator.
 **Trace.** `branch_decided`, registered in `src/types/traces/encounter-traces.ts` and
 in `traceBuffer.ts`'s `TRACE_CATEGORIES` + `EncounterTraceEntry`. Emitted with the
 same cast every encounter-trace emitter uses — those interfaces are not members of
-the `TraceEntry` union, a pre-existing gap shared with `phaseChoiceResolution`.
+the `TraceEntry` union, a pre-existing gap.
 
 **No content yet, and that is recorded.** Zero shipped templates author a `decidedBy`
 branch; the interface-map row is badged **LEAKED** with `deferralTicket: THR-883`

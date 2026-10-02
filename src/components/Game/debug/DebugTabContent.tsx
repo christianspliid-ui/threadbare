@@ -46,7 +46,6 @@ import { RecentEventsView } from './RecentEventsView';
 import { ShellsDebugTab } from './ShellsDebugTab';
 import { CompositionView } from './CompositionView';
 import { PhasesDebugTab } from './PhasesDebugTab';
-import { EncounterChoiceInspector } from './EncounterChoiceInspector';
 import { DriftVisualiser } from './DriftVisualiser';
 import { HandStateInspector } from './HandStateInspector';
 import { DetectionStateInspector } from './DetectionStateInspector';
@@ -65,7 +64,7 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges' | 'tallies';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges' | 'tallies';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -81,7 +80,6 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'shells', label: 'Shells' },
   { id: 'compositions', label: 'Compositions' },
   { id: 'phases', label: 'Phases' },
-  { id: 'choices', label: 'Choices' },
   { id: 'drift', label: 'Drift' },
   { id: 'hand', label: 'Hand' },
   { id: 'detection', label: 'Detection' },
@@ -219,7 +217,6 @@ export function DebugTabContent({
   if (viewMode === 'shells') return <ShellsDebugTab flipTableStates={flipTableStates} currentTick={currentTick} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'compositions') return <CompositionView activeCompositions={activeCompositions} currentTick={currentTick} doomClockStage={doomClockStage} />;
   if (viewMode === 'phases') return <PhasesDebugTab traces={allTraces as TraceEntry[]} currentTick={currentTick} />;
-  if (viewMode === 'choices') return <EncounterChoiceInspector traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
   if (viewMode === 'drift') return <DriftVisualiser archetypeDrift={archetypeDrift} traces={allTraces as TraceEntry[]} retinueAgents={retinueAgents} />;
   if (viewMode === 'hand') return <HandStateInspector traces={allTraces as TraceEntry[]} />;
   if (viewMode === 'detection') return <DetectionStateInspector regionalDetectionPressure={regionalDetectionPressure} traces={allTraces as TraceEntry[]} currentTick={currentTick} />;

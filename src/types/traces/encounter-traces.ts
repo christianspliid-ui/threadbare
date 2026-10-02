@@ -1,4 +1,3 @@
-import type { ReachDomain } from '../traits';
 import type { ValuePair } from '../agent';
 import type { BranchPoleKey } from '../unifiedAction';
 // Type-only, and deliberately circular: `trace.ts` names these interfaces as
@@ -34,29 +33,6 @@ export type DriftThresholdBand = 'soft' | 'banner' | 'becoming';
 export type DetectionThresholdBand = 'notice' | 'turn' | 'encounter';
 export type SpotlightTrigger = 'world_handoff' | 'manual_select' | 'beat_advancement';
 export type ArchetypePole = 'virtue' | 'flaw';
-
-export interface ChoiceResolvedTrace extends TraceBase {
-  category: 'choice_resolved';
-  tick: number;
-  encounterId: string;
-  beatIndex: number;
-  agentId: string;
-  reach: ReachDomain;
-  cost: EncounterChoiceCost;
-  probabilityTilt: number;
-  driftMagnitude: number;
-  moralAxisPole: ArchetypePole;
-  consumesItem?: string;
-  outcomeBand: EncounterOutcomeBand;
-  rolledD100: number;
-  effectiveProbability: number;
-  /**
-   * Resulting live axis position after the choice's drift is applied (THR-528):
-   * clamp(baseline + drift) on the ±1 axis scale. Undefined when the actor has no
-   * baseline profile. Lets an inspector see where the choice *moved* the agent.
-   */
-  livePosition?: number;
-}
 
 export interface ForecastComputedTrace extends TraceBase {
   category: 'forecast_computed';
@@ -159,15 +135,6 @@ export interface DetectionThresholdCrossedTrace extends TraceBase {
   thresholdCrossed: DetectionThresholdBand;
 }
 
-export interface ItemConsumedByChoiceTrace extends TraceBase {
-  category: 'item_consumed_by_choice';
-  tick: number;
-  encounterId: string;
-  beatIndex: number;
-  agentId: string;
-  itemId: string;
-}
-
 export interface SpotlightChangedTrace extends TraceBase {
   category: 'spotlight_changed';
   tick: number;
@@ -188,11 +155,9 @@ export interface CallbackEligibilityComputedTrace extends TraceBase {
 }
 
 export type EncounterExperienceTraceEntry =
-  | ChoiceResolvedTrace
   | ForecastComputedTrace
   | HandFilteredTrace
   | DriftThresholdCrossedTrace
   | DetectionThresholdCrossedTrace
-  | ItemConsumedByChoiceTrace
   | SpotlightChangedTrace
   | CallbackEligibilityComputedTrace;

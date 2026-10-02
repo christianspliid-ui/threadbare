@@ -3072,7 +3072,7 @@ At the moment `branchOnStep` resolves:
    choice-history path, so `resolveStepDefinition` reads it exactly as it reads a
    player pick. There is no second branch-resolution route.
 5. **The pole drifts the mortal toward itself** by `BRANCH_DECISION_DRIFT_MAGNITUDE`,
-   through the same `applyDriftMagnitude` accumulator `phaseChoiceResolution` uses —
+   through the shared `applyDriftMagnitude` accumulator —
    so decay, threshold crossings, and the `archetype_drift_register` reveal all see it.
 
 ### The axis must match, and that is the point

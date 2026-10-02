@@ -3,27 +3,6 @@
  * Foundation-only tunables consumed by later encounter UI phases.
  */
 
-// Probability tilt per divine choice intensity.
-export const CHOICE_PROBABILITY_TILT_SMALL = 0.05;
-// Probability tilt per divine choice intensity.
-export const CHOICE_PROBABILITY_TILT_FULLER = 0.1;
-// Probability tilt per divine choice intensity.
-export const CHOICE_PROBABILITY_TILT_DEEP = 0.2;
-
-// Moral-axis drift magnitude per divine choice intensity.
-export const CHOICE_DRIFT_MAGNITUDE_SMALL = 0.04;
-// Moral-axis drift magnitude per divine choice intensity.
-export const CHOICE_DRIFT_MAGNITUDE_FULLER = 0.07;
-// Moral-axis drift magnitude per divine choice intensity.
-export const CHOICE_DRIFT_MAGNITUDE_DEEP = 0.12;
-
-// Essence cost per divine choice intensity.
-export const CHOICE_ESSENCE_COST_SMALL = 1;
-// Essence cost per divine choice intensity.
-export const CHOICE_ESSENCE_COST_FULLER = 2;
-// Essence cost per divine choice intensity.
-export const CHOICE_ESSENCE_COST_DEEP = 3;
-
 // Drift threshold for soft scene-state signaling.
 export const DRIFT_THRESHOLD_SOFT = 0.3;
 // Drift threshold for identity banner signaling.
@@ -54,7 +33,7 @@ export const DRIFT_DECAY_RATE_PER_TICK = PERSONALITY_DRIFT_DECAY_PER_TICK;
 // ── Detection pressure deltas (THR-963) ─────────────────────────────
 // Detection pressure is a normalised 0–1 fraction (see MAX_DETECTION_PRESSURE),
 // so the delta a divine choice writes to it must be a fraction too. Until THR-963
-// the delta was priced by the CHOICE_ESSENCE_COST_* constants above — a whole-unit
+// the delta was priced by the CHOICE_ESSENCE_COST_* constants (retired, THR-964) — a whole-unit
 // resource cost on a different scale entirely — so the smallest possible write
 // (1 × 0.8 sphere visibility = 0.8) already cleared both NOTICE and TURN, and any
 // louder choice saturated straight to ENCOUNTER. The ladder collapsed in one step.

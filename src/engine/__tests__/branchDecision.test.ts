@@ -68,7 +68,7 @@ const ACTOR = 'actor-1';
  *
  * The encounter trace interfaces are not members of the `TraceEntry` union —
  * a long-standing gap that also forces every *emitter* of these categories to
- * cast (see `phaseChoiceResolution`). Reading them back needs the same widening,
+ * cast. Reading them back needs the same widening,
  * or `category === 'branch_decided'` is a compile error for having "no overlap".
  */
 function tracesOfCategory(category: string): Array<Record<string, unknown>> {
