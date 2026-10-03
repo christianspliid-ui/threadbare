@@ -81,7 +81,7 @@ import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
-import { getGroupOf, getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
+import { getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
 import { setCommander } from '../engine/groups/groupCommand';
 import { applyCohesionDelta } from '../engine/groups/groupCohesion';
 import { writeGrudge } from '../engine/grievance/grudgeEdge';
@@ -111,6 +111,7 @@ import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
 import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES, CONDITION_SUBCATEGORIES } from './world-objects';
 import { getFactionLeaderId } from '../engine/factionNetwork';
+import { isAlly, actorFactionId } from '../engine/allegiance';
 import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
 import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
 import { isMonster } from '../engine/monsters/isMonster';
@@ -160,7 +161,6 @@ import {
   // The dormant kinds I (THR-1429)
   MOTIVE_GATE_KINDS,
   LEARN_SPELL_UNALIGNED_SHELF_OPEN,
-  CONDITION_ALLY_STANDING_MIN,
   CONDITION_TIER_CAP_BY_BAND,
   CONDITION_TIER_CAP_DEFAULT,
   CURSE_DURATION_TICKS_BY_BAND,
@@ -579,14 +579,6 @@ function rosterSize(graph: WorldGraph, groupId: string): number {
   return graph.getIncomingEdges(groupId, 'member_of').length;
 }
 
-/** The first faction the actor is a member of, if any. */
-function actorFactionId(graph: WorldGraph, actorId: string): string | null {
-  for (const e of graph.getOutgoingEdges(actorId, 'member_of')) {
-    const n = graph.getNode(e.target);
-    if (n?.type === 'actor' && n.properties.actorType === 'faction') return n.id;
-  }
-  return null;
-}
 
 /**
  * `observe × anything`: intelligence about the object, keyed on the actor.
@@ -977,28 +969,9 @@ function spellsOfActor(graph: WorldGraph, actorId: string): { known: Set<string>
   return { known, wielded };
 }
 
-/**
- * Whether two mortals are allies — the blessing half of the sign.
- *
- * Three readings in order, the first that answers wins: the same faction, the same
- * company, or standing at or above `CONDITION_ALLY_STANDING_MIN`. Self is handled by
- * the caller, because blessing oneself needs no test at all.
- */
-function isAlly(graph: WorldGraph, actorId: string, targetId: string): boolean {
-  const actorFaction = actorFactionId(graph, actorId);
-  if (actorFaction && actorFaction === actorFactionId(graph, targetId)) return true;
-
-  // Compare ids, not node objects — `getGroupOf` returns a fresh handle per call.
-  const actorGroup = getGroupOf(graph, actorId)?.id;
-  if (actorGroup && actorGroup === getGroupOf(graph, targetId)?.id) return true;
-
-  for (const e of graph.getOutgoingEdges(actorId, 'reputation_with')) {
-    if (e.target !== targetId) continue;
-    const score = num(e.properties, 'score');
-    if (score !== null && score >= CONDITION_ALLY_STANDING_MIN) return true;
-  }
-  return false;
-}
+// `isAlly` — the blessing half of the sign — lives in `src/engine/allegiance.ts` since
+// THR-1683, so the cast resolver's target filter reads the same allegiance without an
+// import cycle back through this file.
 
 /** The first motive the actor holds against the target, or null. The curse half of the sign. */
 function motiveAgainst(graph: WorldGraph, actorId: string, targetId: string): MotiveKind | null {
@@ -2485,13 +2458,14 @@ const POWER: UndertakingObjectType = {
       const band = (STEP_OUTCOMES as readonly string[]).includes(ctx.outcome ?? '')
         ? ctx.outcome as StepOutcome
         : 'success';
-      const { targetId, targetHex } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
+      const { targetId, targetHex, filterRejected } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
       const result = resolveCast(ctx.state, {
         casterId: ctx.actorId,
         spell,
         band,
         ...(targetId ? { targetId } : {}),
         ...(targetHex ? { targetHex } : {}),
+        ...(filterRejected ? { filterRejected } : {}),
         tick: ctx.tick,
         site: 'undertaking',
         siteRef: ctx.projectId ?? `use:${ctx.actorId}:${ctx.tick}`,

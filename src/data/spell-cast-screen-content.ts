@@ -21,6 +21,7 @@ export type CastChipKind =
   | 'price_condition'
   | 'landed_condition'
   | 'backlash_condition'
+  | 'cast_condition'
   | 'moved'
   | 'lifted'
   | 'silenced';
@@ -49,6 +50,14 @@ export const CAST_CHIP_COPY: Readonly<Record<CastChipKind, CastChipCopy>> = {
     category: 'boon',
     direction: 'gain',
     sentence: '{spell} leaves {target} {condition}.',
+  },
+  // THR-1683 — the cast channel: the spell's own lasting effects (an aura, a
+  // conditional) held on the caster for a while. The condition is named for the
+  // spell, so the sentence names the spell once and never lowercases it.
+  cast_condition: {
+    category: 'boon',
+    direction: 'gain',
+    sentence: '{spell} holds around {caster} for a while.',
   },
   // The spell turned on its caster.
   backlash_condition: {
