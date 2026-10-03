@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 12:56 local (10:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 14:00 local (12:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: Meet The First now tells one story about one person** ([THR-1712](https://linear.app/threadbare/issue/THR-1712)), the fourth round-2 playtest bug fixed and the High one. Merged via [#2192](https://github.com/christianspliid-ui/threadbare/pull/2192).
 - **2026-10-03: essence now tells one story** ([THR-1706](https://linear.app/threadbare/issue/THR-1706)): the card names the sphere that pays, the budget is that sphere's pool, and Meet The First charges. It is the third round-2 playtest bug fixed, merged 12:48 via [#2191](https://github.com/christianspliid-ui/threadbare/pull/2191).
 - **2026-10-03: delivery velocity step 1 shipped** ([THR-1717](https://linear.app/threadbare/issue/THR-1717)): builders now get leaner session context and one command for the checks. Merged 12:00 via [#2189](https://github.com/christianspliid-ui/threadbare/pull/2189).
 - **2026-10-03: clicking a mortal's name in a hex list now opens that mortal, and the spell hand names its target** ([THR-1705](https://linear.app/threadbare/issue/THR-1705)), the second round-2 playtest bug fixed. Merged 11:37 via [#2190](https://github.com/christianspliid-ui/threadbare/pull/2190).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: rival strikes now answer nudge pressure** ([THR-1690](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection)): pressure from your nudges can now cross the detection line, and the strike waits until an encounter can carry it. Merged 08:30 via [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182).
 - **2026-10-03: spells as divine gifts and found tomes are designed** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)): a *Teach a Spell* card, and old books that teach their holder. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1672-spells-as-gifts-and-tomes.md) merged via [#2183](https://github.com/christianspliid-ui/threadbare/pull/2183); veto window open until ~08:50 Sunday.
 - **2026-10-03: a survey of a held lead now keeps its visit** ([THR-1686](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the)). Merged 07:51 via [#2181](https://github.com/christianspliid-ui/threadbare/pull/2181).
-- **2026-10-03: a faith undertaking can now consecrate a new pilgrim way mid-game** ([THR-1660](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the)). Merged 05:15 via [#2179](https://github.com/christianspliid-ui/threadbare/pull/2179).
 
 ---
 
