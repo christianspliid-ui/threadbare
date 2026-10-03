@@ -72,6 +72,16 @@ describe('ActionDrawer — the hand', () => {
     expect(screen.getByTestId('action-drawer')).toBeTruthy();
   });
 
+  it('names its target beside Cast (THR-1705)', () => {
+    renderDrawer({ targetName: 'Thessa' });
+    expect(screen.getByTestId('action-drawer-target').textContent).toBe('Casting on Thessa');
+  });
+
+  it('omits the target line when there is no name, rather than "Casting on " (THR-1705)', () => {
+    renderDrawer({ targetName: '' });
+    expect(screen.queryByTestId('action-drawer-target')).toBeNull();
+  });
+
   it('renders nothing when closed', () => {
     const { container } = render(
       <ActionDrawer

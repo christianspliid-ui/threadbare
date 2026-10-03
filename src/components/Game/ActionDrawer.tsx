@@ -80,6 +80,11 @@ const HAND_MAX_WIDTH_PX = 1400;
 export interface ActionDrawerProps {
   open: boolean;
   slots: WheelSlot[];
+  /**
+   * Who or what the hand will land on (THR-1705). Rendered beside **Cast** so a
+   * cast never lands on someone the player did not know was selected; empty ⇒
+   * the line is omitted rather than reading "Casting on ".
+   */
   targetName: string;
   targetLabel: string;
   onSlotClick: (slotId: string) => void;
@@ -105,7 +110,7 @@ export interface ActionDrawerProps {
 
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
   ({
-    open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose,
+    open, slots, targetName, targetLabel: _targetLabel, onSlotClick, onClose,
     playingCardId, hexRevelation, gatedActionCounts, resolvedBands, onOpenCodexEntry,
   }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
@@ -333,6 +338,17 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           className="flex items-center gap-3 pointer-events-auto"
           style={{ marginTop: 8 }}
         >
+          {/* THR-1705 — the hand names its target. A cast once landed on a
+              mortal clicked minutes earlier while The First was on screen,
+              because nothing here said who the selection was. */}
+          {targetName && (
+            <span
+              data-testid="action-drawer-target"
+              style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+            >
+              Casting on <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{targetName}</span>
+            </span>
+          )}
           <Button
             variant="primary"
             size="md"
