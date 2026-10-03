@@ -725,10 +725,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 229 total — 1 write, 3 read, 225 unclassified
+- **Production hits:** 230 total — 1 write, 3 read, 226 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/playerCastReadout.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +220 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts` +221 more
 - **Verdict:** Verified 2026-09-10: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged. THR-1002 moved the card's read from a risk *sentence* to a forecast tier *word*: `castForecastProbability` (`playerCastReadout.ts`) is now the third read site, and the word is `classifyForecastTier` of the probability the roll uses. Re-verified 2026-09-10 by pinning it against `resolveUncontestedStep` driven for real rather than against `computeResolutionThreshold` — which found two live divergences the threshold-only pin had been green over: the below-floor lift is to the *scale* floor (a fresh god's local cast read `perilous` at 0.354 where the roll gives 0.65 → `favorable`), and a difficulty-0 step short-circuits to `probability: 1` above every scale adjustment, so it is `fated` at every scale.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -1487,10 +1487,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Reputation*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 67 total — 1 write, 1 read, 65 unclassified
+- **Production hits:** 68 total — 1 write, 1 read, 66 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/reputation.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +60 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +61 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-writes-opponent-clock` — 🔵 UNVERIFIED-OK
@@ -1511,10 +1511,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Struck down*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 67 total — 1 write, 1 read, 65 unclassified
+- **Production hits:** 68 total — 1 write, 1 read, 66 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/reputation.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +60 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +61 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fights-leave-a-record-on-the-ground` — 🟢 LIVE
@@ -2154,10 +2154,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 342 total — 1 write, 1 read, 340 unclassified
+- **Production hits:** 343 total — 1 write, 1 read, 341 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +335 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +336 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2325,10 +2325,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 32 total — 1 write, 3 read, 28 unclassified
+- **Production hits:** 33 total — 1 write, 3 read, 29 unclassified
 - **Write sites:** `src/data/encounters/vertical-slice.ts`
 - **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +23 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +24 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
 ### `seeded-dead-stay-dead` — 🟢 LIVE

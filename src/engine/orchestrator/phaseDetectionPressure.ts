@@ -10,7 +10,8 @@ import {
   getDetectionThresholdCrossings,
 } from '../encounters/detectionPressure';
 import { emitTrace } from '../traceBuffer';
-import { encounterFamilyHasContent } from '../encounterSeeding';
+import { encounterFamilyAnswersAt, encounterFamilyHasContent } from '../encounterSeeding';
+import type { WorldGraph } from '../graph';
 
 const RIVAL_DETECTION_ENCOUNTER_FAMILY = 'shadow.rival_strike';
 const RIVAL_DETECTION_SEED_PREFIX = 'detection.escalation';
@@ -58,7 +59,7 @@ function emitThresholdTrace(
   fromPressure: number,
   toPressure: number,
   thresholdCrossed: DetectionThresholdBand,
-  seedSkipped?: 'no_target' | 'no_content' | 'already_pending',
+  seedSkipped?: 'no_target' | 'no_content' | 'already_pending' | 'not_here',
 ): void {
   emitTrace({
     category: 'detection_threshold_crossed',
@@ -90,9 +91,10 @@ function emitThresholdTrace(
  * `targetAgentId` (a strike needs someone to strike), when the region already
  * holds one, or when the strike family has no encounter to resolve to: a seed
  * with nothing behind it withers into a sentence that prints the family id.
+ * Given the `graph`, it also holds a strike back when the family has content but
+ * none that can land where the target stands now (`not_here`, THR-1703) — the
+ * seed would fire next pass and wither the same way.
  */
-// TODO(THR-1703): no `shadow.rival_strike` encounter is authored yet, so the
-// content gate below holds every strike back; the crossings trace regardless.
 export function recordDetectionCrossings(
   tick: number,
   regionId: string,
@@ -100,6 +102,7 @@ export function recordDetectionCrossings(
   toPressure: number,
   targetAgentId: string | undefined,
   pendingEncounterSeeds: readonly PendingEncounterSeed[],
+  graph?: WorldGraph,
 ): readonly PendingEncounterSeed[] {
   let seeds = pendingEncounterSeeds;
   for (const crossing of getDetectionThresholdCrossings(fromPressure, toPressure)) {
@@ -113,7 +116,9 @@ export function recordDetectionCrossings(
         ? 'already_pending'
         : !encounterFamilyHasContent(RIVAL_DETECTION_ENCOUNTER_FAMILY)
           ? 'no_content'
-          : undefined;
+          : graph && !encounterFamilyAnswersAt(graph, RIVAL_DETECTION_ENCOUNTER_FAMILY, targetAgentId)
+            ? 'not_here'
+            : undefined;
     emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing, seedSkipped);
     if (!seedSkipped && targetAgentId) {
       seeds = [...seeds, buildDetectionSeed(tick, regionId, targetAgentId)];

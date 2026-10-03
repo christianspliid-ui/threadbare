@@ -6,15 +6,15 @@ import type { PendingEncounterSeed } from '../../../types/unifiedAction';
 import { phaseDetectionPressure, recordDetectionCrossings } from '../phaseDetectionPressure';
 import { encounterFamilyHasContent } from '../../encounterSeeding';
 
-// THR-1690: the strike is gated on the family having an encounter to resolve to,
-// and none is authored yet (THR-1703). These tests pin the planting path with the
-// gate held open; the closed gate is pinned by its own test.
-const contentGate = vi.hoisted(() => ({ open: true }));
+// THR-1690: the strike is gated on the family having an encounter to resolve to.
+// THR-1703 authored one, so the real gate is open; the mock exists only so the
+// closed path (a family with nothing behind it) stays pinned by its own test.
+const contentGate = vi.hoisted(() => ({ closed: false }));
 vi.mock('../../encounterSeeding', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../encounterSeeding')>();
   return {
     ...actual,
-    encounterFamilyHasContent: (family: string) => contentGate.open || actual.encounterFamilyHasContent(family),
+    encounterFamilyHasContent: (family: string) => !contentGate.closed && actual.encounterFamilyHasContent(family),
   };
 });
 
@@ -136,17 +136,19 @@ describe('recordDetectionCrossings', () => {
     expect(skipReason()).toBe('no_target');
   });
 
-  it('holds the strike back while the family has no encounter (THR-1703)', () => {
-    contentGate.open = false;
+  it('the rival-strike family has an encounter to resolve to (THR-1703)', () => {
+    expect(encounterFamilyHasContent('shadow.rival_strike')).toBe(true);
+  });
+
+  it('holds the strike back when the family has no encounter', () => {
+    contentGate.closed = true;
     try {
-      // The real check: flip this when THR-1703 authors the encounter.
-      expect(encounterFamilyHasContent('shadow.rival_strike')).toBe(false);
       const result = recordDetectionCrossings(20, REGION, 0.9, 1, 'agt', []);
       expect(result).toHaveLength(0);
       expect(crossedBands()).toEqual(['encounter']);
       expect(skipReason()).toBe('no_content');
     } finally {
-      contentGate.open = true;
+      contentGate.closed = false;
     }
   });
 });

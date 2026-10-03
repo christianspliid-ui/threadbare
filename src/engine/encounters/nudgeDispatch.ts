@@ -291,6 +291,7 @@ export function dispatchNudgeCommitments(
           result.toPressure,
           action?.actorId,
           seedsBefore,
+          nextState.graph,
         )
         : seedsBefore;
       nextState = {
