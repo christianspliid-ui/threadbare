@@ -77,18 +77,19 @@ function emitThresholdTrace(
  * at most one pending per region. Returns the seed queue, new when a seed was
  * planted and the input otherwise.
  *
- * Extracted from the retired choice-commit loop, which was its only caller and had
- * no producer. A pressure writer calls it after applying a delta.
+ * Extracted from the retired choice-commit loop. Its live caller is the nudge
+ * detection write (`nudgeDispatch.dispatchNudgeCommitments`, THR-1690), which
+ * calls it after applying a card's signed delta.
+ *
+ * Fail-soft: with no `targetAgentId` the crossings are still traced, but no seed
+ * is planted — a rival strike needs someone to strike.
  */
-// TODO(THR-1690): no production caller yet — nudgeDispatch writes regional pressure
-// through applyRawDetectionDelta without calling this, so nudge pressure never
-// crosses a band, emits a crossing trace, or plants a rival strike.
 export function recordDetectionCrossings(
   tick: number,
   regionId: string,
   fromPressure: number,
   toPressure: number,
-  targetAgentId: string,
+  targetAgentId: string | undefined,
   pendingEncounterSeeds: readonly PendingEncounterSeed[],
 ): readonly PendingEncounterSeed[] {
   let seeds = pendingEncounterSeeds;
@@ -96,6 +97,7 @@ export function recordDetectionCrossings(
     emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing);
     if (
       crossing === 'encounter'
+      && targetAgentId
       && toPressure >= DETECTION_THRESHOLD_ENCOUNTER
       && !hasPendingRegionDetectionSeed(seeds, regionId)
     ) {

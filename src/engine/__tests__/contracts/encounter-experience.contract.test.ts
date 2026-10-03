@@ -181,8 +181,8 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
     const state = createAftermathState();
     // THR-964: a pressure writer reports its delta through the extracted helper;
     // the phase that follows only decays, so it must not re-cross or re-seed.
-    // LEAKED until THR-1690: the helper is called by hand here — the live nudge
-    // writer does not call it yet.
+    // The helper is called by hand here; the live nudge writer calls it too
+    // (THR-1690, nudgeDetectionEscalation.test.ts).
     const firstSeeds = recordDetectionCrossings(state.tick, 'region.contract', 0.9, 1, AGENT_ID, []);
     const firstPass = {
       regionalDetectionPressure: [{ regionId: 'region.contract', pressure: 1, lastUpdatedTick: state.tick }],

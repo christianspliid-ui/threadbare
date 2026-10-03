@@ -53,6 +53,7 @@ import type {
 import type { AftermathMutationSummary } from '../encounterAftermath';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { applyRawDetectionDelta } from './detectionPressure';
+import { recordDetectionCrossings } from '../orchestrator/phaseDetectionPressure';
 import { driftTowardPole } from './branchDecision';
 import { UNDERTOW_DRIFT_MAGNITUDE } from '../../data/nudge-constants';
 import { accelerateDoomClock, decelerateDoomClock } from '../doomClock';
@@ -274,7 +275,23 @@ export function dispatchNudgeCommitments(
         costs.detectionDelta,
         tick,
       );
-      nextState = { ...nextState, regionalDetectionPressure: result.regionalDetectionPressure };
+      // Escalation (THR-1690): a write that crosses a band traces the crossing,
+      // and reaching ENCOUNTER plants the rival strike on the mortal who drew
+      // the attention. A lowering write (The Veil) crosses nothing.
+      const seedsBefore = nextState.pendingEncounterSeeds ?? [];
+      const seedsAfter = recordDetectionCrossings(
+        tick,
+        regionId,
+        result.fromPressure,
+        result.toPressure,
+        action?.actorId,
+        seedsBefore,
+      );
+      nextState = {
+        ...nextState,
+        regionalDetectionPressure: result.regionalDetectionPressure,
+        ...(seedsAfter !== seedsBefore ? { pendingEncounterSeeds: [...seedsAfter] } : {}),
+      };
       emitNudgeTrace({
         tick,
         category: 'nudge_cost_charged',

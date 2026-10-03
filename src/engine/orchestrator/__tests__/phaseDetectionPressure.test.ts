@@ -58,7 +58,8 @@ describe('phaseDetectionPressure', () => {
 });
 
 // THR-964: the crossing-and-seed block, extracted from the retired choice-commit loop.
-// LEAKED until THR-1690: these pin the helper alone; no production writer calls it yet.
+// These pin the helper alone; its live caller (the nudge detection write, THR-1690)
+// is pinned end to end in encounters/__tests__/nudgeDetectionEscalation.test.ts.
 describe('recordDetectionCrossings', () => {
   beforeEach(() => {
     clearTraces();
