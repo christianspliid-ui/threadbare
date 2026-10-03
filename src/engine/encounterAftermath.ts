@@ -4666,6 +4666,7 @@ export function applyEncounterAftermathReaction(
           outcome: reaction.actionOutcome,
           band: reaction.stepOutcome,
           missed: effect.missed,
+          seedId: action?.spawnedFromSeedId,
         });
         if (visit.success) {
           touchWorld(runtime);
