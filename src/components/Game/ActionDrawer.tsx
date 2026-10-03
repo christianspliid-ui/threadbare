@@ -344,7 +344,18 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           {targetName && (
             <span
               data-testid="action-drawer-target"
-              style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}
+              style={{
+                fontSize: "var(--text-sm)",
+                color: "var(--text-secondary)",
+                whiteSpace: "nowrap",
+                // The layer tabs' pill: the footer sits straight on the map, and
+                // a name the player cannot read is a name the hand did not say.
+                padding: "4px 10px",
+                borderRadius: "8px",
+                background: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(160, 152, 128, 0.2)",
+              }}
             >
               Casting on <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{targetName}</span>
             </span>
