@@ -288,4 +288,13 @@ describe('the ruin visit (THR-1664)', () => {
     expect(b.pendingVisitSeedId).toBe('seed_b');
     expect(leadProps(state)?.pendingVisitSeedId).toBe('seed_a2');
   });
+
+  it('a seed that matches no lead never cools an unstamped lead underfoot', () => {
+    const state = buildState({ precision: 'located' }); // unstamped lead on the ruin the mortal stands on
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK, { missed: true, seedId: 'seed_gone' });
+    expect(result).toEqual({ success: false, failReason: 'no_lead' });
+    expect(leadProps(state)?.consumed).toBe(false);
+    // Without a seed (a ?spawn= review) the lead underfoot still answers.
+    expect(resolveVisitLead(state.graph, 'actor-hero', TICK, { outcome: 'success' })).toMatchObject({ success: true, ruinId: 'loc-ruin' });
+  });
 });

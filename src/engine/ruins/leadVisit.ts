@@ -148,7 +148,9 @@ function visitLead(graph: WorldGraph, actorId: string, tick: number, seedId?: st
     // The seed's lead was re-stamped by a later survey, or consumed. A lead stamped for a
     // *different* seed belongs to another visit and is never this one's to resolve; only
     // a pre-THR-1696 stamp (no seed id) stays eligible below.
-    pool = leads.filter(e => typeof e.properties?.pendingVisitSeedId !== 'string');
+    // Nor is an unstamped lead: with a seed in hand, only a live unseeded stamp may stand in.
+    pool = leads.filter(e => typeof e.properties?.pendingVisitSeedId !== 'string'
+      && isLeadVisitPending(e.properties?.pendingVisitDueTick, tick));
     if (pool.length === 0) return undefined;
   }
   const hex = resolveAgentHex(graph, actorId);
@@ -164,7 +166,8 @@ function visitLead(graph: WorldGraph, actorId: string, tick: number, seedId?: st
     return [...stamped].sort((a, b) =>
       (a.properties.pendingVisitDueTick as number) - (b.properties.pendingVisitDueTick as number))[0];
   }
-  return pool.find(onHex);
+  // The unstamped lead underfoot answers only a visit with no seed (a `?spawn=` review).
+  return seedId ? undefined : pool.find(onHex);
 }
 
 /**
