@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-03
 validated_doctrine: prose@2
 ---
 
@@ -192,7 +192,7 @@ All linear template encounters use this shape. You are responsible for authoring
 | `aftermathConfig.fallback.overview` | 1-2 sentences framing what the aftermath is about |
 | `aftermathConfig.fallback.reactions[].intent` | 2-3 sentences of narrative intent for the reaction |
 | `successAtCostAfterimage`, `criticalSuccessAfterimage`, `criticalFailureAfterimage` | Band-specific overrides. Author all three — absent, they fall back with a `[band]` debug prefix |
-| `steps[].nudges` | **Author the hand** — 4–8 `StepNudge`s: `name`, `sphere?`, `essenceCost`, `forecastDelta`, `effectLine`, `bandProse`, `imageTag`, `rider?`. **Do not author `fiction`** — that is the card flavor quote, retired 2026-08-25 with Doctrine v2; gate 0i below rejects it |
+| `steps[].nudges` | **Compose the hand** — the 0–2 authored specials plus the step's `deal` fill land at 4–8 cards (see above; a fully authored hand stays legal). Each authored `StepNudge`: `name`, `sphere?`, `essenceCost`, `forecastDelta`, `effectLine`, `bandProse`, `imageTag`, `rider?`. **Do not author `fiction`** — that is the card flavor quote, retired 2026-08-25 with Doctrine v2; gate 0i below rejects it |
 | `traitVariants` | **Author the trait hook** — `traitId` (a live ref), `forecastDelta?`, `difficultyDelta?`, `factorLine`, `addNudgeIds?` |
 | `id`, `rarityTier`, `reach`, `difficulty`, `failBehavior`, `onSuccess`, `onFailure`, `successMetadata`, `failureMetadata` | Preserve — do not change the structural skeleton |
 
@@ -218,7 +218,7 @@ Every narrative field must meet the Threadbare aesthetic — at the **baseline r
 
 **Minimum 2-3 sentences per `narrativeTemplate` field.** One-sentence narratives are labels, not scenes. `successAfterimage` and `failureAfterimage` can be shorter (1-2 sentences) — they're glimpses, not scenes.
 
-**Reduce {adj} dependency.** The `{adj}` placeholder draws from sphere vocabulary (e.g., "crushing", "verdant", "crackling"). It's useful for sphere-flavoring a setting detail ("the {adj} glow of the forge") but destructive when asked to carry emotional weight ("the {adj} accord takes root" — "crushing accord"? "verdant accord"?). Use {adj} for atmospheric texture, never for emotional payload. If you can remove {adj} and the sentence still works, it probably shouldn't have been there.
+**Reduce {adj} dependency.** The `{adj}` placeholder draws from sphere vocabulary (e.g., "crushing", "verdant", "crackling"). It may name the sphere of a thing the step acts on ("the {adj} glow of the forge" when the forge's fire is what the test is about) but is destructive when asked to carry emotional weight ("the {adj} accord takes root" — "crushing accord"? "verdant accord"?). Never use {adj} for atmosphere without a job (Doctrine v2) and never for emotional payload. *(2026-10-03, THR-1695: was "use {adj} for atmospheric texture".)* If you can remove {adj} and the sentence still works, it probably shouldn't have been there.
 
 ### Bar 2: Systemic Wiring
 
@@ -255,7 +255,7 @@ Every narrative field should use the engine's dynamic capabilities. Ask yourself
 
 Each guild has a distinct voice AND a natural affinity for certain systemic capabilities. The voice shapes the prose; the capability affinity shapes what you wire.
 
-> **Doctrine v2 clamp (2026-08-25):** guild voice means *word choice and preoccupations* — what a guild notices, values, and names. It never licenses a change of **mode**: all narration stays narrator-mode, facts stated plainly. Where an example tone below leans literary (similes, vertigo, mood-for-mood's-sake), take the vocabulary and drop the mode — the spec's § Prose doctrine v2 wins over any example in this section. The Thieves Guild example is the shape to imitate: named things, stated events, concrete numbers.
+> **Doctrine v2 clamp (2026-08-25):** guild voice means *word choice and preoccupations* — what a guild notices, values, and names. It never licenses a change of **mode**: all narration stays narrator-mode, facts stated plainly. Where an example tone below leans literary (similes, vertigo, mood-for-mood's-sake), take the vocabulary and drop the mode — the spec's § Prose doctrine v2 wins over any example in this section. The Thieves Guild example is the shape to imitate: named things, stated events, common words. Do not imitate clever specificity (measured counts, paces, "perhaps four minutes") — the spec names it the residue tell of the old mode. *(2026-10-03, THR-1695: the example below was rewritten to narrator mode; this line said "concrete numbers".)*
 
 ### Arcane Circle
 **Voice:** Precision under fascination. The Circle names what it measures and says plainly when a measurement is wrong.
@@ -265,7 +265,7 @@ Each guild has a distinct voice AND a natural affinity for certain systemic capa
 ### Thieves Guild
 **Voice:** Sharp observation, moral ambiguity, gallows humor. Short declarative sentences. The world measured in risk and opportunity.
 **Systemic affinity:** Hidden marks (secrets, debts, leverage), intelligence grants (information as currency), conditional blocks on `{?has_faction}` (guild connections change what doors open).
-**Example tone:** "The house sits on Coppergate Lane, three stories of limestone and leaded glass — the kind of address that announces itself by being quiet. The servants change shift at the eighth bell. There is a gap of perhaps four minutes when the back stairs are unwatched."
+**Example tone:** "The house on Coppergate Lane belongs to a rich wool merchant. The servants change shift at the eighth bell. For a short time after that, no one watches the back stairs."
 
 ### Builders Fellowship
 **Voice:** Patience, craft pride, the satisfaction of things well-made. Attention to material qualities. Time measured in how long things take to do properly.
@@ -365,7 +365,7 @@ Before submitting rewritten prose, check every field against these questions. If
 
 5. **Do success and failure produce structurally different persistence?** If both outcomes just adjust reputationDelta in opposite directions, the world isn't observably different. Success should create different *kinds* of persistence than failure (e.g., success seeds a gratitude encounter; failure plants a hidden mark).
 
-6. **Is {adj} used for atmosphere, not emotional payload?** Check every `{adj}` usage. "The {adj} glow of the forge" → fine (atmospheric). "The {adj} accord takes root" → bad (the adjective is asked to carry the emotion).
+6. **Is {adj} doing a job — naming the sphere of a thing the step acts on — and never atmosphere or emotional payload?** Check every `{adj}` usage. "The {adj} glow of the forge" → fine only when the forge is part of the test. "The {adj} accord takes root" → bad (the adjective is asked to carry the emotion).
 
 7. **Could a GM read it aloud and the player act on it? (Doctrine v2 — this question used to grade prose by novel standards, which is rule zero's literal inversion: game prose, not novel prose.)** The read-aloud test now checks *clarity and consequence*: after one read, does the player know what is happening, what is at stake, and what is being tested? A bare label ("Investigate the disturbance") still fails — not for being unliterary, but for stating no situation. "Sheep are going missing from the high pasture at night, and the shepherds have stopped going up" passes: plain, factual, actionable. *(Exemplar corrected 2026-08-29, THR-1324 — it previously opened "Something is taking sheep from the high pasture…", which is the evasive lexicon's flagship word listed in this file's own Detectors line two questions above. The unknown predator is still the situation; you just do not need the banned word to say so.)*
 

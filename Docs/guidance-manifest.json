@@ -131,6 +131,7 @@
         "Docs/exemplars.md",
         "Docs/ubiquitous-language/Encounters.md",
         "Docs/authoring-brief.md",
+        "scripts/build-authoring-brief.ts",
         "public/nudge-cards-reference.html"
       ],
       "manualDependents": [

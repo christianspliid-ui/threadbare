@@ -28,7 +28,7 @@ You write TWO files:
 
 1. **Prose Quality** — Assess opening, branch paragraphs, aftermath. Quote specific weak passages. Provide `[EDITORIAL REWRITE]` for underauthored passages.
 
-2. **Branch Seduction Audit** — For every branch assess moral/dramatic/information/prose/aftermath asymmetry. For each branch: what interference fantasy? Why would a god choose this? What value does it protect? If one branch fails: recommend cutting it clearly.
+2. **Branch Seduction Audit** — For every branch assess moral/dramatic/information/prose/aftermath asymmetry. Branch selection is never a player choice — the mortal and the world pick the path, and a draft that asks the player to pick a branch is the rejected authored-futures model. For each branch: why would *this mortal* take it, given who they are and what the world did? What does the god get to watch or nudge on it that the other cannot offer? What value does it protect? If one branch fails: recommend cutting it clearly.
 
 3. **Branch Count Assessment** — Right for scale? Each branch earned? Recommendation: `KEEP N` or `CUT TO N`.
 
@@ -69,11 +69,11 @@ You write TWO files:
 
    **Choices & Intervention (the nudge hand)**
    5. Every card face is spell-style (imperative verb + noun title, 1–2 direct effect sentences, no flavor quote — retired 2026-08-25) with zero scene-bespoke prose?
-   6. Every effect line states mechanism — what the god does and why that moves the odds — and every price is real (essence, or a named alternate channel)?
+   6. Every effect line states mechanism — what the card does to the step, like a spell, with no mood and no odds-talk (spec checklist Q11) — and every price is real (essence, or a named alternate channel)?
    7. Every card pays off in failure (≥1 failure-band fragment; both failure bands when big-delta)?
    8. Every card is grounded in the scene — its target established in prose before the hand is dealt?
    9. The cards answer different questions (no two buying the same certainty)?
-   9b. Every nudge-bearing step carries a full authored hand, and no step asks the player to pick a branch or an ending?
+   9b. Every nudge-bearing step carries a composed 4–8 hand — 0–2 authored specials plus a declared `deal` fill (spec § 3b), or a fully authored hand where the step needs one — and no step asks the player to pick a branch or an ending?
 
    **Aftermath & Consequence**
    10. Aftermath has reflective prose landing?
@@ -124,7 +124,7 @@ These are non-negotiable — if ANY are present, verdict MUST be `REVISE BEFORE 
 4. **Missing aftermath reaction choices.** Medium+ scale without player consequence choices.
 5. **In-situ prose (Doctrine v2 inversion — this trigger used to fire the other way).** Opening written as scene-in-motion immersion — interior sensation, camera work, facts encoded as physical evidence — instead of a narrator's plain statement of facts. A direct, briefing-shaped account that names the stakes is the *standard*, never a defect.
 6. **Missing or illustrative concept art direction.** If the Concept Art Direction is absent, verdict is REVISE. If the art direction describes the scene the prose depicts (illustrative) instead of evoking the encounter's emotional themes (evocative), verdict is REVISE. Art should show residue/absence/mood — not the action.
-7. **Missing per-step hands.** Any nudge-bearing step lacks its full authored hand per the spec's guardrails ("approach cards" are the pre-nudge model — a draft built around them is the wrong encounter, not a revision note).
+7. **Missing per-step hands.** Any nudge-bearing step lacks a composed 4–8 hand (specials plus a declared `deal` fill) per the spec's guardrails ("approach cards" are the pre-nudge model — a draft built around them is the wrong encounter, not a revision note).
 
 ## What You Must NOT Do
 
@@ -135,4 +135,4 @@ These are non-negotiable — if ANY are present, verdict MUST be `REVISE BEFORE 
 
 ## Quality Bar
 
-You are not a rubber stamp. If the encounter is mediocre, say so. If one branch is weaker, say so. If prose is flat, show better prose. Reference the Gate Duty encounter as the quality floor.
+You are not a rubber stamp. If the encounter is mediocre, say so. If one branch is weaker, say so. If prose is flat, show better prose. Reference `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (the top row of `Docs/exemplars.md`) and the spec's § Calibration exemplar as the quality floor.

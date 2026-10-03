@@ -5,6 +5,8 @@
 > **Status:** Active
 > **Purpose:** Defines what Threadbearer is supposed to *feel like* to play — the core fantasy, the engagement loop, the emotional architecture. Every feature design must serve the principles in this document.
 
+> **lint_plan_doc:** exempt — standing foundational reference (a source of `Docs/authoring-brief.md` Section C), not a dated plan doc; it proposes no work, so it carries no pillars, constants table or coordination block. Marked by THR-1695.
+
 ---
 
 ## The Core Fantasy
@@ -106,7 +108,7 @@ The binary model (invest essence → succeed/fail) produces two bad states: frus
 
 ### 2. Multiple Meaningful Nudges
 
-The player is a god, not the protagonist: they never choose the mortal's response. What varies inside an encounter is which **nudges** the player spends — each a concrete exercise of influence on the scene or on the mortal's inner weather, each with a real cost and a real risk. The dilemma is *whether and where to spend*, and reading it requires understanding the protagonist — personality, capabilities, current state — not just resource math. Playing nothing must stay viable. **Register clamp:** a card face states what the god does and why that moves the odds, in plain interactive text; the scene does the fiction, the cards do the rules.
+The player is a god, not the protagonist: they never choose the mortal's response. What varies inside an encounter is which **nudges** the player spends — each a concrete exercise of influence on the scene or on the mortal's inner weather, each with a real cost and a real risk. The dilemma is *whether and where to spend*, and reading it requires understanding the protagonist — personality, capabilities, current state — not just resource math. Playing nothing must stay viable. **Register clamp:** a card face states what the card does, like a spell, in plain interactive text with no mood and no odds-talk; the scene does the fiction, the cards do the rules. *(2026-10-03, THR-1695: replaced the odds-talk framing of the effect line.)*
 
 *Superseded 2026-08-25 (THR-1250).* This principle previously read "Multiple Meaningful Choices" and taught the rejected authored-futures model, in these words: *"The player should face several decision points within an encounter, each a genuine dilemma. 'Do I push him to fight or to flee? Fighting might win but might break him. Fleeing preserves him but costs reputation.'"* That is a choice between authored endings made **for** the mortal — exactly what the nudge pivot (THR-772) rejected and what the brief's own Section D and rejection trigger 14 reject. It survived here for four months and was compiled, unlabelled, into the preamble every draft agent reads first.
 

@@ -59,17 +59,17 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
      - Branch shape named from the spec's shape catalog
      - Optional secondary template
 
-   **Linear encounters are valid.** A short encounter that works as a single sharp intervention with no player choices is not underbuilt — it's correctly scoped. Do not invent branching structure to fill a section. If the encounter is strongest as linear, declare it linear and move on.
+   **Linear encounters are valid.** A short encounter that works as a single sharp intervention with no fork is not underbuilt — it's correctly scoped. Do not invent branching structure to fill a section. If the encounter is strongest as linear, declare it linear and move on.
 
-   **There is no branch count of 1.** An encounter either presents no player choices between beats (linear, branch count 0) or it presents a genuine fork with 2+ meaningfully different paths. A "single choice" encounter is really just a linear encounter with an outcome ladder — model it as branch count 0 with a good outcome ladder instead.
+   **There is no branch count of 1.** An encounter either has no fork between beats (linear, branch count 0) or it presents a genuine fork with 2+ meaningfully different paths. A "single choice" encounter is really just a linear encounter with an outcome ladder — model it as branch count 0 with a good outcome ladder instead.
 
-8. **Branching Map** — **Only required if branch count is 2 or higher.** For each choice point: what changes in later steps? Step 1 choice → step 2 prose changes → step 3/aftermath changes. Light for short encounters, detailed for long. If the encounter is linear (branch count 0), write "N/A — linear encounter" and skip this section.
+8. **Branching Map** — **Only required if branch count is 2 or higher.** For each fork (the mortal or the world picks the path, never the player): what changes in later steps? Step 1 fork → step 2 prose changes → step 3/aftermath changes. Light for short encounters, detailed for long. If the encounter is linear (branch count 0), write "N/A — linear encounter" and skip this section.
 
 9. **Outcome Ladder** — critical_success, success, success_at_cost, failure, critical_failure. Each with: what progress was made, what was spent, what new burden or opening exists.
 
 10. **Sample Opening** — Written in **narrator mode per the spec's § Prose doctrine v2** (the authoritative prose contract; where anything in this prompt disagrees with it, the spec wins). Three short paragraphs, ≤80 words total: arrival (real graph names) · situation & complication (events, costs already paid) · the problem (one stake shape). Narrate like a game master reading a module aloud — state facts directly; no interior sensation, no camera work, no atmosphere without a job. A plain, direct account is the target, not a fallback.
 
-11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, author a hand per the shared spec's step 3: 4–8 cards cut from the 21-type library, each with its library type named, a spell-style face per Doctrine v2 (imperative verb + noun title, 1–2 direct effect sentences — no flavor quote, retired 2026-08-25), and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.
+11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, compose a hand per the shared spec's step 3: author the 0–2 **specials** only this encounter could offer and **declare the fill** (`deal: { count, tags, exclude }`, spec § 3b) so the god's Repertoire supplies the rest. The *composed* hand lands at 4–8 cards; each authored card names its library type and carries a spell-style face per Doctrine v2 (imperative verb + noun title, 1–2 direct effect sentences — no flavor quote, retired 2026-08-25), and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.
    - **Branch selection is never a player choice.** The player plays nudges; the mortal and the world pick the path. A "one card per branch, player picks the future" structure is the rejected authored-futures model — Pass 2 rejects it outright.
    - **Branch-bearing steps still get bespoke band fragments** — the fragments and outcome prose are where a branch proves itself, since the card faces are generic by rule.
    - **Linear encounters (branch count 0):** same hand rules on the resolution step(s).
@@ -99,7 +99,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 These are not aspirations — they are hard requirements. If your packet fails any of these, revise before submitting.
 
 - **Scene prose is narrator-mode (Doctrine v2).** "A healer sits outside a gate. Inside, a child is sick." is the *correct shape* — plain, direct, factual — provided it then names the stakes and the test. What fails the floor is the opposite: in-situ immersion, interior sensation, facts encoded as physical evidence the reader must decode, or a sentence doing no challenge/test/outcome work. Answer the spec's 12-question narrator checklist in writing.
-- **Every nudge-bearing step gets a full authored hand.** A step with two token cards is a half-authored hand, which is worse than no hand — the god's absence reads as a bug rather than a decision (spec § fail-soft contract).
+- **Every nudge-bearing step gets a composed 4–8 hand** — authored specials plus a declared `deal` fill (spec § 3b); a fully authored hand stays legal but is not the default. A step with two token cards and no fill is a half-built hand, which is worse than no hand — the god's absence reads as a bug rather than a decision (spec § fail-soft contract).
 - **Card faces are generic; effect lines state mechanism.** "Send restful dreams — you quiet their mind while they sleep, so the rest actually counts." A card face that carries scene prose, or an effect line that states mood, is a quality failure (the communication pivot). The scene's account of the card lives in its band fragments.
 - **Costs are channels, not adjectives.** Essence is rendered as pips; a cheap-in-essence card is priced in doom, detection, or obligation through `costs`/grants. The effect line says where the price lands.
 - **Risks live in the fragments and the ladder.** What might cling, shift, or recoil is written into the card's failure-band fragments and the outcome ladder — witnessed on loss, never a probability adjective.
@@ -123,12 +123,12 @@ Before submitting your packet, answer every question below YES or NO. **If ANY a
 4. Could a player retell the situation and the stakes accurately after one read?
 
 **Choices & Intervention (the nudge hand)**
-5. Does every card read like a spell — imperative verb + noun title, 1–2 direct effect sentences stating what the god does and why that moves the odds — with no flavor quote and zero scene-bespoke prose on the face?
+5. Does every card read like a spell — imperative verb + noun title, 1–2 direct effect sentences stating what the card does to the step — no mood and no odds-talk (spec checklist Q11) — with no flavor quote and zero scene-bespoke prose on the face?
 6. Is every card's price real and legible — essence, or a named alternate channel (doom, detection, obligation, being the person the trait names)?
 7. Does every card pay off in failure — at least one failure-band fragment, both failure bands for a big-delta card?
 8. Is the hand grounded — does every card act on a target the scene established, so deleting the target from the prose makes the card senseless here?
 9. Do the cards answer different questions (no two cards in the hand buying the same certainty), so the hand is a decision rather than a menu of synonyms?
-9b. Does EVERY nudge-bearing step carry a full authored hand per the spec's guardrails — and does no step ask the player to pick a branch or an ending?
+9b. Does EVERY nudge-bearing step carry a composed 4–8 hand (specials plus a declared `deal` fill) per the spec's guardrails — and does no step ask the player to pick a branch or an ending?
 
 **Aftermath & Consequence**
 10. Does the aftermath have its own prose — a reflective landing that wraps the experience before showing mechanics?
@@ -144,9 +144,9 @@ Include your completed gate assessment (all 14 answers) at the end of your packe
 
 ## Branch Seduction Self-Check
 
-Before finalizing, test every branch against:
-- Why would a god choose this on purpose?
-- What fantasy of interference does it offer?
+Branch selection is never the player's choice — the mortal and the world pick the path (spec § agent-decided branches). Before finalizing, test every branch against:
+- Why would *this mortal* take this path — what in who they are, or in the world, sends them down it?
+- What does the god get to watch, or nudge, on this path that the other cannot offer?
 - What value or future does it protect that the others don't?
 - If the labels were removed, would it still feel distinct and tempting?
 

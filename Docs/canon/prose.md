@@ -52,11 +52,11 @@ The four pipelines compose: a vignette step calls enrichment; an entity descript
 The aesthetic is a hard constraint, not a stylistic suggestion. Drift is the most common reason editorial passes reject drafts.
 
 - **Dark world, hidden magic, threads that break through.** Magic is uncanny, not pyrotechnic.
-- **Short, declarative sentences with one vivid detail.** One image earns its keep; three become noise.
+- **Short, declarative sentences that state facts.** Concreteness means named things and stated events, never textures or a "vivid detail". *(2026-10-03, THR-1695: replaced "with one vivid detail — one image earns its keep", which contradicted narrator mode below.)*
 - **No exclamation marks. No breathless enthusiasm.** Cool failure beats bombast.
 - **Wear and age over polish and perfection.** Surfaces are worn, weathered, frayed.
 - **The uncanny over the fantastic.** Strange is colder than spectacular.
-- **Dry wit over comedy. Irony over sentimentality.**
+- **Wit belongs to characters; the narrator states facts.** The irony budget is zero unless a character speaks it (`nudge-authoring-spec.md` § Retired by name). *(2026-10-03, THR-1695: replaced "Dry wit over comedy. Irony over sentimentality.")*
 
 The full voice articulation lives in `Obsidian → Systems/Tonal Bible.md` and `Systems/Narrative Engine.md` (verify freshness — vault Systems pages can lag code; if these pages contradict UL or this Canon page, the UL/Canon wins and the vault page needs a `drift-scan` issue).
 
@@ -67,7 +67,7 @@ The voice rules above say *what* the texture is. The register model says *how pl
 Every player-facing string belongs to exactly one of three registers.
 
 **1. Baseline narration — the default, the large majority of words the player reads.**
-Plain, concrete, active. Short-to-medium sentences, one idea each. Concrete nouns and verbs over abstractions. Dry understatement and deadpan humor are the preferred texture — soldiers talking around a fire, not the Kharkanas high register. Stacked metaphors, archaic diction, and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong in baseline.
+Plain, concrete, active. Short-to-medium sentences, one idea each. Concrete nouns and verbs over abstractions. Plain statement is the preferred texture — a game master reading the module aloud, not the Kharkanas high register; deadpan humor and squad banter belong to character voice (register 2), never to the narrator. *(2026-10-03, THR-1695: replaced "dry understatement and deadpan humor are the preferred texture", which licensed narrator irony against Doctrine v2.)* Stacked metaphors, archaic diction, and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong in baseline.
 
 **2. Character voice — dialogue and agent-attributed lines.**
 Idiosyncratic per persona, but comprehension-first: wit over ornament. A character may be florid *as characterization* — sparingly, at most one such voice per scene (the Kruppe allowance) — but the narration around them stays baseline.
@@ -109,8 +109,9 @@ which part applies depends on what the field is doing:
 
 "Outcome prose" is what the player reads *after* the roll: band base text and fragments,
 afterimages, aftermath overviews, `narrativeTemplates.success`/`.failure`. Everything else
-— openings, step narratives, vignettes, a card's `fiction` — is scene prose and holds only
-to the evasive set.
+— openings, step narratives, vignettes — is scene prose and holds only to the evasive set.
+A card's face is interactive text, not scene prose. *(2026-10-03, THR-1695: dropped a card's
+`fiction` from this list — the field was retired 2026-08-25 and removed by THR-1225.)*
 
 **This exists because the flat version damaged the prose it was protecting.** It failed
 Christian's canonical example of *correct* prose and produced contortions like "the
@@ -119,7 +120,7 @@ Rule zero governs: write the plain sentence. `countVagueness(text, fieldClass)` 
 the strictest scope, so pass the real class.
 
 - **Label** — wrong: *"Beseech the Sundered Veil."* right: *"Part the Veil."*
-- **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant owed too many people too much. He'd started checking the door."*
+- **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant Oren owes money to six people and cannot pay any of them."* *(2026-10-03, THR-1695: the old "right" — "The merchant owed too many people too much. He'd started checking the door." — was past tense with an encoded fact; see `Docs/exemplars.md`.)*
 - **Peak** (allowed, doom transition): *"The bells stopped. Whatever had been holding its breath beneath the city let it out."*
 
 ### Narrator mode — Prose Doctrine v2 (Christian, 2026-08-25; supersedes the three plainness moves)

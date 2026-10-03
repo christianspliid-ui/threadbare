@@ -27,12 +27,12 @@ A draft `UndertakingContentPackage` (`reference/undertaking-package-format.md`) 
    success, at-cost, critical failure. The at-cost band must cost something the player can see.
 4. **What is the counter-play?** For a create: which destroy in the row undoes it. For a destroy:
    which `motiveGate` justifies it and which `harmClass` the victim's grievance lane receives.
-5. **What does the god see?** The moment prose at start and at terminal — GM narration, past
+5. **What does the god see?** The moment prose at start and at terminal — GM narration, present
    tense, no interiority, no numerals, the mortal named by chip.
 
 ## Rules that are not negotiable
 
-- Prose is **GM narration, never in situ** — the narrator reports what the world did.
+- Prose is **GM narration, never in situ** — the narrator reports what the world does.
   No quoted dialogue, no second person to the mortal, no numbers.
 - Every magnitude is a **band word**, never a numeral. Difficulty and progress live in the
   template's tier fields, not in prose.

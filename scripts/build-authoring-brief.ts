@@ -27,6 +27,36 @@ export const AUTHORING_BRIEF_SOURCES = [
 /** Lines Section F may run to — the seams list is a dozen bullets; a longer one is drift. */
 export const AUTHORING_BRIEF_UNDERTAKING_SECTION_MAX_LINES = 30;
 
+/**
+ * The wiring-guide capabilities Section B compiles, by `### Capability N:` number, in brief order.
+ *
+ * Declared, not ranged (THR-1695). The generator used to loop `capNum <= 7`, so the brief froze
+ * at the guide's first seven capabilities while the guide grew to 33: the Nudge Hand (14) — the
+ * only player-facing surface an encounter has — and the carryover factor lines (17) were never
+ * compiled, and regenerating from current sources changed nothing. Adding a capability to the
+ * brief is now one entry here; the line budgets below keep the brief honest about its size.
+ */
+export const AUTHORING_BRIEF_CAPABILITIES: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 14, 17];
+
+/**
+ * A blockquote opening with this marker is a **superseding banner**: the guide's way of saying
+ * "what follows in this section is retired". When a capability carries one, the banner is the
+ * block the brief compiles — never the section's first code block, which is the retired shape
+ * the banner warns about (THR-1695: Cap 7 compiled its legacy `interventionType: 'coercive'`
+ * choice card under a banner that retires it).
+ */
+export const SUPERSEDING_BANNER_PATTERN = /^>\s*\*\*⚠️/;
+
+/**
+ * Version of the distillation logic. The declared capability list, the banner pattern and this
+ * number are folded into the generator stamp ({@link AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH}),
+ * because the up-to-date short-circuit compares stamps only: without them, editing the list or
+ * the extractor left the cached brief "up to date" and regeneration wrote nothing (THR-1695
+ * review gate). **Bump this whenever `distillCapabilitySection` / `extractCapabilitySection`
+ * change what they select.**
+ */
+export const AUTHORING_BRIEF_EXTRACTION_VERSION = 2;
+
 // Sections A and D are content from the encounter-pipeline skill and the prose canon —
 // hardcoded here so generation does not depend on parsing prose out of those files.
 //
@@ -63,7 +93,7 @@ This section governs every other section in this brief. Where a design principle
 
 **Three registers, and baseline is the default.**
 
-- **Baseline** — the large majority of the words the player reads: step narration, band base text, aftermath overviews. Plain, concrete, active. One idea per sentence. Concrete nouns and verbs over abstractions; dry understatement over ornament. Stacked metaphor, archaic diction and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong here.
+- **Baseline** — the large majority of the words the player reads: step narration, band base text, aftermath overviews. Plain, concrete, active, present tense. One fact per sentence. Concrete nouns and verbs over abstractions; plain statement over ornament. The narrator carries no irony — wit belongs to characters. Stacked metaphor, archaic diction and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong here.
 - **Character** — dialogue and agent-attributed lines. Idiosyncratic per persona, but comprehension first. At most one florid voice per scene; the narration around it stays baseline.
 - **Peak** — rationed lyricism, and only on a designated **non-encounter** surface: doom stage transitions, the Twilight Phase, World-Soul / Echo prose. **No encounter surface qualifies** — final-step band prose, the fate-reveal line and aftermath beats were peak surfaces until 2026-08-25; Doctrine v2 retired peak lyricism for every encounter surface. At most one figurative image per paragraph even there.
 
@@ -73,11 +103,15 @@ This section governs every other section in this brief. Where a design principle
 
 **Baseline, right:**
 
-> The merchant owed too many people too much. He'd started checking the door. When the collector's boy finally came, he already had the ledger open — not to pay, but to show how little was left.
+> The merchant Oren owes money to six people and cannot pay any of them. Today the collector's boy comes to his door. Oren opens his ledger and shows the boy how little is left.
 
 **Baseline, wrong** — same beat, ornamental diction, sends the reader to a dictionary:
 
 > The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants.
+
+**Baseline, also wrong** — past tense, and a fact (he is afraid) encoded as behaviour for the reader to decode:
+
+> He'd started checking the door.
 
 **Peak, right** — a doom transition, which is a declared peak surface:
 
@@ -177,7 +211,10 @@ export function hashContent(content: string | Buffer): string {
  */
 export const AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH = hashContent(
   `${SECTION_A_REGISTER}
-${SECTION_D_PLAYER_AS_GOD}`,
+${SECTION_D_PLAYER_AS_GOD}
+capabilities=${JSON.stringify(AUTHORING_BRIEF_CAPABILITIES)}
+banner=${SUPERSEDING_BANNER_PATTERN.source}
+extraction=${AUTHORING_BRIEF_EXTRACTION_VERSION}`,
 );
 
 /** Raw contents of every {@link AUTHORING_BRIEF_SOURCES} entry, by role. */
@@ -267,15 +304,22 @@ export function distillCapabilitySection(section: string[], capNum: number): str
   let i = 1;
   while (i < section.length && section[i].trim() === "") i++;
   const firstParaStart = i;
-  while (i < section.length && section[i].trim() !== "" && !section[i].startsWith("#")) i++;
+  while (i < section.length && section[i].trim() !== "" && !section[i].startsWith("#") && !section[i].startsWith(">")) i++;
   if (i > firstParaStart) {
     result.push("");
     result.push(...section.slice(firstParaStart, i));
   }
 
-  // First code block or markdown table — verbatim
-  let blockStart = -1;
+  // A superseding banner wins over every other block — it is the guide saying the rest of the
+  // section is retired. Taken verbatim, the whole contiguous `>` run (tables inside included).
+  let blockStart = section.findIndex((l, idx) => idx > 0 && SUPERSEDING_BANNER_PATTERN.test(l));
   let blockEnd = -1;
+  if (blockStart !== -1) {
+    blockEnd = blockStart;
+    while (blockEnd < section.length && section[blockEnd].startsWith(">")) blockEnd++;
+  }
+
+  // Otherwise the first code block or markdown table — verbatim
   for (let j = 1; j < section.length && blockStart === -1; j++) {
     if (section[j].startsWith("```")) {
       blockStart = j;
@@ -322,7 +366,9 @@ export function distillCapabilitySection(section: string[], capNum: number): str
 
 export function extractCapabilitySection(lines: string[], capNum: number): string[] {
   const startPattern = new RegExp(`^### Capability ${capNum}:`);
-  const stopPattern = new RegExp(`^### Capability ${capNum + 1}:|^## `);
+  // Stop at the NEXT capability heading, whatever its number: the guide is not in numeric
+  // order (Capability 22 sits between 4 and 5), so `capNum + 1` let Cap 4 run on into 22.
+  const stopPattern = /^### Capability \d+:|^## /;
   const section = extractSection(lines, startPattern, stopPattern);
   return distillCapabilitySection(section, capNum);
 }
@@ -410,7 +456,7 @@ export function buildBrief(
   const skillLines = sources.skill.split(/\r?\n/);
 
   const capabilitySections: string[] = [];
-  for (let capNum = 1; capNum <= 7; capNum++) {
+  for (const capNum of AUTHORING_BRIEF_CAPABILITIES) {
     capabilitySections.push(...extractCapabilitySection(wiringLines, capNum));
   }
 
@@ -428,7 +474,7 @@ export function buildBrief(
     `> **Generated:** ${generatedAt} by scripts/build-authoring-brief.ts`,
     `> **Sources:**`,
     ...sourceStamps,
-    `>   - Sections A/D, hardcoded in the generator (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH})`,
+    `>   - Sections A/D and the capability selection, hardcoded in the generator (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH})`,
     "> **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.",
     "",
     "---",
@@ -437,9 +483,9 @@ export function buildBrief(
     "",
     "---",
     "",
-    "## Section B: The 7 Engine Capabilities",
+    `## Section B: The ${AUTHORING_BRIEF_CAPABILITIES.length} Engine Capabilities Every Encounter Draws On`,
     "",
-    "Every encounter has access to these capabilities. When you sit down to write, ask: which of these am I using, and why am I not using the others?",
+    `Every encounter has access to these capabilities. When you sit down to write, ask: which of these am I using, and why am I not using the others? This is a selection; the full set is in ${WIRING_GUIDE_RELPATH}.`,
     "",
     ...capabilitySections,
     "---",
