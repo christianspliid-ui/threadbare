@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 03:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 04:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,17 +29,18 @@ Say "veto old banner" or "veto found things" to reverse either.
 
 ## Queue
 
-**13 jobs ready** (healthy). Nothing merged in code since 02:48; the only change this hour is the old-banner plan landing ([#2177](https://github.com/christianspliid-ui/threadbare/pull/2177)). Next builder slot ~04:10.
+**13 jobs ready** (healthy). Nothing merged since 02:48. Two jobs are being built right now.
 
-- **In progress:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and) — design work held under your name since 30 September, with a [prototype branch](https://github.com/christianspliid-ui/threadbare/tree/proto/thr-1572-spell-generator). No builder will pick it up.
-- **Next in line:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) · [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) · [the pilgrim way](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the) · [rival strikes from nudge pressure](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection) · [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). The two designs above wait out their veto windows.
+- **Being built:** [the pilgrim way](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the) — a builder is working on it now (last commit 04:50, [branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1660-consecrate-pilgrim-way)); no pull request yet.
+- **Built, waiting to merge:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and) — [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) passed every check at 04:25, but nobody has queued it to merge, and the job has no owner on the board. A builder's job to finish, not yours.
+- **Next in line:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) · [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) · [rival strikes from nudge pressure](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection) · [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). The two designs above wait out their veto windows.
 - **Small bugs waiting:** [an apex monster's title missing from its fight header](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and), [the Wolf-Winter Watch's "Under Watch" never wears off](https://linear.app/threadbare/issue/THR-1697/the-wolf-winter-watch-puts-under-watch-on-a-village-forever-its-apply), [a refused visit leaves a phantom appointment](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed).
 - **Old jobs at the bottom:** two deferrals have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Not blocked; newer work keeps outranking them.
 
 ## Health
 
-- **The simulation is slower again, ninth hour running, and worse this hour.** A builder's job: tick cost 153 ms/tick steady, 71% above the 7-day median (90, 120 rows since b9803408); top phase agent_decision, 539 agents. Name the merges between b9803408 and d20c72c3: git log --oneline --merges b9803408..d20c72c3. The jump came at the [rival-scheme attribution merge](https://github.com/christianspliid-ui/threadbare/pull/2168).
-- **The post-merge slow-test run is green again** on the latest code (68c62a0a), after five failures in a row. The slowdown above is unfixed, so it may fail again.
+- **The simulation is slower again, tenth hour running.** A builder's job: tick cost 145 ms/tick steady, 62% above the 7-day median (90, 119 rows since 00869497); top phase agent_decision, 539 agents. Name the merges between 00869497 and d20c72c3: git log --oneline --merges 00869497..d20c72c3. The jump came at the [rival-scheme attribution merge](https://github.com/christianspliid-ui/threadbare/pull/2168).
+- **One finished pull request is not queued to merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (the spell generator), green since 04:25. A builder's job.
 - **About a third of high-rank faction work is still unreachable in a long game.** 20 of 60 gated encounters are blocked. Detail: [orchestrator report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-02.md). A builder's job.
-- **The worktree reaper has 6 worktrees waiting for a decision** (434 worktrees, 302 local branches on disk). The reaper's own job; noted for visibility.
-- Everything else is green. The live site serves the latest game code (68c62a0a; later commits were docs only). All 10 scheduled tasks are on time. No pull requests are waiting.
+- **The worktree reaper has 6 worktrees waiting for a decision** (436 worktrees, 304 local branches on disk). The reaper's own job; noted for visibility.
+- Everything else is green. The live site serves the latest game code (68c62a0a; later commits were docs only). All 10 scheduled tasks are on time.
