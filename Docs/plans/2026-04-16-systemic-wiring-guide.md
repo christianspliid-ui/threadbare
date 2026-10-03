@@ -4813,6 +4813,16 @@ A spell is a `SpellTemplate` in `src/data/spell-templates.ts`. Four optional fie
 
 Knobs: `src/data/spell-casting-constants.ts`. Seeding: every caster starts knowing one spell (`seedSpellKnowing`; `SEEDED_CASTER_ROLES`, `SEEDED_SPELL_COVERAGE`). Inspect: `__DEBUG.getSpellHolders()`, `await __DEBUG.castSpell({ caster, spell, band })`; traces `spell.seeded`, `spell.cast_resolved`, `spell.backlash`, `effect.teleported`.
 
+### Generated spells — the two vocabularies (THR-1572)
+
+The world writes most of its spells (`src/engine/spellGenerator/`). Content authors extend it by adding a **core** to `src/data/spell-generator-cores.ts` (an arena, an agency, a tier window, the themes and spheres it fits, two flavour lines, a builder) or a **tradition row** to `src/data/spell-generator-tables.ts` (themes, word banks, notice families). What a core may emit is fixed by two vocabularies, and the gate (`spellGenerator.gate.test.ts`) reads every one back through the engine:
+
+- **Carried (fate-woven):** a shape `live` or `narrow` in `ITEM_HONEST_VOCABULARY` **and** stateless on a shared node (`isCarriedEffectStateless`: passive, conditional, test_shaper, social_modifier, aura, reveal, action_trigger, behavior_weight, range_modifier, axiological_drift, per-tick resource_manipulate). Never `self_remove` — on a shared spell it deletes the spell for every bearer.
+- **Cast (deliberate): a cast must write.** Only `live` rows of `SPELL_CAST_HONEST_VOCABULARY` (`src/data/spell-honest-vocabulary.ts`): inflict_condition, fight_clock, teleport/forced_move, modify_rules on a live key, alter_terrain warded/shrouded, dispel. `duration`, `aura`, `conditional`, `suppress` and the other modifier-only arms are refused until THR-1683's per-cast channel; encounter-arena casts target the caster until its ally/enemy filter.
+- **Notice:** a transgression spell carries its tradition's `noticeFamilies`; every cast places one `forbidden_contact` hidden mark on the caster (`placeSpellNotice`). A family must match a live template or the validator refuses it.
+
+Review a batch with `npm run cli` → `generate spells 30 --seed 42`; a live world's libraries with `spells`; one spell with `await __DEBUG.previewGeneratedSpell({ tradition: 'holy', tier: 2 })`.
+
 ### The step cast (THR-1670, power runtime S2)
 
 A mortal who **wields** a deliberate spell casts it in a scene on their own — the author writes no cast into a template. The spell fits a step when its `arena` does: `encounter` on a non-fight step whose `reach` equals the spell's `castReach`; `fight` on a `fightRole: 'clash'` exchange. The mortal casts when the step's odds **before any god card** fall below their threshold (`CAST_THRESHOLD_BASE` ± `CAST_THRESHOLD_COURAGE_SHIFT` × courage, clamped `CAST_THRESHOLD_MIN`/`MAX`), which sits below the odds mortals choose to take on — so a cast is a sign a scene has turned. The step shows it as a factor line ("X is casting *Spell*", `CAST_STEP_BONUS_BY_TIER[tier]`), and **the step's own band decides the spell** through `resolveCast`.

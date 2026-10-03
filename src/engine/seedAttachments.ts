@@ -30,6 +30,7 @@ import { emitTrace } from './traceBuffer';
 import { drawFromTable } from '../lib/drawTable';
 import { SPELL_GEN_ENABLED, SPELL_GEN_STEP_ARENAS } from '../data/spell-generator-tables';
 import type { SpellLibraryIndex } from './spellGenerator/spellLibrary';
+import { casterSeedIdentity } from './spellGenerator/casterTradition';
 import type { SpellTemplate } from '../types/effects';
 import {
   ANOMALY_SIGNATURE_ARTIFACTS,
@@ -353,7 +354,7 @@ export function seedSpellKnowing(graph: WorldGraph, library?: SpellSeedingLibrar
     let viaLibrary = false;
     if (libShelf.length > 0) {
       const weights = Object.fromEntries(libShelf.map(t => [t.id, 1]));
-      const ids = drawFromTable('spellgen.seed_spell', weights, `seed_spell:${library!.worldSeed}:${actorId}`, SEEDED_SPELLS_PER_CASTER);
+      const ids = drawFromTable('spellgen.seed_spell', weights, `seed_spell:${library!.worldSeed}:${casterSeedIdentity(graph, actorId)}`, SEEDED_SPELLS_PER_CASTER);
       picks = ids.map(id => libShelf.find(t => t.id === id)!).filter(Boolean);
       viaLibrary = picks.length > 0;
     } else {

@@ -859,8 +859,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
     ],
     verifiedLive: {
-      date: '2026-09-29',
-      evidence: 'THR-1670 S2 adds the second call site: a step cast. decideStepCast (unifiedActionResolution.ts) records the mortal\'s decision on UnifiedAction.stepCasts; the roll carries it as one named `spell` contribution; executeStepResult then calls resolveCast with the step\'s own band (site: step), and the chips read CastResult.writes back off the record (buildStepCastModel.ts). stepCast.thr1670.test.ts: a success band lands Hollow Crown and writes its price condition; a failure fizzles it and still pays. Live in the browser on the ?spell= review link (pre-card 0.35 → cast → landed → one chip). THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.',
+      date: '2026-10-03',
+      evidence: 'THR-1572 extends the result with CastResult.notice: a generated transgression spell places one forbidden_contact mark on its caster on every cast (landed or fizzled), once per caster per spell — the new consumer is state.hiddenMarks (see spell-notice-reveals-through-hidden-marks). Generated spells reach both call sites through resolveSpellTemplate. THR-1670 S2 adds the second call site: a step cast. decideStepCast (unifiedActionResolution.ts) records the mortal\'s decision on UnifiedAction.stepCasts; the roll carries it as one named `spell` contribution; executeStepResult then calls resolveCast with the step\'s own band (site: step), and the chips read CastResult.writes back off the record (buildStepCastModel.ts). stepCast.thr1670.test.ts: a success band lands Hollow Crown and writes its price condition; a failure fizzles it and still pays. Live in the browser on the ?spell= review link (pre-card 0.35 → cast → landed → one chip). THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.',
     },
   },
   {
@@ -870,15 +870,77 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'Every caster starts the world knowing and wielding a spell of their tradition, and the spells they carry are read by the systems that act on spells.',
     ulTerms: ['Spell'],
     mechanism: { kind: 'function', symbols: ['seedSpellKnowing', 'collectAttachmentEffects'], module: 'src/engine/seedAttachments.ts' },
-    writeSites: ['src/engine/seedAttachments.ts', 'src/engine/worldSeed.ts'],
+    writeSites: ['src/engine/seedAttachments.ts', 'src/engine/worldSeed.ts', 'src/engine/spellGenerator/spellLibrary.ts'],
     readSites: [
       'src/data/undertaking-objects.ts',
       'src/engine/effects/effectWalker.ts',
       'src/engine/effects/effectSuppression.ts',
     ],
     verifiedLive: {
-      date: '2026-09-29',
-      evidence: 'THR-1571 S1. Before: the only writer of knows_spell was create × Power, which needs a caster in the deciding tier (one of 104 on seed 42), so no mortal in the world held a spell (census: knowsSpell 0, wieldSpell 0). After: seedSpellKnowing runs at the tail of seedWorld (after the living world, the first point every mortal exists) and writes knows_spell + has_trait with source seeded for every isCaster actor under SEEDED_CASTER_ROLES × SEEDED_SPELL_COVERAGE; sorted picks, no draws. Measured, CLI tick 0: seed 42 medium 109/109 casters seeded, 0 with more than one spell; seed 99 medium 127/127. All of them via the fallback (the lowest-tier template by id, Height Anchor), because no caster carries a sphere alignment — the generator (THR-1572) is what fills tradition shelves. Carried (fate-woven) spells ride the effect walker through the shared definition node, with their runtime state keyed per bearer (attachmentStateKey). Read-back: spellCasting.test.ts › The Wayfinding reveal and passive reach the wielder; a seal on one bearer silences only theirs.',
+      date: '2026-10-03',
+      evidence: 'THR-1572 extends the producer with the library path: buildSpellLibrary (worldSeed tail, immediately before seedSpellKnowing) derives each caster\'s tradition (casterTraditionOf: role themes × faction reach lean, hashed on the world seed and the caster\'s name), builds one library per tradition in use and mints the generated spells as shared definition nodes; seedSpellKnowing then seeds each caster from their tradition library\'s lowest tier by a hashed pick, recording `tradition` on the knows_spell edge. Measured, CLI tick 0: seed 42 medium 109/109 casters from a tradition library (0 via the cantrip), 162 spells across 27 traditions, 0 empty slots, 43 distinct seeded spells, top holder share 0.064 (bar SPELL_GEN_MAX_HOLDER_SHARE 0.2; before: one spell held by 100%), largest tradition 11% of casters; seed 99 medium 127/127, 198 spells across 33 traditions, 57 distinct, top share 0.047. Read-back: spellLibrary.test.ts › seeds every caster from their tradition library; the switch-off regression (no library → THR-1571\'s seeding byte for byte). THR-1571 S1. Before: the only writer of knows_spell was create × Power, which needs a caster in the deciding tier (one of 104 on seed 42), so no mortal in the world held a spell (census: knowsSpell 0, wieldSpell 0). After: seedSpellKnowing runs at the tail of seedWorld (after the living world, the first point every mortal exists) and writes knows_spell + has_trait with source seeded for every isCaster actor under SEEDED_CASTER_ROLES × SEEDED_SPELL_COVERAGE; sorted picks, no draws. Measured, CLI tick 0: seed 42 medium 109/109 casters seeded, 0 with more than one spell; seed 99 medium 127/127. All of them via the fallback (the lowest-tier template by id, Height Anchor), because no caster carries a sphere alignment — the generator (THR-1572) is what fills tradition shelves. Carried (fate-woven) spells ride the effect walker through the shared definition node, with their runtime state keyed per bearer (attachmentStateKey). Read-back: spellCasting.test.ts › The Wayfinding reveal and passive reach the wielder; a seal on one bearer silences only theirs.',
+    },
+  },
+  {
+    id: 'generated-spell-honest-vocabulary',
+    producerSystem: AMBITIONS,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A spell the world makes promises only what the engine does. A generated spell\'s carried effects pass the item generator\'s per-effect checks and the shared-node rule; its cast effects are live rows of the cast vocabulary (a cast must write); the library mints only spells the validator passed.',
+    ulTerms: ['Spell'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['validateGeneratedSpell', 'SPELL_CAST_HONEST_VOCABULARY'],
+      module: 'src/engine/spellGenerator/validateGeneratedSpell.ts',
+    },
+    writeSites: [
+      'src/engine/spellGenerator/validateGeneratedSpell.ts',
+      'src/data/spell-honest-vocabulary.ts',
+    ],
+    readSites: [
+      'src/engine/spellGenerator/spellLibrary.ts',
+      'src/engine/spellGenerator/readBack.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. spellGenerator.gate.test.ts: for seeds 7, 42, 99 × all 34 traditions (612 spells), zero validator problems and zero read-back failures — carried spells are borne through has_trait and read back by the item read-back\'s readers (readBackEffects); deliberate spells are cast through resolveCast on success and failure from identical worlds, each write present after the landed cast and absent after the fizzle. Every one of the 24 surviving cores fires. The dishonest control batch fails: a cast duration, a doom_rate_multiplier, an enemy-filtered encounter cast, a notice no template answers, a stateful carried primitive, a carried self_remove (it deletes the shared definition node for every bearer), a holy tradition paying transgression.',
+    },
+  },
+  {
+    id: 'spell-template-resolves-from-graph',
+    producerSystem: WORLDGEN,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A generated spell\'s template lives on its definition node, and every site that needs a spell\'s template reads it through one resolver — authored first, then the node. No module-level registry outlives the world that minted it.',
+    ulTerms: ['Spell'],
+    mechanism: { kind: 'function', symbols: ['resolveSpellTemplate', 'spellDefinitionNode'], module: 'src/data/spell-templates.ts' },
+    writeSites: ['src/data/spell-templates.ts', 'src/engine/spellGenerator/spellLibrary.ts'],
+    readSites: [
+      'src/data/undertaking-objects.ts',
+      'src/engine/resolutionModifiers.ts',
+      'src/engine/stepCast.ts',
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/debugEncounterTools.ts',
+      'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. The nine former getSpellTemplate production sites read resolveSpellTemplate(graph, id); authored ids resolve exactly as before. Live read: spellLibrary.test.ts › a generated deliberate spell casts through use × Power — success lands its condition, failure writes nothing (both arms); stepCast.wieldedDeliberateSpells offers generated spells to the step cast, and ?spell=<generated id> stamps one on @hero through applySpellStamp.',
+    },
+  },
+  {
+    id: 'spell-notice-reveals-through-hidden-marks',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A dark art is noticed: casting a generated transgression spell (or first carrying a fate-woven one) places one forbidden_contact hidden mark on the caster, revealed later by the encounter families the tradition names.',
+    ulTerms: ['Spell'],
+    mechanism: { kind: 'state-field', symbols: ['placeSpellNotice', 'hiddenMarks'], module: 'src/engine/spellGenerator/notice.ts' },
+    writeSites: ['src/engine/spellGenerator/notice.ts', 'src/engine/spellCasting.ts', 'src/engine/gameInit.ts', 'src/data/undertaking-objects.ts'],
+    readSites: ['src/engine/hiddenMarks.ts', 'src/engine/encounterScoring.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. resolveCast returns CastResult.notice and places the mark through placeSpellNotice (state.hiddenMarks, the carrier the a-concealed-sale contract already names); one mark per caster per spell. Read-back: every transgression spell in the gate grid places exactly one mark and a second cast places none (readBack.ts); spellLibrary.test.ts › notice. The validator refuses a notice family that matches no template (familyMatchesTemplate over UNIFIED_ACTION_TEMPLATES), so evaluateMarkReveals can always reveal it. There is no general hidden-mark contract row; this one is scoped to spell notice.',
     },
   },
   {
