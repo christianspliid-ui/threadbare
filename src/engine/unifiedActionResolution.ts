@@ -665,6 +665,7 @@ function resolveStepCastOnBand(
     spell,
     band,
     ...(record.targetId ? { targetId: record.targetId } : {}),
+    ...(record.filterRejected ? { filterRejected: record.filterRejected } : {}),
     tick,
     site: 'step',
     siteRef: `${action.actionId}:${action.currentStep}`,

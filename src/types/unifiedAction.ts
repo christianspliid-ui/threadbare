@@ -3195,6 +3195,10 @@ export interface StepCastWrite {
   readonly ref: string;
   readonly fromBacklash?: boolean;
   readonly fromPrice?: boolean;
+  /** THR-1683 — the cast channel's bearing (the spell's modifier-only effects, held). */
+  readonly channel?: 'cast_condition';
+  /** THR-1683 — the channel bearing leaves the caster worse off (a loss chip). */
+  readonly harmful?: boolean;
 }
 
 /**
@@ -3210,6 +3214,8 @@ export interface StepCastRecord {
   readonly spellId?: string;
   /** The node the spell is aimed at, resolved at decision time from `spell.targeting`. */
   readonly targetId?: string;
+  /** THR-1683 — mortals the spell's target filter turned away while choosing the target. */
+  readonly filterRejected?: number;
   /** The named odds line's value (`CAST_STEP_BONUS_BY_TIER[tier]`); cast only. */
   readonly bonus?: number;
   /** The mortal's own cast threshold (courage against prudence). */

@@ -2994,6 +2994,16 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 
 **Wired and asserted:** `monsters/__tests__/innatePower.test.ts` (16 tests) — eight definitions, one per family, sphere-true, stateless, every primitive `live`; no `enemies` aura (a lair elite has no faction, so it could never apply); an elite of each family minted through `phaseLairEscalation` carries exactly one innate edge to its family's power; the sheet lists it as Innate; on-demand definition, idempotent stamp, fail-soft unknown family. `fightStepInputs.test.ts`: Thick Hide adds +0.05 to a beast's clash difficulty; Crackling Air thins the fighter's standing by 0.03. Census (CLI 150 ticks, seed 42 medium): 22 elites, 22 stamped, 8 definitions.
 
+## A landed cast holds — the cast channel and the target filter (THR-1683)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/castChannel.ts` (new: `splitCastEffects`, `castChannelPlan`, `applyCastChannel`, `castChannelConditionId`) | `resolveCast` landed branch (both sites: `use × Power`, the step cast) | the cast chip "*Spell* holds around *caster* for a while." (`cast_condition` in `buildStepCastModel.ts` / `spell-cast-screen-content.ts`) | `graph` (`trait.condition.cast.<spellId>` + `has_trait` with `ticksRemaining`) | `spell.cast_resolved` `writes[].channel`, `channel` | `await __DEBUG.castSpell(...)` → `writes`; `getStepCast` `writes` |
+| `engine/allegiance.ts` (new: `isAlly`, `actorFactionId` — moved from `undertaking-objects.ts`) | `create × Condition` sign; `resolveCastTarget` / `passesTargetFilter` | — | `graph` | `spell.cast_resolved` `filterRejected` | — |
+| `engine/effectExecutors.ts` (`MODIFIER_ONLY_EFFECT_TYPES`, `isModifierOnlyEffect`) | read by `castChannel` | — | — | — | — |
+
+**Wired and asserted:** `castChannel.test.ts` (15 tests) — every modifier-only type writes nothing in `executeEffect`; Veilwalk's `duration` rides as a 3-tick passive and Soulfire's `stacking` is skipped; a landed Hollow Crown bears the cast condition and an enemy one hex away reads −0.08 Gold until `decayConditions` expires it, then 0; a fizzle writes nothing; a re-cast refreshes one bearing; the trace carries the channel; with the bonded ally and a stranger beside the caster the target is the stranger, a named ally is refused, only-an-ally refuses `no_target` and the step cast declines. `stepCast.thr1670.test.ts`: the channel chip is a boon whose sentence never lowercases the spell. Census: zero casts resolve in 150 ticks on seed 42 medium (main too), so no in-play cast has exercised the channel yet.
+
 ## Dialogue contexts (THR-1586)
 
 Presentation only: no orchestrator phase, no GameState field and no trace.

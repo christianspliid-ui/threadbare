@@ -2781,6 +2781,29 @@ export interface SpellCastResolvedTrace extends TraceBase {
   refused?: string;
   /** Carried triggers the cast's `'spell_cast'` raise fired on the caster. */
   triggersFired: number;
+  /**
+   * THR-1683 — the cast's graph writes (the chips' source). `channel: 'cast_condition'`
+   * marks the bearing the cast channel wrote for the spell's modifier-only effects.
+   */
+  writes?: Array<{
+    kind: string;
+    actorId: string;
+    ref: string;
+    channel?: 'cast_condition';
+    harmful?: boolean;
+    fromBacklash?: boolean;
+    fromPrice?: boolean;
+  }>;
+  /** THR-1683 — the cast channel: what rode it, what could not (stateful), and why not, if not. */
+  channel?: {
+    applied: boolean;
+    carried: string[];
+    skipped: string[];
+    durationTicks?: number;
+    reason?: string;
+  };
+  /** THR-1683 — mortals the spell's target filter (`ally`/`enemy`) turned away. */
+  filterRejected?: number;
 }
 
 /** Trace: a cast's backlash fired (THR-1571). */
