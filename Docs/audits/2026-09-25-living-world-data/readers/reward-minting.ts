@@ -15,6 +15,9 @@
 //    `found` item at that band can carry the recipe's tag filters: on the live world context
 //    at the final tick (the past included), GEN_SAMPLES items per band, and the share whose
 //    tags satisfy each observed filter set (`rewardCandidateMatchesTags`, the draw's own rule).
+// C. (THR-1626 build) What the minting point actually did, off `reward.generated` traces:
+//    substitutions per world, the outcome split, the distinct cores used and the most-repeated
+//    core's share of generated rewards (the kill criterion: none above a third).
 import * as fs from 'fs';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
@@ -54,11 +57,22 @@ for (const seed of seeds) {
   const storiedMythicFilters: Record<string, number> = {}; // filter set → draws, for tier-2/3 authored artifacts
   const storiedMythicTemplates: Record<string, number> = {};
   let draws = 0; let empty = 0;
+  const genOutcomes: Record<string, number> = {};
+  const genCores: Record<string, number> = {};
+  const genExamples: string[] = [];
 
   for (let i = 0; i < TICKS; i++) {
     state = runTick(state, [], rt);
     for (const t of getTraces() as unknown as P[]) {
       const site = t.site as string | undefined;
+      if (t.category === 'reward.generated') {
+        inc(genOutcomes, t.outcome as string);
+        const id = t.itemId as string | null;
+        const g = id ? (state.graph.getNode(id)?.properties?.generated as { coreId?: string } | undefined) : undefined;
+        if (g?.coreId) inc(genCores, g.coreId);
+        if (id && genExamples.length < 8) genExamples.push(String(t.summary));
+        continue;
+      }
       if (!site || !REWARD_SITES.has(site)) continue;
       if (t.category === 'content.query_empty') { empty++; continue; }
       if (t.category !== 'content.query_resolved') continue;
@@ -113,6 +127,14 @@ for (const seed of seeds) {
     pastCounts: { heroes: Object.keys(world.heroes).length, events: Object.keys(world.events).length, monsters: Object.keys(world.monsters).length },
     generatedFound: Object.fromEntries(Object.entries(genByBand).map(([b, r]) => [b, { ok: r.ok, refused: r.refused, cores: r.cores, kinds: r.kinds, distinctTags: [...new Set(r.tags.flat())].sort() }])),
     filterFit,
+    generatedRewards: {
+      substituted: genOutcomes.substituted ?? 0,
+      outcomes: genOutcomes,
+      distinctCores: Object.keys(genCores).length,
+      cores: genCores,
+      topCoreShare: (() => { const n = Object.values(genCores).reduce((a, b) => a + b, 0); return n ? Math.max(...Object.values(genCores)) / n : 0; })(),
+      examples: genExamples,
+    },
   };
 }
 
