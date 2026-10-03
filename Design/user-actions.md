@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 04:57 local (02:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 05:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: a faith undertaking can now consecrate a new pilgrim way mid-game** ([THR-1660](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the)). Merged 05:15 via [#2179](https://github.com/christianspliid-ui/threadbare/pull/2179).
 - **2026-10-03: "Raise the Old Banner" is designed** ([THR-1658](https://linear.app/threadbare/issue/THR-1658/a-descendant-can-want-the-old-homeland-back-a-reclaim-homeland-rule)): a descendant of a fallen empire can come to want a piece of its old land back, blaming no one living. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md) merged via [#2177](https://github.com/christianspliid-ui/threadbare/pull/2177); veto window open until ~03:00 Sunday.
 - **2026-10-03: the encounter-writing line now teaches one set of narrator rules** ([THR-1695](https://linear.app/threadbare/issue/THR-1695)), and each brief declares what the engine can do for it. Merged 02:48 via [#2176](https://github.com/christianspliid-ui/threadbare/pull/2176).
 - **2026-10-03: a place's traits now show up in how it is described** ([THR-1522](https://linear.app/threadbare/issue/THR-1522)). Merged 01:39 via [#2175](https://github.com/christianspliid-ui/threadbare/pull/2175).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-02: undertakings now say where they must happen** ([THR-1294](https://linear.app/threadbare/issue/THR-1294/requireslocation-defaults-off-make-it-an-authored-flag-on-every-multi)): every multi-turn undertaking carries the flag instead of a hidden default. Merged 21:31 via [#2171](https://github.com/christianspliid-ui/threadbare/pull/2171).
 - **2026-10-02: found things in the reward draw are designed** ([THR-1626](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at)): about 50 per world, ~40% of Storied and Mythic rewards. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md) merged via [#2170](https://github.com/christianspliid-ui/threadbare/pull/2170); veto window open until Saturday ~20:45.
 - **2026-10-02: the dead encounter-choice pipeline is retired** ([THR-964](https://linear.app/threadbare/issue/THR-964/pendingchoicecommits-has-no-producer-the-entire-encounter-choice)). Merged 20:41 via [#2169](https://github.com/christianspliid-ui/threadbare/pull/2169).
-- **2026-10-02: rival schemes now show who is behind them, on the map too** ([THR-829](https://linear.app/threadbare/issue/THR-829/sponsors-scheme-attribution-edge-never-binds-in-a-real-world-rivals)). Merged 19:54 via [#2168](https://github.com/christianspliid-ui/threadbare/pull/2168).
 
 ---
 
