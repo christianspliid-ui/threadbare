@@ -96,6 +96,8 @@ export interface CastWrite {
    * modifier-only effects, held on the caster as a timed condition.
    */
   readonly channel?: 'cast_condition';
+  /** THR-1683 — a cast-channel bearing that leaves the caster worse off (its chip is a loss). */
+  readonly harmful?: boolean;
 }
 
 export type CastRefusal = 'prerequisite' | 'cooldown' | 'cost' | 'sealed' | 'no_target' | 'error';
@@ -305,7 +307,10 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
       const conditionId = channelResult.applied ? channelResult.conditionId : undefined;
       // Read back off the graph, never off intent (Law 56).
       if (conditionId && graph.getOutgoingEdges(casterId, 'has_trait').some(e => e.target === conditionId)) {
-        writes.push({ kind: 'condition', actorId: casterId, ref: conditionId, channel: 'cast_condition' });
+        writes.push({
+          kind: 'condition', actorId: casterId, ref: conditionId, channel: 'cast_condition',
+          ...(channelResult.harmful ? { harmful: true } : {}),
+        });
       }
     }
   }
@@ -478,6 +483,7 @@ function traceResolved(req: CastRequest, result: CastResult, triggersFired = 0, 
       writes: result.writes.map(w => ({
         kind: w.kind, actorId: w.actorId, ref: w.ref,
         ...(w.channel ? { channel: w.channel } : {}),
+        ...(w.harmful ? { harmful: true } : {}),
         ...(w.fromBacklash ? { fromBacklash: true } : {}),
         ...(w.fromPrice ? { fromPrice: true } : {}),
       })),

@@ -22,6 +22,7 @@ export type CastChipKind =
   | 'landed_condition'
   | 'backlash_condition'
   | 'cast_condition'
+  | 'cast_condition_cost'
   | 'moved'
   | 'lifted'
   | 'silenced';
@@ -58,6 +59,12 @@ export const CAST_CHIP_COPY: Readonly<Record<CastChipKind, CastChipCopy>> = {
     category: 'boon',
     direction: 'gain',
     sentence: '{spell} holds around {caster} for a while.',
+  },
+  // The same channel when what it holds weakens the caster (Last Breath's iron).
+  cast_condition_cost: {
+    category: 'scar',
+    direction: 'loss',
+    sentence: '{spell} leaves {caster} weaker for a while.',
   },
   // The spell turned on its caster.
   backlash_condition: {

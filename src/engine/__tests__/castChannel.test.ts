@@ -14,7 +14,10 @@ import { getSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '..
 import { castChannelTicksForTier, CAST_CHANNEL_DEFAULT_TICKS_BY_TIER } from '../../data/spell-casting-constants';
 import { executeEffect, isModifierOnlyEffect, MODIFIER_ONLY_EFFECT_TYPES } from '../effectExecutors';
 import { resolveCast, resolveCastTarget, passesTargetFilter } from '../spellCasting';
-import { castChannelConditionId, castChannelPlan, splitCastEffects } from '../castChannel';
+import { castChannelConditionId, castChannelPlan, isHarmfulToBearer, splitCastEffects } from '../castChannel';
+import type { StepCastRecord } from '../../types/unifiedAction';
+import { buildCastChanges } from '../../components/Game/encounter-stage/adapters/buildStepCastModel';
+import { buildFightChipWorld } from '../../components/Game/encounter-stage/adapters/chipCollaborators';
 import { findStepCastSpell } from '../stepCast';
 import { decayConditions } from '../conditionDecay';
 import { collectAuraEffectsNear, resolveAgentPosition, resolveAuraModifiers } from '../effectAura';
@@ -187,6 +190,43 @@ describe('a landed Hollow Crown leaves the cast condition on the caster', () => 
     };
     expect(trace.writes.some(w => w.channel === 'cast_condition')).toBe(true);
     expect(trace.channel).toMatchObject({ applied: true, carried: ['aura', 'conditional'] });
+  });
+});
+
+// ─── A channel that weakens its bearer reads as harm ────────────────
+
+describe('a harmful cast condition (review gate, round 2)', () => {
+  it('weighs only what lands on the bearer: an aura never counts', () => {
+    expect(isHarmfulToBearer([{ type: 'passive', reach: 'iron', value: -0.1 }])).toBe(true);
+    expect(isHarmfulToBearer([{ type: 'aura', radius: 1, target: 'enemies', reach: 'gold', value: -0.08 }])).toBe(false);
+    expect(castChannelPlan(CROWN, splitCastEffects(CROWN.effects).channel).harmful).toBe(false);
+  });
+
+  it("Last Breath's iron weakness is tagged #negative and chips as a loss, never a gain", () => {
+    const { graph, state } = world();
+    const lastBreath = getSpellTemplate('spell_last_breath')!;
+    graph.addNode(spellDefinitionNode(lastBreath));
+    mortal(graph, 'caster', 'loc.here', 'faction.crown', { name: 'Ilse', domainCapabilities: { star: 90, heart: 90 } });
+    mortal(graph, 'friend', 'loc.here', 'faction.crown');
+    const target = resolveCastTarget(graph, 'caster', lastBreath, undefined);
+    expect(target.targetId).toBe('friend');
+    const res = resolveCast(state, {
+      casterId: 'caster', spell: lastBreath, band: 'success', ...target,
+      tick: TICK, site: 'step', siteRef: 'test:lb',
+    });
+    expect(res.landed).toBe(true);
+    const condId = castChannelConditionId('spell_last_breath');
+    expect(graph.getNode(condId)?.properties.tags).toContain('#negative');
+    const write = res.writes.find(w => w.channel === 'cast_condition');
+    expect(write).toMatchObject({ actorId: 'caster', ref: condId, harmful: true });
+
+    const record = {
+      decision: 'cast', casterId: 'caster', spellId: 'spell_last_breath', threshold: 0.45,
+      landed: true, band: 'success', writes: [write!],
+    } as unknown as StepCastRecord;
+    const [chip] = buildCastChanges({ 0: record }, buildFightChipWorld(graph));
+    expect(chip).toMatchObject({ category: 'scar', direction: 'loss', polarity: 'loss' });
+    expect(chip.detail).toBe('Last Breath leaves caster weaker for a while.');
   });
 });
 

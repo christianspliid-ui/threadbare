@@ -71,6 +71,8 @@ export function castChannelPlan(spell: SpellTemplate, channel: readonly Attachme
   carried: AttachmentEffect[];
   skipped: AttachmentEffect['type'][];
   durationTicks: number;
+  /** The bearer is worse off for it — see {@link isHarmfulToBearer}. */
+  harmful: boolean;
 } {
   const carried: AttachmentEffect[] = [];
   const skipped: AttachmentEffect['type'][] = [];
@@ -86,7 +88,24 @@ export function castChannelPlan(spell: SpellTemplate, channel: readonly Attachme
     }
   }
   if (durationTicks <= 0) durationTicks = castChannelTicksForTier(spell.tier);
-  return { carried, skipped, durationTicks };
+  return { carried, skipped, durationTicks, harmful: isHarmfulToBearer(carried) };
+}
+
+/**
+ * Whether the carried effects leave their bearer worse off: the reach values that
+ * land on the bearer itself (`passive`, `conditional`) sum below zero. An `aura`
+ * acts on others, so it never counts. Last Breath's iron weakness is harmful;
+ * Hollow Crown's +Gold in social and Veilwalk's +Shadow are not.
+ *
+ * A harmful cast condition is tagged `#negative`, so a condition ward can refuse
+ * it like any other harm, and its chip reads as a loss rather than a gain.
+ */
+export function isHarmfulToBearer(carried: readonly AttachmentEffect[]): boolean {
+  let net = 0;
+  for (const effect of carried) {
+    if (effect.type === 'passive' || effect.type === 'conditional') net += effect.value;
+  }
+  return net < 0;
 }
 
 export interface CastChannelResult {
@@ -99,6 +118,8 @@ export interface CastChannelResult {
   readonly carried: readonly string[];
   /** Modifier-only effect types that could not ride a shared definition (stateful). */
   readonly skipped: readonly string[];
+  /** The bearing leaves the caster worse off (tagged `#negative`; its chip is a loss). */
+  readonly harmful?: boolean;
   /** Why there is no channel, when `applied` is false. */
   readonly reason?: string;
 }
@@ -118,7 +139,7 @@ export function applyCastChannel(
   siteRef: string,
 ): CastChannelResult {
   try {
-    const { carried, skipped, durationTicks } = castChannelPlan(spell, channel);
+    const { carried, skipped, durationTicks, harmful } = castChannelPlan(spell, channel);
     const carriedTypes = carried.map(e => e.type);
     if (carried.length === 0) {
       return { applied: false, carried: carriedTypes, skipped, ...(channel.length > 0 ? { reason: 'nothing_rides' } : {}) };
@@ -134,7 +155,7 @@ export function applyCastChannel(
         properties: {
           subcategory: 'condition',
           tier: spell.tier,
-          tags: ['#condition', '#cast'],
+          tags: harmful ? ['#condition', '#cast', '#negative'] : ['#condition', '#cast'],
           description: `Under ${spell.name}: the working still holds.`,
           mechanicalSummary: spell.mechanicalSummary,
           flavorText: spell.flavorText,
@@ -161,8 +182,9 @@ export function applyCastChannel(
       edgeId: `has_trait_${casterId}_${conditionId}_${tick}_${siteRef}`,
       edgeProperties: { source: 'spell_cast', spellId: spell.id },
     });
-    if (!result.applied) return { applied: false, conditionId, carried: carriedTypes, skipped, reason: result.reason };
-    return { applied: true, conditionId, edgeId: result.edgeId, durationTicks, carried: carriedTypes, skipped };
+    const harm = harmful ? { harmful: true } : {};
+    if (!result.applied) return { applied: false, conditionId, carried: carriedTypes, skipped, ...harm, reason: result.reason };
+    return { applied: true, conditionId, edgeId: result.edgeId, durationTicks, carried: carriedTypes, skipped, ...harm };
   } catch {
     return { applied: false, carried: [], skipped: [], reason: 'error' };
   }

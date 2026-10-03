@@ -2790,6 +2790,7 @@ export interface SpellCastResolvedTrace extends TraceBase {
     actorId: string;
     ref: string;
     channel?: 'cast_condition';
+    harmful?: boolean;
     fromBacklash?: boolean;
     fromPrice?: boolean;
   }>;

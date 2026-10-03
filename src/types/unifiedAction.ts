@@ -3197,6 +3197,8 @@ export interface StepCastWrite {
   readonly fromPrice?: boolean;
   /** THR-1683 — the cast channel's bearing (the spell's modifier-only effects, held). */
   readonly channel?: 'cast_condition';
+  /** THR-1683 — the channel bearing leaves the caster worse off (a loss chip). */
+  readonly harmful?: boolean;
 }
 
 /**
