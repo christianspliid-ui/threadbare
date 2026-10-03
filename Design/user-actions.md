@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 11:00 local (09:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: the Threads panel now shows The First right after the bond** ([THR-1704](https://linear.app/threadbare/issue/THR-1704)), the first round-2 playtest bug fixed. Merged this morning.
 - **2026-10-03: cold playtest round 2 is in** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-2.md)): all three new players met and bonded their mortal and called it the best part; the new wall is the mortal’s life playing on autopilot after the bond ([THR-1715](https://linear.app/threadbare/issue/THR-1715), going to design). 13 tickets filed, 9 ready to build.
 - **2026-10-03: a landed Hollow Crown now changes more than the odds** ([THR-1683](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only)): a condition that weakens its bearer now reads as harm, with a loss chip. Merged 09:15 via [#2184](https://github.com/christianspliid-ui/threadbare/pull/2184).
 - **2026-10-03: rival strikes now answer nudge pressure** ([THR-1690](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection)): pressure from your nudges can now cross the detection line, and the strike waits until an encounter can carry it. Merged 08:30 via [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: "Raise the Old Banner" is designed** ([THR-1658](https://linear.app/threadbare/issue/THR-1658/a-descendant-can-want-the-old-homeland-back-a-reclaim-homeland-rule)): a descendant of a fallen empire can come to want a piece of its old land back, blaming no one living. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md) merged via [#2177](https://github.com/christianspliid-ui/threadbare/pull/2177); veto window open until ~03:00 Sunday.
 - **2026-10-03: the encounter-writing line now teaches one set of narrator rules** ([THR-1695](https://linear.app/threadbare/issue/THR-1695)), and each brief declares what the engine can do for it. Merged 02:48 via [#2176](https://github.com/christianspliid-ui/threadbare/pull/2176).
 - **2026-10-03: a place's traits now show up in how it is described** ([THR-1522](https://linear.app/threadbare/issue/THR-1522)). Merged 01:39 via [#2175](https://github.com/christianspliid-ui/threadbare/pull/2175).
-- **2026-10-03: Sanctify and Hearthfire Blessing now do something lasting** ([THR-662](https://linear.app/threadbare/issue/THR-662/wire-the-two-remaining-no-op-sanctify-actions-subsanctify-subsanctify)): a blessed place keeps its blessing, and a tavern's owner cannot stack it twice. Merged 00:46 via [#2174](https://github.com/christianspliid-ui/threadbare/pull/2174).
 
 ---
 
