@@ -65,7 +65,7 @@ import {
 import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import { UNIFIED_ROLL_READS_STANDING_MODIFIERS } from '../data/standing-modifier-constants';
 import type { StepCastRecord } from '../types/unifiedAction';
-import { getSpellTemplate, spellDefinitionNodeId } from '../data/spell-templates';
+import { resolveSpellTemplate, spellDefinitionNodeId } from '../data/spell-templates';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -758,7 +758,7 @@ export function computeResolutionModifiers(
 
   // THR-1670 — the step cast's named line. Not clamped with the effect family: it
   // is the spell's own authored bonus (`CAST_STEP_BONUS_BY_TIER`), one per step.
-  const spellContributions = stepCastContributions(stepCast, agentId);
+  const spellContributions = stepCastContributions(stepCast, agentId, graph);
   const spellModifier = sumContributions(spellContributions);
 
   const totalModifier =
@@ -843,10 +843,12 @@ export function computeResolutionModifiers(
 export function stepCastContributions(
   stepCast: StepCastRecord | undefined,
   agentId: string,
+  /** THR-1572 — so a generated spell's name resolves from its definition node. */
+  graph?: WorldGraph,
 ): NamedModifierContribution[] {
   if (!stepCast || stepCast.decision !== 'cast' || stepCast.casterId !== agentId) return [];
   if (!stepCast.spellId || !stepCast.bonus || !Number.isFinite(stepCast.bonus)) return [];
-  const spell = getSpellTemplate(stepCast.spellId);
+  const spell = resolveSpellTemplate(graph, stepCast.spellId);
   return [{
     kind: 'spell',
     sourceId: spellDefinitionNodeId(stepCast.spellId),
@@ -884,7 +886,7 @@ export function computeStandingModifierTotal(
 ): number {
   if (!UNIFIED_ROLL_READS_STANDING_MODIFIERS) {
     // The one-flag revert turns off the standing read, never a cast's own line.
-    return sumContributions(stepCastContributions(stepCast, actorId));
+    return sumContributions(stepCastContributions(stepCast, actorId, graph));
   }
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
   const locationId = locEdges.length > 0 ? locEdges[0].target : '';

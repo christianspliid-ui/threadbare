@@ -21,6 +21,7 @@
  *   essence        — print essence pool
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
+ *   spells         — this world's spell libraries and holders (THR-1572)
  *   monsters       — list lair monsters with their cards (THR-1544)
  *   hunts          — the hunt ledger: founded, tracked, planted / kept / missed confronts,
  *                    travel ticks, miss reasons, reason-holders outside the scan (THR-1560)
@@ -136,6 +137,11 @@ import { isSpellSuppressedFor } from '../src/engine/effects/effectSuppression';
 import { getGrievanceHeatWord } from '../src/data/grievance-prose';
 import { generateReviewBatch, formatReviewCard } from '../src/engine/itemGenerator/reviewBatch';
 import { readBack as readBackGeneratedItem } from '../src/engine/itemGenerator/readBack';
+import { traditionCatalog as spellTraditionCatalog } from '../src/engine/spellGenerator/traditionCatalog';
+import { generateTraditionLibrary, getTraditionLibrary } from '../src/engine/spellGenerator/spellLibrary';
+import { validateGeneratedSpell } from '../src/engine/spellGenerator/validateGeneratedSpell';
+import { describeSpell } from '../src/engine/spellGenerator/describeSpell';
+import { readBackSpell } from '../src/engine/spellGenerator/readBack';
 import { buildItemWorldContext, hasItemWorldPast } from '../src/engine/itemGenerator/worldContext';
 import {
   getAllGroups,
@@ -1604,6 +1610,8 @@ function printHelp(): void {
   console.log(`  ${BOLD}profile${RESET} [N]      Run N ticks (default 30) with profiling, print per-phase avg/max/p95 + slowest ticks`);
   console.log(`  ${BOLD}profile phases${RESET}   Print the timing aggregate for ticks already profiled`);
   console.log(`  ${BOLD}generate items${RESET} [N] [--band 2|3|4] [--origin masterwork|found] [--seed S] [--live]  Review N generated items as the sheet reads them, with validator + engine read-back verdicts (THR-1570). Default: the review world; --live dresses masterworks from this world's mortals`);
+  console.log(`  ${BOLD}generate spells${RESET} [N] [--tradition <id>] [--seed S]  Review N generated spells as the sheet reads them, with validator + engine read-back verdicts (THR-1572)`);
+  console.log(`  ${BOLD}spells${RESET}  This world's tradition spell libraries and who holds each spell (THR-1572)`);
   console.log(`  ${BOLD}help${RESET}             This help`);
   console.log(`  ${BOLD}quit${RESET} / ${BOLD}exit${RESET}     Exit`);
 }
@@ -2529,6 +2537,74 @@ function handleBeatCommand(args: string[]): void {
 // ─── REPL ─────────────────────────────────────────────────────────
 
 /**
+ * `generate spells` — the spell generator's review path (THR-1572). Builds the libraries
+ * of every tradition (or one, with `--tradition`) for a seed, without touching this world,
+ * and prints the first N spells as the sheet reads them — name, tradition, what it does,
+ * what it costs, what goes wrong, under the hood — with the validator's and the engine
+ * read-back's verdict.
+ */
+function handleGenerateSpells(args: string[]): void {
+  const opt = (k: string) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : undefined; };
+  const count = Math.max(1, parseInt(args[1] ?? '', 10) || 30);
+  const seed = Number(opt('seed') ?? state.seed);
+  const only = opt('tradition');
+  const wanted = only ? (only.startsWith('magic.') ? only : `magic.${only}`) : null;
+  const coreUse = new Map<string, number>();
+  const usedNames = new Set<string>();
+  const spells = spellTraditionCatalog()
+    .filter(t => !wanted || t.id === wanted)
+    .flatMap(t => generateTraditionLibrary(t.id, seed, coreUse, usedNames).map(s => ({ s, tradition: t.name })));
+  if (spells.length === 0) {
+    console.log(`${RED}No spells — unknown tradition '${only}'?${RESET}`);
+    return;
+  }
+  // Interleave traditions so a sample of thirty reads across the world, not one book.
+  const byTradition = new Map<string, typeof spells>();
+  for (const x of spells) byTradition.set(x.tradition, [...(byTradition.get(x.tradition) ?? []), x]);
+  const order: typeof spells = [];
+  for (let i = 0; order.length < spells.length; i++) {
+    for (const list of byTradition.values()) if (list[i]) order.push(list[i]);
+  }
+  let clean = 0;
+  for (const { s, tradition } of order.slice(0, count)) {
+    const words = describeSpell(s.template, s.provenance.catchIndexes);
+    const problems = validateGeneratedSpell(s.template, s.provenance);
+    const rb = readBackSpell(s);
+    const verdict = problems.length === 0 && rb.ok;
+    if (verdict) clean++;
+    console.log(`\n${BOLD}${s.template.name}${RESET} ${DIM}(${s.template.id})${RESET} — ${s.template.agency === 'deliberate' ? 'cast' : 'carried'}, tier ${s.template.tier}`);
+    console.log(`  Taught by: ${tradition}`);
+    console.log(`  ${DIM}${s.template.flavorText}${RESET}`);
+    console.log(`  What it does: ${words.does}`);
+    console.log(`  What it costs: ${words.costs}`);
+    console.log(`  What goes wrong: ${words.wrong}`);
+    console.log(`  ${DIM}Under the hood: ${s.provenance.coreId} · ${s.template.arena} · ${s.sphere} · ${s.provenance.priceLayer}${s.provenance.riderId ? ` + ${s.provenance.riderId}` : ''} · ${s.provenance.seedKey}${RESET}`);
+    console.log(`  ${verdict ? `${GREEN}honest${RESET} (read-back ${rb.checks} checks)` : `${RED}${[...problems, ...rb.failures].join('; ')}${RESET}`}`);
+  }
+  console.log(`\n${BOLD}${clean}/${Math.min(count, order.length)}${RESET} honest (validator + engine read-back), seed ${seed}.`);
+}
+
+/** `spells` — this world's tradition libraries and who holds each spell (THR-1572). */
+function printSpellLibraries(): void {
+  const holders = new Map<string, number>();
+  for (const actor of state.graph.getNodesByType('actor')) {
+    for (const e of state.graph.getOutgoingEdges(actor.id, 'has_trait')) holders.set(e.target, (holders.get(e.target) ?? 0) + 1);
+  }
+  let shown = 0;
+  for (const t of spellTraditionCatalog()) {
+    const library = getTraditionLibrary(state.graph, t.id);
+    if (library.length === 0) continue;
+    shown++;
+    console.log(`${BOLD}${t.name}${RESET} ${DIM}(${t.id})${RESET}`);
+    for (const s of library) {
+      const n = holders.get(`power.spell.${s.id}`) ?? 0;
+      console.log(`  t${s.tier} ${s.agency === 'deliberate' ? 'cast   ' : 'carried'} ${s.name.padEnd(28)} ${DIM}${s.id}${RESET} · ${n} holder${n === 1 ? '' : 's'}`);
+    }
+  }
+  if (shown === 0) console.log(`${YELLOW}This world has no spell libraries (SPELL_GEN_ENABLED off, or a world seeded before THR-1572).${RESET}`);
+}
+
+/**
  * `generate items` — the item generator's review path (THR-1570). Prints each item the
  * way the artifact sheet reads it, plus the validator's and the engine read-back's
  * verdict. The review world is the default, so a review batch reads the same on any
@@ -2538,8 +2614,12 @@ function handleBeatCommand(args: string[]): void {
  * for found things, and says so.
  */
 function handleGenerate(args: string[]): void {
+  if (args[0] === 'spells') {
+    handleGenerateSpells(args);
+    return;
+  }
   if (args[0] !== 'items') {
-    console.log(`${RED}Usage: generate items [N] [--band 2|3|4] [--origin masterwork|found] [--seed S] [--live]${RESET}`);
+    console.log(`${RED}Usage: generate items [N] [--band 2|3|4] [--origin masterwork|found] [--seed S] [--live] | generate spells [N] [--tradition <id>] [--seed S]${RESET}`);
     return;
   }
   const opt = (k: string) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : undefined; };
@@ -2693,6 +2773,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'factions':
       printFactions();
+      break;
+    case 'spells':
+      printSpellLibraries();
       break;
     case 'monsters':
       printMonsters();

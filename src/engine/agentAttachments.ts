@@ -17,6 +17,9 @@ import type {
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
 import { isSpellSuppressedFor } from './effects/effectSuppression';
+import type { SpellTemplate } from '../types/effects';
+import { describeSpell } from './spellGenerator/describeSpell';
+import { traditionEntry } from './spellGenerator/traditionCatalog';
 
 /**
  * Pull an attachment's on-use behavior out of its `effects[]`.
@@ -72,6 +75,12 @@ export interface AttachmentFullEntry extends AttachmentSummary {
    * gave. Absent on everything that is not a Power. The sheet says the word.
    */
   powerClass?: 'spell' | 'bestowal' | 'innate';
+  /**
+   * THR-1572 — a generated spell's words: who teaches it, what it does, what it costs,
+   * what goes wrong. Derived from the template on its definition node at read time, so
+   * they never go stale (Law 56). Absent on an authored spell.
+   */
+  spellWords?: { taughtBy: string; does: string; costs: string; wrong: string };
   /** A power whose bearer is under a seal: it is theirs, and it will not answer. */
   sealed?: boolean;
   /** How a condition came to be worn — somebody's doing, and which kind of doing. */
@@ -312,6 +321,7 @@ export function getAgentAttachments(
         source: edge.properties.source as string | undefined,
         slotTag: 'spell',
         powerClass: 'spell',
+        ...(generatedSpellWords(traitProps) ? { spellWords: generatedSpellWords(traitProps)! } : {}),
         // Read off the bearer, never off the shared definition node — the same reason
         // `isSpellSuppressedFor` exists (a spell node is shared by every wielder).
         sealed: spellsSealed,
@@ -435,4 +445,22 @@ export function getAgentAttachments(
     agreements: sortAttachments(agreements),
     knownSpells,
   };
+}
+
+/**
+ * THR-1572 — the four sheet lines for a generated spell, read off its definition node:
+ * the tradition's plain name, and `describeSpell` over the template the engine casts.
+ * Null for an authored spell or a node with no template (fail-soft).
+ */
+function generatedSpellWords(props: Record<string, unknown>): { taughtBy: string; does: string; costs: string; wrong: string } | null {
+  if (props.origin !== 'generated') return null;
+  const template = props.template as SpellTemplate | undefined;
+  const prov = props.generated as { traditionId?: string; catchIndexes?: number[] } | undefined;
+  if (!template || !prov?.traditionId) return null;
+  try {
+    const words = describeSpell(template, prov.catchIndexes ?? []);
+    return { taughtBy: traditionEntry(prov.traditionId)?.name ?? prov.traditionId, ...words };
+  } catch {
+    return null;
+  }
 }
