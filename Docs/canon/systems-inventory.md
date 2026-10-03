@@ -380,7 +380,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-611`, `THR-621`, `THR-66`, `THR-829` |
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
-| `ruins` (11) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/leadVisit.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156`, `THR-1560`, `THR-1664` |
+| `ruins` (11) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/leadVisit.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156`, `THR-1560`, `THR-1664`, `THR-1696` |
 | `scaled` (1) | `scaledForecast.ts` | `THR-1535`, `THR-1543` |
 | `scene` (3) | `sceneHere.ts`, `sceneRealm.ts`, `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446`, `THR-1462`, `THR-1499` |
 | `schism` (1) | `schismPlant.ts` | `THR-430` |
