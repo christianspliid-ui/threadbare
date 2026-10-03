@@ -631,7 +631,10 @@ export type EncounterAftermathReactionEffect =
     readonly kind: 'apply_condition';
     /** ID of an existing trait/condition node in the graph. */
     readonly conditionTraitId: string;
-    /** How long the condition lasts in ticks. 0 = indefinite (no auto-expiry). */
+    /**
+     * How long the condition lasts in ticks. 0 = indefinite (no auto-expiry).
+     * Omitted → the condition's `CONDITION_DURATIONS` term, else indefinite (THR-1697).
+     */
     readonly durationTicks?: number;
     /** Intensity 0-1. Stored on the has_trait edge. */
     readonly intensity?: number;

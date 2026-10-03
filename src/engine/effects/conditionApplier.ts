@@ -17,19 +17,41 @@ import { isImmuneToAnyTag, normalizeTag } from './effectQueries';
 import { isHarmfulCondition, raiseConditionLanded } from './conditionProxyEvents';
 import { buildPredicateContext, collectPreventLossEffects } from '../effectResolver';
 import { ATTACHMENT_EDGE_TYPES } from './effectWalker';
+import { CONDITION_DURATIONS } from '../../data/condition-trait-content';
 
 /** Default intensity on apply_condition when the effect omits it. */
 export const CONDITION_DEFAULT_INTENSITY = 0.5;
 
-/** Default durationTicks on apply_condition when omitted. 0 = indefinite (no auto-expiry). */
+/**
+ * Last-resort durationTicks on apply_condition when the effect omits one AND the
+ * condition has no `CONDITION_DURATIONS` row. 0 = indefinite (no auto-expiry).
+ */
 export const CONDITION_DEFAULT_DURATION_TICKS = 0;
+
+/**
+ * The term a condition write lands with (THR-1697): the caller's explicit
+ * `durationTicks`, else the condition's own `CONDITION_DURATIONS` term, else
+ * `CONDITION_DEFAULT_DURATION_TICKS` (indefinite).
+ *
+ * Before this, an omitted duration went straight to 0, so an `apply_condition`
+ * of Under Watch with no `durationTicks` (`wolf-winter-watch.ts`) made a village
+ * watched forever — while `aftermathWords` read the same table for display and
+ * showed the player a week. The writer and the chip now read one term. Conditions
+ * without a row (Scarred, minted traits) stay indefinite, as before.
+ */
+export function resolveConditionDurationTicks(conditionTraitId: string, explicit?: number): number {
+  return explicit ?? CONDITION_DURATIONS[conditionTraitId] ?? CONDITION_DEFAULT_DURATION_TICKS;
+}
 
 /** Options for `applyConditionToActor`. */
 export interface ApplyConditionOpts {
   readonly tick: number;
   /** Defaults to `CONDITION_DEFAULT_INTENSITY`. */
   readonly intensity?: number;
-  /** Defaults to `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite). */
+  /**
+   * Defaults to the condition's `CONDITION_DURATIONS` term, then
+   * `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite) — `resolveConditionDurationTicks`.
+   */
   readonly durationTicks?: number;
   /** The new `has_trait` edge's id. Defaults to `has_trait_<target>_<condition>_<tick>`. */
   readonly edgeId?: string;
@@ -175,7 +197,7 @@ export function applyConditionToActor(
   }
 
   const intensity = opts.intensity ?? CONDITION_DEFAULT_INTENSITY;
-  const durationTicks = opts.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
+  const durationTicks = resolveConditionDurationTicks(conditionTraitId, opts.durationTicks);
   const edgeId = opts.edgeId ?? `has_trait_${targetId}_${conditionTraitId}_${opts.tick}`;
   state.graph.addEdge({
     id: edgeId,
