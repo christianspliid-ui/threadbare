@@ -189,3 +189,19 @@ describe('useInterruptAutoPause — a toggle pressed inside an interrupt (THR-17
     expect(result.current.running).toBe(false);
   });
 });
+
+describe('useInterruptAutoPause — the held state is visible (THR-1711 review)', () => {
+  it('exposes the state the clock returns to, and tracks a toggle inside the popup', () => {
+    const { result } = renderHook(() => useHarness(true));
+    expect(result.current.handle.heldRunning).toBeNull();
+    act(() => result.current.setModalA(true));
+    // The live clock is frozen, but the control must show "running" — a press pauses.
+    expect(result.current.running).toBe(false);
+    expect(result.current.handle.heldRunning).toBe(true);
+    act(() => { result.current.handle.toggleIfHeld(); });
+    expect(result.current.handle.heldRunning).toBe(false);
+    act(() => result.current.setModalA(false));
+    expect(result.current.handle.heldRunning).toBeNull();
+    expect(result.current.running).toBe(false);
+  });
+});

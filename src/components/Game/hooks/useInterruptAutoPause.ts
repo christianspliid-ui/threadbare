@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseInterruptAutoPauseParams {
   /**
@@ -32,6 +32,13 @@ export interface InterruptAutoPauseHandle {
    * when handled; `false` means the caller pauses `running` directly.
    */
   pauseIfHeld: () => boolean;
+  /**
+   * The state the clock returns to when the open interrupt(s) close, as React
+   * state so the time controls can show it (THR-1711 review). `null` while no
+   * interrupt holds the clock. Without it the control is drawn from the forced
+   * `running=false` and shows Play while a press would actually pause.
+   */
+  heldRunning: boolean | null;
 }
 
 /**
@@ -64,31 +71,41 @@ export function useInterruptAutoPause({
 }: UseInterruptAutoPauseParams): InterruptAutoPauseHandle {
   /** `null` = no interrupt open; otherwise the clock state before the first one opened. */
   const priorRunning = useRef<boolean | null>(null);
+  /** Render mirror of `priorRunning` — the ref drives logic, this drives the controls. */
+  const [heldRunning, setHeldRunning] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (interruptOpen) {
-      if (priorRunning.current === null) priorRunning.current = running;
+      if (priorRunning.current === null) {
+        priorRunning.current = running;
+        setHeldRunning(running);
+      }
       if (running) setRunning(false);
       return;
     }
     if (priorRunning.current !== null) {
       const resume = priorRunning.current;
       priorRunning.current = null;
+      setHeldRunning(null);
       if (resume) setRunning(true);
     }
   }, [interruptOpen, running, setRunning]);
 
-  return useMemo<InterruptAutoPauseHandle>(() => ({
+  const methods = useMemo(() => ({
     getWasRunningBeforeInterrupt: () => priorRunning.current,
     toggleIfHeld: () => {
       if (priorRunning.current === null) return false;
       priorRunning.current = !priorRunning.current;
+      setHeldRunning(priorRunning.current);
       return true;
     },
     pauseIfHeld: () => {
       if (priorRunning.current === null) return false;
       priorRunning.current = false;
+      setHeldRunning(false);
       return true;
     },
   }), []);
+
+  return useMemo<InterruptAutoPauseHandle>(() => ({ ...methods, heldRunning }), [methods, heldRunning]);
 }

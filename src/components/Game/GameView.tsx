@@ -4812,7 +4812,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         gameState={gameState}
         seasonName={seasonName}
         year={year}
-        running={running}
+        // THR-1711: while an interrupt holds the clock, show the state it returns
+        // to — that is what the button now toggles — and label it as held.
+        running={interruptAutoPause.heldRunning ?? running}
+        clockHeld={interruptAutoPause.heldRunning !== null}
         speed={speed}
         handleToggleRunning={handleToggleRunningRespectingHold}
         doTick={doTick}
