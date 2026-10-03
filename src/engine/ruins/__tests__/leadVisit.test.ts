@@ -273,4 +273,19 @@ describe('the ruin visit (THR-1664)', () => {
     expect(result).toMatchObject({ success: true, ruinId: 'loc-ruin' });
     expect((state.graph.getEdge(leadFar)!.properties as Record<string, unknown>).precision).toBe('narrowed');
   });
+
+  it('a seed whose lead was re-stamped by a later survey never takes another visit’s lead', () => {
+    const state = buildState({ precision: 'narrowed' });
+    const leadB = addRuin(state, 'loc-ruin-b', 6, 2); // B shares the mortal's hex
+    claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin', TICK, TICK + 48, 'seed_a');
+    claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin-b', TICK, TICK + 60, 'seed_b');
+    // A's stamp lapses and a fresh survey re-stamps it for seed_a2 before seed_a's sequel resolves.
+    expect(claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin', TICK + 73, TICK + 121, 'seed_a2')).toMatchObject({ admitted: true });
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK + 74, { missed: true, seedId: 'seed_a' });
+    expect(result).toEqual({ success: false, failReason: 'no_lead' });
+    const b = state.graph.getEdge(leadB)!.properties as Record<string, unknown>;
+    expect(b.consumed).toBe(false);
+    expect(b.pendingVisitSeedId).toBe('seed_b');
+    expect(leadProps(state)?.pendingVisitSeedId).toBe('seed_a2');
+  });
 });

@@ -130,7 +130,8 @@ export interface VisitLeadResult {
  * The lead a visit acts on. First, the lead stamped with the seed that spawned this
  * visit (THR-1696) — the ruin the visit was arranged for, wherever the mortal now
  * stands, so a missed visit to ruin A never cools the lead on ruin B underfoot.
- * Without a seed match (a `?spawn=` review, a pre-THR-1696 stamp): the actor's lead
+ * A seed that matches no lead never takes another visit's stamped lead. Without a seed
+ * (a `?spawn=` review), or among unseeded pre-THR-1696 stamps: the actor's lead
  * with a *live* visit stamp, the one on the ruin they stand on first, else the soonest
  * due. A lapsed stamp never wins (THR-1696). With no live stamp, the lead on a ruin at
  * the actor's own hex. Deterministic: ties by edge id.
@@ -140,9 +141,15 @@ function visitLead(graph: WorldGraph, actorId: string, tick: number, seedId?: st
     .filter(e => e.properties?.consumed !== true)
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   if (leads.length === 0) return undefined;
+  let pool = leads;
   if (seedId) {
     const arranged = leads.find(e => e.properties?.pendingVisitSeedId === seedId);
     if (arranged) return arranged;
+    // The seed's lead was re-stamped by a later survey, or consumed. A lead stamped for a
+    // *different* seed belongs to another visit and is never this one's to resolve; only
+    // a pre-THR-1696 stamp (no seed id) stays eligible below.
+    pool = leads.filter(e => typeof e.properties?.pendingVisitSeedId !== 'string');
+    if (pool.length === 0) return undefined;
   }
   const hex = resolveAgentHex(graph, actorId);
   const onHex = (e: GraphEdge): boolean => {
@@ -150,14 +157,14 @@ function visitLead(graph: WorldGraph, actorId: string, tick: number, seedId?: st
     const at = resolveLocationToHex(graph, e.target);
     return at !== null && at.col === hex.col && at.row === hex.row;
   };
-  const stamped = leads.filter(e => isLeadVisitPending(e.properties?.pendingVisitDueTick, tick));
+  const stamped = pool.filter(e => isLeadVisitPending(e.properties?.pendingVisitDueTick, tick));
   const stampedHere = stamped.find(onHex);
   if (stampedHere) return stampedHere;
   if (stamped.length > 0) {
     return [...stamped].sort((a, b) =>
       (a.properties.pendingVisitDueTick as number) - (b.properties.pendingVisitDueTick as number))[0];
   }
-  return leads.find(onHex);
+  return pool.find(onHex);
 }
 
 /**
