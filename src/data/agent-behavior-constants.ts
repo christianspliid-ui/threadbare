@@ -261,8 +261,22 @@ export type CapFillLocalOrder = 'walk' | 'template_hash';
  * draw, so no seeded stream shifts (NFP #3). Prototype keep-rate ratio 0.77 · 0.78 · 0.81.
  *
  * Any other value runs `'walk'`, which restores the THR-1633 pass exactly (NFP #6).
+ *
+ * **Ships `'walk'` — the plan's guard-rail fallback (THR-1687 executor, 2026-10-03).**
+ * Measured on the branch with `'template_hash'` (main d20c72c3, same session):
+ * - It worked: expert ÷ novice cap keep rate 0.09 · 0.12 · 0.14 → 0.67 · 0.74 · 0.72; expert
+ *   mean attempted difficulty 0.13 · 0.16 · 0.12 → 0.23 · 0.24 · 0.22 (now above journeymen);
+ *   `reach.ts` firings 1,918 → 2,175, top-10 share 0.258 → 0.182.
+ * - The pass is cheap: a shadow build that computes it and discards it runs +0.0% · +1.9%.
+ * - But the world shifted in ways nobody has read yet: planner decisions on seed 42, 200 ticks
+ *   fell 863 → 693, `start_local` 753 → 620 (−17.7%, the plan's guard rail is −10%), and
+ *   strategic decisions (which the cap never sees) 44 → 28 (seed 99: 104 → 38); whole-tick
+ *   ms +10% from that different world, not from the pass. Master success rose 0.59–0.66 →
+ *   0.74–0.76 (expert work below their window now reaches them).
+ * The plan says a failed guard rail ships `'walk'` plus a separate decision.
+ * TODO(THR-1687): flip to `'template_hash'` once the design lane has read the shift above.
  */
-export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'template_hash';
+export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'walk';
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */

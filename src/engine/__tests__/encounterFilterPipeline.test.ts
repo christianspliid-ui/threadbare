@@ -624,12 +624,12 @@ describe('capWithDiversity', () => {
       makeEntry({ templateId: `home-${String(i).padStart(2, '0')}`, locationId: i % 2 ? 'home-inn' : 'home', encounterType: 'explore' })),
   ];
 
-  it('ships the hashed own-hex order (CAP_FILL_LOCAL_ORDER)', () => {
-    expect(CAP_FILL_LOCAL_ORDER).toBe('template_hash');
+  it('the shipped fill uses CAP_FILL_LOCAL_ORDER, whichever order it names', () => {
+    expect(['walk', 'template_hash']).toContain(CAP_FILL_LOCAL_ORDER);
     const graph = hexGraph();
     const shipped = capWithDiversity(crowdedHome(), 'agent-1', graph, 9, undefined, 'home');
     const explicit = capWithDiversity(crowdedHome(), 'agent-1', graph, 9,
-      { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: 'template_hash' }, 'home');
+      { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: CAP_FILL_LOCAL_ORDER }, 'home');
     expect(shipped.map(e => `${e.templateId}@${e.locationId}`)).toEqual(explicit.map(e => `${e.templateId}@${e.locationId}`));
   });
 
@@ -792,6 +792,26 @@ describe('runFilterPipeline', () => {
     const trace = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 3).trace;
     // Every entry is its own template, so the templates cut equal the entries cut.
     expect(trace.capCutTemplates).toBe(Math.max(0, trace.afterThreat - trace.afterCap));
+  });
+
+  it('names the own-hex order on the trace when the cap ran, and honours an explicit capFill (THR-1687)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 10 });
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
+    const many = Array.from({ length: 60 }, (_, i) =>
+      makeEntry({ templateId: `t-${i}`, threatRating: 'moderate', reachPrimary: 'iron' as ReachDomain }));
+    const shipped = runFilterPipeline(many, 'agent-1', 'loc-agent', graph, 3).trace;
+    expect(shipped.afterThreat).toBeGreaterThan(MAX_SCORED_CANDIDATES);
+    {
+      expect(shipped.capLocalOrder).toBe(CAP_FILL_LOCAL_ORDER);
+      for (const localOrder of ['walk', 'template_hash'] as const) {
+        const t = runFilterPipeline(many, 'agent-1', 'loc-agent', graph, 3, undefined, undefined, undefined, undefined,
+          { distinctFirst: true, rotate: true, localSlots: 30, localOrder }).trace;
+        expect(t.capLocalOrder).toBe(localOrder);
+      }
+    }
+    const few = runFilterPipeline(many.slice(0, 5), 'agent-1', 'loc-agent', graph, 3).trace;
+    expect(few.capLocalOrder).toBeUndefined();
   });
 
   it('stage 1 calls awareness + faction filters', () => {

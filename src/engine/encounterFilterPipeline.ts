@@ -716,6 +716,14 @@ export interface CapFillOptions {
   localOrder?: CapFillLocalOrder;
 }
 
+/** The shipped fill: the tuning constants. */
+const DEFAULT_CAP_FILL: CapFillOptions = {
+  distinctFirst: CAP_FILL_DISTINCT_FIRST,
+  rotate: CAP_FILL_ROTATE,
+  localSlots: CAP_FILL_LOCAL_SLOTS,
+  localOrder: CAP_FILL_LOCAL_ORDER,
+};
+
 /**
  * Cap entries at MAX_SCORED_CANDIDATES while preserving at least
  * MIN_DIVERSITY_SLOTS per encounter type.
@@ -730,12 +738,7 @@ export function capWithDiversity(
   agentId: string,
   graph: WorldGraph,
   tick?: number,
-  fill: CapFillOptions = {
-    distinctFirst: CAP_FILL_DISTINCT_FIRST,
-    rotate: CAP_FILL_ROTATE,
-    localSlots: CAP_FILL_LOCAL_SLOTS,
-    localOrder: CAP_FILL_LOCAL_ORDER,
-  },
+  fill: CapFillOptions = DEFAULT_CAP_FILL,
   agentLocationId?: string,
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
@@ -1005,6 +1008,8 @@ export function runFilterPipeline(
   runtime?: FilterPipelineRuntime,
   /** The hold reader for the `requiresHold` gate (THR-1448); absent → that gate fails open. */
   holdReader?: HoldReader,
+  /** The cap's fill (THR-1687); absent → the tuning constants. Measurement readers pass it to A/B the own-hex order. */
+  capFill: CapFillOptions = DEFAULT_CAP_FILL,
 ): FilterResult {
   // Fast path: empty input
   if (allEntries.length === 0) {
@@ -1076,7 +1081,7 @@ export function runFilterPipeline(
   // Stage 5: Performance Cap
   const beforeCap = current;
   try {
-    current = capWithDiversity(current, agentId, graph, tick, undefined, agentLocationId);
+    current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId);
   } catch {
     // Keep previous stage's output
   }
@@ -1105,7 +1110,7 @@ export function runFilterPipeline(
       afterCap,
       capCutTemplates,
       afterThreat > MAX_SCORED_CANDIDATES
-        ? (CAP_FILL_LOCAL_ORDER === 'template_hash' ? 'template_hash' : 'walk')
+        ? (capFill.localOrder === 'template_hash' ? 'template_hash' : 'walk')
         : undefined,
     ),
   };

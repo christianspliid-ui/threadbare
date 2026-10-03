@@ -10,8 +10,10 @@
 // difficulty rises strictly across those bands, and the in-window share is at
 // least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; THR-1627
 // (local offset ruling) un-skips journeyman and expert level success; THR-1676 arms the
-// rise's novice→journeyman rung; THR-1681 un-skips master level success. The rest of
-// the rise and the in-window share wait on the board, not content (THR-1687).
+// rise's novice→journeyman rung; THR-1681 un-skips master level success. THR-1687 ships
+// the board fix behind CAP_FILL_LOCAL_ORDER (default 'walk') and splits the rest of the
+// rise: journeyman→expert waits on that switch, expert→master on master content
+// (THR-1688), the in-window share on the window (THR-1689).
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
@@ -96,6 +98,12 @@ describe('the level-success invariant (THR-1575)', () => {
   // gameplay report): 0.59 / 0.67 / 0.61. Master mortals reach that level on content
   // below their band — no master-fit everyday template survives to their board yet —
   // so this clause pins *level success*, not a rise; the rise stays skipped below.
+  //
+  // Heads-up for whoever flips CAP_FILL_LOCAL_ORDER to 'template_hash' (THR-1687): with
+  // the hashed order, expert work reaches masters too and sits below their window —
+  // master success measured 0.76 on seed 42 here (ceiling 0.70), and 0.59 / 0.66 / 0.58 →
+  // 0.76 / 0.76 / 0.74 in the gameplay report. This clause passes today only because
+  // masters are starved down to novice work; master-fit content (THR-1688) is its remedy.
   it('the master band succeeds level (THR-1681)', () => {
     for (const seed of [42, 99]) {
       const b = reportFor(seed).bands.find(x => x.band === 'master')!;
@@ -120,23 +128,47 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1687): un-skip when above-journeyman content reaches the board. S7's re-arm
-  // (THR-1681) found the rise and the in-window share still failing with the expert
-  // floor met on every reach: band means 0.11 / 0.17 / 0.13 / 0.13 on seed 42, in-window
-  // 0.47 / 0.46 / 0.45 on 42 / 99 / 7 — the plan's kill criterion ("the window or the
-  // board, not content"). Measured cause: the candidate cap cuts expert everyday
-  // templates on ~99% of the decisions that could see them (THR-1687).
-  it.skip('attempted difficulty rises with proficiency, and most choices are in-window', () => {
+  // THR-1687 split the old whole-rise-plus-window clause into three, so each rung arms on
+  // its own evidence. The cap's own-hex pass fills in catalogue order and cuts expert
+  // everyday templates on ~99% of the decisions that could see them.
+  const bandOf = (report: EngagementKpiReport, band: (typeof PROFICIENCY_BANDS)[number]) =>
+    report.bands.find(b => b.band === band)!;
+
+  // TODO(THR-1687): un-skip when CAP_FILL_LOCAL_ORDER flips to 'template_hash'. Measured
+  // passing on that branch (seeds 42 / 99, 2026-10-03); the switch ships 'walk' pending the
+  // design lane's read of the world shift it causes (see the constant's doc-comment).
+  it.skip('experts attempt harder content than journeymen', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
-      const covered = PROFICIENCY_BANDS
-        .map(band => report.bands.find(b => b.band === band)!)
-        .filter(b => b.covered);
-      for (let i = 1; i < covered.length; i++) {
-        expect(covered[i].meanAttemptedDifficulty, `seed ${seed} ${covered[i - 1].band}→${covered[i].band}`)
-          .toBeGreaterThan(covered[i - 1].meanAttemptedDifficulty);
-      }
-      expect(report.inWindowShare, `seed ${seed}`).toBeGreaterThanOrEqual(KPI_IN_WINDOW_MIN);
+      const journeyman = bandOf(report, 'journeyman');
+      const expert = bandOf(report, 'expert');
+      // Non-vacuity: an uncovered band would pass the comparison by skipping it.
+      expect(journeyman.covered && expert.covered, `seed ${seed} coverage`).toBe(true);
+      expect(expert.meanAttemptedDifficulty, `seed ${seed} journeyman→expert`)
+        .toBeGreaterThan(journeyman.meanAttemptedDifficulty);
+    }
+  }, 600_000);
+
+  // TODO(THR-1688): un-skip once master everyday content exists. Masters have none yet,
+  // so they draw on expert and journeyman work and sit below experts (THR-1687 measured
+  // master 0.18 / 0.17 / 0.16 against expert 0.24 / 0.23 / 0.23 in the prototype).
+  it.skip('masters attempt harder content than experts', () => {
+    for (const seed of [42, 99]) {
+      const report = reportFor(seed);
+      const expert = bandOf(report, 'expert');
+      const master = bandOf(report, 'master');
+      expect(expert.covered && master.covered, `seed ${seed} coverage`).toBe(true);
+      expect(master.meanAttemptedDifficulty, `seed ${seed} expert→master`)
+        .toBeGreaterThan(expert.meanAttemptedDifficulty);
+    }
+  }, 600_000);
+
+  // TODO(THR-1689): un-skip when the window question is answered. Fixing the board did
+  // not raise the share (THR-1687: in-window dips 1–2 points once expert content reaches
+  // experts), so the gap is the window or scoring, not what reaches the board.
+  it.skip('most free choices are in-window', () => {
+    for (const seed of [42, 99]) {
+      expect(reportFor(seed).inWindowShare, `seed ${seed}`).toBeGreaterThanOrEqual(KPI_IN_WINDOW_MIN);
     }
   }, 600_000);
 });
