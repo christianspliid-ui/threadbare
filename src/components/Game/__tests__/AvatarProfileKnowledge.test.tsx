@@ -86,8 +86,9 @@ describe('THR-1710 — the avatar is read as the player\'s own shape', () => {
           id: AVATAR, name: 'Vessane', tier: 0, tierName: unthreadedAgentTierName(AVATAR, AVATAR), category: 'agent',
           threadEdgeId: '', attentionMode: 'auto_resolve', courtPosition: null,
           locationName: 'Ashvale', activityLabel: 'Unknown',
-        }}
+        } as never}
         onClose={() => {}}
+        onViewProfile={() => {}}
       />,
     );
     expect(screen.getByText(AVATAR_TIER_LABEL)).toBeTruthy();
