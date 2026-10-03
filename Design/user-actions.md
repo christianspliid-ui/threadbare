@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 00:59 local (22:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,9 +13,9 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### A finished change stuck for 19 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+### A finished change stuck for 20 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 19 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 20 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
 **Nothing for you to do by hand.** A builder merges main into the branch and pushes, which also restarts its checks. It is here so you know the work exists and is not yet live.
 
@@ -49,6 +49,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: an apex monster's card now names the apex** ([THR-1698](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and)), not just the fight header. Merged via [#2204](https://github.com/christianspliid-ui/threadbare/pull/2204).
 - **2026-10-04: a rival's strike now plays out as an encounter** ([THR-1703](https://linear.app/threadbare/issue/THR-1703/the-rival-strike-has-no-encounter-author-shadowrival-strike-so)): it is held where it cannot land, and both worst-case endings show and write the same harm. Merged via [#2203](https://github.com/christianspliid-ui/threadbare/pull/2203).
 - **2026-10-03: timed conditions now end on time** ([THR-1697](https://linear.app/threadbare/issue/THR-1697)): a timed condition never lands permanent by accident. Merged via [#2202](https://github.com/christianspliid-ui/threadbare/pull/2202).
 - **2026-10-03: reward draws now carry found things** ([THR-1626](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at)): generated items can turn up in an encounter's rewards. Merged via [#2201](https://github.com/christianspliid-ui/threadbare/pull/2201).
@@ -58,7 +59,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: the Divine Court now fits the screen, sits above the HUD, and stops the clock while open** ([THR-1709](https://linear.app/threadbare/issue/THR-1709)), the seventh round-2 playtest bug fixed. Merged via [#2196](https://github.com/christianspliid-ui/threadbare/pull/2196).
 - **2026-10-03: player text cleaned up** ([THR-1708](https://linear.app/threadbare/issue/THR-1708)): no doubled "the", spell names on the lines that report them, and a nudge only counts as yours when you played it. The sixth round-2 playtest bug fixed. Merged via [#2195](https://github.com/christianspliid-ui/threadbare/pull/2195).
 - **2026-10-03: developer text no longer reaches a player's build** ([THR-1707](https://linear.app/threadbare/issue/THR-1707)), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
-- **2026-10-03: Meet The First now tells one story about one person** ([THR-1712](https://linear.app/threadbare/issue/THR-1712)), the fourth round-2 playtest bug fixed and the High one. Merged via [#2192](https://github.com/christianspliid-ui/threadbare/pull/2192).
 
 ---
 
