@@ -106,7 +106,7 @@ function agentPositionId(graph: ConditionGraph, agentId: string): string | undef
  * Returns `undefined` when the region genuinely cannot be determined; every caller
  * treats that as "we do not know" and fails soft to `false`.
  */
-function resolveRegionId(graph: ConditionGraph, locationId: string | undefined): string | undefined {
+export function resolveRegionId(graph: ConditionGraph, locationId: string | undefined): string | undefined {
   let currentId = locationId;
 
   for (let depth = 0; depth < MAX_PARENT_WALK_DEPTH; depth++) {

@@ -2821,7 +2821,14 @@ with the card.**
 `detectionDelta` is signed. Positive is The Heavy Hand (help that is *seen* — rivals notice);
 negative is The Veil (the same help, unwitnessed). It lands on the acting mortal's region and
 clamps to `[0, 1]`, and the trace reports what was *actually* applied after clamping, not what
-you asked for. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
+you asked for. A raising write that crosses a band (notice 0.5 · turn 0.8 · encounter 1.0)
+emits `detection_threshold_crossed`, and reaching *encounter* plants one `shadow.rival_strike`
+seed on the acting mortal — at most one pending per region (THR-1690, via
+`recordDetectionCrossings`). The region is the one whose `contains` edge holds the mortal's
+Location; a mortal in no region writes the `unknown` bucket, which never escalates. **The
+strike is held back until an encounter answers the family** (`encounterFamilyHasContent`;
+none is authored yet — THR-1703), and the crossing trace says so (`seedSkipped: 'no_content'`).
+Authoring that encounter is what turns the lever on. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
 
 Channels **sum across the committed hand** before they are charged, which is what lets a
 player pair The Veil against The Heavy Hand and net off. A net-zero channel is not charged.

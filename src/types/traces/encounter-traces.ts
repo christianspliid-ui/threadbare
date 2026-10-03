@@ -133,6 +133,13 @@ export interface DetectionThresholdCrossedTrace extends TraceBase {
   fromPressure: number;
   toPressure: number;
   thresholdCrossed: DetectionThresholdBand;
+  /**
+   * Set on an `encounter` crossing that planted no rival strike (THR-1690):
+   * `no_target` — the write had no acting mortal; `no_content` — the strike
+   * family has no encounter to resolve to (THR-1703); `already_pending` — the
+   * region already holds an unfired strike.
+   */
+  seedSkipped?: 'no_target' | 'no_content' | 'already_pending';
 }
 
 export interface SpotlightChangedTrace extends TraceBase {
