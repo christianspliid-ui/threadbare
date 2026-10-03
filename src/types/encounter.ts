@@ -277,6 +277,14 @@ export interface EncounterChoiceMemory {
   readonly essenceSpent: number;
   readonly probabilityBoost: number;
   readonly tick: number;
+  /**
+   * THR-1708: true when the god had a nudge hand committed on this step even
+   * though the entry records something else — a mortal-decided branch
+   * (`agent_decided`, essence 0) that the hand leaned. `activeNudges` is
+   * replaced by the next commit, so this is the durable "the god played here"
+   * bit for retrospective surfaces such as the aftermath overview.
+   */
+  readonly handCommitted?: boolean;
 }
 
 /** Stored legacy encounter resolution snapshot for inspectable UI/debug rendering. */

@@ -169,7 +169,7 @@ import { mintCompanion } from './companions';
 import { buildPredicateContext, collectTestShapers } from './effectResolver';
 import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
 import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './effectShellRuntime';
-import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
+import { getEffectiveUnifiedActionChoiceMemory, NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 // THR-773 (Nudge Model WS0): named forecast modifiers + pure band riders.
 import {
   collectHeldTraitIds,
@@ -1072,11 +1072,40 @@ function resolveTemplateAftermathVariant(
   return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
-function buildEncounterAftermathOverview(
+/**
+ * The name a player-facing line gives an action (THR-1708): the spell name the
+ * cards and the Codex show when the template has one, else its plain name. A
+ * cast of Piercing Gaze reported as "completed Observe" names a card the player
+ * never saw.
+ */
+export function playerFacingTemplateName(template: Pick<UnifiedActionTemplate, 'name' | 'spellName'>): string {
+  return template.spellName ?? template.name;
+}
+
+/**
+ * Did the god actually play into this encounter (THR-1708)? True when a nudge
+ * hand was committed on any step (recorded in `choiceHistory` by
+ * `recordUnifiedActionNudgeMemory`), essence was spent on any recorded choice,
+ * a hand leaned a mortal-decided branch (`handCommitted`), or a hand is live on
+ * the current step. A mortal-decided branch with no hand (`agent_decided`, zero
+ * essence) is not the god's touch — that is the mortal
+ * choosing, and the overview must not credit it to "your nudge".
+ */
+export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' | 'activeNudges'>): boolean {
+  if ((action.activeNudges?.length ?? 0) > 0) return true;
+  return (action.choiceHistory ?? []).some(entry =>
+    entry.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE
+      || entry.essenceSpent > 0
+      || entry.handCommitted === true,
+  );
+}
+
+export function buildEncounterAftermathOverview(
   actorName: string,
   templateName: string,
   outcome: UnifiedAction['outcome'],
   changes: readonly EncounterAftermathChange[],
+  godTouched: boolean,
 ): string {
   const rewardCount = changes.filter(change => change.kind === 'item').length;
   const traitCount = changes.filter(change => change.kind === 'trait').length;
@@ -1095,7 +1124,11 @@ function buildEncounterAftermathOverview(
   if (!highlightPhrase) {
     return `${actorName} ${outcomeText} ${templateName}. The scene moved on quietly, but the world still bent a little around it.`;
   }
-  return `${actorName} ${outcomeText} ${templateName}. Your nudge left ${highlightPhrase} behind in the world.`;
+  // THR-1708 — "Your nudge" only when the god played into it. An encounter the
+  // mortal resolved alone credits the mortal, or the Ledger lies about whose
+  // doing it was.
+  const author = godTouched ? 'Your nudge' : `${actorName}'s choices`;
+  return `${actorName} ${outcomeText} ${templateName}. ${author} left ${highlightPhrase} behind in the world.`;
 }
 
 function buildEncounterAftermathReactions(
@@ -2931,7 +2964,7 @@ export function executeStepResult(
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${currentActorName} ${outcomeMsg} ${template.name}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
+      message: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
       significance,
       actorId: action.actorId,
     });
@@ -3034,7 +3067,7 @@ function executeFightNoRollEnd(
     id: `ua_${action.actionId}_resolved`,
     tick,
     type: 'agent_action_resolved',
-    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${template.name}.`,
+    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${playerFacingTemplateName(template)}.`,
     significance: isActionSuccess(finalAction.outcome) ? 0.6 : 0.4,
     actorId: action.actorId,
   });
@@ -3270,9 +3303,10 @@ function withResolvedAftermathSummary(
       outcome: finalAction.outcome,
       overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
         currentActorName,
-        template.name,
+        playerFacingTemplateName(template),
         finalAction.outcome,
         changes,
+        godTouchedEncounter(finalAction),
       ),
       changes: aftermathVariant
         ? [...changes, ...aftermathVariant.changes]
