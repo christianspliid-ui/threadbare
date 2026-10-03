@@ -77,6 +77,7 @@ import {
   resolveAppointmentContext,
   rerankForAppointmentRegime,
   waitingTripOverruns,
+  holdsWaitingMemberAtPlace,
   APPOINTMENT_REGIME_MEMO_PROP,
   type AppointmentContext,
 } from './appointments';
@@ -2187,7 +2188,12 @@ export function phaseAgentDecision(
           });
         }
 
-        if (idle.action === 'drift' && idle.targetLocationId) {
+        // THR-1686 — a mortal waiting at its appointment does not drift, or get forced
+        // out, on a trip it cannot be back from: the same hold company travel asks.
+        const heldAtAppointment = (targetId: string): boolean =>
+          appointmentCtx?.regime === 'waiting'
+          && holdsWaitingMemberAtPlace(state, agentId, targetId, state.tick);
+        if (idle.action === 'drift' && idle.targetLocationId && !heldAtAppointment(idle.targetLocationId)) {
           // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
           const hexPath = buildHexMovementPath(
             graph,
@@ -2235,7 +2241,7 @@ export function phaseAgentDecision(
             }
           }
 
-          if (nearestContentLocId) {
+          if (nearestContentLocId && !heldAtAppointment(nearestContentLocId)) {
             // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
             const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
             let didMove = false;

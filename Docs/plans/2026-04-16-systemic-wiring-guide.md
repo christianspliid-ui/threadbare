@@ -4324,7 +4324,8 @@ They change how a mortal *chooses*, so authored content needs nothing new:
   outlast the due tick is dropped (`rerankForAppointmentRegime`), the trip there and back priced at
   `APPOINTMENT_HEX_TICKS_PER_HEX` a hex plus its own ticks (`waitingTripOverruns`). Company travel asks the same
   question per member (`holdsWaitingMemberAtPlace`, called from `groups/groupMovement.ts`), so a
-  company goes on without a member that is waiting for a meeting. Kill switch:
+  company goes on without a member that is waiting for a meeting; so do idle drift and the
+  forced-travel fallback in `phaseAgentDecision`. Kill switch:
   `APPOINTMENT_WAITING_HOLD_ENABLED`.
 - **`leaning`'s overrun discount reaches the board.** It rides on the candidate as
   `appointmentDiscount` and is multiplied into the encounter entry's score (kill switch
