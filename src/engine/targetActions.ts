@@ -453,7 +453,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     let lockedReason: string | null = null;
 
     // 10. Held lock (THR-1700) — checked first: when the verb is already held,
-    //     "Already held" is the true reason, whatever the pool or range say.
+    //     "Already held" is the true reason, whatever the pool says. (The card
+    //     face still leads with range when out of range — actionBlockedReason.)
     const held = controlOwnerId && template.durationMode === 'sustained'
       ? findHeldNonStackingEffect(heldControlEffects, template.id, controlOwnerId, target.nodeId)
       : undefined;
