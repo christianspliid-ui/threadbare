@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 16:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -10,8 +10,9 @@
 
 Everything from your four feedback batches is live. The one question is: **played together, are the encounters good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-## Also waiting (5)
+## Also waiting (6)
 
+- **A finished change has been stuck for 12 hours and cannot merge on its own: PR #2180 ("feat(thr-1687): fair own-hex draw for the cap behind CAP_FILL_LOCAL_ORDER (ships 'walk')") has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it.** *— from the armed-PR check* ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Nothing for you to do by hand: a builder merges main in and pushes.
 - **Was the app closed from Thursday ~17:00 to Friday ~13:45?** No lane ran for about 21 hours, and nothing recorded a pause. If you were away or the app was closed, just say so.
 - **The scheduled lanes went silent for 25h (2026-09-29T17:38:06.000Z → 2026-09-30T18:36:30.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.** *— from the lane-silence check* (Tuesday ~19:30 to Wednesday ~20:20 your time.)
 - **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
@@ -31,19 +32,18 @@ Say "veto first asks", "veto found things", "veto old banner" or "veto spell gif
 
 ## Queue
 
-**16 jobs ready** (backed up, but draining: down one this hour).
+**15 jobs ready** (healthy, at the top of the band: down one this hour).
 
-- **Just landed:** [the Divine Court fits the screen](https://linear.app/threadbare/issue/THR-1709): it now sits above the HUD and stops the clock while it is open. That is the seventh round-2 playtest bug fixed. Merged via [#2196](https://github.com/christianspliid-ui/threadbare/pull/2196) and already live.
+- **Just landed:** [your own mortal now reads as yours, not a stranger](https://linear.app/threadbare/issue/THR-1710): the Threads panel no longer fogs your avatar's own details. That is the eighth round-2 playtest bug fixed. Merged via [#2197](https://github.com/christianspliid-ui/threadbare/pull/2197) and already live.
 - **Next up (Urgent):** [The First asks](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her), the round-2 playtest's top problem. Its plan is merged and it is ready to build. It waits out its veto window (closes ~14:50 Sunday).
-- **Then, from the playtest (Medium):** [THR-1710](https://linear.app/threadbare/issue/THR-1710), [THR-1711](https://linear.app/threadbare/issue/THR-1711).
-- **Being built, stuck:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). [Pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued but clashes with main, has no checks, and has had no push for ~7½ h. The code is safe on the pull request; nothing is left uncommitted on disk. A builder's job.
-- **Built, waiting to merge:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert): [pull request #2180](https://github.com/christianspliid-ui/threadbare/pull/2180) clashes with main and no checks have started. A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has had no owner on the board for ~12½ h. The code is safe on the pull request; nothing is left uncommitted on disk. The spell-gifts design waits on it. A builder's job.
+- **Then, the last round-2 bug (Medium):** [THR-1711](https://linear.app/threadbare/issue/THR-1711), six small interface faults.
+- **Being built, stuck:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). [Pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued but clashes with main, has no checks, and has had no push for ~8½ h. The code is safe on the pull request; its worktree has nothing uncommitted. A builder's job.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has had no owner on the board for ~13 h. The code is safe on the pull request; nothing is left uncommitted on disk. The spell-gifts design waits on it. A builder's job.
 - **Old jobs at the bottom:** two have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Neither is blocked; newer work keeps outranking them.
 
 ## Health
 
 - **Three pull requests clash with main and cannot merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator, unqueued), [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw) and [#2186](https://github.com/christianspliid-ui/threadbare/pull/2186) (held blessing). GitHub has scheduled no checks on #2180 or #2186. Each one needs main merged in and a push, which also restarts its checks. A builder's job.
-- **The simulation is still slower than its weekly norm.** A builder's job: tick cost 150 ms/tick steady, 62% above the 7-day median (92, 119 rows since e33bc5da); top phase agent_decision, 548 agents. Name the merges between e33bc5da and 40cc462c: git log --oneline --merges e33bc5da..40cc462c
-- **The worktree reaper has 6 worktrees waiting for a decision** (445 worktrees and 305 local branches on disk; last run 16:40). That is the reaper's own job; noted for visibility.
-- Everything else is green. The heavy simulation tests are green again on the latest main. The live site is serving the latest main (40cc462c), and all 11 scheduled tasks are on time.
+- **The simulation is still slower than its weekly norm.** A builder's job: tick cost 149 ms/tick steady, 61% above the 7-day median (93, 120 rows since e33bc5da); top phase agent_decision, 548 agents. Name the merges between e33bc5da and d67c4aae: git log --oneline --merges e33bc5da..d67c4aae
+- **The worktree reaper has 6 worktrees waiting for a decision** (446 worktrees and 306 local branches on disk; last run 17:40). That is the reaper's own job; noted for visibility.
+- Everything else is green. The live site is serving the latest main (d67c4aae), and all 11 scheduled tasks are on time.

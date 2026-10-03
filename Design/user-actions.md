@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 16:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,6 +12,12 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 - [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
+
+### A finished change stuck for 12 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+
+The armed-PR check escalated it this hour: *"A finished change has been stuck for 12 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+
+**Nothing for you to do by hand.** A builder merges main into the branch and pushes, which also restarts its checks. It is here so you know the work exists and is not yet live.
 
 ### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
 
@@ -43,6 +49,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: your own mortal now reads as yours, not a stranger** ([THR-1710](https://linear.app/threadbare/issue/THR-1710)): the Threads panel no longer fogs your avatar's own details. The eighth round-2 playtest bug fixed. Merged via [#2197](https://github.com/christianspliid-ui/threadbare/pull/2197).
 - **2026-10-03: the Divine Court now fits the screen, sits above the HUD, and stops the clock while open** ([THR-1709](https://linear.app/threadbare/issue/THR-1709)), the seventh round-2 playtest bug fixed. Merged via [#2196](https://github.com/christianspliid-ui/threadbare/pull/2196).
 - **2026-10-03: player text cleaned up** ([THR-1708](https://linear.app/threadbare/issue/THR-1708)): no doubled "the", spell names on the lines that report them, and a nudge only counts as yours when you played it. The sixth round-2 playtest bug fixed. Merged via [#2195](https://github.com/christianspliid-ui/threadbare/pull/2195).
 - **2026-10-03: developer text no longer reaches a player's build** ([THR-1707](https://linear.app/threadbare/issue/THR-1707)), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
@@ -52,7 +59,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: clicking a mortal's name in a hex list now opens that mortal, and the spell hand names its target** ([THR-1705](https://linear.app/threadbare/issue/THR-1705)), the second round-2 playtest bug fixed. Merged 11:37 via [#2190](https://github.com/christianspliid-ui/threadbare/pull/2190).
 - **2026-10-03: the Threads panel now shows The First right after the bond** ([THR-1704](https://linear.app/threadbare/issue/THR-1704)), the first round-2 playtest bug fixed. Merged this morning.
 - **2026-10-03: cold playtest round 2 is in** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-2.md)): all three new players met and bonded their mortal and called it the best part; the new wall is the mortal’s life playing on autopilot after the bond ([THR-1715](https://linear.app/threadbare/issue/THR-1715), going to design). 13 tickets filed, 9 ready to build.
-- **2026-10-03: a landed Hollow Crown now changes more than the odds** ([THR-1683](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only)): a condition that weakens its bearer now reads as harm, with a loss chip. Merged 09:15 via [#2184](https://github.com/christianspliid-ui/threadbare/pull/2184).
 
 ---
 
