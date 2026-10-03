@@ -55,11 +55,12 @@ export type UndertakingVerbVariant =
  * The object types an undertaking may act on — the world-object catalogue's kinds
  * (`src/data/world-objects.ts`, THR-1394), in the catalogue's words. Every id here
  * is a `WorldObjectKindId` **or a class of one**: `monster` (THR-1560) is a class of
- * the Mortal kind (THR-1268), and its type names the kind it belongs to through
- * `classOf`. The contract test pins both halves — the kinds, and each class's kind.
+ * the Mortal kind (THR-1268), and `pilgrim_way` (THR-1660) a class of the Route kind;
+ * each class's type names the kind it belongs to through `classOf`. The contract test
+ * pins both halves — the kinds, and each class's kind.
  */
 export type UndertakingObjectTypeId =
-  | 'area' | 'location' | 'place' | 'route'
+  | 'area' | 'location' | 'place' | 'route' | 'pilgrim_way'
   | 'mortal' | 'monster'
   | 'faction' | 'company' | 'army' | 'network' | 'companion'
   | 'item' | 'power' | 'condition' | 'agreement' | 'standing';

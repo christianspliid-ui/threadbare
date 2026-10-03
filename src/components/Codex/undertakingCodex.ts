@@ -37,6 +37,7 @@ export const UNDERTAKING_KIND_GLYPHS: Readonly<Record<UndertakingObjectTypeId, s
   location: '⌂',    // ⌂ house — a settlement
   place: '▣',       // ▣ a room within
   route: '⇢',       // ⇢ a road
+  pilgrim_way: '✶', // ✶ a star over the road — a way to a holy place (THR-1660)
   faction: '⚑',     // ⚑ a banner
   company: '⁂',     // ⁂ three marks travelling together
   army: '⚔',        // ⚔ crossed swords

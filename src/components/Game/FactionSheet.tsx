@@ -20,6 +20,8 @@ import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { formatCongregationSphereLine } from '../../data/world-scenario';
 import { durationLabel } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
+import { PilgrimWayLine } from '../shared/PilgrimWayLine';
+import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
 
@@ -44,6 +46,12 @@ export const FactionSheet = React.memo(function FactionSheet({
   );
 
   const factionNode = useMemo(() => graph?.getNode(factionId) ?? null, [graph, factionId]);
+
+  // THR-1660 — the towns this congregation's pilgrims go to, seeded or consecrated.
+  const pilgrimWays = useMemo(
+    () => (graph ? selectPilgrimWays(graph).filter(w => w.congregationId === factionId) : []),
+    [graph, factionId],
+  );
 
   const actionHistory = useMemo<FactionActionRecord[]>(
     () => (factionNode?.properties?.factionActionHistory as FactionActionRecord[] | undefined) ?? [],
@@ -287,6 +295,8 @@ export const FactionSheet = React.memo(function FactionSheet({
               {venerationLine}
             </p>
           )}
+
+          <PilgrimWayLine graph={graph ?? null} ways={pilgrimWays} side="congregation" data-testid="faction-pilgrim-ways" />
 
           {summary && (
             <>

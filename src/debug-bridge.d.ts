@@ -2188,6 +2188,19 @@ export interface DebugBridge {
       & import('./engine/worldScenarioCensus').WorldScenarioCensus)
   >;
 
+  /** THR-1660 — every pilgrim way (`sacred_route`, congregation → settlement) whose two
+   *  ends still stand, sorted by edge id: the rows `selectPilgrimWays` returns — the same
+   *  read the Location sheet's *Pilgrims come here* line and the Faction sheet's *Pilgrim
+   *  ways to* line use — plus each end's name. `origin` is `'worldgen'` for the seeded
+   *  way to each congregation's seat, `'undertaking'` for one a mortal consecrated (with
+   *  its `projectId`), `'legacy'` when the writer left none.
+   *
+   *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
+  getPilgrimWays: () => Promise<
+    | { error: string }
+    | Array<import('./engine/pilgrimWays').PilgrimWayRow & { congregationName: string | null; siteName: string | null }>
+  >;
+
   /** THR-1030 — What the `?outcome=<band>` review pin actually produced.
    *
    *  Resolves `null` when no pin is armed. `{ ..., status: 'pending' }` means a pin is

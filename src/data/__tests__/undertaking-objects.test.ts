@@ -34,8 +34,8 @@ import type { UndertakingObjectTypeId } from '../../types/strategicAction';
 
 const KIND_IDS = ['area', 'location', 'place', 'route', 'mortal', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
 /** THR-1560 — classes of a kind (THR-1268: a monster is a class of Mortal), each with its kind. */
-const CLASS_OF: Readonly<Record<string, string>> = { monster: 'mortal' };
-const TYPE_IDS: readonly UndertakingObjectTypeId[] = [...KIND_IDS, 'monster'];
+const CLASS_OF: Readonly<Record<string, string>> = { monster: 'mortal', pilgrim_way: 'route' };
+const TYPE_IDS: readonly UndertakingObjectTypeId[] = [...KIND_IDS, 'monster', 'pilgrim_way'];
 
 describe('the object-type registry', () => {
   it('registers the fifteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
@@ -68,7 +68,8 @@ describe('the object-type registry', () => {
       expect(declared.length, `${t.id} declares at least one verb`).toBeGreaterThan(0);
       for (const v of declared) expect(UNDERTAKING_VERB_VARIANTS, `${t.id}.${v}`).toContain(v);
       // The counter-play column: a kind with a create and no destroy was the no-destroy-no-kind rule.
-      if (t.verbs.create && t.id !== 'route') expect(t.verbs.destroy, `${t.id} has a destroy`).toBeDefined();
+      // THR-1660: the exemption covers the Route **kind**, so a pilgrim way (a class of Route) is never unmade (D5).
+      if (t.verbs.create && t.id !== 'route' && t.classOf !== 'route') expect(t.verbs.destroy, `${t.id} has a destroy`).toBeDefined();
     }
     // The route is the one exception, recorded on the grid: a blockade lifts (change:lower); tearing a route up is an open cell.
     expect(getUndertakingObjectType('route')!.verbs['change:lower']).toBeDefined();

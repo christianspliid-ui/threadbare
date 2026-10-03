@@ -197,6 +197,8 @@ export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
   // THR-1560 — a hunt is not a breaking: the ledger reads *Hunted the Mire Ox*.
   'cell.observe.monster': 'Tracked',
   'cell.destroy.monster': 'Hunted',
+  // THR-1660 — a pilgrim way is not *founded*; it is consecrated.
+  'cell.create.pilgrim_way': 'Consecrated',
   'cell.create.company': 'Raised',
   'cell.create.army': 'Raised',
   'cell.create.network': 'Founded',
@@ -259,6 +261,8 @@ export const UNDERTAKING_CELL_PHRASES: Readonly<Record<string, string>> = {
   // THR-1560 — the two hunt cells, in the words the card should use.
   'cell.observe.monster': 'Track a monster',
   'cell.destroy.monster': 'Hunt a monster',
+  // THR-1660 — "Create a pilgrim way" is machinery; the act is a consecration.
+  'cell.create.pilgrim_way': 'Consecrate a pilgrim way',
 };
 
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
@@ -425,6 +429,23 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
       '{Actor} has made ready, and the den of {object} is the next road.',
     ],
     narration: '{Actor} means to face {object} in its den.',
+  },
+
+  // THR-1660 — a consecration. {object} reads *the way to Brindle*. The lines never
+  // name the congregation (there is no slot for it); the sheet line and the moment
+  // card's chips name it from state. Nothing here says a faith was *founded*.
+  'cell.create.pilgrim_way': {
+    activity: [
+      '{Actor} is marking way-stones on the road into {place}, a blessing at each one.',
+      '{Actor} walks the road to {place} again, praying aloud where the travellers can hear.',
+      '{Actor} has been asking the old folk of {place} which saints once walked here.',
+    ],
+    completion: [
+      '{Actor} has consecrated {object}. Pilgrims will follow where the faithful walked first.',
+      'The road into {place} is a holy road now, and {actor} made it so.',
+      '{Actor} finished the last way-stone. {Object} is open to the faithful.',
+    ],
+    narration: '{Actor} means to make {place} a place of pilgrimage.',
   },
 
   // ─── The ownership of people-things (THR-1438) ───────────────────
