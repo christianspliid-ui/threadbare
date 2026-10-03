@@ -1,0 +1,181 @@
+{
+  "7": {
+    "individuals": 814,
+    "generatedItems": {
+      "byOrigin": {
+        "masterwork": 1
+      },
+      "bySub": {
+        "arms": 1
+      },
+      "tomes": 0,
+      "tomeSample": []
+    },
+    "spells": {
+      "casters": 125,
+      "knowers": 123,
+      "nonCasterKnowers": 0,
+      "fullSlots": 0,
+      "wieldHist": {
+        "1": 123
+      },
+      "knowsSources": {
+        "seeded": 123
+      },
+      "casterRoles": {
+        "?": 5,
+        "healer": 32,
+        "priest": 32,
+        "scholar": 11,
+        "oracle": 4,
+        "enchanter": 5,
+        "chaplain": 3,
+        "alchemist": 3,
+        "warmage": 3,
+        "herald": 4,
+        "acolyte": 11,
+        "monk": 12
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.time_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "time",
+          "secondary": "energy"
+        },
+        "domainAffinities": {
+          "heart": 2,
+          "star": 4
+        },
+        "reachTierSnapshot": {
+          "star": 1,
+          "heart": 1
+        }
+      }
+    }
+  },
+  "42": {
+    "individuals": 619,
+    "generatedItems": {
+      "byOrigin": {
+        "masterwork": 1
+      },
+      "bySub": {
+        "relics_talismans": 1
+      },
+      "tomes": 0,
+      "tomeSample": []
+    },
+    "spells": {
+      "casters": 105,
+      "knowers": 104,
+      "nonCasterKnowers": 0,
+      "fullSlots": 0,
+      "wieldHist": {
+        "1": 104
+      },
+      "knowsSources": {
+        "seeded": 104
+      },
+      "casterRoles": {
+        "?": 1,
+        "healer": 20,
+        "priest": 31,
+        "scholar": 12,
+        "warmage": 7,
+        "enchanter": 7,
+        "alchemist": 6,
+        "oracle": 1,
+        "herald": 4,
+        "chaplain": 4,
+        "monk": 6,
+        "acolyte": 6
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.chaos_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "chaos",
+          "secondary": "energy"
+        },
+        "domainAffinities": {
+          "stone": 5,
+          "iron": 2,
+          "gold": 5
+        },
+        "reachTierSnapshot": {
+          "gold": 1,
+          "stone": 1,
+          "iron": 1
+        }
+      }
+    }
+  },
+  "99": {
+    "individuals": 778,
+    "generatedItems": {
+      "byOrigin": {
+        "masterwork": 3
+      },
+      "bySub": {
+        "tools_instruments": 1,
+        "relics_talismans": 1,
+        "arms": 1
+      },
+      "tomes": 0,
+      "tomeSample": []
+    },
+    "spells": {
+      "casters": 122,
+      "knowers": 122,
+      "nonCasterKnowers": 0,
+      "fullSlots": 0,
+      "wieldHist": {
+        "1": 122
+      },
+      "knowsSources": {
+        "seeded": 122
+      },
+      "casterRoles": {
+        "?": 1,
+        "healer": 25,
+        "priest": 46,
+        "warmage": 6,
+        "alchemist": 6,
+        "scholar": 7,
+        "enchanter": 3,
+        "herald": 6,
+        "acolyte": 11,
+        "monk": 9,
+        "chaplain": 2
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.energy_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "energy",
+          "secondary": "light"
+        },
+        "domainAffinities": {
+          "iron": 3,
+          "gold": 4,
+          "heart": 3
+        },
+        "reachTierSnapshot": {
+          "gold": 1,
+          "heart": 1,
+          "iron": 1
+        }
+      }
+    }
+  },
+  "ticks": 150,
+  "map": "medium",
+  "scenario": "default"
+}
