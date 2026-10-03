@@ -278,3 +278,27 @@ describe('PremonitionModal names its own subject (THR-1461)', () => {
     expect(onViewAgent).not.toHaveBeenCalledWith(AGENT_ID);
   });
 });
+
+describe('PremonitionModal — Escape and the backdrop do not decline (THR-1711)', () => {
+  it.each([
+    ['whisper', WHISPER],
+    ['compulsion', COMPULSION],
+  ] as const)('%s: Escape leaves the premonition open and undeclined', (_l, premonition) => {
+    const { onDismiss } = renderModal(premonition);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onDismiss).not.toHaveBeenCalled();
+    expect(screen.getByText(premonition.vignetteProse)).toBeTruthy();
+  });
+
+  it('a backdrop click does not decline', () => {
+    const { onDismiss } = renderModal(WHISPER);
+    fireEvent.click(screen.getByRole('dialog'));
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
+
+  it('the explicit decline button is still the one exit', () => {
+    const { onDismiss } = renderModal(WHISPER);
+    fireEvent.click(screen.getByTestId('premonition-dismiss'));
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+});

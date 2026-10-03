@@ -229,6 +229,33 @@ describe('ActionCard — Law 21 (a named concept reaches its page)', () => {
     expect(onOpenCodexEntry).toHaveBeenCalledWith('action.imbue');
   });
 
+  it('clicking the name itself selects the card, not the codex (THR-1711)', () => {
+    // The title used to be the codex link with stopPropagation, so a click on
+    // the most obvious part of the card never selected it.
+    const onClick = vi.fn();
+    const onOpenCodexEntry = vi.fn();
+    render(<ActionCard slot={slot()} onClick={onClick} onOpenCodexEntry={onOpenCodexEntry} />);
+    const card = screen.getByTestId('action-card-target_action_action.imbue');
+    const name = Array.from(card.querySelectorAll('span')).find(
+      el => el.children.length === 0 && el.textContent === slot().label,
+    );
+    expect(name).toBeTruthy();
+    fireEvent.click(name!);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onOpenCodexEntry).not.toHaveBeenCalled();
+  });
+
+  it('the codex mark beside the name opens the codex without selecting', () => {
+    const onClick = vi.fn();
+    const onOpenCodexEntry = vi.fn();
+    render(<ActionCard slot={slot()} onClick={onClick} onOpenCodexEntry={onOpenCodexEntry} />);
+    const mark = screen.getByTestId('action-card-name-link-target_action_action.imbue');
+    expect(mark.textContent).not.toContain(slot().label);
+    fireEvent.click(mark);
+    expect(onOpenCodexEntry).toHaveBeenCalledWith('action.imbue');
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
   it('renders the name as plain text when there is no page to reach', () => {
     // *Where a page exists* — never a dead link. A slot with no template id has
     // no codex entry to open.

@@ -127,3 +127,65 @@ describe('useInterruptAutoPause', () => {
     expect(result.current.running).toBe(true);
   });
 });
+
+describe('useInterruptAutoPause — a toggle pressed inside an interrupt (THR-1711)', () => {
+  /**
+   * The hotkey/play-button wiring as GameView composes it: toggle the saved
+   * state if an interrupt holds the clock, else flip `running`.
+   */
+  function toggle(h: ReturnType<typeof useHarness>) {
+    if (!h.handle.toggleIfHeld()) h.setRunning(r => !r);
+  }
+
+  it('a pause pressed inside a popup survives the close', () => {
+    const { result } = renderHook(() => useHarness(true));
+    act(() => result.current.setModalA(true));
+    act(() => toggle(result.current)); // the player presses Space to pause
+    expect(result.current.running).toBe(false);
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(false);
+  });
+
+  it('FALSIFICATION — flipping `running` directly (the old wiring) is undone on close', () => {
+    const { result } = renderHook(() => useHarness(true));
+    act(() => result.current.setModalA(true));
+    act(() => result.current.setRunning(r => !r));
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(true);
+  });
+
+  it('a play pressed inside a popup over a paused world resumes on close', () => {
+    const { result } = renderHook(() => useHarness(false));
+    act(() => result.current.setModalA(true));
+    act(() => toggle(result.current));
+    expect(result.current.running).toBe(false); // still held while open
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(true);
+  });
+
+  it('the arrival auto-pause inside a popup also survives the close', () => {
+    const { result } = renderHook(() => useHarness(true));
+    act(() => result.current.setModalA(true));
+    act(() => {
+      if (!result.current.handle.pauseIfHeld()) result.current.setRunning(false);
+    });
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(false);
+  });
+
+  it('with no interrupt open, the routing declines and the caller toggles as usual', () => {
+    const { result } = renderHook(() => useHarness(true));
+    expect(result.current.handle.toggleIfHeld()).toBe(false);
+    expect(result.current.handle.pauseIfHeld()).toBe(false);
+    act(() => toggle(result.current));
+    expect(result.current.running).toBe(false);
+  });
+
+  it('the plain sequence pause → open → close is unchanged', () => {
+    const { result } = renderHook(() => useHarness(true));
+    act(() => toggle(result.current));
+    act(() => result.current.setModalA(true));
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(false);
+  });
+});
