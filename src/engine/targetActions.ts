@@ -20,7 +20,7 @@
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
 import type { WheelSlot } from './wheel';
-import type { UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
+import type { UnifiedAction, UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
 import type { ReachDomain } from '../types/traits';
@@ -41,7 +41,7 @@ import { classifyForecastTier } from './encounters/outcomeForecast';
 import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
 import type { ControlEffect } from '../types/controlEffect';
-import { findHeldNonStackingEffect } from './controlEffectSpawn';
+import { findHeldNonStackingEffect, findPendingNonStackingCast } from './controlEffectSpawn';
 
 /**
  * The hardest step a template can present, with the reach it is rolled in
@@ -216,6 +216,14 @@ export interface TargetActionParams {
   heldControlEffects?: readonly ControlEffect[];
   /** Owner whose effects {@link heldControlEffects} locks against. */
   controlOwnerId?: string;
+  /**
+   * Actions in play (`GameState.unifiedActions`). An unresolved cast of the same
+   * non-stacking verb by {@link controlOwnerId} on this target also locks "Already
+   * held" — its essence is already paid and its effect is on the way, so a second
+   * cast in the resolution window would be refused at spawn after charging full
+   * price (THR-1700 review gate). Optional; omit to skip the in-flight half.
+   */
+  pendingActions?: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[];
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -261,6 +269,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     viewerAgentId,
     heldControlEffects,
     controlOwnerId,
+    pendingActions,
   } = params;
 
   const counts: FilterCounts = {
@@ -456,7 +465,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     //     "Already held" is the true reason, whatever the pool says. (The card
     //     face still leads with range when out of range — actionBlockedReason.)
     const held = controlOwnerId && template.durationMode === 'sustained'
-      ? findHeldNonStackingEffect(heldControlEffects, template.id, controlOwnerId, target.nodeId)
+      ? (findHeldNonStackingEffect(heldControlEffects, template.id, controlOwnerId, target.nodeId)
+        ?? findPendingNonStackingCast(pendingActions, template.id, controlOwnerId, target.nodeId))
       : undefined;
 
     if (held) {

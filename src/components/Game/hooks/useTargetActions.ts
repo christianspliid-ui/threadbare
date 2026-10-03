@@ -59,6 +59,8 @@ export function useTargetActions({
       // "Already held" instead of offering a cast that would establish nothing.
       heldControlEffects: gameState.controlEffects,
       controlOwnerId: gameState.ascendantId,
+      // A cast still resolving counts as held — its effect is on the way.
+      pendingActions: gameState.unifiedActions,
     });
   }, [
     target,
@@ -70,5 +72,6 @@ export function useTargetActions({
     gameState.ascendantId,
     gameState.unlockedActionIds,
     gameState.controlEffects,
+    gameState.unifiedActions,
   ]);
 }

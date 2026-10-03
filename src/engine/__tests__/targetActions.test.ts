@@ -938,6 +938,31 @@ describe('getTargetActionSlots — held lock (filter 10, THR-1700)', () => {
     expect((traces[0] as { lockedByHeld?: number }).lockedByHeld).toBe(1);
   });
 
+  function pendingSlot(cast: { actorId: string; templateId: string; targetId: string; resolved: boolean }) {
+    return getTargetActionSlots({
+      target: locationTarget({ nodeId: TAVERN, subtype: 'tavern' }),
+      templates: [sustained('sub.sanctify_tavern')],
+      pool: BASE_POOL,
+      primarySphere: 'life',
+      accessibleSpheres: ['life'],
+      heldControlEffects: [],
+      controlOwnerId: OWNER,
+      pendingActions: [cast],
+    })[0];
+  }
+
+  it('locks while the viewer\'s own cast on this target is still resolving', () => {
+    const slot = pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: false });
+    expect(slot.available).toBe(false);
+    expect(slot.lockedReason).toBe('Already held');
+  });
+
+  it('ignores a resolved cast, another owner\'s cast, and a cast on another target', () => {
+    expect(pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: true }).available).toBe(true);
+    expect(pendingSlot({ actorId: 'asc.rival', templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: false }).available).toBe(true);
+    expect(pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: 'loc.other', resolved: false }).available).toBe(true);
+  });
+
   it('fails open when no owner is supplied', () => {
     const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect()], null);
     expect(slot.available).toBe(true);

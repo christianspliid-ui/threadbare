@@ -61,6 +61,26 @@ export function findHeldNonStackingEffect(
     && e.ownerId === ownerId && e.targetNodeId === targetNodeId);
 }
 
+/**
+ * An unresolved cast of non-stacking `templateId` by `ownerId` on
+ * `targetNodeId`, or undefined (THR-1700 review gate). A sustained cast takes
+ * its essence at dispatch and resolves over several ticks, so while it is in
+ * flight there is no effect for {@link findHeldNonStackingEffect} to see — yet
+ * a second cast in that window would be refused by the spawn guard all the
+ * same, after charging full price. The hand treats an in-flight cast as held.
+ */
+export function findPendingNonStackingCast(
+  actions: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[] | undefined,
+  templateId: string,
+  ownerId: string,
+  targetNodeId: string,
+): Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'> | undefined {
+  if (!actions || !NON_STACKING_CONTROL_TEMPLATE_IDS.has(templateId)) return undefined;
+  return actions.find(a =>
+    !a.resolved && a.templateId === templateId
+    && a.actorId === ownerId && a.targetId === targetNodeId);
+}
+
 /** Reset counter for deterministic testing. */
 export function resetEffectCounter(): void {
   effectCounter = 0;

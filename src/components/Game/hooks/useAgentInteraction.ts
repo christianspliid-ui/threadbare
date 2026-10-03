@@ -210,11 +210,12 @@ export function useAgentInteraction({
           // THR-1700 — see useTargetActions: a held non-stacking verb locks.
           heldControlEffects: gameState.controlEffects,
           controlOwnerId: gameState.ascendantId,
+          pendingActions: gameState.unifiedActions,
         })
       : [];
 
     return targetSlots.length > 0 ? targetSlots : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, retinueAgents, archetype, worldVersion]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, gameState.unifiedActions, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;
