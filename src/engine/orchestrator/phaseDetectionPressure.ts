@@ -91,8 +91,6 @@ function emitThresholdTrace(
  * holds one, or when the strike family has no encounter to resolve to: a seed
  * with nothing behind it withers into a sentence that prints the family id.
  */
-// TODO(THR-1703): no `shadow.rival_strike` encounter is authored yet, so the
-// content gate below holds every strike back; the crossings trace regardless.
 export function recordDetectionCrossings(
   tick: number,
   regionId: string,

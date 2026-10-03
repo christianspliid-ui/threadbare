@@ -57,9 +57,9 @@ const CORPUS = [...UNIFIED_ACTION_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEM
  * `query` authored directly on the seed.
  *
  * THR-1613 drained the six families that actually wither in a live run (50 sites) —
- * 168 → 118.
+ * 168 → 118. THR-1703 seated `shadow.rival_strike` (four sites) — 118 → 114.
  */
-const DEAD_FAMILY_SITE_CEILING = 118;
+const DEAD_FAMILY_SITE_CEILING = 114;
 
 describe('encounter seeds name something that can arrive', () => {
   it('the corpus is large and seed-bearing, so the sweeps below are not vacuous', () => {

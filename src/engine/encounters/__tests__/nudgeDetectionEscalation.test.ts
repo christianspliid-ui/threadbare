@@ -11,7 +11,7 @@
  * returned state from one hand to the next exactly as the aftermath phase does.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { dispatchNudgeCommitments } from '../nudgeDispatch';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../../traceBuffer';
@@ -19,17 +19,9 @@ import { createSimulationRuntime, type SimulationRuntime } from '../../simulatio
 import type { GameState } from '../../../types/gameState';
 import type { ActionStep, StepNudge, UnifiedAction } from '../../../types/unifiedAction';
 
-// The strike is gated on the family having an encounter to resolve to, and none
-// is authored yet (THR-1703). The planting path is pinned with the gate held open;
-// the closed gate — today's live behaviour — is pinned by its own test.
-const contentGate = vi.hoisted(() => ({ open: true }));
-vi.mock('../../encounterSeeding', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../encounterSeeding')>();
-  return {
-    ...actual,
-    encounterFamilyHasContent: (family: string) => contentGate.open || actual.encounterFamilyHasContent(family),
-  };
-});
+// Un-mocked: the strike is gated on the family having an encounter to resolve to,
+// and THR-1703 authored one (`encounter.rival.hired_knives`), so every case below
+// runs through the real gate. The closed gate is pinned in phaseDetectionPressure.test.ts.
 
 const ACTOR = 'actor-hero';
 const REGION = 'region-vale';
@@ -140,18 +132,14 @@ describe('nudge detection pressure escalates (THR-1690)', () => {
     expect(after.pendingEncounterSeeds).toBeUndefined();
   });
 
-  it('today, with no rival-strike encounter authored, traces the crossing and plants nothing (THR-1703)', () => {
-    contentGate.open = false;
-    try {
-      const state = play(buildState(), 1, 50, runtime);
-      expect(crossings()).toEqual(['notice', 'turn', 'encounter']);
-      expect(state.pendingEncounterSeeds ?? []).toHaveLength(0);
-      const encounterTrace = getTraces().find((t) => t.category === 'detection_threshold_crossed'
-        && (t as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
-      expect((encounterTrace as { seedSkipped?: string }).seedSkipped).toBe('no_content');
-    } finally {
-      contentGate.open = true;
-    }
+  it('with the rival strike authored, the real content gate plants the seed (THR-1703)', () => {
+    const state = play(buildState(), 1, 50, runtime);
+    expect(crossings()).toEqual(['notice', 'turn', 'encounter']);
+    expect(state.pendingEncounterSeeds ?? []).toHaveLength(1);
+    expect(state.pendingEncounterSeeds?.[0]?.encounterFamily).toBe('shadow.rival_strike');
+    const encounterTrace = getTraces().find((t) => t.category === 'detection_threshold_crossed'
+      && (t as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
+    expect((encounterTrace as { seedSkipped?: string }).seedSkipped).toBeUndefined();
   });
 
   it('a mortal outside any region writes the fallback bucket, which never escalates', () => {
