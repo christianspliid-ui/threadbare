@@ -140,6 +140,31 @@ export function encounterFamilyHasContent(family: string): boolean {
 }
 
 /**
+ * Whether `family` has an encounter that could land on `targetAgentId` where they
+ * stand right now (THR-1703 review): {@link encounterFamilyHasContent}'s candidates,
+ * narrowed by the filters a family seed is judged by when it fires — individual-
+ * performable, and a `locationSubtypes` gate (if any) that accepts the target's
+ * Location-tier subtype. A planter whose seed fires on the next pass asks this
+ * instead, because a seed that finds nothing eligible withers into a sentence that
+ * prints the family id.
+ */
+export function encounterFamilyAnswersAt(
+  graph: WorldGraph,
+  family: string,
+  targetAgentId: string,
+): boolean {
+  const tag = ENCOUNTER_FAMILY_TAGS[family];
+  const prefix = `${family}.`;
+  const subtype = seedTargetSubtype(graph, targetAgentId);
+  return UNIFIED_ACTION_TEMPLATES.some((template) => {
+    const member = tag ? template.tags?.includes(tag) : template.id.startsWith(prefix);
+    if (!member || !template.actorAffinities?.includes('individual')) return false;
+    if (!template.locationSubtypes || template.locationSubtypes.length === 0) return true;
+    return subtype !== undefined && template.locationSubtypes.includes(subtype);
+  });
+}
+
+/**
  * The query a seed resolves by, or `undefined` when it has none.
  *
  * Authored `query` wins over an aliased family, so a migration can land the query

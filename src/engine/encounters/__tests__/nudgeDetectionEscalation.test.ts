@@ -39,7 +39,9 @@ function buildState(): GameState {
     id: 'loc-hold',
     type: 'location',
     name: 'The Hold',
-    properties: { hexCol: 4, hexRow: 4 },
+    // A town: the rival strike (`encounter.rival.hired_knives`) lands at rural,
+    // urban and wayside Locations only, and the planter checks where the mortal stands.
+    properties: { hexCol: 4, hexRow: 4, locationSubtype: 'town' },
   });
   graph.addEdge({ id: 'vale_contains_hold', source: REGION, target: 'loc-hold', type: 'contains', properties: {} });
   graph.addEdge({ id: 'hero_at_hold', source: ACTOR, target: 'loc-hold', type: 'located_at', properties: {} });
@@ -140,6 +142,17 @@ describe('nudge detection pressure escalates (THR-1690)', () => {
     const encounterTrace = getTraces().find((t) => t.category === 'detection_threshold_crossed'
       && (t as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
     expect((encounterTrace as { seedSkipped?: string }).seedSkipped).toBeUndefined();
+  });
+
+  it('holds the strike back while the mortal stands where it cannot land (THR-1703)', () => {
+    const state = buildState();
+    state.graph.getNode('loc-hold')!.properties.locationSubtype = 'temple';
+    const after = play(state, 1, 50, runtime);
+    expect(crossings()).toEqual(['notice', 'turn', 'encounter']);
+    expect(after.pendingEncounterSeeds ?? []).toHaveLength(0);
+    const encounterTrace = getTraces().find((t) => t.category === 'detection_threshold_crossed'
+      && (t as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
+    expect((encounterTrace as { seedSkipped?: string }).seedSkipped).toBe('not_here');
   });
 
   it('a mortal outside any region writes the fallback bucket, which never escalates', () => {
