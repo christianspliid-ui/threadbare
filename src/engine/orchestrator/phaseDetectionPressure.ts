@@ -10,6 +10,7 @@ import {
   getDetectionThresholdCrossings,
 } from '../encounters/detectionPressure';
 import { emitTrace } from '../traceBuffer';
+import { encounterFamilyHasContent } from '../encounterSeeding';
 
 const RIVAL_DETECTION_ENCOUNTER_FAMILY = 'shadow.rival_strike';
 const RIVAL_DETECTION_SEED_PREFIX = 'detection.escalation';
@@ -57,6 +58,7 @@ function emitThresholdTrace(
   fromPressure: number,
   toPressure: number,
   thresholdCrossed: DetectionThresholdBand,
+  seedSkipped?: 'no_target' | 'no_content' | 'already_pending',
 ): void {
   emitTrace({
     category: 'detection_threshold_crossed',
@@ -65,7 +67,9 @@ function emitThresholdTrace(
     fromPressure,
     toPressure,
     thresholdCrossed,
-    summary: `Detection threshold ${thresholdCrossed}: ${regionId} ${fromPressure.toFixed(2)} → ${toPressure.toFixed(2)}`,
+    ...(seedSkipped ? { seedSkipped } : {}),
+    summary: `Detection threshold ${thresholdCrossed}: ${regionId} ${fromPressure.toFixed(2)} → ${toPressure.toFixed(2)}`
+      + (seedSkipped ? ` (no strike: ${seedSkipped})` : ''),
   });
 }
 
@@ -77,28 +81,41 @@ function emitThresholdTrace(
  * at most one pending per region. Returns the seed queue, new when a seed was
  * planted and the input otherwise.
  *
- * Extracted from the retired choice-commit loop, which was its only caller and had
- * no producer. A pressure writer calls it after applying a delta.
+ * Extracted from the retired choice-commit loop. Its live caller is the nudge
+ * detection write (`nudgeDispatch.dispatchNudgeCommitments`, THR-1690), which
+ * calls it after applying a card's signed delta.
+ *
+ * Fail-soft: the crossings are always traced. The seed is skipped — and the
+ * encounter crossing's trace says why (`seedSkipped`) — when there is no
+ * `targetAgentId` (a strike needs someone to strike), when the region already
+ * holds one, or when the strike family has no encounter to resolve to: a seed
+ * with nothing behind it withers into a sentence that prints the family id.
  */
-// TODO(THR-1690): no production caller yet — nudgeDispatch writes regional pressure
-// through applyRawDetectionDelta without calling this, so nudge pressure never
-// crosses a band, emits a crossing trace, or plants a rival strike.
+// TODO(THR-1703): no `shadow.rival_strike` encounter is authored yet, so the
+// content gate below holds every strike back; the crossings trace regardless.
 export function recordDetectionCrossings(
   tick: number,
   regionId: string,
   fromPressure: number,
   toPressure: number,
-  targetAgentId: string,
+  targetAgentId: string | undefined,
   pendingEncounterSeeds: readonly PendingEncounterSeed[],
 ): readonly PendingEncounterSeed[] {
   let seeds = pendingEncounterSeeds;
   for (const crossing of getDetectionThresholdCrossings(fromPressure, toPressure)) {
-    emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing);
-    if (
-      crossing === 'encounter'
-      && toPressure >= DETECTION_THRESHOLD_ENCOUNTER
-      && !hasPendingRegionDetectionSeed(seeds, regionId)
-    ) {
+    if (crossing !== 'encounter' || toPressure < DETECTION_THRESHOLD_ENCOUNTER) {
+      emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing);
+      continue;
+    }
+    const seedSkipped = !targetAgentId
+      ? 'no_target'
+      : hasPendingRegionDetectionSeed(seeds, regionId)
+        ? 'already_pending'
+        : !encounterFamilyHasContent(RIVAL_DETECTION_ENCOUNTER_FAMILY)
+          ? 'no_content'
+          : undefined;
+    emitThresholdTrace(tick, regionId, fromPressure, toPressure, crossing, seedSkipped);
+    if (!seedSkipped && targetAgentId) {
       seeds = [...seeds, buildDetectionSeed(tick, regionId, targetAgentId)];
     }
   }
