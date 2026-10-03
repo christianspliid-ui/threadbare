@@ -191,6 +191,11 @@ export interface EncounterStageChoiceModel {
   essenceCost: number;
   affordable: boolean;
   costLabel?: string;
+  /**
+   * THR-1706 — the sphere this choice's essence is taken from, named on its
+   * cost line. Absent ⇒ no sphere identity; the line shows the price alone.
+   */
+  payingSphere?: SphereName;
   likelyBurden?: string;
   /**
    * Intervention type — supportive, coercive, or withdrawn. Drives choice glow
@@ -648,6 +653,14 @@ export interface EncounterStageNudgeCardModel {
   /** Prices charged outside the essence pool. Empty ⇒ essence is the whole price. */
   costChannels?: EncounterStageCostChannelModel[];
   sphere?: SphereName;
+  /**
+   * THR-1706 — the sphere whose pool this card's essence is taken from. A
+   * sphere-gated card pays from `sphere`; a sphere-less one from the phase's
+   * `budgetSphere`. The cost row names it, so a Gold card that bills Life says
+   * so before it is played. Absent ⇒ unknown payer (no identity); the row
+   * shows the price alone.
+   */
+  payingSphere?: SphereName;
   /** WS4 image-library tag. Absent ⇒ the fallback chain ends at EntityVisual. */
   imageTag?: string;
   state: NudgeCardState;
@@ -836,6 +849,17 @@ export interface EncounterStageNudgePhaseModel {
   availableEssence: number;
   /** Total essence the committed hand costs. */
   committedCost: number;
+  /**
+   * THR-1706 — the sphere a sphere-less card bills first: the god's primary.
+   * The commit path spends with it, each card's `payingSphere` names it, and
+   * the hand's "essence left" line counts down *its* pool rather than the
+   * grand total, so the line, the card and the bar all tell one story.
+   * Absent on a run with no sphere identity — the line falls back to the pooled
+   * total and the commit to the archetype's primary, exactly as before.
+   */
+  budgetSphere?: SphereName;
+  /** THR-1706 — `budgetSphere`'s own pool right now. Present iff `budgetSphere` is. */
+  budgetSphereEssence?: number;
 }
 
 export interface EncounterStageModel {

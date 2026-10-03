@@ -25,6 +25,29 @@ import type {
   EncounterStageNudgeCardModel,
   EncounterStageNudgePhaseModel,
 } from './types';
+import type { SphereName } from '../../../types/index';
+
+/**
+ * THR-1706 — what is left in the paying sphere's own pool after the current
+ * selection. Only cards billed to that sphere count against it: a gated card
+ * of another sphere pays from its own pool, which this line does not describe.
+ *
+ * `undefined` when the phase names no budget sphere (no identity), so the
+ * shell falls back to the pooled total. Pure — the hook and its tests share it.
+ */
+export function budgetSphereRemaining(
+  phase: EncounterStageNudgePhaseModel | undefined,
+  selectedIds: readonly string[],
+): { sphere: SphereName; remaining: number } | undefined {
+  if (!phase?.budgetSphere) return undefined;
+  const sphere = phase.budgetSphere;
+  let spent = 0;
+  for (const id of selectedIds) {
+    const card = phase.cards.find((c) => c.id === id);
+    if (card?.payingSphere === sphere) spent += Math.max(0, card.essenceCost);
+  }
+  return { sphere, remaining: Math.max(0, (phase.budgetSphereEssence ?? 0) - spent) };
+}
 
 /**
  * The forecast a given selection produces — the single implementation the hook
@@ -81,6 +104,12 @@ export interface UseNudgeHandResult {
   selectedCost: number;
   /** Essence left after paying for the selection. */
   remainingEssence: number;
+  /**
+   * THR-1706 — the paying sphere and what its own pool holds after the
+   * selection. The hand's "essence left" line reads this when present, so it
+   * agrees with that sphere's bar after the commit.
+   */
+  budget?: { sphere: SphereName; remaining: number };
   /** True when the selection has moved the forecast off its base tier. */
   forecastMoved: boolean;
   toggle: (nudgeId: string) => void;
@@ -153,6 +182,7 @@ export function useNudgeHand(
       ?? { tier: 'uncertain', word: FORECAST_TIER_WORDS.uncertain, probability: 0 },
     selectedCost,
     remainingEssence,
+    budget: budgetSphereRemaining(phase, selectedIds),
     forecastMoved: !!phase && forecast.tier !== phase.baseForecast.tier,
     toggle,
     clear,

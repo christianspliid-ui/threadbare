@@ -25,6 +25,7 @@ import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
 import { clearMeetingDebugState, publishMeetingDebugState } from './meetingDebugState';
 import { DILEMMA_TEMPLATES } from '../../data/meeting-content';
 import { SENSING_OPENING_PROSE, SENSING_OPENING_FALLBACK } from '../../data/meeting-narrative-prose';
+import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 
 type MeetBeat = 'sensing' | 'testing' | 'spark' | 'bond';
 
@@ -41,6 +42,11 @@ interface MeetTheFirstFlowProps {
    * priced card rather than throwing, leaving the free options playable.
    */
   essencePool?: Readonly<Record<string, number>>;
+  /**
+   * THR-1706 — charge a committed test hand against the live pool. The meeting
+   * previewed its spend and never made it; the owner of `essencePool` writes it.
+   */
+  onSpendEssence?: (testIndex: number, requests: NudgeSpendRequest[]) => void;
   onComplete: (result: MeetingEncounterResult) => void;
   onClose: () => void;
 }
@@ -53,6 +59,7 @@ export function MeetTheFirstFlow({
   seed,
   tick,
   essencePool,
+  onSpendEssence,
   onComplete,
   onClose,
 }: MeetTheFirstFlowProps) {
@@ -246,6 +253,8 @@ export function MeetTheFirstFlow({
           tests={convertedTests}
           locationName={locationName}
           essencePool={essencePool}
+          primarySphere={primarySphere}
+          onSpendEssence={onSpendEssence}
           seed={seed + 3}
           onComplete={handleFormativeComplete}
         />
@@ -276,6 +285,7 @@ export function MeetTheFirstFlow({
           primarySphere={primarySphere}
           bondTest={MEETING_BOND_TEST}
           essencePool={essencePool}
+          onSpendEssence={onSpendEssence}
           seed={seed + 4}
           onComplete={handleBondComplete}
         />

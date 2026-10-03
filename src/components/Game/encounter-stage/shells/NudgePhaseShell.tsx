@@ -18,7 +18,7 @@ import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { CostPips } from '../../../shared/OddsPips';
 import { CardFace, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
-import { formatEssencePool } from '../../../shared/formatEssence';
+import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
@@ -172,6 +172,8 @@ export function NudgeCard({
         // THR-1586: sphere tint when the nudge draws essence from a named sphere.
         ...(card.sphere && card.essenceCost > 0 ? { sphereTint: card.sphere } : {}),
         cost: card.essenceCost,
+        // THR-1706 — name the pool that pays, in words, on the cost row.
+        ...(card.payingSphere ? { costSphere: card.payingSphere } : {}),
         costEmphasised: dimmed && card.blockedCode === 'essence_unavailable',
         ...(card.costChannels ? { costChannels: card.costChannels } : {}),
         ...(card.provenance ? { provenance: card.provenance } : {}),
@@ -309,8 +311,17 @@ export function NudgePhaseShell({
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}
           <Tooltip id="ui.nudge_essence">
-            <span data-testid="nudge-remaining-essence" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-              {formatEssencePool(hand.remainingEssence)} essence left
+            {/* THR-1706 — the paying sphere's own pool, named, not all twelve
+                pools summed: the summed "600" matched no bar the player could
+                see. Falls back to the pooled total when no sphere pays. */}
+            <span
+              data-testid="nudge-remaining-essence"
+              {...(hand.budget ? { 'data-budget-sphere': hand.budget.sphere } : {})}
+              style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+            >
+              {hand.budget
+                ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`
+                : `${formatEssencePool(hand.remainingEssence)} essence left`}
             </span>
           </Tooltip>
 

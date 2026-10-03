@@ -170,7 +170,7 @@ import { PREMONITION_EXPIRY_TICKS } from '../../data/premonition-constants';
 import { mulberry32 } from '../../lib/prng';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
-import { spendNudgeEssence } from './encounter-stage/nudgeCommit';
+import { spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
@@ -3787,10 +3787,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       cost: Math.max(0, cardsById.get(id)?.essenceCost ?? 0),
     }));
 
+    // THR-1706 — bill the sphere the cards named. `budgetSphere` is what each
+    // sphere-less card's cost row printed; the archetype's primary is the same
+    // sphere on every identity run and the fallback on a legacy one.
     const spend = spendNudgeEssence(
       gameState.essencePool,
       requests,
-      archetype.sphereAlignment.primary,
+      phase.budgetSphere ?? archetype.sphereAlignment.primary,
     );
 
     if (!spend.ok) {
@@ -4097,6 +4100,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     );
     setMeetingState(state);
   }, [gameState.graph, gameState.ascendantId, gameState.tick]);
+
+  /**
+   * THR-1706 — Meet The First's test hands are a real spend. The beat used to
+   * show "598" while the player picked and then commit without charging, so the
+   * pool snapped back to 600. Charged with the same `spendNudgeEssence` every
+   * other nudge commit uses: the god's primary pays first, the spend spills
+   * across the pool only if it runs dry (the meeting's cards are not
+   * sphere-gated). All-or-nothing; a shortfall charges nothing and is traced.
+   */
+  const handleMeetingSpendEssence = useCallback((testIndex: number, requests: NudgeSpendRequest[]) => {
+    // Priced against the pool this render shows, as `handleCommitNudges` is —
+    // the meeting is modal, so nothing else spends while a test is open.
+    const primarySphere = archetype.sphereAlignment.primary;
+    const spend = spendNudgeEssence(gameState.essencePool, requests, primarySphere);
+    emitTrace({
+      tick: gameState.tick,
+      category: 'meeting.essence_spent',
+      testIndex,
+      primarySphere,
+      spent: spend.spent,
+      ok: spend.ok,
+      summary: spend.ok
+        ? `meeting.essence_spent: test ${testIndex} charged ${spend.spent} (${primarySphere} first)`
+        : `meeting.essence_spent: test ${testIndex} not charged — pool short`,
+    });
+    if (!spend.ok) return;
+    setGameState(prev => ({ ...prev, essencePool: spend.pool }));
+  }, [gameState.essencePool, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
 
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
     // THR-1704: the bond mutates the graph in place and the clock comes back paused,
@@ -5732,6 +5763,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // THR-868: the meeting's nudge cards are a real essence spend, so the
           // stage needs the live pool to know what the player can afford.
           essencePool={gameState.essencePool}
+          onSpendEssence={handleMeetingSpendEssence}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
         />
