@@ -34,7 +34,7 @@ import {
   INCIDENT_PROMPT_COOLDOWN_TICKS,
 } from '../../data/incident-snapshot-constants';
 import { useScry } from './hooks/useScry';
-import { useAgentInteraction } from './hooks/useAgentInteraction';
+import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
 import { hexToWorld } from '../../lib/worldPosition';
@@ -1672,7 +1672,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             id: graphNode.id,
             name: graphNode.name,
             tier: 0 as import('../../types/influence').InfluenceTier,
-            tierName: TIER_NAMES[0],
+            // THR-1710: the avatar has no thread edge, but it is not "Unaware".
+            tierName: unthreadedAgentTierName(graphNode.id, avatarNodeId),
             category: 'agent' as const,
             threadEdgeId: '',
             attentionMode: 'auto_resolve' as const,
@@ -1700,7 +1701,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         return undefined;
       })();
     return detailNode;
-  }, [threadedNodes, gameState.graph]);
+  }, [threadedNodes, gameState.graph, avatarNodeId]);
 
   /**
    * The notices a badge click revealed, snapshotted at click time (THR-935).
