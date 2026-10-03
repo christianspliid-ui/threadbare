@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: cold playtest round 2 is in** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-2.md)): all three new players met and bonded their mortal and called it the best part; the new wall is the mortal’s life playing on autopilot after the bond ([THR-1715](https://linear.app/threadbare/issue/THR-1715), going to design). 13 tickets filed, 9 ready to build.
+- **2026-10-03: a landed Hollow Crown now changes more than the odds** ([THR-1683](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only)): a condition that weakens its bearer now reads as harm, with a loss chip. Merged 09:15 via [#2184](https://github.com/christianspliid-ui/threadbare/pull/2184).
 - **2026-10-03: rival strikes now answer nudge pressure** ([THR-1690](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection)): pressure from your nudges can now cross the detection line, and the strike waits until an encounter can carry it. Merged 08:30 via [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182).
 - **2026-10-03: spells as divine gifts and found tomes are designed** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)): a *Teach a Spell* card, and old books that teach their holder. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1672-spells-as-gifts-and-tomes.md) merged via [#2183](https://github.com/christianspliid-ui/threadbare/pull/2183); veto window open until ~08:50 Sunday.
 - **2026-10-03: a survey of a held lead now keeps its visit** ([THR-1686](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the)). Merged 07:51 via [#2181](https://github.com/christianspliid-ui/threadbare/pull/2181).
@@ -51,8 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: the encounter-writing line now teaches one set of narrator rules** ([THR-1695](https://linear.app/threadbare/issue/THR-1695)), and each brief declares what the engine can do for it. Merged 02:48 via [#2176](https://github.com/christianspliid-ui/threadbare/pull/2176).
 - **2026-10-03: a place's traits now show up in how it is described** ([THR-1522](https://linear.app/threadbare/issue/THR-1522)). Merged 01:39 via [#2175](https://github.com/christianspliid-ui/threadbare/pull/2175).
 - **2026-10-03: Sanctify and Hearthfire Blessing now do something lasting** ([THR-662](https://linear.app/threadbare/issue/THR-662/wire-the-two-remaining-no-op-sanctify-actions-subsanctify-subsanctify)): a blessed place keeps its blessing, and a tavern's owner cannot stack it twice. Merged 00:46 via [#2174](https://github.com/christianspliid-ui/threadbare/pull/2174).
-- **2026-10-02: dialogue cards now take their colour from the moment** ([THR-1586](https://linear.app/threadbare/issue/THR-1586)): story, elder and gain palettes, and the sphere tint on the card face. Merged ~23:45 via [#2173](https://github.com/christianspliid-ui/threadbare/pull/2173).
-- **2026-10-02: jobs inside a veto window now wait their turn** ([THR-1694](https://linear.app/threadbare/issue/THR-1694)): the builder will not start a design you could still veto. Merged 22:39 via [#2172](https://github.com/christianspliid-ui/threadbare/pull/2172).
 
 ---
 
