@@ -196,7 +196,8 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
+import { bondFirstFromMeeting } from './meetingBond';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
@@ -4098,7 +4099,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.graph, gameState.ascendantId, gameState.tick]);
 
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
-    const agentId = createAgentFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick);
+    // THR-1704: the bond mutates the graph in place and the clock comes back paused,
+    // so it must touch the runtime itself or the Threads panel stays "No Threads".
+    const agentId = bondFirstFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick, runtime);
     setMeetingState(null);
 
     // Update familiarity map for the new agent
@@ -4121,7 +4124,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ],
       };
     });
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary, runtime]);
 
   const handleMeetingClose = useCallback(() => {
     // The central interrupt auto-pause resumes the sim (if it auto-paused)
@@ -5136,7 +5139,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             <ActionDrawer
               open={drawerOpen}
               slots={wheelSlots}
-              targetName={selectedRetinueAgent?.name ?? ''}
+              // THR-1705 — any selected mortal, not only a retinue member: the
+              // drawer names who a cast will hit, and most targets are strangers.
+              targetName={selectedRetinueAgent?.name ?? gameState.graph.getNode(selectedAgentId)?.name ?? ''}
               targetLabel={selectedRetinueAgent?.tierName ?? ''}
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
@@ -5249,7 +5254,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       onClose={handleHexDetailClose}
                       onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
-                      onAgentClick={handleAgentSelect}
+                      // THR-1705 — the same opener the map and the Hex Chronicle use.
+                      // `handleAgentSelect` alone moved the cast target and opened the
+                      // drawer but set no thread node, so the row "did nothing" while a
+                      // later cast quietly landed on the mortal clicked here.
+                      onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                       onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
                   )}
