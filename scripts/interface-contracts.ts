@@ -1161,12 +1161,18 @@ export const CONTRACTS: readonly Contract[] = [
     // the template's type and tags and the by-type scan had been offering every mortal's
     // prize back to the pool. `assembleRewardPoolDetailed` is the same assembly with the
     // dedup bookkeeping (`excludedIds`, `bearerAdmitted`) the traces and levers read.
+    // THR-1626: the draw path gained a second producer for the possession it hands over.
+    // After the pool's pick, on a prize draw only, `drawSeededReward` asks
+    // `tryGeneratedReward` (itemGenerator/rewardMinting.ts) whether a generated `found`
+    // thing stands in for an eligible Storied or Mythic artifact; on a substitution the
+    // possession is minted by `mintGeneratedItem` instead of cloned by `instantiateReward`.
+    // The entry points and every unsubstituted draw's write path are unchanged.
     mechanism: {
       kind: 'function',
       symbols: ['assembleRewardPool', 'assembleRewardPoolDetailed', 'heldTemplateIdsOf', 'instantiateReward', 'instantiateAgreementReward'],
       module: 'src/engine/rewardPool.ts',
     },
-    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts'],
+    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts'],
     readSites: [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
@@ -4494,6 +4500,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/itemGenerator/mintGeneratedItem.ts',
       'src/engine/strategicGraphOps.ts',
       'src/engine/itemGenerator/readBack.ts',
+      // THR-1626: the reward draw's minting point mints only a validator-passed item too.
+      'src/engine/itemGenerator/rewardMinting.ts',
     ],
     verifiedLive: {
       date: '2026-09-27',

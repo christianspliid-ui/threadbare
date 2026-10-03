@@ -25,7 +25,25 @@ Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
 - [x] UI renders the output: `ArtifactSheet` *Made by* / *What it does* / *The catch* (generated items only; Law 4).
 - [x] Traces registered in the THR-928 trio (`types/traces/item-generator-traces.ts`).
 - [x] Debug levers: `getGeneratedItems`, `previewGeneratedItem`, `mintGeneratedItem`; CLI `generate items`.
-- [ ] Found-origin minting point (reward draws) — THR-1626; live past for found things — THR-1637.
+- [x] Found-origin minting point (reward draws) — THR-1626, § below; live past for found things — THR-1637.
+
+## Found things in the reward draw — the item generator's second minting point (THR-1626)
+
+Plan: `Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `itemGenerator/rewardMinting.ts` (new — `tryGeneratedReward`) | inside `drawSeededReward` (step resolution's `step_reward_pool`; aftermath `reward_draw` and fight trophies share it) | aftermath reward line → `ArtifactSheet` | graph only | `reward.generated`; `item.generated` via the minter | `forceGeneratedRewards`, `getGeneratedItems` (`origin: 'found'`) |
+| `rewardPool.ts` `drawSeededReward` (edited — calls it after the pick, prize draws only; `SeededRewardDraw.generated`) | same | same | — | existing `content.query_*` unchanged | — |
+| `itemGenerator/generateItem.ts` (edited — `requiredTags`: core eligibility, reach/sphere steering, `missing_required_tags` refusal) | same | — | — | — | `previewGeneratedItem` |
+| `data/item-generator-cores.ts` (edited — `coreTagReach`, `signatureTags`, the `argued_book` core) | — | — | — | — | CLI `generate items --origin found` |
+| `engine/debugGeneratedRewardPin.ts` (new) | — | — | — | — | `forceGeneratedRewards` |
+
+- [x] Engine module called from a live path: `tryGeneratedReward` ← `drawSeededReward` ← `resolveUnifiedReward` / `reward_draw` aftermath / fight trophy.
+- [x] UI renders the output: the reward line names and links the instance (`rewardSentence`), the link opens `ArtifactSheet`, which already reads a generated item; a found thing has no *Made by* row (Law 4).
+- [x] Trace registered in the THR-928 trio (`types/traces/item-generator-traces.ts`, `types/trace.ts`).
+- [x] Debug lever: `forceGeneratedRewards` (`.d.ts` JSDoc).
+- [ ] Not touched: the legacy encounter-progress reward block in `orchestrator.ts` runs its own draw and stays authored (plan § Notes).
 
 ## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
 

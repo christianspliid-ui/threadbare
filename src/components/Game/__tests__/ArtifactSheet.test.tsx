@@ -21,6 +21,9 @@ import {
   ARTIFACT_STORIED_TRAIT_ID,
   ARTIFACT_STORIED_ENCOUNTERS_PER_LEVEL,
 } from '../../../data/artifact-trait-content';
+import { tryGeneratedReward } from '../../../engine/itemGenerator/rewardMinting';
+import { setForceGeneratedRewards } from '../../../engine/debugGeneratedRewardPin';
+import { rewardSentence } from '../../../engine/aftermathWords';
 
 function graphWithMule(): WorldGraph {
   const graph = new WorldGraph();
@@ -251,5 +254,47 @@ describe('ArtifactSheet — a generated item says what it does (THR-1570)', () =
     expect(screen.queryByTestId('artifact-sheet-maker')).toBeNull();
     expect(screen.queryByTestId('artifact-sheet-does')).toBeNull();
     expect(screen.queryByTestId('artifact-sheet-catch')).toBeNull();
+  });
+});
+
+describe('ArtifactSheet — a found thing handed out as a reward (THR-1626)', () => {
+  // The reward path's own write, not a hand-built node: a tier-2 knowledge pick, the
+  // share roll forced, minted by `tryGeneratedReward` onto a mortal in a world with a past.
+  function graphWithFoundReward(): { graph: WorldGraph; id: string } {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'kael', type: 'actor', name: 'Kael Thornweaver', properties: { actorType: 'individual' } } as never);
+    graph.addNode({ id: 'dead_scholar', type: 'actor', name: 'Genner Vale', properties: { actorType: 'individual', npcRole: 'scholar', deceased: true, deceasedTick: 12, deathCause: 'band' } } as never);
+    graph.addNode({ id: 'dead_captain', type: 'actor', name: 'Hesta Ryle', properties: { actorType: 'individual', gender: 'female', deceased: true, deceasedTick: 20, deathCause: 'battle' } } as never);
+    graph.addNode({ id: 'reward_tome_t2', type: 'artifact', name: 'Chronicle of the Falling', properties: { subcategory: 'tomes_scrolls', tier: 2, tags: ['#knowledge', '#tome'] } } as never);
+    setForceGeneratedRewards(true);
+    try {
+      const r = tryGeneratedReward({ graph, seed: 42, tick: 30, recipientId: 'kael', drawnTemplateId: 'reward_tome_t2', requiredTags: ['#knowledge'], site: 'step_reward_pool' });
+      if (!r.substituted) throw new Error(`no substitution: ${r.reason}`);
+      return { graph, id: r.instantiation.instanceId };
+    } finally { setForceGeneratedRewards(false); }
+  }
+
+  it('the reward line names the found thing and links its sheet', () => {
+    const { graph, id } = graphWithFoundReward();
+    const line = rewardSentence({ actorName: 'Kael Thornweaver', rewardName: graph.getNode(id)!.name, rewardId: id, gained: true });
+    expect(line.detail).toBe(`Kael Thornweaver gained ${graph.getNode(id)!.name}.`);
+    expect(line.stateNoun?.entityId).toBe(id);
+  });
+
+  it('shows its story, What it does and the Storied word — and no Made by row (Law 4)', () => {
+    const { graph, id } = graphWithFoundReward();
+    const node = graph.getNode(id)!;
+    render(<ArtifactSheet name={node.name} artifactId={id} graph={graph} onClose={() => {}} />);
+    // A found thing has no maker; the sheet must not invent one.
+    expect(screen.queryByTestId('artifact-sheet-maker')).toBeNull();
+    expect(screen.getByTestId('artifact-sheet-prose').textContent).toContain(String(node.properties.flavorText).slice(0, 30));
+    const does = screen.getByTestId('artifact-sheet-does');
+    expect(does.textContent).toMatch(/What it does/);
+    expect(does.textContent).not.toMatch(/\d/);
+    const catchBlock = screen.queryByTestId('artifact-sheet-catch');
+    if (catchBlock) expect(catchBlock.textContent).not.toMatch(/\d/);
+    // Law 56: the Storied chip is the real has_trait edge the minter wrote.
+    expect(screen.getByTestId('artifact-sheet-traits').textContent).toMatch(/Storied|seen/i);
+    expect(document.body.textContent).not.toContain(String(node.properties.mechanicalSummary));
   });
 });
