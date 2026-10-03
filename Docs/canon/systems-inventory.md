@@ -228,6 +228,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (9) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-719`, `THR-822` |
+| `allegiance` (1) | `allegiance.ts` | `THR-1429`, `THR-1683` |
 | `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `appointments` (1) | `appointments.ts` | `THR-1479` |
@@ -248,7 +249,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `callback` (1) | `callbackEligibility.ts` | — |
 | `calling` (1) | `calling.ts` | `THR-1281`, `THR-1299` |
 | `capability` (1) | `capabilityGrowth.ts` | — |
-| `cast` (2) | `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651` |
+| `cast` (3) | `castChannel.ts`, `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651`, `THR-1683` |
 | `caster` (1) | `casterIdentity.ts` | `THR-1229`, `THR-1230`, `THR-1571` |
 | `chapter` (1) | `chapterArchive.ts` | `THR-603` |
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
@@ -430,4 +431,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 203 engine domains · 623 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 625 modules._
