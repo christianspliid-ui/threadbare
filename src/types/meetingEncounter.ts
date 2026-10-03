@@ -213,6 +213,13 @@ export interface MeetingCandidate {
   appearanceSeed: number;
 }
 
+/**
+ * Who a meeting candidate is drawn as (THR-1712). Stored on the created First as
+ * the node's `gender` property, which the prose resolvers already read for
+ * pronouns (`proseEnrichment.getPronouns`).
+ */
+export type MeetingCandidateGender = 'female' | 'male';
+
 /** A candidate presented as a narrative vignette — no stats visible to the player. */
 export interface NarrativeCandidate {
   /** Temp ID for this candidate (not yet a graph node). */
@@ -237,6 +244,12 @@ export interface NarrativeCandidate {
   imageAssetPath: string;
   /** Gradient fallback when image is missing. */
   placeholderGradient: string;
+  /**
+   * Who the vignette depicts — copied from the vignette so the name, the
+   * portrait, the prose pronouns and the created First agree (THR-1712).
+   * Optional for saved meetings that predate it.
+   */
+  gender?: MeetingCandidateGender;
   /** Hidden axiological profile. */
   axiologicalSeed: AxiologicalProfile;
   /** Hidden reach capabilities (0-1 range). */
@@ -398,6 +411,15 @@ export interface DilemmaInstance {
    * converted path silently unreachable.
    */
   test?: FormativeTest;
+  /**
+   * The source template's resonance tags, when it carries them (THR-1712).
+   *
+   * Same allowlist trap as `test`: the scene-art pickers in
+   * `FormativeTestBeat` / `TestingBeat` read `resonance.emotionalRegister`,
+   * and while the mapper dropped it every scene tied at score 0 and the
+   * backdrop was picked by test index — test 2 was always the burning village.
+   */
+  resonance?: DilemmaResonanceTags;
 }
 
 /**
@@ -527,6 +549,8 @@ export interface MeetingEncounterResult {
   flavorChoices?: FlavorChoices;
   /** Explicit portrait selected during the meeting flow, if one was authored */
   portraitAssetPath?: string;
+  /** Who the First is drawn as — lands on the node as `gender` (THR-1712). */
+  gender?: MeetingCandidateGender;
   /** Appearance PRNG seed */
   appearanceSeed: number;
   /** The full meeting choice record (persisted on thread edge) */

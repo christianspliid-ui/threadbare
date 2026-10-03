@@ -18,7 +18,7 @@ import { TestingBeat } from './TestingBeat';
 import { FormativeTestBeat, type ConvertedTest } from './FormativeTestBeat';
 import { SparkBeat } from './SparkBeat';
 import { BondBeat } from './BondBeat';
-import { generateNarrativeCandidates, generateSparkVisions, buildNarrativeResult, selectDilemmasScored, applyMeetingOutcomes } from '../../engine/meetingEncounter';
+import { generateNarrativeCandidates, generateSparkVisions, bindSparkVisionsToCandidate, buildNarrativeResult, selectDilemmasScored, applyMeetingOutcomes } from '../../engine/meetingEncounter';
 import { buildLensFromIdentity } from '../../engine/ascendantLens';
 import { ENRICHED_DILEMMA_LIBRARY } from '../../data/meeting-dilemma-library';
 import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
@@ -226,10 +226,15 @@ export function MeetTheFirstFlow({
 
   useEffect(() => clearMeetingDebugState, []);
 
-  // Generate spark visions for the selected candidate
+  // Generate spark visions for the selected candidate, each carrying the
+  // candidate's own portrait (THR-1712) — the path cards and the binding card
+  // show the person the player chose, not the catalog's stock figure.
   const sparkVisions = useMemo(() => {
     if (!selectedCandidate) return [];
-    return generateSparkVisions(selectedCandidate.primaryReach, primarySphere, seed + 2);
+    return bindSparkVisionsToCandidate(
+      generateSparkVisions(selectedCandidate.primaryReach, primarySphere, seed + 2),
+      selectedCandidate,
+    );
   }, [selectedCandidate, primarySphere, seed]);
 
   return (

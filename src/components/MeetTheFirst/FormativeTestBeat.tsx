@@ -32,7 +32,7 @@ import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetin
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import type { SphereName } from '../../types/index';
 import { resolveFormativeTest } from '../../engine/meetingEncounter';
-import { selectDilemmaScene } from '../../data/meeting-art-library';
+import { selectSceneForDilemma } from '../../data/meeting-art-library';
 import {
   MEETING_FATE_REVEAL_CONTINUE,
   TESTING_TRANSITION_IN,
@@ -151,12 +151,10 @@ export function FormativeTestBeat({
     }
   }, [revealed, outcomes, index, tests.length, onComplete]);
 
+  // Chosen from what the test is about — its register and the imagery its prose
+  // names — never its position (THR-1712: test 2 used to always burn a village).
   const sceneAsset = current
-    ? selectDilemmaScene(
-        (current.instance as { resonance?: { emotionalRegister?: string[] } }).resonance
-          ?.emotionalRegister ?? [],
-        index,
-      )
+    ? selectSceneForDilemma({ ...current.instance, test: current.test }, seed)
     : null;
 
   const characterPosition = index % 2 === 0 ? 'left' : 'right';
