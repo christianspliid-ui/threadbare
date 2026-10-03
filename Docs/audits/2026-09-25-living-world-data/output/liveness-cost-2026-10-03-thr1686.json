@@ -4,24 +4,24 @@
     "seed": 42,
     "reps": 3,
     "estimator": "median across reps",
-    "ms1_20": 117.6,
-    "ms21_150": 198.2,
-    "ms21_200": 220.8,
-    "meanOfReps21_200": 220.1,
+    "ms1_20": 118.7,
+    "ms21_150": 189.2,
+    "ms21_200": 210.5,
+    "meanOfReps21_200": 211.5,
     "perRep21_200": [
-      220.8,
-      218,
-      221.6
+      215.3,
+      210.5,
+      208.7
     ],
     "perRep1_20": [
-      132.6,
-      117.6,
-      117.2
+      125.3,
+      118.7,
+      117.8
     ],
-    "repSd21_200": 1.5,
+    "repSd21_200": 2.8,
     "repRange21_200": [
-      218,
-      221.6
+      208.7,
+      215.3
     ],
     "deltaSteadyMs": 0,
     "deltaSteadyPct": 0,
@@ -37,42 +37,42 @@
       {
         "phase": "agent_decision",
         "deltaMs": 0,
-        "armMs": 93.45
+        "armMs": 89.52
       },
       {
         "phase": "economic_traits",
         "deltaMs": 0,
-        "armMs": 39.01
+        "armMs": 36.78
       },
       {
         "phase": "unified_action_progress",
         "deltaMs": 0,
-        "armMs": 15.49
+        "armMs": 14.84
       },
       {
         "phase": "effect_tick",
         "deltaMs": 0,
-        "armMs": 10.76
-      },
-      {
-        "phase": "faction_actions",
-        "deltaMs": 0,
-        "armMs": 9.5
+        "armMs": 10.23
       },
       {
         "phase": "reputation_traits",
         "deltaMs": 0,
-        "armMs": 9.46
+        "armMs": 9.25
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": 0,
+        "armMs": 9.12
       },
       {
         "phase": "colocation_detection",
         "deltaMs": 0,
-        "armMs": 5.84
+        "armMs": 5.62
       },
       {
         "phase": "faction_succession",
         "deltaMs": 0,
-        "armMs": 4.2
+        "armMs": 4.07
       }
     ]
   },
@@ -81,24 +81,24 @@
     "seed": 99,
     "reps": 3,
     "estimator": "median across reps",
-    "ms1_20": 150.3,
-    "ms21_150": 250.9,
-    "ms21_200": 269.1,
-    "meanOfReps21_200": 270.5,
+    "ms1_20": 149.2,
+    "ms21_150": 246.6,
+    "ms21_200": 265.1,
+    "meanOfReps21_200": 264.4,
     "perRep21_200": [
-      269.1,
-      264.9,
-      277.4
+      265.1,
+      265.5,
+      262.8
     ],
     "perRep1_20": [
-      163,
-      150.3,
-      148.4
+      148.6,
+      149.2,
+      150.1
     ],
-    "repSd21_200": 5.2,
+    "repSd21_200": 1.2,
     "repRange21_200": [
-      264.9,
-      277.4
+      262.8,
+      265.5
     ],
     "deltaSteadyMs": 0,
     "deltaSteadyPct": 0,
@@ -114,42 +114,42 @@
       {
         "phase": "agent_decision",
         "deltaMs": 0,
-        "armMs": 116.67
+        "armMs": 116.94
       },
       {
         "phase": "economic_traits",
         "deltaMs": 0,
-        "armMs": 57.19
+        "armMs": 53.67
       },
       {
         "phase": "unified_action_progress",
         "deltaMs": 0,
-        "armMs": 14.03
+        "armMs": 13.94
       },
       {
         "phase": "reputation_traits",
         "deltaMs": 0,
-        "armMs": 12.28
-      },
-      {
-        "phase": "faction_actions",
-        "deltaMs": 0,
-        "armMs": 11.67
+        "armMs": 12.04
       },
       {
         "phase": "effect_tick",
         "deltaMs": 0,
-        "armMs": 11.58
+        "armMs": 11.4
+      },
+      {
+        "phase": "faction_actions",
+        "deltaMs": 0,
+        "armMs": 11.37
       },
       {
         "phase": "colocation_detection",
         "deltaMs": 0,
-        "armMs": 6.64
+        "armMs": 6.71
       },
       {
         "phase": "faction_succession",
         "deltaMs": 0,
-        "armMs": 5.37
+        "armMs": 5.27
       }
     ]
   },
@@ -158,75 +158,75 @@
     "seed": 42,
     "reps": 3,
     "estimator": "median across reps",
-    "ms1_20": 117.4,
-    "ms21_150": 196.7,
-    "ms21_200": 217.4,
-    "meanOfReps21_200": 217.2,
+    "ms1_20": 118.1,
+    "ms21_150": 189.8,
+    "ms21_200": 205.7,
+    "meanOfReps21_200": 205.8,
     "perRep21_200": [
-      217.4,
-      213.1,
-      221.2
+      205.3,
+      206.5,
+      205.7
     ],
     "perRep1_20": [
-      128.2,
-      117.4,
-      116.7
+      126.2,
+      118.1,
+      117.3
     ],
-    "repSd21_200": 3.3,
+    "repSd21_200": 0.5,
     "repRange21_200": [
-      213.1,
-      221.2
+      205.3,
+      206.5
     ],
-    "deltaSteadyMs": -3.4,
-    "deltaSteadyPct": -1.5,
-    "deltaWarmPct": -0.1,
+    "deltaSteadyMs": -4.8,
+    "deltaSteadyPct": -2.3,
+    "deltaWarmPct": -0.5,
     "decidersStartEnd": [
       20,
-      16
+      17
     ],
-    "aliveMortalsEnd": 634,
-    "eventsEmitted": 17647,
+    "aliveMortalsEnd": 637,
+    "eventsEmitted": 17515,
     "lever": {},
     "phasesMoved": [
       {
+        "phase": "agent_decision",
+        "deltaMs": -5.88,
+        "armMs": 83.64
+      },
+      {
         "phase": "economic_traits",
-        "deltaMs": -0.78,
-        "armMs": 38.24
+        "deltaMs": 1.44,
+        "armMs": 38.22
       },
       {
         "phase": "unified_action_progress",
         "deltaMs": -0.77,
-        "armMs": 14.72
-      },
-      {
-        "phase": "effect_tick",
-        "deltaMs": -0.45,
-        "armMs": 10.31
-      },
-      {
-        "phase": "colocation_detection",
-        "deltaMs": -0.4,
-        "armMs": 5.44
-      },
-      {
-        "phase": "agent_decision",
-        "deltaMs": -0.31,
-        "armMs": 93.14
-      },
-      {
-        "phase": "faction_actions",
-        "deltaMs": -0.2,
-        "armMs": 9.3
+        "armMs": 14.07
       },
       {
         "phase": "groups",
-        "deltaMs": 0.1,
-        "armMs": 1.45
+        "deltaMs": 0.3,
+        "armMs": 1.6
+      },
+      {
+        "phase": "battle_tick",
+        "deltaMs": 0.23,
+        "armMs": 2.11
+      },
+      {
+        "phase": "colocation_detection",
+        "deltaMs": 0.13,
+        "armMs": 5.75
       },
       {
         "phase": "condition_decay",
-        "deltaMs": -0.08,
-        "armMs": 0.68
+        "deltaMs": -0.1,
+        "armMs": 0.64
+      },
+      {
+        "phase": "faction_succession",
+        "deltaMs": 0.09,
+        "armMs": 4.16
       }
     ]
   },
@@ -235,75 +235,75 @@
     "seed": 99,
     "reps": 3,
     "estimator": "median across reps",
-    "ms1_20": 150.9,
-    "ms21_150": 251.8,
-    "ms21_200": 274.7,
-    "meanOfReps21_200": 276.2,
+    "ms1_20": 148.9,
+    "ms21_150": 243.1,
+    "ms21_200": 262.8,
+    "meanOfReps21_200": 264.4,
     "perRep21_200": [
-      274.7,
-      272,
-      281.8
+      262.4,
+      262.8,
+      268.1
     ],
     "perRep1_20": [
-      165.5,
-      148.3,
-      150.9
+      149.7,
+      148.9,
+      148
     ],
-    "repSd21_200": 4.1,
+    "repSd21_200": 2.6,
     "repRange21_200": [
-      272,
-      281.8
+      262.4,
+      268.1
     ],
-    "deltaSteadyMs": 5.7,
-    "deltaSteadyPct": 2.1,
-    "deltaWarmPct": 0.4,
+    "deltaSteadyMs": -2.3,
+    "deltaSteadyPct": -0.9,
+    "deltaWarmPct": -0.2,
     "decidersStartEnd": [
       23,
       19
     ],
     "aliveMortalsEnd": 799,
-    "eventsEmitted": 21585,
+    "eventsEmitted": 21556,
     "lever": {},
     "phasesMoved": [
       {
-        "phase": "agent_decision",
-        "deltaMs": 4.65,
-        "armMs": 121.32
-      },
-      {
         "phase": "unified_action_progress",
-        "deltaMs": -0.64,
-        "armMs": 13.39
+        "deltaMs": -1.21,
+        "armMs": 12.73
       },
       {
         "phase": "battle_tick",
-        "deltaMs": -0.58,
-        "armMs": 1.65
-      },
-      {
-        "phase": "effect_tick",
-        "deltaMs": 0.27,
-        "armMs": 11.85
+        "deltaMs": -0.65,
+        "armMs": 1.57
       },
       {
         "phase": "colocation_detection",
-        "deltaMs": -0.23,
-        "armMs": 6.41
+        "deltaMs": -0.55,
+        "armMs": 6.16
       },
       {
         "phase": "economic_traits",
-        "deltaMs": -0.21,
-        "armMs": 56.98
+        "deltaMs": 0.48,
+        "armMs": 54.15
+      },
+      {
+        "phase": "agent_decision",
+        "deltaMs": 0.35,
+        "armMs": 117.28
+      },
+      {
+        "phase": "effect_tick",
+        "deltaMs": 0.21,
+        "armMs": 11.61
       },
       {
         "phase": "strategic_projects",
-        "deltaMs": 0.17,
-        "armMs": 1.48
+        "deltaMs": 0.18,
+        "armMs": 1.5
       },
       {
-        "phase": "personality_trait_emerge",
-        "deltaMs": 0.16,
-        "armMs": 2.01
+        "phase": "reputation_traits",
+        "deltaMs": -0.16,
+        "armMs": 11.88
       }
     ]
   }

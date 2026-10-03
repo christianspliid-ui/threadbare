@@ -265,7 +265,7 @@ function writeMemberRoute(state: GameState, member: GraphNode, destinationId: st
   if (!fromId || fromId === destinationId) return false;
   // THR-1686 — a member waiting at its appointment is not walked off on a trip it
   // cannot be back from; the company goes on without it (same test as the decision hold).
-  if (holdsWaitingMemberAtPlace(state, member.id, destinationId, state.tick)) return false;
+  if (holdsWaitingMemberAtPlace(state, member.id, destinationId, state.tick, 'company')) return false;
 
   let path: ReturnType<typeof findShortestPath> = null;
   try {

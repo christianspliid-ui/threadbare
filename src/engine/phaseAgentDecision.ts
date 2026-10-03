@@ -1089,7 +1089,25 @@ export function phaseAgentDecision(
           rerankForAppointmentRegime(list, regime, regime === 'waiting' ? waitingOverruns : overruns);
         const hadSelection = decision.selected !== null;
         decision.rankedCandidates = rerank(decision.rankedCandidates);
-        decision.topCandidates = rerank(decision.topCandidates);
+        // THR-1686 — the live board reads `topCandidates` alone, which the scorer cut
+        // at its top five. For `waiting`, re-cut it from the reranked full list, so a
+        // local encounter ranked sixth survives a filter that emptied the five (local
+        // work stays, whatever it costs); an entry appended above (the arrival goal) is
+        // kept when the re-cut does not already hold it. `leaning` and `departing` keep
+        // the scorer's five, reranked in place: their `overruns` prices a hex at one
+        // tick, so widening their board lets in trips that only look as if they fit —
+        // measured over twelve seeds, re-cutting leaning too took kept visits 16 → 15
+        // and delves 3 → 2, and re-cutting departing raised missed appointments 18 → 22.
+        if (regime !== 'waiting') {
+          decision.topCandidates = rerank(decision.topCandidates);
+        } else {
+          const topSize = decision.topCandidates.length;
+          const reTop = decision.rankedCandidates.slice(0, topSize);
+          for (const c of rerank(decision.topCandidates)) {
+            if (!reTop.some(t => t.entry === c.entry)) reTop.push(c);
+          }
+          decision.topCandidates = reTop;
+        }
         decision.selected = hadSelection ? (decision.rankedCandidates[0] ?? null) : null;
         if (regime === 'departing') {
           appointmentWorkBudget = budget;
@@ -2190,10 +2208,10 @@ export function phaseAgentDecision(
 
         // THR-1686 — a mortal waiting at its appointment does not drift, or get forced
         // out, on a trip it cannot be back from: the same hold company travel asks.
-        const heldAtAppointment = (targetId: string): boolean =>
+        const heldAtAppointment = (targetId: string, by: 'idle_drift' | 'forced_travel'): boolean =>
           appointmentCtx?.regime === 'waiting'
-          && holdsWaitingMemberAtPlace(state, agentId, targetId, state.tick);
-        if (idle.action === 'drift' && idle.targetLocationId && !heldAtAppointment(idle.targetLocationId)) {
+          && holdsWaitingMemberAtPlace(state, agentId, targetId, state.tick, by);
+        if (idle.action === 'drift' && idle.targetLocationId && !heldAtAppointment(idle.targetLocationId, 'idle_drift')) {
           // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
           const hexPath = buildHexMovementPath(
             graph,
@@ -2241,7 +2259,7 @@ export function phaseAgentDecision(
             }
           }
 
-          if (nearestContentLocId && !heldAtAppointment(nearestContentLocId)) {
+          if (nearestContentLocId && !heldAtAppointment(nearestContentLocId, 'forced_travel')) {
             // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
             const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
             let didMove = false;

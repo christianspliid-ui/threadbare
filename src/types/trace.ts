@@ -3693,6 +3693,13 @@ export interface AppointmentRegimeTrace extends TraceBase {
   leaveMargin: number;
   /** True when this tick queued the journey to the place. */
   journeyQueued?: boolean;
+  /**
+   * THR-1686 — set when the waiting hold kept the mortal at the place: where it would
+   * have gone (`heldFrom`, a location id) and which mover was refused (`heldBy`). Fires
+   * on every hold, not on change, so a mortal that stayed behind can be explained.
+   */
+  heldFrom?: string;
+  heldBy?: 'idle_drift' | 'forced_travel' | 'company';
 }
 
 /** Trace: present in the window; the kept sequel fired at the place. */

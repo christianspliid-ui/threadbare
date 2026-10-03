@@ -3954,7 +3954,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/decisionBoard.ts'],
     verifiedLive: {
       date: '2026-10-03',
-      evidence: 'THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on seeds 42 · 99 (1 · 3 decisions), and arms p12 (part 3 off) vs all (on) were identical on seeds 42 · 99 · 4 · 8 — kept visits 2 · 4 · 1 · 2 both ways — so the discount does not lower kept visits (the plan’s keep condition).',
+      evidence: 'THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on 3 decisions on seed 99 and on seeds 1, 2, 3 and 7 (1 · 1 · 3 · 3), and on seeds 42 · 99 · 4 · 8 arms p12 (part 3 off) vs all (on) kept 6 vs 7 visits — the discount does not lower kept visits (the plan’s keep condition).',
     },
   },
   {

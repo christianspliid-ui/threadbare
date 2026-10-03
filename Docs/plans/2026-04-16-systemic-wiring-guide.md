@@ -4332,7 +4332,7 @@ They change how a mortal *chooses*, so authored content needs nothing new:
   `APPOINTMENT_DISCOUNT_ON_BOARD`). Before this it scaled `finalScore`, which the live board never
   reads.
 
-Inspect: `decision_board_comparison.boardTop[]` (`forecastZone`, `appointmentDiscount`);
+Inspect: `decision_board_comparison.boardTop[]` (`forecastZone`, `appointmentDiscount`); `appointment_regime` with `heldFrom` / `heldBy` for every hold;
 `readers/lead-survey-arms.ts` for the census.
 
 Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI

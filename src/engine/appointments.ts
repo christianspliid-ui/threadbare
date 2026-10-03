@@ -48,7 +48,7 @@ import type { GraphEdge, GraphNode } from '../types/graph';
 import type { GameState } from '../types/gameState';
 import type { AxiologicalProfile } from '../types/agent';
 import type { AppointmentBlock, PendingEncounterSeed, PlantedAppointment } from '../types/unifiedAction';
-import type { AppointmentPlantedTrace, AppointmentRegime } from '../types/trace';
+import type { AppointmentPlantedTrace, AppointmentRegime, AppointmentRegimeTrace } from '../types/trace';
 import type { WorldGraph } from './graph';
 import { hexDistance } from '../lib/hexMath';
 import { emitTrace } from './traceBuffer';
@@ -607,14 +607,33 @@ export function holdsWaitingMemberAtPlace(
   agentId: string,
   destinationId: string,
   tick: number,
+  heldBy?: 'idle_drift' | 'forced_travel' | 'company',
 ): boolean {
   if (!APPOINTMENT_WAITING_HOLD_ENABLED) return false;
   if (agentAppointmentSeeds(state, agentId).length === 0) return false;
   const ctx = resolveAppointmentContext(state, agentId, tick, { courage_prudence: 0, loyalty_ambition: 0 });
   if (!ctx || ctx.regime !== 'waiting') return false;
   const destHex = resolveLocationToHex(state.graph, destinationId);
-  if (!destHex) return true;
-  return waitingTripOverruns(0, hexDistance(destHex, ctx.slack.placeHex), ctx.appointment.dueTick - tick);
+  const held = !destHex
+    || waitingTripOverruns(0, hexDistance(destHex, ctx.slack.placeHex), ctx.appointment.dueTick - tick);
+  // A hold is traced every time it refuses a mover — a mortal that stays behind while
+  // its idle trace, or its company, says it went must be explainable (NFP #2).
+  if (held && heldBy) {
+    emitTrace({
+      category: 'appointment_regime',
+      tick,
+      agentId,
+      seedId: ctx.seed.seedId,
+      regime: ctx.regime,
+      slack: ctx.slack.slack,
+      travelTicks: ctx.slack.travelTicks,
+      leaveMargin: ctx.leaveMargin,
+      heldFrom: destinationId,
+      heldBy,
+      summary: `${state.graph.getNode(agentId)?.name ?? agentId} stays for the meeting at ${state.graph.getNode(ctx.appointment.locationId)?.name ?? ctx.appointment.locationId} — ${heldBy.replace('_', ' ')} to ${state.graph.getNode(destinationId)?.name ?? destinationId} held`,
+    } as AppointmentRegimeTrace & { summary: string });
+  }
+  return held;
 }
 
 /**
