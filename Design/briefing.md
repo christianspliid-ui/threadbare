@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 14:57 local (12:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 15:57 local (13:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,20 +31,20 @@ Say "veto first asks", "veto found things", "veto old banner" or "veto spell gif
 
 ## Queue
 
-**18 jobs ready** (backed up, but draining: the round-2 playtest added 9 bugs at once).
+**17 jobs ready** (backed up, but draining: down one this hour).
 
-- **Just landed:** [developer text no longer reaches a player's build](https://linear.app/threadbare/issue/THR-1707), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
-- **Next up (Urgent):** [The First asks](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her), the round-2 playtest's top problem. Its plan merged this hour ([#2194](https://github.com/christianspliid-ui/threadbare/pull/2194)) and it is ready to build.
-- **Then, from the playtest (Medium):** [THR-1708](https://linear.app/threadbare/issue/THR-1708), [THR-1709](https://linear.app/threadbare/issue/THR-1709), [THR-1710](https://linear.app/threadbare/issue/THR-1710), [THR-1711](https://linear.app/threadbare/issue/THR-1711).
-- **Being built, stuck:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). [Pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued but clashes with main, has no checks, and has had no push for ~5½ h. The code is safe on the pull request; nothing is left uncommitted on disk. A builder's job.
+- **Just landed:** [player text cleaned up](https://linear.app/threadbare/issue/THR-1708): no doubled "the", spell names on the lines that report them, and a nudge only counts as yours when you played it. That is the sixth round-2 playtest bug fixed. Merged via [#2195](https://github.com/christianspliid-ui/threadbare/pull/2195) and already live.
+- **Next up (Urgent):** [The First asks](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her), the round-2 playtest's top problem. Its plan is merged and it is ready to build. Nobody has started it yet.
+- **Then, from the playtest (Medium):** [THR-1709](https://linear.app/threadbare/issue/THR-1709), [THR-1710](https://linear.app/threadbare/issue/THR-1710), [THR-1711](https://linear.app/threadbare/issue/THR-1711).
+- **Being built, stuck:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting). [Pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued but clashes with main, has no checks, and has had no push for ~6½ h. The code is safe on the pull request; nothing is left uncommitted on disk. A builder's job.
 - **Built, waiting to merge:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert): [pull request #2180](https://github.com/christianspliid-ui/threadbare/pull/2180) clashes with main and no checks have started. A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has had no owner on the board for ~10½ h. The code is safe on the pull request; nothing is left uncommitted on disk. The spell-gifts design waits on it. A builder's job.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has had no owner on the board for ~11½ h. The code is safe on the pull request; nothing is left uncommitted on disk. The spell-gifts design waits on it. A builder's job.
 - **Old jobs at the bottom:** two have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Neither is blocked; newer work keeps outranking them.
 
 ## Health
 
 - **Three pull requests clash with main and cannot merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator, unqueued), [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw) and [#2186](https://github.com/christianspliid-ui/threadbare/pull/2186) (held blessing). GitHub has scheduled no checks on #2180 or #2186. Each one needs main merged in and a push, which also restarts its checks. A builder's job.
 - **The heavy simulation tests are red on the latest main.** A follow-up fix is owed. A builder's job.
-- **The simulation is still slower than its weekly norm.** A builder's job: tick cost 152 ms/tick steady, 66% above the 7-day median (92, 119 rows since fed7ba93); top phase agent_decision, 548 agents. Name the merges between fed7ba93 and f8463b71: git log --oneline --merges fed7ba93..f8463b71
-- **The worktree reaper has 6 worktrees waiting for a decision** (446 worktrees and 307 local branches on disk; last run 14:40). That is the reaper's own job; noted for visibility.
-- Everything else is green. The live site is up to date (the commits since the last build were docs only), and all 11 scheduled tasks are on time.
+- **The simulation is still slower than its weekly norm.** A builder's job: tick cost 149 ms/tick steady, 61% above the 7-day median (92, 119 rows since 580ce6d9); top phase agent_decision, 548 agents. Name the merges between 580ce6d9 and 193c75d7: git log --oneline --merges 580ce6d9..193c75d7
+- **The worktree reaper has 6 worktrees waiting for a decision** (444 worktrees and 307 local branches on disk; last run 15:47). That is the reaper's own job; noted for visibility.
+- Everything else is green. The live site is serving the latest main (193c75d7), and all 11 scheduled tasks are on time.
