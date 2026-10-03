@@ -25,7 +25,7 @@ const CONVERTED = ENRICHED_DILEMMA_LIBRARY.filter((t) => t.test != null);
 const TEMPLATE = CONVERTED[0];
 const TEST = TEMPLATE.test as FormativeTest;
 const PRIMARY: SphereName = 'life';
-const START_POOL = { life: 50, force: 50, gold: 50, darkness: 50 } as unknown as EssencePool;
+const START_POOL = { life: 50, force: 50, darkness: 50 } as unknown as EssencePool;
 
 /** The cheapest priced card — affordable in any pool the harness holds. */
 const PRICED = [...TEST.nudges].filter((n) => n.essenceCost > 0).sort((a, b) => a.essenceCost - b.essenceCost)[0];
@@ -81,7 +81,7 @@ describe('THR-1706 (3) — a formative test with cards spends essence', () => {
     expect(latestPool.life).toBeCloseTo(START_POOL.life - PRICED.essenceCost, 9);
     // Nothing else moved: the meeting's cards bill the primary first.
     expect(latestPool.force).toBe(START_POOL.force);
-    expect(latestPool.gold).toBe(START_POOL.gold);
+    expect(latestPool.darkness).toBe(START_POOL.darkness);
   });
 
   it('an empty hand charges nothing', () => {

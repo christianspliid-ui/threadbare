@@ -88,7 +88,7 @@ function buildGraph(): WorldGraph {
   return graph;
 }
 
-const POOL = { life: 50, force: 50, gold: 50 } as unknown as EssencePool;
+const POOL = { life: 50, force: 50, darkness: 50 } as unknown as EssencePool;
 
 function buildState(withIdentity: boolean): GameState {
   return {
