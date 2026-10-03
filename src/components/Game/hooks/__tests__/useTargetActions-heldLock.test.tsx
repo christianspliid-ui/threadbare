@@ -23,7 +23,7 @@ import { CardFace } from '../../../shared/CardFace';
 import type { GameState } from '../../../../types/gameState';
 import type { ControlEffect } from '../../../../types/controlEffect';
 import type { TargetContext } from '../../../../types/targetContext';
-import type { AscendantArchetype } from '../../../../types';
+import type { AscendantArchetype } from '../../../../types/influence';
 
 const ASCENDANT = 'asc.test';
 const TAVERN = 'loc.tavern';

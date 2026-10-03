@@ -528,7 +528,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     });
   }
 
-  if (counts.byUnlock > 0 || counts.byReach > 0) {
+  // THR-1700: a held lock also emits, so "why is this card locked?" has a trace.
+  if (counts.byUnlock > 0 || counts.byReach > 0 || counts.byHeld > 0) {
     emitTrace({
       category: 'target_action_filter',
       summary: 'action.gate.unlock_filter',
@@ -544,6 +545,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       filteredByEssence: counts.byEssence,
       filteredByRange: counts.byRange,
       filteredByReach: counts.byReach,
+      lockedByHeld: counts.byHeld,
       slotsGenerated: slots.length,
     });
   }

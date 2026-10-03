@@ -4,6 +4,7 @@ import type { TargetContext } from '../../types/targetContext';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EssencePool } from '../../types/influence';
 import type { ControlEffect } from '../../types/controlEffect';
+import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -925,6 +926,16 @@ describe('getTargetActionSlots — held lock (filter 10, THR-1700)', () => {
   it('leaves stacking verbs (consecrate) castable on purpose', () => {
     const [slot] = slotsFor('sub.sanctify', [heldEffect({ templateId: 'sub.sanctify' })]);
     expect(slot.available).toBe(true);
+  });
+
+  it('emits a target_action_filter trace counting the held lock', () => {
+    enableTracing();
+    clearTraces();
+    slotsFor('sub.sanctify_tavern', [heldEffect()]);
+    const traces = getTraces().filter(t => t.category === 'target_action_filter');
+    disableTracing();
+    expect(traces).toHaveLength(1);
+    expect((traces[0] as { lockedByHeld?: number }).lockedByHeld).toBe(1);
   });
 
   it('fails open when no owner is supplied', () => {
