@@ -269,7 +269,7 @@ const out: Record<string, unknown> = { undertakingModel: UNDERTAKING_MODEL, tick
 for (const seed of seeds) {
   resetEventCounter(); resetReputationTraitInit();
   const rt = createSimulationRuntime();
-  enableTracing();
+  if (process.env.CENSUS_TRACE !== '0') enableTracing();
   const pr = MAP_SIZE_PRESETS.medium;
   let { state } = initializeGameState(
     generateArchetypes(4, seed)[0], 'C', createBalancedCosmology(), seed, pr.cols, pr.rows,
