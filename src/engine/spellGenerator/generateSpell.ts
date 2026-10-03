@@ -27,7 +27,8 @@ import { SPELL_CORES, SPELL_RIDERS } from '../../data/spell-generator-cores';
 import {
   SPELL_GEN_CONDITIONS, SPELL_GEN_CORE_REPEAT_DECAY, SPELL_GEN_FOUNDATION_MIN_TIER, SPELL_GEN_FOUNDATION_SHELF_WEIGHT,
   SPELL_GEN_FOUNDATION_SHELVES, SPELL_GEN_MAGNITUDE_BY_TIER, SPELL_GEN_MASS_NOUNS, SPELL_GEN_MAX_RIDERS,
-  SPELL_GEN_PRICE as P, SPELL_GEN_RIDER_CHANCE_BY_TIER, SPELL_GEN_SPHERES, SPELL_NOTICE_SEVERITY_BY_TIER, STRAIN_PAIR, THEME_PRICE_LEAN,
+  SPELL_GEN_MISCASTS, SPELL_GEN_NAME_IMPERATIVE_CHANCE, SPELL_GEN_NAME_SPHERE_NOUN_CHANCE, SPELL_GEN_PRICE as P,
+  SPELL_GEN_RIDER_CHANCE_BY_TIER, SPELL_GEN_SPHERES, SPELL_GEN_THEME_REACH_WEIGHT, SPELL_NOTICE_SEVERITY_BY_TIER, STRAIN_PAIR, THEME_PRICE_LEAN,
   THEME_REACH, THEME_VICE, TIER_PRICE_WINDOW, TRADITION_ENV,
 } from '../../data/spell-generator-tables';
 import { GENERATED_SPELL_ID_PREFIX, SPELL_TEMPLATES } from '../../data/spell-templates';
@@ -129,23 +130,14 @@ export function priceWeights(row: TraditionRow, tier: SpellGenTier): Partial<Rec
 
 interface Miscast { readonly effect: AttachmentEffect; readonly narrative: string }
 
+/** Build a miscast from its authored row (`SPELL_GEN_MISCASTS`); an unknown key falls back to exhaustion. */
 function miscast(key: string, c: CoreContext): Miscast {
-  const self = (cond: string, ticks: readonly [number, number, number, number], narrative: string): Miscast => ({
-    effect: { type: 'inflict_condition', conditionTraitId: SPELL_GEN_CONDITIONS[cond].id, target: 'self', durationTicks: c.t(ticks) },
-    narrative,
-  });
-  switch (key) {
-    case 'heavy_steps': return { effect: { type: 'modify_rules', scope: { scope: 'self' }, rule: 'movement_cost_multiplier', value: 1.5, ticks: c.t([12, 12, 24, 36]) }, narrative: "{actor}'s legs turn heavy, and every road is longer for a while." };
-    case 'snapback': return { effect: { type: 'modify_rules', scope: { scope: 'self' }, rule: 'cooldown_multiplier', value: 2.0, ticks: c.t([24, 24, 48, 72]) }, narrative: 'Time snaps back on {actor}, and their workings are slow to return.' };
-    case 'blinded': return { effect: { type: 'modify_rules', scope: { scope: 'self' }, rule: 'awareness_range_bonus', value: -1, ticks: c.t([24, 24, 36, 48]) }, narrative: 'The dark closes in around {actor}, and they notice less than they should.' };
-    case 'self_wounded': return self('wounded', [24, 24, 36, 48], 'The working rebounds, and {actor} is left Wounded.');
-    case 'self_terrified': return self('terrified', [24, 24, 36, 48], 'Something looks back at {actor}, and they are left Terrified.');
-    case 'self_shaken': return self('shaken', [24, 24, 36, 48], "{actor}'s own judgement slips, and they are left Shaken.");
-    case 'self_cursed': return self('cursed', [24, 36, 48, 72], 'The rot turns inward, and {actor} is left Cursed.');
-    case 'self_grieving': return self('grieving', [24, 36, 48, 72], 'Something is taken from {actor}, and they are left Grieving.');
-    case 'self_exhausted':
-    default: return self('exhausted', [12, 24, 36, 48], 'It takes everything {actor} has, and they are left Exhausted.');
-  }
+  const row = SPELL_GEN_MISCASTS[key] ?? SPELL_GEN_MISCASTS.self_exhausted;
+  const ticks = c.t(row.ticks);
+  const effect: AttachmentEffect = row.kind === 'condition'
+    ? { type: 'inflict_condition', conditionTraitId: SPELL_GEN_CONDITIONS[row.condition].id, target: 'self', durationTicks: ticks }
+    : { type: 'modify_rules', scope: { scope: 'self' }, rule: row.rule, value: row.value, ticks };
+  return { effect, narrative: row.narrative };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -184,7 +176,7 @@ export function generateSpell(req: SpellGenRequest): GeneratedSpell | null {
   // 3. The Reach it leans on: the sphere's pulls, nudged toward the tradition's primary theme.
   const themeReach = THEME_REACH[row.themes[0]];
   const reachWeights: Partial<Record<ReachDomain, number>> = { ...S.reaches };
-  reachWeights[themeReach] = (reachWeights[themeReach] ?? 0) + 3;
+  reachWeights[themeReach] = (reachWeights[themeReach] ?? 0) + SPELL_GEN_THEME_REACH_WEIGHT;
   const leanReach = draw<ReachDomain>('reach', reachWeights) ?? themeReach;
 
   const ctx: CoreContext = {
@@ -358,13 +350,13 @@ function composeName(n: NameRequest): string {
     const k = `name.${attempt}`;
     const F = n.pickOf(`${k}.f`, n.names.nouns) ?? 'Working';
     let name: string;
-    const imperative = n.agency === 'deliberate' && !!n.names.verbs?.length && !!n.names.objects?.length && n.roll(`${k}.imp`) < 0.6;
+    const imperative = n.agency === 'deliberate' && !!n.names.verbs?.length && !!n.names.objects?.length && n.roll(`${k}.imp`) < SPELL_GEN_NAME_IMPERATIVE_CHANCE;
     if (imperative) {
       name = `${n.pickOf(`${k}.verb`, n.names.verbs!)} ${n.pickOf(`${k}.obj`, n.names.objects!)}`;
     } else if (F.includes(' ')) {
       name = F;
     } else {
-      const useSphere = n.roll(`${k}.sph`) < 0.3 || tAll.length === 0;
+      const useSphere = n.roll(`${k}.sph`) < SPELL_GEN_NAME_SPHERE_NOUN_CHANCE || tAll.length === 0;
       const T = (useSphere ? n.pickOf(`${k}.t`, S.noun) : n.pickOf(`${k}.t`, tAll)) ?? 'Old';
       const isMass = n.row.mass.includes(T) || SPELL_GEN_MASS_NOUNS.includes(T);
       const A = n.pickOf(`${k}.a`, S.adj) ?? 'Old';

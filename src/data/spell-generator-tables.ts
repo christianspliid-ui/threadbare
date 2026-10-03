@@ -160,6 +160,34 @@ export const SPELL_GEN_PRICE = {
   carriedViceDriftLimit: -0.5,
 } as const;
 
+/**
+ * The cast miscasts — what a deliberate spell's backlash does, one authored row each.
+ * Only effects that write (§ Data tables): a self-inflicted condition, or a timed rule
+ * override on the caster. A sphere names the rows it may bite with (`SPELL_GEN_SPHERES[*].miscasts`).
+ */
+export type SpellMiscastRow =
+  | { readonly kind: 'condition'; readonly condition: string; readonly ticks: ByTier<number>; readonly narrative: string }
+  | { readonly kind: 'rule'; readonly rule: 'movement_cost_multiplier' | 'cooldown_multiplier' | 'awareness_range_bonus'; readonly value: number; readonly ticks: ByTier<number>; readonly narrative: string };
+
+export const SPELL_GEN_MISCASTS: Readonly<Record<string, SpellMiscastRow>> = {
+  heavy_steps: { kind: 'rule', rule: 'movement_cost_multiplier', value: 1.5, ticks: [12, 12, 24, 36], narrative: "{actor}'s legs turn heavy, and every road is longer for a while." },
+  snapback: { kind: 'rule', rule: 'cooldown_multiplier', value: 2.0, ticks: [24, 24, 48, 72], narrative: 'Time snaps back on {actor}, and their workings are slow to return.' },
+  blinded: { kind: 'rule', rule: 'awareness_range_bonus', value: -1, ticks: [24, 24, 36, 48], narrative: 'The dark closes in around {actor}, and they notice less than they should.' },
+  self_wounded: { kind: 'condition', condition: 'wounded', ticks: [24, 24, 36, 48], narrative: 'The working rebounds, and {actor} is left Wounded.' },
+  self_terrified: { kind: 'condition', condition: 'terrified', ticks: [24, 24, 36, 48], narrative: 'Something looks back at {actor}, and they are left Terrified.' },
+  self_shaken: { kind: 'condition', condition: 'shaken', ticks: [24, 24, 36, 48], narrative: "{actor}'s own judgement slips, and they are left Shaken." },
+  self_cursed: { kind: 'condition', condition: 'cursed', ticks: [24, 36, 48, 72], narrative: 'The rot turns inward, and {actor} is left Cursed.' },
+  self_grieving: { kind: 'condition', condition: 'grieving', ticks: [24, 36, 48, 72], narrative: 'Something is taken from {actor}, and they are left Grieving.' },
+  self_exhausted: { kind: 'condition', condition: 'exhausted', ticks: [12, 24, 36, 48], narrative: 'It takes everything {actor} has, and they are left Exhausted.' },
+};
+
+/** How strongly a tradition's primary theme pulls the Reach a spell leans on (added to the sphere's own pull). */
+export const SPELL_GEN_THEME_REACH_WEIGHT = 3;
+
+/** Name grammar: how often a cast spell takes the card form (*Bar the Road*), and how often a name borrows the sphere's noun. */
+export const SPELL_GEN_NAME_IMPERATIVE_CHANCE = 0.6;
+export const SPELL_GEN_NAME_SPHERE_NOUN_CHANCE = 0.3;
+
 // ═══════════════════════════════════════════════════════════════════
 // Themes: price lean, Reach, vice, arenas
 // ═══════════════════════════════════════════════════════════════════
