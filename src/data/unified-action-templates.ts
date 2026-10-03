@@ -261,6 +261,7 @@ import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
+import { HIRED_KNIVES_TEMPLATE } from './encounters/hired-knives';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5782,6 +5783,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
+  HIRED_KNIVES_TEMPLATE,
 ];
 
 /**
@@ -5939,6 +5941,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
+  HIRED_KNIVES_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

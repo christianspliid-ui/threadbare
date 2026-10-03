@@ -288,6 +288,11 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   // reader: `cell.observe.location`'s appointment payoff names both by query.
   T('#ruin_lead', 'family', 'A held lead followed to the ruin itself, to see where it lies.', ['encounter_template']),
   T('#lead_gone_cold', 'family', 'A visit to a lead\'s ruin that was never made.', ['encounter_template']),
+  // THR-1703 — what a rival sends when a god's help draws too much notice in one
+  // region. Seated on its runtime readers: the detection planter
+  // (`recordDetectionCrossings`) and the Infiltrator's Approach seed, both of which
+  // name the `shadow.rival_strike` family that `ENCOUNTER_FAMILY_TAGS` maps here.
+  T('#rival_strike', 'family', 'A rival\'s people, sent for a mortal whose god was noticed.', ['encounter_template']),
   // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),

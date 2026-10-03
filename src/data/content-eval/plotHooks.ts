@@ -217,7 +217,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'discovery'],
     reaches: ['eye', 'shadow'],
     source: 'Hook #207 — vertical-slice.ts (Riders Behind the Caravan)',
-    usedBy: ['encounter.slice.riders_behind_caravan'],
+    usedBy: ['encounter.slice.riders_behind_caravan', 'encounter.rival.hired_knives'],
   },
 
   // ── Adventure & Quest archetypes (vault) ──────────────────────────

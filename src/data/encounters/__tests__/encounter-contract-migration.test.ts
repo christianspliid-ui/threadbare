@@ -106,6 +106,8 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.mill_lease_auction',
   'encounter.town.inheritance_wake',
   'encounter.town.flood_dyke_mending',
+  // THR-1703 — nudge-native, seed-only rival strike.
+  'encounter.rival.hired_knives',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {
