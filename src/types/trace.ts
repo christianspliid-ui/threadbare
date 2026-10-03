@@ -1984,7 +1984,7 @@ export interface ScoringTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this candidate (already in `finalScore`). */
     forecastFit?: number;
     /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */
@@ -3043,7 +3043,7 @@ export interface EngagementDecisionTrace extends TraceBase {
     /** Mean demanded proficiency after the scale offset; NaN when unknown. */
     difficulty: number;
     fit: number;
-    zone: 'refused' | 'below' | 'in' | 'above';
+    zone: 'refused' | 'below' | 'in' | 'above' | 'certain';
     exempt?: 'too_easy';
   }>;
   chosenId: string | null;
@@ -3084,11 +3084,13 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this entry (already in `score`). */
     forecastFit?: number;
     /** THR-1582 — where the entry's forecast sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
     /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
     leadPull?: number;
+    /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
+    appointmentDiscount?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;

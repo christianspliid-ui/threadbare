@@ -66,6 +66,8 @@ import {
   APPOINTMENT_PULL_HORIZON_TICKS,
   APPOINTMENT_PULL_WEIGHT,
   APPOINTMENT_WINDOW_TICKS,
+  APPOINTMENT_OVERRUN_DISCOUNT,
+  APPOINTMENT_DISCOUNT_ON_BOARD,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -533,4 +535,49 @@ export const APPOINTMENT_REGIME_WORDS: Readonly<Record<AppointmentRegime | 'plac
 
 function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));
+}
+
+// ─── The regime's rerank (THR-1479, THR-1686) ─────────────────────────────
+
+/** The shape of an encounter candidate the regime reranks — `ScoredCandidate`'s fields, without importing it (see the module header). */
+export interface AppointmentRerankable {
+  readonly finalScore: number;
+  readonly hexDistanceToEntry: number;
+  readonly appointmentDiscount?: number;
+}
+
+/**
+ * What an appointment regime does to the encounter candidates, given which of them
+ * would outlast the time left (`overruns`):
+ *
+ * - **leaning** — an overrunning candidate is discounted by `APPOINTMENT_OVERRUN_DISCOUNT`
+ *   on `finalScore` and, while `APPOINTMENT_DISCOUNT_ON_BOARD`, carries the same
+ *   number as `appointmentDiscount` so the live board (which never reads
+ *   `finalScore`) sees it (THR-1686 part 3). Re-sorted by `finalScore`.
+ * - **departing** — an overrunning candidate is dropped.
+ * - **waiting** — an overrunning candidate *off the mortal's own hex* is dropped;
+ *   local work stays, whatever it costs (THR-1686 part 2). An unknown distance is
+ *   not local.
+ *
+ * Pure. The caller decides whether `waiting` is held at all
+ * (`APPOINTMENT_WAITING_HOLD_ENABLED`).
+ */
+export function rerankForAppointmentRegime<C extends AppointmentRerankable>(
+  list: readonly C[],
+  regime: 'leaning' | 'departing' | 'waiting',
+  overruns: (c: C) => boolean,
+): C[] {
+  if (regime === 'leaning') {
+    return list
+      .map(c => (overruns(c)
+        ? {
+          ...c,
+          finalScore: c.finalScore * APPOINTMENT_OVERRUN_DISCOUNT,
+          ...(APPOINTMENT_DISCOUNT_ON_BOARD ? { appointmentDiscount: APPOINTMENT_OVERRUN_DISCOUNT } : {}),
+        }
+        : c))
+      .sort((a, b) => b.finalScore - a.finalScore);
+  }
+  if (regime === 'waiting') return list.filter(c => !(c.hexDistanceToEntry !== 0 && overruns(c)));
+  return list.filter(c => !overruns(c));
 }

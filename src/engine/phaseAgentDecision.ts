@@ -55,7 +55,7 @@ import {
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
   DECISION_REEVALUATION_TICKS,
   APPOINTMENT_JOURNEY_PULL,
-  APPOINTMENT_OVERRUN_DISCOUNT,
+  APPOINTMENT_WAITING_HOLD_ENABLED,
 } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -75,6 +75,7 @@ import {
   appointmentPlaceLocationId,
   readRegimeMemo,
   resolveAppointmentContext,
+  rerankForAppointmentRegime,
   APPOINTMENT_REGIME_MEMO_PROP,
   type AppointmentContext,
 } from './appointments';
@@ -249,7 +250,9 @@ function buildEngagementDecisionTrace(
   });
   const reason: EngagementDecisionTrace['reason'] = !winner
     ? 'idle'
-    : winner.forecastZone === 'in' ? 'in_window' : 'best_available';
+    // THR-1686 — a 'certain' winner (a held lead's survey) was not discounted by the
+    // window; it won on its own terms, the same as an in-window one.
+    : winner.forecastZone === 'in' || winner.forecastZone === 'certain' ? 'in_window' : 'best_available';
   return {
     id: 0,
     tick,
@@ -1058,9 +1061,15 @@ export function phaseAgentDecision(
       // left — if the board still outvotes the promise, that is traced, never
       // forced. A running undertaking is never abandoned here: its checkpoints
       // already defer on absence, and that deferral is the price of the walk.
+      // THR-1686 — Waiting: the mortal is at the place. A candidate off its own hex
+      // that would outlast the time left is dropped; local work, and a far trip it
+      // can be back from, stay open. The strategic work budget is not applied.
+      // Leaning's discount also rides on the candidate as `appointmentDiscount`,
+      // because the live board never reads `finalScore`.
       let appointmentJourneyQueued = false;
       let appointmentWorkBudget: number | null = null;
-      if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing')) {
+      if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing'
+        || (appointmentCtx.regime === 'waiting' && APPOINTMENT_WAITING_HOLD_ENABLED))) {
         const { slack, appointment, regime } = appointmentCtx;
         // Hex distances stand in for travel ticks here, the same proxy the scorer's
         // own travel cost uses; the priced path is reserved for the slack itself.
@@ -1071,11 +1080,8 @@ export function phaseAgentDecision(
           const there = Number.isFinite(c.hexDistanceToEntry) ? c.hexDistanceToEntry : Infinity;
           return c.entry.totalTickCost + there + onward > budget;
         };
-        const rerank = (list: ScoredCandidate[]): ScoredCandidate[] => regime === 'leaning'
-          ? list
-              .map(c => (overruns(c) ? { ...c, finalScore: c.finalScore * APPOINTMENT_OVERRUN_DISCOUNT } : c))
-              .sort((a, b) => b.finalScore - a.finalScore)
-          : list.filter(c => !overruns(c));
+        const rerank = (list: ScoredCandidate[]): ScoredCandidate[] =>
+          rerankForAppointmentRegime(list, regime, overruns);
         const hadSelection = decision.selected !== null;
         decision.rankedCandidates = rerank(decision.rankedCandidates);
         decision.topCandidates = rerank(decision.topCandidates);
@@ -1305,6 +1311,7 @@ export function phaseAgentDecision(
               ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
               ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
+              ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
             })),
             agreement,
             boardFamily,
