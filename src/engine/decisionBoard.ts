@@ -131,6 +131,7 @@ import {
 } from '../data/strategic-action-constants';
 import { heldTownAffinity, type HoldStanding } from './holdStanding';
 import { computeEngagementFit, type EngagementZone } from './engagementWindow';
+import { CLUE_LEAD_SURVEY_SKIPS_WINDOW } from './ruins/constants';
 import { META_VALUE_PAIR } from '../types/agent';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -222,6 +223,13 @@ export interface BoardEntry {
    * `score`; absent on every other entry.
    */
   readonly leadPull?: number;
+  /**
+   * THR-1686 — the `leaning` appointment discount on an encounter that would outlast
+   * the slack (`APPOINTMENT_OVERRUN_DISCOUNT`), already folded into `score`; absent on
+   * every other entry. It used to scale `finalScore` only, which this board never
+   * reads — the same dead-multiplier shape `arrivalCommitment` documents.
+   */
+  readonly appointmentDiscount?: number;
 }
 
 export interface BoardResult {
@@ -550,14 +558,18 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       && candidate.entry.templateId === goal.templateId
       && (goal.locationId === undefined || candidate.entry.locationId === goal.locationId);
     const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
+    // THR-1686 — set by the appointment regime only while `APPOINTMENT_DISCOUNT_ON_BOARD`.
+    const appointmentDiscount = candidate.appointmentDiscount;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
       evt: candidate.valuePerTick,
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
-      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment,
+      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
+        * (appointmentDiscount ?? 1),
       ...(isGoal ? { arrivalCommitment } : {}),
+      ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,
@@ -574,9 +586,21 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const checkpointDifficulty = template?.cellVariant && candidate.objectTier
       ? UNDERTAKING_VERB_DIFFICULTY[template.cellVariant][candidate.objectTier - 1]
       : template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
-    const advanceProbability = forecastAdvanceProbability(proficiency, checkpointDifficulty);
+    // THR-1686 — a survey of a held lead (instant, carrying `leadPull`) has no dice:
+    // it completes at `INSTANT_COMPLETION_BAND` and never rolls. The window would be
+    // judging a roll that never happens, so the board takes it as certain. Every
+    // other instant cell still faces the window — exempting them all was measured
+    // at +560% to +2120% `observe` undertakings and rejected.
+    const certain = CLUE_LEAD_SURVEY_SKIPS_WINDOW
+      && candidate.executionMode === 'instant'
+      && candidate.leadPull !== undefined;
+    const advanceProbability = certain
+      ? 1
+      : forecastAdvanceProbability(proficiency, checkpointDifficulty);
     // THR-1582 — an undertaking's forecast is its checkpoint advance probability.
-    const engagement = computeEngagementFit(advanceProbability, courageLean, consecutiveFailures);
+    const engagement: { fit: number; zone: EngagementZone } = certain
+      ? { fit: 1, zone: 'certain' }
+      : computeEngagementFit(advanceProbability, courageLean, consecutiveFailures);
     const payoff = resolveUndertakingPayoff(template, candidate.objectTier);
 
     // A candidate has not started, so the whole undertaking is remaining.

@@ -55,7 +55,7 @@ import {
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
   DECISION_REEVALUATION_TICKS,
   APPOINTMENT_JOURNEY_PULL,
-  APPOINTMENT_OVERRUN_DISCOUNT,
+  APPOINTMENT_WAITING_HOLD_ENABLED,
 } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -75,6 +75,9 @@ import {
   appointmentPlaceLocationId,
   readRegimeMemo,
   resolveAppointmentContext,
+  rerankForAppointmentRegime,
+  waitingTripOverruns,
+  holdsWaitingMemberAtPlace,
   APPOINTMENT_REGIME_MEMO_PROP,
   type AppointmentContext,
 } from './appointments';
@@ -249,7 +252,9 @@ function buildEngagementDecisionTrace(
   });
   const reason: EngagementDecisionTrace['reason'] = !winner
     ? 'idle'
-    : winner.forecastZone === 'in' ? 'in_window' : 'best_available';
+    // THR-1686 — a 'certain' winner (a held lead's survey) was not discounted by the
+    // window; it won on its own terms, the same as an in-window one.
+    : winner.forecastZone === 'in' || winner.forecastZone === 'certain' ? 'in_window' : 'best_available';
   return {
     id: 0,
     tick,
@@ -1058,9 +1063,15 @@ export function phaseAgentDecision(
       // left — if the board still outvotes the promise, that is traced, never
       // forced. A running undertaking is never abandoned here: its checkpoints
       // already defer on absence, and that deferral is the price of the walk.
+      // THR-1686 — Waiting: the mortal is at the place. A candidate off its own hex
+      // that would outlast the time left is dropped; local work, and a far trip it
+      // can be back from, stay open. The strategic work budget is not applied.
+      // Leaning's discount also rides on the candidate as `appointmentDiscount`,
+      // because the live board never reads `finalScore`.
       let appointmentJourneyQueued = false;
       let appointmentWorkBudget: number | null = null;
-      if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing')) {
+      if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing'
+        || (appointmentCtx.regime === 'waiting' && APPOINTMENT_WAITING_HOLD_ENABLED))) {
         const { slack, appointment, regime } = appointmentCtx;
         // Hex distances stand in for travel ticks here, the same proxy the scorer's
         // own travel cost uses; the priced path is reserved for the slack itself.
@@ -1071,14 +1082,32 @@ export function phaseAgentDecision(
           const there = Number.isFinite(c.hexDistanceToEntry) ? c.hexDistanceToEntry : Infinity;
           return c.entry.totalTickCost + there + onward > budget;
         };
-        const rerank = (list: ScoredCandidate[]): ScoredCandidate[] => regime === 'leaning'
-          ? list
-              .map(c => (overruns(c) ? { ...c, finalScore: c.finalScore * APPOINTMENT_OVERRUN_DISCOUNT } : c))
-              .sort((a, b) => b.finalScore - a.finalScore)
-          : list.filter(c => !overruns(c));
+        // THR-1686 — waiting prices the trip there and back at the hex-priced rate.
+        const waitingOverruns = (c: ScoredCandidate): boolean =>
+          waitingTripOverruns(c.entry.totalTickCost, c.hexDistanceToEntry, budget);
+        const rerank = (list: ScoredCandidate[]): ScoredCandidate[] =>
+          rerankForAppointmentRegime(list, regime, regime === 'waiting' ? waitingOverruns : overruns);
         const hadSelection = decision.selected !== null;
         decision.rankedCandidates = rerank(decision.rankedCandidates);
-        decision.topCandidates = rerank(decision.topCandidates);
+        // THR-1686 — the live board reads `topCandidates` alone, which the scorer cut
+        // at its top five. For `waiting`, re-cut it from the reranked full list, so a
+        // local encounter ranked sixth survives a filter that emptied the five (local
+        // work stays, whatever it costs); an entry appended above (the arrival goal) is
+        // kept when the re-cut does not already hold it. `leaning` and `departing` keep
+        // the scorer's five, reranked in place: their `overruns` prices a hex at one
+        // tick, so widening their board lets in trips that only look as if they fit —
+        // measured over twelve seeds, re-cutting leaning too took kept visits 16 → 15
+        // and delves 3 → 2, and re-cutting departing raised missed appointments 18 → 22.
+        if (regime !== 'waiting') {
+          decision.topCandidates = rerank(decision.topCandidates);
+        } else {
+          const topSize = decision.topCandidates.length;
+          const reTop = decision.rankedCandidates.slice(0, topSize);
+          for (const c of rerank(decision.topCandidates)) {
+            if (!reTop.some(t => t.entry === c.entry)) reTop.push(c);
+          }
+          decision.topCandidates = reTop;
+        }
         decision.selected = hadSelection ? (decision.rankedCandidates[0] ?? null) : null;
         if (regime === 'departing') {
           appointmentWorkBudget = budget;
@@ -1305,6 +1334,7 @@ export function phaseAgentDecision(
               ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
               ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
+              ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
             })),
             agreement,
             boardFamily,
@@ -2176,7 +2206,12 @@ export function phaseAgentDecision(
           });
         }
 
-        if (idle.action === 'drift' && idle.targetLocationId) {
+        // THR-1686 — a mortal waiting at its appointment does not drift, or get forced
+        // out, on a trip it cannot be back from: the same hold company travel asks.
+        const heldAtAppointment = (targetId: string, by: 'idle_drift' | 'forced_travel'): boolean =>
+          appointmentCtx?.regime === 'waiting'
+          && holdsWaitingMemberAtPlace(state, agentId, targetId, state.tick, by);
+        if (idle.action === 'drift' && idle.targetLocationId && !heldAtAppointment(idle.targetLocationId, 'idle_drift')) {
           // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
           const hexPath = buildHexMovementPath(
             graph,
@@ -2224,7 +2259,7 @@ export function phaseAgentDecision(
             }
           }
 
-          if (nearestContentLocId) {
+          if (nearestContentLocId && !heldAtAppointment(nearestContentLocId, 'forced_travel')) {
             // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
             const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
             let didMove = false;

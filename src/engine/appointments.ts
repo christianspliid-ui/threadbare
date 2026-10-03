@@ -48,7 +48,7 @@ import type { GraphEdge, GraphNode } from '../types/graph';
 import type { GameState } from '../types/gameState';
 import type { AxiologicalProfile } from '../types/agent';
 import type { AppointmentBlock, PendingEncounterSeed, PlantedAppointment } from '../types/unifiedAction';
-import type { AppointmentPlantedTrace, AppointmentRegime } from '../types/trace';
+import type { AppointmentPlantedTrace, AppointmentRegime, AppointmentRegimeTrace } from '../types/trace';
 import type { WorldGraph } from './graph';
 import { hexDistance } from '../lib/hexMath';
 import { emitTrace } from './traceBuffer';
@@ -66,6 +66,9 @@ import {
   APPOINTMENT_PULL_HORIZON_TICKS,
   APPOINTMENT_PULL_WEIGHT,
   APPOINTMENT_WINDOW_TICKS,
+  APPOINTMENT_OVERRUN_DISCOUNT,
+  APPOINTMENT_DISCOUNT_ON_BOARD,
+  APPOINTMENT_WAITING_HOLD_ENABLED,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -533,4 +536,119 @@ export const APPOINTMENT_REGIME_WORDS: Readonly<Record<AppointmentRegime | 'plac
 
 function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));
+}
+
+// ─── The regime's rerank (THR-1479, THR-1686) ─────────────────────────────
+
+/** The shape of an encounter candidate the regime reranks — `ScoredCandidate`'s fields, without importing it (see the module header). */
+export interface AppointmentRerankable {
+  readonly finalScore: number;
+  readonly hexDistanceToEntry: number;
+  readonly appointmentDiscount?: number;
+}
+
+/**
+ * What an appointment regime does to the encounter candidates, given which of them
+ * would outlast the time left (`overruns`):
+ *
+ * - **leaning** — an overrunning candidate is discounted by `APPOINTMENT_OVERRUN_DISCOUNT`
+ *   on `finalScore` and, while `APPOINTMENT_DISCOUNT_ON_BOARD`, carries the same
+ *   number as `appointmentDiscount` so the live board (which never reads
+ *   `finalScore`) sees it (THR-1686 part 3). Re-sorted by `finalScore`.
+ * - **departing** — an overrunning candidate is dropped.
+ * - **waiting** — an overrunning candidate *off the mortal's own hex* is dropped;
+ *   local work stays, whatever it costs (THR-1686 part 2). An unknown distance is
+ *   not local. The caller prices `overruns` for this regime with
+ *   `waitingTripOverruns`.
+ *
+ * Pure. The caller decides whether `waiting` is held at all
+ * (`APPOINTMENT_WAITING_HOLD_ENABLED`).
+ */
+export function rerankForAppointmentRegime<C extends AppointmentRerankable>(
+  list: readonly C[],
+  regime: 'leaning' | 'departing' | 'waiting',
+  overruns: (c: C) => boolean,
+): C[] {
+  if (regime === 'leaning') {
+    return list
+      .map(c => (overruns(c)
+        ? {
+          ...c,
+          finalScore: c.finalScore * APPOINTMENT_OVERRUN_DISCOUNT,
+          ...(APPOINTMENT_DISCOUNT_ON_BOARD ? { appointmentDiscount: APPOINTMENT_OVERRUN_DISCOUNT } : {}),
+        }
+        : c))
+      .sort((a, b) => b.finalScore - a.finalScore);
+  }
+  if (regime === 'waiting') return list.filter(c => c.hexDistanceToEntry === 0 || !overruns(c));
+  return list.filter(c => !overruns(c));
+}
+
+/**
+ * THR-1686 — does a mortal `waiting` at its appointment stay put rather than follow a
+ * company route to `destinationId`?
+ *
+ * Company travel (`groups/groupMovement.ts`) writes every member's route in
+ * `phaseGroups`, outside the decision phase, so the regime block never sees it. On
+ * seed 99 a company walked a waiting surveyor one hex off the ruin it was due at, and
+ * the visit was lost three ticks later. The test is the decision hold's: a trip off the
+ * place's hex whose way there and back does not fit before the due tick. A company
+ * route carries no encounter cost, so the walk is priced the way a hex-priced
+ * appointment is (`APPOINTMENT_HEX_TICKS_PER_HEX` a hex) — at one tick a hex, the
+ * seed-99 trip (one hex, two ticks left) read as returnable and was not held. A trip
+ * it can be back from is not held, and nor is anyone not `waiting`.
+ *
+ * The regime's margin does not matter here — `waiting` is standing on the place's hex,
+ * whatever the margin — so a neutral profile is passed. Fail-soft: no context, no hold;
+ * a destination with no hex is held (staying at the place is what waiting means).
+ */
+export function holdsWaitingMemberAtPlace(
+  state: Pick<GameState, 'pendingEncounterSeeds'> & { graph: WorldGraph },
+  agentId: string,
+  destinationId: string,
+  tick: number,
+  heldBy?: 'idle_drift' | 'forced_travel' | 'company',
+): boolean {
+  if (!APPOINTMENT_WAITING_HOLD_ENABLED) return false;
+  if (agentAppointmentSeeds(state, agentId).length === 0) return false;
+  const ctx = resolveAppointmentContext(state, agentId, tick, { courage_prudence: 0, loyalty_ambition: 0 });
+  if (!ctx || ctx.regime !== 'waiting') return false;
+  const destHex = resolveLocationToHex(state.graph, destinationId);
+  const held = !destHex
+    || waitingTripOverruns(0, hexDistance(destHex, ctx.slack.placeHex), ctx.appointment.dueTick - tick);
+  // A hold is traced every time it refuses a mover — a mortal that stays behind while
+  // its idle trace, or its company, says it went must be explainable (NFP #2).
+  if (held && heldBy) {
+    emitTrace({
+      category: 'appointment_regime',
+      tick,
+      agentId,
+      seedId: ctx.seed.seedId,
+      regime: ctx.regime,
+      slack: ctx.slack.slack,
+      travelTicks: ctx.slack.travelTicks,
+      leaveMargin: ctx.leaveMargin,
+      heldFrom: destinationId,
+      heldBy,
+      summary: `${state.graph.getNode(agentId)?.name ?? agentId} stays for the meeting at ${state.graph.getNode(ctx.appointment.locationId)?.name ?? ctx.appointment.locationId} — ${heldBy.replace('_', ' ')} to ${state.graph.getNode(destinationId)?.name ?? destinationId} held`,
+    } as AppointmentRegimeTrace & { summary: string });
+  }
+  return held;
+}
+
+/**
+ * THR-1686 — would a mortal standing at its appointment's place be back in time from
+ * this trip? Way there and way back are the same `hexesAway`, each hex priced at
+ * `APPOINTMENT_HEX_TICKS_PER_HEX` (the hex-priced appointment's own rate), plus the
+ * work's own `workTicks`. A trip on the place's own hex never overruns (local work
+ * stays, whatever it costs); an unknown distance always does.
+ *
+ * Why not the `departing` test (`totalTickCost + hexes`, one tick a hex): it read a
+ * one-hex encounter with seven ticks of real cost as returnable, and on seed 2 the
+ * waiting surveyor took it and lost the visit. `departing` keeps its own test.
+ */
+export function waitingTripOverruns(workTicks: number, hexesAway: number, ticksLeft: number): boolean {
+  if (hexesAway === 0) return false;
+  if (!Number.isFinite(hexesAway)) return true;
+  return workTicks + 2 * hexesAway * APPOINTMENT_HEX_TICKS_PER_HEX > ticksLeft;
 }
