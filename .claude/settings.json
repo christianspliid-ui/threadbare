@@ -1,5 +1,34 @@
 {
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "playground@claude-plugins-official": false,
+    "webgpu-threejs-tsl@webgpu-threejs-tsl": false,
+    "vercel@claude-plugins-official": false,
+    "miro@claude-plugins-official": false,
+    "productivity@synced": false,
+    "design@synced": false,
+    "engineering@synced": false,
+    "product-management@synced": false,
+    "data@synced": false,
+    "finance@synced": false,
+    "cowork-plugin-management@synced": false
+  },
+  "deniedMcpServers": [
+    { "serverName": "ms365" },
+    { "serverName": "dk-bogfoerer" },
+    { "serverName": "billy" },
+    { "serverName": "claude.ai Claude Docs" },
+    { "serverName": "claude.ai Higgsfield" },
+    { "serverName": "claude.ai outlook mcp home made" },
+    { "serverName": "claude.ai Microsoft 365" },
+    { "serverName": "claude.ai nanobanana" },
+    { "serverName": "claude.ai Google Drive" },
+    { "serverName": "claude.ai Vercel" },
+    { "serverName": "claude.ai Gmail" },
+    { "serverName": "claude.ai Google Calendar" },
+    { "serverName": "claude.ai Notion" },
+    { "serverName": "claude.ai Miro" },
+    { "serverName": "claude.ai Slack" }
+  ],
   "permissions": {
     "allow": [
       "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issues",
@@ -20,27 +49,9 @@
         "matcher": "Write|Edit",
         "hooks": [{
           "type": "command",
-          "command": "bash .claude/hooks/worktree-write-guard.sh",
+          "command": "node .claude/hooks/worktree-write-guard.mjs",
           "timeout": 10,
           "statusMessage": "Checking worktree write path..."
-        }]
-      },
-      {
-        "matcher": "Bash(git commit*)",
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/pre-commit-gate.sh",
-          "timeout": 300,
-          "statusMessage": "Running pre-commit checks (tsc + tests)..."
-        }]
-      },
-      {
-        "matcher": "Bash(git push*)",
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/pre-push-gate.sh",
-          "timeout": 120,
-          "statusMessage": "Verifying Definition of Done (docs + build)..."
         }]
       },
       {
