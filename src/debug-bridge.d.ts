@@ -2390,7 +2390,9 @@ export interface DebugBridge {
    *  `huntedBy[]` (THR-1560, plan doc 6): the mortals with an active hunt
    *  (`cell.destroy.monster`, `work: 'hunt'`) or tracking (`cell.observe.monster`,
    *  `work: 'track'`) project on the monster, each with the door that admits them today —
-   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does. */
+   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does.
+   *  `apex` (THR-1698): the apex card id (`golem.colossus` / `behemoth.ancient`) when the
+   *  monster grew into one as its lair went legendary (THR-1682); absent otherwise. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
   /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4
