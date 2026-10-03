@@ -601,8 +601,8 @@ exit
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 14 total — 2 write, 2 read, 10 unclassified
-- **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
+- **Production hits:** 15 total — 3 write, 2 read, 10 unclassified
+- **Write sites:** `src/engine/itemGenerator/rewardMinting.ts`, `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
 - **Other hits:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/contentQuery.ts`, `src/engine/debugWorldSpawnTools.ts` +5 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
@@ -1475,10 +1475,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Reward Pool*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/rewardPool.ts`, `src/types/contentQuery.ts`
-- **Other hits:** `src/data/fight-ending-content.ts`, `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/fight-ending-content.ts`, `src/engine/encounterAftermath.ts`, `src/engine/itemGenerator/rewardMinting.ts`, `src/engine/unifiedActionResolution.ts`, `src/types/traces/item-generator-traces.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-victory-earns-gratitude-and-standing` — 🔵 UNVERIFIED-OK
@@ -1967,10 +1967,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Effects & Conditions
 - **UL terms:** *Condition*, *Curse*, *Blessing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 31 total — 1 write, 3 read, 27 unclassified
+- **Production hits:** 32 total — 1 write, 3 read, 28 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/strategicActionLifecycle.ts`
-- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/game-config.ts` +22 more
+- **Other hits:** `src/components/Game/momentBadgeModel.ts`, `src/data/action-template-content.ts`, `src/data/ambition-minting-rules.ts`, `src/data/culture-content.ts`, `src/data/game-config.ts` +23 more
 - **Verdict:** Verified 2026-09-07: THR-1429. On seed 42 small a motive-gated `cell.create.condition` left reward_condition_nightmares on npc_10 with sign=curse, inflictedBy=npc_11 and ticksRemaining=19 (24 from CURSE_DURATION_TICKS_BY_BAND.success, decayed 5 by conditionDecay — the live reader), plus an undertaking_outcome event carrying harmClass=afflicted, victim npc_10, culprit npc_11. `cell.destroy.power` left reward_condition_null_touched with sign=seal and the bearer reading sealed through the effect walker. The blessing arm registers no harm, and the stranger arm refuses no_sign — both falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, along with the cross-bearer guard: a second wielder of the same shared spell node is NOT sealed when the first is cursed.
 
 ### `mortal-learns-a-spell` — 🟢 LIVE
@@ -2027,10 +2027,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 30 total — 3 write, 1 read, 26 unclassified
+- **Production hits:** 31 total — 3 write, 1 read, 27 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +21 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +22 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `pilgrim-way-reaches-location-and-faction-sheets` — 🟢 LIVE
@@ -2154,10 +2154,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 341 total — 1 write, 1 read, 339 unclassified
+- **Production hits:** 342 total — 1 write, 1 read, 340 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +334 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +335 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2247,10 +2247,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Attachment*, *Outcome Band*
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 11 total — 2 write, 1 read, 8 unclassified
+- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
-- **Other hits:** `src/data/encounters/bell-at-the-exchange.ts`, `src/data/fight-ending-content.ts`, `src/engine/contentQuery.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/rewardPool.ts` +3 more
+- **Other hits:** `src/data/encounters/bell-at-the-exchange.ts`, `src/data/fight-ending-content.ts`, `src/engine/contentQuery.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/itemGenerator/rewardMinting.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ring-is-a-group-that-stays` — 🔵 UNVERIFIED-OK
@@ -2650,10 +2650,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 67 total — 3 write, 4 read, 60 unclassified
+- **Production hits:** 68 total — 3 write, 4 read, 61 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +55 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +56 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK

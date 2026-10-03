@@ -271,7 +271,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
-| `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-689`, `THR-878` |
+| `debug` (8) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugGeneratedRewardPin.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-1626`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `decision` (2) | `decisionBoard.ts`, `decisionTier.ts` | `THR-1292`, `THR-1329`, `THR-1348`, `THR-1349` |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-1650`, `THR-452`, `THR-506` |
@@ -324,7 +324,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
 | `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
-| `itemgenerator` (9) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1637` |
+| `itemgenerator` (10) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/rewardMinting.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1626`, `THR-1637` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
@@ -431,4 +431,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 626 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 628 modules._
