@@ -4443,6 +4443,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     divineReceiptPending: activeReceipt !== null,
     momentPending: pendingMoment !== null,
     chapterLedgerOpen,
+    courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
   });
   const otherInterruptOpen = interruptResolution.otherThanMomentOpen;
@@ -4477,7 +4478,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (debugPanelOpen) openModals.push('DebugPanel');
     if (settingsPanelOpen) openModals.push('SettingsPanel');
     if (readThreadsOpen) openModals.push('ReadTheThreadsPanel');
-    if (scryVisible) openModals.push('ScryOverlay');
     if (agendaPickerOpen && !!pendingAgendas) openModals.push('AgendaPicker');
     if (drawerOpen && !!selectedAgentId) openModals.push('ActionDrawer');
     if (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId) openModals.push('ActionDrawer');
@@ -5407,7 +5407,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       </AnimateMount>
 
       {/* Scry overlay */}
-      <AnimateMount show={scryVisible} animation="anim-fade">
+      {/* THR-1709: no AnimateMount — its animated wrapper is a stacking context
+          that trapped the court under the top bar. The overlay portals itself to
+          <body> and carries its own fade-in. */}
+      {scryVisible && (
         <ScryProvider
           value={{
             scryState,
@@ -5420,12 +5423,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAssign: handleScryAssign,
             onDemote: handleScryDemote,
             onClose: handleCloseScry,
-            onAgentSelect: handleAgentSelect,
+            // THR-1709: choosing a courtier leaves the court, so the action drawer
+            // it opens is never hidden behind the (now body-level) overlay.
+            onAgentSelect: (agentId: string) => {
+              handleCloseScry();
+              handleAgentSelect(agentId);
+            },
           }}
         >
           <ScryOverlay />
         </ScryProvider>
-      </AnimateMount>
+      )}
 
       {/* Harvest overlay */}
       <AnimateMount show={harvestResult !== null} animation="anim-fade">
