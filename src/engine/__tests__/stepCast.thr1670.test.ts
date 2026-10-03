@@ -263,7 +263,13 @@ describe('THR-1670 — the band decides the cast, and the record freezes it', ()
 
     const chips = buildCastChanges(updatedAction.stepCasts, buildFightChipWorld(state.graph));
     expect(chips.length).toBe(record!.writes!.length);
-    expect(chips.every(c => c.category === 'scar')).toBe(true);
+    // The price chips are scars; THR-1683's cast channel (the crown's aura, held) is
+    // the one boon, and its sentence names the spell once, never lowercased.
+    const channelChip = chips.find(c => c.id.startsWith('cast-chip-cast_condition-'));
+    expect(channelChip).toMatchObject({ category: 'boon', direction: 'gain', title: 'Pact of the Hollow Crown' });
+    expect(channelChip?.detail).toBe('Pact of the Hollow Crown holds around Ilse for a while.');
+    expect(chips.filter(c => c !== channelChip).every(c => c.category === 'scar')).toBe(true);
+    expect(chips.some(c => /leaves Ilse pact of the hollow crown/i.test(c.detail ?? ''))).toBe(false);
     const model = stepCastModelFor(state.graph, record);
     expect(model).toMatchObject({ spellName: 'Pact of the Hollow Crown', landed: true, casterName: 'Ilse' });
   });

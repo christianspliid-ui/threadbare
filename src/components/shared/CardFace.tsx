@@ -66,6 +66,7 @@ import { CardKeywordChip } from './CardKeywordChip';
 import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
+import { sphereWord } from './formatEssence';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
 // These name the same tokens `EncounterVeil.tsx` and `NudgePhaseShell.tsx` use;
@@ -248,6 +249,13 @@ export interface CardFaceModel {
   readonly sphereTint?: SphereName;
   /** Effective essence price, after any discount. */
   readonly cost: number;
+  /**
+   * THR-1706 — the sphere whose pool pays {@link cost}, named in words after
+   * the price. A card the god's primary sphere pays for (a sphere-less or
+   * reach-only card) otherwise gave no sign that, say, Life would be billed for
+   * a Gold path. Ignored on a free card. Absent ⇒ the price alone, as before.
+   */
+  readonly costSphere?: SphereName;
   /** Emphasise the price, as an unaffordable card does. */
   readonly costEmphasised?: boolean;
   /** Zone 4. */
@@ -501,6 +509,20 @@ export function CardFace({
                 data-testid={`${p}-cost-${id}`}
               />
             </MaybeTooltip>
+            {model.costSphere && model.cost > 0 && (
+              <span
+                data-testid={`${p}-cost-sphere-${id}`}
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'var(--text-xs)',
+                  color: sphereBrightToken(model.costSphere),
+                  letterSpacing: '0.04em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {sphereWord(model.costSphere)}
+              </span>
+            )}
           </span>
         </div>
 

@@ -49,6 +49,13 @@ export const TIER_NAMES: Record<InfluenceTier, string> = {
   4: 'Aspect',
 };
 
+/**
+ * The badge the god's own avatar wears where a threaded mortal shows its tier.
+ * The avatar carries no thread edge, so the tier fallback named it "Unaware" —
+ * the player's own shape read as a stranger (THR-1710).
+ */
+export const AVATAR_TIER_LABEL = 'Your mortal shape';
+
 /** Maintenance cost per tick per tier. */
 export const TIER_MAINTENANCE: Record<InfluenceTier, number> = {
   0: 0,

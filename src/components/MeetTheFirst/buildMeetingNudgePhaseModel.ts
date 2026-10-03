@@ -48,6 +48,7 @@ import {
   NUDGE_RIDER_LABELS,
 } from '../../data/nudge-stage-content';
 import { SPHERE_NAMES } from '../../types/index';
+import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { formatEssenceLabel } from '../shared/formatEssence';
 import type {
   EncounterStageFactorLineModel,
@@ -69,6 +70,13 @@ export interface BuildMeetingNudgePhaseArgs {
   stepIndex: number;
   /** Ascendant's essence pool, per sphere. Absent ⇒ every priced card dims. */
   essencePool?: Readonly<Record<string, number>>;
+  /**
+   * THR-1706 — the god's primary sphere, which pays for every meeting card
+   * first (the spend spills into the other pools only if it runs dry; see
+   * {@link meetingSpendRequests}). Present ⇒ each card's cost row and the
+   * hand's "essence left" line name it. Absent ⇒ the pooled total, as before.
+   */
+  primarySphere?: SphereName;
   /**
    * Candidate name for `{agent.name}` substitution.
    *
@@ -135,7 +143,7 @@ function totalEssence(pool: Readonly<Record<string, number>> | undefined): numbe
 export function buildMeetingNudgePhaseModel(
   args: BuildMeetingNudgePhaseArgs,
 ): EncounterStageNudgePhaseModel {
-  const { test, testId, stepIndex, essencePool, agentName, locationName } = args;
+  const { test, testId, stepIndex, essencePool, agentName, locationName, primarySphere } = args;
 
   const available = totalEssence(essencePool);
   const difficulty = Math.max(0, Math.min(1, Number.isFinite(test.difficulty) ? test.difficulty : 0.5));
@@ -172,6 +180,8 @@ export function buildMeetingNudgePhaseModel(
         essenceCost: nudge.essenceCost,
         costLabel: costLabelFor(nudge.essenceCost),
         sphere: nudge.sphere as SphereName | undefined,
+        // THR-1706 — a meeting card's sphere is flavour; the primary pays.
+        ...(primarySphere ? { payingSphere: primarySphere } : {}),
         imageTag: nudge.imageTag,
         state: unaffordable ? 'dimmed' : 'playable',
         ...(unaffordable
@@ -210,5 +220,30 @@ export function buildMeetingNudgePhaseModel(
     committedIds: [],
     availableEssence: available,
     committedCost: 0,
+    ...(primarySphere
+      ? { budgetSphere: primarySphere, budgetSphereEssence: essencePool?.[primarySphere] ?? 0 }
+      : {}),
   };
+}
+
+/**
+ * THR-1706 — what a committed meeting hand charges, as spend requests for
+ * `spendNudgeEssence`. Every request is sphere-less: the meeting's cards are
+ * sphere-*flavoured* but not sphere-gated (see {@link totalEssence}), so the
+ * spend bills the god's primary first and spills across the pool only if that
+ * runs dry — the same reach the affordability check above assumes.
+ *
+ * Unknown ids and free cards contribute nothing. Pure.
+ */
+export function meetingSpendRequests(
+  test: FormativeTest | BondTest,
+  nudgeIds: readonly string[],
+): NudgeSpendRequest[] {
+  const byId = new Map((test.nudges as readonly MeetingStepNudge[]).map((n) => [n.id, n]));
+  const requests: NudgeSpendRequest[] = [];
+  for (const id of nudgeIds) {
+    const cost = Math.max(0, byId.get(id)?.essenceCost ?? 0);
+    if (cost > 0) requests.push({ sphere: undefined, cost });
+  }
+  return requests;
 }

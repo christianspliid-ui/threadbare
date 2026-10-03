@@ -39,6 +39,7 @@ import type {
   EnrichedDilemmaTemplate,
   IntentOption,
   NarrativeCandidate,
+  MeetingCandidateGender,
   SparkVision,
   BondOutcome,
   BondTest,
@@ -83,7 +84,7 @@ import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-v
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
 import { mulberry32 } from '../lib/prng';
-import { pickCulturalName } from '../data/culture-name-pools';
+import { pickCulturalName, pickGenderedName } from '../data/culture-name-pools';
 
 // ─── Per-tick Meeting Counter ─────────────────────────────────────
 
@@ -275,13 +276,21 @@ function getPersonalityHint(pair: ValuePair, value: number): string {
   return value >= 0 ? virtue : flaw;
 }
 
-/** Generate a candidate name, preferring culture-specific pools when available. */
+/**
+ * Generate a candidate name, preferring culture-specific pools when available.
+ *
+ * A known `gender` draws from the gendered pools (THR-1712): the vignette's
+ * portrait and prose pronouns are fixed, so the name has to agree with them.
+ * The ungendered path stays for callers that have no gender to honour.
+ */
 function generateCandidateName(
   rng: () => number,
   usedNames: Set<string>,
   foundationBias?: string,
   primarySphere?: string,
+  gender?: MeetingCandidateGender,
 ): string {
+  if (gender) return pickGenderedName(foundationBias ?? '', gender, rng, usedNames);
   return pickCulturalName(foundationBias ?? '', primarySphere ?? '', rng, usedNames);
 }
 
@@ -543,8 +552,12 @@ export function selectDilemmasScored(
   // here or the converted path is unreachable no matter how many templates
   // carry a test. `DilemmaTemplate` does not declare it — only the enriched
   // subtype does — hence the guarded read rather than a plain property access.
+  //
+  // `resonance` rides along for the same reason (THR-1712): the scene-art
+  // pickers score on `resonance.emotionalRegister`, and with it dropped every
+  // scene tied at 0 and the backdrop fell back to the test index.
   const dilemmas = selected.map(t => {
-    const test = (t as Partial<EnrichedDilemmaTemplate>).test;
+    const { test, resonance } = t as Partial<EnrichedDilemmaTemplate>;
     return {
       templateId: t.id,
       category: t.category,
@@ -552,6 +565,7 @@ export function selectDilemmasScored(
       godVoice: t.godVoice,
       choices: t.choices,
       ...(test ? { test } : {}),
+      ...(resonance ? { resonance } : {}),
     };
   });
 
@@ -931,6 +945,10 @@ export function createAgentFromMeeting(
       sphere: result.sphere,
       flavorChoices: result.flavorChoices ?? null,
       portraitAssetPath: result.portraitAssetPath ?? null,
+      // Who the First is drawn as (THR-1712) — the prose resolvers read
+      // `gender` for pronouns, so the world keeps calling her "she" after the
+      // meeting. Spread so a legacy result without one leaves the node neutral.
+      ...(result.gender ? { gender: result.gender } : {}),
       appearanceSeed: result.appearanceSeed,
       createdByMeeting: true,
       // Formative-test scarring (THR-868). Spread rather than written
@@ -1079,7 +1097,7 @@ export function generateNarrativeCandidates(
     const axiologicalSeed = generateAxiologicalProfile(rng);
     const reachCapabilities = generateReachCapabilities(vignette.primaryReach, vignette.secondaryReach, rng);
     const cooperationStrategy = assignCooperationStrategy(archetypeId, axiologicalSeed, rng);
-    const name = generateCandidateName(rng, usedNames, foundationBias, primarySphere);
+    const name = generateCandidateName(rng, usedNames, foundationBias, primarySphere, vignette.gender);
 
     return {
       tempId: `candidate_${seed}_${i}`,
@@ -1093,6 +1111,7 @@ export function generateNarrativeCandidates(
       epithet: vignette.epithet,
       imageAssetPath: vignette.imageAssetPath,
       placeholderGradient: vignette.placeholderGradient,
+      gender: vignette.gender,
       axiologicalSeed,
       reachCapabilities,
       cooperationStrategy,
@@ -1156,6 +1175,28 @@ export function generateSparkVisions(
     result.push(v);
   }
   return result.slice(0, 3);
+}
+
+/**
+ * Put the chosen candidate's own face on every path card (THR-1712).
+ *
+ * The catalog's vision portraits are fixed per reach and depict whoever the
+ * art happened to show — two men on the binding card for a woman the player
+ * picked by her face. Image doctrine ruling 10 already says the candidate
+ * portrait chosen at Sensing is the only human likeness the flow shows, so the
+ * path frame keeps its scene backdrop and prose and takes the candidate's
+ * portrait. Pure; a candidate without a portrait leaves the vision unchanged.
+ */
+export function bindSparkVisionsToCandidate(
+  visions: readonly SparkVision[],
+  candidate: Pick<NarrativeCandidate, 'imageAssetPath' | 'placeholderGradient'>,
+): SparkVision[] {
+  if (!candidate.imageAssetPath) return [...visions];
+  return visions.map(v => ({
+    ...v,
+    portraitAssetPath: candidate.imageAssetPath,
+    portraitPlaceholder: candidate.placeholderGradient || v.portraitPlaceholder,
+  }));
 }
 
 /**
@@ -1225,6 +1266,7 @@ export function buildNarrativeResult(input: NarrativeResultInput): MeetingEncoun
     foundingGateTags,
     traitSeeds,
     portraitAssetPath: candidate.imageAssetPath,
+    ...(candidate.gender ? { gender: candidate.gender } : {}),
     appearanceSeed: candidate.appearanceSeed,
     meetingChoiceRecord,
     locationId,

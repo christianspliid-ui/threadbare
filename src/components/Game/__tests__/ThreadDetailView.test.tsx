@@ -201,10 +201,15 @@ describe('ThreadDetailView', () => {
       />
     );
 
-    expect(screen.getByText('Encounter Pool')).toBeInTheDocument();
-    expect(screen.getByText('Queue Movement')).toBeInTheDocument();
-    // The location subtype renders as words, not as its raw `snake_case` key.
-    expect(screen.getByText('Ruins')).toBeInTheDocument();
+    // THR-1707 — normal play reads the decision as one sentence, never as the
+    // planner's own field rows ("Encounter Pool", "Decision: Queue Movement",
+    // "Heading"), which cold playtest round 2 read as "computer settings".
+    expect(screen.getByText('On their mind')).toBeInTheDocument();
+    expect(screen.getByTestId('decision-in-words').textContent).toBe('Heading for the ruins');
+    expect(screen.queryByText('Encounter Pool')).not.toBeInTheDocument();
+    expect(screen.queryByText('Queue Movement')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Decision/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Heading$/)).not.toBeInTheDocument();
     // Funnel counts, travel cost and best score are designer-view only.
     expect(screen.queryByText(/Cached 12 -> Awareness 8/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Travel cost/)).not.toBeInTheDocument();
@@ -229,6 +234,11 @@ describe('ThreadDetailView', () => {
 
     expect(screen.getByText(/Cached 12 -> Awareness 8 -> Visibility 6 -> Prereqs 4 -> Threat 4 -> Capability 3 -> Cooldown 2/i)).toBeInTheDocument();
     expect(screen.getByText(/Travel cost/)).toBeInTheDocument();
+    // The planner's rows live here, in the designer view (THR-1707).
+    expect(screen.getByText('Encounter Pool')).toBeInTheDocument();
+    expect(screen.getByText('Queue Movement')).toBeInTheDocument();
+    expect(screen.getByText('Ruins')).toBeInTheDocument();
+    expect(screen.queryByTestId('decision-in-words')).not.toBeInTheDocument();
   });
 
   it('keeps the viable choice count out of the activity line in normal play', () => {
@@ -267,7 +277,24 @@ describe('ThreadDetailView', () => {
     expect(screen.getByText('Going to Green-shroud (from 2 options)')).toBeInTheDocument();
   });
 
-  it('renders idle reason text in encounter pool panel', () => {
+  it('renders the idle reason as words in normal play and as the planner row in the designer view', () => {
+    const { unmount } = render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentEncounterDecision={makeEncounterDecision({
+          idleReason: 'no_candidates_after_cooldown',
+          candidatesAfterCooldown: 0,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByTestId('decision-in-words').textContent).toBe('Resting after what they have just done');
+    expect(screen.queryByText('Idle reason')).not.toBeInTheDocument();
+    expect(screen.queryByText('All candidates on cooldown')).not.toBeInTheDocument();
+    unmount();
+
+    setNudgeDesignerView(true);
     render(
       <ThreadDetailView
         node={makeAgent()}

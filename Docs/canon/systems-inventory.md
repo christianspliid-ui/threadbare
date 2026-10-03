@@ -228,6 +228,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (9) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-719`, `THR-822` |
+| `allegiance` (1) | `allegiance.ts` | `THR-1429`, `THR-1683` |
 | `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `appointments` (1) | `appointments.ts` | `THR-1479` |
@@ -248,7 +249,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `callback` (1) | `callbackEligibility.ts` | — |
 | `calling` (1) | `calling.ts` | `THR-1281`, `THR-1299` |
 | `capability` (1) | `capabilityGrowth.ts` | — |
-| `cast` (2) | `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651` |
+| `cast` (3) | `castChannel.ts`, `castInfluenceDrift.ts`, `castTargetChanges.ts` | `THR-1606`, `THR-1651`, `THR-1683` |
 | `caster` (1) | `casterIdentity.ts` | `THR-1229`, `THR-1230`, `THR-1571` |
 | `chapter` (1) | `chapterArchive.ts` | `THR-603` |
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
@@ -296,7 +297,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (5) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
-| `faction` (14) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `faction` (15) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
@@ -430,4 +431,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 203 engine domains · 623 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 626 modules._

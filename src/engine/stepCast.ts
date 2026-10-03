@@ -153,9 +153,10 @@ export function stepCastRecordFor(
     };
   }
   const p = preCardProbability();
-  const targetId = resolveCastTarget(state.graph, casterId, found.spell, site.targetNodeId).targetId;
+  const { targetId, filterRejected } = resolveCastTarget(state.graph, casterId, found.spell, site.targetNodeId);
   const base = {
-    casterId, spellId: found.spell.id, ...(targetId ? { targetId } : {}), threshold, preCardProbability: p,
+    casterId, spellId: found.spell.id, ...(targetId ? { targetId } : {}),
+    ...(filterRejected ? { filterRejected } : {}), threshold, preCardProbability: p,
   };
   if (!(p < threshold)) return { decision: 'declined', ...base, declinedReason: 'odds_good' };
   return { decision: 'cast', ...base, bonus: castStepBonusForTier(found.spell.tier) };

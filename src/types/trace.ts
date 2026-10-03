@@ -379,6 +379,7 @@ export type TraceCategory =
   | 'beat.delivery_skipped'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
+  | 'meeting.essence_spent'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -896,6 +897,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.delivery_skipped',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
+  'meeting.essence_spent',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -2783,6 +2785,29 @@ export interface SpellCastResolvedTrace extends TraceBase {
   refused?: string;
   /** Carried triggers the cast's `'spell_cast'` raise fired on the caster. */
   triggersFired: number;
+  /**
+   * THR-1683 — the cast's graph writes (the chips' source). `channel: 'cast_condition'`
+   * marks the bearing the cast channel wrote for the spell's modifier-only effects.
+   */
+  writes?: Array<{
+    kind: string;
+    actorId: string;
+    ref: string;
+    channel?: 'cast_condition';
+    harmful?: boolean;
+    fromBacklash?: boolean;
+    fromPrice?: boolean;
+  }>;
+  /** THR-1683 — the cast channel: what rode it, what could not (stateful), and why not, if not. */
+  channel?: {
+    applied: boolean;
+    carried: string[];
+    skipped: string[];
+    durationTicks?: number;
+    reason?: string;
+  };
+  /** THR-1683 — mortals the spell's target filter (`ally`/`enemy`) turned away. */
+  filterRejected?: number;
 }
 
 /** Trace: a cast's backlash fired (THR-1571). */
@@ -4557,6 +4582,7 @@ export type TraceEntry =
   | BeatSeededTrace
   | BeatDeliveryTrace
   | MeetingLocationPickedTrace
+  | MeetingEssenceSpentTrace
   | DoomWakeTrace
   | DoomExpiryHeldTrace
   | RivalGraceHoldTrace
@@ -4968,6 +4994,22 @@ export interface MeetingLocationPickedTrace extends TraceBase {
   /** Picked for its current culture. */
   cultured: boolean;
   fallback: boolean;
+}
+
+/**
+ * Trace: a Meet-The-First test hand was paid for (THR-1706). Before this the
+ * meeting's cards previewed a spend and never charged it. One per test the
+ * player commits with priced cards; `ok: false` means the pool could not cover
+ * the hand at commit time and nothing was charged.
+ */
+export interface MeetingEssenceSpentTrace extends TraceBase {
+  category: 'meeting.essence_spent';
+  /** Formative test index, or the bond test's step index. */
+  testIndex: number;
+  /** The sphere billed first — the god's primary. */
+  primarySphere: string;
+  spent: number;
+  ok: boolean;
 }
 
 /**

@@ -34,7 +34,7 @@ import {
   INCIDENT_PROMPT_COOLDOWN_TICKS,
 } from '../../data/incident-snapshot-constants';
 import { useScry } from './hooks/useScry';
-import { useAgentInteraction } from './hooks/useAgentInteraction';
+import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
 import { hexToWorld } from '../../lib/worldPosition';
@@ -170,7 +170,7 @@ import { PREMONITION_EXPIRY_TICKS } from '../../data/premonition-constants';
 import { mulberry32 } from '../../lib/prng';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
-import { spendNudgeEssence } from './encounter-stage/nudgeCommit';
+import { spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
@@ -196,7 +196,8 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
+import { bondFirstFromMeeting } from './meetingBond';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
@@ -1671,7 +1672,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             id: graphNode.id,
             name: graphNode.name,
             tier: 0 as import('../../types/influence').InfluenceTier,
-            tierName: TIER_NAMES[0],
+            // THR-1710: the avatar has no thread edge, but it is not "Unaware".
+            tierName: unthreadedAgentTierName(graphNode.id, avatarNodeId),
             category: 'agent' as const,
             threadEdgeId: '',
             attentionMode: 'auto_resolve' as const,
@@ -1699,7 +1701,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         return undefined;
       })();
     return detailNode;
-  }, [threadedNodes, gameState.graph]);
+  }, [threadedNodes, gameState.graph, avatarNodeId]);
 
   /**
    * The notices a badge click revealed, snapshotted at click time (THR-935).
@@ -3786,10 +3788,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       cost: Math.max(0, cardsById.get(id)?.essenceCost ?? 0),
     }));
 
+    // THR-1706 — bill the sphere the cards named. `budgetSphere` is what each
+    // sphere-less card's cost row printed; the archetype's primary is the same
+    // sphere on every identity run and the fallback on a legacy one.
     const spend = spendNudgeEssence(
       gameState.essencePool,
       requests,
-      archetype.sphereAlignment.primary,
+      phase.budgetSphere ?? archetype.sphereAlignment.primary,
     );
 
     if (!spend.ok) {
@@ -4097,8 +4102,38 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setMeetingState(state);
   }, [gameState.graph, gameState.ascendantId, gameState.tick]);
 
+  /**
+   * THR-1706 — Meet The First's test hands are a real spend. The beat used to
+   * show "598" while the player picked and then commit without charging, so the
+   * pool snapped back to 600. Charged with the same `spendNudgeEssence` every
+   * other nudge commit uses: the god's primary pays first, the spend spills
+   * across the pool only if it runs dry (the meeting's cards are not
+   * sphere-gated). All-or-nothing; a shortfall charges nothing and is traced.
+   */
+  const handleMeetingSpendEssence = useCallback((testIndex: number, requests: NudgeSpendRequest[]) => {
+    // Priced against the pool this render shows, as `handleCommitNudges` is —
+    // the meeting is modal, so nothing else spends while a test is open.
+    const primarySphere = archetype.sphereAlignment.primary;
+    const spend = spendNudgeEssence(gameState.essencePool, requests, primarySphere);
+    emitTrace({
+      tick: gameState.tick,
+      category: 'meeting.essence_spent',
+      testIndex,
+      primarySphere,
+      spent: spend.spent,
+      ok: spend.ok,
+      summary: spend.ok
+        ? `meeting.essence_spent: test ${testIndex} charged ${spend.spent} (${primarySphere} first)`
+        : `meeting.essence_spent: test ${testIndex} not charged — pool short`,
+    });
+    if (!spend.ok) return;
+    setGameState(prev => ({ ...prev, essencePool: spend.pool }));
+  }, [gameState.essencePool, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
+
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
-    const agentId = createAgentFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick);
+    // THR-1704: the bond mutates the graph in place and the clock comes back paused,
+    // so it must touch the runtime itself or the Threads panel stays "No Threads".
+    const agentId = bondFirstFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick, runtime);
     setMeetingState(null);
 
     // Update familiarity map for the new agent
@@ -4121,7 +4156,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ],
       };
     });
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary, runtime]);
 
   const handleMeetingClose = useCallback(() => {
     // The central interrupt auto-pause resumes the sim (if it auto-paused)
@@ -4409,6 +4444,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     divineReceiptPending: activeReceipt !== null,
     momentPending: pendingMoment !== null,
     chapterLedgerOpen,
+    courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
   });
   const otherInterruptOpen = interruptResolution.otherThanMomentOpen;
@@ -4443,7 +4479,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (debugPanelOpen) openModals.push('DebugPanel');
     if (settingsPanelOpen) openModals.push('SettingsPanel');
     if (readThreadsOpen) openModals.push('ReadTheThreadsPanel');
-    if (scryVisible) openModals.push('ScryOverlay');
     if (agendaPickerOpen && !!pendingAgendas) openModals.push('AgendaPicker');
     if (drawerOpen && !!selectedAgentId) openModals.push('ActionDrawer');
     if (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId) openModals.push('ActionDrawer');
@@ -5136,7 +5171,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             <ActionDrawer
               open={drawerOpen}
               slots={wheelSlots}
-              targetName={selectedRetinueAgent?.name ?? ''}
+              // THR-1705 — any selected mortal, not only a retinue member: the
+              // drawer names who a cast will hit, and most targets are strangers.
+              targetName={selectedRetinueAgent?.name ?? gameState.graph.getNode(selectedAgentId)?.name ?? ''}
               targetLabel={selectedRetinueAgent?.tierName ?? ''}
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
@@ -5249,7 +5286,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       onClose={handleHexDetailClose}
                       onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
-                      onAgentClick={handleAgentSelect}
+                      // THR-1705 — the same opener the map and the Hex Chronicle use.
+                      // `handleAgentSelect` alone moved the cast target and opened the
+                      // drawer but set no thread node, so the row "did nothing" while a
+                      // later cast quietly landed on the mortal clicked here.
+                      onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                       onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
                   )}
@@ -5367,7 +5408,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       </AnimateMount>
 
       {/* Scry overlay */}
-      <AnimateMount show={scryVisible} animation="anim-fade">
+      {/* THR-1709: no AnimateMount — its animated wrapper is a stacking context
+          that trapped the court under the top bar. The overlay portals itself to
+          <body> and carries its own fade-in. */}
+      {scryVisible && (
         <ScryProvider
           value={{
             scryState,
@@ -5380,12 +5424,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAssign: handleScryAssign,
             onDemote: handleScryDemote,
             onClose: handleCloseScry,
-            onAgentSelect: handleAgentSelect,
+            // THR-1709: choosing a courtier leaves the court, so the action drawer
+            // it opens is never hidden behind the (now body-level) overlay.
+            onAgentSelect: (agentId: string) => {
+              handleCloseScry();
+              handleAgentSelect(agentId);
+            },
           }}
         >
           <ScryOverlay />
         </ScryProvider>
-      </AnimateMount>
+      )}
 
       {/* Harvest overlay */}
       <AnimateMount show={harvestResult !== null} animation="anim-fade">
@@ -5723,6 +5772,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // THR-868: the meeting's nudge cards are a real essence spend, so the
           // stage needs the live pool to know what the player can afford.
           essencePool={gameState.essencePool}
+          onSpendEssence={handleMeetingSpendEssence}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
         />

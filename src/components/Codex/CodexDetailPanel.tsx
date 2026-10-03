@@ -27,12 +27,16 @@
  * a new mapper cannot ship a concept row plain is `__tests__/codexDetailConcepts.test.tsx`.
  */
 
-import { Fragment, memo } from 'react';
+import { Fragment, memo, useSyncExternalStore } from 'react';
 import type { CodexEntry } from './codexRegistry';
 import { detailConcepts, splitDetailValue } from './codexConcepts';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
+import {
+  isNudgeDesignerViewEnabled,
+  subscribeNudgeDesignerView,
+} from '../Game/encounter-stage/designerView';
 
 interface CodexDetailPanelProps {
   entry: CodexEntry | null;
@@ -43,6 +47,20 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
   entry,
   onClose,
 }: CodexDetailPanelProps) {
+  const designerView = useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    isNudgeDesignerViewEnabled,
+  );
+  // THR-1707. The Effect block and its wiring badge ("Engine bridge: creates a
+  // `narrowed` `knows_clue_of` edge…", WIRED · ENGINE) audit the action catalog
+  // for whoever builds it (THR-610); they are not text a player can act on, and
+  // cold playtest round 2 found them on the deployed build. Dev builds keep them;
+  // a production build shows them only under the designer view. The player keeps
+  // the Mechanics summary above, which is the entry's player-facing line. Read at
+  // render, not at module load, so a test can stub the build mode.
+  const showTechnicalEffect = designerView || import.meta.env.DEV;
+
   if (!entry) {
     return (
       <div
@@ -171,7 +189,7 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
 
         {/* Technical effect — what state this action changes + where it's wired (THR-610).
             Absent for non-action entries (possessions/conditions/agreements) → hidden. */}
-        {entry.technicalEffect && (
+        {showTechnicalEffect && entry.technicalEffect && (
           <div data-testid="codex-effect-block">
             <div className="flex items-center gap-2">
               <SectionHeading as="h3">Effect</SectionHeading>

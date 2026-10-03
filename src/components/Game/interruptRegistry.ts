@@ -39,6 +39,8 @@ export interface InterruptSnapshot {
   /** An undertaking moment sits in the card slot. */
   momentPending: boolean;
   chapterLedgerOpen: boolean;
+  /** The Divine Court (ScryOverlay) is open — managing the court must not leak time (THR-1709). */
+  courtOpen: boolean;
   /** The head of the popup-channel queue (doom stages, the Unmaking, mandate failure). */
   popupQueued: boolean;
 }
@@ -74,6 +76,9 @@ export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   { id: 'DivineReceiptModal', tier: 'interrupt', isOpen: s => s.divineReceiptPending },
   // Reading the chapter ledger must not leak time (the Vision rhythm argument).
   { id: 'ChapterLedger', tier: 'interrupt', isOpen: s => s.chapterLedgerOpen },
+  // The Divine Court: arranging the retinue is a reading-and-deciding surface like
+  // the ledger, so the clock stops behind it (THR-1709).
+  { id: 'ScryOverlay', tier: 'interrupt', isOpen: s => s.courtOpen },
   // The two yielding surfaces are resolved by `resolveInterrupts`, not here —
   // their `isOpen` is the *wish* to open; whether they render depends on the rest.
   { id: 'MomentCard', tier: 'interrupt', isOpen: s => s.momentPending },

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
 import type { DilemmaInstance, DilemmaChoiceRecord } from '../../types/meetingEncounter';
 import { ComicPanel } from './ComicPanel';
-import { selectDilemmaScene } from '../../data/meeting-art-library';
+import { selectSceneForDilemma } from '../../data/meeting-art-library';
 import { TESTING_TRANSITION_IN, TESTING_BETWEEN_DILEMMAS } from '../../data/meeting-narrative-prose';
 
 interface TestingBeatProps {
@@ -70,12 +70,10 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
 
   const currentDilemma = currentDilemmaIdx >= 0 ? dilemmas[currentDilemmaIdx] : null;
 
-  // Select scene art based on dilemma emotional tags
+  // Select scene art from the dilemma's register and the imagery its prose
+  // names, not its position in the deal (THR-1712).
   const sceneAsset = currentDilemma
-    ? selectDilemmaScene(
-        (currentDilemma as any).resonance?.emotionalRegister ?? [],
-        currentDilemmaIdx,
-      )
+    ? selectSceneForDilemma(currentDilemma, 0)
     : null;
 
   return (
