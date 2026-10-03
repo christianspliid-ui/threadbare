@@ -57,6 +57,7 @@ import { defaultFollowedAgentIds } from './undertakingCheckpoints';
 import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 import { computeReachShares } from './domainCapability';
+import { placeSeededCarriedNotices } from './spellGenerator/notice';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -433,6 +434,11 @@ export function initializeGameState(
   // clear; a state that already holds founded definitions publishes them all
   // without the mirror having had to observe the mints.
   publishDynamicFactionDefinitions(state.dynamicFactionDefinitions);
+
+  // THR-1572 — a carried transgression spell is noticed from the first day it is
+  // carried. Worldgen has no `hiddenMarks` to write to, so the seeded carriers' marks are
+  // placed here, once, in sorted order (NFP #3).
+  placeSeededCarriedNotices(state);
 
   return {
     state,

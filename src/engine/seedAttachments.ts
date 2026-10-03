@@ -27,6 +27,11 @@ import {
 import { SLOT_CAPS } from '../data/attachment-slot-constants';
 import { isCaster, isCasterByCraft, casterRoleOf, alignedSpheres } from './casterIdentity';
 import { emitTrace } from './traceBuffer';
+import { drawFromTable } from '../lib/drawTable';
+import { SPELL_GEN_ENABLED, SPELL_GEN_STEP_ARENAS } from '../data/spell-generator-tables';
+import type { SpellLibraryIndex } from './spellGenerator/spellLibrary';
+import { casterSeedIdentity } from './spellGenerator/casterTradition';
+import type { SpellTemplate } from '../types/effects';
 import {
   ANOMALY_SIGNATURE_ARTIFACTS,
   ANOMALY_BESTOWED_POWERS,
@@ -265,6 +270,34 @@ export interface SpellSeedingReport {
   readonly seeded: number;
   readonly bySpell: Record<string, number>;
   readonly fallbackCantrip: number;
+  /** THR-1572 — casters per tradition among those seeded from a library. */
+  readonly byTradition: Record<string, number>;
+  /** THR-1572 — casters seeded from their tradition's generated library. */
+  readonly fromLibrary: number;
+}
+
+/** THR-1572 — the generated library seeding reads, and the world seed its hashed pick keys on. */
+export interface SpellSeedingLibrary {
+  readonly index: SpellLibraryIndex;
+  readonly worldSeed: number;
+}
+
+/**
+ * The lowest-tier spells of a caster's tradition library, or [] when the tradition has no
+ * library or its library holds no spell a step can use (§ Fail-soft table: those casters
+ * keep today's path).
+ */
+function libraryShelf(graph: WorldGraph, lib: SpellSeedingLibrary, traditionId: string | undefined): SpellTemplate[] {
+  if (!traditionId) return [];
+  const templates = (lib.index.byTradition.get(traditionId) ?? [])
+    .map(id => graph.getNode(spellDefinitionNodeId(id))?.properties.template as SpellTemplate | undefined)
+    .filter((t): t is SpellTemplate => !!t);
+  // Only spells a step can use are seeded, so no caster starts the world holding nothing
+  // but map magic — even when a tier-1 slot drew a map arena or its step slot was left empty.
+  const stepUsable = templates.filter(t => t.arena && SPELL_GEN_STEP_ARENAS.includes(t.arena));
+  if (stepUsable.length === 0) return [];
+  const lowest = Math.min(...stepUsable.map(t => t.tier));
+  return stepUsable.filter(t => t.tier === lowest);
 }
 
 /**
@@ -287,8 +320,14 @@ export interface SpellSeedingReport {
  *
  * Runs at the tail of worldgen, after every mortal is placed (NPCs are seeded after
  * `seedAttachments`, so the definitions and the knowing cannot share one pass).
+ *
+ * THR-1572 — with a `library` (and `SPELL_GEN_ENABLED`), a caster whose tradition has a
+ * generated library is seeded from it instead: among the library's lowest-tier spells, a
+ * hashed pick keyed `seed_spell:${worldSeed}:${actorId}`, so two priests of one order do not
+ * all carry the same spell. The `knows_spell` edge records the `tradition`. Without a
+ * library, or with the switch off, this is THR-1571's path exactly.
  */
-export function seedSpellKnowing(graph: WorldGraph): SpellSeedingReport {
+export function seedSpellKnowing(graph: WorldGraph, library?: SpellSeedingLibrary): SpellSeedingReport {
   const templates = [...SPELL_TEMPLATES]
     .filter(t => graph.getNode(spellDefinitionNodeId(t.id)))
     .sort((a, b) => a.tier - b.tier || a.id.localeCompare(b.id));
@@ -306,15 +345,29 @@ export function seedSpellKnowing(graph: WorldGraph): SpellSeedingReport {
   const chosen = eligible.slice(0, Math.ceil(eligible.length * Math.max(0, Math.min(1, SEEDED_SPELL_COVERAGE))));
 
   const bySpell: Record<string, number> = {};
+  const byTradition: Record<string, number> = {};
   let seeded = 0;
   let fallbackCantrip = 0;
+  let fromLibrary = 0;
+  const useLibrary = SPELL_GEN_ENABLED && !!library;
   for (const actorId of chosen) {
-    const aligned = alignedSpheres(graph, actorId);
-    const shelf = templates.filter(t => aligned.includes(t.sphereAffinity));
-    let picks = shelf.slice(0, SEEDED_SPELLS_PER_CASTER);
-    if (picks.length === 0 && SEEDED_FALLBACK_TO_CANTRIP && cantrip) {
-      picks = [cantrip];
-      fallbackCantrip += 1;
+    const traditionId = useLibrary ? library!.index.traditionOf.get(actorId) : undefined;
+    const libShelf = useLibrary ? libraryShelf(graph, library!, traditionId) : [];
+    let picks: SpellTemplate[];
+    let viaLibrary = false;
+    if (libShelf.length > 0) {
+      const weights = Object.fromEntries(libShelf.map(t => [t.id, 1]));
+      const ids = drawFromTable('spellgen.seed_spell', weights, `seed_spell:${library!.worldSeed}:${casterSeedIdentity(graph, actorId)}`, SEEDED_SPELLS_PER_CASTER);
+      picks = ids.map(id => libShelf.find(t => t.id === id)!).filter(Boolean);
+      viaLibrary = picks.length > 0;
+    } else {
+      const aligned = alignedSpheres(graph, actorId);
+      const shelf = templates.filter(t => aligned.includes(t.sphereAffinity));
+      picks = shelf.slice(0, SEEDED_SPELLS_PER_CASTER);
+      if (picks.length === 0 && SEEDED_FALLBACK_TO_CANTRIP && cantrip) {
+        picks = [cantrip];
+        fallbackCantrip += 1;
+      }
     }
     if (picks.length === 0) continue;
 
@@ -330,7 +383,7 @@ export function seedSpellKnowing(graph: WorldGraph): SpellSeedingReport {
         source: actorId,
         target: defId,
         type: 'knows_spell',
-        properties: { learnedTick: 0, sphereAffinity: spell.sphereAffinity, source: 'seeded' },
+        properties: { learnedTick: 0, sphereAffinity: spell.sphereAffinity, source: 'seeded', ...(viaLibrary && traditionId ? { tradition: traditionId } : {}) },
       });
       if (wielded < (SLOT_CAPS.spell ?? 0)) {
         graph.addEdge({
@@ -352,16 +405,22 @@ export function seedSpellKnowing(graph: WorldGraph): SpellSeedingReport {
       bySpell[spell.id] = (bySpell[spell.id] ?? 0) + 1;
       wroteAny = true;
     }
-    if (wroteAny) seeded += 1;
+    if (wroteAny) {
+      seeded += 1;
+      if (viaLibrary && traditionId) {
+        fromLibrary += 1;
+        byTradition[traditionId] = (byTradition[traditionId] ?? 0) + 1;
+      }
+    }
   }
 
-  const report: SpellSeedingReport = { casters: casters.length, seeded, bySpell, fallbackCantrip };
+  const report: SpellSeedingReport = { casters: casters.length, seeded, bySpell, fallbackCantrip, byTradition, fromLibrary };
   try {
     emitTrace({
       category: 'spell.seeded',
       tick: 0,
       ...report,
-      summary: `Seeded knowing: ${seeded} of ${casters.length} casters start with a spell (${fallbackCantrip} from the fallback cantrip)`,
+      summary: `Seeded knowing: ${seeded} of ${casters.length} casters start with a spell (${fromLibrary} from a tradition library, ${fallbackCantrip} from the fallback cantrip)`,
     });
   } catch {
     /* NFP #4 */

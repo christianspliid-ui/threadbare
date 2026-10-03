@@ -2818,7 +2818,7 @@ if (import.meta.env.DEV) {
         const sub = g.getNode(id)?.properties.subcategory;
         return sub === 'spell' || sub === 'innate_power';
       };
-      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string }> = [];
+      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string; tradition?: string }> = [];
       for (const actor of g.getNodesByType('actor')) {
         const wieldedEdges = g.getOutgoingEdges(actor.id, 'has_trait').filter(e => isSpell(e.target));
         const knownEdges = g.getOutgoingEdges(actor.id, 'knows_spell');
@@ -2829,9 +2829,66 @@ if (import.meta.env.DEV) {
           wielded: wieldedEdges.map(e => e.target),
           known: knownEdges.map(e => e.target),
           source: String(wieldedEdges[0]?.properties.source ?? knownEdges[0]?.properties.source ?? ''),
+          // THR-1572 — the tradition recorded on a library-seeded or library-learned edge.
+          ...(knownEdges.find(e => typeof e.properties.tradition === 'string')
+            ? { tradition: String(knownEdges.find(e => typeof e.properties.tradition === 'string')!.properties.tradition) }
+            : {}),
         });
       }
       return out.sort((a, b) => a.actorId.localeCompare(b.actorId));
+    },
+
+    // ── The seeded spell generator (THR-1572) ───────────────────────────
+    /** Every tradition library in this world, with each spell's holders. */
+    getSpellLibraries: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { traditionCatalog } = await import('./engine/spellGenerator/traditionCatalog');
+      const { getTraditionLibrary, spellProvenance } = await import('./engine/spellGenerator/spellLibrary');
+      const { spellDefinitionNodeId } = await import('./data/spell-templates');
+      const g = state.graph;
+      const holders = new Map<string, number>();
+      for (const actor of g.getNodesByType('actor')) {
+        for (const e of g.getOutgoingEdges(actor.id, 'has_trait')) holders.set(e.target, (holders.get(e.target) ?? 0) + 1);
+      }
+      return traditionCatalog()
+        .map(t => ({
+          traditionId: t.id,
+          name: t.name,
+          spells: getTraditionLibrary(g, t.id).map(s => ({
+            id: s.id,
+            name: s.name,
+            tier: s.tier,
+            agency: s.agency ?? 'fate_woven',
+            arena: s.arena ?? 'encounter',
+            priceLayer: spellProvenance(g, s.id)?.priceLayer ?? 'free',
+            coreId: spellProvenance(g, s.id)?.coreId ?? '',
+            holders: holders.get(spellDefinitionNodeId(s.id)) ?? 0,
+          })),
+        }))
+        .filter(l => l.spells.length > 0);
+    },
+    /** Generate one spell without minting it — the spell, its words and its validator problems. */
+    previewGeneratedSpell: async (opts: { tradition: string; tier: number; slot?: number; seed?: number; agency?: string; arena?: string }) => {
+      const state = _gameStateProvider?.();
+      const { generateSpell } = await import('./engine/spellGenerator/generateSpell');
+      const { validateGeneratedSpell } = await import('./engine/spellGenerator/validateGeneratedSpell');
+      const { describeSpell } = await import('./engine/spellGenerator/describeSpell');
+      const { planLibrarySlots } = await import('./engine/spellGenerator/spellLibrary');
+      const traditionId = opts.tradition.startsWith('magic.') ? opts.tradition : `magic.${opts.tradition}`;
+      const worldSeed = opts.seed ?? Number(state?.seed ?? 42);
+      const tier = Math.max(1, Math.min(4, Math.round(opts.tier))) as 1 | 2 | 3 | 4;
+      const planned = planLibrarySlots(traditionId, worldSeed).find(s => s.tier === tier && (opts.slot === undefined || s.slot === opts.slot));
+      const agency = (opts.agency ?? planned?.agency ?? (tier >= 4 ? 'deliberate' : 'fate_woven')) as 'deliberate' | 'fate_woven';
+      const arena = (opts.arena ?? planned?.arena ?? 'encounter') as 'encounter';
+      const spell = generateSpell({ worldSeed, traditionId, tier, slot: opts.slot ?? planned?.slot ?? 0, agency, arena });
+      if (!spell) return { error: `no core fits ${traditionId} tier ${tier} ${agency} ${arena}` };
+      return {
+        spell: spell.template,
+        provenance: spell.provenance,
+        words: describeSpell(spell.template, spell.provenance.catchIndexes),
+        problems: validateGeneratedSpell(spell.template, spell.provenance),
+      };
     },
     /**
      * Run one cast through `resolveCast` directly — the engine lever for review. The
@@ -2842,9 +2899,9 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
       const { resolveCast, resolveCastTarget } = await import('./engine/spellCasting');
-      const { getSpellTemplate } = await import('./data/spell-templates');
+      const { resolveSpellTemplate } = await import('./data/spell-templates');
       const { STEP_OUTCOMES } = await import('./types/unifiedAction');
-      const spell = getSpellTemplate(opts.spell) ?? getSpellTemplate(`spell_${opts.spell}`);
+      const spell = resolveSpellTemplate(state.graph, opts.spell) ?? resolveSpellTemplate(state.graph, `spell_${opts.spell}`);
       if (!spell) return { error: `no spell template: ${opts.spell}` };
       if (!state.graph.getNode(opts.caster)) return { error: `no caster: ${opts.caster}` };
       const band = (STEP_OUTCOMES as readonly string[]).includes(opts.band ?? '') ? opts.band as typeof STEP_OUTCOMES[number] : 'success';

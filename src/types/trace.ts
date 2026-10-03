@@ -158,6 +158,11 @@ export type TraceCategory =
   | 'effect.teleported'
   // The step cast (THR-1670)
   | 'spell.cast_decided'
+  // The seeded spell generator (THR-1572)
+  | 'spell.library_built'
+  | 'spell.generated'
+  | 'spell.generate_fallback'
+  | 'spell.notice_placed'
   // Innate powers (THR-1671)
   | 'power.innate_stamped'
   // Undertaking checkpoints (THR-1292)
@@ -657,6 +662,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'spell.backlash',
   'effect.teleported',
   'spell.cast_decided',
+  'spell.library_built',
+  'spell.generated',
+  'spell.generate_fallback',
+  'spell.notice_placed',
   'power.innate_stamped',
   'undertaking_checkpoint',
   'undertaking_fork',
@@ -2762,6 +2771,61 @@ export interface SpellSeededTrace extends TraceBase {
   seeded: number;
   bySpell: Record<string, number>;
   fallbackCantrip: number;
+  /** THR-1572 — casters per tradition among those seeded from a library. */
+  byTradition?: Record<string, number>;
+  /** THR-1572 — casters seeded from their tradition's generated library. */
+  fromLibrary?: number;
+}
+
+/** Trace: the world's spell libraries were built at worldgen (THR-1572, one aggregate per world). */
+export interface SpellLibraryBuiltTrace extends TraceBase {
+  category: 'spell.library_built';
+  /** Traditions in use (one library each). */
+  traditions: number;
+  spells: number;
+  /** Casters per tradition. */
+  byTradition: Record<string, number>;
+  /** Slots the validator could not fill. */
+  emptySlots: number;
+  /** Seeded carriers' summed per-tick soul drain, as a share of their summed passive regeneration. */
+  soulDrainShare: number;
+}
+
+/** Trace: one spell was generated into a tradition's library (THR-1572). */
+export interface SpellGeneratedTrace extends TraceBase {
+  category: 'spell.generated';
+  spellId: string;
+  name: string;
+  traditionId: string;
+  coreId: string;
+  tier: number;
+  agency: 'fate_woven' | 'deliberate';
+  arena: string;
+  priceLayer: string;
+  sphere: string;
+  seedKey: string;
+  rerolls: number;
+}
+
+/** Trace: a library slot was left empty (THR-1572). */
+export interface SpellGenerateFallbackTrace extends TraceBase {
+  category: 'spell.generate_fallback';
+  traditionId: string;
+  tier: number;
+  slot: number;
+  seedKey: string;
+  reason: 'no_eligible_core' | 'validator_exhausted' | 'threw';
+  lastProblems: string[];
+}
+
+/** Trace: a transgression spell was noticed — a hidden mark placed on its caster (THR-1572). */
+export interface SpellNoticePlacedTrace extends TraceBase {
+  category: 'spell.notice_placed';
+  casterId: string;
+  spellId: string;
+  markId: string;
+  severity: number;
+  site: 'cast' | 'carried';
 }
 
 /** Trace: one cast resolved through `resolveCast` (THR-1571). A refusal writes nothing. */
@@ -4334,6 +4398,10 @@ export type TraceEntry =
   | SpellCastResolvedTrace
   | SpellBacklashTrace
   | SpellCastDecidedTrace
+  | SpellLibraryBuiltTrace
+  | SpellGeneratedTrace
+  | SpellGenerateFallbackTrace
+  | SpellNoticePlacedTrace
   | PowerInnateStampedTrace
   | EffectTeleportedTrace
   | ConditionInflictedTrace

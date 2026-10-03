@@ -53,6 +53,8 @@ import {
 } from '../data/realm-content';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments, seedSpellKnowing } from './seedAttachments';
+import { buildSpellLibrary, measureSoulDrainShare } from './spellGenerator/spellLibrary';
+import { SPELL_GEN_ENABLED } from '../data/spell-generator-tables';
 import { seedGuilds } from './guildSeeding';
 import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -2379,8 +2381,36 @@ export function seedWorld(
   // Here, after the living world, because this is the first point every mortal a
   // caster role can land on exists (roster NPCs, the genome top-up, the captains).
   // No draws — sorted picks only — so it shifts no stream above or below it.
-  const spellSeeding = seedSpellKnowing(graph);
-  console.log(`[WorldGen] Seeded knowing: ${spellSeeding.seeded}/${spellSeeding.casters} casters wield a spell (${spellSeeding.fallbackCantrip} via the fallback)`);
+  //
+  // THR-1572 — first, the spell libraries: each caster's tradition, one library per
+  // tradition in use, minted as shared definition nodes. Every generator draw is a hashed
+  // table of its own (`drawFromTable`), so this too consumes no worldgen stream.
+  let spellLibrary: ReturnType<typeof buildSpellLibrary> | null = null;
+  if (SPELL_GEN_ENABLED) {
+    try {
+      spellLibrary = buildSpellLibrary(graph, seed);
+    } catch (err) {
+      console.warn('[WorldGen] Spell libraries could not be built; casters keep the authored shelf', err);
+    }
+  }
+  const spellSeeding = seedSpellKnowing(graph, spellLibrary ? { index: spellLibrary.index, worldSeed: seed } : undefined);
+  console.log(`[WorldGen] Seeded knowing: ${spellSeeding.seeded}/${spellSeeding.casters} casters wield a spell (${spellSeeding.fromLibrary} from a tradition library, ${spellSeeding.fallbackCantrip} via the fallback)`);
+  if (spellLibrary) {
+    const soulDrainShare = measureSoulDrainShare(graph);
+    try {
+      emitTrace({
+        category: 'spell.library_built',
+        tick: 0,
+        traditions: spellLibrary.report.traditions,
+        spells: spellLibrary.report.spells,
+        byTradition: spellLibrary.report.byTradition,
+        emptySlots: spellLibrary.report.emptySlots,
+        soulDrainShare,
+        summary: `Spell libraries: ${spellLibrary.report.spells} spells across ${spellLibrary.report.traditions} traditions (${spellLibrary.report.emptySlots} empty slots)`,
+      });
+    } catch { /* NFP #4 */ }
+    console.log(`[WorldGen] Spell libraries: ${spellLibrary.report.spells} spells across ${spellLibrary.report.traditions} traditions, ${spellLibrary.report.emptySlots} empty slots`);
+  }
 
   if (genomeNpcResult.npcIds.length > 0) {
     console.log(

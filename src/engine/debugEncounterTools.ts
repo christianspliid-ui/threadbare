@@ -22,7 +22,7 @@ import type { EssencePool } from '../types/influence';
 import { REACH_DOMAINS } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
 import { ARCHETYPE_NAMES } from '../types/agent';
-import { getSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../data/spell-templates';
+import { resolveSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../data/spell-templates';
 import { SLOT_CAPS } from '../data/attachment-slot-constants';
 import { REACH_SHARE_FULL_RAW } from '../data/reach-share-constants';
 
@@ -722,7 +722,7 @@ export function applySpellStamp(state: GameState, agentQuery: string, spellQuery
   const agent = findAgent(state, agentQuery);
   if (!agent) return { success: false, message: `No agent matches '${agentQuery}'` };
   const templateId = spellQuery.startsWith('spell_') ? spellQuery : `spell_${spellQuery}`;
-  const spell = getSpellTemplate(templateId);
+  const spell = resolveSpellTemplate(state.graph, templateId);
   if (!spell) return { success: false, message: `No spell template '${templateId}'` };
   const graph = state.graph;
   const nodeId = spellDefinitionNodeId(spell.id);

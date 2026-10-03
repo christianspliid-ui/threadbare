@@ -263,9 +263,38 @@ export function spellAgencyOf(spell: Pick<SpellTemplate, 'agency' | 'effects'>):
   return spell.agency ?? (spell.effects.length > 0 ? 'deliberate' : 'fate_woven');
 }
 
-/** Lookup spell by ID */
+/**
+ * Lookup an **authored** spell by ID. A generated spell (THR-1572) is not here — it lives
+ * on its definition node; ask `resolveSpellTemplate(graph, id)` wherever a graph is in reach.
+ */
 export function getSpellTemplate(id: string): SpellTemplate | undefined {
   return SPELL_TEMPLATES.find(s => s.id === id);
+}
+
+/** The id prefix every generated spell carries; no authored id may start with it (THR-1572). */
+export const GENERATED_SPELL_ID_PREFIX = 'spell_gen_';
+
+/** The narrow graph read `resolveSpellTemplate` needs — keeps this data module free of engine imports. */
+interface SpellNodeReader {
+  getNode(id: string): { readonly properties: Record<string, unknown> } | undefined;
+}
+
+/**
+ * Resolve a spell template by id — authored first, then a generated spell's template on its
+ * definition node (THR-1572, lane decision 3). There is no module-level registry of
+ * generated templates: the graph is the per-session store, so a generated spell cannot
+ * outlive the world that minted it.
+ *
+ * Returns `undefined` for an unknown id or a node with no template, which every caller
+ * already handles as `no_spell_template`.
+ */
+export function resolveSpellTemplate(graph: SpellNodeReader | undefined, id: string): SpellTemplate | undefined {
+  const authored = getSpellTemplate(id);
+  if (authored || !graph) return authored;
+  const template = graph.getNode(spellDefinitionNodeId(id))?.properties.template;
+  return template && typeof template === 'object' && (template as SpellTemplate).id === id
+    ? template as SpellTemplate
+    : undefined;
 }
 
 // ─── The Power kind's node shape (THR-1429) ─────────────────────────
@@ -293,8 +322,14 @@ export function spellDefinitionNodeId(spellTemplateId: string): string {
   return `power.spell.${spellTemplateId}`;
 }
 
-/** The definition-node shape for one spell template — the single writer of the Power kind's `spell` class. */
-export function spellDefinitionNode(spell: SpellTemplate): {
+/**
+ * The definition-node shape for one spell template — the single writer of the Power kind's `spell` class.
+ *
+ * THR-1572: a generated spell passes its `generated` provenance; the node then also carries
+ * the whole template (`properties.template`, read by `resolveSpellTemplate`),
+ * `origin: 'generated'` and the provenance bag. An authored spell's node is unchanged.
+ */
+export function spellDefinitionNode(spell: SpellTemplate, generated?: Record<string, unknown>): {
   id: string;
   type: 'trait';
   name: string;
@@ -317,6 +352,7 @@ export function spellDefinitionNode(spell: SpellTemplate): {
       agency: spellAgencyOf(spell),
       ...(spell.arena ? { arena: spell.arena } : {}),
       ...(carriedEffectsOf(spell) ? { effects: carriedEffectsOf(spell) } : {}),
+      ...(generated ? { template: spell, origin: 'generated', generated } : {}),
     },
   };
 }
@@ -341,5 +377,5 @@ export function carriedEffectsOf(spell: SpellTemplate): AttachmentEffect[] | nul
 export function allSpellDefinitionNodes(): ReturnType<typeof spellDefinitionNode>[] {
   return [...SPELL_TEMPLATES]
     .sort((a, b) => a.id.localeCompare(b.id))
-    .map(spellDefinitionNode);
+    .map(spell => spellDefinitionNode(spell));
 }
