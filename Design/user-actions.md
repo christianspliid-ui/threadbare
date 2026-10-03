@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 21:58 local (19:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 22:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,9 +13,9 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### A finished change stuck for 16 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+### A finished change stuck for 17 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 16 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 17 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
 **Nothing for you to do by hand.** A builder merges main into the branch and pushes, which also restarts its checks. It is here so you know the work exists and is not yet live.
 
@@ -49,6 +49,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: timed conditions now end on time** ([THR-1697](https://linear.app/threadbare/issue/THR-1697)): a timed condition never lands permanent by accident. Merged via [#2202](https://github.com/christianspliid-ui/threadbare/pull/2202).
+- **2026-10-03: reward draws now carry found things** ([THR-1626](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at)): generated items can turn up in an encounter's rewards. Merged via [#2201](https://github.com/christianspliid-ui/threadbare/pull/2201).
 - **2026-10-03: six small interface faults fixed** ([THR-1711](https://linear.app/threadbare/issue/THR-1711)), including the time control now showing the held state a press will change. The last round-2 playtest bug. Merged via [#2198](https://github.com/christianspliid-ui/threadbare/pull/2198).
 - **2026-10-03: a held blessing is no longer offered again at full price** ([THR-1700](https://linear.app/threadbare/issue/THR-1700)): a blessing still resolving now counts as held. Merged via [#2186](https://github.com/christianspliid-ui/threadbare/pull/2186).
 - **2026-10-03: your own mortal now reads as yours, not a stranger** ([THR-1710](https://linear.app/threadbare/issue/THR-1710)): the Threads panel no longer fogs your avatar's own details. The eighth round-2 playtest bug fixed. Merged via [#2197](https://github.com/christianspliid-ui/threadbare/pull/2197).
@@ -57,8 +59,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: developer text no longer reaches a player's build** ([THR-1707](https://linear.app/threadbare/issue/THR-1707)), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
 - **2026-10-03: Meet The First now tells one story about one person** ([THR-1712](https://linear.app/threadbare/issue/THR-1712)), the fourth round-2 playtest bug fixed and the High one. Merged via [#2192](https://github.com/christianspliid-ui/threadbare/pull/2192).
 - **2026-10-03: essence now tells one story** ([THR-1706](https://linear.app/threadbare/issue/THR-1706)): the card names the sphere that pays, the budget is that sphere's pool, and Meet The First charges. It is the third round-2 playtest bug fixed, merged 12:48 via [#2191](https://github.com/christianspliid-ui/threadbare/pull/2191).
-- **2026-10-03: delivery velocity step 1 shipped** ([THR-1717](https://linear.app/threadbare/issue/THR-1717)): builders now get leaner session context and one command for the checks. Merged 12:00 via [#2189](https://github.com/christianspliid-ui/threadbare/pull/2189).
-- **2026-10-03: clicking a mortal's name in a hex list now opens that mortal, and the spell hand names its target** ([THR-1705](https://linear.app/threadbare/issue/THR-1705)), the second round-2 playtest bug fixed. Merged 11:37 via [#2190](https://github.com/christianspliid-ui/threadbare/pull/2190).
 
 ---
 
