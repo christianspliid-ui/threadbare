@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: the encounter-writing line now teaches one set of narrator rules** ([THR-1695](https://linear.app/threadbare/issue/THR-1695)), and each brief declares what the engine can do for it. Merged 02:48 via [#2176](https://github.com/christianspliid-ui/threadbare/pull/2176).
 - **2026-10-03: a place's traits now show up in how it is described** ([THR-1522](https://linear.app/threadbare/issue/THR-1522)). Merged 01:39 via [#2175](https://github.com/christianspliid-ui/threadbare/pull/2175).
 - **2026-10-03: Sanctify and Hearthfire Blessing now do something lasting** ([THR-662](https://linear.app/threadbare/issue/THR-662/wire-the-two-remaining-no-op-sanctify-actions-subsanctify-subsanctify)): a blessed place keeps its blessing, and a tavern's owner cannot stack it twice. Merged 00:46 via [#2174](https://github.com/christianspliid-ui/threadbare/pull/2174).
 - **2026-10-02: dialogue cards now take their colour from the moment** ([THR-1586](https://linear.app/threadbare/issue/THR-1586)): story, elder and gain palettes, and the sphere tint on the card face. Merged ~23:45 via [#2173](https://github.com/christianspliid-ui/threadbare/pull/2173).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-02: the dead encounter-choice pipeline is retired** ([THR-964](https://linear.app/threadbare/issue/THR-964/pendingchoicecommits-has-no-producer-the-entire-encounter-choice)). Merged 20:41 via [#2169](https://github.com/christianspliid-ui/threadbare/pull/2169).
 - **2026-10-02: rival schemes now show who is behind them, on the map too** ([THR-829](https://linear.app/threadbare/issue/THR-829/sponsors-scheme-attribution-edge-never-binds-in-a-real-world-rivals)). Merged 19:54 via [#2168](https://github.com/christianspliid-ui/threadbare/pull/2168).
 - **2026-10-02: the encounter factory's checks now read the right side of each step** ([THR-1693](https://linear.app/threadbare/issue/THR-1693/encounter-factory-gates-live-proof-stops-reading-success-side-step)). Merged 18:50 via [#2167](https://github.com/christianspliid-ui/threadbare/pull/2167).
-- **2026-10-02: every code change now gets a cold review before it merges** ([THR-1691](https://linear.app/threadbare/issue/THR-1691/automatic-code-review-gate-a-cold-suspicious-reviewer-runs-before)). Merged via [#2166](https://github.com/christianspliid-ui/threadbare/pull/2166); its first backtest already found the Wolf-Winter Watch bug ([THR-1697](https://linear.app/threadbare/issue/THR-1697)).
 
 ---
 
