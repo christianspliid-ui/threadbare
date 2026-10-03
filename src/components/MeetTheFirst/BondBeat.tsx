@@ -4,7 +4,8 @@ import { BOND_PROSE, BOND_PROSE_FALLBACK, BOND_RELEASE_TEXT, MEETING_FATE_REVEAL
 import { getSphereColor } from '../../data/sphereIcons';
 import type { SphereName } from '../../types/graph';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
-import { buildMeetingNudgePhaseModel } from './buildMeetingNudgePhaseModel';
+import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
+import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { resolveBondTest } from '../../engine/meetingEncounter';
 import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
@@ -22,6 +23,8 @@ interface BondBeatProps {
   bondTest?: BondTest;
   essencePool?: Readonly<Record<string, number>>;
   seed?: number;
+  /** THR-1706 — charge the bond test's hand; see `FormativeTestBeat.onSpendEssence`. */
+  onSpendEssence?: (testIndex: number, requests: NudgeSpendRequest[]) => void;
   onComplete: (editedName: string | undefined, bondOutcome?: BondOutcome) => void;
 }
 
@@ -47,6 +50,7 @@ export function BondBeat({
   bondTest,
   essencePool,
   seed = 0,
+  onSpendEssence,
   onComplete,
 }: BondBeatProps) {
   const [stage, setStage] = useState<BondStage>(bondTest ? 'test' : 'bond');
@@ -67,18 +71,21 @@ export function BondBeat({
             stepIndex: BOND_STEP_INDEX,
             essencePool,
             agentName: candidate.name,
+            primarySphere,
           })
         : undefined,
-    [bondTest, essencePool, candidate.name],
+    [bondTest, essencePool, candidate.name, primarySphere],
   );
 
   const handleCommit = useCallback(
     (nudgeIds: string[]) => {
       if (!bondTest) return;
+      const requests = meetingSpendRequests(bondTest, nudgeIds);
+      if (requests.length > 0) onSpendEssence?.(BOND_STEP_INDEX, requests);
       setOutcome(resolveBondTest(bondTest, nudgeIds, seed));
       setStage('reveal');
     },
-    [bondTest, seed],
+    [bondTest, seed, onSpendEssence],
   );
 
   // Staggered reveal — starts only once the naming stage is reached, so the

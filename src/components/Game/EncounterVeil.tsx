@@ -36,7 +36,7 @@ import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeS
 import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { OpponentHeader } from './encounter-stage/OpponentHeader';
-import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { formatEssence, formatEssencePool, sphereWord } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
 import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
@@ -2841,7 +2841,9 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
             transition: 'opacity 0.5s ease',
           }}
         >
-          &#9670; {formatEssence(choice.essenceCost)} essence
+          &#9670; {formatEssence(choice.essenceCost)}{' '}
+          {/* THR-1706 — say which pool pays. */}
+          {choice.payingSphere && choice.essenceCost > 0 ? `${sphereWord(choice.payingSphere)} essence` : 'essence'}
         </span>
         {boostLabel && (
           <span style={{ color: TEXT_GHOST }}>{boostLabel}</span>

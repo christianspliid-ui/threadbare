@@ -71,3 +71,12 @@ export function formatEssencePool(value: number): string {
   if (!Number.isFinite(value)) return '0';
   return String(Math.floor(value));
 }
+
+/**
+ * A sphere's name as the player reads it beside an essence figure — `Life`.
+ * THR-1706: every surface that says *which* pool pays (the hand's budget line,
+ * a card's cost row) spells the sphere the same way the essence bars do.
+ */
+export function sphereWord(sphere: string): string {
+  return sphere.length > 0 ? sphere.charAt(0).toUpperCase() + sphere.slice(1) : sphere;
+}

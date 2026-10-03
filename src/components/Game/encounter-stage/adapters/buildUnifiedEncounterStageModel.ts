@@ -397,6 +397,14 @@ function buildChoices(
   const authoredForStep = template.authoredChoices?.[activeAction.currentStep];
 
   if (authoredForStep && authoredForStep.length > 0) {
+    // THR-1706 — an authored choice is billed to the god's primary sphere
+    // (`handleEncounterIntervene`), so it is priced against that pool and the
+    // row names it. Pricing it against all twelve pools summed let a choice
+    // read affordable and then floor the one pool it actually drew on.
+    const payingSphere = args.gameState?.ascendantIdentity?.sphereAlignment?.primary;
+    const payingEssence = payingSphere
+      ? (args.gameState?.essencePool?.[payingSphere] ?? 0)
+      : essence;
     // Use authored choice cards with full prose bodies
     //
     // THR-1411 — the stance rides along. `AuthoredChoiceCard.interventionType`
@@ -416,7 +424,8 @@ function buildChoices(
       intent: enrichProse(card.intent, ctx),
       targetLabel: card.targetLabel,
       essenceCost: card.essenceCost,
-      affordable: essence + 1e-9 >= card.essenceCost,
+      affordable: payingEssence + 1e-9 >= card.essenceCost,
+      ...(payingSphere ? { payingSphere } : {}),
       costLabel: card.essenceCost > 0 ? formatEssenceLabel(card.essenceCost) : undefined,
       likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
       interventionType: card.interventionType,

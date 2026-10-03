@@ -28,7 +28,9 @@ import type {
 } from '../../types/meetingEncounter';
 import { ComicPanel } from './ComicPanel';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
-import { buildMeetingNudgePhaseModel } from './buildMeetingNudgePhaseModel';
+import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
+import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
+import type { SphereName } from '../../types/index';
 import { resolveFormativeTest } from '../../engine/meetingEncounter';
 import { selectDilemmaScene } from '../../data/meeting-art-library';
 import {
@@ -59,6 +61,15 @@ export interface FormativeTestBeatProps {
   /** Base seed; each test derives its own stream from `seed + testIndex`. */
   seed: number;
   godVoiceOverride?: string;
+  /** THR-1706 — the god's primary sphere: it pays for the hand, and the cards say so. */
+  primarySphere?: SphereName;
+  /**
+   * THR-1706 — charge a committed hand. Called once per test the player commits
+   * with priced cards, before the outcome resolves. Absent ⇒ the hand is free,
+   * which is what every test did before this ticket (a preview that never
+   * charged) and stays the fail-soft path for a caller with no pool to write.
+   */
+  onSpendEssence?: (testIndex: number, requests: NudgeSpendRequest[]) => void;
   onComplete: (outcomes: FormativeOutcome[]) => void;
 }
 
@@ -74,6 +85,8 @@ export function FormativeTestBeat({
   essencePool,
   seed,
   godVoiceOverride,
+  primarySphere,
+  onSpendEssence,
   onComplete,
 }: FormativeTestBeatProps) {
   // -1 is the transition-in line; `revealed` holds the resolved outcome whose
@@ -103,14 +116,17 @@ export function FormativeTestBeat({
             essencePool,
             agentName: candidate.name,
             locationName,
+            primarySphere,
           })
         : undefined,
-    [current, index, essencePool, candidate.name, locationName],
+    [current, index, essencePool, candidate.name, locationName, primarySphere],
   );
 
   const handleCommit = useCallback(
     (nudgeIds: string[]) => {
       if (!current) return;
+      const requests = meetingSpendRequests(current.test, nudgeIds);
+      if (requests.length > 0) onSpendEssence?.(index, requests);
       const outcome = resolveFormativeTest(
         current.test,
         index,
@@ -120,7 +136,7 @@ export function FormativeTestBeat({
       );
       setRevealed(outcome);
     },
-    [current, index, seed],
+    [current, index, seed, onSpendEssence],
   );
 
   const handleAdvance = useCallback(() => {

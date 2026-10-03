@@ -379,6 +379,7 @@ export type TraceCategory =
   | 'beat.delivery_skipped'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
+  | 'meeting.essence_spent'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -896,6 +897,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.delivery_skipped',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
+  'meeting.essence_spent',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -4578,6 +4580,7 @@ export type TraceEntry =
   | BeatSeededTrace
   | BeatDeliveryTrace
   | MeetingLocationPickedTrace
+  | MeetingEssenceSpentTrace
   | DoomWakeTrace
   | DoomExpiryHeldTrace
   | RivalGraceHoldTrace
@@ -4989,6 +4992,22 @@ export interface MeetingLocationPickedTrace extends TraceBase {
   /** Picked for its current culture. */
   cultured: boolean;
   fallback: boolean;
+}
+
+/**
+ * Trace: a Meet-The-First test hand was paid for (THR-1706). Before this the
+ * meeting's cards previewed a spend and never charged it. One per test the
+ * player commits with priced cards; `ok: false` means the pool could not cover
+ * the hand at commit time and nothing was charged.
+ */
+export interface MeetingEssenceSpentTrace extends TraceBase {
+  category: 'meeting.essence_spent';
+  /** Formative test index, or the bond test's step index. */
+  testIndex: number;
+  /** The sphere billed first — the god's primary. */
+  primarySphere: string;
+  spent: number;
+  ok: boolean;
 }
 
 /**
