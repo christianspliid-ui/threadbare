@@ -701,6 +701,20 @@ describe('capWithDiversity', () => {
     expect(nowhere.map(e => e.templateId)).toEqual(none.map(e => e.templateId));
   });
 
+  it('reports the own-hex order only when the local pass ran (the trace reads this)', () => {
+    const graph = hexGraph();
+    for (const localOrder of ['walk', 'template_hash'] as const) {
+      const ran: { localOrder?: 'walk' | 'template_hash' } = {};
+      capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30, localOrder }, 'home', ran);
+      expect(ran.localOrder).toBe(localOrder);
+      // The cap ran, but the location resolves to no hex, so no own-hex pass did.
+      const skipped: { localOrder?: 'walk' | 'template_hash' } = {};
+      const r = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30, localOrder }, 'nowhere', skipped);
+      expect(r).toHaveLength(MAX_SCORED_CANDIDATES);
+      expect(skipped.localOrder).toBeUndefined();
+    }
+  });
+
   it('is deterministic per (agent, tick) and changes with the tick', () => {
     const graph = hexGraph();
     const local = (tick: number) => capWithDiversity(crowdedHome(), 'agent-1', graph, tick, HASHED, 'home')

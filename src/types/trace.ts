@@ -1893,7 +1893,7 @@ export interface FilterPipelineTrace extends TraceBase {
   afterCap: number;
   /** Distinct templates entering the cap stage minus distinct templates leaving it (THR-1633 S1). Optional: traces from before THR-1633 lack it. */
   capCutTemplates?: number;
-  /** Which own-hex order filled the cap's local slots (THR-1687). Absent when the cap did not run. */
+  /** Which own-hex order filled the cap's local slots (THR-1687). Absent when no own-hex pass ran (cap not reached, no agent hex, reserves took every slot). */
   capLocalOrder?: 'walk' | 'template_hash';
 }
 

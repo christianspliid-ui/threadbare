@@ -740,6 +740,8 @@ export function capWithDiversity(
   tick?: number,
   fill: CapFillOptions = DEFAULT_CAP_FILL,
   agentLocationId?: string,
+  /** Out-param (THR-1687): set to the own-hex order only when the local pass actually ran. */
+  report?: { localOrder?: CapFillLocalOrder },
 ): EncounterCacheEntry[] {
   if (entries.length <= MAX_SCORED_CANDIDATES) {
     return [...entries];
@@ -950,6 +952,7 @@ export function capWithDiversity(
       }
       return local;
     };
+    if (report) report.localOrder = fill.localOrder === 'template_hash' ? 'template_hash' : 'walk';
     if (fill.localOrder !== 'template_hash') {
       walk(localSlots, isLocal, [true]);
     } else {
@@ -1080,8 +1083,9 @@ export function runFilterPipeline(
 
   // Stage 5: Performance Cap
   const beforeCap = current;
+  const capReport: { localOrder?: CapFillLocalOrder } = {};
   try {
-    current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId);
+    current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId, capReport);
   } catch {
     // Keep previous stage's output
   }
@@ -1109,9 +1113,7 @@ export function runFilterPipeline(
       afterThreat,
       afterCap,
       capCutTemplates,
-      afterThreat > MAX_SCORED_CANDIDATES
-        ? (capFill.localOrder === 'template_hash' ? 'template_hash' : 'walk')
-        : undefined,
+      capReport.localOrder,
     ),
   };
 }
@@ -1134,7 +1136,7 @@ function buildTrace(
   afterThreat: number,
   afterCap: number,
   capCutTemplates = 0,
-  capLocalOrder?: 'walk' | 'template_hash',
+  capLocalOrder?: CapFillLocalOrder,
 ): FilterPipelineTrace {
   return {
     id: 0,
