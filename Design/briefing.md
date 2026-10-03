@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 11:00 local (09:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 11:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,19 +30,20 @@ Say "veto found things", "veto old banner" or "veto spell gifts" to reverse any 
 
 ## Queue
 
-**19 jobs ready** (backed up — the playtest added 9 bugs at once; it is draining, not stalled).
+**18 jobs ready** (backed up — the round-2 playtest added 9 bugs at once; it is draining, not stalled).
 
-- **Just landed:** [the Threads panel now shows The First right after the bond](https://linear.app/threadbare/issue/THR-1704) — the first of the round-2 playtest bugs, merged this morning.
-- **Being built:** [delivery velocity step 1](https://linear.app/threadbare/issue/THR-1717/delivery-velocity-step-1-lean-session-context-one-shot-npm-run-gate) (leaner sessions, one-command gate, back-to-back pickup) — [pull request #2189](https://github.com/christianspliid-ui/threadbare/pull/2189) is clean, builder active (updated ~10:48), [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-delivery-velocity.md) merged via [#2188](https://github.com/christianspliid-ui/threadbare/pull/2188).
-- **Being built:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting) — [pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued to merge but clashes with main and has no checks (last push ~09:31).
-- **Next up from the playtest (High):** [clicking a mortal in a hex list silently retargets your spell](https://linear.app/threadbare/issue/THR-1705), [Essence tells three stories](https://linear.app/threadbare/issue/THR-1706), [Meet The First contradicts itself](https://linear.app/threadbare/issue/THR-1712). Five Medium ones follow: [THR-1707](https://linear.app/threadbare/issue/THR-1707), [THR-1708](https://linear.app/threadbare/issue/THR-1708), [THR-1709](https://linear.app/threadbare/issue/THR-1709), [THR-1710](https://linear.app/threadbare/issue/THR-1710), [THR-1711](https://linear.app/threadbare/issue/THR-1711).
+- **Just landed:** [clicking a mortal's name in a hex list now opens that mortal, and the spell hand names its target](https://linear.app/threadbare/issue/THR-1705) — the second round-2 playtest bug, merged 11:37 via [#2190](https://github.com/christianspliid-ui/threadbare/pull/2190) and live.
+- **Being built:** [delivery velocity step 1](https://linear.app/threadbare/issue/THR-1717/delivery-velocity-step-1-lean-session-context-one-shot-npm-run-gate) — [pull request #2189](https://github.com/christianspliid-ui/threadbare/pull/2189) is queued to merge, checks running (last push ~11:48).
+- **Being built:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting) — [pull request #2186](https://github.com/christianspliid-ui/threadbare/pull/2186) is queued but clashes with main and has no checks; no push for ~4½ h. Its local workspace is clean, so nothing is stranded.
+- **Next up from the playtest (High):** [Essence tells three stories](https://linear.app/threadbare/issue/THR-1706), [Meet The First contradicts itself](https://linear.app/threadbare/issue/THR-1712). Five Medium ones follow: [THR-1707](https://linear.app/threadbare/issue/THR-1707), [THR-1708](https://linear.app/threadbare/issue/THR-1708), [THR-1709](https://linear.app/threadbare/issue/THR-1709), [THR-1710](https://linear.app/threadbare/issue/THR-1710), [THR-1711](https://linear.app/threadbare/issue/THR-1711).
 - **Built, waiting to merge:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert): [pull request #2180](https://github.com/christianspliid-ui/threadbare/pull/2180) clashes with main; no checks have started. A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has no owner on the board (parked ~6½ h). Code is safe on the PR; its local workspace is clean. The spell-gifts design waits on it. A builder's job.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, is not queued to merge, and the job has no owner on the board (parked ~7½ h). Code is safe on the PR; its local workspace is clean. The spell-gifts design waits on it. A builder's job.
 - **Old jobs at the bottom:** two have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Not blocked; newer work keeps outranking them.
 
 ## Health
 
 - **Three pull requests clash with main and cannot merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator, unqueued), [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw) and [#2186](https://github.com/christianspliid-ui/threadbare/pull/2186) (held blessing). GitHub has scheduled no checks on #2180 or #2186. Each needs main merged in and a push, which also restarts the checks. A builder's job.
-- **The simulation got slower again** (147 → 186 ms/tick since the last brief; other sessions were running on the machine, so part of this may be load). A builder's job: tick cost 186 ms/tick steady, 106% above the 7-day median (90, 119 rows since dbf4f9d5); top phase agent_decision, 548 agents. Name the merges between dbf4f9d5 and 20788e50: git log --oneline --merges dbf4f9d5..20788e50
-- **The worktree reaper has 6 worktrees waiting for a decision** (441 worktrees, 306 local branches on disk). The reaper's own job; noted for visibility.
-- Everything else is green. The live site is current (the last commits were docs only). All scheduled tasks are on time; the cold-playtest lane checked in at ~10:48.
+- **The heavy simulation tests are red on the latest main.** A follow-up fix is owed; a builder's job.
+- **The simulation is still slower than its weekly norm** (145 ms/tick, down from 186 last hour). A builder's job: tick cost 145 ms/tick steady, 59% above the 7-day median (91, 119 rows since 68f172bb); top phase agent_decision, 548 agents. Name the merges between 68f172bb and a2eb0b54: git log --oneline --merges 68f172bb..a2eb0b54
+- **The worktree reaper has 6 worktrees waiting for a decision** (444 worktrees, 307 local branches on disk). The reaper's own job; noted for visibility.
+- Everything else is green. The live site is serving the latest main (a2eb0b54). All scheduled tasks are on time.
