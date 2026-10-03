@@ -25,6 +25,7 @@
  *   {?no_X}...{/no_X}   → inverse conditional block
  */
 
+import { substituteFactionName } from './factionNameSubstitution';
 import type { WorldGraph } from './graph';
 import type { CampbellianPhase } from '../types/influence';
 import type { MeetingChoiceRecord } from '../types/meetingEncounter';
@@ -829,7 +830,7 @@ export function enrichProse(
     ctx.rivals[0]?.name ?? 'a bitter enemy');
 
   // Faction
-  result = result.replace(/{faction}/g,
+  result = substituteFactionName(result,
     ctx.factionRank?.factionName ?? 'their people');
 
   // Scene target (THR-694) — the entity the encounter is *with*. Every token carries a

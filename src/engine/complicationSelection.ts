@@ -20,6 +20,7 @@
  * | Edge/node lookup fails in prose fill| Use placeholder literal e.g. "(unknown)"  |
  */
 
+import { substituteFactionName } from './factionNameSubstitution';
 import type {
   ComplicationTemplate,
   ComplicationContext,
@@ -215,13 +216,14 @@ function fillProse(
     ? ctx.graph.getNode(ctx.fight.opponentId)?.name ?? 'the foe'
     : 'the foe';
 
-  return template
+  // THR-1708 — `{faction}` first and article-aware: "The {faction}" with a name
+  // that already reads "The Builders Fellowship" must not become "The The …".
+  return substituteFactionName(template, factionName)
     .replace(/\{opponent\}/g, opponentName)
     .replace(/\{name\}/g, actorName)
     .replace(/\{possessive\}/g, possessive)
     .replace(/\{location\}/g, locationName)
     .replace(/\{witness\}/g, witnessName)
-    .replace(/\{faction\}/g, factionName)
     .replace(/\{omen_atmosphere\}/g, omenAtmosphere || 'unseen forces');
 }
 
