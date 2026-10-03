@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 06:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 07:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,19 +29,20 @@ Say "veto found things" or "veto old banner" to reverse either.
 
 ## Queue
 
-**12 jobs ready** (healthy). No merges since the last brief.
+**11 jobs ready** (healthy). One merge since the last brief.
 
-- **Being built right now:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) — a builder is working on it (14 files in progress in its local workspace, last touched 2 minutes ago; checkpoint pushed 39 minutes ago).
+- **Just landed:** [the lead survey and the kept visit](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the) — merged 07:51 via [#2181](https://github.com/christianspliid-ui/threadbare/pull/2181) and live on the site.
+- **Being built right now:** [rival strikes from nudge pressure](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection) — a builder opened [pull request #2182](https://github.com/christianspliid-ui/threadbare/pull/2182) minutes ago; it already clashes with the merge above, so the builder has a merge to do before queueing it.
 - **Built, waiting to merge:** [the shortlist's fair draw](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert): [pull request #2180](https://github.com/christianspliid-ui/threadbare/pull/2180) clashes with newer main and no checks have started. A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main in four generated/doc files, is not queued to merge, and the job has no owner on the board. Code is safe on the PR. A builder's job, not yours.
-- **Next in line:** [rival strikes from nudge pressure](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection) · [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting) · [a landed Hollow Crown changes only the odds](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only). The two designs above wait out their veto windows.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [pull request #2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main in generated/doc files, is not queued to merge, and the job has no owner on the board (parked since ~04:25). Code is safe on the PR; its workspace is clean. A builder's job, not yours.
+- **Next in line:** [a held blessing still offered at full price](https://linear.app/threadbare/issue/THR-1700/a-held-sustained-verb-is-still-offered-on-its-own-target-re-casting) · [a landed Hollow Crown changes only the odds](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only). The two designs above wait out their veto windows.
 - **Small bugs waiting:** [an apex monster's title missing from its fight header](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and), [the Wolf-Winter Watch's "Under Watch" never wears off](https://linear.app/threadbare/issue/THR-1697/the-wolf-winter-watch-puts-under-watch-on-a-village-forever-its-apply), [a refused visit leaves a phantom appointment](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed).
 - **Old jobs at the bottom:** two deferrals have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Not blocked; newer work keeps outranking them.
 
 ## Health
 
-- **Two finished pull requests clash with main and cannot merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator, unqueued) and [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw; GitHub has not scheduled a single check on it). Each needs a builder to merge main in and push, which also restarts the checks. A builder's job.
-- **The heavy simulation tests are red on the latest main** (about 2 hours). A follow-up fix is owed. A builder's job.
-- **The simulation is still slower, twelfth hour running.** A builder's job: tick cost 148 ms/tick steady, 65% above the 7-day median (90, 119 rows since 7f5195c5); top phase agent_decision, 539 agents. Name the merges between 7f5195c5 and f184fa93: git log --oneline --merges 7f5195c5..f184fa93. Up from 132 last hour (no new merges, so part of this is run-to-run noise).
-- **The worktree reaper has 6 worktrees waiting for a decision** (438 worktrees, 305 local branches on disk). The reaper's own job; noted for visibility.
-- Everything else is green. The live site serves the latest commit (f184fa93). All 10 scheduled tasks are on time.
+- **Three pull requests clash with main and cannot merge:** [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator, unqueued), [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw; GitHub has not scheduled a single check on it) and [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182) (rival strikes, builder active). Each needs main merged in and a push, which also restarts the checks. A builder's job.
+- **The heavy simulation tests are red on the latest main** (about 3 hours). A follow-up fix is owed. A builder's job.
+- **The simulation is still slower, thirteenth hour running.** A builder's job: tick cost 142 ms/tick steady, 59% above the 7-day median (90, 120 rows since 7f5195c5); top phase agent_decision, 548 agents. Name the merges between 7f5195c5 and f18d1003: git log --oneline --merges 7f5195c5..f18d1003
+- **The worktree reaper has 6 worktrees waiting for a decision** (439 worktrees, 306 local branches on disk). The reaper's own job; noted for visibility.
+- Everything else is green. The live site serves the latest commit (f18d1003). All 10 scheduled tasks are on time.
