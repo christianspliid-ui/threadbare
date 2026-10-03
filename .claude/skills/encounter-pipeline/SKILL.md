@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-10-02
+last_validated_against: 2026-10-03
 validated_doctrine: prose@2
 ---
 
@@ -73,7 +73,7 @@ five-band ladder; prose pays the nudge off at *every* band, misfires included.
 **The communication pivot (THR-883, locked 2026-07-30): prose does the scene, cards do
 the rules.** The scene lives in the per-class openings, the setting-neutral spine, and
 the outcome prose. A card face is generic and reusable — 2–4 word title, one plain
-mechanical `effectLine` (what the god does and why that moves the odds) — cut from the
+mechanical `effectLine` (what the card does to the step, no odds-talk) — cut from the
 21-type card library. Zero scene-bespoke prose on a card face. **Cards read like spells:
 imperative verb + noun, one or two direct sentences of effect, and no flavor quote at all**
 (retired 2026-08-25 with Prose Doctrine v2; REVISE trigger 16 below enforces it).
@@ -532,7 +532,7 @@ Gate (14 YES/NO).
 **Writes:** `<slug>-editorial.md` + `<slug>-revised.md`
 
 The editorial agent:
-1. Reviews prose quality, branch seduction, scale discipline, inspiration honesty, aftermath payoff, dilemma energy
+1. Reviews prose quality, branch distinctness (forks are the mortal's, never the player's), scale discipline, inspiration honesty, aftermath payoff, dilemma energy
 2. Runs the Experience Differentiator Gate (14 questions)
 3. Issues a verdict
 4. **If PASS or PASS WITH REVISIONS:** produces the revised file directly with all edits applied inline. No manifest. No orchestrator text surgery.
@@ -555,7 +555,7 @@ The editorial agent:
 14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
 16. **Scene-bespoke prose on a card face** — a title or effect line that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules) — or any flavor quote at all (retired 2026-08-25; cards read like spells)
-17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
+17. **An effect line that states mood instead of mechanism** — it must say what the card does to the step, like a spell, with no odds-talk (spec checklist Q11)
 18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
 19. **Two rider cards in one hand**, or a rider with no justifying comment
 20. **A zero-essence non-trait card with no other cost channel**, or a grant naming content that does not exist (`validateNudgeGrantRefs`)

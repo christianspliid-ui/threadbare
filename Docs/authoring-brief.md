@@ -1,12 +1,12 @@
 # Authoring Brief
 
-> **Generated:** 2026-10-02 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-10-03 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 6823e02d409beaae54accc6c041385425c2963f1)
->   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
->   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a9e866b16e82f019e80385eabd9327d31f4226b5)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: f087af9339b8b991c6dc6d8498d1b325b0a98953)
+>   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 363595558a37160ca5834c3e1d0caa5a72c8854a)
+>   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 636abd2bb126e15b1b9fcb29c291c2e5496f5811)
 >   - Docs/canon/undertakings.md (sha1: 851d8660d4891fac0e8193531e6abac64d7881c4)
->   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
+>   - Sections A/D, hardcoded in the generator (sha1: 7796e03200a835cd1346e97524a9196c614308b9)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
 ---
@@ -21,7 +21,7 @@ This section governs every other section in this brief. Where a design principle
 
 **Three registers, and baseline is the default.**
 
-- **Baseline** — the large majority of the words the player reads: step narration, band base text, aftermath overviews. Plain, concrete, active. One idea per sentence. Concrete nouns and verbs over abstractions; dry understatement over ornament. Stacked metaphor, archaic diction and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong here.
+- **Baseline** — the large majority of the words the player reads: step narration, band base text, aftermath overviews. Plain, concrete, active, present tense. One fact per sentence. Concrete nouns and verbs over abstractions; plain statement over ornament. The narrator carries no irony — wit belongs to characters. Stacked metaphor, archaic diction and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong here.
 - **Character** — dialogue and agent-attributed lines. Idiosyncratic per persona, but comprehension first. At most one florid voice per scene; the narration around it stays baseline.
 - **Peak** — rationed lyricism, and only on a designated **non-encounter** surface: doom stage transitions, the Twilight Phase, World-Soul / Echo prose. **No encounter surface qualifies** — final-step band prose, the fate-reveal line and aftermath beats were peak surfaces until 2026-08-25; Doctrine v2 retired peak lyricism for every encounter surface. At most one figurative image per paragraph even there.
 
@@ -31,11 +31,15 @@ This section governs every other section in this brief. Where a design principle
 
 **Baseline, right:**
 
-> The merchant owed too many people too much. He'd started checking the door. When the collector's boy finally came, he already had the ledger open — not to pay, but to show how little was left.
+> The merchant Oren owes money to six people and cannot pay any of them. Today the collector's boy comes to his door. Oren opens his ledger and shows the boy how little is left.
 
 **Baseline, wrong** — same beat, ornamental diction, sends the reader to a dictionary:
 
 > The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants.
+
+**Baseline, also wrong** — past tense, and a fact (he is afraid) encoded as behaviour for the reader to decode:
+
+> He'd started checking the door.
 
 **Peak, right** — a doom transition, which is a declared peak surface:
 
@@ -47,9 +51,9 @@ This section governs every other section in this brief. Where a design principle
 
 ---
 
-## Section B: The 7 Engine Capabilities
+## Section B: The 9 Engine Capabilities Every Encounter Draws On
 
-Every encounter has access to these capabilities. When you sit down to write, ask: which of these am I using, and why am I not using the others?
+Every encounter has access to these capabilities. When you sit down to write, ask: which of these am I using, and why am I not using the others? This is a selection; the full set is in Docs/plans/2026-04-16-systemic-wiring-guide.md.
 
 ### Capability 1: Enrichment Placeholders — Prose That Knows Who's Reading
 
@@ -100,7 +104,7 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
   kind: 'encounter_seed',
   templateId: 'broker.quest.shrine_confrontation',  // Specific encounter to spawn
   // OR:
-  encounterFamily: 'broker.quest',                   // Family prefix — the engine draws + spawns a member (THR-697)
+  query: { kind: 'encounter_template', tags: ['#broker_errand'] },  // A family by tag — the engine draws + spawns a member (THR-1488)
   targetAgentId: '$actor',       // Who gets the follow-up (defaults to current agent)
   delayTicks: 15,                // When it becomes eligible
   priority: 1.2,                 // Higher = spawns sooner when eligible
@@ -176,17 +180,69 @@ Two aftermath reaction types give agents tangible knowledge or items:
 
 The player is a god. Their choices are always divine interventions, never direct character control.
 
+> **⚠️ The engine no longer generates a generic choice set (THR-1121, 2026-08-15).** Court position governs **prose depth only**. What the player is offered at a step now comes entirely from what the *template* authored, and there are exactly three cases:
+>
+> | The step authored… | The player gets |
+> |---|---|
+> | a `nudges` hand (capability 14) | the nudge stage: those cards, plus `Let fate decide` |
+> | `authoredChoices` (retired — WS5 complete, THR-1086: zero shipped templates author it; the row survives for un-migrated saves only) | the choice screen, committed with `Let fate decide` |
+> | neither | **fate alone** — *"Nothing here answers to you. Let it play out."* and `Let fate decide` |
+>
+> The third case is the model working, not a gap: a step where the god has no purchase is a real state. **What you must not expect any more is a free floor of choices under an unauthored step** — if you want the player to have a move, author one.
+>
+> Court position still governs prose depth exactly as before:
+>
+> | Court Position | Prose Depth |
+> |---|---|
+> | `the_first` | Full (3-5 sentences) |
+> | `retinue` | Medium (2-3 sentences) |
+> | `watched` | Peek (1-2 sentences), observation only |
+> | `dormant` | None |
+>
+> **And no choice buys odds.** The retired set priced itself in essence and paid out in `probabilityBoost` — *supportive +3% for 1 essence, coercive +15% for 5*. `probabilityBoost` is no longer read by resolution at all. An authored choice still **costs** essence and still **keys which authored ending resolves** (`aftermathConfig.branchOnStep`), but the only thing that moves a roll now is a committed nudge card on the named `nudge:<id>` channel. Do not write a choice whose appeal is that it is the expensive one.
+
+**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and decides whether to play a nudge card or let fate decide — a nudge is an influence on the scene or the mortal, never a choice of how the mortal responds or which ending resolves (the branch is the mortal's, Capability 14). **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
+
+### Capability 14: The Nudge Hand — What the God May Do to This Step (THR-773)
+
+**What it is:** a step can carry an authored hand of **nudge cards**. In an *attended* encounter the player is offered them, pays essence, and each one bends the named odds of that step. Some cards also carry a **rider** that remaps the outcome band after the roll lands.
+
 ```ts
 {
-  id: 'turn_the_chaos', label: 'Turn the Chaos', /* …prose… */
-  interventionType: 'coercive',
-  moralAxis: 'iron',     // which Reach's virtue↔vice axis this choice moves (defaults to the choice's reach)
-  pole: 'vice',          // 'virtue' tilts toward the reach's virtue pole, 'vice' toward the vice pole
-  magnitude: 0.15,       // unsigned drift strength, canonical 0.05–0.20 (PERSONALITY_DRIFT_DELTA_*)
+  id: 'steady_her_hand',            // unique within the template
+  name: 'Steady Her Hand',           // ≤6 words, plain
+  sphere: 'spirit',                  // optional gate; omit = common pool
+  requiredUnlock: 'divine.inspire',  // optional god-power gate
+  requiredTrait: 'trait.core.core_integrity.virtue', // optional trait-only card; full node id, and it must survive validateTraitRefs() — see Capability 15
+  essenceCost: 2,                    // 0 allowed (trait options)
+  forecastDelta: 0.10,               // named modifier, source `nudge:steady_her_hand`
+  rider: 'no_crit_fail',             // optional band rider
+  imageTag: 'hand_on_shoulder',      // optional WS4 library tag
+  effectLine: 'Makes the worst outcome impossible.',   // words only, never a number
+  bandProse: { failure: 'She still misses — but she misses cleanly.' },
 }
 ```
 
-**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
+**Why this changes what you write:** you compose a hand, you do not type one out. Author the 0–2 **specials** only this encounter could offer and declare the fill (`deal: { count, tags, exclude }`); the god's Repertoire deals the rest, and the *composed* hand lands at 4–8 cards. A fully authored hand stays legal but is not the default. Each card face reads like a spell: an imperative verb + noun title and one or two sentences of what the card does to the step, with no mood and no odds-talk. The scene's account of a card lives in its band fragments, never on the face. Branch selection is never the player's: a card influences the scene or the mortal, and the mortal and the world pick the path (spec: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` § 3).
+
+### Capability 17: Carryover Factor Lines — How the Last Step Tilts This One (THR-892)
+
+**What it is:** an outcome-keyed line on `ActionStep` describing how the *previous* step's resolution changes this one — the only authored factor surface besides trait lines that survives the variance rule.
+
+```ts
+carryoverFactorLines: {
+  success_at_cost: {
+    text: 'The last door cost her a knuckle.',
+    polarity: 'against',
+    forecastDelta: -0.04,   // optional
+  },
+  critical_success: {
+    text: 'The first lock gave up its pattern.',
+    polarity: 'for',
+    forecastDelta: 0.06,
+  },
+}
+```
 
 ---
 
@@ -200,7 +256,7 @@ Encounters are the linchpin — the curated moments where the game says "pay att
 The binary model (invest essence → succeed/fail) produces two bad states: frustration ("I wasted my investment") or indifference ("I succeeded, next"). Neither keeps the player in the scene. An encounter the player is *present for* must be an experience, not a transaction. **Register clamp:** the richness lives in the mechanism — a hand worth thinking about, bands worth reading — never in the ornateness of the sentences describing it.
 
 ### 2. Multiple Meaningful Nudges
-The player is a god, not the protagonist: they never choose the mortal's response. What varies inside an encounter is which **nudges** the player spends — each a concrete exercise of influence on the scene or on the mortal's inner weather, each with a real cost and a real risk. The dilemma is *whether and where to spend*, and reading it requires understanding the protagonist — personality, capabilities, current state — not just resource math. Playing nothing must stay viable. **Register clamp:** a card face states what the god does and why that moves the odds, in plain interactive text; the scene does the fiction, the cards do the rules.
+The player is a god, not the protagonist: they never choose the mortal's response. What varies inside an encounter is which **nudges** the player spends — each a concrete exercise of influence on the scene or on the mortal's inner weather, each with a real cost and a real risk. The dilemma is *whether and where to spend*, and reading it requires understanding the protagonist — personality, capabilities, current state — not just resource math. Playing nothing must stay viable. **Register clamp:** a card face states what the card does, like a spell, in plain interactive text with no mood and no odds-talk; the scene does the fiction, the cards do the rules. *(2026-10-03, THR-1695: replaced the odds-talk framing of the effect line.)*
 
 ### 3. No Obviously Right Answer
 If one option is clearly optimal, it's not a dilemma. The best encounters create situations where every option has real upside and real risk, and the "right" answer depends on what you value: safety vs. glory, short-term survival vs. long-term arc, the protagonist's nature vs. what you want them to become. **Register clamp:** state each option's upside and cost plainly on the card face — a dilemma the player has to decode is not a dilemma.
@@ -249,7 +305,7 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
 16. **Scene-bespoke prose on a card face** — a title or effect line that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules) — or any flavor quote at all (retired 2026-08-25; cards read like spells)
-17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
+17. **An effect line that states mood instead of mechanism** — it must say what the card does to the step, like a spell, with no odds-talk (spec checklist Q11)
 18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
 19. **Two rider cards in one hand**, or a rider with no justifying comment
 20. **A zero-essence non-trait card with no other cost channel**, or a grant naming content that does not exist (`validateNudgeGrantRefs`)

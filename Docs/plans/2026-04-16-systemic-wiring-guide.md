@@ -141,7 +141,7 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
   kind: 'encounter_seed',
   templateId: 'broker.quest.shrine_confrontation',  // Specific encounter to spawn
   // OR:
-  encounterFamily: 'broker.quest',                   // Family prefix — the engine draws + spawns a member (THR-697)
+  query: { kind: 'encounter_template', tags: ['#broker_errand'] },  // A family by tag — the engine draws + spawns a member (THR-1488)
   targetAgentId: '$actor',       // Who gets the follow-up (defaults to current agent)
   delayTicks: 15,                // When it becomes eligible
   priority: 1.2,                 // Higher = spawns sooner when eligible
@@ -150,9 +150,13 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
 }
 ```
 
-**Two modes (both now spawn a real encounter — THR-697 Slice D activated the family stub):**
+**Two live modes:**
 - **`templateId`** — spawns that exact template as a unified action for the target agent. The reliable path for authored chains.
-- **`encounterFamily`** — a family *prefix*, matched raw (`broker.quest` matches `broker.quest.*`). **⚠️ This is NOT the same vocabulary as `revealFamilies`.** They used to share the raw-prefix convention; since THR-844 `revealFamilies` resolves through `REVEAL_FAMILY_ALIASES` and `encounterFamily` does not. A thematic name that works as a reveal family (`investigation`, `oracle`) will silently match **zero** templates here and fall through to the generic "the consequences are stirring…" event. Write a real id prefix for seeding. At eligibility the engine collects the registered templates in that family that are individual-performable and location-eligible for the target agent (scan capped at `FAMILY_SEED_MAX_CANDIDATES` = 12), makes one seeded `rng()` draw, and spawns the winner. If the family resolves to **zero** eligible templates, it falls back to the v1 "the consequences are stirring…" narrative event and the seed is consumed. Emits `encounter_seed_family_matched` on a spawn.
+- **`query`** — a content query naming a family **by tag** (`#broker_errand`, `#circle_errand`, …), resolved at fire time; see § "Capability 29: Content tags and the content query" (THR-1488).
+
+*(2026-10-03, THR-1695: the example above taught `encounterFamily` as live. It is deprecated and fatal in `check:encounter` — see § "Capability 29: Content tags and the content query". The note below is kept for reading old content only.)*
+
+- **`encounterFamily` (deprecated — do not author)** — a family *prefix*, matched raw (`broker.quest` matches `broker.quest.*`). **⚠️ This is NOT the same vocabulary as `revealFamilies`.** They used to share the raw-prefix convention; since THR-844 `revealFamilies` resolves through `REVEAL_FAMILY_ALIASES` and `encounterFamily` does not. A thematic name that works as a reveal family (`investigation`, `oracle`) will silently match **zero** templates here and fall through to the generic "the consequences are stirring…" event. Write a real id prefix for seeding. At eligibility the engine collects the registered templates in that family that are individual-performable and location-eligible for the target agent (scan capped at `FAMILY_SEED_MAX_CANDIDATES` = 12), makes one seeded `rng()` draw, and spawns the winner. If the family resolves to **zero** eligible templates, it falls back to the v1 "the consequences are stirring…" narrative event and the seed is consumed. Emits `encounter_seed_family_matched` on a spawn.
 
 **Scene-context inheritance (`inheritContext: true`, opt-in, THR-697 Slice D):** by default a seeded follow-up self-targets — it forgets who the original story was about. Set `inheritContext: true` and the planting site snapshots the source action's `targetId` and `supportBindings` onto the seed; at spawn the engine re-validates both against the live graph (a dead target falls back to self-target; dead-node bindings are dropped) and threads the survivors into the follow-up's normal `supportBindings` slot. The upshot: **the same people return** — `{target:*}`/`{cast:*}` prose placeholders and `$target`/`$cast:` aftermath sentinels resolve to the original scene in the follow-up. Emits `seed_context_inherited`.
 
@@ -434,7 +438,9 @@ The player is a god. Their choices are always divine interventions, never direct
 - `supportiveCount`, `coerciveCount`
 - `essenceSpentOnEncounters`
 
-**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
+**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and decides whether to play a nudge card or let fate decide — a nudge is an influence on the scene or the mortal, never a choice of how the mortal responds or which ending resolves (the branch is the mortal's, Capability 14). **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
+
+*(2026-10-03, THR-1695: the paragraph above replaced "pour power in, or let them find their own way?", which read as the retired buy-odds choice.)*
 
 **Authored moral-axis poles on choice cards (THR-528). Legacy surface (2026-08-25 note):** `authoredChoices` is the rejected authored-futures model — no new template authors it (WS5 complete, THR-1086); the render layer survives only for un-migrated saves and the drift mechanics below apply to nudge pole-leans through the same resolvers. An `AuthoredChoiceCard` can *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
 
@@ -852,6 +858,8 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
 
 **Why you care:** this is the seam where "you nudge the physics, fate picks the outcome" stops being a slogan. Without an authored hand, an attended encounter offers the player nothing to do but watch. Cards are per-encounter and concrete — they name a thing that visibly happens in *this* scene — so this is a content surface, not a settings screen.
 
+**Why this changes what you write:** you compose a hand, you do not type one out. Author the 0–2 **specials** only this encounter could offer and declare the fill (`deal: { count, tags, exclude }`); the god's Repertoire deals the rest, and the *composed* hand lands at 4–8 cards. A fully authored hand stays legal but is not the default. Each card face reads like a spell: an imperative verb + noun title and one or two sentences of what the card does to the step, with no mood and no odds-talk. The scene's account of a card lives in its band fragments, never on the face. Branch selection is never the player's: a card influences the scene or the mortal, and the mortal and the world pick the path (spec: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` § 3).
+
 **Scope rule you cannot author around:** nudges exist **only** in the attended encounter (`AttentionTier === 'story_beat'`). A hand authored on a template that resolves in the background is inert. That is by design, not a bug to route around.
 
 **How to author one** — put it in the step's `nudges[]` array:
@@ -900,7 +908,7 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 | Big delta | `forecastDelta ≥ 0.15` ⇒ **both** `failure` and `critical_failure` | A nudge that moved the odds that far and still lost owes a distinct reading of *how* it lost at each depth. |
 | Band coverage | the hand's fragments cover all six `StepOutcome`s between them | `near_miss` has no afterimage field on `ActionStep`; fragments are the only place it gets paid off. |
 | Base-text independence | nudge-specific payoffs live in `bandProse`, never in `narrativeTemplate` | The base text must read correctly with **any** subset of the hand active, including none. |
-| `effectLine` | words, zero digits or `%`; **states mechanism, not mood** | Ruling 1: odds are legible in words only (pips render magnitude). The pivot: the effect line is the rules text — what the god does and why that moves the odds. |
+| `effectLine` | words, zero digits or `%`; **states mechanism, not mood** | Ruling 1: odds are legible in words only (pips render magnitude). The pivot: the effect line is the rules text — what the card does to the step, stated like a spell, with no mood and no odds-talk (spec checklist Q11; corrected 2026-10-03, THR-1695). |
 | Card faces | library-generic and spell-style: imperative verb + noun title (2–4 words), 1–2 direct effect sentences, zero scene-bespoke prose — **the flavor quote is retired** (2026-08-25, fields removed by THR-1225) | The THR-883 communication pivot: prose does the scene, cards do the rules. Band fragments stay bespoke — they are outcome prose, not card prose. |
 | Riders | ≤1 per hand; justify each in a code comment | Two riders answer the same question twice; a rider on every card turns the outcome ladder into a floor. |
 | Trait options | `essenceCost: 0` | The price was paid by being that person. |
@@ -1768,7 +1776,7 @@ Supersedes `onFailureEffects`, a key the THR-101 tavern migration authored at fi
 | `reputation_tally` | Named counter accumulation — key MUST be a valid `${reach}.positive` or `${reach}.negative` (8 reach domains). Off-axis keys are silently dropped with `aftermath_invalid_tally_key` trace. | `key`, `delta`, `targetAgentId?`, `targetFactionId?` |
 | `faction_reputation_gain` | Grow/shrink a faction member's standing directly. Agent must have a `member_of` edge to the faction. Amount clamped to [-1, +1]. Emits `faction_reputation` trace with `cause:'encounter_aftermath'`. **`factionId` takes the definition id** (`'mercenary_company'`) as well as a node id — `bindFactionDefinitionIds` resolves it through `resolveFactionNodeId` before dispatch, and does the same for every other faction-carrying kind (`faction_dissolve`, `signature_warhost`, `faction_absorb`, `faction_declare_war`, `faction_force_peace`, `faction_splinter`). Until THR-1150 it did not, and since `factionSeeding` keys nodes `faction_def_<definitionId><chapterSuffix>` while the whole authored corpus writes definition ids, **every faction-standing consequence in the game was a no-op** — a silent one, which is why it survived to be found by an unrelated ticket. A no-op now emits an `encounter_aftermath_effect` trace with `failReason: 'not_a_member'` or `'faction_not_found'`; there is no longer a quiet skip on this path. | `factionId`, `amount` |
 | `reputation_set` | Absolute reputation assignment (hard reset) | `value` (clamped [0,1]), `targetAgentId?`, `targetFactionId?` |
-| `encounter_seed` | Plant future encounter | `templateId` or `encounterFamily`, `delayTicks`, `seedLabel` |
+| `encounter_seed` | Plant future encounter | `templateId` or `query` (a family by tag — `encounterFamily` is deprecated, THR-1488), `delayTicks`, `seedLabel` |
 | `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
 | `intelligence` | Grant knowledge to an agent | `category`, `label`, `detail`, `targetEntityId`, `reliability`, `targetAgentId?` |
 | `intel_referenced_prose` (THR-139) | Authored "the intel paid off" chronicle line — fires when actor holds a matching record; reliability band picks one of three prose variants; record is read, not consumed | `category`, `prose: { reliable, uncertain?, dubious? }`, `significance?`, `targetAgentId?` |
@@ -1887,7 +1895,7 @@ Every `EncounterAftermathReactionEffect` can carry an optional `when?: EffectPre
 { kind: 'reputation_score', delta: 0.1, when: 'reputation_above:0.6' }
 
 // Effect fires only when wounded
-{ kind: 'encounter_seed', encounterFamily: 'revenge', seedLabel: 'They remember the wound', delayTicks: 12, priority: 1.5, when: 'health_low' }
+{ kind: 'encounter_seed', query: { kind: 'encounter_template', tags: ['#broker_errand'] }, seedLabel: 'They remember the wound', delayTicks: 12, priority: 1.5, when: 'health_low' }
 ```
 
 See **Capability 11** for full documentation on `alone` and `outnumbered`.
@@ -2104,7 +2112,7 @@ An *ally* or *enemy* is any actor sharing the **exact same `located_at` node** a
 { kind: 'stat_bonus', reach: 'iron', value: 0.2, when: 'outnumbered' }
 
 // Lone Walk — reflective prose branch fires only when no one else is present
-{ kind: 'encounter_seed', encounterFamily: 'reflection', seedLabel: 'The road listens', delayTicks: 6, when: 'alone' }
+{ kind: 'encounter_seed', query: { kind: 'encounter_template', tags: ['#threshold_errand'] }, seedLabel: 'The road listens', delayTicks: 6, when: 'alone' }
 ```
 
 #### Important constraints
@@ -2354,7 +2362,7 @@ The `narrativeTemplate` field contains prose with no placeholders, no conditiona
 Aftermath reactions have evocative prose but no effects array, or only a `recent_event`. The aftermath doesn't change the world — it just describes what happened. **Fix:** Every aftermath reaction should have at least one effect that creates persistent state: a seed, a mark, a tally, or intelligence.
 
 ### Anti-Pattern 4: "Seeds That Assume Family-Matching Is Dead"
-*(Corrected 2026-08-29, THR-1365 — this entry previously taught the pre-THR-697 stub.)* Family-only seeds **do** spawn real follow-up encounters since THR-697 Slice D: a family-only `encounter_seed` draws an eligible member of `${family}.*` from the template pool and spawns it, falling back to the withered narrative event only when zero members are eligible (see Part 2, Capability 2). The live anti-pattern is the inverse: writing `templateId` seeds everywhere out of distrust of family-matching, which bypasses the eligibility filter's variety. **Fix:** use `encounterFamily` when any family member is a valid follow-up (the common case); reserve `templateId` for a specifically authored continuation. Note a `templateId` seed skips the eligibility filter (memory/THR-697) — it spawns even where the template wouldn't normally qualify.
+*(Corrected 2026-08-29, THR-1365 — this entry previously taught the pre-THR-697 stub.)* Family-only seeds **do** spawn real follow-up encounters since THR-697 Slice D: a family-only `encounter_seed` draws an eligible member of `${family}.*` from the template pool and spawns it, falling back to the withered narrative event only when zero members are eligible (see Part 2, Capability 2). The live anti-pattern is the inverse: writing `templateId` seeds everywhere out of distrust of family-matching, which bypasses the eligibility filter's variety. **Fix:** use a `query` naming the family by tag (THR-1488 — `encounterFamily` is deprecated; corrected 2026-10-03, THR-1695) when any family member is a valid follow-up (the common case); reserve `templateId` for a specifically authored continuation. Note a `templateId` seed skips the eligibility filter (memory/THR-697) — it spawns even where the template wouldn't normally qualify.
 
 ### Anti-Pattern 5: "Scoring Blindness"
 The author doesn't set `crudType`, `motivations`, `locationSubtypes`, or `actorAffinities` thoughtfully. The encounter exists in the content registry but never surfaces for appropriate agents because the scoring system can't match it. **Fix:** Think about scoring as design. A festival encounter should be `crudType: 'update'` with `motivations: [['loyalty', 'ambition']]` and `locationSubtypes: ['market', 'settlement']`. These fields determine whether the encounter finds its audience.

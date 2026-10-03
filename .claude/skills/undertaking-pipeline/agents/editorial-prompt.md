@@ -6,7 +6,7 @@ something the declarations do not deliver, you fix the sentence, and you tell th
 
 ## The register (Christian's standard, game-wide)
 
-- **GM narration, never in situ.** The narrator reports what happened in the world, past tense,
+- **GM narration, never in situ.** The narrator reports what happens in the world, present tense (`Docs/canon/undertakings.md` § Register),
   from outside. Not the mortal's thoughts; not "you"; not quoted speech.
 - **A game, not a novel.** One beat per sentence. Every sentence carries a fact the player can
   act on — who, where, what changed. Cut atmosphere that carries none.

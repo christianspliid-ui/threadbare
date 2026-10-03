@@ -10,7 +10,7 @@ When a better exemplar ships, update this file instead of hardcoding references 
 | Encounter — prose + structure | `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` | Nudge Model format (THR-883) + Prose Doctrine v2 | **The one to copy.** Authored end-to-end against the locked format with every rule visible once; present tense, one fact per sentence, no figuration in the spine. Registered in no pool — it exists to be copied. `nudgeModel.test.ts` § *golden exemplar* pins it against the spec. *(The old caveat about its card quotes is closed — THR-1225 removed the `fiction` fields; cards are spell-style with no quote to copy.)* |
 | Encounter — systemic wiring only | `src/data/encounters/rival-shrine-betrayal.ts` | 10/10 systemic wiring · **prose: do not copy** | Full-stack systemic connectivity with strong cool-failure outcomes and meaningful aftermath reactions. Study the wiring, not the sentences. |
 | Encounter — systemic wiring only | `src/data/encounters/flawed-steel.ts` | 9/10 systemic wiring · **prose: do not copy** | High-quality branch seduction and fail-forward pacing while staying implementable and testable. Study the branch/aftermath structure, not the sentences — and note its premise is the named rejected authored-futures example ("forge the truth / temper the narrative"). |
-| Prose — baseline register | (inline, below) | THR-609 register model | The default voice: plain, concrete, active. Dry understatement over ornament. |
+| Prose — baseline register | (inline, below) | THR-609 register model + Prose Doctrine v2 | The default voice: plain, concrete, active, present tense, facts stated. |
 | Prose — peak register | (inline, below) | THR-609 register model | Rationed lyricism for the non-encounter peak surfaces (doom transitions, Twilight, World-Soul — encounter surfaces lost peak status 2026-08-25, Doctrine v2). |
 | Attachment | `<TBD - promote when a clear exemplar ships>` | `<TBD - define attachment rubric>` | Placeholder row for future promotion. |
 
@@ -30,11 +30,13 @@ Both May encounter rows were audited against the register model and Prose Doctri
 
 The register model is canonical in [`Docs/canon/prose.md`](canon/prose.md#the-register-model-settled--plainspoken-malazan-thr-609), and narrator mode — Prose Doctrine v2 — governs it as of 2026-08-25. These two entries show the contrast an author must hold: **baseline is the default; peak is the rationed exception.** The deterministic floor is the prose-QA `registerCompliance` dimension (`window.__DEBUG.proseQualityReport()`).
 
-**Baseline register** — the large majority of the prose the player reads. Plain, concrete, one idea per sentence. Dry wit over metaphor.
+**Baseline register** — the large majority of the prose the player reads. Plain, concrete, one fact per sentence, present tense, narrator mode.
 
-> The merchant owed too many people too much. He'd started checking the door. When the collector's boy finally came, he already had the ledger open — not to pay, but to show how little was left.
+> The merchant Oren owes money to six people and cannot pay any of them. Today the collector's boy comes to his door. Oren opens his ledger and shows the boy how little is left.
 
-Why it works: short declarative sentences, concrete nouns (merchant, door, ledger, boy), no rare vocabulary, no stacked figuration. The tension is human and legible. Contrast the drift version the model rejects: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* — same beat, ornamental diction, sends the reader to a dictionary.
+Why it works: present tense, subject-verb-object, the person named, every fact stated rather than implied, no figuration. A game master could read it aloud as a report. Contrast the two drift versions the model rejects: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* — ornamental diction that sends the reader to a dictionary — and *"He'd started checking the door."* — past tense, and a fact (he is afraid) encoded as behaviour for the reader to decode.
+
+*(2026-10-03, THR-1695: the previous baseline exemplar — "The merchant owed too many people too much. He'd started checking the door…" — was past tense with an encoded fact, the exact pattern this page's own register verdicts condemn; replaced with a Doctrine v2 version of the same beat.)*
 
 **Peak register** — reserved for the non-encounter surfaces: doom transitions, Twilight, World-Soul prose (encounter climaxes lost peak status 2026-08-25, Doctrine v2). One figurative image per paragraph; rhythm may stretch.
 

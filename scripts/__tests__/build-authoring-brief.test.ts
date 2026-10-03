@@ -8,6 +8,7 @@ import {
   hashBriefSource,
   extractSection,
   distillCapabilitySection,
+  extractCapabilitySection,
   extractPrinciplesSections,
   extractRejectionTriggers,
   buildBrief,
@@ -18,17 +19,18 @@ import {
   AUTHORING_BRIEF_CAPABILITY_SECTION_MAX_LINES,
   AUTHORING_BRIEF_PRINCIPLE_SECTION_MAX_LINES,
   AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH,
+  AUTHORING_BRIEF_CAPABILITIES,
   DIRECTION_DOC_RELPATH,
+  WIRING_GUIDE_RELPATH,
   ENCOUNTER_PIPELINE_SKILL_RELPATH,
   type BriefSourceContents,
 } from "../build-authoring-brief";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-// Minimal fake wiring guide with Capabilities 1-7
+// Minimal fake wiring guide carrying every declared capability (THR-1695: not a 1..7 range)
 function makeWiringGuide(overrides: Partial<Record<number, string>> = {}): string {
-  const caps = Array.from({ length: 7 }, (_, idx) => {
-    const n = idx + 1;
+  const caps = AUTHORING_BRIEF_CAPABILITIES.map((n) => {
     const override = overrides[n];
     if (override !== undefined) return override;
     return [
@@ -327,11 +329,13 @@ describe("buildBrief", () => {
       .toThrow("Section F would compile empty");
   });
 
-  it("includes all 7 capability headings", () => {
+  it("includes every declared capability heading, and only those", () => {
     const brief = build();
-    for (let n = 1; n <= 7; n++) {
+    for (const n of AUTHORING_BRIEF_CAPABILITIES) {
       expect(brief).toContain(`### Capability ${n}:`);
     }
+    expect(brief.match(/^### Capability \d+:/gm)).toHaveLength(AUTHORING_BRIEF_CAPABILITIES.length);
+    expect(brief).toContain(`## Section B: The ${AUTHORING_BRIEF_CAPABILITIES.length} Engine Capabilities`);
   });
 
   it("includes Sections A, D and E", () => {
@@ -537,7 +541,7 @@ describe("Section A leads the brief and carries the register model", () => {
   });
 
   it("inlines both register exemplars, right and wrong", () => {
-    expect(brief).toContain("The merchant owed too many people too much");
+    expect(brief).toContain("The merchant Oren owes money to six people");
     expect(brief).toContain("The merchant's ambit had grown parlous");
     expect(brief).toContain("The bells stopped.");
   });
@@ -593,5 +597,87 @@ describe("the rejected player-choice framing does not reach the brief", () => {
     const committed = fs.readFileSync(path.join(repoRoot, AUTHORING_BRIEF_OUTPUT_PATH), "utf8");
     expect(committed).not.toContain("fight or to flee");
     expect(committed).toContain("## Section A:");
+  });
+});
+
+// THR-1695 — the brief compiled a frozen 1..7 slice of the guide, so the Nudge Hand never
+// reached it, Cap 7 compiled its retired choice card under the banner retiring it, and Cap 2
+// taught the deprecated `encounterFamily` seed. Regenerating from current sources changed nothing.
+describe("capabilities are selected by declaration and honour superseding banners (THR-1695)", () => {
+  it("stops a capability at the next capability heading whatever its number", () => {
+    const lines = [
+      "### Capability 4: Four",
+      "",
+      "Statement four.",
+      "",
+      "### Capability 22: Twenty-two",
+      "",
+      "```ts",
+      "{ kind: 'belongs_to_22' }",
+      "```",
+      "",
+      "### Capability 5: Five",
+    ];
+    const joined = extractCapabilitySection(lines, 4).join("\n");
+    expect(joined).toContain("Statement four.");
+    expect(joined).not.toContain("belongs_to_22");
+  });
+
+  it("compiles a superseding banner instead of the retired code block below it", () => {
+    const section = [
+      "### Capability 7: Choices",
+      "",
+      "Statement.",
+      "",
+      "> **⚠️ The old choice set is retired.** Here is what replaced it:",
+      ">",
+      "> | Case | Result |",
+      "> |---|---|",
+      "> | nudges | the nudge stage |",
+      "",
+      "```ts",
+      "{ interventionType: 'coercive' }",
+      "```",
+      "",
+      "**Why this changes what you write:** Reason.",
+    ];
+    const joined = distillCapabilitySection(section, 7).join("\n");
+    expect(joined).toContain("> **⚠️ The old choice set is retired.**");
+    expect(joined).toContain("> | nudges | the nudge stage |");
+    expect(joined).not.toContain("interventionType");
+    expect(joined).toContain("**Why this changes what you write:** Reason.");
+  });
+
+  it("does not fold a banner into the first paragraph when it follows the heading directly", () => {
+    const section = ["### Capability 7: Choices", "", "> **⚠️ Retired.**", "> Use nudges.", ""];
+    const result = distillCapabilitySection(section, 7);
+    expect(result.filter((l) => l === "> **⚠️ Retired.**")).toHaveLength(1);
+  });
+
+  describe("against the real wiring guide", () => {
+    const realWiring = fs.readFileSync(path.join(repoRoot, WIRING_GUIDE_RELPATH), "utf8");
+    const brief = build({ wiringGuide: realWiring });
+
+    it("compiles the Nudge Hand and the carryover factor lines", () => {
+      expect(brief).toContain("### Capability 14: The Nudge Hand");
+      expect(brief).toContain("### Capability 17: Carryover Factor Lines");
+    });
+
+    it("compiles no retired choice card and no live encounterFamily seed", () => {
+      expect(brief).not.toContain("interventionType: 'coercive'");
+      expect(brief).not.toMatch(/^\s*encounterFamily:/m);
+      expect(brief).toContain("query: { kind: 'encounter_template'");
+    });
+
+    it("compiles Cap 7's banner, which says no choice buys odds", () => {
+      expect(brief).toContain("The engine no longer generates a generic choice set");
+    });
+  });
+
+  it("the committed brief carries the Nudge Hand and no retired choice card", () => {
+    const committed = fs.readFileSync(path.join(repoRoot, AUTHORING_BRIEF_OUTPUT_PATH), "utf8");
+    expect(committed).toContain("### Capability 14: The Nudge Hand");
+    expect(committed).not.toContain("interventionType: 'coercive'");
+    expect(committed).not.toMatch(/^\s*encounterFamily:/m);
   });
 });
