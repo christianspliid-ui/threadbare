@@ -35,7 +35,7 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
 import { Tooltip } from '../shared/Tooltip';
 import { HeldByLine } from '../shared/HeldByLine';
-import { PilgrimWayLine } from '../shared/PilgrimWayLine';
+import { PilgrimWayLine } from './PilgrimWayLine';
 import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { getLocationHolder } from '../../engine/realmHolder';
 import { clampRarityTier } from '../../types/rarity';

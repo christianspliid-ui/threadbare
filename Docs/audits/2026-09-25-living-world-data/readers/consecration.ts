@@ -18,6 +18,11 @@
 //   - active ambition: agent --pursues{status:'active'}--> ambition node, template id via
 //     getAmbitionTemplateId (phaseAgentDecision.ts strategic-candidate block);
 //   - undertakings: state.strategicState.projects (new projectIds) + .history (rolling).
+//
+// THR-1660 (the build): section J counts the consecration cell itself — `sacred_route`
+// edges by `origin`, `cell.create.pilgrim_way` projects started and finished by holder,
+// pilgrimages offered and run at consecrated sites, and the board's refusal reasons for
+// the cell (from `strategic_candidates_generated` traces) for the kill criterion.
 import * as fs from 'fs';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
@@ -33,6 +38,7 @@ import { UNDERTAKING_MODEL, STRATEGIC_TARGET_SCAN_CAPS } from '../../../../src/d
 import { orderTargetsByProximity } from '../../../../src/engine/strategicActionCandidates';
 import { getAgentLocationId } from '../../../../src/engine/graphQueries';
 import { resolveLocationToHex } from '../../../../src/engine/encounterAwareness';
+import { enableTracing, getTraces } from '../../../../src/engine/traceBuffer';
 import type { GameState } from '../../../../src/types/gameState';
 import type { WorldGraph } from '../../../../src/engine/graph';
 
@@ -45,6 +51,7 @@ const PILGRIMAGE = 'encounter.pilgrimage_trial';
 const FAITH = 'ambition_spread_faith';
 const SETTLEMENT = new Set(['town', 'city', 'capital']);
 const HOLY = new Set(['shrine', 'temple']);
+const CONSECRATE = 'cell.create.pilgrim_way';
 
 type P = Record<string, unknown>;
 
@@ -262,6 +269,7 @@ const out: Record<string, unknown> = { undertakingModel: UNDERTAKING_MODEL, tick
 for (const seed of seeds) {
   resetEventCounter(); resetReputationTraitInit();
   const rt = createSimulationRuntime();
+  enableTracing();
   const pr = MAP_SIZE_PRESETS.medium;
   let { state } = initializeGameState(
     generateArchetypes(4, seed)[0], 'C', createBalancedCosmology(), seed, pr.cols, pr.rows,
@@ -287,6 +295,12 @@ for (const seed of seeds) {
     const holderHistory: Record<string, Record<string, number>> = {};
     const pilgrimage = new Map<string, { cls: string; resolved: boolean; outcome: string | null; onRoute: boolean }>();
     const poolSamples: Array<{ tick: number; sample: unknown }> = [];
+    // J (THR-1660)
+    const jStartedBy: Record<string, number> = {};
+    const jFinished: Record<string, number> = {};
+    const jRefusals: Record<string, number> = {};
+    const jPilgrimageAtConsecrated = new Set<string>();
+    const jPilgrimageAtConsecratedResolved = new Set<string>();
 
     for (let i = 0; i < TICKS; i++) {
       const s = Date.now();
@@ -307,6 +321,7 @@ for (const seed of seeds) {
         // Holder at the tick the project first appears (the actor's active ambition then).
         if (holdersNow.has(p.actorId)) row.byFaithHolder++;
         if (p.ambitionId === FAITH) row.faithAmbition++;
+        if (p.templateId === CONSECRATE) jStartedBy[p.actorId] = (jStartedBy[p.actorId] ?? 0) + 1;
       }
       for (const h of state.strategicState?.history ?? []) {
         const key = `${h.tick}|${h.actorId}|${h.templateId}|${h.outcome}|${h.targetNodeId ?? ''}`;
@@ -316,6 +331,7 @@ for (const seed of seeds) {
           const r = (faithHistory[h.templateId] ??= {});
           r[h.outcome] = (r[h.outcome] ?? 0) + 1;
         }
+        if (h.templateId === CONSECRATE) jFinished[h.outcome] = (jFinished[h.outcome] ?? 0) + 1;
         if (holdersEver.has(h.actorId)) {
           const r = (holderHistory[h.templateId] ??= {});
           r[h.outcome] = (r[h.outcome] ?? 0) + 1;
@@ -330,6 +346,10 @@ for (const seed of seeds) {
         const loc = target?.type === 'location'
           ? resolveToParentLocation(g, target)
           : parentLocOf(g, g.getOutgoingEdges(a.actorId, 'located_at')[0]?.target);
+        if (loc && g.getIncomingEdges(loc.id, 'sacred_route').some(e => (e.properties as P).origin === 'undertaking')) {
+          jPilgrimageAtConsecrated.add(a.actionId);
+          if (a.resolved === true) jPilgrimageAtConsecratedResolved.add(a.actionId);
+        }
         const prev = pilgrimage.get(a.actionId);
         pilgrimage.set(a.actionId, {
           cls: prev?.cls ?? locClass(loc?.properties.locationSubtype as string | undefined),
@@ -337,6 +357,16 @@ for (const seed of seeds) {
           outcome: (a.outcome as string | undefined) ?? prev?.outcome ?? null,
           onRoute: prev?.onRoute ?? (!!loc && routed.has(loc.id)),
         });
+      }
+      for (const t of getTraces() as Array<P>) {
+        if (t.category !== 'strategic_candidate_board' || t.tick !== state.tick - 1) continue;
+        const rej = t.refusals as Array<{ templateId?: string; reason?: string }> | undefined;
+        if (!Array.isArray(rej)) continue;
+        for (const r of rej) {
+          if (r.templateId !== CONSECRATE || !r.reason) continue;
+          const reason = r.reason.split(':').slice(0, 2).join(':');
+          jRefusals[reason] = (jRefusals[reason] ?? 0) + 1;
+        }
       }
       if ((i + 1) % POOL_SAMPLE_EVERY === 0) {
         poolSamples.push({ tick: state.tick, sample: poolSample(rt.encounterCache, g) });
@@ -370,6 +400,20 @@ for (const seed of seeds) {
       byClass: pilgrimageByClass,
       outcomes,
       poolSamples,
+    };
+    const byOrigin: Record<string, number> = {};
+    for (const e of state.graph.getEdgesByType('sacred_route')) {
+      const o = String((e.properties as P).origin ?? 'legacy');
+      byOrigin[o] = (byOrigin[o] ?? 0) + 1;
+    }
+    report.J_consecration = {
+      sacredRoutesByOriginAtEnd: byOrigin,
+      projectsStarted: Object.values(jStartedBy).reduce((a, b) => a + b, 0),
+      startedByHolder: jStartedBy,
+      historyOutcomes: jFinished,
+      boardRefusals: jRefusals,
+      pilgrimagesAtConsecratedSites: jPilgrimageAtConsecrated.size,
+      pilgrimagesAtConsecratedSitesResolved: jPilgrimageAtConsecratedResolved.size,
     };
     report.G_steadyMsPerTick = steadyTicks ? +(steadyMs / steadyTicks).toFixed(1) : null;
   }

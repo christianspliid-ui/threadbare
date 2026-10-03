@@ -16,9 +16,9 @@
  */
 
 import React from 'react';
-import { EntityVisual } from './EntityVisual';
-import { EntityLink } from './EntityLink';
-import { Tooltip } from './Tooltip';
+import { EntityVisual } from '../shared/EntityVisual';
+import { EntityLink } from '../shared/EntityLink';
+import { Tooltip } from '../shared/Tooltip';
 import type { WorldGraph } from '../../engine/graph';
 import type { PilgrimWayRow } from '../../engine/pilgrimWays';
 
@@ -48,7 +48,7 @@ export function PilgrimWayLine({ graph, ways, side, 'data-testid': testId = 'pil
   const refKind = side === 'site' ? 'faction' : 'location';
 
   return (
-    <p
+    <div
       data-testid={testId}
       style={{
         fontFamily: 'var(--font-body)',
@@ -67,10 +67,12 @@ export function PilgrimWayLine({ graph, ways, side, 'data-testid': testId = 'pil
       {named.map((e, i) => (
         <span key={e.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
           <EntityVisual size="chip" entity={{ id: e.id, name: e.name }} graph={graph} data-testid="pilgrim-way-visual" />
-          <EntityLink id={e.id} name={e.name} entityRef={{ kind: refKind, id: e.id }} />
-          {i < named.length - 1 ? ',' : '.'}
+          <span>
+            <EntityLink id={e.id} name={e.name} entityRef={{ kind: refKind, id: e.id }} />
+            {i < named.length - 1 ? ',' : '.'}
+          </span>
         </span>
       ))}
-    </p>
+    </div>
   );
 }

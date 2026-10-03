@@ -496,7 +496,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // THR-1660 — the pilgrim way, on the Location and Faction sheets alike.
   'ui.pilgrim_way': {
     label: 'A Pilgrim Way',
-    desc: 'A road a congregation has made holy. Pilgrims of that faith come to the town at its end, and the pilgrimage can happen there. A way is consecrated at the start of the world or by a mortal who spreads the faith, and once made it is not unmade.',
+    desc: 'A road a congregation has made holy. Its pilgrims come to the town at its end, and the pilgrimage can happen there. A mortal who spreads the faith can consecrate one; none is ever unmade.',
   },
   'ui.aftermath_toll': {
     label: 'A Toll',

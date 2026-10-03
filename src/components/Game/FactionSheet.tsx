@@ -20,7 +20,7 @@ import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { formatCongregationSphereLine } from '../../data/world-scenario';
 import { durationLabel } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
-import { PilgrimWayLine } from '../shared/PilgrimWayLine';
+import { PilgrimWayLine } from './PilgrimWayLine';
 import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';

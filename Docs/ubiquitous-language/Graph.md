@@ -62,7 +62,7 @@ A patch of open ground an actor passed through: a Location that movement pathing
 **Also see:** `[[World Object]]`, `[[Location]]`, `[[Edge]]`
 **Status:** canonical
 
-An edge between two Locations — `road`, `trades_with`, `sacred_route` — that traversal walks, and that grows an identity node (`location:trade_route` today) the moment it becomes nameable, ownable, blockadable or consecrated. Five ratified classes: road, trail, trade_lane, pilgrim_way, portal; a portal is a route edge with an empty hex path and its own cost. Trail and portal have no edge type yet (THR-1394 slice 2 adds `routeKind`).
+An edge between two Locations — `road`, `trades_with`, `sacred_route` — that traversal walks, and that grows an identity node (`location:trade_route` today) the moment it becomes nameable, ownable, blockadable or consecrated. Five ratified classes: road, trail, trade_lane, pilgrim_way, portal; a portal is a route edge with an empty hex path and its own cost. Trail and portal have no edge type yet (THR-1394 slice 2 adds `routeKind`). A pilgrim way (`sacred_route`, congregation → settlement) is seeded to each congregation's seat and, since THR-1660, may be consecrated mid-game by the `create × pilgrim_way` undertaking; it belongs to the congregation, never to the mortal who made it.
 
 ---
 
