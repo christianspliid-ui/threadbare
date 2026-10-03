@@ -11,13 +11,25 @@
  * returned state from one hand to the next exactly as the aftermath phase does.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { dispatchNudgeCommitments } from '../nudgeDispatch';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../../simulationRuntime';
 import type { GameState } from '../../../types/gameState';
 import type { ActionStep, StepNudge, UnifiedAction } from '../../../types/unifiedAction';
+
+// The strike is gated on the family having an encounter to resolve to, and none
+// is authored yet (THR-1703). The planting path is pinned with the gate held open;
+// the closed gate — today's live behaviour — is pinned by its own test.
+const contentGate = vi.hoisted(() => ({ open: true }));
+vi.mock('../../encounterSeeding', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../encounterSeeding')>();
+  return {
+    ...actual,
+    encounterFamilyHasContent: (family: string) => contentGate.open || actual.encounterFamilyHasContent(family),
+  };
+});
 
 const ACTOR = 'actor-hero';
 const REGION = 'region-vale';
@@ -27,12 +39,17 @@ const STEP_DELTA = 0.3;
 function buildState(): GameState {
   const graph = new WorldGraph();
   graph.addNode({ id: ACTOR, type: 'actor', name: 'Hero', properties: { actorType: 'individual' } });
+  // Region membership is the region's `contains` edge — the only location→region
+  // linkage worldgen writes (THR-841). A `properties.regionId` stamp has no
+  // production writer, so a fixture built on it tests a world that never exists.
+  graph.addNode({ id: REGION, type: 'region', name: 'The Vale', properties: {} });
   graph.addNode({
     id: 'loc-hold',
     type: 'location',
     name: 'The Hold',
-    properties: { regionId: REGION, hexCol: 4, hexRow: 4 },
+    properties: { hexCol: 4, hexRow: 4 },
   });
+  graph.addEdge({ id: 'vale_contains_hold', source: REGION, target: 'loc-hold', type: 'contains', properties: {} });
   graph.addEdge({ id: 'hero_at_hold', source: ACTOR, target: 'loc-hold', type: 'located_at', properties: {} });
   return {
     tick: 50, seed: 42, graph,
@@ -123,9 +140,37 @@ describe('nudge detection pressure escalates (THR-1690)', () => {
     expect(after.pendingEncounterSeeds).toBeUndefined();
   });
 
-  it('fail-soft: no actor still traces the crossing but plants no strike', () => {
-    const state = play(buildState(), 1, 50, runtime, '');
-    expect(crossings()).toContain('encounter');
+  it('today, with no rival-strike encounter authored, traces the crossing and plants nothing (THR-1703)', () => {
+    contentGate.open = false;
+    try {
+      const state = play(buildState(), 1, 50, runtime);
+      expect(crossings()).toEqual(['notice', 'turn', 'encounter']);
+      expect(state.pendingEncounterSeeds ?? []).toHaveLength(0);
+      const encounterTrace = getTraces().find((t) => t.category === 'detection_threshold_crossed'
+        && (t as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
+      expect((encounterTrace as { seedSkipped?: string }).seedSkipped).toBe('no_content');
+    } finally {
+      contentGate.open = true;
+    }
+  });
+
+  it('a mortal outside any region writes the fallback bucket, which never escalates', () => {
+    let state = buildState();
+    state.graph.addNode({ id: 'loc-wild', type: 'location', name: 'Nowhere', properties: { hexCol: 9, hexRow: 9 } });
+    state.graph.removeEdge('hero_at_hold');
+    state.graph.addEdge({ id: 'hero_at_wild', source: ACTOR, target: 'loc-wild', type: 'located_at', properties: {} });
+    state = play(state, 1, 50, runtime);
+    expect(state.regionalDetectionPressure?.some((r) => r.regionId === 'unknown' && r.pressure === 1)).toBe(true);
+    expect(crossings()).toEqual([]);
     expect(state.pendingEncounterSeeds ?? []).toHaveLength(0);
+  });
+
+  it('a mortal at a Place resolves to its parent Location’s region', () => {
+    let state = buildState();
+    state.graph.addNode({ id: 'place-cellar', type: 'location', name: 'The Cellar', properties: { parentLocationId: 'loc-hold' } });
+    state.graph.removeEdge('hero_at_hold');
+    state.graph.addEdge({ id: 'hero_at_cellar', source: ACTOR, target: 'place-cellar', type: 'located_at', properties: {} });
+    state = play(state, 1, 50, runtime);
+    expect(state.pendingEncounterSeeds?.[0]?.sourceEncounterId).toBe(`detection.escalation.${REGION}`);
   });
 });

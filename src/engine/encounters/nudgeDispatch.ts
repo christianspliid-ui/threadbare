@@ -55,6 +55,7 @@ import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { applyRawDetectionDelta } from './detectionPressure';
 import { recordDetectionCrossings } from '../orchestrator/phaseDetectionPressure';
 import { driftTowardPole } from './branchDecision';
+import { resolveRegionId } from '../graphConditions';
 import { UNDERTOW_DRIFT_MAGNITUDE } from '../../data/nudge-constants';
 import { accelerateDoomClock, decelerateDoomClock } from '../doomClock';
 import { emitTrace } from '../traceBuffer';
@@ -266,7 +267,8 @@ export function dispatchNudgeCommitments(
   // ── Detection pressure, through the region detection API ──
   if (costs.detectionDelta !== undefined) {
     try {
-      const regionId = resolveActorRegionId(nextState, action) ?? NUDGE_DETECTION_FALLBACK_REGION;
+      const resolvedRegionId = resolveActorRegionId(nextState, action);
+      const regionId = resolvedRegionId ?? NUDGE_DETECTION_FALLBACK_REGION;
       // Signed, because The Veil *lowers* pressure and the choice-cost band API
       // can only raise it. Both entry points share the module's clamp.
       const result = applyRawDetectionDelta(
@@ -277,16 +279,20 @@ export function dispatchNudgeCommitments(
       );
       // Escalation (THR-1690): a write that crosses a band traces the crossing,
       // and reaching ENCOUNTER plants the rival strike on the mortal who drew
-      // the attention. A lowering write (The Veil) crosses nothing.
+      // the attention. A lowering write (The Veil) crosses nothing. The fallback
+      // bucket is not a region — it pools every unplaceable mortal's attention —
+      // so it never escalates: a strike there would land on whoever tipped it.
       const seedsBefore = nextState.pendingEncounterSeeds ?? [];
-      const seedsAfter = recordDetectionCrossings(
-        tick,
-        regionId,
-        result.fromPressure,
-        result.toPressure,
-        action?.actorId,
-        seedsBefore,
-      );
+      const seedsAfter = resolvedRegionId
+        ? recordDetectionCrossings(
+          tick,
+          resolvedRegionId,
+          result.fromPressure,
+          result.toPressure,
+          action?.actorId,
+          seedsBefore,
+        )
+        : seedsBefore;
       nextState = {
         ...nextState,
         regionalDetectionPressure: result.regionalDetectionPressure,
@@ -396,17 +402,20 @@ export function dispatchNudgeCommitments(
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 /**
- * The region the acting mortal stands in, resolved through the three-tier
- * position model (sublocation → location → hex). Returns undefined when the
- * actor cannot be placed; the caller falls back rather than skipping the charge.
+ * The region the acting mortal stands in: the region node whose `contains` edge
+ * holds the actor's location, climbing `parentLocationId` from a sublocation
+ * (`graphConditions.resolveRegionId`, THR-841). Returns undefined when the actor
+ * cannot be placed in a region; the caller falls back rather than skipping the charge.
+ *
+ * THR-1690: this used to read `properties.regionId` off the location — a property
+ * nothing writes — so every live write pooled under the fallback region, and once
+ * crossings became live a mortal could tip the whole world's pooled pressure and
+ * draw a strike for attention someone else gathered.
  */
 function resolveActorRegionId(state: GameState, action: UnifiedAction | undefined): string | undefined {
   const actorId = action?.actorId;
   if (!actorId) return undefined;
   const locatedAt = state.graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
   if (!locatedAt) return undefined;
-  const node = state.graph.getNode(locatedAt);
-  if (!node) return undefined;
-  const regionId = node.properties?.regionId;
-  return typeof regionId === 'string' && regionId.length > 0 ? regionId : undefined;
+  return resolveRegionId(state.graph, locatedAt);
 }

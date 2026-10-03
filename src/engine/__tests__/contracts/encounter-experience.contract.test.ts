@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldGraph } from '../../graph';
 import type { GameState, ArchetypeDrift } from '../../../types/gameState';
 import type { UnifiedAction, EncounterAftermathReaction, UnifiedActionTemplate } from '../../../types/unifiedAction';
@@ -13,6 +13,18 @@ import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrat
 import { createBalancedCosmology } from '../../cosmology';
 import { generateArchetypes } from '../../ascendant';
 import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
+
+// THR-1690: the strike is gated on the family having an encounter to resolve to,
+// and none is authored yet (THR-1703). These tests pin the planting path with the
+// gate held open; the closed gate is pinned by its own test.
+const contentGate = vi.hoisted(() => ({ open: true }));
+vi.mock('../../encounterSeeding', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../encounterSeeding')>();
+  return {
+    ...actual,
+    encounterFamilyHasContent: (family: string) => contentGate.open || actual.encounterFamilyHasContent(family),
+  };
+});
 
 const AGENT_ID = 'actor.contract';
 

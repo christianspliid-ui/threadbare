@@ -118,6 +118,19 @@ export const ENCOUNTER_FAMILY_TAGS: Readonly<Record<string, ContentTag>> = {
 };
 
 /**
+ * Whether a seed naming `family` can resolve to an encounter at all (THR-1690):
+ * an `ENCOUNTER_FAMILY_TAGS` row, or a registered template id under the
+ * `${family}.` prefix `matchFamilyTemplate` draws from. A planter that would
+ * otherwise mint a seed doomed to the withered path asks this first, because the
+ * withered sentence prints the family id to the player.
+ */
+export function encounterFamilyHasContent(family: string): boolean {
+  if (ENCOUNTER_FAMILY_TAGS[family]) return true;
+  const prefix = `${family}.`;
+  return UNIFIED_ACTION_TEMPLATES.some((template) => template.id.startsWith(prefix));
+}
+
+/**
  * The query a seed resolves by, or `undefined` when it has none.
  *
  * Authored `query` wins over an aliased family, so a migration can land the query
