@@ -1,0 +1,421 @@
+{
+  "7": {
+    "t0": {
+      "t0Holdings": {
+        "heirs": [
+          {
+            "holdings": [
+              "sublocation-type.counting-house:other"
+            ],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [
+              "sublocation-type.granary:ancestral"
+            ],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [
+              "sublocation-type.embassy:ancestral"
+            ],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [
+              "sublocation-type.granary:ancestral"
+            ],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          }
+        ]
+      },
+      "deciders": 22,
+      "descendantDeciders": 6,
+      "byEmpire": {
+        "hist_culture_2": 3,
+        "hist_culture_0": 3
+      },
+      "slots": {
+        "full": 6
+      },
+      "reclaimMilestonesAlreadyTrue": {
+        "reclaim_strength": 3
+      },
+      "wouldCompleteAtOnce": 0,
+      "homeHeldBy": {
+        "none": 4,
+        "other_faction": 1,
+        "realm": 1
+      },
+      "nearestAncestralRuinHexes": {
+        "min": 0,
+        "median": 1,
+        "max": 2
+      },
+      "reclaimHoldersAtT0": 0
+    },
+    "refill": [
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 8,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 7,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 8,
+        "reclaimRankInPool": 2,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 8,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      }
+    ],
+    "holdingsAtEnd": {
+      "deciders": {
+        "holders": 10,
+        "total": 13,
+        "onOwnAncestralLand": 3
+      },
+      "heirs": {
+        "holders": 4,
+        "total": 4,
+        "onOwnAncestralLand": 3
+      },
+      "heirLoyaltyBonds": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "decidersWith3Loyalty": 0,
+      "decidersLoyaltyMax": 0,
+      "tieBasesAmongDeciders": {
+        "kin": 15,
+        "friendship": 23,
+        "rivalry": 13,
+        "bond": 29,
+        "undefined": 2,
+        "debt": 6
+      },
+      "individualsHoldingSettlement": 1,
+      "individualsHoldingRuin": 0,
+      "heldSubtypesByIndividuals": {
+        "hamlet": 1,
+        "glowcap_hollow": 1,
+        "trade_route": 2
+      }
+    },
+    "acquisitions": {
+      "decidersAcquiring": 5,
+      "deciderAcquisitions": 7,
+      "heirsAcquiringOnAncestralLand": 0,
+      "heirsAcquiringAnywhere": 0,
+      "heirKin": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    "heirsAtAncestralRuinEver": 3,
+    "reclaimMilestonesTrueAtEnd": {
+      "reclaim_strength": 2,
+      "reclaim_return": 1
+    },
+    "wouldCompleteAtEnd": 0,
+    "run": {
+      "ticks": 150,
+      "reclaimMinted": 0,
+      "mints": [],
+      "descendantDecidersOffAncestralLandAtEnd": 0,
+      "descendantDecidersDead": 1,
+      "heirFreeSlotShare": 0.187,
+      "heirsWithFreeSlotEver": 3,
+      "heirRuinEvents": 0,
+      "delvesAll": 0,
+      "delvesByDeciders": 0,
+      "delvesByHeirs": 0,
+      "delvesByHeirsAncestral": 0,
+      "delvesByAnyDescendant": 0,
+      "delvesByAnyDescendantAncestral": 0,
+      "heirAncestralRuinEvents": 0,
+      "ruinEventSample": []
+    }
+  },
+  "42": {
+    "t0": {
+      "t0Holdings": {
+        "heirs": [
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          }
+        ]
+      },
+      "deciders": 20,
+      "descendantDeciders": 3,
+      "byEmpire": {
+        "hist_culture_1": 2,
+        "hist_culture_0": 1
+      },
+      "slots": {
+        "full": 3
+      },
+      "reclaimMilestonesAlreadyTrue": {
+        "reclaim_strength": 2
+      },
+      "wouldCompleteAtOnce": 0,
+      "homeHeldBy": {
+        "other_faction": 1,
+        "none": 1,
+        "realm": 1
+      },
+      "nearestAncestralRuinHexes": {
+        "min": 2,
+        "median": 2,
+        "max": 2
+      },
+      "reclaimHoldersAtT0": 0
+    },
+    "refill": [
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 7,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 8,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      }
+    ],
+    "holdingsAtEnd": {
+      "deciders": {
+        "holders": 5,
+        "total": 8,
+        "onOwnAncestralLand": 1
+      },
+      "heirs": {
+        "holders": 0,
+        "total": 0,
+        "onOwnAncestralLand": 0
+      },
+      "heirLoyaltyBonds": [
+        0,
+        0,
+        0
+      ],
+      "decidersWith3Loyalty": 0,
+      "decidersLoyaltyMax": 0,
+      "tieBasesAmongDeciders": {
+        "kin": 11,
+        "friendship": 15,
+        "rivalry": 9,
+        "bond": 35,
+        "debt": 8
+      },
+      "individualsHoldingSettlement": 0,
+      "individualsHoldingRuin": 0,
+      "heldSubtypesByIndividuals": {
+        "trade_route": 2,
+        "fossil_bed": 1
+      }
+    },
+    "acquisitions": {
+      "decidersAcquiring": 2,
+      "deciderAcquisitions": 4,
+      "heirsAcquiringOnAncestralLand": 0,
+      "heirsAcquiringAnywhere": 0,
+      "heirKin": [
+        1,
+        1,
+        0
+      ]
+    },
+    "heirsAtAncestralRuinEver": 1,
+    "reclaimMilestonesTrueAtEnd": {
+      "reclaim_strength": 1
+    },
+    "wouldCompleteAtEnd": 0,
+    "run": {
+      "ticks": 150,
+      "reclaimMinted": 0,
+      "mints": [],
+      "descendantDecidersOffAncestralLandAtEnd": 0,
+      "descendantDecidersDead": 0,
+      "heirFreeSlotShare": 0.135,
+      "heirsWithFreeSlotEver": 1,
+      "heirRuinEvents": 0,
+      "delvesAll": 0,
+      "delvesByDeciders": 0,
+      "delvesByHeirs": 0,
+      "delvesByHeirsAncestral": 0,
+      "delvesByAnyDescendant": 0,
+      "delvesByAnyDescendantAncestral": 0,
+      "heirAncestralRuinEvents": 0,
+      "ruinEventSample": []
+    }
+  },
+  "99": {
+    "t0": {
+      "t0Holdings": {
+        "heirs": [
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          },
+          {
+            "holdings": [],
+            "loyaltyBonds": 0
+          }
+        ]
+      },
+      "deciders": 23,
+      "descendantDeciders": 3,
+      "byEmpire": {
+        "hist_culture_0": 3
+      },
+      "slots": {
+        "full": 2,
+        "free": 1
+      },
+      "reclaimMilestonesAlreadyTrue": {
+        "reclaim_strength": 2
+      },
+      "wouldCompleteAtOnce": 0,
+      "homeHeldBy": {
+        "none": 2,
+        "other_faction": 1
+      },
+      "nearestAncestralRuinHexes": {
+        "min": 1,
+        "median": 2,
+        "max": 4
+      },
+      "reclaimHoldersAtT0": 0
+    },
+    "refill": [
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 7,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 8,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      },
+      {
+        "eligibleOnReclaimFloors": true,
+        "refillPoolLeft": 7,
+        "reclaimRankInPool": 1,
+        "freeSlot": false
+      }
+    ],
+    "holdingsAtEnd": {
+      "deciders": {
+        "holders": 7,
+        "total": 9,
+        "onOwnAncestralLand": 4
+      },
+      "heirs": {
+        "holders": 1,
+        "total": 2,
+        "onOwnAncestralLand": 1
+      },
+      "heirLoyaltyBonds": [
+        0,
+        0,
+        0
+      ],
+      "decidersWith3Loyalty": 0,
+      "decidersLoyaltyMax": 0,
+      "tieBasesAmongDeciders": {
+        "friendship": 23,
+        "rivalry": 12,
+        "bond": 35,
+        "kin": 13,
+        "debt": 8
+      },
+      "individualsHoldingSettlement": 1,
+      "individualsHoldingRuin": 0,
+      "heldSubtypesByIndividuals": {
+        "trade_route": 2,
+        "city": 1
+      }
+    },
+    "acquisitions": {
+      "decidersAcquiring": 4,
+      "deciderAcquisitions": 6,
+      "heirsAcquiringOnAncestralLand": 1,
+      "heirsAcquiringAnywhere": 1,
+      "heirKin": [
+        1,
+        1,
+        0
+      ]
+    },
+    "heirsAtAncestralRuinEver": 1,
+    "reclaimMilestonesTrueAtEnd": {
+      "reclaim_strength": 2,
+      "reclaim_return": 1
+    },
+    "wouldCompleteAtEnd": 1,
+    "run": {
+      "ticks": 150,
+      "reclaimMinted": 0,
+      "mints": [],
+      "descendantDecidersOffAncestralLandAtEnd": 0,
+      "descendantDecidersDead": 0,
+      "heirFreeSlotShare": 0.164,
+      "heirsWithFreeSlotEver": 1,
+      "heirRuinEvents": 0,
+      "delvesAll": 0,
+      "delvesByDeciders": 0,
+      "delvesByHeirs": 0,
+      "delvesByHeirsAncestral": 0,
+      "delvesByAnyDescendant": 0,
+      "delvesByAnyDescendantAncestral": 0,
+      "heirAncestralRuinEvents": 0,
+      "ruinEventSample": []
+    }
+  }
+}
