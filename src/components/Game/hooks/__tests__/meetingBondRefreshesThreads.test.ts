@@ -94,20 +94,15 @@ function makeResult(): MeetingEncounterResult {
     meetingChoiceRecord: {
       encounterTick: TICK,
       locationId: LOCATION_ID,
-      intentPrimaryReach: 'iron',
-      intentSecondaryReach: 'heart',
-      intentSphere: 'force',
       candidateIndex: 0,
       archetypeId: 'iron_heart',
       dilemmaChoices: [],
-      investmentChoice: 'spark_invest_iron',
-      sparkTraitId: 'trait.god.iron_will',
-      shapePath: 'surprise',
+      sparkVisionId: 'spark_invest_iron',
       ascendantSphere: 'life',
       foundingGateTags: ['heroic_origin'],
     },
     locationId: LOCATION_ID,
-  } as MeetingEncounterResult;
+  };
 }
 
 function renderInteraction() {
