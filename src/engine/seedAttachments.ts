@@ -292,9 +292,12 @@ function libraryShelf(graph: WorldGraph, lib: SpellSeedingLibrary, traditionId: 
   const templates = (lib.index.byTradition.get(traditionId) ?? [])
     .map(id => graph.getNode(spellDefinitionNodeId(id))?.properties.template as SpellTemplate | undefined)
     .filter((t): t is SpellTemplate => !!t);
-  if (!templates.some(t => t.arena && SPELL_GEN_STEP_ARENAS.includes(t.arena))) return [];
-  const lowest = Math.min(...templates.map(t => t.tier));
-  return templates.filter(t => t.tier === lowest);
+  // Only spells a step can use are seeded, so no caster starts the world holding nothing
+  // but map magic — even when a tier-1 slot drew a map arena or its step slot was left empty.
+  const stepUsable = templates.filter(t => t.arena && SPELL_GEN_STEP_ARENAS.includes(t.arena));
+  if (stepUsable.length === 0) return [];
+  const lowest = Math.min(...stepUsable.map(t => t.tier));
+  return stepUsable.filter(t => t.tier === lowest);
 }
 
 /**

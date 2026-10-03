@@ -27,7 +27,7 @@ import { SPELL_CORES, SPELL_RIDERS } from '../../data/spell-generator-cores';
 import {
   SPELL_GEN_CONDITIONS, SPELL_GEN_CORE_REPEAT_DECAY, SPELL_GEN_FOUNDATION_MIN_TIER, SPELL_GEN_FOUNDATION_SHELF_WEIGHT,
   SPELL_GEN_FOUNDATION_SHELVES, SPELL_GEN_MAGNITUDE_BY_TIER, SPELL_GEN_MASS_NOUNS, SPELL_GEN_MAX_RIDERS,
-  SPELL_GEN_RIDER_CHANCE_BY_TIER, SPELL_GEN_SPHERES, SPELL_NOTICE_SEVERITY_BY_TIER, STRAIN_PAIR, THEME_PRICE_LEAN,
+  SPELL_GEN_PRICE as P, SPELL_GEN_RIDER_CHANCE_BY_TIER, SPELL_GEN_SPHERES, SPELL_NOTICE_SEVERITY_BY_TIER, STRAIN_PAIR, THEME_PRICE_LEAN,
   THEME_REACH, THEME_VICE, TIER_PRICE_WINDOW, TRADITION_ENV,
 } from '../../data/spell-generator-tables';
 import { GENERATED_SPELL_ID_PREFIX, SPELL_TEMPLATES } from '../../data/spell-templates';
@@ -223,19 +223,19 @@ export function generateSpell(req: SpellGenRequest): GeneratedSpell | null {
   if (req.agency === 'deliberate') {
     const mc = () => miscast(pickOf('miscast', S.miscasts) ?? 'self_exhausted', ctx);
     if (priceLayer === 'strain') {
-      const kind = draw<'exhaust' | 'exhausted' | 'drain'>('strain.kind', { exhaust: 0.4, exhausted: 0.35, drain: 0.25 }) ?? 'exhaust';
-      if (kind === 'exhaust') costs.push({ type: 'tick_exhaust', ticks: ctx.t([6, 6, 12, 24]) });
+      const kind = draw<'exhaust' | 'exhausted' | 'drain'>('strain.kind', P.castStrainKindWeights) ?? 'exhaust';
+      if (kind === 'exhaust') costs.push({ type: 'tick_exhaust', ticks: ctx.t(P.castStrainExhaustTicks) });
       else if (kind === 'exhausted') costs.push({ type: 'condition_inflict', template: 'exhausted' });
-      else costs.push({ type: 'reach_drain', reach: roll('strain.drain_reach') < 0.5 ? 'veil' : reach, amount: r2(ctx.m('strain.drain') * 0.5) });
+      else costs.push({ type: 'reach_drain', reach: roll('strain.drain_reach') < 0.5 ? 'veil' : reach, amount: r2(ctx.m('strain.drain') * P.castStrainDrainShare) });
       const m = mc();
-      backlash = { trigger: 'failure', probability: r2(0.25 + 0.1 * roll('backlash.p')), severity: 'minor', effect: m.effect, narrativeTemplate: m.narrative };
+      backlash = { trigger: 'failure', probability: r2(P.castStrainBacklashBase + P.castStrainBacklashSpread * roll('backlash.p')), severity: 'minor', effect: m.effect, narrativeTemplate: m.narrative };
     } else if (priceLayer === 'gamble') {
       const m = mc();
-      backlash = { trigger: 'always', probability: r2(ctx.t([0.2, 0.2, 0.28, 0.35]) + 0.05 * roll('backlash.p')), severity: tier >= 4 ? 'catastrophic' : 'major', effect: m.effect, narrativeTemplate: m.narrative };
+      backlash = { trigger: 'always', probability: r2(ctx.t(P.castGambleBacklashBase) + P.castGambleBacklashSpread * roll('backlash.p')), severity: tier >= 4 ? 'catastrophic' : 'major', effect: m.effect, narrativeTemplate: m.narrative };
     } else if (priceLayer === 'transgression') {
-      costs.push({ type: 'doom_increase', amount: ctx.t([8, 10, 15, 25]) });
+      costs.push({ type: 'doom_increase', amount: ctx.t(P.castTransgressionSoulPrice) });
       const m = mc();
-      backlash = { trigger: 'critical_failure', probability: r2(0.6 + 0.2 * roll('backlash.p')), severity: tier >= 4 ? 'catastrophic' : 'major', effect: m.effect, narrativeTemplate: m.narrative };
+      backlash = { trigger: 'critical_failure', probability: r2(P.castTransgressionBacklashBase + P.castTransgressionBacklashSpread * roll('backlash.p')), severity: tier >= 4 ? 'catastrophic' : 'major', effect: m.effect, narrativeTemplate: m.narrative };
     }
   } else {
     const triggers = () => [...main, ...riderFx, ...priceFx].filter(e => e.type === 'action_trigger').length;
@@ -246,26 +246,26 @@ export function generateSpell(req: SpellGenRequest): GeneratedSpell | null {
     });
     if (priceLayer === 'strain') {
       const canWeary = triggers() + 2 <= ACTION_TRIGGER_MAX_PER_ATTACHMENT;
-      const kind = draw<'weigh' | 'weary'>('strain.kind', { weigh: 0.6, weary: canWeary ? 0.4 : 0 }) ?? 'weigh';
+      const kind = draw<'weigh' | 'weary'>('strain.kind', { weigh: P.carriedStrainKindWeights.weigh, weary: canWeary ? P.carriedStrainKindWeights.weary : 0 }) ?? 'weigh';
       if (kind === 'weigh') {
         const other = STRAIN_PAIR[reach];
-        priceFx.push({ type: 'passive', reach: other, value: -r2(Math.min(EFFECT_PER_ITEM_CAP, ctx.m('strain.weigh') * 0.6)) });
+        priceFx.push({ type: 'passive', reach: other, value: -r2(Math.min(EFFECT_PER_ITEM_CAP, ctx.m('strain.weigh') * P.carriedWeighShare)) });
       } else {
         priceFx.push({
-          type: 'action_trigger', on: 'encounter_success', probability: 0.25, cooldownTicks: 24,
-          payload: { kind: 'condition_grant', conditionTraitId: SPELL_GEN_CONDITIONS.exhausted.id, durationTicks: 12 },
+          type: 'action_trigger', on: 'encounter_success', probability: P.carriedWearyChance, cooldownTicks: P.carriedWearyCooldownTicks,
+          payload: { kind: 'condition_grant', conditionTraitId: SPELL_GEN_CONDITIONS.exhausted.id, durationTicks: P.carriedWearyTicks },
           narrativeTemplate: 'The working takes its toll, and {actor} is left Exhausted.',
         });
       }
-      if (triggers() < ACTION_TRIGGER_MAX_PER_ATTACHMENT) priceFx.push(turnOnFail('encounter_critical_failure', 0.25, 12));
+      if (triggers() < ACTION_TRIGGER_MAX_PER_ATTACHMENT) priceFx.push(turnOnFail('encounter_critical_failure', P.carriedStrainTurnChance, P.carriedStrainTurnTicks));
     } else if (priceLayer === 'gamble') {
-      if (triggers() < ACTION_TRIGGER_MAX_PER_ATTACHMENT) priceFx.push(turnOnFail('encounter_failure', r2(ctx.t([0.3, 0.3, 0.4, 0.5])), 36));
-      else priceFx.push({ type: 'passive', reach: STRAIN_PAIR[reach], value: -r2(ctx.m('gamble.weigh') * 0.6) });
+      if (triggers() < ACTION_TRIGGER_MAX_PER_ATTACHMENT) priceFx.push(turnOnFail('encounter_failure', r2(ctx.t(P.carriedGambleTurnChance)), P.carriedGambleTurnTicks));
+      else priceFx.push({ type: 'passive', reach: STRAIN_PAIR[reach], value: -r2(ctx.m('gamble.weigh') * P.carriedWeighShare) });
     } else if (priceLayer === 'transgression') {
       // The soul price, carried: a little quintessence every tick (inside the passive regen).
-      priceFx.push({ type: 'resource_manipulate', resource: 'quintessence', target: 'self', amount: -r4(0.0005 * (tierIdx + 1)), mode: 'per_tick' });
+      priceFx.push({ type: 'resource_manipulate', resource: 'quintessence', target: 'self', amount: -r4(P.carriedSoulDrainPerTierPerTick * (tierIdx + 1)), mode: 'per_tick' });
       // Rule 7 — it changes them, toward the tradition's vice, never the effect's Reach.
-      priceFx.push({ type: 'axiological_drift', axis: REACH_VALUE_PAIR[vice], ratePerTick: -0.002, limitValue: -0.5 });
+      priceFx.push({ type: 'axiological_drift', axis: REACH_VALUE_PAIR[vice], ratePerTick: P.carriedViceDriftPerTick, limitValue: P.carriedViceDriftLimit });
     }
   }
 

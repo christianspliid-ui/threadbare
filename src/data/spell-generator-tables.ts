@@ -112,6 +112,55 @@ export const TIER_PRICE_WINDOW: Readonly<Record<SpellGenTier, Partial<Record<Spe
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// Price shapes — what each layer charges, per agency (rule 3)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Four-entry envelopes are indexed by tier (tier 1 first). */
+type ByTier<T> = readonly [T, T, T, T];
+
+/** Every number a generated spell's price is built from (NFP #1). */
+export const SPELL_GEN_PRICE = {
+  // ── Deliberate (paid when cast) ──
+  /** Strain: which cost a strain cast charges. */
+  castStrainKindWeights: { exhaust: 0.4, exhausted: 0.35, drain: 0.25 },
+  /** Strain: ticks a `tick_exhaust` cost locks the caster out. */
+  castStrainExhaustTicks: [6, 6, 12, 24] as ByTier<number>,
+  /** Strain: a `reach_drain` amount, as a share of the tier magnitude. */
+  castStrainDrainShare: 0.5,
+  /** Strain: backlash on failure, chance = base + spread × roll. */
+  castStrainBacklashBase: 0.25,
+  castStrainBacklashSpread: 0.1,
+  /** Gamble: backlash on any band but a triumph, chance = by-tier base + spread × roll. */
+  castGambleBacklashBase: [0.2, 0.2, 0.28, 0.35] as ByTier<number>,
+  castGambleBacklashSpread: 0.05,
+  /** Transgression: the soul price (`doom_increase`, lands on quintessence). */
+  castTransgressionSoulPrice: [8, 10, 15, 25] as ByTier<number>,
+  /** Transgression: backlash on disaster, chance = base + spread × roll. */
+  castTransgressionBacklashBase: 0.6,
+  castTransgressionBacklashSpread: 0.2,
+  // ── Fate-woven (paid by carrying) ──
+  /** Strain: a standing weakness, or a toll on success. */
+  carriedStrainKindWeights: { weigh: 0.6, weary: 0.4 },
+  /** Strain/gamble: the standing weakness, as a share of the tier magnitude. */
+  carriedWeighShare: 0.6,
+  /** Strain: the toll on success — chance, cooldown and how long the bearer stays Exhausted. */
+  carriedWearyChance: 0.25,
+  carriedWearyCooldownTicks: 24,
+  carriedWearyTicks: 12,
+  /** Strain: the turn on disaster — chance and how long. */
+  carriedStrainTurnChance: 0.25,
+  carriedStrainTurnTicks: 12,
+  /** Gamble: the turn on any failure — chance by tier, and how long. */
+  carriedGambleTurnChance: [0.3, 0.3, 0.4, 0.5] as ByTier<number>,
+  carriedGambleTurnTicks: 36,
+  /** Transgression: quintessence drained per tick, per tier step (tier 1 = 1×). Measured against `SPELL_GEN_WORLD_SOUL_DRAIN_BUDGET`. */
+  carriedSoulDrainPerTierPerTick: 0.0005,
+  /** Transgression: "it changes them" — drift per tick toward the tradition's vice, and where it stops. */
+  carriedViceDriftPerTick: -0.002,
+  carriedViceDriftLimit: -0.5,
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════
 // Themes: price lean, Reach, vice, arenas
 // ═══════════════════════════════════════════════════════════════════
 

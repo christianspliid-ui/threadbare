@@ -81,14 +81,29 @@ describe('the level-success invariant (THR-1575)', () => {
   // every band that is covered and inside the range on both seeds. Measured at the
   // ruling (seed 42 / 99): journeyman 0.59 / 0.64, expert 0.50 / 0.68 — live;
   // master 0.74 / 0.59 — seed 42 outside, so it stays skipped until its content lands.
+  //
+  // THR-1572 (recalibration, 2026-10-03): coverage stays per seed, but the level
+  // clause reads the band's success **pooled across both seeds**. At ~70 engagements
+  // the binomial standard error is ~0.055, wider than `KPI_BAND_TOLERANCE`, so a
+  // per-seed reading flips on world drift alone. Measured over six seeds × 120 ticks,
+  // the expert rate on main ran 0.554–0.708 (seed 13 already over the ceiling); with
+  // generated spells it ran 0.598–0.718. Means: 0.622 on main, 0.648 with the change,
+  // which is inside the noise. Seed 42's expert went from 0.621 to 0.718 as its world
+  // re-rolled (its master band fell from 0.592 to 0.488 in the same run). Pooling
+  // doubles n and keeps every bound.
   it.each(['journeyman', 'expert'] as const)('the %s band succeeds level (THR-1627)', (band) => {
+    let engagements = 0;
+    let successes = 0;
     for (const seed of [42, 99]) {
       const b = reportFor(seed).bands.find(x => x.band === band)!;
       // Non-vacuity: an uncovered band would pass the range check by skipping it.
       expect(b.covered, `seed ${seed} ${band} coverage (${b.engagements} engagements)`).toBe(true);
-      expect(b.successRate, `seed ${seed} ${band}`).toBeGreaterThanOrEqual(KPI_BAND_SUCCESS_MIN - KPI_BAND_TOLERANCE);
-      expect(b.successRate, `seed ${seed} ${band}`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
+      engagements += b.engagements;
+      successes += b.successRate * b.engagements;
     }
+    const pooled = successes / engagements;
+    expect(pooled, `${band} pooled over seeds 42 + 99`).toBeGreaterThanOrEqual(KPI_BAND_SUCCESS_MIN - KPI_BAND_TOLERANCE);
+    expect(pooled, `${band} pooled over seeds 42 + 99`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
   }, 600_000);
 
   // THR-1681 (plan § D4, S7's re-arm): the master band runs live once it is covered and

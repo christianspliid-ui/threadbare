@@ -45,7 +45,9 @@ export function placeSpellNotice(
   graph?: WorldGraph,
 ): HiddenMark | null {
   try {
-    const notice = spellProvenance(graph ?? state.graph, spell.id)?.notice;
+    const world = graph ?? state.graph;
+    if (!world) return null;
+    const notice = spellProvenance(world, spell.id)?.notice;
     if (!notice || notice.revealFamilies.length === 0) return null;
     const markId = spellNoticeMarkId(casterId, spell.id);
     const marks = state.hiddenMarks ?? [];
