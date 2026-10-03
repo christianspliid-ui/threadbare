@@ -12,9 +12,11 @@
  * Consequence hand: relationship (bond_change with the warner) + drive (plant_compulsion, optional
  * assign_ambition ambition_seek_revenge on critical_success). Wounded on failure.
  * Cost channels: Hide Their Passing pays detection down; Shatter The Blades pays it up (costs.detectionDelta).
- * Accepted deviations: D1 success_at_cost bond is step 1's strain netted against step 2; D2 critical_failure
- * claims only the BOND chip (a step-1 critical failure ends the action with step 1's writes only);
- * D3 no sender node, so Seek Revenge is offered as a reaction with no named target.
+ * Accepted deviations: D1 success_at_cost carries no strain (it is reached only through a near miss, which
+ * fires the success writes); D3 no sender node, so Seek Revenge is offered as a reaction with no named target.
+ * Review-gate fix (THR-1703): failing to shake the tail ends the encounter with the same harm as failing
+ * against the knives (Wounded, the warner's trust, the fear drive), so the failure and critical_failure
+ * endings write the same state on every path and their chips show all of it (Law 56: nothing hidden).
  * Chip titles are implementation-authored (the final doc fixes detail text, not titles).
  */
 
@@ -57,7 +59,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       purposeLine: 'Shake the tail',
       onSuccess: [],
       onFailure: [],
-      failBehavior: 'continue_weakened',
+      failBehavior: 'fail_action',
       narrativeTemplate: 'Two strangers have followed {actor} for three days. Tonight they are closer than before. '
         + '{cast:warner} has seen them too, and says they asked for {actor} by name.\n\n'
         + 'A rival sent them, because a god\'s help was seen around {actor}. Nothing has happened yet. They '
@@ -65,8 +67,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       criticalSuccessAfterimage: 'They shook the strangers, doubled back, and watched them search in the wrong direction.',
       successAfterimage: 'They lost the strangers for an hour, and chose where to be when they came back.',
       successAtCostAfterimage: 'They lost the strangers by running, but the strangers saw where they went.',
-      failureAfterimage: 'The strangers stayed on them, and now they know {cast:warner}\'s face too.',
-      criticalFailureAfterimage: 'They doubled back straight into the strangers and had to run with the knives at their backs.',
+      failureAfterimage: 'The strangers stayed on them and caught them in the dark. One knife cut them before they broke away.',
+      criticalFailureAfterimage: 'They doubled back straight into the strangers, and a knife cut them before they could run.',
       deal: {
         count: 4,
         tags: ['shadow', 'peril'],
@@ -74,10 +76,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failureMetadata: {
         effects: [
           {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.wounded',
+            targetAgentId: '$actor',
+          },
+          {
             kind: 'bond_change',
             withAgentId: '$cast:warner',
-            sentimentDelta: -0.05,
-            trustDelta: -0.05,
+            sentimentDelta: -0.1,
+            trustDelta: -0.1,
+          },
+          {
+            kind: 'plant_compulsion',
+            targetAgentId: '$actor',
+            encounterBias: {
+              duel: -0.4,
+              explore: -0.3,
+              steal: -0.2,
+            },
+            durationTicks: 96,
+            narrativeHook: 'Cut by hired knives, and shying from fights and far roads.',
           },
         ],
       },
@@ -148,7 +166,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           polarity: 'for',
           forecastDelta: 0.05,
         },
-        failure: {
+        near_miss: {
           text: 'The knives are closer than they should be.',
           polarity: 'against',
           forecastDelta: -0.05,
@@ -505,6 +523,47 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         critical_failure: {
           overview: '{actor} lived through the night, and {cast:warner} saw how close it came.',
           changes: [
+            {
+              id: 'knives.cf.wounded',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'Wounded',
+              detail: '{actor} is wounded until the cut heals.',
+              stateNoun: {
+                text: 'Wounded',
+                entityId: 'trait.condition.wounded',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'wounded',
+                  entityId: 'trait.condition.wounded',
+                  visualKind: 'attachment',
+                },
+              ],
+            },
+            {
+              id: 'knives.cf.fear',
+              kind: 'shell_state',
+              category: 'scar',
+              direction: 'loss',
+              stateNoun: {
+                text: 'compulsion',
+                tooltipId: 'ui.compulsion',
+              },
+              title: 'Shying from danger',
+              detail: 'For a while they shy from fights and far roads.',
+              polarity: 'loss',
+              concepts: [
+                {
+                  text: 'fights and far roads',
+                  entityId: '$actor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
             {
               id: 'knives.cf.bond',
               kind: 'reputation',
