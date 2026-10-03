@@ -3509,6 +3509,13 @@ if (import.meta.env.DEV) {
       });
     },
 
+    // THR-1626: force the reward draw's generated-item share roll to pass, so a browser
+    // check sees a found thing without waiting on a coin. The floor and fit check still apply.
+    forceGeneratedRewards: async (on: boolean) => {
+      const { setForceGeneratedRewards } = await import('./engine/debugGeneratedRewardPin');
+      return setForceGeneratedRewards(on);
+    },
+
     // THR-1570: preview a generated item without minting it — the review world by default.
     previewGeneratedItem: async (opts: { seed?: number; band?: 2 | 3 | 4; origin?: 'masterwork' | 'found'; index?: number } = {}) => {
       const { generateReviewBatch } = await import('./engine/itemGenerator/reviewBatch');

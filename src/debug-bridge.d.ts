@@ -729,7 +729,8 @@ export interface DebugBridge {
 
   /**
    * THR-1570: every generated item in the world (`properties.origin === 'generated'`) —
-   * masterworks made with an idea, and debug mints. `coreId` / `signatureId` name the
+   * masterworks made with an idea, found things handed out as rewards (THR-1626,
+   * `origin: 'found'`, id `gen_found_…`), and debug mints. `coreId` / `signatureId` name the
    * authored idea it grew around; `band` is 2 Storied / 3 Mythic / 4 Legendary;
    * `rerolls` is 0 in a healthy world. Empty when the game is not loaded. Always `await` it.
    */
@@ -737,6 +738,17 @@ export interface DebugBridge {
     id: string; name: string; coreId: string; signatureId: string; band: 2 | 3 | 4;
     origin: 'masterwork' | 'found'; makerId: string | null; tick: number | null; rerolls: number;
   }>>;
+
+  /**
+   * THR-1626: force the reward draw's generated-item share roll to pass (`true`) or give
+   * it back to the coin (`false`). While on, every eligible Storied or Mythic reward pick
+   * (an authored `artifact` of tier 2 or 3, not a service, on a prize draw) is offered to
+   * the generator — but the two-core floor and the recipe's tags still apply, so a pick
+   * can keep its authored item (`reward.generated` traces say why). A substituted reward
+   * shows in {@link getGeneratedItems} with `origin: 'found'` and an id starting
+   * `gen_found_`. Returns the new state. Module state — survives until reload. Always `await` it.
+   */
+  forceGeneratedRewards: (on: boolean) => Promise<boolean>;
 
   /**
    * THR-1570: preview a generated item without minting — the review batch's `index`-th
