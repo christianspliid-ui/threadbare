@@ -1397,7 +1397,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
-| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964). Its live caller is the nudge detection write in `nudgeDispatch.dispatchNudgeCommitments` (THR-1690) |
+| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964). Its live caller is the nudge detection write in `nudgeDispatch.dispatchNudgeCommitments` (THR-1690). The planted `shadow.rival_strike` seed resolves through `ENCOUNTER_FAMILY_TAGS` → `#rival_strike` → `encounter.rival.hired_knives` (THR-1703) |
 | 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
