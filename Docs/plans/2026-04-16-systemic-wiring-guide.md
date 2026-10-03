@@ -4251,6 +4251,34 @@ cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertakin
   (its first profile) and `ambition_conquer_territory`. The object scan reads a per-type cap,
   `STRATEGIC_TARGET_SCAN_CAPS[objectTypeId] ?? .object` (`monster: HUNT_TARGET_SCAN_CAP` = 128 — at least the 120 living monsters an epic map holds at 300 ticks).
 
+**The pilgrim way — a class of Route whose create writes a pool-changing edge (THR-1660).** The
+second class of a kind, and the first undertaking cell whose product is an **edge another system
+reads to change an encounter pool**:
+
+- **`pilgrim_way`** (`classOf: 'route'`, `shape: { edgeType: 'sacred_route' }`) has one verb,
+  `create`. It writes `sacred_route` **from the congregation of the site's own culture** to the
+  site — never from the mortal — through `createRelationEdge` (schema-checked, duplicate-refused),
+  stamped `origin: 'undertaking'` and the `projectId`. The encounter cache's
+  `sacredRouteDestinationTemplates` pools `encounter.pilgrimage_trial` at any `sacred_route`
+  destination, and the cell arm's pool invalidation (`poolInvalidatedLocationIds` ← the cell's
+  `targetNodeId`) makes it live the same tick — **no new firing mechanism**. The pattern for any
+  future cell: if your edge already has a reader, aim the create at the reader's site and the
+  existing invalidation does the rest.
+- **A create hook that reads the ground.** `pilgrimWaySiteEligibility` is the THR-1617 create-site
+  hook: `consecrator_gone` / `site_gone` / `no_congregation_here` /
+  `already_a_pilgrim_destination`, refused on the board as `ineligible:<reason>:<site>` and
+  re-checked by the verb at completion. `congregationOfSite(graph, siteId)`
+  (`src/engine/pilgrimWays.ts`) answers *whose faith is this ground* — the strongest current-layer
+  culture link, then that culture's living Temple congregation, lowest id.
+- **`UNDERTAKING_CELL_REACH`** (`src/data/undertaking-cells.ts`) — a bounded per-cell reach lean
+  read at synthesis, for a cell whose verb's generic lean misreads the work (a consecration is
+  Star/Heart, not `create`'s Stone/Gold). Growth on completion reads it.
+- **Readers you can key on:** `selectPilgrimWays(graph)` (every way, both ends standing, by edge
+  id, with `origin` and `projectId`) and `isPilgrimDestination(graph, siteId)`. The Location and
+  Faction sheet lines and `__DEBUG.getPilgrimWays()` read the first.
+- **Prose:** `{object}` reads *the way to Brindle* for this type (`objectDisplayName`), so the
+  deed is *Consecrated the way to Brindle* even though the made thing is an edge.
+
 **The ruin visit (THR-1664, seeded things stay alive S3).** The second appointment row, and the
 first that gates on the site and on the actor's own state rather than planting on every completion:
 

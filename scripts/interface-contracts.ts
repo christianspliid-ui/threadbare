@@ -5372,12 +5372,55 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['sacred_route', 'sacredRouteDestinationTemplates'],
       module: 'src/engine/encounterCache.ts',
     },
+    // THR-1660 extends the producer set: the `create × pilgrim_way` undertaking writes the
+    // same edge mid-game (its own row, `consecrated-pilgrim-way-pools-pilgrimage`). The
+    // reader and this row's proof are unchanged.
     writeSites: ['src/engine/worldSeed.ts'],
     readSites: ['src/engine/encounterCache.ts'],
     verifiedLive: {
       date: '2026-09-28',
       evidence:
         "THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-\"today\" setting).",
+    },
+  },
+  {
+    id: 'consecrated-pilgrim-way-pools-pilgrimage',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick.",
+    ulTerms: ['Route', 'Congregation', 'Undertaking', 'Encounter'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sacred_route', 'consecratePilgrimWay', 'createRelationEdge', 'sacredRouteDestinationTemplates'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/strategicGraphOps.ts'],
+    readSites: ['src/engine/encounterCache.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence:
+        "THR-1660. `src/engine/__tests__/pilgrimWay.test.ts` takes the board's own `cell.create.pilgrim_way` candidate for a non-member zealot, completes it through `executeStrategicAction`, and asserts one `sacred_route` congregation → town with `origin: 'undertaking'` and the `projectId`, the town in `poolInvalidatedLocationIds`, and `encounter.pilgrimage_trial` pooled there by a full `EncounterCacheManager` build (absent before). Refusals `already_a_pilgrim_destination` / `no_congregation_here` are asserted on the board and at completion.",
+    },
+  },
+  {
+    id: 'pilgrim-way-reaches-location-and-faction-sheets',
+    producerSystem: WORLDGEN,
+    consumerSystem: NARRATIVE,
+    intent:
+      "Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link.",
+    ulTerms: ['Route', 'Congregation', 'Location'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sacred_route', 'selectPilgrimWays', 'PilgrimWayLine'],
+      module: 'src/engine/pilgrimWays.ts',
+    },
+    writeSites: ['src/engine/worldSeed.ts', 'src/data/undertaking-objects.ts'],
+    readSites: ['src/components/Game/LocationProfileModal.tsx', 'src/components/Game/FactionSheet.tsx', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence:
+        "THR-1660. `src/components/Game/__tests__/PilgrimWayLine.test.tsx` renders both sheets over a graph with a seeded and a consecrated way and asserts the lines' words, links and the absence of any line on a town no way reaches; browser-verified on the seeded medium world via `window.__DEBUG.getPilgrimWays()` and the opened sheets.",
     },
   },
   {

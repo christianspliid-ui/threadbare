@@ -2946,6 +2946,16 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 
 **Wired and asserted:** `worldScenario.test.ts` (fast, generated small world) — resolver clamps; the all-"today" block seeds today's single Temple and writes no fringe, route or label; one congregation per living culture seated at its capital with every hall on its heartland; dispositions both ways; a Temple reputation effect lands on the actor's own congregation; the cache pools the pilgrimage at every seat; fringe links are current-only, half strength, never on non-settlements, never promoted or Realm-held; unheld settlements within one of today; determinism. The all-"today" t0 graph hashes identical to `origin/main` on medium seeds 42 and 99. `scripts/realm-census.ts` skips fringe links (not domain ground).
 
+## Consecrate a pilgrim way (THR-1660)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `data/undertaking-objects.ts` `PILGRIM_WAY` (class of Route) + `consecratePilgrimWay` + `pilgrimWaySiteEligibility` | strategic decision (candidate walk, THR-1617 hook) → checkpoint pass → resolver | moment card + Journey deed line (existing) | `strategicState.projects` / `.history` | `strategic_world_change`, `strategic_project_progress`; board refusals `ineligible:<reason>:<site>` | `getStrategicProjects`, `startUndertaking` |
+| `engine/pilgrimWays.ts` (new: `selectPilgrimWays`, `congregationOfSite`, `siteCultureOf`, `isPilgrimDestination`) | read-only, no phase | `Game/PilgrimWayLine` on `LocationProfileModal` (Allegiance) and `FactionSheet` | graph (`sacred_route`, `belongs_to`) | — | `await __DEBUG.getPilgrimWays()` |
+| `data/undertaking-cells.ts` (`CREATE_SITE_RULE`, `CELL_FAMILY_BY_TYPE`, catalyst row, new `UNDERTAKING_CELL_REACH`) · `ambition_spread_faith.cells` | synthesis at import; candidate walk | codex glyph `✶` | — | — | grid `LIVE_CLASS_CELL_NOTES.pilgrim_way` |
+
+**Wired and asserted:** `pilgrimWay.test.ts` (12) — the board offers a non-member zealot its own town and a city on the same ground, never a shrine, refuses `no_congregation_here` and `already_a_pilgrim_destination` by name; completion writes one congregation → town way with `origin`/`establishedTick`/`projectId`, invalidates the town, and a full `EncounterCacheManager` then pools `encounter.pilgrimage_trial`; completion re-checks a second way and a dissolved congregation; the deed reads *Consecrated the way to Brindle*. `PilgrimWayLine.test.tsx` — both sheet lines render seeded and consecrated ways and nothing for a town no way reaches.
+
 ## The power runtime, S1 — spells that work (THR-1571)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |

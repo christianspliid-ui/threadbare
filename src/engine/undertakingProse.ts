@@ -76,6 +76,13 @@ export function objectDisplayName(
   handle: UndertakingObjectHandle | undefined,
 ): string | undefined {
   if (!handle) return undefined;
+  // THR-1660 — a pilgrim way has no name of its own; it is the way to its town, whether
+  // the handle is the site (a create) or the `sacred_route` edge itself.
+  if (objectTypeId === 'pilgrim_way') {
+    const siteId = handle.kind === 'node' ? handle.nodeId : graph.getEdge(handle.edgeId)?.target;
+    const site = nameOf(graph, siteId);
+    return site ? `the way to ${site}` : undefined;
+  }
   if (handle.kind === 'node') return nameOf(graph, handle.nodeId);
   const edge = graph.getEdge(handle.edgeId);
   if (!edge) return undefined;

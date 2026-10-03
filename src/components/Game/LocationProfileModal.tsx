@@ -35,6 +35,8 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
 import { Tooltip } from '../shared/Tooltip';
 import { HeldByLine } from '../shared/HeldByLine';
+import { PilgrimWayLine } from './PilgrimWayLine';
+import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { getLocationHolder } from '../../engine/realmHolder';
 import { clampRarityTier } from '../../types/rarity';
 import { locationSubtypeName } from '../../data/location-words';
@@ -189,6 +191,13 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
     [graph, locationId],
   );
 
+  // THR-1660 — the congregations whose pilgrims come here, seeded or consecrated. Same
+  // remount-per-open refresh as `holder` above.
+  const pilgrimWays = React.useMemo(
+    () => (graph && locationId ? selectPilgrimWays(graph).filter(w => w.siteId === locationId) : []),
+    [graph, locationId],
+  );
+
   // THR-1143 — what the world has done to this place, and for how much longer.
   const conditions = React.useMemo(
     () => (node && graph && locationId ? readActiveConditions(graph, locationId) : []),
@@ -263,6 +272,7 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
             <div data-testid="location-profile-held-by">
               <SectionHeading>Allegiance</SectionHeading>
               <HeldByLine holder={holder} graph={graph ?? null} onOpenFaction={onOpenFaction} />
+              <PilgrimWayLine graph={graph ?? null} ways={pilgrimWays} side="site" data-testid="location-profile-pilgrim-way" />
             </div>
           )}
 

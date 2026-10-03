@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 151 |
+| 🟢 LIVE | 153 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **211** |
+| **Total** | **213** |
 
 ## Contracts by producing subsystem
 
@@ -48,6 +48,7 @@ remediation ticket or the build fails.
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
 | `blockade-suspends-lane-traffic` | A warlord who blockades a trade lane holds it rather than killing it: while the blockade stands the lane is suspended — no decay, volume sinking toward a trickle — and when the threat lifts it carries again. Without this read a blockade on a standing lane would be invisible to the lane rule (it would keep carrying at full traffic), and without the suspension a blockade would be an erasure the verb itself promises it is not ("suspended, not deleted"). The player reads it as the word "blockaded" on the lane in the hex tooltip. | edge-prop: `blockadedBy` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `colocated-grudge-spawns-duel` | Two mortals who share a grudge born of a real injury, standing in the same place and neither busy, may come to blows: the colocation phase rolls for it on the pair's own stream and spawns Old Blood between them. An old quarrel never does, the god's avatar never duels, a threaded mortal is always the actor, and a pair waits `GRUDGE_DUEL_COOLDOWN_TICKS` between duels. | state-field: `runGrudgeDuels`, `isInjuryProvenance`, `fightCooldowns`, `fight.duel.grudge` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `consecrated-pilgrim-way-pools-pilgrimage` | A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick. | edge: `sacred_route`, `consecratePilgrimWay`, `createRelationEdge`, `sacredRouteDestinationTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `factory-pack-registry` | A template the undertaking factory compiles reaches the one decision board the same way a hand-written one does — through the template registry — without an author ever editing a pack array. The compiler writes `strategic-packs/factory/<slug>.ts` and registers the export in the factory aggregate, the id in its kind row and in each ambition profile it names; the registry joins the aggregate last so factory output can never shadow an authored id. A template registered in two of the three places is unreachable by luck, which is the defect the compiler exists to make impossible. | function: `FACTORY_STRATEGIC_TEMPLATES`, `ALL_PACKS`, `registerInFactoryIndex` | Strategic Projects & Control | 🔵 UNVERIFIED-OK | THR-1300 |
 | `freehold-income-pays-mortal-holders` | What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🟢 LIVE | — |
@@ -339,6 +340,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `pilgrim-way-reaches-location-and-faction-sheets` | Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link. | edge: `sacred_route`, `selectPilgrimWays`, `PilgrimWayLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `seeded-dead-stay-dead` | The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target. | node-prop: `deceased` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `seeded-notable-holds-a-local-agenda` | Every settlement starts with one notable — its wealthiest-role resident, promoted by `seedLivingWorld.seedNotables` and stamped `notableOrigin: worldgen` — holding a Place, an old quarrel with the nearest decider (else the neighbouring notable) and a secret about or favour from a decider. The notable-agenda phase reads that stamp through `listLocalNotables` and launches feud, claim and rite agendas aimed at the notable’s own quarrel, holding and home, under `MAX_ACTIVE_LOCAL_AGENDAS`, counted apart from the leaders’ cap. | function: `listLocalNotables`, `selectLocalAgendaTarget`, `NOTABLE_ORIGIN_WORLDGEN`, `MAX_ACTIVE_LOCAL_AGENDAS` | Factions & Succession | 🟢 LIVE | — |
 | `seeded-notable-reaches-the-settlement-page` | The settlement page names who matters there: `settlementNotable.getSettlementNotable` finds the living, resident seeded notable (`notableOrigin: worldgen`) and reads the edges `seedNotables` wrote — `owns` (Holds), `hostile_to` with cause `old_quarrel` (At odds with), an unrevealed `knows_secret_of` (Knows something about, gated on the player knowing the notable at `known`+) and a live incoming `owes_favor` (Is owed a favour by) — as structured clauses. `LocationView` lifts the notable to the top of Inhabitants with a notable chip and one sentence built from those clauses; `window.__DEBUG.getSettlementNotable` returns the same object. | function: `NOTABLE_ORIGIN_WORLDGEN`, `getSettlementNotable` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -974,11 +976,23 @@ exit
 - **Producer → Consumer:** Factions & Succession → Factions & Succession
 - **UL terms:** *Congregation*, *Sphere*, *Faction*
 - **Module:** `src/data/world-scenario.ts`
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/worldSeed.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`
-- **Other hits:** `src/data/world-scenario.ts`, `src/engine/worldScenarioCensus.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/world-scenario.ts`, `src/engine/pilgrimWays.ts`, `src/engine/worldScenarioCensus.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-29: THR-1659 (S2). Browser, 1920×1080, `?view=game&seeded&size=medium&nofog`: `getWorldScenario().congregations` lists three congregations (spirit / darkness / entropy); `openRef('faction', 'faction_def_temple_of_spheres_0', 'sheet')` renders `[data-testid=faction-venerates-line]` = "Venerates Spirit." under the kind chip. A labelled town guild's chip reads `guild` (capitalised by CSS), with no venerates line. Unit tests: `src/components/Game/__tests__/FaithAndFringe.thr1659.test.tsx`.
+
+### `consecrated-pilgrim-way-pools-pilgrimage` — 🟢 LIVE
+
+- **Intent:** A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick.
+- **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
+- **UL terms:** *Route*, *Congregation*, *Undertaking*, *Encounter*
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 15 total — 2 write, 1 read, 12 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicGraphOps.ts`
+- **Read sites:** `src/engine/encounterCache.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts`, `src/engine/pilgrimWays.ts` +7 more
+- **Verdict:** Verified 2026-10-03: THR-1660. `src/engine/__tests__/pilgrimWay.test.ts` takes the board's own `cell.create.pilgrim_way` candidate for a non-member zealot, completes it through `executeStrategicAction`, and asserts one `sacred_route` congregation → town with `origin: 'undertaking'` and the `projectId`, the town in `poolInvalidatedLocationIds`, and `encounter.pilgrimage_trial` pooled there by a full `EncounterCacheManager` build (absent before). Refusals `already_a_pilgrim_destination` / `no_congregation_here` are asserted on the board and at completion.
 
 ### `content-objects-registry` — 🟢 LIVE
 
@@ -2006,6 +2020,18 @@ exit
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +21 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
+### `pilgrim-way-reaches-location-and-faction-sheets` — 🟢 LIVE
+
+- **Intent:** Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link.
+- **Producer → Consumer:** World Generation, Terrain & Places → Attention, Chronicle & Narrative
+- **UL terms:** *Route*, *Congregation*, *Location*
+- **Module:** `src/engine/pilgrimWays.ts`
+- **Production hits:** 18 total — 2 write, 3 read, 13 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/worldSeed.ts`
+- **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/debug-bridge.ts`
+- **Other hits:** `src/components/Game/PilgrimWayLine.tsx`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/encounterCache.ts` +8 more
+- **Verdict:** Verified 2026-10-03: THR-1660. `src/components/Game/__tests__/PilgrimWayLine.test.tsx` renders both sheets over a graph with a seeded and a consecrated way and asserts the lines' words, links and the absence of any line on a town no way reaches; browser-verified on the seeded medium world via `window.__DEBUG.getPilgrimWays()` and the opened sheets.
+
 ### `place-sphere-reaches-encounter-opening` — 🟢 LIVE
 
 - **Intent:** Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon.
@@ -2344,10 +2370,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Encounters & Dilemmas
 - **UL terms:** *Congregation*, *Location*, *Encounter*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
 - **Write sites:** `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/encounterCache.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts` +4 more
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/undertaking-objects.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts` +7 more
 - **Verdict:** Verified 2026-09-28: THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-"today" setting).
 
 ### `seeded-spell-holders` — 🟢 LIVE
@@ -2367,10 +2393,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 104 total — 1 write, 1 read, 102 unclassified
+- **Production hits:** 105 total — 1 write, 1 read, 103 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +97 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +98 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2633,10 +2659,10 @@ exit
 - **Intent:** What the player sees of a mortal’s work, on three surfaces that never list capability on a person: the Undertakings codex page (one card per live cell, generated from the registry and the grid’s dispositions — who tends to do it derived under the division rule), the roster’s doing-line (what each mortal is in the middle of, in words), and the ledger that names each finished deed by verb and object with the object linked.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingDeed.ts`
-- **Production hits:** 39 total — 5 write, 5 read, 29 unclassified
+- **Production hits:** 40 total — 5 write, 5 read, 30 unclassified
 - **Write sites:** `src/data/division-rule-tables.ts`, `src/data/undertaking-verb-prose.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicPresentation.ts`, `src/engine/undertakingDeed.ts`
 - **Read sites:** `src/components/Codex/codexRegistry.ts`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/tabs/JourneyTab.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentArc.ts`
-- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/debt-arbitration.ts`, `src/data/encounters/inheritance-wake.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts` +24 more
+- **Other hits:** `src/data/builders-fellowship-encounter-content.ts`, `src/data/encounters/debt-arbitration.ts`, `src/data/encounters/inheritance-wake.ts`, `src/data/encounters/the-granaries-in-the-famine-year.ts`, `src/data/encounters/the-stones-judgement.ts` +25 more
 - **Verdict:** Verified 2026-09-07: THR-1434. The codex builds one card per live cell from `UNDERTAKING_CELL_TEMPLATES` and `LIVE_CELL_NOTES` (49 = 49 on the shipped grid, `validateUndertakingCodex` fails by name on a cell without a phrase, glyph, lexicon line or note); the roster reads `activeProject.doingLine` composed in `getAgentStrategicSummary`; the lifecycle names the deed once (`describeDeed`) on the history entry and the completion event’s `refs`, and the arc strip renders it with the object linked. Non-vacuous by `codexUndertakings.test.ts` (count equals live cells, game words only, derivation reversible, the guard falsified on an injected template), `ThreadsPanelDoingLine.test.tsx` (phrase + progress word, trouble word, "and more", nothing when idle), `JourneyTabDeed.test.tsx` (verb tooltip, linked object, plain object with no page) and `undertakingDeed.test.ts` (the namer’s branches and the real pipeline: an instant cell through the review lever writes its deed). Browser proof on the closing PR: the codex section open on a card, a roster with three mortals mid-work, Ashara’s ledger with two linked deeds.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

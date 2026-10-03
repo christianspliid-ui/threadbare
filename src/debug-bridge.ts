@@ -2746,6 +2746,23 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1660 — every pilgrim way in the world (seeded and consecrated), through the
+     * one selector the Location and Faction sheet lines read, with each end's name.
+     *
+     * **Async** (`await` it) — the selector is pulled in on call, like every reader here.
+     */
+    getPilgrimWays: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { selectPilgrimWays } = await import('./engine/pilgrimWays');
+      return selectPilgrimWays(state.graph).map(w => ({
+        ...w,
+        congregationName: state.graph.getNode(w.congregationId)?.name ?? null,
+        siteName: state.graph.getNode(w.siteId)?.name ?? null,
+      }));
+    },
+
+    /**
      * THR-1605 — the opening: has the player met The First, and where.
      *
      * S1 fields plus the S2 doom wake (THR-1646); the spine gift gates (S4)

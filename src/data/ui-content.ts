@@ -493,6 +493,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Held By',
     desc: 'Whose writ runs here. A Realm holds the towns of its domain; a guild or an order can hold the town its hall stands in. Ground nobody holds is unclaimed, and the border on the map stops there.',
   },
+  // THR-1660 — the pilgrim way, on the Location and Faction sheets alike.
+  'ui.pilgrim_way': {
+    label: 'A Pilgrim Way',
+    desc: 'A road a congregation has made holy. Its pilgrims come to the town at its end, and the pilgrimage can happen there. A mortal who spreads the faith can consecrate one; none is ever unmade.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

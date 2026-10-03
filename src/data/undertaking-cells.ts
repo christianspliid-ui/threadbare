@@ -50,6 +50,8 @@ import {
   UNDERTAKING_DEFAULT_TIER,
   HUNT_APPOINTMENT_DELAY_TICKS,
   HUNT_APPOINTMENT_PULL_MULT,
+  PILGRIM_WAY_SITE_SUBTYPES,
+  PILGRIM_WAY_REACH_PROFILE,
 } from './strategic-action-constants';
 
 /** `cell.<variant>.<type>` — the variant with its colon folded to an underscore so the id stays a plain token. */
@@ -79,6 +81,8 @@ export const CELL_FAMILY_BY_TYPE: Readonly<Record<UndertakingObjectTypeId, Behav
   location: 'builder-civic',
   place: 'builder-civic',
   route: 'merchant-expansion',
+  // THR-1660 — the legacy consecration template's family, and what the faith ambition reports.
+  pilgrim_way: 'zealot-mission',
   // The plot is the underworld's work, not a courtier's (THR-1430).
   mortal: 'underworld-network',
   // THR-1560 — the martial family that already works companies and armies. It governs
@@ -109,6 +113,17 @@ export const CELL_REACH_BY_VERB: Readonly<Record<UndertakingVerb, Partial<Record
   observe: { eye: 0.6, star: 0.4 },
 };
 
+/**
+ * The reaches a **cell** leans on where its verb's generic lean misreads the work
+ * (THR-1660). Bounded, like the deed words and phrases: a cell with no row takes its
+ * verb's lean, which is right for nearly all of them. Read once at synthesis, so the
+ * codex, the grid and capability growth all read the same profile.
+ */
+export const UNDERTAKING_CELL_REACH: Readonly<Record<string, Partial<Record<ReachDomain, number>>>> = {
+  // A consecration is Star work, not the builder's Stone and Gold.
+  'cell.create.pilgrim_way': PILGRIM_WAY_REACH_PROFILE,
+};
+
 /** Two value pairs per verb — the board's desire signal (`UNDERTAKING_MOTIVATION_MIN_ARITY`). */
 export const CELL_MOTIVATIONS_BY_VERB: Readonly<Record<UndertakingVerb, readonly ValuePair[]>> = {
   create: ['preservation_transformation', 'tradition_novelty'],
@@ -133,6 +148,8 @@ export const CREATE_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, Strategi
   location: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
   place: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
   route: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
+  // THR-1660 — a settlement, never a shrine or temple: those already host the pilgrimage.
+  pilgrim_way: { type: 'location_subtype', subtypes: PILGRIM_WAY_SITE_SUBTYPES },
   // A mortal is never *made* by an undertaking — the kind has one cell and it is
   // `destroy`. `self` keeps the table total without claiming a create cell exists.
   mortal: { type: 'self' },
@@ -197,6 +214,8 @@ export const UNDERTAKING_CELL_CATALYSTS: Readonly<Record<string, ContentQuery>> 
   'cell.create.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
   'cell.change_raise.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
   'cell.change_lower.route': { kind: 'encounter_template', tags: ['#consortium_errand'] },
+  // A pilgrim way consecrated is the Temple's errand — the legacy template's own family (THR-1660).
+  'cell.create.pilgrim_way': { kind: 'encounter_template', tags: ['#temple_errand'] },
   // An army raised or reinforced draws the Company's recruiters and contracts.
   'cell.create.army': { kind: 'encounter_template', tags: ['#company_errand'] },
   'cell.change_raise.army': { kind: 'encounter_template', tags: ['#company_errand'] },
@@ -321,7 +340,7 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
     objectTypeId: type.id,
     executionMode,
     behaviorFamily: counterPlay ? COUNTER_PLAY_FAMILY : CELL_FAMILY_BY_TYPE[type.id],
-    reachProfile: CELL_REACH_BY_VERB[verb],
+    reachProfile: UNDERTAKING_CELL_REACH[cellTemplateId(variant, type.id)] ?? CELL_REACH_BY_VERB[verb],
     projectDuration: executionMode === 'multi_tick_project'
       ? UNDERTAKING_VERB_DURATION[variant][tierIndex] * UNDERTAKING_PROGRESS_PER_ADVANCE
       : undefined,

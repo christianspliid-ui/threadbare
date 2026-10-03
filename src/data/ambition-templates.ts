@@ -819,6 +819,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         // this ambition it is the blessing half that fires, and the sign says so.
         'cell.create.condition',
         'cell.create.place',
+        // THR-1660 — the one work whose whole fiction is the faith moving to a new town.
+        'cell.create.pilgrim_way',
         'cell.control_claim.place',
         'cell.change_raise.location',
         'cell.destroy.faction',
