@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo, memo } from 'react';
+import { createPortal } from 'react-dom';
 import type { Title, TitleProposal, Position } from '../../types/scry';
 import { RANK_MIN_TIER } from '../../types/scry';
 import type { SphereName } from '../../types';
@@ -522,6 +523,9 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
   );
 });
 
+/** The court panel's height cap — the Modal primitive's value (Viewport Contract, THR-1709). */
+export const SCRY_PANEL_MAX_HEIGHT = '75vh';
+
 export function ScryOverlay() {
   const {
     scryState,
@@ -685,9 +689,15 @@ export function ScryOverlay() {
     }
   }, [onClose]);
 
-  return (
+  // THR-1709: portalled to <body> so no ancestor stacking context (GameView's
+  // mount wrappers) can trap the z-50 under the top bar or the Active Locations
+  // strip. The outer layer never scrolls; the panel is capped at the Modal
+  // primitive's 75vh and centred with margin:auto, so its header and ✕ always sit
+  // inside the viewport and only the court body scrolls (Viewport Contract).
+  const overlay = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+      className="fixed inset-0 z-50 flex overflow-hidden anim-fade-enter"
+      data-testid="scry-overlay"
       style={{
         backgroundColor: 'rgba(10, 10, 14, 0.95)',
         backdropFilter: 'blur(4px)',
@@ -704,9 +714,13 @@ export function ScryOverlay() {
         loading="eager"
       />
 
-      <div className="w-full max-w-4xl mx-4 py-8 relative" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 px-6">
+      <div
+        className="w-full max-w-4xl mx-auto my-auto px-4 relative flex flex-col"
+        style={{ maxHeight: SCRY_PANEL_MAX_HEIGHT }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header — outside the scroll area, so the ✕ is always reachable */}
+        <div className="flex items-center justify-between mb-6 px-6 shrink-0">
           <div>
             <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--text-tertiary)' }}>✦</div>
             <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
@@ -727,7 +741,8 @@ export function ScryOverlay() {
         </div>
 
         <div
-          className="rounded-lg border p-6 space-y-6 relative"
+          className="rounded-lg border p-6 space-y-6 relative flex-1 min-h-0 overflow-y-auto"
+          data-testid="scry-overlay-body"
           style={{
             backgroundColor: 'rgba(20, 18, 15, 0.85)',
             borderColor: 'var(--border-gold)',
@@ -959,4 +974,6 @@ export function ScryOverlay() {
       )}
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(overlay, document.body) : overlay;
 }

@@ -24,6 +24,7 @@ const closed: InterruptSnapshot = {
   divineReceiptPending: false,
   momentPending: false,
   chapterLedgerOpen: false,
+  courtOpen: false,
   popupQueued: false,
 };
 
@@ -59,6 +60,13 @@ describe('interruptRegistry', () => {
     const r = resolveInterrupts(snap({ chapterLedgerOpen: true }));
     expect(r.open).toEqual(['ChapterLedger']);
     expect(r.anyOpen).toBe(true);
+  });
+
+  it('the Divine Court stops the world and holds the popup channel (THR-1709)', () => {
+    const r = resolveInterrupts(snap({ courtOpen: true, popupQueued: true }));
+    expect(r.open).toEqual(['ScryOverlay']);
+    expect(r.anyOpen).toBe(true);
+    expect(r.popupMayRender).toBe(false);
   });
 
   it('a doom-stage popup shows and stops the world when nothing else is open', () => {
