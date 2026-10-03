@@ -4,7 +4,8 @@
  *
  * The stack was `fixed right-4 bottom-4`, so it sat over the right sidebar and
  * covered the Chronicle. GameView mounts it inside the map area's `relative`
- * box; `absolute` keeps it inside that box.
+ * box; `absolute` keeps it inside that box, at the top so the action drawer
+ * rising from the bottom edge never sits under it.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -23,6 +24,10 @@ describe('ToastStack — anchored inside the map area (THR-1711)', () => {
     const stack = screen.getByTestId('toast-stack');
     expect(stack.className.split(/\s+/)).toContain('absolute');
     expect(stack.className.split(/\s+/)).not.toContain('fixed');
+    // Top, not bottom: the action drawer rises from the map's bottom edge and a
+    // bottom-anchored toast covered its Cast bar (seen in the browser-verify pass).
+    expect(stack.className.split(/\s+/)).toContain('top-4');
+    expect(stack.className.split(/\s+/)).not.toContain('bottom-4');
   });
 
   it('GameView mounts it inside the relative map area, before the map', () => {
