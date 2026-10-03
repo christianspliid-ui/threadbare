@@ -29,11 +29,13 @@ Empty output means **docs-only**; any output means **code**. This is the same pr
 **`npm run gate` runs the track your diff owes — the rules below, executed.** It classifies the working tree (committed range plus uncommitted and untracked files) with the same predicate as `classify:diff`, then:
 
 - **code track:** `npm test` ∥ `check:typecheck` ∥ `vite build` ∥ `check:encounter -- --all` (∥ the 30-tick CLI smoke on an engine diff), and **then** `test:heavy` on its own for an engine diff — two vitest suites never share the machine (running them together stretched the fast suite 73 s → 139 s and timed out five tests, measured 2026-10-03);
-- **docs track:** `check:impediment-ids` ∥ `lint:plan-doc` on the changed plan docs.
+- **docs track:** `check:impediment-ids` ∥ `check:predicate-copies` ∥ `lint:plan-doc` on the changed plan docs.
+
+The CLI smoke is judged on its **output**, not its exit code: `runTick` catches its own crashes and the CLI exits 0 regardless, so the gate fails the smoke unless the status block reads tick 30 with a non-zero agent count and no `Tick crashed` line appears (step 7's pass criterion).
 
 Each gate logs to `.cache/gate/<gate>.log`; the console shows one `PASS`/`FAIL` line per gate and the log tail of a failure only. **Paste that verdict block as your evidence** — it is the raw terminal output step 6 asks for, without 1,400 lines of vitest in your context.
 
-The tree-diffing gates (3b, 3c) are a separate phase because of the general rule below: **`npm run gate -- --final`** runs `check:generated-freshness` then `check:wiki-freshness:blocking`, as the last action before `git push`. `--all` runs the track and the final phase in one go when the closeout edits are already in the tree; `--heavy` forces the engine gates; `--code` / `--docs` force a track. Measured wall time on this machine: code track ~80 s (135 s serial), engine track ~220 s (~290 s serial).
+The tree-diffing gates (3b, 3c) are a separate phase because of the general rule below: **`npm run gate -- --final`** runs `check:impediment-ids`, `check:generated-freshness` and `check:wiki-freshness:blocking`, as the last action before `git push` — the id check is there because the closeout appends to `Docs/impediments.md` after the track ran, and `generated-freshness` regenerates cleanly over a duplicate id. `--all` runs the track and the final phase in one go when the closeout edits are already in the tree; `--heavy` forces the engine gates; `--code` / `--docs` force a track. Measured wall time on this machine: code track ~80 s (135 s serial), engine track ~220 s (~290 s serial).
 
 The individual commands below remain the law and stay runnable on their own; the ratchet's `--update` is still a deliberate manual step.
 

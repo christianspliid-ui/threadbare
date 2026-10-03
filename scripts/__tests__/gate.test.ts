@@ -12,6 +12,7 @@ import { describe, it, expect } from 'vitest';
 
 import {
   CLI_SMOKE_INPUT,
+  checkCliSmoke,
   isEnginePath,
   planGates,
   renderSummary,
@@ -52,8 +53,8 @@ describe('planGates', () => {
     const plan = planGates(['Docs/plans/2026-10-03-delivery-velocity.md', 'Docs/changelog.md'], TRACK);
     expect(plan.track).toBe('docs-only');
     expect(plan.engine).toBe(false);
-    expect(names(plan).stages).toEqual([['impediment-ids', 'plan-doc-lint']]);
-    expect(plan.stages[0][1].command).toContain('Docs/plans/2026-10-03-delivery-velocity.md');
+    expect(names(plan).stages).toEqual([['impediment-ids', 'predicate-copies', 'plan-doc-lint']]);
+    expect(plan.stages[0][2].command).toContain('Docs/plans/2026-10-03-delivery-velocity.md');
     expect(plan.stages.flat().some((gate) => gate.command.includes('npm test'))).toBe(false);
   });
 
@@ -61,12 +62,13 @@ describe('planGates', () => {
     expect(planGates(['Docs/changelog.md'], { ...TRACK, heavy: true }).engine).toBe(false);
   });
 
-  it('--final runs only the tree-diffing gates, and --all appends them after the track', () => {
+  it('--final runs only the closeout-sensitive gates, and --all appends them after the track', () => {
     expect(names(planGates(['src/components/Foo.tsx'], { ...TRACK, final: true }))).toEqual({
       stages: [],
-      final: ['generated-freshness', 'wiki-freshness'],
+      final: ['impediment-ids', 'generated-freshness', 'wiki-freshness'],
     });
     expect(names(planGates(['src/components/Foo.tsx'], { ...TRACK, all: true })).final).toEqual([
+      'impediment-ids',
       'generated-freshness',
       'wiki-freshness',
     ]);
@@ -75,6 +77,32 @@ describe('planGates', () => {
   it('honours a forced track over the classifier', () => {
     expect(planGates(['Docs/changelog.md'], { ...TRACK, forceTrack: 'code' }).track).toBe('code');
     expect(planGates(['src/engine/a.ts'], { ...TRACK, forceTrack: 'docs-only' }).track).toBe('docs-only');
+  });
+});
+
+describe('checkCliSmoke', () => {
+  // Shape of the real status block (ANSI colour included), from a seed-42 medium run.
+  const status = (tick: number, agents: number) =>
+    `\x1b[2mfws>\x1b[0m \x1b[32m✓\x1b[0m Tick ${tick}  |  88 events\n  Tick:     ${tick}\n  Agents:   ${agents}\n`;
+
+  it('passes a run that reaches tick 30 with agents', () => {
+    expect(checkCliSmoke(status(30, 532))).toBeNull();
+  });
+
+  it('fails a run whose ticks crashed — the CLI still exits 0, so the output is the only signal', () => {
+    const crashed = '[Orchestrator] Tick crashed, returning previous state: TypeError: x\n' + status(0, 532);
+    expect(checkCliSmoke(crashed)).toMatch(/Tick crashed/);
+  });
+
+  it('fails a run that stops short of tick 30, or has no agents, or printed no status', () => {
+    expect(checkCliSmoke(status(12, 532))).toMatch(/did not reach tick 30 \(read 12\)/);
+    expect(checkCliSmoke(status(30, 0))).toMatch(/no agents/);
+    expect(checkCliSmoke('fws> Goodbye.')).toMatch(/no status block/);
+  });
+
+  it('is attached to the cli-smoke gate', () => {
+    const smoke = planGates(['src/engine/a.ts'], TRACK).stages[0].find((gate) => gate.name === 'cli-smoke');
+    expect(smoke?.check).toBe(checkCliSmoke);
   });
 });
 

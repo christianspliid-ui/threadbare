@@ -16,8 +16,9 @@
  *    test ∥ typecheck ∥ build ∥ cli-smoke, THEN test:heavy alone (see GatePlan.stages);
  * 3. prints one verdict line per gate, and the log tail of a failure only.
  *
- * The tree-diffing gates (`check:generated-freshness`, `check:wiki-freshness:blocking`)
- * are a separate `--final` phase because they must run after every closeout edit,
+ * The closeout-sensitive gates (`check:impediment-ids`, `check:generated-freshness`,
+ * `check:wiki-freshness:blocking`) are a separate `--final` phase because they must
+ * run after every closeout edit,
  * immediately before `git push` (Docs/canon/verification-gates.md). The session's
  * sequence is: implement → `npm run gate` → closeout docs → commit →
  * `npm run gate -- --final` → push. `--all` runs both phases in one go.
@@ -61,6 +62,30 @@ export const ENGINE_PATH_PATTERNS: readonly RegExp[] = [
 /** The CLI smoke's scripted input: 30 ticks, a status read, exit. */
 export const CLI_SMOKE_INPUT = "tick 30\nstatus\nexit\n";
 
+/** The tick the smoke must reach (verification-gates.md step 7). */
+export const CLI_SMOKE_TICKS = 30;
+
+const ANSI_PATTERN = /\x1b\[[0-9;]*m/g;
+
+/**
+ * Step 7's pass criterion, read from the CLI's output — its exit code cannot carry
+ * it. `runTick` catches its own crashes (orchestrator.ts: "Tick crashed, returning
+ * previous state") and the CLI's `exit` command calls `process.exit(0)`, so a tick
+ * that throws on every tick still exits 0. A crashed tick also leaves the counter
+ * where it was, so "the status block reads tick 30" catches it twice over.
+ */
+export function checkCliSmoke(output: string): string | null {
+  const text = output.replace(ANSI_PATTERN, "");
+  if (/Tick crashed/.test(text)) return "a tick crashed (orchestrator logged \"Tick crashed\")";
+  const tick = text.match(/^\s*Tick:\s+(\d+)/m);
+  if (!tick || Number(tick[1]) < CLI_SMOKE_TICKS) {
+    return `the status block did not reach tick ${CLI_SMOKE_TICKS} (read ${tick ? tick[1] : "no status block"})`;
+  }
+  const agents = text.match(/^\s*Agents:\s+(\d+)/m);
+  if (!agents || Number(agents[1]) === 0) return "the status block shows no agents";
+  return null;
+}
+
 export type Track = "code" | "docs-only";
 
 export interface GateSpec {
@@ -70,6 +95,11 @@ export interface GateSpec {
   command: string;
   /** Text piped to the command's stdin, if any. */
   stdin?: string;
+  /**
+   * Judges the output of a run that exited 0; returns a failure reason, or null.
+   * For gates whose exit code cannot carry the verdict — see {@link checkCliSmoke}.
+   */
+  check?: (output: string) => string | null;
 }
 
 export interface GatePlan {
@@ -106,7 +136,15 @@ export function isEnginePath(file: string): boolean {
   return ENGINE_PATH_PATTERNS.some((pattern) => pattern.test(normalized));
 }
 
+/**
+ * The final phase: run after every closeout edit. `check:impediment-ids` belongs
+ * here because the closeout appends to `Docs/impediments.md` after the track ran,
+ * and `generated-freshness` regenerates cleanly over a duplicate id — only the id
+ * check catches the collision a `git merge origin/main` can union in (both CI jobs
+ * run it). It takes about a second.
+ */
 const FINAL_GATES: readonly GateSpec[] = [
+  { name: "impediment-ids", command: "npm run check:impediment-ids" },
   { name: "generated-freshness", command: "npm run check:generated-freshness" },
   { name: "wiki-freshness", command: "npm run check:wiki-freshness:blocking" },
 ];
@@ -131,13 +169,23 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
       { name: "encounter", command: "npm run check:encounter -- --all" },
     ];
     if (engine) {
-      first.push({ name: "cli-smoke", command: "npm run cli -- --seed 42 --map medium", stdin: CLI_SMOKE_INPUT });
+      first.push({
+        name: "cli-smoke",
+        command: "npm run cli -- --seed 42 --map medium",
+        stdin: CLI_SMOKE_INPUT,
+        check: checkCliSmoke,
+      });
     }
     stages.push(first);
     // The heavy suite gets the machine to itself — see GatePlan.stages.
     if (engine) stages.push([{ name: "test-heavy", command: "npm run test:heavy" }]);
   } else {
-    const docs: GateSpec[] = [{ name: "impediment-ids", command: "npm run check:impediment-ids" }];
+    // `check:predicate-copies` is a required `Docs gates` step that nothing on the
+    // docs track would otherwise run (`npm test` is code-track only).
+    const docs: GateSpec[] = [
+      { name: "impediment-ids", command: "npm run check:impediment-ids" },
+      { name: "predicate-copies", command: "npm run check:predicate-copies" },
+    ];
     const planDocs = files.filter((file) => /^Docs\/(plans|audits)\/.+\.md$/.test(file.replaceAll("\\", "/")));
     if (planDocs.length > 0) {
       docs.push({ name: "plan-doc-lint", command: `npm run lint:plan-doc -- ${planDocs.join(" ")}` });
@@ -235,7 +283,23 @@ function runGate(gate: GateSpec, logDir: string): Promise<GateResult> {
     child.on("error", (error) => {
       out.write(`gate: \`${gate.command}\` failed to start: ${String(error)}\n`);
     });
-    child.on("close", (code) => finish(code === 0));
+    child.on("close", (code) => {
+      if (code !== 0 || !gate.check) {
+        finish(code === 0);
+        return;
+      }
+      // The log stream may still be flushing; judge the output once it is on disk.
+      out.end(() => {
+        let reason: string | null;
+        try {
+          reason = gate.check!(fs.readFileSync(log, "utf8"));
+        } catch (error) {
+          reason = `could not read the output to judge it: ${String(error)}`;
+        }
+        if (reason) fs.appendFileSync(log, `\ngate: ${gate.name} exited 0 but FAILED its output check — ${reason}\n`);
+        resolve({ gate, ok: reason === null, seconds: Math.round((Date.now() - started) / 1000), log: log.replaceAll("\\", "/") });
+      });
+    });
   });
 }
 
