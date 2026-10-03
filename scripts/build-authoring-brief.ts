@@ -47,6 +47,16 @@ export const AUTHORING_BRIEF_CAPABILITIES: readonly number[] = [1, 2, 3, 4, 5, 6
  */
 export const SUPERSEDING_BANNER_PATTERN = /^>\s*\*\*⚠️/;
 
+/**
+ * Version of the distillation logic. The declared capability list, the banner pattern and this
+ * number are folded into the generator stamp ({@link AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH}),
+ * because the up-to-date short-circuit compares stamps only: without them, editing the list or
+ * the extractor left the cached brief "up to date" and regeneration wrote nothing (THR-1695
+ * review gate). **Bump this whenever `distillCapabilitySection` / `extractCapabilitySection`
+ * change what they select.**
+ */
+export const AUTHORING_BRIEF_EXTRACTION_VERSION = 2;
+
 // Sections A and D are content from the encounter-pipeline skill and the prose canon —
 // hardcoded here so generation does not depend on parsing prose out of those files.
 //
@@ -201,7 +211,10 @@ export function hashContent(content: string | Buffer): string {
  */
 export const AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH = hashContent(
   `${SECTION_A_REGISTER}
-${SECTION_D_PLAYER_AS_GOD}`,
+${SECTION_D_PLAYER_AS_GOD}
+capabilities=${JSON.stringify(AUTHORING_BRIEF_CAPABILITIES)}
+banner=${SUPERSEDING_BANNER_PATTERN.source}
+extraction=${AUTHORING_BRIEF_EXTRACTION_VERSION}`,
 );
 
 /** Raw contents of every {@link AUTHORING_BRIEF_SOURCES} entry, by role. */
@@ -461,7 +474,7 @@ export function buildBrief(
     `> **Generated:** ${generatedAt} by scripts/build-authoring-brief.ts`,
     `> **Sources:**`,
     ...sourceStamps,
-    `>   - Sections A/D, hardcoded in the generator (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH})`,
+    `>   - Sections A/D and the capability selection, hardcoded in the generator (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH})`,
     "> **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.",
     "",
     "---",

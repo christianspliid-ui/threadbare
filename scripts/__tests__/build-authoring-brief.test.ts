@@ -681,3 +681,14 @@ describe("capabilities are selected by declaration and honour superseding banner
     expect(committed).not.toMatch(/^\s*encounterFamily:/m);
   });
 });
+
+describe("the generator stamp covers the capability selection (THR-1695 review gate)", () => {
+  it("folds the declared list, banner pattern and extraction version into the stamp", async () => {
+    const src = fs.readFileSync(path.join(repoRoot, "scripts", "build-authoring-brief.ts"), "utf8");
+    const stampBlock = src.slice(src.indexOf("AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH = hashContent("));
+    const body = stampBlock.slice(0, stampBlock.indexOf(");"));
+    expect(body).toContain("AUTHORING_BRIEF_CAPABILITIES");
+    expect(body).toContain("SUPERSEDING_BANNER_PATTERN");
+    expect(body).toContain("AUTHORING_BRIEF_EXTRACTION_VERSION");
+  });
+});
