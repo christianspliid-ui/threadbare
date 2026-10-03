@@ -10,11 +10,11 @@
 
 ## Why this is load-bearing
 
-Christian, 2026-10-03: *"we are spending a lot of tokens and time on running the test suites and we are only running one executor at a time … how do we reach the next level here, as we have lots of work to do."* The measurements below say the test suites are a minor share of the cost. The binding constraints are (a) the hourly cadence — one ~31-minute run per 60-minute slot, (b) a ~150k-token session baseline that every one of ~100 turns re-reads, and (c) a commit hook that re-runs the full suite on every commit. Fixing those roughly doubles tickets per day on the existing single lane; only then is a second executor worth its coordination cost.
+Christian, 2026-10-03: *"we are spending a lot of tokens and time on running the test suites and we are only running one executor at a time … how do we reach the next level here, as we have lots of work to do."* The measurements below say the test suites are a minor share of the cost. The binding constraints are (a) the hourly cadence — one ~31-minute run per 60-minute slot, (b) a ~150k-token session baseline that every one of ~100 turns re-reads, and (c) per-tool overhead: gates run serially and a 2-second hook on every file edit. Fixing those roughly doubles tickets per day on the existing single lane; only then is a second executor worth its coordination cost.
 
 ## Measurements (2026-10-03)
 
-Sources: the last 25 `tb-opus-pickup` transcripts (3 outliers excluded — they were stale transcripts from other lanes), `list_task_runs(tb-opus-pickup)`, 253 `git commit` calls across 4 days of transcripts, and headless `claude -p --output-format stream-json` probes in this repo.
+Sources: the last 25 `tb-opus-pickup` transcripts (3 outliers excluded — stale transcripts from other lanes), `list_task_runs(tb-opus-pickup)`, tool-call timings and hook attachments across 2–4 days of transcripts, and headless `claude -p --output-format stream-json` probes in this repo.
 
 | Quantity | Value |
 |---|---|
@@ -27,7 +27,8 @@ Sources: the last 25 `tb-opus-pickup` transcripts (3 outliers excluded — they 
 | `npm test` full suite | 73 s (1,434 files, 22,724 tests) |
 | `check:typecheck` / `vite build` / `check:generated-freshness` / `test:heavy` | 42 s / 20 s / 87 s / 138 s |
 | test ∥ typecheck ∥ build, run concurrently (32 cores) | **74 s wall vs 135 s serial** |
-| `git commit` median / p90 | **48 s / 85 s**, vs 5 s with `--no-verify` |
+| `Edit` tool median / `Read` median | **2.0 s / 0.0 s** (n = 1,586 / 735, two days) |
+| Write-guard hook timeouts (10 s, fail-open) | 93 in two days |
 | Merges per day (last 6 days) | 5–19 |
 | Ready for Dev on 2026-10-01 | empty all day — every run exited in ~1 min |
 
@@ -43,9 +44,10 @@ Sources: the last 25 `tb-opus-pickup` transcripts (3 outliers excluded — they 
 
 `disabledMcpServers` in a settings layer is **not** honoured for user-scope or claude.ai servers (probe-verified); `deniedMcpServers` is, and keeps the named exceptions (Linear, GitHub, codesight, Playwright, Discord). The desktop app adds ~35k of its own tools on top, which no project setting reaches.
 
-### The commit hook
+### The hooks
 
-`.claude/hooks/pre-commit-gate.sh` (April 2026, `2026-04-13-definition-of-done-hooks-design.md`) runs `npx tsc --noEmit` — a no-op here since the root `tsconfig.json` has `files: []` (THR-686) — and the full `npm test` on **every** `git commit`, including THR-1529's WIP checkpoint commits (taken *before* verification, so the hook either blocks the checkpoint or re-verifies code nobody claimed was ready) and docs-only closeout commits. A typical run commits 2–4 times. The pre-push hook's `Docs/project-status.md` check has been unsatisfiable since THR-1016 made that file generated and untracked.
+- **`worktree-write-guard.sh` runs on every `Edit`/`Write`.** It is a bash script that spawns `node` three times to read three JSON fields, then makes two or three `git` calls. On Windows that is ~2 s per edit — the whole difference between the `Edit` (2.0 s) and `Read` (0.0 s) medians — and under load it hits its 10 s timeout, where the harness **cancels it and lets the write through** (93 times in two days). The guard is slowest exactly when it is least effective.
+- **The DoD commit/push hooks never fire.** `pre-commit-gate.sh` and `pre-push-gate.sh` are registered with matchers `Bash(git commit*)` / `Bash(git push*)`; a hook matcher is a tool-name pattern, so neither matches `Bash`. Measured: a `git commit --dry-run` in a session with them registered completes in 0.7 s, and no transcript holds a hook attachment for either. They are a latent hazard, not a cost: `pre-push-gate.sh` requires a new entry in `Docs/project-status.md`, which has been untracked since THR-1016, so if matcher semantics ever changed it would block every push in every lane. (An earlier reading of this data took slow `git commit` calls for hook cost; they were compound commands chaining the 87 s freshness gate.)
 
 ### The scheduler
 
@@ -67,26 +69,18 @@ Sources: the last 25 `tb-opus-pickup` transcripts (3 outliers excluded — they 
 
 `scripts/gate.ts`:
 
-1. Classifies the working tree against `origin/main` with `scripts/docs-only-predicate.ts` (the same predicate CI's `detect` job uses — no new copy).
+1. Classifies the working tree against `origin/main` with `scripts/docs-only-predicate.ts` (the same predicate CI's `detect` job uses — no new copy). `--code` / `--docs` force a track.
 2. **Code track:** runs `npm test`, `check:typecheck` and `vite build` concurrently; adds `test:heavy` and the 30-tick CLI smoke when an engine path is touched (`src/engine/`, `src/types/gameState.ts`, `src/types/graph.ts`), or always with `--heavy`.
 3. **Docs track:** `check:impediment-ids` and `lint:plan-doc` on changed plan docs.
-4. **Final phase** (`--final`, or included with `--all`): the tree-diffing gates `check:generated-freshness` and `check:wiki-freshness:blocking`, which must run after every closeout edit (verification-gates.md).
-5. Prints one line per gate (`PASS`/`FAIL`, seconds) and, for a failure only, the last 40 lines of its log. Full logs go to `.cache/gate/<gate>.log`.
-6. Writes `.cache/gate/receipt.json`: `{ codeKey, track, results, at }`. `codeKey` is a SHA-256 over the `git ls-files -s` lines of every **non-docs** path in the working tree (tracked and untracked, via a temporary index), so closeout doc edits after the gate do not invalidate it and any code edit does.
+4. **Final phase** (`--final` alone, or appended with `--all`): the tree-diffing gates `check:generated-freshness` and `check:wiki-freshness:blocking`, which must run after every closeout edit (verification-gates.md).
+5. Prints one line per gate (`PASS`/`FAIL`, seconds) and, for a failure only, the last 40 lines of its log. Full logs go to `.cache/gate/<gate>.log`, so a session pastes the verdict block as evidence instead of reading 1,400 lines of vitest output into its context.
 
 The session's gate sequence becomes: implement → `npm run gate` → closeout docs → commit → `npm run gate -- --final` → push.
 
-### 1d. A cheap commit hook
+### 1d. Hook hygiene
 
-`.claude/hooks/pre-commit-gate.sh` delegates to `scripts/gate.ts --pre-commit`, which passes immediately when:
-
-- the commit message starts `wip(` (THR-1529 checkpoint — taken before verification by design), or
-- the working tree's code diff is empty (docs-only commit), or
-- `.cache/gate/receipt.json` carries a passing code track whose `codeKey` matches the current tree.
-
-Otherwise it runs `vitest related --run` on the changed code files only (three fast projects) and the existing untracked-import check. The no-op `tsc --noEmit` is removed. CI's required `Test · Typecheck · Build` check remains the authoritative full gate; nothing about it changes.
-
-`.claude/hooks/pre-push-gate.sh`: drop the `Docs/project-status.md` requirement (untracked since THR-1016), skip the doc checks on a `wip(`-headed branch tip, and skip the `vite build` when the receipt already records a passing build for the current `codeKey`.
+- **Write guard rewritten as one Node process** — `.claude/hooks/worktree-write-guard.mjs`, registered as `node .claude/hooks/worktree-write-guard.mjs`. Same decision table (THR-685, THR-880 sibling exemption), one JSON parse, git called only when the path is not already inside the session's worktree. `worktree-write-guard.sh` stays as a one-line shim (`exec node …mjs`) so the existing regression suite and every doc reference keep working unchanged.
+- **Remove the dead DoD hook registrations** and delete `pre-commit-gate.sh` / `pre-push-gate.sh`. CI's required `Test · Typecheck · Build` check and `Docs gates` are the enforced gates; nothing that currently runs stops running.
 
 ### 1e. Back-to-back pickup
 
@@ -100,7 +94,7 @@ Only after one week of step 1 data, and only if Ready for Dev never sits empty f
 
 ## Substrate inventory
 
-N/A — no Engine pillar. Delivery-tooling surfaces touched: `.claude/hooks/pre-commit-gate.sh`, `.claude/hooks/pre-push-gate.sh` (extends), `scripts/docs-only-predicate.ts` (consumed, unchanged), `scripts/classify-diff.ts` (unchanged), the `tb-opus-pickup` prompt (extends), `.claude/settings.json` (extends).
+N/A — no Engine pillar. Delivery-tooling surfaces touched: `.claude/hooks/worktree-write-guard.sh` (replaced by a Node implementation behind a shim), `.claude/hooks/pre-commit-gate.sh` / `pre-push-gate.sh` (removed — never fired), `scripts/docs-only-predicate.ts` (consumed, unchanged), the `tb-opus-pickup` prompt (extends), `.claude/settings.json` (extends).
 
 ## Engine pillar
 
@@ -120,14 +114,13 @@ No runtime modules — nothing is called from the orchestrator or rendered in Ga
 
 | Module | Called by | Reads | Writes | Debug visibility |
 |---|---|---|---|---|
-| `scripts/gate.ts` (`npm run gate`) | executor sessions (pickup prompt step 4, pull-work, verification-gates.md) | working tree, `origin/main`, `docs-only-predicate.ts` | `.cache/gate/*.log`, `.cache/gate/receipt.json` | one verdict line per gate; logs on disk |
-| `scripts/gate.ts --pre-commit` | `.claude/hooks/pre-commit-gate.sh` | the hook's tool input (commit command), receipt | nothing | hook stderr on failure |
-| `.claude/hooks/pre-push-gate.sh` | Claude `PreToolUse` on `git push` | branch diff, receipt | nothing | hook stderr on failure |
+| `scripts/gate.ts` (`npm run gate`) | executor sessions (pickup prompt step 4, pull-work, verification-gates.md) | working tree, `origin/main`, `docs-only-predicate.ts` | `.cache/gate/*.log` | one verdict line per gate; logs on disk |
+| `.claude/hooks/worktree-write-guard.mjs` | Claude `PreToolUse` on `Write`/`Edit` | hook JSON (`tool_input.file_path`, `cwd`), `git rev-parse`, `git worktree list` | nothing | stderr + exit 2 on a blocked write |
 | `.claude/settings.json` | every Claude Code session in the repo | — | — | the session's tool list |
 
 ## Tracing
 
-N/A — no simulation traces. Inspectability is carried by the per-gate logs under `.cache/gate/` and the receipt's `results` array (`{ gate, ok, seconds, log }`).
+N/A — no simulation traces. Inspectability is carried by the per-gate logs under `.cache/gate/` and the printed verdict block.
 
 ## Interface impact
 
@@ -142,19 +135,18 @@ No high-impact file is modified. `src/types/gameState.ts` and `src/types/graph.t
 | Constant | Default | Purpose |
 |---|---|---|
 | `GATE_FAIL_TAIL_LINES` | 40 | Log lines printed for a failing gate |
-| `GATE_LOG_DIR` | `.cache/gate` | Where full gate logs and the receipt live |
+| `GATE_LOG_DIR` | `.cache/gate` | Where full gate logs live |
 | `ENGINE_PATH_PATTERNS` | `src/engine/`, `src/types/gameState.ts`, `src/types/graph.ts` | Paths that add `test:heavy` + CLI smoke |
-| `WIP_COMMIT_PREFIX` | `wip(` | Commit-message prefix the pre-commit hook passes through |
+| Write-guard hook timeout | 10 s (unchanged) | Harness timeout; the Node guard should finish in well under 1 s |
 | Pickup cron | `*/20 * * * *` | Maximum idle gap between pickup runs |
 
 ## Fail-soft table
 
 | Failure case | Fallback |
 |---|---|
-| Receipt missing, unreadable or for another tree | Pre-commit falls back to `vitest related` on changed code |
-| `git` fails while computing `codeKey` | No receipt match → related tests run; never a false pass |
 | Classifier cannot reach `origin/main` | Treat as code track (the expensive, safe direction) |
-| A gate process crashes | Reported `FAIL` with its log tail; `npm run gate` exits non-zero |
+| A gate process crashes or cannot spawn | Reported `FAIL` with its log tail; `npm run gate` exits non-zero |
+| Write guard gets malformed JSON or git fails | Allow the write (exit 0), exactly as the bash guard did |
 | Fable usage limits after the cron change | Revert cron to `*/30`; recorded in the registry |
 
 ## NFP-compliance table
@@ -162,12 +154,12 @@ No high-impact file is modified. `src/types/gameState.ts` and `src/types/graph.t
 | NFP | Verdict | Note |
 |---|---|---|
 | 1. Tunability | PASS | Constants above are named in `scripts/gate.ts`; cron in the registry |
-| 2. Inspectability | PASS | Per-gate logs and a receipt on disk; one-line verdicts |
-| 3. Determinism | PASS | No randomness; `codeKey` is a content hash |
-| 4. Fail-soft | PASS | Every unknown state falls back to running more checks, never fewer |
+| 2. Inspectability | PASS | Per-gate logs on disk; one-line verdicts |
+| 3. Determinism | PASS | No randomness |
+| 4. Fail-soft | PASS | Unknown classifier state runs more checks, never fewer; guard fails open as before |
 | 5. Narrative over mechanical perfection | N/A | Tooling |
-| 6. Additive over destructive | PASS with note | Removes one no-op typecheck and one unsatisfiable doc check; CI unchanged |
-| 7. Performance budget | PASS | 135 s → 74 s for the code track; commit with receipt ≈ seconds |
+| 6. Additive over destructive | PASS with note | Deletes two hooks that never fire; the guard's behaviour is unchanged behind its shim |
+| 7. Performance budget | PASS | Code track 135 s → 74 s; edit hook ~2 s → sub-second |
 
 ## Three-pillar check
 
@@ -190,8 +182,7 @@ No high-impact file is modified. `src/types/gameState.ts` and `src/types/graph.t
 
 - **CI is unchanged and stays authoritative.** The local gate gets faster; the required `Test · Typecheck · Build` check still runs the full suite on every code PR. Do not touch `ci.yml`.
 - **Reuse the predicate, never copy it.** `scripts/gate.ts` imports `isDocsOnlyPath` from `scripts/docs-only-predicate.ts`; a new hand-written copy would need registering with `check:predicate-copies`.
-- **The hook must fail toward running checks.** Any unknown (no receipt, git error, classifier error) runs `vitest related`; only the three named pass-throughs skip.
-- **`PreToolUse` fires before the whole Bash command**, so in `git add -A && git commit …` the index is not yet updated when the hook runs. Key the receipt on the working tree (temporary index), not the real index.
+- **The write guard's decision table is the contract.** Port it rule for rule; the existing `worktree-write-guard.test.ts` (run through the `.sh` shim) must pass unmodified before anything else changes.
 - **Re-list crons after any scheduled-task update** and diff against the registry (impediment #359 — any toggle may drop a cron).
 - Edit the live prompt at `C:\Users\chris\.claude\scheduled-tasks\tb-opus-pickup\SKILL.md` **and** its mirror `Docs/ops/scheduled-task-prompts/tb-opus-pickup.md` in the same change.
 
@@ -203,13 +194,13 @@ Not run. Director-directed tooling plan (Christian, attended chat 2026-10-03); a
 
 - [ ] Headless probe from a worktree shows the denied servers absent and Linear present; turn-1 context recorded before/after
 - [ ] `npm run gate` passes on the branch; docs-only and code fixtures each pick the right track (unit tests)
-- [ ] A commit with a matching receipt completes in < 10 s (timed); a `wip(` commit and a docs-only commit skip tests
+- [ ] `worktree-write-guard.test.ts` passes unmodified through the shim; guard wall time per invocation measured before/after
 - [ ] `tb-opus-pickup` cron re-listed after the update and matching the registry
 - [ ] `npm test`, ratchet, `vite build`, freshness gates green; closing commit carries the close line for THR-1717
 
 ## Coordination block
 
-- **Suggested model:** Opus — edits the hooks every lane commits through.
+- **Suggested model:** Opus — edits the hooks every lane writes through.
 - **Parallel-safe with:** product tickets (no `src/` change).
 - **Mutex with:** THR-1718 (both edit `CLAUDE.md` gate wording); THR-1719 (both edit the pickup prompt and registry).
-- **Files to touch:** `.claude/settings.json`, `.claude/hooks/pre-commit-gate.sh`, `.claude/hooks/pre-push-gate.sh`, `scripts/gate.ts` (new), `scripts/__tests__/gate.test.ts` (new), `package.json`, `Docs/canon/verification-gates.md`, `.claude/skills/pull-work/SKILL.md`, `Docs/ops/scheduled-task-prompts/tb-opus-pickup.md`, `Docs/ops/scheduled-tasks-registry.md`, `CLAUDE.md` (gate pointer line only).
+- **Files to touch:** `.claude/settings.json`, `.claude/hooks/worktree-write-guard.mjs` (new), `.claude/hooks/worktree-write-guard.sh` (shim), `.claude/hooks/pre-commit-gate.sh` / `pre-push-gate.sh` (deleted), `scripts/gate.ts` (new), `scripts/__tests__/gate.test.ts` (new), `package.json`, `Docs/canon/verification-gates.md`, `.claude/skills/pull-work/SKILL.md`, `Docs/ops/scheduled-task-prompts/tb-opus-pickup.md`, `Docs/ops/scheduled-tasks-registry.md`, `CLAUDE.md` (gate pointer line only).
