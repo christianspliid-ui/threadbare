@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-03 22:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-03 23:59 local (21:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -12,7 +12,7 @@ Everything from your four feedback batches is live. The one question is: **playe
 
 ## Also waiting (6)
 
-- **A finished change has been stuck for 17 hours and cannot merge on its own: PR #2180 ("feat(thr-1687): fair own-hex draw for the cap behind CAP_FILL_LOCAL_ORDER (ships 'walk')") has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it.** *— from the armed-PR check* ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Nothing for you to do by hand: a builder merges main in and pushes.
+- **A finished change has been stuck for 18 hours and cannot merge on its own: PR #2180 ("feat(thr-1687): fair own-hex draw for the cap behind CAP_FILL_LOCAL_ORDER (ships 'walk')") has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it.** *— from the armed-PR check* ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Nothing for you to do by hand: a builder merges main in and pushes.
 - **Was the app closed from Thursday ~17:00 to Friday ~13:45?** No lane ran for about 21 hours, and nothing recorded a pause. If you were away or the app was closed, just say so.
 - **The scheduled lanes went silent for 25h (2026-09-29T17:38:06.000Z → 2026-09-30T18:36:30.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.** *— from the lane-silence check* (Tuesday ~19:30 to Wednesday ~20:20 your time.)
 - **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
@@ -32,18 +32,18 @@ Say "veto old banner", "veto spell gifts", "veto first asks" or "veto show the r
 
 ## Queue
 
-**12 jobs ready** (healthy; two more pieces shipped this hour).
+**11 jobs ready** (healthy).
 
-- **Shipped:** [found things in the reward draw](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at) via [#2201](https://github.com/christianspliid-ui/threadbare/pull/2201), and [timed conditions now end on time](https://linear.app/threadbare/issue/THR-1697) via [#2202](https://github.com/christianspliid-ui/threadbare/pull/2202).
+- **Being built now:** [the rival strike encounter](https://linear.app/threadbare/issue/THR-1703/the-rival-strike-has-no-encounter-author-shadowrival-strike-so) — its branch was pushed minutes ago; no pull request yet.
 - **Next up (Urgent):** [The First asks](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her), ready once its veto window closes (~14:50 Sunday); [Show the roll](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice) (High) follows (~20:45 Sunday).
-- **Built, now stuck:** [the ruin-visit fix](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed): [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) now clashes with main (one generated doc) and is not queued to merge; no owner on the board for ~2.5 h. Its code is safe on the pull request. A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, not queued, no owner for ~18 h. The spell-gifts design waits on it. A builder's job.
+- **Built, stuck:** [the ruin-visit fix](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed): [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) clashes with main and is not queued to merge; no owner on the board for ~3.5 h. Its code is safe on the pull request (nothing left uncommitted). A builder's job.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, not queued, no owner for ~19 h (nothing left uncommitted). The spell-gifts design waits on it. A builder's job.
 - **Old jobs at the bottom:** two have sat ready for over a month ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two), [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Neither is blocked; newer work keeps outranking them.
 
 ## Health
 
-- **The heavy simulation tests are red on main** (for ~1.5 h; 4 of the last 5 runs failed). A follow-up fix is owed. A builder's job.
-- **Three pull requests clash with main and cannot merge:** [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw, queued), [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator) and [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) (ruin visit). GitHub has scheduled no checks on #2180. Each needs main merged in and a push. A builder's job.
-- **The simulation is still slower than its weekly norm.** A builder's job: tick cost 144 ms/tick steady, 45% above the 7-day median (100, 119 rows since f0f24999); top phase agent_decision, 532 agents. Name the merges between f0f24999 and b928796a: git log --oneline --merges f0f24999..b928796a
-- **The worktree reaper has 6 worktrees waiting for a decision** (450 worktrees and 305 local branches on disk). That is the reaper's own job; noted for visibility.
+- **The heavy simulation tests are red on main** (~2 h). A follow-up fix is owed. A builder's job.
+- **Three pull requests clash with main and cannot merge:** [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw, queued; GitHub has scheduled no checks on it), [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator) and [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) (ruin visit). Each needs main merged in and a push. A builder's job.
+- **The simulation-speed reading is unreliable this hour.** tick cost 245 ms/tick steady, 143% above the 7-day median (101, 120 rows since f0f24999); top phase agent_decision, 532 agents. Name the merges between f0f24999 and b928796a: git log --oneline --merges f0f24999..b928796a. *Note:* the same commit (b928796a) measured 144 last hour and 294 on a re-run this hour while a build session was active on the machine, so most of this jump is machine load, not code. The underlying ~45% slowdown stands; a builder's job.
+- **The worktree reaper has 6 worktrees waiting for a decision** (451 worktrees and 306 local branches on disk). That is the reaper's own job; noted for visibility.
 - Everything else is green. The live site is serving the latest commit on main (b928796a), and all 11 scheduled tasks are on time.
