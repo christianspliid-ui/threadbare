@@ -14,9 +14,10 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { generateStrategicCandidates, LEAD_SURVEY_CELL_ID } from '../strategicActionCandidates';
 import { scoreUnifiedBoard } from '../decisionBoard';
-import { rerankForAppointmentRegime } from '../appointments';
+import { rerankForAppointmentRegime, waitingTripOverruns } from '../appointments';
 import { CLUE_LEAD_SURVEY_PULL_MULT, CLUE_LEAD_SURVEY_SKIPS_WINDOW } from '../ruins/constants';
 import {
+  APPOINTMENT_HEX_TICKS_PER_HEX,
   APPOINTMENT_DISCOUNT_ON_BOARD,
   APPOINTMENT_OVERRUN_DISCOUNT,
   APPOINTMENT_WAITING_HOLD_ENABLED,
@@ -127,6 +128,15 @@ describe('part 2 — a waiting mortal stays for its appointment', () => {
     expect(kept).toEqual(['local_overrun', 'far_returnable']);
   });
 
+  it('prices a waiting trip there and back at the hex-priced rate, plus its own work', () => {
+    const H = APPOINTMENT_HEX_TICKS_PER_HEX;
+    // Seed 2: one hex out, a 3-tick encounter, 7 ticks left — 3 + 2H > 7 at H = 3.
+    expect(waitingTripOverruns(3, 1, 3 + 2 * H - 1)).toBe(true);
+    expect(waitingTripOverruns(3, 1, 3 + 2 * H)).toBe(false);
+    expect(waitingTripOverruns(50, 0, 1)).toBe(false); // local work stays, whatever it costs
+    expect(waitingTripOverruns(0, Number.NaN, 1000)).toBe(true); // unknown distance is not local
+  });
+
   it('departing still drops every overrunning candidate, local ones included', () => {
     const list = [mk('far_overrun', 5), mk('local_overrun', 0), mk('far_returnable', 2)];
     expect(rerankForAppointmentRegime(list, 'departing', overruns).map(c => c.id)).toEqual(['far_returnable']);
@@ -139,7 +149,7 @@ describe('part 3 — leaning\'s discount reaches the board', () => {
   });
 
   it('the leaning rerank stamps the discount on an overrunning candidate only', () => {
-    const list = [
+    const list: Array<{ id: string; hexDistanceToEntry: number; finalScore: number; appointmentDiscount?: number }> = [
       { id: 'far_overrun', hexDistanceToEntry: 5, finalScore: 1 },
       { id: 'near', hexDistanceToEntry: 1, finalScore: 0.5 },
     ];

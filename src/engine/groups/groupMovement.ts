@@ -34,6 +34,7 @@ import type { AxiologicalProfile } from '../../types/agent';
 import { generateMovementCandidates } from '../movementCandidates';
 import { findShortestPath } from '../pathfinding';
 import { getAgentLocationId } from '../graphQueries';
+import { holdsWaitingMemberAtPlace } from '../appointments';
 import { getGroupLeader, getGroupMembers, isGroupBlessed } from './groupQueries';
 import { anyInFight } from '../fights/fightParticipants';
 import {
@@ -262,6 +263,9 @@ function writeMemberRoute(state: GameState, member: GraphNode, destinationId: st
   const graph = state.graph;
   const fromId = resolveTravelAnchor(graph, member.id);
   if (!fromId || fromId === destinationId) return false;
+  // THR-1686 — a member waiting at its appointment is not walked off on a trip it
+  // cannot be back from; the company goes on without it (same test as the decision hold).
+  if (holdsWaitingMemberAtPlace(state, member.id, destinationId, state.tick)) return false;
 
   let path: ReturnType<typeof findShortestPath> = null;
   try {

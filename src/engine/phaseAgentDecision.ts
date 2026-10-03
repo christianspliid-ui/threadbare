@@ -76,6 +76,7 @@ import {
   readRegimeMemo,
   resolveAppointmentContext,
   rerankForAppointmentRegime,
+  waitingTripOverruns,
   APPOINTMENT_REGIME_MEMO_PROP,
   type AppointmentContext,
 } from './appointments';
@@ -1080,8 +1081,11 @@ export function phaseAgentDecision(
           const there = Number.isFinite(c.hexDistanceToEntry) ? c.hexDistanceToEntry : Infinity;
           return c.entry.totalTickCost + there + onward > budget;
         };
+        // THR-1686 — waiting prices the trip there and back at the hex-priced rate.
+        const waitingOverruns = (c: ScoredCandidate): boolean =>
+          waitingTripOverruns(c.entry.totalTickCost, c.hexDistanceToEntry, budget);
         const rerank = (list: ScoredCandidate[]): ScoredCandidate[] =>
-          rerankForAppointmentRegime(list, regime, overruns);
+          rerankForAppointmentRegime(list, regime, regime === 'waiting' ? waitingOverruns : overruns);
         const hadSelection = decision.selected !== null;
         decision.rankedCandidates = rerank(decision.rankedCandidates);
         decision.topCandidates = rerank(decision.topCandidates);

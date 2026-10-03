@@ -4313,6 +4313,27 @@ first that gates on the site and on the actor's own state rather than planting o
   It backs Law 56 chips (`CHIP_BACKING_EFFECT_KINDS`) and satisfies the `knowledge` consequence
   family. Emits `ruins.clue_sharpened` with `via: 'visit' | 'missed_visit'`.
 
+**The lead survey and the kept visit (THR-1686).** Three rules, none with an authoring field.
+They change how a mortal *chooses*, so authored content needs nothing new:
+
+- **A held lead's survey is not judged by the forecast window.** On the decision board, a candidate
+  that is `executionMode: 'instant'` **and** carries `leadPull` takes advance probability 1 and
+  fit 1, and its entry reads `forecastZone: 'certain'`. A survey has no dice. Every other instant
+  cell still faces the window (kill switch `CLUE_LEAD_SURVEY_SKIPS_WINDOW`).
+- **A mortal `waiting` at an appointment's place stays.** A candidate off its own hex that would
+  outlast the due tick is dropped (`rerankForAppointmentRegime`), the trip there and back priced at
+  `APPOINTMENT_HEX_TICKS_PER_HEX` a hex plus its own ticks (`waitingTripOverruns`). Company travel asks the same
+  question per member (`holdsWaitingMemberAtPlace`, called from `groups/groupMovement.ts`), so a
+  company goes on without a member that is waiting for a meeting. Kill switch:
+  `APPOINTMENT_WAITING_HOLD_ENABLED`.
+- **`leaning`'s overrun discount reaches the board.** It rides on the candidate as
+  `appointmentDiscount` and is multiplied into the encounter entry's score (kill switch
+  `APPOINTMENT_DISCOUNT_ON_BOARD`). Before this it scaled `finalScore`, which the live board never
+  reads.
+
+Inspect: `decision_board_comparison.boardTop[]` (`forecastZone`, `appointmentDiscount`);
+`readers/lead-survey-arms.ts` for the census.
+
 Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI
 `hunts` (founded, tracked, planted / kept / missed with reasons, travel ticks, out-of-scan
 reason-holders); `npm run census:hunts -- --seeds 42,99 --ticks 300` (runs past the CLI's

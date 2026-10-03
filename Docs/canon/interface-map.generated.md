@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 153 |
+| 🟢 LIVE | 154 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **213** |
+| **Total** | **214** |
 
 ## Contracts by producing subsystem
 
@@ -169,6 +169,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `a-concealed-sale-ends-the-company-that-was-sold` | A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused. | property: `hiddenMarks` | Companies & Group Travel | 🟢 LIVE | — |
+| `appointment-discount-reaches-board` | A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly. | function: `appointmentDiscount`, `rerankForAppointmentRegime`, `APPOINTMENT_DISCOUNT_ON_BOARD` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `appointment-pulls-agent-movement` | An encounter ending can bind a mortal to a place by a time (THR-1479). The seed carries an `appointment` block — place, due tick, window, counterparty, missed branch — and the decision phase reads it every tick: slack (due − now − travel) is priced by the movement graph, the mortal *leans* toward the place through a second additive term on the relocation channel while the slack is inside the horizon, and *departs* through a journey candidate scored by `scoreMovementCandidate` and queued through the ordinary `initMovementState` writer once the slack falls under their leave margin (a formula over `courage_prudence` and `loyalty_ambition` that can go negative, so a Renegade chooses to miss). No second movement path; if the board outvotes the promise, `appointment_regime` traces it and nothing is forced. Registered LEAKED-with-ticket at filing: slice 1 lands the primitive and its first user; slice 2 (THR-1518) lands the census that proves a seeded run actually pulls a mortal — the reachability row, proven by a census hit rather than by a gate that reads the code (the THR-1497 lesson). | function: `plantAppointmentPromise`, `agentAppointmentSeeds`, `resolveAppointmentContext`, `computeAppointmentPull`, `appointmentRegime`, `computeAppointmentSlack` | Movement & Colocation | 🟢 LIVE | — |
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `assembleRewardPoolDetailed`, `heldTemplateIdsOf`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
@@ -287,7 +288,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `held-lead-draws-a-survey` | A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. | edge-prop: `knows_clue_of`, `heldLeadRuinIds`, `sharpenClue`, `leadPull` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `held-lead-draws-a-survey` | A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`). | edge-prop: `knows_clue_of`, `heldLeadRuinIds`, `sharpenClue`, `leadPull` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `monster-card-shows-on-lair` | A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does. | function: `buildLairMonsterCardModel`, `readOpponentCard`, `monsterState`, `getAgentInfoCard` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -459,6 +460,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/ambitionTick.ts`
 - **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/spotlightPull.ts` +1 more
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `appointment-discount-reaches-board` — 🟢 LIVE
+
+- **Intent:** A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
+- **UL terms:** *Appointment*, *Encounter*
+- **Module:** `src/engine/appointments.ts`
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/appointments.ts`, `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`
+- **Other hits:** `src/data/movement-content.ts`, `src/engine/encounterScoring.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-10-03: THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on seeds 42 · 99 (1 · 3 decisions), and arms p12 (part 3 off) vs all (on) were identical on seeds 42 · 99 · 4 · 8 — kept visits 2 · 4 · 1 · 2 both ways — so the discount does not lower kept visits (the plan’s keep condition).
 
 ### `appointment-pulls-agent-movement` — 🟢 LIVE
 
@@ -1635,7 +1648,7 @@ exit
 
 ### `held-lead-draws-a-survey` — 🟢 LIVE
 
-- **Intent:** A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it.
+- **Intent:** A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`).
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/strategicActionCandidates.ts`

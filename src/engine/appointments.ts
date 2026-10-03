@@ -68,6 +68,7 @@ import {
   APPOINTMENT_WINDOW_TICKS,
   APPOINTMENT_OVERRUN_DISCOUNT,
   APPOINTMENT_DISCOUNT_ON_BOARD,
+  APPOINTMENT_WAITING_HOLD_ENABLED,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -557,7 +558,8 @@ export interface AppointmentRerankable {
  * - **departing** — an overrunning candidate is dropped.
  * - **waiting** — an overrunning candidate *off the mortal's own hex* is dropped;
  *   local work stays, whatever it costs (THR-1686 part 2). An unknown distance is
- *   not local.
+ *   not local. The caller prices `overruns` for this regime with
+ *   `waitingTripOverruns`.
  *
  * Pure. The caller decides whether `waiting` is held at all
  * (`APPOINTMENT_WAITING_HOLD_ENABLED`).
@@ -578,6 +580,56 @@ export function rerankForAppointmentRegime<C extends AppointmentRerankable>(
         : c))
       .sort((a, b) => b.finalScore - a.finalScore);
   }
-  if (regime === 'waiting') return list.filter(c => !(c.hexDistanceToEntry !== 0 && overruns(c)));
+  if (regime === 'waiting') return list.filter(c => c.hexDistanceToEntry === 0 || !overruns(c));
   return list.filter(c => !overruns(c));
+}
+
+/**
+ * THR-1686 — does a mortal `waiting` at its appointment stay put rather than follow a
+ * company route to `destinationId`?
+ *
+ * Company travel (`groups/groupMovement.ts`) writes every member's route in
+ * `phaseGroups`, outside the decision phase, so the regime block never sees it. On
+ * seed 99 a company walked a waiting surveyor one hex off the ruin it was due at, and
+ * the visit was lost three ticks later. The test is the decision hold's: a trip off the
+ * place's hex whose way there and back does not fit before the due tick. A company
+ * route carries no encounter cost, so the walk is priced the way a hex-priced
+ * appointment is (`APPOINTMENT_HEX_TICKS_PER_HEX` a hex) — at one tick a hex, the
+ * seed-99 trip (one hex, two ticks left) read as returnable and was not held. A trip
+ * it can be back from is not held, and nor is anyone not `waiting`.
+ *
+ * The regime's margin does not matter here — `waiting` is standing on the place's hex,
+ * whatever the margin — so a neutral profile is passed. Fail-soft: no context, no hold;
+ * a destination with no hex is held (staying at the place is what waiting means).
+ */
+export function holdsWaitingMemberAtPlace(
+  state: Pick<GameState, 'pendingEncounterSeeds'> & { graph: WorldGraph },
+  agentId: string,
+  destinationId: string,
+  tick: number,
+): boolean {
+  if (!APPOINTMENT_WAITING_HOLD_ENABLED) return false;
+  if (agentAppointmentSeeds(state, agentId).length === 0) return false;
+  const ctx = resolveAppointmentContext(state, agentId, tick, { courage_prudence: 0, loyalty_ambition: 0 });
+  if (!ctx || ctx.regime !== 'waiting') return false;
+  const destHex = resolveLocationToHex(state.graph, destinationId);
+  if (!destHex) return true;
+  return waitingTripOverruns(0, hexDistance(destHex, ctx.slack.placeHex), ctx.appointment.dueTick - tick);
+}
+
+/**
+ * THR-1686 — would a mortal standing at its appointment's place be back in time from
+ * this trip? Way there and way back are the same `hexesAway`, each hex priced at
+ * `APPOINTMENT_HEX_TICKS_PER_HEX` (the hex-priced appointment's own rate), plus the
+ * work's own `workTicks`. A trip on the place's own hex never overruns (local work
+ * stays, whatever it costs); an unknown distance always does.
+ *
+ * Why not the `departing` test (`totalTickCost + hexes`, one tick a hex): it read a
+ * one-hex encounter with seven ticks of real cost as returnable, and on seed 2 the
+ * waiting surveyor took it and lost the visit. `departing` keeps its own test.
+ */
+export function waitingTripOverruns(workTicks: number, hexesAway: number, ticksLeft: number): boolean {
+  if (hexesAway === 0) return false;
+  if (!Number.isFinite(hexesAway)) return true;
+  return workTicks + 2 * hexesAway * APPOINTMENT_HEX_TICKS_PER_HEX > ticksLeft;
 }
