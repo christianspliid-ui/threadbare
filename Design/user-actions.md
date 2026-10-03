@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 16:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: the Divine Court now fits the screen, sits above the HUD, and stops the clock while open** ([THR-1709](https://linear.app/threadbare/issue/THR-1709)), the seventh round-2 playtest bug fixed. Merged via [#2196](https://github.com/christianspliid-ui/threadbare/pull/2196).
 - **2026-10-03: player text cleaned up** ([THR-1708](https://linear.app/threadbare/issue/THR-1708)): no doubled "the", spell names on the lines that report them, and a nudge only counts as yours when you played it. The sixth round-2 playtest bug fixed. Merged via [#2195](https://github.com/christianspliid-ui/threadbare/pull/2195).
 - **2026-10-03: developer text no longer reaches a player's build** ([THR-1707](https://linear.app/threadbare/issue/THR-1707)), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
 - **2026-10-03: Meet The First now tells one story about one person** ([THR-1712](https://linear.app/threadbare/issue/THR-1712)), the fourth round-2 playtest bug fixed and the High one. Merged via [#2192](https://github.com/christianspliid-ui/threadbare/pull/2192).
@@ -52,7 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: the Threads panel now shows The First right after the bond** ([THR-1704](https://linear.app/threadbare/issue/THR-1704)), the first round-2 playtest bug fixed. Merged this morning.
 - **2026-10-03: cold playtest round 2 is in** ([report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-2.md)): all three new players met and bonded their mortal and called it the best part; the new wall is the mortal’s life playing on autopilot after the bond ([THR-1715](https://linear.app/threadbare/issue/THR-1715), going to design). 13 tickets filed, 9 ready to build.
 - **2026-10-03: a landed Hollow Crown now changes more than the odds** ([THR-1683](https://linear.app/threadbare/issue/THR-1683/a-landed-hollow-crown-changes-nothing-but-the-steps-odds-modifier-only)): a condition that weakens its bearer now reads as harm, with a loss chip. Merged 09:15 via [#2184](https://github.com/christianspliid-ui/threadbare/pull/2184).
-- **2026-10-03: rival strikes now answer nudge pressure** ([THR-1690](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection)): pressure from your nudges can now cross the detection line, and the strike waits until an encounter can carry it. Merged 08:30 via [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182).
 
 ---
 
