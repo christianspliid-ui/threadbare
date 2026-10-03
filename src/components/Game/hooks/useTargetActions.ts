@@ -55,6 +55,10 @@ export function useTargetActions({
       // THR-998: lets each slot carry the difficulty that actually reaches the roll,
       // so the focused card's line tracks the odds instead of the authored price.
       ascendantCastCapabilities: castCapabilityByReach(gameState.graph, gameState.ascendantId),
+      // THR-1700: a non-stacking sustained verb the god already holds here locks
+      // "Already held" instead of offering a cast that would establish nothing.
+      heldControlEffects: gameState.controlEffects,
+      controlOwnerId: gameState.ascendantId,
     });
   }, [
     target,
@@ -65,5 +69,6 @@ export function useTargetActions({
     gameState.graph,
     gameState.ascendantId,
     gameState.unlockedActionIds,
+    gameState.controlEffects,
   ]);
 }

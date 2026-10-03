@@ -14,6 +14,8 @@
  *   5.  Essence gate         — player can afford template.essenceCost
  *   6.  Range gate           — target in range from avatar (if positions available)
  *   7.  Revelation gate      — template.narrativeLayer revealed on target hex (if applicable)
+ *   10. Held lock            — a non-stacking sustained verb the viewer already holds on
+ *                              this target shows locked "Already held" (THR-1700)
  */
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
@@ -38,6 +40,8 @@ import { effectiveCastDifficulty, castForecastProbability } from './playerCastRe
 import { classifyForecastTier } from './encounters/outcomeForecast';
 import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
+import type { ControlEffect } from '../types/controlEffect';
+import { findHeldNonStackingEffect } from './controlEffectSpawn';
 
 /**
  * The hardest step a template can present, with the reach it is rolled in
@@ -130,6 +134,11 @@ export const TARGET_ACTION_CONSTANTS = {
   MAX_SLOTS: 20,
   /** Slot ID prefix for non-intervention target actions */
   SLOT_ID_PREFIX: 'target_action_',
+  /**
+   * Locked reason on a non-stacking sustained card the viewer already holds on
+   * this target (THR-1700). Words, not a number (Law 13).
+   */
+  ALREADY_HELD_REASON: 'Already held',
   /** Default angle step for laying out target_action slots */
   ANGLE_STEP_DEG: 36,
   /** Max range in hexes for local-range target actions (when no delivery info) */
@@ -194,6 +203,19 @@ export interface TargetActionParams {
   graph?: WorldGraph;
   /** The agent whose reputation with the target is checked. See {@link graph}. */
   viewerAgentId?: string;
+  /**
+   * Sustained effects in play (`GameState.controlEffects`) and whose holdings count
+   * as the viewer's (THR-1700) — the ascendant, which is the `ownerId` a player cast
+   * stamps on its effect. Together they drive the held lock: a non-stacking verb
+   * (`NON_STACKING_CONTROL_TEMPLATE_IDS`) already held on this target is shown
+   * locked "Already held", because re-casting it would charge the full price and
+   * establish nothing. Stacking verbs (consecrate) stay castable on purpose — their
+   * per-tick effects add up. Both optional: omit either to skip the lock (fail-open,
+   * like the other viewer-scoped gates).
+   */
+  heldControlEffects?: readonly ControlEffect[];
+  /** Owner whose effects {@link heldControlEffects} locks against. */
+  controlOwnerId?: string;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -211,6 +233,7 @@ interface FilterCounts {
   byUnlock: number;
   byReach: number;
   byReputation: number;
+  byHeld: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -236,6 +259,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     ascendantCastCapabilities,
     graph,
     viewerAgentId,
+    heldControlEffects,
+    controlOwnerId,
   } = params;
 
   const counts: FilterCounts = {
@@ -251,6 +276,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byUnlock: 0,
     byReach: 0,
     byReputation: 0,
+    byHeld: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -426,7 +452,17 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     let available = canAffordEssence && rangeStatus !== 'out_of_range';
     let lockedReason: string | null = null;
 
-    if (!canAffordEssence) {
+    // 10. Held lock (THR-1700) — checked first: when the verb is already held,
+    //     "Already held" is the true reason, whatever the pool or range say.
+    const held = controlOwnerId && template.durationMode === 'sustained'
+      ? findHeldNonStackingEffect(heldControlEffects, template.id, controlOwnerId, target.nodeId)
+      : undefined;
+
+    if (held) {
+      counts.byHeld++;
+      available = false;
+      lockedReason = TARGET_ACTION_CONSTANTS.ALREADY_HELD_REASON;
+    } else if (!canAffordEssence) {
       counts.byEssence++;
       available = false;
       lockedReason = `Not enough ${sphere} essence`;
