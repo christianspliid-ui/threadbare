@@ -147,6 +147,7 @@ export function useNudgeHand(
 
   const availableEssence = phase?.availableEssence ?? 0;
   const remainingEssence = Math.max(0, availableEssence - selectedCost);
+  const budget = useMemo(() => budgetSphereRemaining(phase, selectedIds), [phase, selectedIds]);
 
   const forecast = useMemo((): EncounterStageForecastModel => {
     if (!phase) return { tier: 'uncertain', word: FORECAST_TIER_WORDS.uncertain, probability: 0 };
@@ -160,7 +161,13 @@ export function useNudgeHand(
       // Re-price against the live remainder. A selected card stays interactive
       // so the player can always undo; an unselected one needs its own cost to
       // still fit in what is left after everything else selected.
-      const affordable = selected || card.essenceCost <= remainingEssence + 1e-9;
+      // THR-1706 — a card billed to the budget sphere must fit in *that*
+      // pool. Pricing it against the pooled total let the card read "Mind" and
+      // then spill onto Force at commit when Mind ran short.
+      const billedToBudget = budget !== undefined && card.payingSphere === budget.sphere;
+      const affordable = selected || (billedToBudget
+        ? card.essenceCost <= budget.remaining + 1e-9
+        : card.essenceCost <= remainingEssence + 1e-9);
       const blocked = card.state === 'dimmed' || !affordable;
       return {
         ...card,
@@ -172,7 +179,7 @@ export function useNudgeHand(
           ?? (affordable ? undefined : NUDGE_BLOCKED_REASONS.essence_unavailable),
       };
     });
-  }, [phase, selectedIds, remainingEssence]);
+  }, [phase, selectedIds, remainingEssence, budget]);
 
   return {
     cards,
@@ -182,7 +189,7 @@ export function useNudgeHand(
       ?? { tier: 'uncertain', word: FORECAST_TIER_WORDS.uncertain, probability: 0 },
     selectedCost,
     remainingEssence,
-    budget: budgetSphereRemaining(phase, selectedIds),
+    budget,
     forecastMoved: !!phase && forecast.tier !== phase.baseForecast.tier,
     toggle,
     clear,

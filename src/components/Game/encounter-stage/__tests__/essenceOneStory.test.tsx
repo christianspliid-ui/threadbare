@@ -147,6 +147,32 @@ describe('THR-1706 (4) — the cost row names the sphere that pays', () => {
   });
 });
 
+describe('THR-1706 (4) — a card never names one sphere and charges another', () => {
+  // Review-gate round 1: priced against the pooled total, a Life-billed card
+  // stayed playable with Life empty, and the commit spilled the cost onto Force.
+  function buildLowPrimaryPhase() {
+    return buildNudgePhaseModel({
+      template: TEMPLATE,
+      activeAction: ACTION,
+      step: STEP,
+      graph: buildGraph(),
+      gameState: {
+        ...buildState(true),
+        essencePool: { life: 1, force: 50, darkness: 50 },
+      } as unknown as GameState,
+    })!;
+  }
+
+  it('a Life-billed card dims when Life cannot cover it, whatever the other pools hold', () => {
+    render(<NudgePhaseShell phase={buildLowPrimaryPhase()} onCommit={() => {}} />);
+    const card = screen.getByTestId('nudge-card-count_the_coin');
+    expect(card.getAttribute('data-nudge-state')).toBe('dimmed');
+    expect(card.getAttribute('data-nudge-blocked')).toBe('essence_unavailable');
+    // The Force card pays from Force, which can cover it.
+    expect(screen.getByTestId('nudge-card-lend_force').getAttribute('data-nudge-state')).toBe('playable');
+  });
+});
+
 describe('THR-1706 (2) — the budget line is the paying sphere, not the grand total', () => {
   it('reads the primary pool and names it', () => {
     render(<NudgePhaseShell phase={buildPhase()} onCommit={() => {}} />);
