@@ -3921,9 +3921,11 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/appointments.ts',
     },
     writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
+    // THR-1686: company travel asks the waiting hold per member (`holdsWaitingMemberAtPlace`).
     readSites: [
       'src/engine/encounterScoring.ts',
       'src/engine/phaseAgentDecision.ts',
+      'src/engine/groups/groupMovement.ts',
       'src/engine/__tests__/appointments.test.ts',
       'src/engine/__tests__/undertakingAppointmentPayoff.test.ts',
     ],
@@ -3931,6 +3933,28 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-22',
       evidence:
         'THR-1524 — the census HIT. Shipped by THR-1479 with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain); THR-1518 proved the mechanics on a seeded world through `check:encounter-live` (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken) and then MEASURED the reachability row UNREACHED on every seed — the Crossroads fired once in 1000 ticks and the mortal refused. Two content defects on the parent, both fixed in vertical-slice.ts: (1) `settings: [wayside]` alone is camp | oasis | wilderness, 8 of 974 locations on seed 42 / medium and 5.5% of mortal-ticks (urban 50%, rural 37%, ruin 2.3%, sampled every 10 ticks over 200) — none of the four wayside-only slice encounters fired in 200 ticks; the Crossroads now registers at rural + ruin + wayside with an opening per class. (2) `motivations: [tradition_novelty]` named the fork axis, and `computeDesireScore` sums the SIGNED profile value, so the board handed the scene to Archivists (positive pole, who refuse) and floored Heretics (negative pole, the planting arm) at MINIMUM_DESIRE — 34 of 65 profiled mortals lean novelty and none ever met him; selection moved to the Eye axis (`revelation_discretion`, the scene\'s own reach) and the fork stays on tradition. `npm run check:content-model-census -- --ticks 200 --seed 42 --map medium` now prints `Reachability: HIT` — parents fired 3, 2 planted, 0 kept, 0 missed; seed 99 / 200 ticks: 11 firings, 7 planted, one kept (the Full Moon Collection fired from the kept arm, `spawnedFromSeedId` set); seed 7 / 200 ticks: see the THR-1524 status fragment. Pinned by vertical-slice.test.ts (THR-1524 block): a slice fork whose planting arm is the negative pole may not name that axis in `motivations` — restoring the old axis fails it (falsified 2026-09-22) — and the Crossroads registers past wayside. Not a gate that reads the code: the census counts the seed off `pendingEncounterSeeds` per tick.',
+    },
+  },
+  // -- Appointments -> the decision board (THR-1686, seeded things stay alive, re-plan after S3)
+  // What this row makes impossible: a named discount (`APPOINTMENT_OVERRUN_DISCOUNT`) that
+  // scaled `finalScore` only, which the live board never reads — a promise that did nothing.
+  {
+    id: 'appointment-discount-reaches-board',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly.',
+    ulTerms: ['Appointment', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['appointmentDiscount', 'rerankForAppointmentRegime', 'APPOINTMENT_DISCOUNT_ON_BOARD'],
+      module: 'src/engine/appointments.ts',
+    },
+    writeSites: ['src/engine/appointments.ts', 'src/engine/phaseAgentDecision.ts'],
+    readSites: ['src/engine/decisionBoard.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on 3 decisions on seed 99 and on seeds 1, 2, 3 and 7 (1 · 1 · 3 · 3), and on seeds 42 · 99 · 4 · 8 arms p12 (part 3 off) vs all (on) kept 6 vs 7 visits — the discount does not lower kept visits (the plan’s keep condition).',
     },
   },
   {
@@ -5499,7 +5523,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: RUINS,
     consumerSystem: AMBITIONS,
     intent:
-      "A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it.",
+      "A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`).",
     ulTerms: ['Undertaking', 'Location'],
     mechanism: {
       kind: 'edge-prop',

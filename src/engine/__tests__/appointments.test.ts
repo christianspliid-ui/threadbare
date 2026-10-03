@@ -31,6 +31,7 @@ import {
   breakAppointmentFavour,
   writeAppointmentEvent,
   APPOINTMENT_FAVOUR_PROP,
+  holdsWaitingMemberAtPlace,
   type AppointmentContext,
 } from '../appointments';
 import {
@@ -336,5 +337,41 @@ describe('describeAppointments — the readout every surface reads', () => {
     expect(row.regime).toBe('far');
     expect(row.broken).toBe(true);
     expect(describeAppointments(state, () => NEUTRAL, 'actor-stranger')).toEqual([]);
+  });
+});
+
+// THR-1686 — company travel writes member routes outside the decision phase, so the
+// waiting hold has to be asked there too (seed 99: a company walked a waiting surveyor
+// off the ruin it was due at).
+describe('holdsWaitingMemberAtPlace — the company leaves a waiting member behind', () => {
+  // The hero stands at loc-far, the place; loc-mid is 3 hexes off, loc-home 6.
+  const waitingAtFar = (dueTick: number) => {
+    const graph = buildGraph();
+    graph.removeEdge('hero_loc');
+    graph.addEdge({ id: 'hero_at_far', source: 'actor-hero', target: 'loc-far', type: 'located_at', properties: {} });
+    return { graph, pendingEncounterSeeds: [seedWith(appointmentAt('loc-far', dueTick))] };
+  };
+
+  it('holds a waiting member from a trip it cannot be back from by the due tick', () => {
+    // 3 hexes out and 3 back at APPOINTMENT_HEX_TICKS_PER_HEX (3) is 18 > 4 ticks left.
+    expect(holdsWaitingMemberAtPlace(waitingAtFar(54), 'actor-hero', 'loc-mid', 50)).toBe(true);
+    // One hex with two ticks left — the seed-99 shape — is held too.
+    const state = waitingAtFar(52);
+    state.graph.addNode({ id: 'loc-next', type: 'location', name: 'Next door', properties: { hexCol: 5, hexRow: 0, locationSubtype: 'hamlet', locationType: 'settlement' } });
+    expect(holdsWaitingMemberAtPlace(state, 'actor-hero', 'loc-next', 50)).toBe(true);
+  });
+  it('lets a waiting member go on a trip it can be back from', () => {
+    expect(holdsWaitingMemberAtPlace(waitingAtFar(80), 'actor-hero', 'loc-mid', 50)).toBe(false);
+  });
+  it('never holds a trip that stays on the place hex', () => {
+    const state = waitingAtFar(51);
+    state.graph.addNode({ id: 'place-inn', type: 'location', name: 'The Inn', properties: { parentLocationId: 'loc-far', sublocationTypeId: 'inn' } });
+    expect(holdsWaitingMemberAtPlace(state, 'actor-hero', 'place-inn', 50)).toBe(false);
+  });
+  it('does not hold a member who is not waiting, or who holds nothing', () => {
+    const graph = buildGraph(); // the hero is at loc-home, far from loc-far
+    const away = { graph, pendingEncounterSeeds: [seedWith(appointmentAt('loc-far', 54))] };
+    expect(holdsWaitingMemberAtPlace(away, 'actor-hero', 'loc-mid', 50)).toBe(false);
+    expect(holdsWaitingMemberAtPlace({ graph, pendingEncounterSeeds: [] }, 'actor-hero', 'loc-mid', 50)).toBe(false);
   });
 });
