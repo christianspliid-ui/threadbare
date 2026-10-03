@@ -79,6 +79,26 @@ describe('THR-1710 — the avatar is read as the player\'s own shape', () => {
     expect(unthreadedAgentTierName(STRANGER, null)).toBe(TIER_NAMES[0]);
   });
 
+  it('the thread panel shows the avatar\'s Intelligence section; a tier-0 stranger\'s stays hidden', () => {
+    const graph = buildGraph();
+    const node = (id: string, name: string) => ({
+      id, name, tier: 0, tierName: unthreadedAgentTierName(id, AVATAR), category: 'agent',
+      threadEdgeId: '', attentionMode: 'auto_resolve', courtPosition: null,
+      locationName: 'Ashvale', activityLabel: 'Unknown',
+    }) as never;
+    const avatarCard = getAgentInfoCard(graph, AVATAR, ASCENDANT, resolveCardKnowledgeLevel(stateFor(graph), AVATAR, false));
+    const { unmount } = render(
+      <ThreadDetailView node={node(AVATAR, 'Vessane')} agentInfoCard={avatarCard} graph={graph} intelligenceRecords={[]} onClose={() => {}} onViewProfile={() => {}} />,
+    );
+    expect(screen.queryByText('Intelligence')).not.toBeNull();
+    unmount();
+    const strangerCard = getAgentInfoCard(graph, STRANGER, ASCENDANT, resolveCardKnowledgeLevel(stateFor(graph), STRANGER, false));
+    render(
+      <ThreadDetailView node={node(STRANGER, 'Kael')} agentInfoCard={strangerCard} graph={graph} intelligenceRecords={[]} onClose={() => {}} onViewProfile={() => {}} />,
+    );
+    expect(screen.queryByText('Intelligence')).toBeNull();
+  });
+
   it('the thread detail badge names the avatar as the player\'s shape, not "Unaware"', () => {
     render(
       <ThreadDetailView

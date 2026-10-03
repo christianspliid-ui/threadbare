@@ -728,7 +728,10 @@ function AgentDetailBody({
     [intelligenceRecords, node.id, graph, currentTick, worldVersion],
   );
 
-  const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER;
+  // A mortal whose card already reads at `transparent` is no stranger, whatever
+  // its thread tier — the god's own avatar has no thread edge (tier 0) but is
+  // always read at `transparent` (THR-1710), as is anyone under omniscience.
+  const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER && agentInfoCard?.knowledgeLevel !== 'transparent';
 
   if (agentInfoCard) {
     return (
