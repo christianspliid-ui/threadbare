@@ -5139,7 +5139,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             <ActionDrawer
               open={drawerOpen}
               slots={wheelSlots}
-              targetName={selectedRetinueAgent?.name ?? ''}
+              // THR-1705 — any selected mortal, not only a retinue member: the
+              // drawer names who a cast will hit, and most targets are strangers.
+              targetName={selectedRetinueAgent?.name ?? gameState.graph.getNode(selectedAgentId)?.name ?? ''}
               targetLabel={selectedRetinueAgent?.tierName ?? ''}
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
@@ -5252,7 +5254,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       onClose={handleHexDetailClose}
                       onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
-                      onAgentClick={handleAgentSelect}
+                      // THR-1705 — the same opener the map and the Hex Chronicle use.
+                      // `handleAgentSelect` alone moved the cast target and opened the
+                      // drawer but set no thread node, so the row "did nothing" while a
+                      // later cast quietly landed on the mortal clicked here.
+                      onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                       onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
                   )}
