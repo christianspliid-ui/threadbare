@@ -5,6 +5,8 @@
 > **Status:** Active
 > **Purpose:** Defines what Threadbearer is supposed to *feel like* to play — the core fantasy, the engagement loop, the emotional architecture. Every feature design must serve the principles in this document.
 
+> **lint_plan_doc:** exempt — standing foundational reference (a source of `Docs/authoring-brief.md` Section C), not a dated plan doc; it proposes no work, so it carries no pillars, constants table or coordination block. Marked by THR-1695.
+
 ---
 
 ## The Core Fantasy
