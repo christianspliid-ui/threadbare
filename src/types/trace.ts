@@ -1805,6 +1805,8 @@ export interface TargetActionFilterTrace extends TraceBase {
   filteredByRange: number;
   /** Templates hidden by the reach gate (THR-503). Optional — older traces omit it. */
   filteredByReach?: number;
+  /** Cards locked "Already held" by the held lock (THR-1700). Optional — older traces omit it. */
+  lockedByHeld?: number;
   slotsGenerated: number;
 }
 

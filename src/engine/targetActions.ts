@@ -14,11 +14,13 @@
  *   5.  Essence gate         — player can afford template.essenceCost
  *   6.  Range gate           — target in range from avatar (if positions available)
  *   7.  Revelation gate      — template.narrativeLayer revealed on target hex (if applicable)
+ *   10. Held lock            — a non-stacking sustained verb the viewer already holds on
+ *                              this target shows locked "Already held" (THR-1700)
  */
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
 import type { WheelSlot } from './wheel';
-import type { UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
+import type { UnifiedAction, UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
 import type { ReachDomain } from '../types/traits';
@@ -38,6 +40,8 @@ import { effectiveCastDifficulty, castForecastProbability } from './playerCastRe
 import { classifyForecastTier } from './encounters/outcomeForecast';
 import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
+import type { ControlEffect } from '../types/controlEffect';
+import { findHeldNonStackingEffect, findPendingNonStackingCast } from './controlEffectSpawn';
 
 /**
  * The hardest step a template can present, with the reach it is rolled in
@@ -130,6 +134,11 @@ export const TARGET_ACTION_CONSTANTS = {
   MAX_SLOTS: 20,
   /** Slot ID prefix for non-intervention target actions */
   SLOT_ID_PREFIX: 'target_action_',
+  /**
+   * Locked reason on a non-stacking sustained card the viewer already holds on
+   * this target (THR-1700). Words, not a number (Law 13).
+   */
+  ALREADY_HELD_REASON: 'Already held',
   /** Default angle step for laying out target_action slots */
   ANGLE_STEP_DEG: 36,
   /** Max range in hexes for local-range target actions (when no delivery info) */
@@ -194,6 +203,27 @@ export interface TargetActionParams {
   graph?: WorldGraph;
   /** The agent whose reputation with the target is checked. See {@link graph}. */
   viewerAgentId?: string;
+  /**
+   * Sustained effects in play (`GameState.controlEffects`) and whose holdings count
+   * as the viewer's (THR-1700) — the ascendant, which is the `ownerId` a player cast
+   * stamps on its effect. Together they drive the held lock: a non-stacking verb
+   * (`NON_STACKING_CONTROL_TEMPLATE_IDS`) already held on this target is shown
+   * locked "Already held", because re-casting it would charge the full price and
+   * establish nothing. Stacking verbs (consecrate) stay castable on purpose — their
+   * per-tick effects add up. Both optional: omit either to skip the lock (fail-open,
+   * like the other viewer-scoped gates).
+   */
+  heldControlEffects?: readonly ControlEffect[];
+  /** Owner whose effects {@link heldControlEffects} locks against. */
+  controlOwnerId?: string;
+  /**
+   * Actions in play (`GameState.unifiedActions`). An unresolved cast of the same
+   * non-stacking verb by {@link controlOwnerId} on this target also locks "Already
+   * held" — its essence is already paid and its effect is on the way, so a second
+   * cast in the resolution window would be refused at spawn after charging full
+   * price (THR-1700 review gate). Optional; omit to skip the in-flight half.
+   */
+  pendingActions?: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[];
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -211,6 +241,7 @@ interface FilterCounts {
   byUnlock: number;
   byReach: number;
   byReputation: number;
+  byHeld: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -236,6 +267,9 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     ascendantCastCapabilities,
     graph,
     viewerAgentId,
+    heldControlEffects,
+    controlOwnerId,
+    pendingActions,
   } = params;
 
   const counts: FilterCounts = {
@@ -251,6 +285,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byUnlock: 0,
     byReach: 0,
     byReputation: 0,
+    byHeld: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -426,7 +461,19 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     let available = canAffordEssence && rangeStatus !== 'out_of_range';
     let lockedReason: string | null = null;
 
-    if (!canAffordEssence) {
+    // 10. Held lock (THR-1700) — checked first: when the verb is already held,
+    //     "Already held" is the true reason, whatever the pool says. (The card
+    //     face still leads with range when out of range — actionBlockedReason.)
+    const held = controlOwnerId && template.durationMode === 'sustained'
+      ? (findHeldNonStackingEffect(heldControlEffects, template.id, controlOwnerId, target.nodeId)
+        ?? findPendingNonStackingCast(pendingActions, template.id, controlOwnerId, target.nodeId))
+      : undefined;
+
+    if (held) {
+      counts.byHeld++;
+      available = false;
+      lockedReason = TARGET_ACTION_CONSTANTS.ALREADY_HELD_REASON;
+    } else if (!canAffordEssence) {
       counts.byEssence++;
       available = false;
       lockedReason = `Not enough ${sphere} essence`;
@@ -491,7 +538,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     });
   }
 
-  if (counts.byUnlock > 0 || counts.byReach > 0) {
+  // THR-1700: a held lock also emits, so "why is this card locked?" has a trace.
+  if (counts.byUnlock > 0 || counts.byReach > 0 || counts.byHeld > 0) {
     emitTrace({
       category: 'target_action_filter',
       summary: 'action.gate.unlock_filter',
@@ -507,6 +555,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       filteredByEssence: counts.byEssence,
       filteredByRange: counts.byRange,
       filteredByReach: counts.byReach,
+      lockedByHeld: counts.byHeld,
       slotsGenerated: slots.length,
     });
   }
