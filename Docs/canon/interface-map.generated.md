@@ -1652,10 +1652,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/strategicActionCandidates.ts`
-- **Production hits:** 25 total — 3 write, 3 read, 19 unclassified
+- **Production hits:** 26 total — 3 write, 3 read, 20 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/strategic-packs/wandererStrategicPack.ts`, `src/data/undertaking-kinds.ts` +14 more
+- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/strategic-packs/wandererStrategicPack.ts` +15 more
 - **Verdict:** Verified 2026-09-29: THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.
 
 ### `held-town-affinity-on-the-board` — 🟢 LIVE
@@ -2501,10 +2501,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/ruins/leadVisit.ts`
-- **Production hits:** 28 total — 3 write, 2 read, 23 unclassified
+- **Production hits:** 29 total — 3 write, 2 read, 24 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts`, `src/data/encounters/ruin-lead-cold.ts` +18 more
+- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts` +19 more
 - **Verdict:** Verified 2026-09-29: THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply).
 
 ### `t1-undertaking-objects-feed-existing-economies` — 🟢 LIVE
@@ -2513,10 +2513,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 113 total — 2 write, 4 read, 107 unclassified
+- **Production hits:** 114 total — 2 write, 4 read, 108 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts`, `src/components/Game/NotableLine.tsx` +102 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +103 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
