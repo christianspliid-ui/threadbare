@@ -199,7 +199,7 @@ import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { bondFirstFromMeeting } from './meetingBond';
 import { useNotifications } from './hooks/useNotifications';
-import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
+import { useInterruptAutoPause, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
@@ -376,6 +376,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
+
+  // THR-1711 (6): the interrupt auto-pause is declared far below (it reads the
+  // interrupt registry), but the play toggle and the arrival pause are wired
+  // above it. This ref hands them its handle, so a toggle pressed while an
+  // interrupt holds the clock changes the state the clock returns to, instead
+  // of flipping `running` and being undone on close.
+  const interruptHoldRef = useRef<InterruptAutoPauseHandle | null>(null);
+  const handleToggleRunningRespectingHold = useCallback(() => {
+    if (interruptHoldRef.current?.toggleIfHeld()) return;
+    handleToggleRunning();
+  }, [handleToggleRunning]);
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -666,7 +677,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       if (processedArrivalEventsRef.current.has(evt.id)) continue;
       processedArrivalEventsRef.current.add(evt.id);
 
-      setRunning(false);
+      // THR-1711: while an interrupt holds the clock, pause the state it returns to.
+      if (!interruptHoldRef.current?.pauseIfHeld()) setRunning(false);
       handlePushToast({
         id: `toast_arrival_${evt.id}`,
         message: evt.message,
@@ -1764,7 +1776,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useTopBarHotkeys({
     running,
     speed,
-    onToggle: handleToggleRunning,
+    onToggle: handleToggleRunningRespectingHold,
     onSpeedChange: setSpeed,
     onStep: doTick,
     onMoveClick: handleAvatarMoveClick,
@@ -4454,6 +4466,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running,
     setRunning,
   });
+  useEffect(() => {
+    interruptHoldRef.current = interruptAutoPause;
+  }, [interruptAutoPause]);
 
   // ── Moment queue consumer (THR-1299 slice 3) ──
   // Pops the oldest unacknowledged interrupt-tier record into the slot when nothing
@@ -4797,9 +4812,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         gameState={gameState}
         seasonName={seasonName}
         year={year}
-        running={running}
+        // THR-1711: while an interrupt holds the clock, show the state it returns
+        // to — that is what the button now toggles — and label it as held.
+        running={interruptAutoPause.heldRunning ?? running}
+        clockHeld={interruptAutoPause.heldRunning !== null}
         speed={speed}
-        handleToggleRunning={handleToggleRunning}
+        handleToggleRunning={handleToggleRunningRespectingHold}
         doTick={doTick}
         setSpeed={setSpeed}
         attentionPool={attentionPool}

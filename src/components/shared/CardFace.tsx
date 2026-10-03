@@ -329,6 +329,9 @@ function cardTint(selected: boolean): string {
   return selected ? 'rgb(var(--veil-gold-rgb) / 0.12)' : 'rgba(255, 255, 255, 0.02)';
 }
 
+/** Hit box of the codex info mark beside a card's name (THR-1711). */
+const CARD_CODEX_MARK_HIT_PX = 20;
+
 /** The resting edge every untinted card wears. */
 const RESTING_BORDER = 'rgb(var(--veil-gold-rgb) / 0.18)';
 
@@ -527,50 +530,58 @@ export function CardFace({
         </div>
 
         {/* ── Title ───────────────────────────────────────────── */}
-        {model.onOpenName ? (
-          // Law 21: a named concept reaches its page. Rendered as a span with
-          // button semantics rather than a nested <button>, which is invalid
-          // inside the card's own button element.
+        {/* THR-1711 (2): the name is part of the card, so clicking it selects the
+            card like every other part of it. The codex page (Law 21) is reached
+            from a small info mark beside the name instead — before this, the
+            whole title was the codex link and swallowed the select click.
+            A span with button semantics rather than a nested <button>, which is
+            invalid inside the card's own button element. */}
+        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span
-            role="link"
-            tabIndex={0}
-            data-testid={`${p}-name-link-${id}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              model.onOpenName?.();
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-sm)',
+              lineHeight: 1.25,
+              color: model.selected ? GOLD : 'var(--veil-text-bright)',
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+          >
+            {model.name}
+          </span>
+          {model.onOpenName && (
+            <span
+              role="link"
+              tabIndex={0}
+              aria-label={`Open ${model.name} in the codex`}
+              title="Open in the codex"
+              data-testid={`${p}-name-link-${id}`}
+              onClick={(e) => {
                 e.stopPropagation();
                 model.onOpenName?.();
-              }
-            }}
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
-              lineHeight: 1.25,
-              color: model.selected ? GOLD : 'var(--veil-text-bright)',
-              textDecoration: 'underline',
-              textDecorationColor: 'rgb(var(--veil-gold-rgb) / 0.35)',
-              textUnderlineOffset: 2,
-              cursor: 'pointer',
-            }}
-          >
-            {model.name}
-          </span>
-        ) : (
-          <span
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
-              lineHeight: 1.25,
-              color: model.selected ? GOLD : 'var(--veil-text-bright)',
-            }}
-          >
-            {model.name}
-          </span>
-        )}
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  model.onOpenName?.();
+                }
+              }}
+              className="hover:brightness-125 transition-[filter]"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                minWidth: CARD_CODEX_MARK_HIT_PX,
+                minHeight: CARD_CODEX_MARK_HIT_PX,
+                fontSize: 'var(--text-xs)',
+                color: 'rgb(var(--veil-gold-rgb) / 0.75)',
+                cursor: 'pointer',
+              }}
+            >
+              <span aria-hidden="true">ⓘ</span>
+            </span>
+          )}
+        </span>
 
         {/* ── Alternate costs — a card paid for outside the pool says so ── */}
         {model.costChannels && model.costChannels.length > 0 && (

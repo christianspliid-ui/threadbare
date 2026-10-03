@@ -33,6 +33,8 @@ export interface GameViewTopBarProps {
   seasonName: string;
   year: number;
   running: boolean;
+  /** True while an interrupt holds the clock; `running` is then the state it returns to (THR-1711). */
+  clockHeld?: boolean;
   speed: number;
   handleToggleRunning: () => void;
   doTick: () => void;
@@ -98,6 +100,7 @@ export function GameViewTopBar({
   seasonName,
   year,
   running,
+  clockHeld = false,
   speed,
   handleToggleRunning,
   doTick,
@@ -164,6 +167,7 @@ export function GameViewTopBar({
             season={seasonName}
             year={year}
             running={running}
+            held={clockHeld}
             speed={speed}
             onToggle={handleToggleRunning}
             onStep={doTick}

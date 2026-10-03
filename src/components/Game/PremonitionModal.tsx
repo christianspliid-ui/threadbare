@@ -88,6 +88,9 @@ const SUBJECT_PORTRAIT_PX = 84;
 /** Minimum hit area for the name control (Law 46). */
 const SUBJECT_NAME_MIN_HIT_PX = 24;
 
+/** Escape / backdrop are not a decline (THR-1711) — the decline button is the only exit. */
+const IGNORE_IMPLICIT_CLOSE = (): void => {};
+
 // ─── Helpers ────────────────────────────────────────────────────
 
 function getSphereColor(sphere: SphereName | undefined): string {
@@ -223,7 +226,11 @@ export function PremonitionModal({
   const dismissText = isWhisper ? 'Let the dream fade' : 'Release your hold \u2014 let them choose';
 
   return (
-    <Modal open={open} onClose={onDismiss} maxWidth={520} aria-label={headerText}>
+    // THR-1711 (1): Escape and a backdrop click do NOT decline. A premonition is a
+    // one-shot choice — `handlePremonitionDismiss` drops it from the queue for good —
+    // and Escape is the key the player presses to close the action drawer under it.
+    // Only the explicit decline button below declines.
+    <Modal open={open} onClose={IGNORE_IMPLICIT_CLOSE} maxWidth={520} aria-label={headerText}>
       <div
         className="rounded-lg overflow-hidden"
         style={{
@@ -349,6 +356,7 @@ export function PremonitionModal({
           <button
             className="text-xs hover:brightness-125 transition-[filter] cursor-pointer bg-transparent border-none"
             style={{ color: dimText(isWhisper) }}
+            data-testid="premonition-dismiss"
             onClick={onDismiss}
           >
             {dismissText}

@@ -211,10 +211,15 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       [armedSlotId, handCards],
     );
 
-    /** Arm a card (or disarm it, if it was already the armed one). */
+    /**
+     * Arm a card. Re-clicking the armed card keeps it armed (THR-1711): the setup
+     * screens teach "click again to choose", so a second click that silently
+     * disarmed read as the card refusing to select. Escape disarms; clicking a
+     * different card re-arms onto that one.
+     */
     const handleCardClick = useCallback((slotId: string) => {
       if (playingCardId) return;
-      setArmedSlotId(prev => (prev === slotId ? null : slotId));
+      setArmedSlotId(slotId);
     }, [playingCardId]);
 
     /** Fire the armed card. */

@@ -17,6 +17,12 @@ interface SimulationControlsProps {
   onStep: () => void;
   onSpeedChange: (speed: number) => void;
   compact?: boolean;
+  /**
+   * True while an interrupt holds the clock (THR-1711). `running` is then the
+   * state the clock returns to on close, not the frozen live clock, so the button
+   * shows what a press will do; the status line says the world is held.
+   */
+  held?: boolean;
 }
 
 export const SPEED_STEPS = [1, 2, 3, 5, 10, 20];
@@ -27,7 +33,7 @@ const SEASON_ICONS: Record<string, string> = {
 
 export function SimulationControls({
   season, year, running, speed,
-  onToggle, onStep, onSpeedChange, compact,
+  onToggle, onStep, onSpeedChange, compact, held = false,
 }: SimulationControlsProps) {
   function speedDown() {
     const idx = SPEED_STEPS.indexOf(speed);
@@ -42,7 +48,9 @@ export function SimulationControls({
   }
 
   if (compact) {
-    const statusText = running ? `running ×${speed}` : 'paused';
+    const statusText = held
+      ? (running ? 'held · runs on after' : 'held · stays paused')
+      : running ? `running ×${speed}` : 'paused';
     return (
       <div className="topbar-tier">
         <span className="topbar-section-label">Time</span>
