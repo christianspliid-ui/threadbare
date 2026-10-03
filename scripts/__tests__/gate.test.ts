@@ -17,6 +17,8 @@ import {
   planGates,
   renderSummary,
   tailLines,
+  warnPlanDocLint,
+  workingTreeContribution,
   type GateOptions,
 } from '../gate.ts';
 
@@ -124,5 +126,48 @@ describe('verdict output', () => {
 
   it('tails the last non-empty lines of a log', () => {
     expect(tailLines('a\r\nb\nc\n\n\n', 2)).toEqual(['b', 'c']);
+  });
+
+  it('labels an advisory finding WARN without failing the gate', () => {
+    const plan = planGates(['Docs/plans/2026-10-04-x.md'], TRACK);
+    const lint = plan.stages[0].find((gate) => gate.name === 'plan-doc-lint')!;
+    const text = renderSummary(
+      plan,
+      [{ gate: lint, ok: true, seconds: 1, log: '.cache/gate/plan-doc-lint.log', warning: '2 lint error(s)' }],
+      1,
+    );
+    expect(text).toMatch(/WARN {2}plan-doc-lint +1s {2}→ 2 lint error\(s\)/);
+    expect(text).toContain('gate: PASS with 1 warning(s)');
+  });
+});
+
+describe('plan-doc lint is advisory but visible', () => {
+  it('counts [ERROR] lines — the lint exits 0 without --strict, so its output is the only signal', () => {
+    const output = '[ERROR] done-when Docs/plans/x.md:1 Missing\n  [ERROR] wiring Docs/plans/x.md:1 Missing\n[WARN] blast-radius\n';
+    expect(warnPlanDocLint(output)).toMatch(/^2 lint error\(s\)/);
+    expect(warnPlanDocLint('lint:plan-doc passed (no findings).')).toBeNull();
+  });
+
+  it('is attached to the plan-doc-lint gate as a warning, never a failure', () => {
+    const lint = planGates(['Docs/plans/2026-10-04-x.md'], TRACK).stages[0].find((g) => g.name === 'plan-doc-lint');
+    expect(lint?.warn).toBe(warnPlanDocLint);
+    expect(lint?.check).toBeUndefined();
+  });
+});
+
+describe('workingTreeContribution', () => {
+  it('drops the harness-rewritten local settings file, in either slash form', () => {
+    expect(
+      workingTreeContribution(['.claude/settings.local.json', '.claude\\settings.local.json', 'Docs/plans/a.md']),
+    ).toEqual(['Docs/plans/a.md']);
+  });
+
+  it('keeps the classification docs-only when only the local settings file is dirty', () => {
+    const files = [...['Docs/plans/a.md'], ...workingTreeContribution(['.claude/settings.local.json'])];
+    expect(planGates(files, TRACK).track).toBe('docs-only');
+  });
+
+  it('keeps the checked-in project settings — a real config change', () => {
+    expect(workingTreeContribution(['.claude/settings.json'])).toEqual(['.claude/settings.json']);
   });
 });

@@ -100,6 +100,12 @@ export interface GateSpec {
    * For gates whose exit code cannot carry the verdict — see {@link checkCliSmoke}.
    */
   check?: (output: string) => string | null;
+  /**
+   * Advisory: findings in a run that exited 0 and passed `check`. The gate stays
+   * green but the verdict line reads WARN and the log tail is printed, so an
+   * advisory tool's findings reach the session instead of an unread log.
+   */
+  warn?: (output: string) => string | null;
 }
 
 export interface GatePlan {
@@ -129,6 +135,32 @@ export interface GateResult {
   ok: boolean;
   seconds: number;
   log: string;
+  /** Set when an advisory `warn` judge found something; `ok` stays true. */
+  warning?: string;
+}
+
+/**
+ * `lint:plan-doc` is advisory (verification-gates.md step 5) and exits 0 without
+ * `--strict` however many errors it prints, so its exit code says nothing. Its
+ * `[ERROR]` lines become a WARN verdict rather than a FAIL — the gate must not
+ * make blocking what the policy keeps advisory, nor hide it.
+ */
+export function warnPlanDocLint(output: string): string | null {
+  const errors = output.split(/\r?\n/).filter((line) => /^\[ERROR\]/.test(line.trim())).length;
+  return errors > 0 ? `${errors} lint error(s) — advisory (step 5); fix them or say why not` : null;
+}
+
+/**
+ * Tracked files the harness rewrites locally and sessions never commit. A working-
+ * tree edit to one must not move the track: `.claude/settings.local.json` is rewritten
+ * whenever a permission grant is saved, and it would turn a docs-only branch into a
+ * code diff that CI (which sees only commits) classifies as docs-only.
+ */
+export const LOCAL_ONLY_PATHS: readonly string[] = [".claude/settings.local.json"];
+
+/** Pure: the working-tree paths that count toward the classification. */
+export function workingTreeContribution(paths: readonly string[]): string[] {
+  return paths.filter((file) => !LOCAL_ONLY_PATHS.includes(file.replaceAll("\\", "/")));
 }
 
 export function isEnginePath(file: string): boolean {
@@ -188,7 +220,11 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
     ];
     const planDocs = files.filter((file) => /^Docs\/(plans|audits)\/.+\.md$/.test(file.replaceAll("\\", "/")));
     if (planDocs.length > 0) {
-      docs.push({ name: "plan-doc-lint", command: `npm run lint:plan-doc -- ${planDocs.join(" ")}` });
+      docs.push({
+        name: "plan-doc-lint",
+        command: `npm run lint:plan-doc -- ${planDocs.join(" ")}`,
+        warn: warnPlanDocLint,
+      });
     }
     stages.push(docs);
   }
@@ -206,13 +242,16 @@ export function tailLines(text: string, count: number): string[] {
 /** Pure: the verdict block a session pastes as evidence. */
 export function renderSummary(plan: GatePlan, results: readonly GateResult[], wallSeconds: number): string {
   const width = Math.max(...results.map((result) => result.gate.name.length), 4);
-  const lines = results.map(
-    (result) =>
-      `  ${result.ok ? "PASS" : "FAIL"}  ${result.gate.name.padEnd(width)}  ${String(result.seconds).padStart(4)}s` +
-      (result.ok ? "" : `  → ${result.log}`),
-  );
+  const lines = results.map((result) => {
+    const label = !result.ok ? "FAIL" : result.warning ? "WARN" : "PASS";
+    const row = `  ${label}  ${result.gate.name.padEnd(width)}  ${String(result.seconds).padStart(4)}s`;
+    if (!result.ok) return `${row}  → ${result.log}`;
+    return result.warning ? `${row}  → ${result.warning} (${result.log})` : row;
+  });
   const failed = results.filter((result) => !result.ok).length;
-  const verdict = failed === 0 ? "PASS" : `FAIL (${failed} of ${results.length})`;
+  const warned = results.filter((result) => result.ok && result.warning).length;
+  const verdict =
+    failed > 0 ? `FAIL (${failed} of ${results.length})` : warned > 0 ? `PASS with ${warned} warning(s)` : "PASS";
   return [
     ...lines,
     `gate: ${verdict} — track=${plan.track} engine=${plan.engine ? "yes" : "no"} — ${wallSeconds}s wall — logs in ${GATE_LOG_DIR}/`,
@@ -237,21 +276,27 @@ function git(args: readonly string[]): string[] {
 
 /**
  * Everything the branch changes: committed range against `origin/main`, plus the
- * working tree (tracked edits and untracked files) — a gate run before the first
- * commit must still see the change. Returns null when `origin/main` is unreachable;
- * the caller then forces the code track, the expensive and safe direction.
+ * working tree (tracked edits and untracked files, minus {@link LOCAL_ONLY_PATHS}) —
+ * a gate run before the first commit must still see the change. The two halves are
+ * read independently: when `origin/main` is unreachable the working tree still
+ * counts (so an uncommitted engine edit still owes the engine gates), and the caller
+ * forces the code track — the expensive and safe direction.
  */
-function changedFiles(): string[] | null {
+function changedFiles(): { files: string[]; baseReachable: boolean } {
+  const files = new Set<string>();
+  let baseReachable = true;
   try {
-    const files = new Set<string>([
-      ...git(["diff", "--name-only", "origin/main...HEAD"]),
-      ...git(["diff", "--name-only", "HEAD"]),
-      ...git(["ls-files", "--others", "--exclude-standard"]),
-    ]);
-    return [...files].sort();
+    for (const file of git(["diff", "--name-only", "origin/main...HEAD"])) files.add(file);
   } catch {
-    return null;
+    baseReachable = false;
   }
+  try {
+    const working = [...git(["diff", "--name-only", "HEAD"]), ...git(["ls-files", "--others", "--exclude-standard"])];
+    for (const file of workingTreeContribution(working)) files.add(file);
+  } catch {
+    // Fail-soft: the committed range alone still classifies the branch.
+  }
+  return { files: [...files].sort(), baseReachable };
 }
 
 function runGate(gate: GateSpec, logDir: string): Promise<GateResult> {
@@ -284,20 +329,29 @@ function runGate(gate: GateSpec, logDir: string): Promise<GateResult> {
       out.write(`gate: \`${gate.command}\` failed to start: ${String(error)}\n`);
     });
     child.on("close", (code) => {
-      if (code !== 0 || !gate.check) {
+      if (code !== 0 || (!gate.check && !gate.warn)) {
         finish(code === 0);
         return;
       }
       // The log stream may still be flushing; judge the output once it is on disk.
       out.end(() => {
-        let reason: string | null;
+        let reason: string | null = null;
+        let warning: string | null = null;
         try {
-          reason = gate.check!(fs.readFileSync(log, "utf8"));
+          const output = fs.readFileSync(log, "utf8");
+          reason = gate.check?.(output) ?? null;
+          if (reason === null) warning = gate.warn?.(output) ?? null;
         } catch (error) {
           reason = `could not read the output to judge it: ${String(error)}`;
         }
         if (reason) fs.appendFileSync(log, `\ngate: ${gate.name} exited 0 but FAILED its output check — ${reason}\n`);
-        resolve({ gate, ok: reason === null, seconds: Math.round((Date.now() - started) / 1000), log: log.replaceAll("\\", "/") });
+        resolve({
+          gate,
+          ok: reason === null,
+          seconds: Math.round((Date.now() - started) / 1000),
+          log: log.replaceAll("\\", "/"),
+          ...(warning ? { warning } : {}),
+        });
       });
     });
   });
@@ -305,12 +359,12 @@ function runGate(gate: GateSpec, logDir: string): Promise<GateResult> {
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
-  const files = changedFiles();
-  if (files === null && !options.forceTrack) {
+  const { files, baseReachable } = changedFiles();
+  if (!baseReachable && !options.forceTrack) {
     console.log("gate: cannot diff against origin/main (try `git fetch origin main`) — running the code track.");
     options.forceTrack = "code";
   }
-  const plan = planGates(files ?? [], options);
+  const plan = planGates(files, options);
 
   const logDir = path.resolve(GATE_LOG_DIR);
   fs.mkdirSync(logDir, { recursive: true });
@@ -319,7 +373,7 @@ async function main(): Promise<void> {
   const order = [...plan.stages.map((stage) => stage.map((g) => g.name).join(" ∥ ")), ...plan.final.map((g) => g.name)];
   console.log(
     `gate: ${phase} — track=${plan.track} engine=${plan.engine ? "yes" : "no"} — ` +
-      `${(files ?? []).length} changed file(s) — running ${order.join(" → ")}`,
+      `${files.length} changed file(s) — running ${order.join(" → ")}`,
   );
 
   const started = Date.now();
@@ -328,7 +382,7 @@ async function main(): Promise<void> {
   for (const gate of plan.final) results.push(await runGate(gate, logDir));
   const wall = Math.round((Date.now() - started) / 1000);
 
-  for (const result of results.filter((r) => !r.ok)) {
+  for (const result of results.filter((r) => !r.ok || r.warning)) {
     const text = fs.existsSync(result.log) ? fs.readFileSync(result.log, "utf8") : "";
     console.log(`\n--- ${result.gate.name}: last ${GATE_FAIL_TAIL_LINES} lines of ${result.log} ---`);
     console.log(tailLines(text, GATE_FAIL_TAIL_LINES).join("\n"));
