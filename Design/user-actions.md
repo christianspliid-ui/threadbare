@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-03 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-03 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -43,6 +43,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-03: rival strikes now answer nudge pressure** ([THR-1690](https://linear.app/threadbare/issue/THR-1690/nudge-driven-detection-pressure-never-crosses-a-threshold-no-detection)): pressure from your nudges can now cross the detection line, and the strike waits until an encounter can carry it. Merged 08:30 via [#2182](https://github.com/christianspliid-ui/threadbare/pull/2182).
+- **2026-10-03: spells as divine gifts and found tomes are designed** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)): a *Teach a Spell* card, and old books that teach their holder. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1672-spells-as-gifts-and-tomes.md) merged via [#2183](https://github.com/christianspliid-ui/threadbare/pull/2183); veto window open until ~08:50 Sunday.
 - **2026-10-03: a survey of a held lead now keeps its visit** ([THR-1686](https://linear.app/threadbare/issue/THR-1686/the-lead-survey-and-the-kept-visit-a-survey-of-a-held-lead-skips-the)). Merged 07:51 via [#2181](https://github.com/christianspliid-ui/threadbare/pull/2181).
 - **2026-10-03: a faith undertaking can now consecrate a new pilgrim way mid-game** ([THR-1660](https://linear.app/threadbare/issue/THR-1660/a-faith-undertaking-consecrates-new-pilgrim-routes-mid-game-design-the)). Merged 05:15 via [#2179](https://github.com/christianspliid-ui/threadbare/pull/2179).
 - **2026-10-03: "Raise the Old Banner" is designed** ([THR-1658](https://linear.app/threadbare/issue/THR-1658/a-descendant-can-want-the-old-homeland-back-a-reclaim-homeland-rule)): a descendant of a fallen empire can come to want a piece of its old land back, blaming no one living. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md) merged via [#2177](https://github.com/christianspliid-ui/threadbare/pull/2177); veto window open until ~03:00 Sunday.
@@ -51,8 +53,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: Sanctify and Hearthfire Blessing now do something lasting** ([THR-662](https://linear.app/threadbare/issue/THR-662/wire-the-two-remaining-no-op-sanctify-actions-subsanctify-subsanctify)): a blessed place keeps its blessing, and a tavern's owner cannot stack it twice. Merged 00:46 via [#2174](https://github.com/christianspliid-ui/threadbare/pull/2174).
 - **2026-10-02: dialogue cards now take their colour from the moment** ([THR-1586](https://linear.app/threadbare/issue/THR-1586)): story, elder and gain palettes, and the sphere tint on the card face. Merged ~23:45 via [#2173](https://github.com/christianspliid-ui/threadbare/pull/2173).
 - **2026-10-02: jobs inside a veto window now wait their turn** ([THR-1694](https://linear.app/threadbare/issue/THR-1694)): the builder will not start a design you could still veto. Merged 22:39 via [#2172](https://github.com/christianspliid-ui/threadbare/pull/2172).
-- **2026-10-02: undertakings now say where they must happen** ([THR-1294](https://linear.app/threadbare/issue/THR-1294/requireslocation-defaults-off-make-it-an-authored-flag-on-every-multi)): every multi-turn undertaking carries the flag instead of a hidden default. Merged 21:31 via [#2171](https://github.com/christianspliid-ui/threadbare/pull/2171).
-- **2026-10-02: found things in the reward draw are designed** ([THR-1626](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at)): about 50 per world, ~40% of Storied and Mythic rewards. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md) merged via [#2170](https://github.com/christianspliid-ui/threadbare/pull/2170); veto window open until Saturday ~20:45.
 
 ---
 
