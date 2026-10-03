@@ -19,6 +19,9 @@ import {
 import {
   MAX_COMPLETIONS_PER_TEMPLATE,
   CAP_FILL_ROTATE,
+  CAP_FILL_DISTINCT_FIRST,
+  CAP_FILL_LOCAL_SLOTS,
+  CAP_FILL_LOCAL_ORDER,
   ANOMALY_SITE_CAP_RESERVE,
   ANOMALY_SITE_MAX_HEX_DISTANCE,
   ANOMALY_SITE_TEMPLATE_PREFIX,
@@ -605,6 +608,105 @@ describe('capWithDiversity', () => {
     const withPass = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30 }, 'nowhere');
     const without = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 0 }, 'home');
     expect(withPass.map(e => e.templateId)).toEqual(without.map(e => e.templateId));
+  });
+
+  // ── Own-hex pass by template hash (THR-1687) ──────────────────
+  //
+  // The walk entered the mortal's block at its head, so the local slots went to the
+  // templates registered first and the newest (the harder bands) were never scored:
+  // third-quarter own-hex templates reached scoring ~1% of the time against ~60% for
+  // the first quarter. These pin the hashed order with the switch passed explicitly.
+  const HASHED = { ...FAIR, localSlots: 30, localOrder: 'template_hash' } as const;
+  const crowdedHome = (): EncounterCacheEntry[] => [
+    ...Array.from({ length: 300 }, (_, i) =>
+      makeEntry({ templateId: `far-${i}`, locationId: 'far', encounterType: 'explore' })),
+    ...Array.from({ length: 90 }, (_, i) =>
+      makeEntry({ templateId: `home-${String(i).padStart(2, '0')}`, locationId: i % 2 ? 'home-inn' : 'home', encounterType: 'explore' })),
+  ];
+
+  it('ships the hashed own-hex order (CAP_FILL_LOCAL_ORDER)', () => {
+    expect(CAP_FILL_LOCAL_ORDER).toBe('template_hash');
+    const graph = hexGraph();
+    const shipped = capWithDiversity(crowdedHome(), 'agent-1', graph, 9, undefined, 'home');
+    const explicit = capWithDiversity(crowdedHome(), 'agent-1', graph, 9,
+      { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: 'template_hash' }, 'home');
+    expect(shipped.map(e => `${e.templateId}@${e.locationId}`)).toEqual(explicit.map(e => `${e.templateId}@${e.locationId}`));
+  });
+
+  it("'walk' (or no localOrder, or an unknown value) reproduces the THR-1633 pass exactly", () => {
+    const graph = hexGraph();
+    for (let tick = 1; tick <= 10; tick++) {
+      const absent = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30 }, 'home');
+      const walk = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30, localOrder: 'walk' }, 'home');
+      const unknown = capWithDiversity(crowdedHome(), 'agent-1', graph, tick,
+        { ...FAIR, localSlots: 30, localOrder: 'bogus' as unknown as 'walk' }, 'home');
+      const key = (r: EncounterCacheEntry[]) => r.map(e => `${e.templateId}@${e.locationId}`);
+      expect(key(walk)).toEqual(key(absent));
+      expect(key(unknown)).toEqual(key(absent));
+    }
+  });
+
+  it('under the walk, the templates registered last on a crowded hex never get a local slot', () => {
+    // The mechanism the hash removes, pinned so a reader can see it.
+    const graph = hexGraph();
+    const offered = new Set<string>();
+    for (let tick = 1; tick <= 200; tick++) {
+      for (const e of capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30 }, 'home')) {
+        offered.add(e.templateId);
+      }
+    }
+    expect(offered.has('home-89')).toBe(false);
+  });
+
+  it('offers every own-hex template at least once across 200 ticks, the last-registered included', () => {
+    const graph = hexGraph();
+    const offered = new Set<string>();
+    for (let tick = 1; tick <= 200; tick++) {
+      const result = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, HASHED, 'home');
+      expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+      // Own hex first, bounded at localSlots (no reserve takes a slot here).
+      expect(result.filter(e => e.templateId.startsWith('home-')).length).toBeGreaterThanOrEqual(30);
+      for (const e of result) offered.add(e.templateId);
+    }
+    for (let i = 0; i < 90; i++) expect(offered.has(`home-${String(i).padStart(2, '0')}`)).toBe(true);
+  });
+
+  it('picks the same local templates whatever order they were registered in', () => {
+    const graph = hexGraph();
+    const forward = crowdedHome();
+    const reversed = [...forward.slice(0, 300), ...forward.slice(300).reverse()];
+    for (let tick = 1; tick <= 10; tick++) {
+      const local = (r: EncounterCacheEntry[]) =>
+        r.filter(e => e.templateId.startsWith('home-')).map(e => e.templateId).sort();
+      // Every free slot goes to the local pass (90 home templates > free slots), so the
+      // general fill takes nothing and the hash alone decides which home templates appear.
+      const a = capWithDiversity(forward, 'agent-1', graph, tick, { ...HASHED, localSlots: MAX_SCORED_CANDIDATES }, 'home');
+      const b = capWithDiversity(reversed, 'agent-1', graph, tick, { ...HASHED, localSlots: MAX_SCORED_CANDIDATES }, 'home');
+      expect(local(a).length).toBeGreaterThan(0);
+      expect(local(a)).toEqual(local(b));
+    }
+  });
+
+  it('keeps the THR-1633 intent under the hash: all of a small hex, bounded, skipped without a location', () => {
+    const graph = hexGraph();
+    for (let tick = 1; tick <= 20; tick++) {
+      const all = capWithDiversity(farAndLocal(), 'agent-1', graph, tick, HASHED, 'home');
+      expect(all.filter(e => e.templateId.startsWith('home-'))).toHaveLength(8);
+    }
+    const bounded = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...HASHED, localSlots: 3 }, 'home');
+    expect(bounded.filter(e => e.templateId.startsWith('home-')).length).toBeGreaterThanOrEqual(3);
+    expect(bounded.filter(e => e.templateId.startsWith('home-')).length).toBeLessThan(8);
+    const nowhere = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, HASHED, 'nowhere');
+    const none = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 0 }, 'home');
+    expect(nowhere.map(e => e.templateId)).toEqual(none.map(e => e.templateId));
+  });
+
+  it('is deterministic per (agent, tick) and changes with the tick', () => {
+    const graph = hexGraph();
+    const local = (tick: number) => capWithDiversity(crowdedHome(), 'agent-1', graph, tick, HASHED, 'home')
+      .filter(e => e.templateId.startsWith('home-')).map(e => e.templateId);
+    expect(local(33)).toEqual(local(33));
+    expect(local(34)).not.toEqual(local(33));
   });
 });
 

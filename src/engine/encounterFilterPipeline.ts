@@ -96,6 +96,8 @@ import {
   CAP_FILL_DISTINCT_FIRST,
   CAP_FILL_ROTATE,
   CAP_FILL_LOCAL_SLOTS,
+  CAP_FILL_LOCAL_ORDER,
+  type CapFillLocalOrder,
 } from '../data/agent-behavior-constants';
 import { hashString } from './factionAmbitions';
 
@@ -681,6 +683,21 @@ export function filterByThreat(
 
 // ─── Stage 5: Performance Cap with Diversity ────────────────────
 
+/**
+ * murmur3's 32-bit finalizer (THR-1687). `hashString` is a polynomial hash: for ids of
+ * equal length, a shared `agent:tick:` prefix only adds the same constant to every key,
+ * so ids that differ in a suffix (`…_01`, `…_02`) sort in suffix order on every tick.
+ * Mixing the bits makes the order a fresh shuffle per (agent, tick). Pure, no PRNG draw.
+ */
+function mixKey(h: number): number {
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
 /** How the cap stage fills its free slots (THR-1633 S1). */
 export interface CapFillOptions {
   /** One entry per template before any repeats. */
@@ -692,6 +709,11 @@ export interface CapFillOptions {
    * or 0 → no local pass. Needs `agentLocationId`; without it the pass is skipped.
    */
   localSlots?: number;
+  /**
+   * Order of the own-hex pass (THR-1687). `'template_hash'` gives every own-hex template
+   * the same chance of a slot; absent, `'walk'` or any other value runs the THR-1633 walk.
+   */
+  localOrder?: CapFillLocalOrder;
 }
 
 /**
@@ -712,6 +734,7 @@ export function capWithDiversity(
     distinctFirst: CAP_FILL_DISTINCT_FIRST,
     rotate: CAP_FILL_ROTATE,
     localSlots: CAP_FILL_LOCAL_SLOTS,
+    localOrder: CAP_FILL_LOCAL_ORDER,
   },
   agentLocationId?: string,
 ): EncounterCacheEntry[] {
@@ -915,7 +938,7 @@ export function capWithDiversity(
   const agentHex = localSlots > 0 && agentLocationId ? resolveLocationToHex(graph, agentLocationId) : null;
   if (agentHex) {
     const onHex = new Map<string, boolean>();
-    walk(localSlots, entry => {
+    const isLocal = (entry: EncounterCacheEntry): boolean => {
       let local = onHex.get(entry.locationId);
       if (local === undefined) {
         const hex = resolveLocationToHex(graph, entry.locationId);
@@ -923,7 +946,37 @@ export function capWithDiversity(
         onHex.set(entry.locationId, local);
       }
       return local;
-    }, [true]);
+    };
+    if (fill.localOrder !== 'template_hash') {
+      walk(localSlots, isLocal, [true]);
+    } else {
+      // THR-1687: the walk enters the mortal's block at its head, so the slots went to the
+      // templates registered first and the newest (the harder bands) were never scored.
+      // Collect one entry per own-hex template, then let a per-(agent, tick, template) hash
+      // pick which get a slot. The representative entry is still the first met from the
+      // rotated start, as in the walk.
+      const firstByTemplate = new Map<string, EncounterCacheEntry>();
+      for (let step = 0; step < n; step++) {
+        const entry = entries[(start + step) % n];
+        if (seenTemplates.has(entry.templateId) || firstByTemplate.has(entry.templateId)) continue;
+        if (reservedKeys.has(`${entry.templateId}:${entry.locationId}`)) continue;
+        if (!isLocal(entry)) continue;
+        firstByTemplate.set(entry.templateId, entry);
+      }
+      const salt = `${agentId}:${tick ?? 0}:`;
+      const keyed = [...firstByTemplate.keys()].map(templateId => ({
+        templateId,
+        key: mixKey(hashString(salt + templateId)),
+      }));
+      keyed.sort((a, b) => a.key - b.key || (a.templateId < b.templateId ? -1 : a.templateId > b.templateId ? 1 : 0));
+      for (const { templateId } of keyed) {
+        if (filled.length >= localSlots) break;
+        const entry = firstByTemplate.get(templateId)!;
+        filled.push(entry);
+        reservedKeys.add(`${entry.templateId}:${entry.locationId}`);
+        seenTemplates.add(entry.templateId);
+      }
+    }
   }
   walk(remaining, () => true);
 
@@ -1051,6 +1104,9 @@ export function runFilterPipeline(
       afterThreat,
       afterCap,
       capCutTemplates,
+      afterThreat > MAX_SCORED_CANDIDATES
+        ? (CAP_FILL_LOCAL_ORDER === 'template_hash' ? 'template_hash' : 'walk')
+        : undefined,
     ),
   };
 }
@@ -1073,6 +1129,7 @@ function buildTrace(
   afterThreat: number,
   afterCap: number,
   capCutTemplates = 0,
+  capLocalOrder?: 'walk' | 'template_hash',
 ): FilterPipelineTrace {
   return {
     id: 0,
@@ -1087,6 +1144,7 @@ function buildTrace(
     afterThreat,
     afterCap,
     capCutTemplates,
+    ...(capLocalOrder ? { capLocalOrder } : {}),
     summary: `Agent ${agentId}: ${cacheSize} → ${afterCap} candidates`,
   };
 }

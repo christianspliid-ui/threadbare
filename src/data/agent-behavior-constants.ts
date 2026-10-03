@@ -238,6 +238,32 @@ export const CAP_FILL_ROTATE = true;
  */
 export const CAP_FILL_LOCAL_SLOTS = 30;
 
+/** How the own-hex pass picks which templates get its `CAP_FILL_LOCAL_SLOTS` (THR-1687). */
+export type CapFillLocalOrder = 'walk' | 'template_hash';
+
+/**
+ * Order of the cap's own-hex pass (THR-1687, plan `Docs/plans/2026-10-01-thr-1687-cap-local-order.md`).
+ *
+ * `'walk'` is the THR-1633 pass: walk the list from the rotated start and keep the first
+ * `CAP_FILL_LOCAL_SLOTS` distinct own-hex templates. The start almost always lands outside
+ * the mortal's own block, so the walk enters it at its head — catalogue registration order
+ * — and the templates registered last never get a slot. New content is registered last.
+ * Measured (main @ e5118533, medium, 120 ticks, `readers/cap-band.ts`): own-hex templates
+ * in the catalogue's third quarter reached scoring 0.8% · 1.4% · 1.1% of the time (seeds
+ * 42 · 99 · 7) against 59–63% for the first quarter; the cap kept expert-fit content for
+ * expert deciders at 0.15 · 0.13 · 0.10 of the rate it kept novice-fit content.
+ *
+ * `'template_hash'` collects the first unreserved own-hex entry of every template and fills
+ * the slots with the templates whose bit-mixed `hashString(agent:tick:template)` is
+ * smallest, ties by id. (The mix matters: the bare polynomial hash only shifts every
+ * equal-length id by the same constant, so `…_01`, `…_02` kept suffix order every tick.) Every own-hex template has the same chance of a slot, whatever order it was written
+ * in, and a mortal who stays put sees a different set each tick. A pure hash, not a PRNG
+ * draw, so no seeded stream shifts (NFP #3). Prototype keep-rate ratio 0.77 · 0.78 · 0.81.
+ *
+ * Any other value runs `'walk'`, which restores the THR-1633 pass exactly (NFP #6).
+ */
+export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'template_hash';
+
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
 export const THREAT_FLOOR_FILTER = false;
