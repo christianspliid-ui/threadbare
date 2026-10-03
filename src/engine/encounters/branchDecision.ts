@@ -518,6 +518,9 @@ function recordDecidedChoice(
     essenceSpent: 0,
     probabilityBoost: 0,
     tick,
+    // THR-1708 — the hand that leaned this decision is otherwise forgotten once
+    // the next step commits; keep the fact that the god played here.
+    ...((action.activeNudges?.length ?? 0) > 0 ? { handCommitted: true } : {}),
   };
 
   const history = [

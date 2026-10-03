@@ -1086,14 +1086,17 @@ export function playerFacingTemplateName(template: Pick<UnifiedActionTemplate, '
  * Did the god actually play into this encounter (THR-1708)? True when a nudge
  * hand was committed on any step (recorded in `choiceHistory` by
  * `recordUnifiedActionNudgeMemory`), essence was spent on any recorded choice,
- * or a hand is live on the current step. A mortal-decided branch
- * (`agent_decided`, zero essence) is not the god's touch — that is the mortal
+ * a hand leaned a mortal-decided branch (`handCommitted`), or a hand is live on
+ * the current step. A mortal-decided branch with no hand (`agent_decided`, zero
+ * essence) is not the god's touch — that is the mortal
  * choosing, and the overview must not credit it to "your nudge".
  */
 export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' | 'activeNudges'>): boolean {
   if ((action.activeNudges?.length ?? 0) > 0) return true;
   return (action.choiceHistory ?? []).some(entry =>
-    entry.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE || entry.essenceSpent > 0,
+    entry.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE
+      || entry.essenceSpent > 0
+      || entry.handCommitted === true,
   );
 }
 
