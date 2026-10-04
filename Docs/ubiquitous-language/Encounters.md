@@ -226,7 +226,17 @@ The compact, self-contained snapshot of a resolved encounter (`ChapterRecord`, `
 **Also see:** `[[Chapter]]`, `[[Chapter Record]]`, `[[Encounter]]`
 **Status:** canonical
 
-The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603).
+The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603). `[[Daily life]]` (routine chores) is excluded from the default view and the launcher badge; the *Daily life* filter lists it (THR-1715).
+
+---
+
+### Daily life
+
+**Aliases:** chores, routine (code word: `routine`; template field `routine?: boolean`)
+**Also see:** `[[Chapter Ledger]]`, `[[Chapter]]`, `[[Encounter]]`
+**Status:** canonical
+
+A mortal's ordinary chores: raw encounters authored `threatRating: 'trivial'` (mending, foraging, resting, harvest, taking stock of holdings). Daily life still happens, still archives and still has consequences, but it never asks the god, never raises an encounter notification, and never appears in the Chapter Ledger's default view or badge; the Ledger's **Daily life** filter lists it. Not a *Chapter*: a chapter is a scene the player may attend. Not the attention tier `background` (an effective processing tier, which The First's court position promotes), and not *idle behaviour* (`idleBehavior.ts` fill-in); daily life is the player-facing classification of the content itself. During a pause-mode mortal's **story breath** (`PAUSED_STORY_BREATH_TICKS`) daily life is all she starts. Seated by THR-1715 from [UL-proposal THR-1721](https://linear.app/threadbare/issue/THR-1721).
 
 ---
 

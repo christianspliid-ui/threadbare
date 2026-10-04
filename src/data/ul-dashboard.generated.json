@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 60,
+      "termCount": 61,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -3288,7 +3288,7 @@
       "status": "canonical",
       "statusNote": null,
       "oneLiner": "always-readable list (`game.chapter-ledger`) merging active encounters and resolved chapters",
-      "body": "The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603).",
+      "body": "The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603). `[[Daily life]]` (routine chores) is excluded from the default view and the launcher badge; the *Daily life* filter lists it (THR-1715).",
       "seeAlso": [
         {
           "raw": "Chapter",
@@ -3307,6 +3307,38 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#chapter-ledger",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "daily-life",
+      "name": "Daily life",
+      "aliases": [
+        "chores",
+        "routine (code word: `routine`; template field `routine?: boolean`)"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "A mortal's ordinary chores: raw encounters authored `threatRating: 'trivial'` (mending, foraging, resting, harvest, taking stock of holdings).",
+      "body": "A mortal's ordinary chores: raw encounters authored `threatRating: 'trivial'` (mending, foraging, resting, harvest, taking stock of holdings). Daily life still happens, still archives and still has consequences, but it never asks the god, never raises an encounter notification, and never appears in the Chapter Ledger's default view or badge; the Ledger's **Daily life** filter lists it. Not a *Chapter*: a chapter is a scene the player may attend. Not the attention tier `background` (an effective processing tier, which The First's court position promotes), and not *idle behaviour* (`idleBehavior.ts` fill-in); daily life is the player-facing classification of the content itself. During a pause-mode mortal's **story breath** (`PAUSED_STORY_BREATH_TICKS`) daily life is all she starts. Seated by THR-1715 from [UL-proposal THR-1721](https://linear.app/threadbare/issue/THR-1721).",
+      "seeAlso": [
+        {
+          "raw": "Chapter Ledger",
+          "termName": "Chapter Ledger",
+          "resolvedSlug": "encounters#chapter-ledger"
+        },
+        {
+          "raw": "Chapter",
+          "termName": "Chapter",
+          "resolvedSlug": "encounters#chapter"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#daily-life",
       "contentAdjacent": true
     },
     {

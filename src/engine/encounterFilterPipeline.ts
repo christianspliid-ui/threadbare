@@ -8,6 +8,8 @@
  *   3. Prerequisites — chains, traits, faction joins, and actor eligibility
  *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`,
  *      the lair-monster hunt's `requiresLiveMonster`)
+ *   3b. Story breath (THR-1715) — a pause-mode mortal inside her breath starts
+ *      daily life only (`PAUSED_STORY_BREATH_TICKS`); pass-through for all others
  *   4. Threat — courage/capability vs threat-rating tolerance check
  *   5. Performance Cap — cap at MAX_SCORED_CANDIDATES with diversity floor
  *
@@ -98,6 +100,7 @@ import {
   CAP_FILL_LOCAL_SLOTS,
 } from '../data/agent-behavior-constants';
 import { hashString } from './factionAmbitions';
+import { isRoutineTemplate, storyBreathRemaining } from './attentionCadence';
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
@@ -601,6 +604,37 @@ export function filterByOutgrowth(
   return result;
 }
 
+// ─── Stage 3b: Story breath (THR-1715) ─────────────────────────
+
+/**
+ * The story breath: after a pause-mode mortal's story chapter ends, she starts
+ * no new story chapter for `PAUSED_STORY_BREATH_TICKS`. Inside the breath only
+ * routine (daily-life) candidates survive; she lives her ordinary life, silently.
+ *
+ * Why a hard filter, not a weight: a weight would still let a high-scoring
+ * scene through every few turns and re-create the drumbeat the breath exists
+ * to prevent (plan § Resolution logic). Encounter *seeding* bypasses this
+ * pipeline by design, so authored pressure still lands during a breath.
+ *
+ * One thread lookup per agent; pass-through (same array) for every agent not
+ * inside a breath.
+ */
+export function filterByStoryBreath(
+  entries: EncounterCacheEntry[],
+  agentId: string,
+  graph: WorldGraph,
+  tick: number,
+): EncounterCacheEntry[] {
+  if (storyBreathRemaining(graph, agentId, tick) <= 0) return entries;
+  // The encounter she walked to (`journeyGoal`, THR-1639) survives the breath. A
+  // journey chosen on the tick her last chapter resolved predates the anchor
+  // (agent decision runs before the archive write), and cutting its goal on
+  // arrival sent The First 12 turns back the way she came — seed 42 went quiet
+  // for 37 turns, past FIRST_ENCOUNTER_MAX_GAP_TICKS. The breath governs new
+  // choices, not a walk already made.
+  return entries.filter(entry => entry.journeyGoal === true || isRoutineTemplate(entry.templateId));
+}
+
 // ─── Stage 4: Threat tolerance ──────────────────────────────────
 
 /**
@@ -1009,6 +1043,15 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterPrerequisites = current.length;
+
+  // Stage 3b: Story breath (THR-1715). Counted inside the prerequisites funnel
+  // bucket — it is an eligibility gate, and the funnel's gate set is fixed.
+  try {
+    current = filterByStoryBreath(current, agentId, graph, tick);
+  } catch {
+    // Keep previous stage's output
+  }
+  const afterStoryBreath = current.length;
   const s3 = (funnel && s0) ? templateIdSet(current) : null;
 
   // Stage 4: Threat
@@ -1051,6 +1094,7 @@ export function runFilterPipeline(
       afterThreat,
       afterCap,
       capCutTemplates,
+      afterStoryBreath,
     ),
   };
 }
@@ -1073,6 +1117,7 @@ function buildTrace(
   afterThreat: number,
   afterCap: number,
   capCutTemplates = 0,
+  storyBreath?: number,
 ): FilterPipelineTrace {
   return {
     id: 0,
@@ -1087,6 +1132,7 @@ function buildTrace(
     afterThreat,
     afterCap,
     capCutTemplates,
+    storyBreath: storyBreath ?? afterPrerequisites,
     summary: `Agent ${agentId}: ${cacheSize} → ${afterCap} candidates`,
   };
 }

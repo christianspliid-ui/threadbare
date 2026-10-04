@@ -399,7 +399,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-04 by Claude Code (THR-1727 — the encounter stakes line). **Added** 🟢 LIVE
+2026-10-04 by Claude Code (THR-1715 — The First asks). **Added** two rows, UNVERIFIED-OK:
+`routine-flag-keeps-daily-life-off-notifications-and-ledger` (Encounters & Dilemmas →
+Attention, Chronicle & Narrative: authored `trivial` carried as `routine`, read by the
+visibility phase, the filter pipeline's story breath and the Chapter Ledger) and
+`story-breath-anchor-paces-pause-mode-chapters` (the thread edge's
+`lastStoryChapterEndTick`, written at the chapter-archive transition, read by
+`filterByStoryBreath`). Audit-on-touch: the attention-mode contract
+(`attentionMode` → `autoResolveTick`) is preserved in shape; The First's value changes.
+Earlier: 2026-10-04 by Claude Code (THR-1727 — the encounter stakes line). **Added** 🟢 LIVE
 `encounter-stakes-line-reaches-veil-ledger-badge-row` (Encounters & Dilemmas → Attention,
 Chronicle & Narrative: a template's authored `stakes` and the `stakesContext` the tick path
 freezes at encounter start build one opening line and one result line, read by the veil's

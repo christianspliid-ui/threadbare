@@ -25,6 +25,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { isRoutineTemplate } from './attentionCadence';
 import type { StepProseRecord } from '../types/stepProseRecord';
 import type { GameState } from '../types/gameState';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -73,6 +74,14 @@ export function isEncounterAction(templateId: string): boolean {
   return getAnyEncounterById(templateId) !== undefined
     || isBranchingTemplate(templateId)
     || isFactoryEncounterTemplate(templateId);
+}
+
+/**
+ * Is this ledger row daily life (THR-1715)? Reads the record's own flag, and
+ * falls back to the template for records archived before the flag existed.
+ */
+export function isRoutineChapter(rec: Pick<ChapterRecord, 'routine' | 'templateId'>): boolean {
+  return rec.routine === true || isRoutineTemplate(rec.templateId);
 }
 
 /** Display name for an encounter template id — falls back to the id when unknown. */
@@ -139,6 +148,7 @@ export function buildChapterRecord(
     actionId: action.actionId,
     templateId: action.templateId,
     templateName: template?.name ?? action.templateId,
+    ...(template?.routine === true ? { routine: true } : {}),
     actorId: action.actorId,
     actorName,
     targetId: action.targetId,

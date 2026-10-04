@@ -6,6 +6,7 @@ import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
+import { resolveTooltip } from '../../engine/tooltipResolver';
 import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
 import { EncounterBadge } from './EncounterBadge';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
@@ -88,7 +89,7 @@ interface ThreadsPanelProps {
   onZoomToLocation?: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecisions?: Map<string, BalanceEvent>;
-  onToggleAttentionMode?: (threadEdgeId: string) => void;
+  onToggleAttentionMode?: (threadEdgeId: string) => AttentionToggleOutcome | void;
   /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
   agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
   /**
@@ -159,7 +160,7 @@ interface CompactThreadRowProps {
   onCenterOnHex: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecision?: BalanceEvent;
-  onToggleAttentionMode?: (threadEdgeId: string) => void;
+  onToggleAttentionMode?: (threadEdgeId: string) => AttentionToggleOutcome | void;
   /** Strategic summary for this agent, if they have active strategic activity. */
   strategicSummary?: AgentStrategicSummary;
   /** THR-1479: the appointment clock line for this mortal, if they hold one. */
@@ -268,34 +269,86 @@ function ThreadPortrait({ name, id, sphere, selected, size = 52 }: ThreadPortrai
   );
 }
 
-function AutoToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+/**
+ * What a toggle click returned (THR-1715). `ok: false` carries the refusal's
+ * reason so the toggle can say why (Law 47) instead of doing nothing visible.
+ */
+export type AttentionToggleOutcome = { ok: true } | { ok: false; reason: string };
+
+/** Registry id for a refusal reason's explanation; unknown reasons fall back to the generic. */
+const ATTENTION_REFUSAL_TOOLTIP: Record<string, string> = {
+  thread_too_thin: 'ui.attention.thread_too_thin',
+};
+
+function fillName(text: string | undefined, name: string): string {
+  return (text ?? '').replace(/{name}/g, name);
+}
+
+/**
+ * The attention toggle (THR-1715 U1). Reads the true mode after every click:
+ * **Asks you** (pause — her important moments stop the world) or **Lives on**
+ * (auto — her moments resolve on their own). Copy comes from the tooltip
+ * registry (Law 17); a refused click shakes and shows its reason (Law 47).
+ */
+export function AutoToggle({ asking, name, onToggle }: {
+  asking: boolean;
+  name: string;
+  onToggle: () => AttentionToggleOutcome | void;
+}) {
   const [hov, setHov] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
+  const [shakeKey, setShakeKey] = useState(0);
+  const entry = resolveTooltip(asking ? 'ui.attention.asks' : 'ui.attention.lives_on');
+  const label = entry?.label ?? (asking ? 'Asks you' : 'Lives on');
+  const refusalEntry = refusal
+    ? resolveTooltip(ATTENTION_REFUSAL_TOOLTIP[refusal] ?? 'ui.attention.thread_too_thin')
+    : null;
   return (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      aria-label={on ? 'Auto mode active — click to pause' : 'Paused — click to enable auto'}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '2px 8px 2px 4px',
-        background: hov ? 'var(--bg-hover)' : 'transparent',
-        border: '1px solid transparent', borderRadius: 4,
-        color: on ? 'var(--text-secondary)' : 'var(--text-muted)',
-        fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
-        cursor: 'pointer',
-        flexShrink: 0,
-      }}
+    <Tooltip
+      label={refusalEntry?.label ?? label}
+      desc={refusalEntry ? refusalEntry.desc : fillName(entry?.desc, name)}
+      focusable={false}
     >
-      <span style={{
-        width: 0, height: 0,
-        borderLeft: `6px solid ${on ? 'var(--accent-gold-dim)' : 'currentColor'}`,
-        borderTop: '4px solid transparent',
-        borderBottom: '4px solid transparent',
-      }} />
-      Auto
-    </button>
+      <button
+        key={shakeKey}
+        type="button"
+        data-testid="attention-toggle"
+        data-attention-mode={asking ? 'pause' : 'auto_resolve'}
+        className={refusal ? 'anim-shake-no' : undefined}
+        onClick={(e) => {
+          e.stopPropagation();
+          const outcome = onToggle();
+          if (outcome && !outcome.ok) {
+            setRefusal(outcome.reason);
+            setShakeKey(k => k + 1);
+          } else {
+            setRefusal(null);
+          }
+        }}
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        aria-label={asking
+          ? `${label}: ${name}'s important moments stop the world. Click so they resolve on their own.`
+          : `${label}: ${name}'s moments resolve on their own. Click so they stop and ask you.`}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '2px 8px 2px 4px',
+          background: hov ? 'var(--bg-hover)' : 'transparent',
+          border: '1px solid transparent', borderRadius: 4,
+          color: asking ? 'var(--text-secondary)' : 'var(--text-muted)',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        <span aria-hidden style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: asking ? 'var(--accent-gold-dim)' : 'transparent',
+          border: `1px solid ${asking ? 'var(--accent-gold-dim)' : 'currentColor'}`,
+        }} />
+        {label}
+      </button>
+    </Tooltip>
   );
 }
 
@@ -749,7 +802,8 @@ function CompactThreadRow({
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <div style={{ marginLeft: 'auto' }}>
                 <AutoToggle
-                  on={node.attentionMode === 'auto_resolve'}
+                  asking={node.attentionMode === 'pause'}
+                  name={node.name}
                   onToggle={() => onToggleAttentionMode(node.threadEdgeId)}
                 />
               </div>

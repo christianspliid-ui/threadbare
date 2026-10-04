@@ -88,6 +88,13 @@ export interface ThreadEdgeProperties {
   // ── Attention mode (Phase 4+) ──────────────────────────────
   /** Determines vignette behavior: 'pause' = auto-interrupt, 'auto_resolve' = background. */
   attentionMode?: 'pause' | 'auto_resolve';
+  /**
+   * The story-breath anchor (THR-1715): the tick a pause-mode mortal's last
+   * story chapter (non-routine encounter) resolved. Read by the filter
+   * pipeline's `filterByStoryBreath` stage; written at the chapter-archive
+   * write. Absent = no breath.
+   */
+  lastStoryChapterEndTick?: number;
 
   // ── Journey state (Phase 2+, only for The First) ───────────
   /** Current Campbellian journey phase. */

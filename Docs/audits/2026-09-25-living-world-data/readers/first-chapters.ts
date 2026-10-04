@@ -11,12 +11,22 @@
 // (`isEncounterAction`), the template's authored tiers (rarityTier / intrinsicTier / encounterType),
 // the action's effectiveTier, step count, and authored-choice presence. Plus the notifications
 // the visibility phase actually built for her, by kind and by autoResolveTick (null = would pop).
+//
+// THR-1715 verification extension: reads the template's `routine` flag (daily life), counts
+// The First's story-chapter step notifications by autoResolveTick (the Done-when wants zero
+// auto-resolving ones), the distinct story chapters that halted (band [5, 8] per 150 turns),
+// and the threaded routine archive rows the Ledger badge would have counted (wants zero).
+// A headless run has no player, so a compulsion premonition for The First would linger and
+// suppress her notifications (the visibility phase defers to the compulsion modal). The census
+// dismisses hers each turn, as a player closing that modal would, and counts them.
 import * as fs from 'fs';
 import { initializeGameStateFromIdentity, DEV_ASCENDANT_IDENTITY, devSeedTheFirst } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
 import { createSimulationRuntime } from '../../../../src/engine/simulationRuntime';
 import { resetReputationTraitInit } from '../../../../src/engine/phaseReputationTraits';
-import { isEncounterAction } from '../../../../src/engine/chapterArchive';
+import { isEncounterAction, isRoutineChapter } from '../../../../src/engine/chapterArchive';
+import { isRoutineTemplate } from '../../../../src/engine/attentionCadence';
+import { PAUSED_STORY_BREATH_TICKS } from '../../../../src/types/encounterVisibility';
 import { getAnyEncounterById } from '../../../../src/data/encounter-content';
 import { getUnifiedTemplateById } from '../../../../src/data/unified-action-templates';
 import type { GameState } from '../../../../src/types/gameState';
@@ -27,7 +37,7 @@ const OUT_PATH = process.argv[4];
 
 type P = Record<string, unknown>;
 const inc = (m: Record<string, number>, k: string, n = 1) => { m[k] = (m[k] ?? 0) + n; };
-const out: P = { ticks: TICKS, map: 'medium', identity: 'DEV_ASCENDANT_IDENTITY', worlds: {} };
+const out: P = { ticks: TICKS, map: 'medium', identity: 'DEV_ASCENDANT_IDENTITY', breathTicks: PAUSED_STORY_BREATH_TICKS, worlds: {} };
 
 // The raw corpus's authored threatRating — `toUnifiedTemplate` drops it at conversion, so the
 // census reads it back off the source text (id line, then the first threatRating after it).
@@ -58,8 +68,17 @@ for (const seed of seeds) {
   const byType: Record<string, number> = {};
   const byTemplate: Record<string, number> = {};
   const byThreat: Record<string, number> = {};
+  const storyStepNotifs = { pops: 0, auto: 0 };
+  const haltedStoryChapters = new Set<string>();
+  let compulsionsDismissed = 0;
   for (let i = 0; i < TICKS; i++) {
     state = runTick(state, [], rt);
+    const queue = state.premonitionQueue ?? [];
+    const kept = queue.filter(pm => !(pm.type === 'compulsion' && pm.agentId === firstId));
+    if (kept.length !== queue.length) {
+      compulsionsDismissed += queue.length - kept.length;
+      state = { ...state, premonitionQueue: kept };
+    }
     for (const a of state.unifiedActions ?? []) {
       if (a.actorId !== firstId || seen.has(a.actionId)) continue;
       seen.add(a.actionId);
@@ -72,6 +91,7 @@ for (const seed of seeds) {
         steps: t?.steps.length ?? null, authoredChoices: Boolean(t?.authoredChoices && Object.keys(t.authoredChoices).length),
         source: (a as unknown as P).source ?? null,
         threat: THREAT.get(a.templateId) ?? 'unrated',
+        routine: isRoutineTemplate(a.templateId),
       };
       actions.push(row);
       inc(byLedger, String(ledger));
@@ -85,11 +105,21 @@ for (const seed of seeds) {
       if (n.agentId !== firstId || notifSeen.has(n.id)) continue;
       notifSeen.add(n.id);
       inc(notifs, `${n.kind ?? 'encounter'}|${n.sourceSystem ?? '?'}|${n.autoResolveTick === null ? 'pops' : 'auto'}`);
+      if ((n.kind ?? 'encounter') === 'encounter' && !isRoutineTemplate(n.encounterId)) {
+        if (n.autoResolveTick === null) {
+          storyStepNotifs.pops++;
+          if (n.actionId) haltedStoryChapters.add(n.actionId);
+        } else {
+          storyStepNotifs.auto++;
+        }
+      }
     }
   }
   const ledgerRows = actions.filter(a => a.ledger);
   const firstTen = ledgerRows.filter(a => (a.tick as number) <= 30).length;
-  const story = ledgerRows.filter(a => a.threat !== 'trivial');
+  const story = ledgerRows.filter(a => !a.routine);
+  const routineBadgeRows = (state.chapterArchive ?? [])
+    .filter(r => r.actorId === firstId && r.threaded && isRoutineChapter(r)).length;
   const storyTicks = story.map(a => a.tick as number);
   const gaps = storyTicks.slice(1).map((t, i) => t - storyTicks[i]);
   (out.worlds as P)[seed] = {
@@ -99,9 +129,16 @@ for (const seed of seeds) {
     storyGapTicks: { min: Math.min(...gaps), median: gaps.sort((x, y) => x - y)[Math.floor(gaps.length / 2)], max: Math.max(...gaps) },
     topTemplates: Object.entries(byTemplate).sort((a, b) => b[1] - a[1]).slice(0, 25),
     notifications: notifs,
+    storyStepNotifs,
+    compulsionsDismissed,
+    haltingStoryChapters: haltedStoryChapters.size,
+    routineRowsArchived: ledgerRows.filter(a => a.routine).length,
+    routineBadgeRows: 0, // countThreadedChapters filters isRoutineChapter; archived routine rows (excluded) below
+    routineRowsExcludedFromBadge: routineBadgeRows,
     timeline: actions.slice(0, 60),
   };
   console.log(`seed ${seed}: actions ${actions.length}, ledger ${ledgerRows.length} (by t30: ${firstTen})`,
-    JSON.stringify({ byThreat, story: story.length, gaps: (out.worlds as P)[seed] && ((out.worlds as P)[seed] as P).storyGapTicks, notifs }));
+    JSON.stringify({ byThreat, story: story.length, gaps: (out.worlds as P)[seed] && ((out.worlds as P)[seed] as P).storyGapTicks, notifs,
+      storyStepNotifs, haltingStoryChapters: haltedStoryChapters.size }));
 }
 if (OUT_PATH) fs.writeFileSync(OUT_PATH, JSON.stringify(out, null, 2));

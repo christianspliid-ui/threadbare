@@ -23,7 +23,10 @@ import {
   PAUSE_MODE_MIN_TIER,
   ATTENTION_MODE_CHANGE_COST,
   VISIBILITY_BY_POSITION,
+  ROUTINE_SUPPRESSED_TRACE_AGENT_CAP,
 } from '../types/encounterVisibility';
+import { isRoutineTemplate, resolveAttentionMode } from './attentionCadence';
+export { resolveAttentionMode } from './attentionCadence';
 import { getThreadsFrom, getAgentLocation, getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -350,26 +353,38 @@ export function applyEncounterIntervention(
 
 // ─── Attention Mode Toggle ─────────────────────────────────────────
 
+/** Why a toggle was refused — the UI says so (Law 47). */
+export type AttentionToggleRefusal = 'thread_too_thin' | 'no_edge';
+
+/** Result of {@link toggleAttentionMode} (THR-1715: a refusal now carries its reason). */
+export type AttentionToggleResult =
+  | { ok: true; newMode: 'pause' | 'auto_resolve'; essenceCost: number }
+  | { ok: false; reason: AttentionToggleRefusal };
+
 /**
  * Toggle a thread's attention mode between pause and auto_resolve.
- * Returns the essence cost or null if the toggle is blocked.
+ *
+ * THR-1715: The First is exempt from the tier gate — she is the player's own
+ * mortal and is born asking, so a tier-1 bond must still reach pause.
+ * `PAUSE_MODE_MIN_TIER` keeps guarding every other thread (a thin thread to a
+ * stranger does not get to stop the world). A refusal returns its reason so
+ * the UI can say why instead of doing nothing visible.
  */
 export function toggleAttentionMode(
   graph: WorldGraph,
   threadEdgeId: string,
   ascendantId: string,
   tick: number,
-): { newMode: 'pause' | 'auto_resolve'; essenceCost: number } | null {
+): AttentionToggleResult {
   const edge = graph.getEdge(threadEdgeId);
-  if (!edge) return null;
+  if (!edge) return { ok: false, reason: 'no_edge' };
 
   const props = edge.properties as ThreadEdgeProperties;
-  const currentMode = props.attentionMode ?? 'auto_resolve';
+  const currentMode = resolveAttentionMode(props);
   const newMode = currentMode === 'pause' ? 'auto_resolve' : 'pause';
 
-  // Check tier requirement for pause mode
-  if (newMode === 'pause' && props.tier < PAUSE_MODE_MIN_TIER) {
-    return null; // Thread too thin for pause mode
+  if (newMode === 'pause' && props.courtPosition !== 'the_first' && props.tier < PAUSE_MODE_MIN_TIER) {
+    return { ok: false, reason: 'thread_too_thin' };
   }
 
   graph.updateEdge(threadEdgeId, {
@@ -386,7 +401,7 @@ export function toggleAttentionMode(
     essenceCost: ATTENTION_MODE_CHANGE_COST,
   });
 
-  return { newMode, essenceCost: ATTENTION_MODE_CHANGE_COST };
+  return { ok: true, newMode, essenceCost: ATTENTION_MODE_CHANGE_COST };
 }
 
 // ─── Orchestrator Phase ────────────────────────────────────────────
@@ -447,16 +462,48 @@ export function collectThreadedAgents(
   return threadedAgents;
 }
 
+export interface EncounterVisibilityOptions {
+  /**
+   * THR-1715: restrict the pass to pause-mode threads. The orchestrator runs a
+   * second, pause-only pass right after agent decision, because the main pass
+   * (2a.6) runs before agent decision and the next tick's progress phase
+   * resolves a new action's step 0 before the main pass sees it — so a step 0
+   * was never notified for anyone. Pause mode promises every beat asks (Law
+   * 39), so for those threads the opening step must reach the player on the
+   * tick it is created. Dedup keys make the second pass idempotent. Auto-mode
+   * threads are untouched. The routine-suppressed trace is emitted by the
+   * main pass only.
+   */
+  pauseModeOnly?: boolean;
+}
+
 export function phaseEncounterVisibility(
   state: GameState,
+  opts: EncounterVisibilityOptions = {},
 ): { notifications: EncounterNotification[]; events: TickEvent[] } {
   const { graph, ascendantId, tick } = state;
   const notifications: EncounterNotification[] = [];
   const events: TickEvent[] = [];
 
   const threadedAgents = collectThreadedAgents(graph, ascendantId);
+  if (opts.pauseModeOnly) {
+    for (const [agentId, info] of threadedAgents) {
+      if (resolveAttentionMode(info.props) !== 'pause') threadedAgents.delete(agentId);
+    }
+  }
 
   if (threadedAgents.size === 0) return { notifications, events };
+
+  // THR-1715: daily life never reaches the player's screen. Counted per tick
+  // for one aggregated trace rather than one trace per suppressed beat.
+  let routineSuppressed = 0;
+  const routineSuppressedAgents = new Set<string>();
+  const suppressRoutine = (templateId: string, actorId: string): boolean => {
+    if (!isRoutineTemplate(templateId)) return false;
+    routineSuppressed++;
+    routineSuppressedAgents.add(actorId);
+    return true;
+  };
 
   // Agents with pending compulsions — suppress encounter notifications so
   // the Compulsion modal handles encounter selection instead of the legacy
@@ -501,9 +548,12 @@ export function phaseEncounterVisibility(
     const epTier = ep.effectiveTier;
     if (epTier === 'invisible' || epTier === 'background') continue;
 
+    if (suppressRoutine(ep.encounterId, ep.actorId)) continue;
+
     // For shaping tier: only generate notification if the player attended the tug for this agent.
     // Without an attended tug the encounter auto-resolves silently into the digest buffer.
-    if (epTier === 'shaping') {
+    // THR-1715: a pause-mode thread needs no tug — Law 39, every beat interrupts.
+    if (epTier === 'shaping' && resolveAttentionMode(threadInfo.props) !== 'pause') {
       const tugs = state.activeThreadTugs ?? [];
       const attendedTug = tugs.find(
         t => t.agentId === ep.actorId && t.encounterId === ep.encounterId && t.attended,
@@ -530,7 +580,6 @@ export function phaseEncounterVisibility(
 
     // Agents without an explicit courtPosition default to retinue behaviour
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
-    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
 
     const notification = buildEncounterNotification(
       ep.actorId,
@@ -539,7 +588,7 @@ export function phaseEncounterVisibility(
       templateName,
       locationName,
       courtPosition,
-      threadInfo.props.attentionMode ?? defaultMode,
+      resolveAttentionMode(threadInfo.props),
       tick,
       {
         sourceSystem: 'legacy_encounter',
@@ -583,9 +632,12 @@ export function phaseEncounterVisibility(
     const actionTier = action.effectiveTier;
     if (actionTier === 'invisible' || actionTier === 'background') continue;
 
+    if (suppressRoutine(action.templateId, action.actorId)) continue;
+
     // For shaping tier: only generate notification if the player attended the tug for this agent.
     // Without an attended tug the encounter auto-resolves silently into the digest buffer.
-    if (actionTier === 'shaping') {
+    // THR-1715: a pause-mode thread needs no tug — Law 39, every beat interrupts.
+    if (actionTier === 'shaping' && resolveAttentionMode(threadInfo.props) !== 'pause') {
       const tugs = state.activeThreadTugs ?? [];
       const attendedTug = tugs.find(
         t => t.agentId === action.actorId && (t.actionId === action.actionId || t.encounterId === action.templateId) && t.attended,
@@ -605,7 +657,6 @@ export function phaseEncounterVisibility(
     const actionLocationId = getAgentLocationId(graph, action.actorId);
     const actionHex = actionLocationId ? resolveLocationToHex(graph, actionLocationId) : null;
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
-    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
     const encounterName = encounter?.name ?? unifiedTemplate?.name ?? action.templateId;
     const resolvedTemplate = unifiedTemplate ?? undefined;
     const currentStep = resolvedTemplate
@@ -623,7 +674,7 @@ export function phaseEncounterVisibility(
       encounterName,
       locationName,
       courtPosition,
-      threadInfo.props.attentionMode ?? defaultMode,
+      resolveAttentionMode(threadInfo.props),
       tick,
       {
         sourceSystem: 'unified_action',
@@ -681,6 +732,8 @@ export function phaseEncounterVisibility(
     const aftermathTier = action.effectiveTier;
     if (aftermathTier === 'invisible' || aftermathTier === 'background') continue;
 
+    if (suppressRoutine(action.templateId, action.actorId)) continue;
+
     const notifKey = `aftermath:unified_action:${action.actorId}:${action.templateId}:${action.actionId}:${action.currentStep}`;
     if (existingNotifKeys.has(notifKey)) continue;
 
@@ -692,7 +745,6 @@ export function phaseEncounterVisibility(
     const aftermathLocationId = getAgentLocationId(graph, action.actorId);
     const aftermathHex = aftermathLocationId ? resolveLocationToHex(graph, aftermathLocationId) : null;
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
-    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
     const aftermathStepTemplate = getUnifiedTemplateById(action.templateId);
     const finalStepOutcome = action.stepOutcomes.length > 0
       ? action.stepOutcomes[action.stepOutcomes.length - 1]
@@ -705,7 +757,7 @@ export function phaseEncounterVisibility(
       encounterName,
       locationName,
       courtPosition,
-      threadInfo.props.attentionMode ?? defaultMode,
+      resolveAttentionMode(threadInfo.props),
       tick,
       {
         kind: 'aftermath',
@@ -737,6 +789,16 @@ export function phaseEncounterVisibility(
         actorId: action.actorId,
       });
     }
+  }
+
+  if (routineSuppressed > 0 && !opts.pauseModeOnly) {
+    emitTrace({
+      category: 'attention.routine_suppressed',
+      tick,
+      count: routineSuppressed,
+      agentIds: [...routineSuppressedAgents].slice(0, ROUTINE_SUPPRESSED_TRACE_AGENT_CAP),
+      summary: `${routineSuppressed} daily-life beat(s) kept off screen`,
+    });
   }
 
   return { notifications, events };
