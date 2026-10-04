@@ -57,3 +57,23 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 ## Last-reviewed
 
 2026-08-06 (THR-1004 — added the UI Law to Per-system required sections § UI pillar; director ruling, stated twice in chat before being written down). Previously 2026-07-26 (THR-760 — content relocated verbatim from CLAUDE.md § Design Governance; no rule changed). Review trigger: when the design workflow gains or loses a step, when a Per-system required section is added or retired, or with the monthly `process.md` review.
+
+---
+
+## Relocated from CLAUDE.md (THR-1718) — the former § Design Governance card
+
+> **Relocated verbatim from `CLAUDE.md` by THR-1718 (2026-10-04).** CLAUDE.md now carries a shorter pointer. The text below is unchanged; paths in it are repo-root relative, and "this file" / "this section" mean their original place in `CLAUDE.md`. `CLAUDE.md` now carries a short card pointing here.
+
+### Design Governance
+
+**Authoritative home: [`Docs/canon/design-governance.md`](Docs/canon/design-governance.md).** Load it before any design pass — it carries the full workflow checklist (Steps 0–8.6), the Per-system required sections, and the maintenance rules. Two things stay here because they gate whether a design is allowed to exist at all:
+
+- **Never present a non-compliant design.** Draft → audit → revise → summarize happen in a single internal pass, before the user sees anything. If an NFP conflict is structural (not just a missing constant), surface it as a trade-off rather than hiding it.
+- **Three-Pillar Rule.** Every feature touches **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, modals, HexMap, player controls). **Do not move an issue forward unless all three pillars are addressed or explicitly marked N/A with rationale** — one- and two-pillar plans produce incomplete features that the executor rightfully defers. Exit criteria: `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+
+<details>
+<summary>Relocated 2026-07-26 (THR-760) — what moved</summary>
+
+The design-workflow checklist, Per-system required sections, and Maintenance-and-review bullets moved verbatim to `Docs/canon/design-governance.md`; no rule changed. `Docs/canon/process.md` points there.
+
+</details>
