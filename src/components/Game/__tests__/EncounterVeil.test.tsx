@@ -221,6 +221,44 @@ describe('EncounterVeil', () => {
   });
 
   /**
+   * THR-1720 — `affordable` used to be computed and never read, so a choice the
+   * paying pool could not cover was committable. It now dims with its reason
+   * (still readable and selectable), and the commit refuses while it is chosen.
+   */
+  it('dims an unaffordable choice with its reason and refuses to commit it', () => {
+    const onIntervene = vi.fn();
+    const model: EncounterStageModel = {
+      ...mockModel,
+      choices: mockModel.choices.map((c) =>
+        c.id === 'choice-coerce' ? { ...c, affordable: false, payingSphere: 'life' } : c,
+      ),
+    };
+    render(<EncounterVeil {...defaultProps} model={model} onIntervene={onIntervene} />);
+
+    const rows = screen.getAllByTestId('veil-choice');
+    const coerce = rows.find((r) => r.textContent?.includes('Hold the shipment'))!;
+    const support = rows.find((r) => r.textContent?.includes('Let the grain through'))!;
+    expect(coerce).toHaveAttribute('data-choice-affordable', 'false');
+    expect(Number(coerce.style.opacity)).toBeLessThan(1);
+    expect(within(coerce).getByTestId('choice-unaffordable-reason')).toHaveTextContent('Not enough Life essence');
+    // Affordable rows are untouched.
+    expect(support.style.opacity).toBe('1');
+    expect(within(support).queryByTestId('choice-unaffordable-reason')).toBeNull();
+
+    const commit = screen.getByTestId('stage-commit');
+    fireEvent.click(coerce);
+    expect(commit).toBeDisabled();
+    fireEvent.click(commit);
+    expect(onIntervene).not.toHaveBeenCalled();
+
+    // Switching to a choice the pool covers re-enables the commit.
+    fireEvent.click(support);
+    expect(commit).toBeEnabled();
+    fireEvent.click(commit);
+    expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
+  });
+
+  /**
    * The legacy pair is gone as *labels*, not merely relocated — the director's
    * finding was about the words on screen ("the resume/intervene buttons bottom
    * right ... is a legacy UX pattern"), so absence is the assertion.
