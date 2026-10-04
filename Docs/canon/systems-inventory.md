@@ -277,6 +277,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-1650`, `THR-452`, `THR-506` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
 | `derive` (1) | `deriveLocationActivities.ts` | — |
+| `descent` (1) | `descent.ts` | `THR-1658` |
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | `THR-577` |
 | `digest` (1) | `digestBuffer.ts` | — |
 | `disposition` (1) | `disposition.ts` | — |
@@ -431,4 +432,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 628 modules._
+_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 205 engine domains · 629 modules._

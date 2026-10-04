@@ -8,7 +8,7 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-13 kinds · 1282 claimed entries across 41 catalogs.
+13 kinds · 1283 claimed entries across 41 catalogs.
 
 ## Drift
 
@@ -35,7 +35,7 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 | `trait_template` | Trait | 59 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8)<br>`TEMPER_TRAIT_DEFINITIONS` (4/4) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
 | `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
 | `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
+| `ambition_template` | Ambition | 21 | `AMBITION_TEMPLATES` (11/11)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
 | `omen_template` | Omen | 44 | `OMEN_TEMPLATES` (44/44) | _(nothing)_ | card only | — | Omens & Atmospheric Pressure | 🟢 LIVE |
 | `nudge_card` | Card | 37 | `NUDGE_CARD_LIBRARY` (37/37) | _(nothing)_ | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
 

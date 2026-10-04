@@ -1011,6 +1011,94 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       'The healing hands stilled. Some wounds, it turned out, were her own.',
     ],
   },
+
+  // 11. Raise the Old Banner (dominion) — Iron/Heart, descent-gated (THR-1658)
+  //
+  // The descendant's drive, sibling to the exile's `reclaim_homeland` (which stays as
+  // it is). An heir lives on the old land already, so there is no *return*; the want is
+  // to walk the stones the forebears left and plant a banner on the old ground. Nobody
+  // living is blamed for an empire that fell centuries ago, so there is no culprit and
+  // no grievance block — a soft drive, filled only through the ordinary re-evaluation
+  // when a slot frees (no t0 mint: initial assignment runs before worldgen writes
+  // descent, and its snapshots carry none, so the gate fails closed there).
+  //
+  // Appended, not placed beside the other dominion drives: selection draws one PRNG
+  // value per eligible template in pool order, so an entry at the tail leaves every
+  // earlier template's draw untouched for the heirs it *is* eligible for.
+  {
+    id: 'ambition_raise_the_old_banner',
+    displayName: 'Raise the Old Banner',
+    category: 'dominion',
+    requiresDescent: true,
+    // `reclaim_homeland`'s floors; every measured heir passes them.
+    reachFloors: { iron: 0.3, heart: 0.3 },
+    requiredTraits: [],
+    blockingTraits: [],
+    sphereAffinities: ['force', 'spirit'],
+    bondModifiers: [{ bondType: 'kin', modifier: 0.3 }],
+    boostingTraits: ['trait.mastery.steadfast'],
+    reachAffinity: { iron: 0.6, heart: 0.6, stone: 0.3 },
+    // Close to `reclaim_homeland`'s profile (which measured first in heirs' refill
+    // ranking); `preservation_transformation` leans harder — this keeps an old thing alive.
+    poleAffinities: [
+      { valuePair: 'loyalty_ambition', pole: 'virtue', weight: 0.6 },
+      { valuePair: 'preservation_transformation', pole: 'virtue', weight: 0.8 },
+    ],
+    strategicProfile: {
+      behaviorFamily: 'warlord-expansion',
+      preferredVerbs: ['gather_info', 'control', 'create'],
+      // The claims start from the heir's own hex on the old land
+      // (`orderTargetsByProximity`), so they land on old ground without a target rule.
+      cells: [
+        'cell.observe.location',
+        'cell.control_claim.place',
+        'cell.control_claim.location',
+        'cell.control_seize.location',
+        'cell.create.place',
+      ],
+      templateIds: [],
+      reachEmphasis: { iron: 0.6, heart: 0.5, stone: 0.3 },
+    },
+    milestones: [
+      {
+        id: 'old_stones',
+        condition: { type: 'agent_at_ancestral_ruin' },
+        prose: ['They walked among the old stones, and the stones seemed to know them.'],
+      },
+      {
+        // Window-bound: only ground taken since the drive began counts.
+        id: 'old_ground',
+        condition: { type: 'agent_took_ancestral_ground' },
+        prose: ['A piece of the old land answers to them now.'],
+      },
+    ],
+    completion: { requires: 2, of: 2 },
+    abandonmentTriggers: [
+      {
+        // Rooted somewhere off the old land, for the exile's dwell, measured from this
+        // drive's own `assignedTick`. Region-aware on purpose: the exile's
+        // `agent_away_from_origin` is location-exact, and would end the drive for an
+        // heir who settled at the next town — or at the ruin they came to walk.
+        condition: { type: 'agent_rooted_off_ancestral_land', minTicks: EXILE_ACCEPTED_DWELL_TICKS },
+        prose: ['The old empire went back to being a story told by the fire.'],
+      },
+    ],
+    abandonmentCooldown: 50,
+    selectionProse: [
+      'Their forebears ruled this country once. The thought will not leave them alone.',
+      'The old stones still stand here. Someone ought to remember whose they were.',
+    ],
+    milestoneProse: {
+      old_stones: ['They walked among the old stones, and the stones seemed to know them.'],
+      old_ground: ['A piece of the old land answers to them now.'],
+    },
+    completionProse: [
+      'The old banner flies again over a corner of the old land. Small, but theirs.',
+    ],
+    abandonmentProse: [
+      'The old empire went back to being a story told by the fire.',
+    ],
+  },
 ] as const;
 
 // ─── Grievance Ambition Templates (THR-1298) ─────────────────────────────────

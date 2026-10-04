@@ -6,6 +6,22 @@
 
 ---
 
+## Raise the Old Banner — descent becomes a want (THR-1658)
+
+Plan: `Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `engine/descent.ts` (new — `getDescentCultureIds`, `historicalCultureOfRegion`, `ancestralRuinIds`, `isAtAncestralRuin`, `tookAncestralGround`) | read-only; called from the two passes below and from worldgen S1e | — | graph (`backstoryStrata`, `belongs_to` historical, `elder_ruin.originCultureId`, `owns.acquiredTick`) | — | `__DEBUG.getDescent()` |
+| `ambitionSelection.passesEligibility` descent gate + `buildAmbitionAgentSnapshot.descentCultureIds` | `phaseAmbitionProgress` → re-evaluation (25 ticks) | — | graph (`pursues`) | existing `ambition_assigned` event / `ambition_progress` trace | existing ambition accessors |
+| `graphConditions` `agent_at_ancestral_ruin`, `agent_took_ancestral_ground` | milestone pass (15 ticks) | ambition progress surfaces (existing) | graph | existing milestone / completion events | existing ambition accessors |
+| `ambitionTick` refill label (`oldBannerLabel`) + decider-only offer | re-evaluation | `IntentSection` (existing, renders `mintedByLabel`) | `pursues.mintedByLabel` | — | `getDescent()` (`holdsOldBanner`) |
+
+- [x] Engine module called from a live path: `descent.ts` ← `graphConditions` (milestone pass), `ambitionTick` (snapshot), `worldPast` S1e.
+- [x] UI renders the output: the existing intent line, *"Because of the old blood of …"*; no new component.
+- [x] No new trace type (read model only; plan § Tracing).
+- [x] Debug lever: `__DEBUG.getDescent(nameOrId)` (async, JSDoc in `debug-bridge.d.ts`).
+
 ## The seeded item generator — a masterwork is made with an idea (THR-1570)
 
 Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.

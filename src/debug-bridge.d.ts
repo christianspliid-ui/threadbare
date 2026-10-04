@@ -530,6 +530,23 @@ export interface DebugBridge {
     reaches: Record<string, { raw: number; share: number }>;
   } | null>;
   /**
+   * THR-1658: an agent's descent from a dead empire (worldgen's `backstoryStrata`
+   * `relation: 'descent'`) and whether it holds the Raise-the-Old-Banner drive.
+   * `ancestralRuinIds` are the elder ruins of its descent cultures (the
+   * *walk the old stones* milestone's targets); `onAncestralLand` is true when its
+   * current region was one of those empires' land. A read model, not a trace.
+   * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not
+   * found. **Async — await it.**
+   */
+  getDescent: (nameOrId: string) => Promise<{
+    actorId: string;
+    descentCultureIds: string[];
+    descentCultureNames: string[];
+    ancestralRuinIds: string[];
+    onAncestralLand: boolean;
+    holdsOldBanner: boolean;
+  } | null>;
+  /**
    * Returns all attachments for an agent (possessions, conditions, powers, agreements).
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
@@ -1881,13 +1898,14 @@ export interface DebugBridge {
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */
   spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };
-  /** THR-775 — Stage the nudge golden exemplar (`The Darkhollow Vault`) on an agent at
+  /** THR-775 — Stage the nudge golden exemplar (`The Swollen Ford`) on an agent at
    *  the attended tier, so the nudge hand is actually in play.
    *
    *  The exemplar is a fixture deliberately absent from every pool, so this registers it
    *  into the lookup index first (index only — never `UNIFIED_ACTION_TEMPLATES`, so no
-   *  scoring pass can draw it afterwards). The sanctioned browser-verify path for the
-   *  nudge stage until WS5 converts shipped templates. */
+   *  scoring pass can draw it afterwards). A fixture-only route: the sanctioned
+   *  browser-verify path for a shipped encounter is the `?spawn=<templateId>` URL lever
+   *  (THR-883). Read the staged hand back with `getEncounterNudges(agentQuery, result.actionId)`. */
   spawnNudgeExemplar: (agentQuery: string) => Promise<DebugSpawnEncounterResult & { notificationId?: string }>;
   /** Prepare encounter context (support bundle, anchor location) without spawning. */
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
@@ -2074,9 +2092,16 @@ export interface DebugBridge {
    *  is that nudges exist ONLY in the attended encounter, so an authored hand on a
    *  background action is inert by design, not by bug.
    *
-   *  Agent matching: exact id, then id prefix, then case-insensitive partial name.
+   *  Agent matching (THR-893): the same resolver the spawners use — `@hero`, `@avatar`,
+   *  `@ascendant`, then exact id, id prefix, case-insensitive partial name.
+   *
+   *  Action choice (THR-893): pass `actionId` (e.g. the `actionId` a spawn returned) to
+   *  read exactly that action. Without it, reads the newest unresolved action whose
+   *  notification is open (the encounter on screen), else the newest unresolved, else the
+   *  newest of any state — never merely the first unresolved one.
+   *
    *  Read-only. `{ error }` when no live state / no matching actor / no action / no template. */
-  getEncounterNudges: (agentRef: string) => Promise<
+  getEncounterNudges: (agentRef: string, actionId?: string) => Promise<
     | { error: string }
     | {
       actionId: string;
