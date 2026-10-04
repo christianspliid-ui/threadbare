@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 01:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,10 +25,10 @@ Say "veto fair draw", "veto arrival", "veto hand bar" or "veto set-down waits" t
 
 **4 jobs ready** (healthy), nothing being built. All four wait on the veto windows above; the first one opens ~02:45 tonight. The fair-draw pull request ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)) is held on purpose until then.
 
-- [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready (last touched 21:51 UTC). Most likely a pickup run that backed off for the veto window; the next pickup run sorts it out.
+- [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready (last touched 21:51 UTC). Most likely a pickup run that backed off for the veto window; the next pickup run after ~08:45 sorts it out.
 
 ## Health
 
-- **The heavy simulation tests are red on main**, now ~7 h. A builder owes a fix, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (477 worktrees, 324 local branches on disk; reaper ran 00:40). Noted for visibility.
+- **The heavy simulation tests are red on main**, now ~8 h. A builder owes a fix, not you.
+- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 322 local branches on disk; reaper ran 01:40). Noted for visibility.
 - Everything else is green. Simulation speed is normal (99 ms per tick, below its weekly median of 114). The live site is current (only docs changed since the last publish), automated checks run normally, and all 11 scheduled tasks are on time.
