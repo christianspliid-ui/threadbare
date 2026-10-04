@@ -1,23 +1,14 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### Finish the playthrough: two encounters left, screen clean ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with))
+### A finished change stuck for 28 hours: the fair draw for experts ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-You stopped after four feedback batches on Saturday 12 September, saying *"more batches expected."* Everything those batches produced is shipped and live, including the last blemish ([THR-1516](https://linear.app/threadbare/issue/THR-1516/sphere-flavor-leaks-raw-into-social-scene-step-prose-its-resolver)).
+The armed-PR check escalated it: *"A finished change has been stuck for 28 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
-- [The Unsafe Bridge](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
-- [Riders Behind the Caravan](https://threadbearer.co/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
-
-The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
-
-### A finished change stuck for 28 hours: the seeded spell generator ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and))
-
-The armed-PR check escalated it: *"A finished change has been stuck for 28 hours and cannot merge on its own: PR #2178 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
-
-**Nothing for you to do by hand.** Clearing the conflict is a builder's job; the code is safe on the pull request. The spell-gifts design ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)) waits on it. The fair-draw PR [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) is stuck the same way but on purpose: it waits on its veto window (~02:45 Monday), then a builder clears it.
+**You don't need to do anything.** It is held on purpose until its veto window closes (~02:45 Monday). After that, a builder clears the conflict. The code is safe on the pull request.
 
 ### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
 
@@ -49,6 +40,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: the playthrough is paused until your morning findings are built** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). You played The Unsafe Bridge, and four jobs came out of it ([THR-1724](https://linear.app/threadbare/issue/THR-1724/encounter-screen-christians-2026-10-04-layout-pass-169-card-art-skill), [THR-1725](https://linear.app/threadbare/issue/THR-1725/remove-the-threads-placeholder-lines-from-encounters-show-nothing), [THR-1726](https://linear.app/threadbare/issue/THR-1726/the-unsafe-bridge-the-keepers-name-is-missing-from-the-scene-prose-the), [THR-1727](https://linear.app/threadbare/issue/THR-1727/encounter-stakes-line-one-formula-sentence-replaces-the-summary-and)). The invitation comes back once all four are live.
+- **2026-10-04: the seeded spell generator is unstuck** ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178)). A builder cleared its clash, and it is now queued to merge.
 - **2026-10-04: the word *Tradition* is now in the game glossary** ([THR-1701](https://linear.app/threadbare/issue/THR-1701)). Merged via [#2210](https://github.com/christianspliid-ui/threadbare/pull/2210).
 - **2026-10-04: an encounter choice the god can't afford can no longer be played** ([THR-1720](https://linear.app/threadbare/issue/THR-1720/an-authored-encounter-choice-the-god-cant-afford-is-still-playable)). Merged via [#2205](https://github.com/christianspliid-ui/threadbare/pull/2205).
 - **2026-10-04: a descendant can want the old homeland back** ([THR-1658](https://linear.app/threadbare/issue/THR-1658/a-descendant-can-want-the-old-homeland-back-a-reclaim-homeland-rule)): the "Raise the Old Banner" ambition. Merged via [#2208](https://github.com/christianspliid-ui/threadbare/pull/2208).
@@ -57,8 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: an apex monster's card now names the apex** ([THR-1698](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and)), not just the fight header. Merged via [#2204](https://github.com/christianspliid-ui/threadbare/pull/2204).
 - **2026-10-04: a rival's strike now plays out as an encounter** ([THR-1703](https://linear.app/threadbare/issue/THR-1703/the-rival-strike-has-no-encounter-author-shadowrival-strike-so)): it is held where it cannot land, and both worst-case endings show and write the same harm. Merged via [#2203](https://github.com/christianspliid-ui/threadbare/pull/2203).
 - **2026-10-03: timed conditions now end on time** ([THR-1697](https://linear.app/threadbare/issue/THR-1697)): a timed condition never lands permanent by accident. Merged via [#2202](https://github.com/christianspliid-ui/threadbare/pull/2202).
-- **2026-10-03: reward draws now carry found things** ([THR-1626](https://linear.app/threadbare/issue/THR-1626/item-generator-minting-point-2-reward-draws-carry-generated-items-at)): generated items can turn up in an encounter's rewards. Merged via [#2201](https://github.com/christianspliid-ui/threadbare/pull/2201).
-- **2026-10-03: six small interface faults fixed** ([THR-1711](https://linear.app/threadbare/issue/THR-1711)), including the time control now showing the held state a press will change. The last round-2 playtest bug. Merged via [#2198](https://github.com/christianspliid-ui/threadbare/pull/2198).
 
 ---
 
