@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
-import { ensureDebugSpawnThread, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../debugEncounterTools';
+import {
+  ensureDebugSpawnThread, findAgent, prepareDebugEncounterContext, prepareDebugEncounterSpawn,
+  selectDebugReaderAction,
+} from '../debugEncounterTools';
+import type { UnifiedAction } from '../../types/unifiedAction';
+import type { EncounterNotification } from '../../types/encounterVisibility';
 import { phaseEncounterVisibility } from '../encounterVisibility';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import * as unifiedActionTemplates from '../../data/unified-action-templates';
@@ -454,5 +459,46 @@ describe('debug spawn threads its target (THR-934)', () => {
     // precisely why the bug read as "steps 2+ resolve silently".
     expect(stepTwo).toBeDefined();
     expect(stepTwo!.autoResolveTick).not.toBeNull();
+  });
+});
+
+// THR-893 — getEncounterNudges must resolve agents and pick actions the way the
+// spawners do, so a spawned encounter's hand can be read back.
+describe('debug reader parity (THR-893)', () => {
+  const action = (actionId: string, actorId: string, resolved = false) =>
+    ({ actionId, actorId, resolved }) as unknown as UnifiedAction;
+  const note = (actionId: string, agentId: string, viewed: boolean, resolved = false) =>
+    ({ actionId, agentId, viewed, resolved }) as unknown as EncounterNotification;
+
+  it('findAgent resolves the alias refs, ids and partial names', () => {
+    const state = makeGateDutyState();
+    expect(findAgent(state, '@ascendant')?.id).toBe('asc_1');
+    expect(findAgent(state, '@hero')?.properties.actorType).toBe('individual');
+    expect(findAgent(state, 'agent_1')?.id).toBe('agent_1');
+    expect(findAgent(state, 'recr')?.id).toBe('agent_1');
+    state.graph.addEdge({ id: 'av', source: 'agent_1', target: 'asc_1', type: 'avatar_of', properties: {} });
+    expect(findAgent(state, '@hero')?.id).toBe('agent_1');
+    expect(findAgent(state, '@avatar')?.id).toBe('agent_1');
+  });
+
+  it('prefers the opened encounter over an earlier unresolved one', () => {
+    const actions = [action('ua_sim', 'a'), action('ua_spawn', 'a'), action('ua_other', 'b')];
+    expect(selectDebugReaderAction(actions, [note('ua_spawn', 'a', true)], 'a')?.actionId).toBe('ua_spawn');
+    // An opened notification that is already resolved does not count.
+    expect(selectDebugReaderAction(
+      [action('ua_spawn', 'a'), action('ua_sim', 'a')], [note('ua_spawn', 'a', true, true)], 'a',
+    )?.actionId).toBe('ua_sim');
+  });
+
+  it('falls back to the newest unresolved, then the newest of any state', () => {
+    expect(selectDebugReaderAction([action('x', 'a'), action('y', 'a')], [], 'a')?.actionId).toBe('y');
+    expect(selectDebugReaderAction([action('x', 'a', true), action('y', 'a', true)], [], 'a')?.actionId).toBe('y');
+    expect(selectDebugReaderAction([action('x', 'b')], [], 'a')).toBeUndefined();
+  });
+
+  it('an explicit actionId wins and never falls back', () => {
+    const actions = [action('x', 'a'), action('y', 'a', true)];
+    expect(selectDebugReaderAction(actions, [note('x', 'a', true)], 'a', 'y')?.actionId).toBe('y');
+    expect(selectDebugReaderAction(actions, [], 'a', 'missing')).toBeUndefined();
   });
 });
