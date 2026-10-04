@@ -175,6 +175,7 @@ export function tryGeneratedReward(req: GeneratedRewardRequest): GeneratedReward
       holderId: req.recipientId,
       rerolls: fit.rerolls,
       source: 'item_generator:found_reward',
+      worldSeed: req.seed,
     });
     if (!minted) {
       trace('mint_failed', attempts, null, null);
@@ -185,11 +186,18 @@ export function tryGeneratedReward(req: GeneratedRewardRequest): GeneratedReward
     const node = req.graph.getNode(minted);
     if (node) node.properties.acquiredTick = req.tick;
     trace('substituted', attempts, fit.item, minted);
+    // THR-1672 — a forbidden book teaches on the way in; read the teaching back off the
+    // reader's edge (Law 56) so the reward line can say what they learned.
+    const taughtEdge = req.graph.getOutgoingEdges(req.recipientId, 'knows_spell').find(e => e.properties.viaItemId === minted);
+    const taughtSpellName = taughtEdge ? req.graph.getNode(taughtEdge.target)?.name : undefined;
     return {
       substituted: true,
       band,
       item: fit.item,
-      instantiation: { instanceId: minted, edgeId: `possesses_${req.recipientId}_${minted}`, category: 'possession', displayName: fit.item.name },
+      instantiation: {
+        instanceId: minted, edgeId: `possesses_${req.recipientId}_${minted}`, category: 'possession', displayName: fit.item.name,
+        ...(taughtSpellName ? { taughtSpellName } : {}),
+      },
     };
   } catch {
     return { substituted: false, reason: 'mint_failed' };

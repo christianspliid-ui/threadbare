@@ -244,6 +244,12 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               {entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`}
             </p>
           )}
+          {/* THR-1672 — a book-taught spell names its book, read off the bearer's edge. */}
+          {entry.learnedFrom && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }} data-testid={`attachment-learned-from-${entry.id}`}>
+              {`Learned from ${entry.learnedFrom}`}
+            </p>
+          )}
           {/* THR-1572 \u2014 a generated spell speaks in words (Laws 4, 13): who taught it,
               what it does, what it costs, what goes wrong. Each line only when it has
               content; the words are derived from the template the engine casts. */}
@@ -370,6 +376,12 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
                 {spell.tradition}
               </span>
+              {/* THR-1672 — who or what taught it, in the same words as a carried spell. */}
+              {(spell.grantedBy || spell.learnedFrom) && (
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }} data-testid={`known-spell-provenance-${spell.id}`}>
+                  {spell.grantedBy ? `Granted by ${spell.grantedBy}` : `Learned from ${spell.learnedFrom}`}
+                </span>
+              )}
             </div>
           ))}
         </section>

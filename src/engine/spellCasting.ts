@@ -59,6 +59,9 @@ import { isAlly, actorFactionId } from './allegiance';
 import { areFactionsHostile } from './factionNetwork';
 import { applyCastChannel, splitCastEffects, type CastChannelResult } from './castChannel';
 import { placeSpellNotice, spellNoticeMarkId, spellProvenance } from './spellGenerator/notice';
+import { knowsSpellEdge } from './spellGrant';
+import { writeAgentDetection, type DetectionCrossingRecorder } from './agentDetection';
+import { DIVINE_TAUGHT_CAST_DETECTION } from '../data/spell-grant-constants';
 
 // ═══════════════════════════════════════════════════════════════════
 // Request / result
@@ -79,6 +82,12 @@ export interface CastRequest {
   readonly siteRef: string;
   /** THR-1683 — mortals the target filter turned away while choosing `targetId` (traced). */
   readonly filterRejected?: number;
+  /**
+   * THR-1672 — the detection crossing recorder for a god-taught transgression's echo.
+   * Handed in by callers outside the module cycle (`agentDetection.ts`); omitted, the
+   * echo still writes pressure but plants no strike.
+   */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 /** One graph write a cast produced — the only thing a chip may be built from (Law 56). */
@@ -363,10 +372,15 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
   }
 
   // 6b. A transgression is noticed (THR-1572, Lane decision 5) — on every cast, landed or not.
+  // THR-1672 — a god-taught transgression echoes back to the god: the mark names the
+  // teaching, and every cast adds detection where the caster stands (Lane decision 4).
   let notice: CastResult['notice'];
   if (spellProvenance(graph, spell.id)?.notice) {
-    const placed = placeSpellNotice(state, casterId, spell, tick, 'cast');
+    const taughtByRaw = knowsSpellEdge(graph, casterId, spell.id)?.properties.grantedBy;
+    const taughtBy = typeof taughtByRaw === 'string' ? taughtByRaw : undefined;
+    const placed = placeSpellNotice(state, casterId, spell, tick, 'cast', undefined, taughtBy);
     notice = { markId: spellNoticeMarkId(casterId, spell.id), placed: placed !== null };
+    if (taughtBy) divineEcho(state, taughtBy, casterId, spell, tick, landed, req.recordCrossings);
   }
 
   const result: CastResult = {
@@ -380,6 +394,29 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
   };
   traceResolved(req, result, triggersFired, channelResult);
   return result;
+}
+
+/** THR-1672 — each cast of a god-taught transgression adds detection in the caster's region. */
+function divineEcho(
+  state: GameState,
+  ascendantId: string,
+  casterId: string,
+  spell: SpellTemplate,
+  tick: number,
+  landed: boolean,
+  recordCrossings?: DetectionCrossingRecorder,
+): void {
+  const write = writeAgentDetection(state, casterId, DIVINE_TAUGHT_CAST_DETECTION, tick, recordCrossings);
+  if (!write) return;
+  try {
+    emitTrace({
+      category: 'spell.divine_echo', tick, agentId: casterId, ascendantId, casterId, spellId: spell.id,
+      regionId: write.regionId, detectionDelta: DIVINE_TAUGHT_CAST_DETECTION, landed,
+      summary: `${spell.name} was cast by one a god taught it to — the teaching echoes in ${write.regionId}`,
+    });
+  } catch {
+    /* NFP #4 */
+  }
 }
 
 function refuse(req: CastRequest, refused: CastRefusal): CastResult {

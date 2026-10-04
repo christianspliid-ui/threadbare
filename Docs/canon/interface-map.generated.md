@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 159 |
+| 🟢 LIVE | 160 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **219** |
+| **Total** | **220** |
 
 ## Contracts by producing subsystem
 
@@ -77,6 +77,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `a-mortal-is-taught-a-spell-by-a-god-or-a-book` | A god can teach a mortal a spell, and some books teach whoever comes to hold them (THR-1231 acquisition channels 1 and 4). Every channel writes through one seam, grantSpell, which records where the spell came from on the knows_spell edge (source divine + grantedBy, or tome + viaItemId); the sheet reads that edge to say who or what taught it, and the cast resolver reads it to make a god-taught transgression echo back to the god. | edge: `knows_spell`, `grantSpell`, `applyTeachSpell`, `onItemAcquired`, `spell_grant` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -371,6 +372,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/groups/groupDissolution.ts`
 - **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/HiddenMarksTab.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx`, `src/engine/ascendantExpression.ts` +12 more
 - **Verdict:** Verified 2026-08-18: src/engine/groups/__tests__/groupLifecycle.test.ts § "betrayal dissolution (THR-1174)" drives the reason through runGroupUpkeep and reads it off the result — never by passing the literal to selectPartingVariant, which is how this contract sat consumer-only for months. Disabling the trigger fails 3 of its rows; the negative rows (floor, category, former member, holding company) stay green by design.
+
+### `a-mortal-is-taught-a-spell-by-a-god-or-a-book` — 🟢 LIVE
+
+- **Intent:** A god can teach a mortal a spell, and some books teach whoever comes to hold them (THR-1231 acquisition channels 1 and 4). Every channel writes through one seam, grantSpell, which records where the spell came from on the knows_spell edge (source divine + grantedBy, or tome + viaItemId); the sheet reads that edge to say who or what taught it, and the cast resolver reads it to make a god-taught transgression echo back to the god.
+- **Producer → Consumer:** Ascendant Beats & Progression → Attachments, Items & Possessions
+- **UL terms:** *Spell*, *Bestowal*
+- **Module:** `src/engine/spellGrant.ts`
+- **Production hits:** 26 total — 6 write, 2 read, 18 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ascendantExpression.ts`, `src/engine/encounterAftermath.ts`, `src/engine/itemGenerator/mintGeneratedItem.ts`, `src/engine/rewardPool.ts` +1 more
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/nudge-card-library.ts`, `src/data/spell-grant-constants.ts` +13 more
+- **Verdict:** Verified 2026-10-04: THR-1672. spellGrant.test.ts: Teach a Spell on a threaded priest writes knows_spell { source: divine, grantedBy }; with no thread it no-ops (no_thread). Teaching a library transgression raises the doom clock tickModifier by DIVINE_TEACH_DARK_DOOM and the mortal’s region pressure by DIVINE_TEACH_DARK_DETECTION; teaching an authored spell moves neither. A cast of the god-taught transgression adds DIVINE_TAUGHT_CAST_DETECTION and its forbidden_contact mark reads "… was cast — <god>’s teaching". instantiateReward of reward_tomes_scrolls_veilscript_fragment teaches a farmer (source tome, viaItemId = the clone), once; the sheet entry carries learnedFrom "Veilscript Fragment"; a seized book teaches its new holder. A spell_grant nudge reaction teaches the scene actor from the god. The three pre-existing writers (seedSpellKnowing, create × Power, applySpellStamp) write byte-identical edges through grantSpell (spellGrant.pin.test.ts snapshots, written before the repoint).
 
 ### `active-influences-render-on-sheet` — 🔵 UNVERIFIED-OK
 
@@ -1147,10 +1160,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 40 total — 1 write, 1 read, 38 unclassified
+- **Production hits:** 42 total — 1 write, 1 read, 40 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +33 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +35 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -1360,10 +1373,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 131 total — 1 write, 1 read, 129 unclassified
+- **Production hits:** 132 total — 1 write, 1 read, 130 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +124 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +125 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -2020,10 +2033,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 105 total — 2 write, 3 read, 100 unclassified
+- **Production hits:** 109 total — 2 write, 3 read, 104 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +95 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/useDebugOpenModal.ts` +99 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -2032,10 +2045,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Nudge*, *Detection Pressure*, *Doom Clock*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 0 write, 2 read, 4 unclassified
 - **Write sites:** —
 - **Read sites:** `src/engine/doomClock.ts`, `src/engine/encounters/detectionPressure.ts`
-- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/agentDetection.ts`, `src/engine/ascendantExpression.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeCostChannels' src/engine/phases/phaseAutonomousAftermath.ts before treating this as a leak.
 
 ### `nudge-card-grants-dispatch-to-host-systems` — 🔵 UNVERIFIED-OK
@@ -2068,10 +2081,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/naming/workNames.ts`
-- **Production hits:** 31 total — 3 write, 1 read, 27 unclassified
+- **Production hits:** 32 total — 3 write, 1 read, 28 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +22 more
+- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +23 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `pilgrim-way-reaches-location-and-faction-sheets` — 🟢 LIVE
@@ -2195,10 +2208,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 348 total — 1 write, 1 read, 346 unclassified
+- **Production hits:** 351 total — 1 write, 1 read, 349 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +341 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +344 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2436,10 +2449,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Effects & Conditions
 - **UL terms:** *Spell*
 - **Module:** `src/engine/seedAttachments.ts`
-- **Production hits:** 21 total — 2 write, 2 read, 17 unclassified
+- **Production hits:** 22 total — 2 write, 2 read, 18 unclassified
 - **Write sites:** `src/engine/seedAttachments.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/effects/effectSuppression.ts`, `src/engine/effects/effectWalker.ts`
-- **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts`, `src/engine/attachmentSlotResolver.ts` +12 more
+- **Other hits:** `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts`, `src/engine/attachmentSlotResolver.ts` +13 more
 - **Verdict:** Verified 2026-10-03: THR-1572 extends the producer with the library path: buildSpellLibrary (worldSeed tail, immediately before seedSpellKnowing) derives each caster's tradition (casterTraditionOf: role themes × faction reach lean, hashed on the world seed and the caster's name), builds one library per tradition in use and mints the generated spells as shared definition nodes; seedSpellKnowing then seeds each caster from their tradition library's lowest tier by a hashed pick, recording `tradition` on the knows_spell edge. Measured, CLI tick 0: seed 42 medium 109/109 casters from a tradition library (0 via the cantrip), 198 spells across 33 traditions, 0 empty slots, 55 distinct seeded spells, top holder share 0.046 (bar SPELL_GEN_MAX_HOLDER_SHARE 0.2; before: one spell held by 100%); seed 99 medium 127/127, 180 spells across 30 traditions, 51 distinct, top share 0.071. Only step-arena spells are seeded, so no caster starts with map magic alone. Read-back: spellLibrary.test.ts › seeds every caster from their tradition library; the switch-off regression (no library → THR-1571's seeding byte for byte). THR-1571 S1. Before: the only writer of knows_spell was create × Power, which needs a caster in the deciding tier (one of 104 on seed 42), so no mortal in the world held a spell (census: knowsSpell 0, wieldSpell 0). After: seedSpellKnowing runs at the tail of seedWorld (after the living world, the first point every mortal exists) and writes knows_spell + has_trait with source seeded for every isCaster actor under SEEDED_CASTER_ROLES × SEEDED_SPELL_COVERAGE; sorted picks, no draws. Measured, CLI tick 0: seed 42 medium 109/109 casters seeded, 0 with more than one spell; seed 99 medium 127/127. All of them via the fallback (the lowest-tier template by id, Height Anchor), because no caster carries a sphere alignment — the generator (THR-1572) is what fills tradition shelves. Carried (fate-woven) spells ride the effect walker through the shared definition node, with their runtime state keyed per bearer (attachmentStateKey). Read-back: spellCasting.test.ts › The Wayfinding reveal and passive reach the wielder; a seal on one bearer silences only theirs.
 
 ### `seeded-ties-never-graduate` — 🟢 LIVE
@@ -2447,10 +2460,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 111 total — 1 write, 1 read, 109 unclassified
+- **Production hits:** 112 total — 1 write, 1 read, 110 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +104 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +105 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2518,10 +2531,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Effects & Conditions
 - **UL terms:** *Spell*
 - **Module:** `src/data/spell-templates.ts`
-- **Production hits:** 12 total — 2 write, 6 read, 4 unclassified
+- **Production hits:** 13 total — 2 write, 6 read, 5 unclassified
 - **Write sites:** `src/data/spell-templates.ts`, `src/engine/spellGenerator/spellLibrary.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildStepCastModel.ts`, `src/data/undertaking-objects.ts`, `src/engine/debugEncounterTools.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/stepCast.ts` +1 more
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/contentQuery.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/spellGenerator/readBack.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/contentQuery.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/spellGenerator/readBack.ts`, `src/engine/spellGrant.ts`
 - **Verdict:** Verified 2026-10-03: THR-1572. The nine former getSpellTemplate production sites read resolveSpellTemplate(graph, id); authored ids resolve exactly as before. Live read: spellLibrary.test.ts › a generated deliberate spell casts through use × Power — success lands its condition, failure writes nothing (both arms); stepCast.wieldedDeliberateSpells offers generated spells to the step cast, and ?spell=<generated id> stamps one on @hero through applySpellStamp.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE
@@ -2578,10 +2591,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 114 total — 2 write, 4 read, 108 unclassified
+- **Production hits:** 115 total — 2 write, 4 read, 109 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +103 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +104 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -2855,10 +2868,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 270 total — 2 write, 6 read, 262 unclassified
+- **Production hits:** 271 total — 2 write, 6 read, 263 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +257 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +258 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

@@ -31,7 +31,7 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 | `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 145 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 163 |  |
 | `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 98 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 124 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 125 |  |
 
 ## sphere
 

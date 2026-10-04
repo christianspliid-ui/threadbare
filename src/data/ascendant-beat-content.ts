@@ -406,7 +406,9 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
     templateId: 'beat.pool.invest.the_favored_soul',
-    grantsActionIds: ['action.bestow'],
+    // THR-1672: the favoured soul can be taught as well as gifted — Teach a Spell sits
+    // beside Bestow Power, a Spell rather than a Bestowal (Lane decision 3).
+    grantsActionIds: ['action.bestow', 'action.teach_spell'],
   },
   {
     beatId: 'beat.pool.invest.the_chosen_banner',
@@ -542,6 +544,7 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // THR-518: the relic variant of consecrate — same bucket, granted by the same beat.
   'action.consecrate-relic': { bucket: 'unlockable-generic' },
   'action.bestow': { bucket: 'unlockable-generic' },
+  'action.teach_spell': { bucket: 'unlockable-generic' },
   'action.anoint': { bucket: 'unlockable-generic' },
   // Divine-economy source-loop verbs (THR-611 Slice 3), granted by
   // `beat.pool.invest.the_wellspring`: claim/type a source, deepen it, ward it. Universal

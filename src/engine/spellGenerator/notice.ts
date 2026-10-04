@@ -43,6 +43,8 @@ export function placeSpellNotice(
   site: 'cast' | 'carried',
   /** The world to read the spell's provenance from, when the state does not carry it. */
   graph?: WorldGraph,
+  /** THR-1672 — the god who taught this caster the spell; the mark then names the teaching. */
+  taughtBy?: string,
 ): HiddenMark | null {
   try {
     const world = graph ?? state.graph;
@@ -56,7 +58,9 @@ export function placeSpellNotice(
       markId,
       category: 'forbidden_contact',
       severity: notice.severity,
-      label: `${spell.name} was cast`,
+      label: taughtBy
+        ? `${spell.name} was cast — ${world.getNode(taughtBy)?.name ?? 'a god'}'s teaching`
+        : `${spell.name} was cast`,
       sourceEncounterId: `spell:${spell.id}`,
       placedTick: tick,
       targetAgentId: casterId,

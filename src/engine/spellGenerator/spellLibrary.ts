@@ -18,7 +18,7 @@
  */
 
 import type { WorldGraph } from '../graph';
-import type { SpellArena, SpellAgency, SpellTemplate } from '../../types/effects';
+import type { SpellArena, SpellAgency } from '../../types/effects';
 import { drawFromTable, rollTableUnit } from '../../lib/drawTable';
 import { emitTrace } from '../traceBuffer';
 import { isCaster } from '../casterIdentity';
@@ -31,9 +31,11 @@ import { QUINTESSENCE_PASSIVE_REGEN } from '../../types/quintessence';
 import { casterTraditionOf } from './casterTradition';
 import { eligibleCores, generateSpell, spellSeedKey } from './generateSpell';
 import { validateGeneratedSpell } from './validateGeneratedSpell';
-import type { GeneratedSpell, GeneratedSpellProvenance, SpellGenTier } from './types';
+import type { GeneratedSpell, SpellGenTier } from './types';
 
 export { placeSpellNotice, spellNoticeMarkId, spellProvenance } from './notice';
+export { sortLibrary, getTraditionLibrary } from './libraryRead';
+import { sortLibrary } from './libraryRead';
 
 // ═══════════════════════════════════════════════════════════════════
 // The slate
@@ -215,22 +217,8 @@ export function buildSpellLibrary(graph: WorldGraph, worldSeed: number, casterId
   return { index: { byTradition, traditionOf }, spells, report };
 }
 
-/** Sort a library the way seeding and learning read it: tier, then id (NFP #3). */
-export function sortLibrary<T extends Pick<SpellTemplate, 'tier' | 'id'>>(spells: readonly T[]): T[] {
-  return [...spells].sort((a, b) => a.tier - b.tier || a.id.localeCompare(b.id));
-}
-
-/** A tradition's generated spells, read back off the graph, by tier then id. */
-export function getTraditionLibrary(graph: WorldGraph, traditionId: string): SpellTemplate[] {
-  const out: SpellTemplate[] = [];
-  for (const n of graph.getNodesByType('trait')) {
-    if (n.properties.subcategory !== 'spell' || n.properties.origin !== 'generated') continue;
-    const prov = n.properties.generated as Partial<GeneratedSpellProvenance> | undefined;
-    const template = n.properties.template as SpellTemplate | undefined;
-    if (prov?.traditionId === traditionId && template) out.push(template);
-  }
-  return sortLibrary(out);
-}
+// THR-1672: `sortLibrary` / `getTraditionLibrary` moved to `libraryRead.ts` (re-exported
+// above) so the grant seam can read a library without importing the generator.
 
 // ═══════════════════════════════════════════════════════════════════
 // The population envelope — the soul drain carried at tick 0

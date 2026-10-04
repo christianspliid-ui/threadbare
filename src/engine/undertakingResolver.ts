@@ -34,6 +34,7 @@ import {
 } from '../data/undertaking-objects';
 import { STRATEGIC_VERB_OF_UNDERTAKING_VERB, OWNERSHIP_BY_VERB } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
+import { recordDetectionCrossings } from './orchestrator/phaseDetectionPressure';
 
 export type ObjectOwnership = 'own' | 'other' | 'unowned';
 
@@ -197,6 +198,8 @@ export function resolveUndertakingCompletion(input: UndertakingResolutionInput):
     originLocationId: input.originLocationId, targetNodeId: input.targetNodeId,
     boundCastIds: input.boundCastIds, params: input.params,
     outcome: input.outcome,
+    // THR-1672 — a god-taught transgression's cast echo crosses detection bands here too.
+    recordCrossings: recordDetectionCrossings,
   };
 
   let result: GraphOpResult;
