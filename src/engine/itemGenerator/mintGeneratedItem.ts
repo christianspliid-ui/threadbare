@@ -18,6 +18,7 @@ import { assignArtifactTrait } from '../artifactTraits';
 import { ARTIFACT_CURSED_TRAIT_ID, ARTIFACT_STORIED_TRAIT_ID } from '../../data/artifact-trait-content';
 import { ITEM_GEN_MAX_REROLLS, STORIED_START_LEVEL_FOUND_BY_BAND, STORIED_START_LEVEL_MASTERWORK } from '../../data/item-generator-tables';
 import { tryGenerate } from './generateItem';
+import { onItemAcquired } from '../spellGrant';
 import { validateGeneratedItem } from './validateGeneratedItem';
 import type { GenerateItemRefusal } from './generateItem';
 import type { GeneratedItem, GeneratedItemProvenance, ItemGenRequest } from './types';
@@ -81,6 +82,8 @@ export interface MintGeneratedItemOptions {
   readonly edgeTags?: readonly string[];
   /** Trace/source word for the trait stamps. */
   readonly source?: string;
+  /** THR-1672 — the world seed, for a teaching book's hashed pick. */
+  readonly worldSeed?: number;
 }
 
 /**
@@ -155,6 +158,12 @@ export function mintGeneratedItem(graph: WorldGraph, item: GeneratedItem, opts: 
       rerolls: opts.rerolls ?? 0,
       storiedLevel,
     });
+
+    // THR-1672 — a forbidden book teaches whoever comes to hold it. A masterwork's
+    // maker does not learn from the book they wrote; the next holder does.
+    if (opts.holderId && opts.holderId !== opts.makerId) {
+      onItemAcquired(graph, opts.holderId, opts.id, opts.tick, 'minted', opts.worldSeed ?? 0);
+    }
     return opts.id;
   } catch {
     // Leave no half-minted thing behind: the caller's fallback mints its own node.

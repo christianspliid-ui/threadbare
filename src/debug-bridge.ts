@@ -2929,7 +2929,8 @@ if (import.meta.env.DEV) {
         const sub = g.getNode(id)?.properties.subcategory;
         return sub === 'spell' || sub === 'innate_power';
       };
-      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string; tradition?: string }> = [];
+      type GrantEdge = { spellId: string; source: string; grantedBy?: string; viaItemId?: string };
+      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string; tradition?: string; grants: GrantEdge[] }> = [];
       for (const actor of g.getNodesByType('actor')) {
         const wieldedEdges = g.getOutgoingEdges(actor.id, 'has_trait').filter(e => isSpell(e.target));
         const knownEdges = g.getOutgoingEdges(actor.id, 'knows_spell');
@@ -2944,6 +2945,13 @@ if (import.meta.env.DEV) {
           ...(knownEdges.find(e => typeof e.properties.tradition === 'string')
             ? { tradition: String(knownEdges.find(e => typeof e.properties.tradition === 'string')!.properties.tradition) }
             : {}),
+          // THR-1672 — where each known spell came from, per edge.
+          grants: knownEdges.map(e => ({
+            spellId: e.target,
+            source: String(e.properties.source ?? ''),
+            ...(typeof e.properties.grantedBy === 'string' ? { grantedBy: e.properties.grantedBy } : {}),
+            ...(typeof e.properties.viaItemId === 'string' ? { viaItemId: e.properties.viaItemId } : {}),
+          })),
         });
       }
       return out.sort((a, b) => a.actorId.localeCompare(b.actorId));
@@ -3711,6 +3719,46 @@ if (import.meta.env.DEV) {
         touchWorld(runtime);
       }
       return { ok: true as const, id, name: result.item.name, coreId: result.item.coreId, signatureId: result.item.signatureId, band: result.item.band, holderId: agent.id };
+    },
+
+    // THR-1672: the god teaches a mortal a spell — the divine path with the gates bypassed
+    // (the `applySpellStamp` pattern). Picks as the card would, unless `spellId` names one.
+    teachSpell: async (agentQuery = '@hero', spellId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { ok: false as const, reason: 'no_game' };
+      const agent = await resolveAgentNode(agentQuery);
+      if (!agent) return { ok: false as const, reason: 'agent_not_found' };
+      const { applyTeachSpell } = await import('./engine/ascendantExpression');
+      const taught = applyTeachSpell(state, state.ascendantId, agent.id, state.tick, {
+        bypassGates: true,
+        ...(spellId ? { spellId: spellId.startsWith('spell_') ? spellId : `spell_${spellId}` } : {}),
+      });
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchStructure } = await import('./engine/simulationRuntime');
+        touchStructure(runtime);
+      }
+      return taught.success
+        ? { ok: true as const, agentId: agent.id, spellId: taught.spellId, spellName: taught.spellName, dark: !!taught.dark, wielded: !!taught.wielded }
+        : { ok: false as const, reason: taught.failSoft ?? 'refused' };
+    },
+
+    // THR-1672: hand a mortal a reward book through `instantiateReward`, so the teaching
+    // hook runs for real (`reward_tomes_scrolls_veilscript_fragment` teaches).
+    giveTome: async (agentQuery = '@hero', templateId = 'reward_tomes_scrolls_veilscript_fragment') => {
+      const state = _gameStateProvider?.();
+      if (!state) return { ok: false as const, reason: 'no_game' };
+      const agent = await resolveAgentNode(agentQuery);
+      if (!agent) return { ok: false as const, reason: 'agent_not_found' };
+      const { instantiateReward } = await import('./engine/rewardPool');
+      const result = instantiateReward(state.graph, templateId, agent.id, state.tick);
+      if (!result) return { ok: false as const, reason: 'template_or_agent_missing' };
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchStructure } = await import('./engine/simulationRuntime');
+        touchStructure(runtime);
+      }
+      return { ok: true as const, agentId: agent.id, itemId: result.instanceId, itemName: result.displayName, ...(result.taughtSpellName ? { taughtSpellName: result.taughtSpellName } : {}) };
     },
 
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.

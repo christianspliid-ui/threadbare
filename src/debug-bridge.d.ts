@@ -2272,7 +2272,25 @@ export interface DebugBridge {
     readonly source: string;
     /** THR-1572 — the tradition on a library-seeded or library-learned `knows_spell` edge. */
     readonly tradition?: string;
+    /** THR-1672 — every `knows_spell` edge with its provenance: `source` (`'divine'`,
+     *  `'tome'`, …), the teaching god's id (`grantedBy`) or the book's id (`viaItemId`). */
+    readonly grants: ReadonlyArray<{ readonly spellId: string; readonly source: string; readonly grantedBy?: string; readonly viaItemId?: string }>;
   }>;
+  /** THR-1672 — the god teaches a mortal a spell, gates bypassed (debug). Picks as the
+   *  Teach a Spell card would — the god's spheres, then the mortal's tradition — unless
+   *  `spellId` names one (`hollow_crown` or `spell_hollow_crown`). A dark spell charges
+   *  the god doom and detection, as the card does. **Async** — `await` it. */
+  teachSpell: (agentQuery?: string, spellId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly spellId?: string; readonly spellName?: string; readonly dark: boolean; readonly wielded: boolean }
+    | { readonly ok: false; readonly reason: string }
+  >;
+  /** THR-1672 — hand a mortal a reward book through `instantiateReward` so the teaching
+   *  hook runs for real (default `reward_tomes_scrolls_veilscript_fragment`).
+   *  `taughtSpellName` is set when the book taught them. **Async** — `await` it. */
+  giveTome: (agentQuery?: string, templateId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly itemId: string; readonly itemName: string; readonly taughtSpellName?: string }
+    | { readonly ok: false; readonly reason: string }
+  >;
   /** THR-1572 — every tradition library this world built, each spell with its holder
    *  count (`has_trait` bearers). Spell ids are template ids (`spell_gen_holy_1_0`), the
    *  form `?spell=` accepts. Empty before the world exists. **Async** — `await` it. */

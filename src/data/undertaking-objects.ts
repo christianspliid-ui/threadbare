@@ -106,7 +106,7 @@ import { isSpellSuppressedFor } from '../engine/effects/effectSuppression';
 import { resolveSpellTemplate } from './spell-templates';
 import { casterTraditionOf } from '../engine/spellGenerator/casterTradition';
 import { placeSpellNotice } from '../engine/spellGenerator/notice';
-import { SLOT_CAPS } from './attachment-slot-constants';
+import { grantSpell, onItemAcquired } from '../engine/spellGrant';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
@@ -2240,6 +2240,8 @@ const ITEM: UndertakingObjectType = {
         type: 'possesses',
         properties: { active: true, acquiredTick: ctx.tick, via: 'seized' },
       });
+      // THR-1672 — a seized book teaches its new holder, once.
+      onItemAcquired(ctx.graph, ctx.actorId, nodeId, ctx.tick, 'seized', Number(ctx.state?.seed ?? 0));
       return { success: true, op: 'seize_item', createdId: nodeId };
     },
     // Destroying an item is the removal funnel: the bearer edges, then the node.
@@ -2325,7 +2327,7 @@ const POWER: UndertakingObjectType = {
         : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? authored : []);
       const shelf = [...librarySpells, ...sphereShelf];
 
-      const { known, wielded } = spellsOfActor(ctx.graph, ctx.actorId);
+      const { known } = spellsOfActor(ctx.graph, ctx.actorId);
       const pick = shelf.find(n => !known.has(n.id));
       if (!pick) {
         // Told apart on purpose: a shelf that had nothing on it and a shelf whose every
@@ -2336,38 +2338,17 @@ const POWER: UndertakingObjectType = {
       const spellTemplateId = str(pick.properties, 'spellTemplateId') ?? pick.id;
       const tradition = str(pick.properties, 'sphereAffinity') ?? 'unaligned';
 
-      // Known — always, and first. The biography is the thing this cell exists to write.
-      const knowsEdgeId = `knows_spell_${ctx.actorId}_${pick.id}`;
-      ctx.graph.addEdge({
-        id: knowsEdgeId,
-        source: ctx.actorId,
-        target: pick.id,
-        type: 'knows_spell',
-        properties: {
-          learnedTick: ctx.tick, sphereAffinity: tradition, source: op,
-          ...(generatedOf(pick) ? { tradition: generatedOf(pick) } : {}),
-        },
+      // Known — always, and first; wielded only while a slot is free. THR-1672: both
+      // edges are written by the one grant seam, unchanged (spellGrant.pin.test.ts).
+      const granted = grantSpell(ctx.graph, ctx.actorId, spellTemplateId, {
+        source: op,
+        tick: ctx.tick,
+        sphereAffinity: tradition,
+        ...(generatedOf(pick) ? { tradition: generatedOf(pick) } : {}),
       });
-
-      // Wielded — only if a slot is free. The cap is the attachment system's own
-      // (`SLOT_CAPS.spell`); this cell adds no cap logic of its own.
-      const freeSlot = wielded.size < (SLOT_CAPS.spell ?? 0);
-      if (freeSlot) {
-        ctx.graph.addEdge({
-          id: `has_trait_${ctx.actorId}_${pick.id}`,
-          source: ctx.actorId,
-          target: pick.id,
-          type: 'has_trait',
-          properties: {
-            level: 1,
-            acquiredTick: ctx.tick,
-            ticksRemaining: null,
-            source: op,
-            visibility: 'discoverable',
-            modifiers: {},
-          },
-        });
-      }
+      if (!granted.granted || !granted.knowsEdgeId) return traceRefusal('already_known', spellTemplateId, tradition);
+      const knowsEdgeId = granted.knowsEdgeId;
+      const freeSlot = granted.newlyWielded;
 
       // THR-1572 — a carried transgression is noticed the first time it is carried.
       if (freeSlot && pick.properties.agency === 'fate_woven') {

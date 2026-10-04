@@ -163,6 +163,12 @@ export type TraceCategory =
   | 'spell.generated'
   | 'spell.generate_fallback'
   | 'spell.notice_placed'
+  // Spells as divine gifts and found tomes (THR-1672)
+  | 'spell.granted'
+  | 'spell.grant_skipped'
+  | 'spell.tome_unread'
+  | 'spell.divine_teaching_priced'
+  | 'spell.divine_echo'
   // Innate powers (THR-1671)
   | 'power.innate_stamped'
   // Undertaking checkpoints (THR-1292)
@@ -671,6 +677,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'spell.generated',
   'spell.generate_fallback',
   'spell.notice_placed',
+  'spell.granted',
+  'spell.grant_skipped',
+  'spell.tome_unread',
+  'spell.divine_teaching_priced',
+  'spell.divine_echo',
   'power.innate_stamped',
   'undertaking_checkpoint',
   'undertaking_fork',
@@ -2840,6 +2851,55 @@ export interface SpellNoticePlacedTrace extends TraceBase {
   site: 'cast' | 'carried';
 }
 
+/** Where a known spell came from — the `source` on its `knows_spell` edge (THR-1672). */
+export type SpellGrantSourceTrace = 'seeded' | 'learn_spell' | 'debug' | 'divine' | 'tome';
+
+/** Trace: a mortal came to know a spell, through the one grant seam (THR-1672, every channel). */
+export interface SpellGrantedTrace extends TraceBase {
+  category: 'spell.granted';
+  spellId: string;
+  source: SpellGrantSourceTrace;
+  /** False when the slots were full: known, not carried. */
+  wielded: boolean;
+  grantedBy?: string;
+  viaItemId?: string;
+}
+
+/** Trace: a teaching or a `spell_grant` found nothing to teach (THR-1672). */
+export interface SpellGrantSkippedTrace extends TraceBase {
+  category: 'spell.grant_skipped';
+  source: SpellGrantSourceTrace;
+  reason: 'empty_pool' | 'already_known' | 'disabled' | 'gate';
+}
+
+/** Trace: a teaching book found nothing for this reader (THR-1672). The book is still a book. */
+export interface SpellTomeUnreadTrace extends TraceBase {
+  category: 'spell.tome_unread';
+  itemId: string;
+  kind: 'arcane' | 'ancient';
+}
+
+/** Trace: the god paid for teaching dark magic — doom and detection (THR-1672). */
+export interface SpellDivineTeachingPricedTrace extends TraceBase {
+  category: 'spell.divine_teaching_priced';
+  ascendantId: string;
+  spellId: string;
+  doomDelta: number;
+  regionId: string;
+  detectionDelta: number;
+}
+
+/** Trace: a god-taught transgression was cast, and the cast echoed back to the god (THR-1672). */
+export interface SpellDivineEchoTrace extends TraceBase {
+  category: 'spell.divine_echo';
+  ascendantId: string;
+  casterId: string;
+  spellId: string;
+  regionId: string;
+  detectionDelta: number;
+  landed: boolean;
+}
+
 /** Trace: one cast resolved through `resolveCast` (THR-1571). A refusal writes nothing. */
 export interface SpellCastResolvedTrace extends TraceBase {
   category: 'spell.cast_resolved';
@@ -4446,6 +4506,11 @@ export type TraceEntry =
   | SpellGeneratedTrace
   | SpellGenerateFallbackTrace
   | SpellNoticePlacedTrace
+  | SpellGrantedTrace
+  | SpellGrantSkippedTrace
+  | SpellTomeUnreadTrace
+  | SpellDivineTeachingPricedTrace
+  | SpellDivineEchoTrace
   | PowerInnateStampedTrace
   | EffectTeleportedTrace
   | ConditionInflictedTrace

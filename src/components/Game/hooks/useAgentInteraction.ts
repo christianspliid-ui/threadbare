@@ -17,6 +17,7 @@ import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
 import { buildCastReceipt } from './castReceipt';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
+import { spellTeachingPreview } from '../../../engine/spellGrant';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
@@ -211,11 +212,13 @@ export function useAgentInteraction({
           heldControlEffects: gameState.controlEffects,
           controlOwnerId: gameState.ascendantId,
           pendingActions: gameState.unifiedActions,
+          // THR-1672 — see useTargetActions: a teaching card names its spell.
+          spellTeachingPreview: spellTeachingPreview(gameState.graph, gameState.ascendantId, selectedAgentId, Number(gameState.seed ?? 0)),
         })
       : [];
 
     return targetSlots.length > 0 ? targetSlots : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, gameState.unifiedActions, retinueAgents, archetype, worldVersion]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, gameState.unifiedActions, gameState.seed, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;

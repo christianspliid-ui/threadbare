@@ -24,7 +24,7 @@ import {
   SEEDED_CASTER_ROLES,
   SEEDED_SPELL_COVERAGE,
 } from '../data/spell-casting-constants';
-import { SLOT_CAPS } from '../data/attachment-slot-constants';
+import { grantSpell } from './spellGrant';
 import { isCaster, isCasterByCraft, casterRoleOf, alignedSpheres } from './casterIdentity';
 import { emitTrace } from './traceBuffer';
 import { drawFromTable } from '../lib/drawTable';
@@ -371,37 +371,16 @@ export function seedSpellKnowing(graph: WorldGraph, library?: SpellSeedingLibrar
     }
     if (picks.length === 0) continue;
 
-    let wielded = graph.getOutgoingEdges(actorId, 'has_trait')
-      .filter(e => graph.getNode(e.target)?.properties.subcategory === 'spell').length;
     let wroteAny = false;
     for (const spell of picks) {
-      const defId = spellDefinitionNodeId(spell.id);
-      const knowsId = `knows_spell_${actorId}_${defId}`;
-      if (graph.getEdge(knowsId)) continue;
-      graph.addEdge({
-        id: knowsId,
-        source: actorId,
-        target: defId,
-        type: 'knows_spell',
-        properties: { learnedTick: 0, sphereAffinity: spell.sphereAffinity, source: 'seeded', ...(viaLibrary && traditionId ? { tradition: traditionId } : {}) },
+      // THR-1672: through the one grant seam. Edges unchanged (pinned by spellGrant.pin.test.ts).
+      const granted = grantSpell(graph, actorId, spell.id, {
+        source: 'seeded',
+        tick: 0,
+        sphereAffinity: spell.sphereAffinity,
+        ...(viaLibrary && traditionId ? { tradition: traditionId } : {}),
       });
-      if (wielded < (SLOT_CAPS.spell ?? 0)) {
-        graph.addEdge({
-          id: `has_trait_${actorId}_${defId}`,
-          source: actorId,
-          target: defId,
-          type: 'has_trait',
-          properties: {
-            level: 1,
-            acquiredTick: 0,
-            ticksRemaining: null,
-            source: 'seeded',
-            visibility: 'discoverable',
-            modifiers: {},
-          },
-        });
-        wielded += 1;
-      }
+      if (!granted.granted) continue;
       bySpell[spell.id] = (bySpell[spell.id] ?? 0) + 1;
       wroteAny = true;
     }

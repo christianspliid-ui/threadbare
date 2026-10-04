@@ -94,6 +94,7 @@ export type GraphOpType =
   | 'anoint_successor' // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
   | 'imbue_item'     // THR-508: append a sphere-flavored power to a target artifact node
   | 'bestow_power'   // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
+  | 'teach_spell'    // THR-1672: a god teaches a threaded agent a spell from the god's own spheres (dark magic is priced)
   | 'grant_companion' // THR-1096: mint a companion from `companionTemplateId` and attach them to the target
   | 'anoint_faction' // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
   | 'consecrate_source' // THR-611: turn the target host into a typed essence source (Build/Create leg) + ensure a controls edge

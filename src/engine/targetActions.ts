@@ -139,6 +139,8 @@ export const TARGET_ACTION_CONSTANTS = {
    * this target (THR-1700). Words, not a number (Law 13).
    */
   ALREADY_HELD_REASON: 'Already held',
+  /** THR-1672: a teaching card on a mortal who already knows all the god could teach. */
+  NOTHING_TO_TEACH_REASON: 'They know everything you could teach',
   /** Default angle step for laying out target_action slots */
   ANGLE_STEP_DEG: 36,
   /** Max range in hexes for local-range target actions (when no delivery info) */
@@ -224,6 +226,25 @@ export interface TargetActionParams {
    * price (THR-1700 review gate). Optional; omit to skip the in-flight half.
    */
   pendingActions?: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[];
+  /**
+   * THR-1672 — the spell a teaching card (a template whose step teaches, `teach_spell`)
+   * would teach this target now, from `pickDivineSpell` on the current state. The god
+   * chooses the gift, so the god sees it: the card's line names the spell (and says
+   * *dark* for a transgression). `null` locks the card — there is nothing to teach.
+   * Omit to skip both (fail-open, like the other viewer-scoped inputs).
+   */
+  spellTeachingPreview?: SpellTeachingPreview | null;
+}
+
+/** What a teaching card would teach its target (THR-1672). */
+export interface SpellTeachingPreview {
+  readonly spellName: string;
+  readonly dark: boolean;
+}
+
+/** Whether a template's steps teach a spell (the `teach_spell` op). */
+function teachesSpell(template: UnifiedActionTemplate): boolean {
+  return template.steps.some(step => !isActionStepBranch(step) && (step.onSuccess ?? []).some(op => op.op === 'teach_spell'));
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -483,6 +504,17 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       lockedReason = hexDist !== null ? `Out of range (${hexDist} hexes)` : 'Out of range';
     }
 
+    // 11. Nothing to teach (THR-1672) — a teaching card whose pool is empty on this
+    //     target is shown locked, with the reason in words (Law 13).
+    const teaching = params.spellTeachingPreview !== undefined && teachesSpell(template);
+    if (teaching && params.spellTeachingPreview === null && available) {
+      available = false;
+      lockedReason = TARGET_ACTION_CONSTANTS.NOTHING_TO_TEACH_REASON;
+    }
+    const teachingLine = teaching && params.spellTeachingPreview
+      ? `Will teach ${params.spellTeachingPreview.spellName}${params.spellTeachingPreview.dark ? ' — dark magic' : ''}.`
+      : undefined;
+
     const slotId = `${TARGET_ACTION_CONSTANTS.SLOT_ID_PREFIX}${template.id}`;
     const angleDeg = (slots.length * TARGET_ACTION_CONSTANTS.ANGLE_STEP_DEG) % 360;
 
@@ -530,7 +562,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       spellName: template.spellName,
       technicalDescription: template.description,
       technicalEffect: template.technicalEffect,
-      effectsLine: actionEffectsProse(template),
+      effectsLine: teachingLine ?? actionEffectsProse(template),
       effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,

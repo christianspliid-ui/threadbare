@@ -789,6 +789,26 @@ export type EncounterAftermathReactionEffect =
     readonly durationOverride?: number | null;
     readonly when?: EffectPredicate;
   }
+  | {
+    /**
+     * THR-1672 — the god teaches a mortal a spell (acquisition channel 1, the nudge
+     * card's "leave something behind" grant). A card fired by the god is the god
+     * teaching, so the grant is always `source: 'divine'` with `grantedBy` the player
+     * ascendant, written through the one grant seam (`grantSpell`). Teaching a
+     * transgression costs the god doom and detection, exactly as the Teach a Spell card.
+     *
+     * No pick (the mortal already knows all the god could teach) skips the grant with a
+     * `spell.grant_skipped` trace; the card's other effects still apply.
+     */
+    readonly kind: 'spell_grant';
+    /** Who is taught. Defaults to the encounter's actor. Accepts scene sentinels. */
+    readonly targetAgentId?: string;
+    /** `'god'`: the god's spheres, then the mortal's tradition. `'tradition'`: the tradition only. */
+    readonly selector: 'god' | 'tradition';
+    /** Highest tier taught; defaults to `DIVINE_TEACH_MAX_TIER`. */
+    readonly maxTier?: number;
+    readonly when?: EffectPredicate;
+  }
   // ─── World-shaping effects (THR-115) ──────────────────────────────────────
   | {
     readonly kind: 'spawn_artifact';

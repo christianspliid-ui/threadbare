@@ -36,6 +36,7 @@ import { contentQueryAdmitsBearer } from './contentQueryBearer';
 import { mulberry32 } from '../lib/prng';
 import { applyResourceDelta } from './effects/resourceDelta';
 import { emitTrace } from './traceBuffer';
+import { grantSpell, onItemAcquired } from './spellGrant';
 import type { TraceEntry } from '../types/trace';
 import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
 import { filterCompanionTemplates, getCompanionTemplate } from '../data/companion-templates';
@@ -726,10 +727,15 @@ export function drawSeededReward(
 export interface InstantiateRewardResult {
   instanceId: string;
   edgeId: string;
-  /** 'possession' | 'condition' | 'bestowed' | 'service' | 'companion' — determines edge type/runtime handling */
-  category: 'possession' | 'condition' | 'bestowed' | 'service' | 'companion';
+  /** 'possession' | 'condition' | 'bestowed' | 'service' | 'companion' | 'spell' — determines edge type/runtime handling */
+  category: 'possession' | 'condition' | 'bestowed' | 'service' | 'companion' | 'spell';
   /** Human-readable reward name for timeline/debug surfaces */
   displayName: string;
+  /**
+   * THR-1672 — the spell a teaching book taught its new holder on the way in, for the
+   * reward line's "and learned <spell>". Absent when nothing was taught.
+   */
+  taughtSpellName?: string;
 }
 
 function hashString(input: string): number {
@@ -839,6 +845,16 @@ function instantiateRewardInternal(
   const agent = graph.getNode(recipientAgentId);
   if (!agent) return null;
 
+  // THR-1672 — a spell is not cloned. A spell definition node is shared by every
+  // bearer (THR-1395); before this, a spell template here fell into the condition
+  // branch below and wrote an *expiring* `has_trait` to a per-bearer clone and no
+  // `knows_spell` at all. It routes through the one grant seam instead.
+  if (template.type === 'trait' && template.properties.subcategory === 'spell') {
+    const granted = grantSpell(graph, recipientAgentId, templateNodeId, { source: 'learn_spell', tick });
+    if (!granted.granted || !granted.definitionId || !granted.knowsEdgeId) return null;
+    return { instanceId: granted.definitionId, edgeId: granted.knowsEdgeId, category: 'spell', displayName: granted.spellName ?? template.name };
+  }
+
   if (
     (template.type === 'artifact' || template.type === 'artifact_legendary')
     && template.properties.rewardMode === 'service'
@@ -888,6 +904,9 @@ function instantiateRewardInternal(
       },
     });
     rewardResult = { instanceId, edgeId, category: 'possession', displayName: template.name };
+    // THR-1672 — a book that teaches teaches its new holder (acquisition channel 4).
+    const taught = onItemAcquired(graph, recipientAgentId, instanceId, tick, 'reward');
+    if (taught) rewardResult.taughtSpellName = taught.spellName;
   } else if (template.type === 'trait' && subcategory === 'bestowed') {
     // Bestowed power → has_trait edge, permanent
     const domainContributions = template.properties.domainContributions as Record<string, number> | undefined;

@@ -70,7 +70,8 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower, applyTeachSpell, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
+import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
 import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
@@ -1567,6 +1568,8 @@ interface ResolvedUnifiedReward {
   readonly displayName: string;
   /** Instantiated reward node id — the entity the prize chip pictures and links. */
   readonly instanceId: string;
+  /** THR-1672 — the spell a teaching book taught its holder on the way in. */
+  readonly taughtSpellName?: string;
 }
 
 function resolveUnifiedReward(
@@ -1665,7 +1668,11 @@ function resolveUnifiedReward(
     });
   }
 
-  return { displayName: instantiation.displayName, instanceId: instantiation.instanceId };
+  return {
+    displayName: instantiation.displayName,
+    instanceId: instantiation.instanceId,
+    ...(instantiation.taughtSpellName ? { taughtSpellName: instantiation.taughtSpellName } : {}),
+  };
 }
 
 /**
@@ -1833,6 +1840,9 @@ export function executeStepResult(
     const anointSuccessorOps: GraphOp[] = [];
     const imbueItemOps: GraphOp[] = [];
     const bestowPowerOps: GraphOp[] = [];
+    // THR-1672: `teach_spell` routes here beside Bestow — it writes the god's two prices
+    // (doom, detection) and a receipt, and the graph executor has no GameState for either.
+    const teachSpellOps: GraphOp[] = [];
     // THR-1096: companions are minted through the engine module (name generation,
     // single-bearer invariant, trace) rather than by the generic node executor,
     // which has no way to do any of those.
@@ -1861,6 +1871,7 @@ export function executeStepResult(
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
+      else if (op.op === 'teach_spell') teachSpellOps.push(op);
       else if (op.op === 'grant_companion') grantCompanionOps.push(op);
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else if (op.op === 'plant_trap') plantTrapOps.push(op);
@@ -1969,6 +1980,34 @@ export function executeStepResult(
           applyBestowPower(state.graph, action.actorId, resolvedAgentId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (teachSpellOps.length > 0) {
+      // THR-1672 — Teach a Spell. Same gates and site as Bestow; the receipt names the
+      // spell, read back off the grant (never off intent — Law 56).
+      for (const op of teachSpellOps) {
+        const agentRef = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedAgentId = agentRef === '$target' ? action.targetId : agentRef;
+        try {
+          const taught = applyTeachSpell(state, action.actorId, resolvedAgentId, tick);
+          if (taught.success && taught.spellName) {
+            const agentName = state.graph.getNode(resolvedAgentId)?.name ?? resolvedAgentId;
+            const event: TickEvent = {
+              id: `teach_spell_${resolvedAgentId}_${taught.spellId}_t${tick}`,
+              tick,
+              type: 'ripple_consequence',
+              message: `${agentName} wakes knowing ${taught.spellName}, and does not remember learning it.`,
+              significance: TEACH_SPELL_RECEIPT_SIGNIFICANCE,
+              actorId: resolvedAgentId,
+            };
+            state.recentEvents = [...(state.recentEvents ?? []), event];
+            state.tickEvents = [...(state.tickEvents ?? []), event];
+            if (runtime) touchStructure(runtime);
+          }
+        } catch {
+          // Fail-soft per NFP #4: never crash the tick.
         }
       }
     }
@@ -2824,6 +2863,7 @@ export function executeStepResult(
       rewardName: resolvedReward.displayName,
       rewardId: resolvedReward.instanceId,
       gained: isStepSuccess(outcome),
+      ...(resolvedReward.taughtSpellName ? { learnedSpellName: resolvedReward.taughtSpellName } : {}),
     });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
