@@ -1888,11 +1888,17 @@ export function phaseAgentDecision(
             }
 
             const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
+            // THR-1722: name whichever catalogue resolved the selection. A
+            // unified-only template leaves `template` undefined, and reading its
+            // name threw into the per-agent catch — dropping this event and the
+            // balance record below for ~1 in 7 planner encounter starts.
+            // Legacy name first so templates in both catalogues read as before.
+            const startedName = template?.name ?? unifiedTemplate?.name ?? sel.entry.templateId;
             newEvents.push({
               id: `decision_${agentId}_${state.tick}`,
               tick: state.tick,
               type: 'agent_encounter',
-              message: `${actor.name} ${prefix} ${template.name}`,
+              message: `${actor.name} ${prefix} ${startedName}`,
               significance: 0.4,
             });
 
