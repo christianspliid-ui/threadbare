@@ -6,7 +6,7 @@ import type { WheelSlot } from '../../../engine/wheel';
 import { getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
-import { spellTeachingPreview } from '../../../engine/spellGrant';
+import { teachSpellPreview } from '../../../engine/ascendantExpression';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
@@ -63,7 +63,7 @@ export function useTargetActions({
       // A cast still resolving counts as held — its effect is on the way.
       pendingActions: gameState.unifiedActions,
       // THR-1672: a teaching card names the spell it would teach, or locks when there is none.
-      spellTeachingPreview: spellTeachingPreview(gameState.graph, gameState.ascendantId, target.nodeId, Number(gameState.seed ?? 0)),
+      spellTeachingPreview: teachSpellPreview(gameState.graph, gameState.ascendantId, target.nodeId, Number(gameState.seed ?? 0)),
     });
   }, [
     target,

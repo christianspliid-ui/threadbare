@@ -24,9 +24,9 @@ import {
   DIVINE_TEACH_MAX_TIER,
 } from '../../data/spell-grant-constants';
 import {
-  grantSpell, isDarkSpell, onItemAcquired, pickDivineSpell, pickTomeSpell, spellTeachingPreview, tomeTeaches,
+  grantSpell, isDarkSpell, onItemAcquired, pickDivineSpell, pickTomeSpell, tomeTeaches,
 } from '../spellGrant';
-import { applyTeachSpell } from '../ascendantExpression';
+import { applyTeachSpell, teachSpellPreview, TEACH_SPELL_NOT_THREADED_REASON } from '../ascendantExpression';
 import { recordDetectionCrossings } from '../orchestrator/phaseDetectionPressure';
 import { instantiateReward } from '../rewardPool';
 import { buildSpellLibrary } from '../spellGenerator/spellLibrary';
@@ -132,8 +132,9 @@ describe('the divine pool (Lane decision 2)', () => {
       grantSpell(graph, 'farmer', pick.spellId, { source: 'divine', tick: k });
     }
     expect(pickDivineSpell(graph, 'asc', 'farmer', 42)).toBeNull();
-    expect(spellTeachingPreview(graph, 'asc', 'farmer', 42)).toBeNull();
-    expect(spellTeachingPreview(graph, 'asc', 'loc_0', 42)).toBeUndefined();
+    // The farmer has no thread: the card locks on the gate before the pool is asked.
+    expect(teachSpellPreview(graph, 'asc', 'farmer', 42)).toEqual({ lockedReason: TEACH_SPELL_NOT_THREADED_REASON });
+    expect(teachSpellPreview(graph, 'asc', 'loc_0', 42)).toBeUndefined();
   });
 });
 
@@ -267,6 +268,15 @@ describe('the Teach a Spell card on the drawer (UI pillar)', () => {
     const [slot] = getTargetActionSlots({ ...base, spellTeachingPreview: { spellName: 'Veilwalk', dark: false } });
     expect(slot?.effectsLine).toBe('Will teach Veilwalk.');
     expect(slot?.available).toBe(true);
+  });
+  it('locks with the gate reason on a mortal it cannot teach', () => {
+    const [slot] = getTargetActionSlots({ ...base, spellTeachingPreview: { lockedReason: TEACH_SPELL_NOT_THREADED_REASON } });
+    expect(slot?.available).toBe(false);
+    expect(slot?.lockedReason).toBe(TEACH_SPELL_NOT_THREADED_REASON);
+  });
+  it('previews the spell for the threaded priest', () => {
+    const { graph } = world({ library: true });
+    expect(teachSpellPreview(graph, 'asc', 'priest', 42)).toMatchObject({ dark: false });
   });
   it('locks with a reason in words when there is nothing to teach', () => {
     const [slot] = getTargetActionSlots({ ...base, spellTeachingPreview: null });

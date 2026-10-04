@@ -30,7 +30,6 @@ import { resolveSpellTemplate, spellDefinitionNodeId } from '../data/spell-templ
 import { SLOT_CAPS } from '../data/attachment-slot-constants';
 import {
   DIVINE_TEACH_MAX_TIER,
-  SPELL_GRANT_ENABLED_DIVINE,
   SPELL_GRANT_ENABLED_TOMES,
   TOME_ANCIENT_MIN_GENERATED_BAND,
   TOME_ANCIENT_TAG,
@@ -299,23 +298,6 @@ export function pickDivineSpell(
   } catch {
     return null;
   }
-}
-
-/**
- * What a teaching card would teach this target now, for the card's line (THR-1672 § UI).
- * `null` when the target is a mortal with nothing left to learn from this god;
- * `undefined` when the target is not a mortal (the card does not apply, so no gate).
- */
-export function spellTeachingPreview(
-  graph: WorldGraph,
-  ascendantId: string,
-  targetId: string,
-  worldSeed: number,
-): { spellName: string; dark: boolean } | null | undefined {
-  if (graph.getNode(targetId)?.type !== 'actor') return undefined;
-  if (!SPELL_GRANT_ENABLED_DIVINE) return null;
-  const pick = pickDivineSpell(graph, ascendantId, targetId, worldSeed);
-  return pick ? { spellName: pick.spellName, dark: pick.dark } : null;
 }
 
 /** The `spell_grant` reaction's `'tradition'` selector: the mortal's own tradition library only. */

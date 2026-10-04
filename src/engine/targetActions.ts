@@ -237,10 +237,10 @@ export interface TargetActionParams {
 }
 
 /** What a teaching card would teach its target (THR-1672). */
-export interface SpellTeachingPreview {
-  readonly spellName: string;
-  readonly dark: boolean;
-}
+export type SpellTeachingPreview =
+  | { readonly spellName: string; readonly dark: boolean }
+  /** The card's gate refuses this target (no thread, too little awareness, switched off). */
+  | { readonly lockedReason: string };
 
 /** Whether a template's steps teach a spell (the `teach_spell` op). */
 function teachesSpell(template: UnifiedActionTemplate): boolean {
@@ -507,12 +507,13 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     // 11. Nothing to teach (THR-1672) — a teaching card whose pool is empty on this
     //     target is shown locked, with the reason in words (Law 13).
     const teaching = params.spellTeachingPreview !== undefined && teachesSpell(template);
-    if (teaching && params.spellTeachingPreview === null && available) {
+    const preview = params.spellTeachingPreview;
+    if (teaching && available && (preview === null || (preview && 'lockedReason' in preview))) {
       available = false;
-      lockedReason = TARGET_ACTION_CONSTANTS.NOTHING_TO_TEACH_REASON;
+      lockedReason = preview && 'lockedReason' in preview ? preview.lockedReason : TARGET_ACTION_CONSTANTS.NOTHING_TO_TEACH_REASON;
     }
-    const teachingLine = teaching && params.spellTeachingPreview
-      ? `Will teach ${params.spellTeachingPreview.spellName}${params.spellTeachingPreview.dark ? ' — dark magic' : ''}.`
+    const teachingLine = teaching && preview && 'spellName' in preview
+      ? `Will teach ${preview.spellName}${preview.dark ? ' — dark magic' : ''}.`
       : undefined;
 
     const slotId = `${TARGET_ACTION_CONSTANTS.SLOT_ID_PREFIX}${template.id}`;

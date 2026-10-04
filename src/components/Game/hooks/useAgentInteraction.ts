@@ -17,7 +17,7 @@ import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
 import { buildCastReceipt } from './castReceipt';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
-import { spellTeachingPreview } from '../../../engine/spellGrant';
+import { teachSpellPreview } from '../../../engine/ascendantExpression';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
@@ -213,7 +213,7 @@ export function useAgentInteraction({
           controlOwnerId: gameState.ascendantId,
           pendingActions: gameState.unifiedActions,
           // THR-1672 — see useTargetActions: a teaching card names its spell.
-          spellTeachingPreview: spellTeachingPreview(gameState.graph, gameState.ascendantId, selectedAgentId, Number(gameState.seed ?? 0)),
+          spellTeachingPreview: teachSpellPreview(gameState.graph, gameState.ascendantId, selectedAgentId, Number(gameState.seed ?? 0)),
         })
       : [];
 

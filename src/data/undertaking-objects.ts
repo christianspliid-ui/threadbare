@@ -107,6 +107,7 @@ import { resolveSpellTemplate } from './spell-templates';
 import { casterTraditionOf } from '../engine/spellGenerator/casterTradition';
 import { placeSpellNotice } from '../engine/spellGenerator/notice';
 import { grantSpell, onItemAcquired } from '../engine/spellGrant';
+import type { DetectionCrossingRecorder } from '../engine/agentDetection';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
@@ -237,6 +238,12 @@ export interface ObjectVerbContext {
    * plain-success row everywhere, never a second resolution.
    */
   readonly outcome?: string;
+  /**
+   * THR-1672 — the detection crossing recorder, for a god-taught transgression cast by
+   * `use × Power`. This module cannot import it (a module cycle, `agentDetection.ts`), so
+   * the resolver that builds the context hands it in.
+   */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 export type ObjectVerbSemantic = (ctx: ObjectVerbContext) => GraphOpResult;
@@ -2480,6 +2487,7 @@ const POWER: UndertakingObjectType = {
         tick: ctx.tick,
         site: 'undertaking',
         siteRef: ctx.projectId ?? `use:${ctx.actorId}:${ctx.tick}`,
+        ...(ctx.recordCrossings ? { recordCrossings: ctx.recordCrossings } : {}),
       });
       if (result.refused) return fail('activate_spell', result.refused);
       if ((result.soulPrice ?? 0) > 0) {

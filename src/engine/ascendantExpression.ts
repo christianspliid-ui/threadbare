@@ -453,6 +453,37 @@ export function applyTeachSpell(
   }
 }
 
+/** Words for a teaching card that cannot teach this mortal (Law 13: a reason, never a number). */
+export const TEACH_SPELL_NOT_THREADED_REASON = 'They do not yet hold your connection deeply enough';
+export const TEACH_SPELL_DISABLED_REASON = 'You cannot teach a spell now';
+
+/**
+ * What the Teach a Spell card would do on this target now, for its drawer line
+ * (THR-1672 § UI): the spell it would teach, or why it cannot — the same gates
+ * `applyTeachSpell` applies, so the card is never castable for a no-op that still
+ * charges its essence. `null` when there is nothing left to teach; `undefined` when
+ * the target is not a mortal (the card does not apply, so no gate).
+ */
+export function teachSpellPreview(
+  graph: WorldGraph,
+  ascendantId: string,
+  targetId: string,
+  worldSeed: number,
+): { spellName: string; dark: boolean } | { lockedReason: string } | null | undefined {
+  try {
+    if (graph.getNode(targetId)?.type !== 'actor') return undefined;
+    if (!SPELL_GRANT_ENABLED_DIVINE) return { lockedReason: TEACH_SPELL_DISABLED_REASON };
+    const threadEdge = graph.getOutgoingEdges(ascendantId, 'thread').find((e) => e.target === targetId);
+    if (!threadEdge || awarenessRank(threadEdge.properties.awareness as string | undefined) < awarenessRank(BESTOW_MIN_AWARENESS)) {
+      return { lockedReason: TEACH_SPELL_NOT_THREADED_REASON };
+    }
+    const pick = pickDivineSpell(graph, ascendantId, targetId, worldSeed);
+    return pick ? { spellName: pick.spellName, dark: pick.dark } : null;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The god pays for teaching dark magic: doom, and being seen where the mortal stands. */
 function priceDarkTeaching(
   sink: TeachSpellSink,
