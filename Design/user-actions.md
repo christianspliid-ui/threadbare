@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,11 +13,11 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### A finished change stuck for 20 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+### A finished change stuck for 21 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 20 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 21 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
-**Nothing for you to do by hand.** A builder merges main into the branch and pushes, which also restarts its checks. It is here so you know the work exists and is not yet live.
+**Nothing for you to do by hand.** The design lane has now scheduled it ([plan § D4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-01-thr-1687-cap-local-order.md)): it waits on the [THR-1722](https://linear.app/threadbare/issue/THR-1722/a-mortal-who-begins-a-new-catalogue-encounter-crashes-the-rest-of-its) bug fix and its veto window (closes ~02:45 Monday), then a builder clears the conflict and pushes.
 
 ### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
 
