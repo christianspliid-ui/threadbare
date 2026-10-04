@@ -180,6 +180,7 @@ import {
   emitChapterArchivedTrace,
   isEncounterAction,
 } from './chapterArchive';
+import { recordStoryChapterEnd } from './attentionCadence';
 import { stampStakesContexts } from './encounters/stakesLine';
 import { getUnifiedTemplateById as getStakesTemplateById } from '../data/unified-action-templates';
 import type { ChapterRecord } from '../types/chapterRecord';
@@ -3236,6 +3237,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = runRegisteredPhases(s, phaseCtx, 'post-resolution', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2a.99: Story breath anchors (THR-1715) — a pause-mode mortal's story
+  // chapter that resolved earlier this tick starts her breath BEFORE agent
+  // decision, or the same tick's decision would pick her next story chapter at
+  // once. The archive write below records anything resolved after 2b.
+  for (const a of s.unifiedActions ?? []) {
+    if (a.resolved && a.completedAtTick == null && isEncounterAction(a.templateId)) {
+      recordStoryChapterEnd(s.graph, a.actorId, a.actionId, a.templateId, s.tick);
+    }
+  }
+
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
@@ -3258,6 +3269,25 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         isEncounterAction(templateId) ? getStakesTemplateById(templateId) : undefined));
     s = r.next;
     phaseEventCounts['stakes_context'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2b.2: Encounter Visibility, pause-mode pass (THR-1715) — a pause-mode
+  // mortal's encounter created by agent decision this tick gets its step-0
+  // notification now. Otherwise the next tick's progress phase (2a) resolves
+  // step 0 before the main pass (2a.6) runs, and the opening step never asks.
+  // Dedup-keyed against the main pass, so it never doubles a notification.
+  {
+    const pauseVis = timeInlinePhase('encounter_visibility_pause', s, () =>
+      phaseEncounterVisibility(s, { pauseModeOnly: true }));
+    if (pauseVis.notifications.length > 0 || pauseVis.events.length > 0) {
+      s = {
+        ...s,
+        tickEvents: [...s.tickEvents, ...pauseVis.events],
+        encounterNotifications: [...(s.encounterNotifications ?? []), ...pauseVis.notifications],
+      };
+    }
+    phaseEventCounts['encounter_visibility_pause'] = pauseVis.notifications.length;
   }
   prevEventCount = s.tickEvents.length;
 
@@ -3944,6 +3974,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (isEncounterAction(a.templateId)) {
           const record = buildChapterRecord(stampedAction, s, runtime);
           if (record) newlyArchived.push(record);
+          // THR-1715 E5: a pause-mode mortal's story chapter ended — her breath begins.
+          recordStoryChapterEnd(s.graph, a.actorId, a.actionId, a.templateId, s.tick);
         }
         newlyResolved.push(stampedAction);
         return stampedAction;

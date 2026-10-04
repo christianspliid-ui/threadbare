@@ -536,6 +536,26 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Threads panel (THR-1008) ─────────────────────────────────
   // Concepts the thread rows reach for. Registered here rather than written
   // inline on the row, so the copy has one home and can chain (Law 17).
+  // THR-1715: the attention toggle and the Chapter Ledger's Daily-life filter.
+  // `{name}` is filled with the mortal's name at the call site; the copy names
+  // the mortal rather than guessing a pronoun. Second person is legal here: it
+  // is the god's own control (Law 42).
+  'ui.attention.asks': {
+    label: 'Asks you',
+    desc: "{name}'s important moments stop the world and wait for you.",
+  },
+  'ui.attention.lives_on': {
+    label: 'Lives on',
+    desc: "{name}'s moments resolve on their own; you can read them afterwards.",
+  },
+  'ui.attention.thread_too_thin': {
+    label: 'Thread too thin',
+    desc: 'The thread is too thin for this mortal to stop the world. Strengthen it first.',
+  },
+  'ui.ledger.daily_life': {
+    label: 'Daily life',
+    desc: 'Ordinary chores — mending, foraging, resting. They still happen and still matter, but they never ask for you and stay out of the chapter list.',
+  },
   'ui.thread_priority_pip': {
     label: 'Needs Attention',
     desc: 'This thread has a beat waiting on you. The pip clears once you have looked at what it marks.',

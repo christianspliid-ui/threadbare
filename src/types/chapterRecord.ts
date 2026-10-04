@@ -63,6 +63,13 @@ export interface ChapterRecord {
   readonly actionId: string;
   readonly templateId: string;
   readonly templateName: string;
+  /**
+   * Daily life (THR-1715): the template is a chore (authored
+   * `threatRating: 'trivial'`). Excluded from the Chapter Ledger's default view
+   * and badge; listed under the Daily-life filter. Absent on records from before
+   * THR-1715 — read through `isRoutineChapter`, which falls back to the template.
+   */
+  readonly routine?: boolean;
   readonly actorId: string;
   /** Snapshot — the actor may die or be pruned after the chapter closes. */
   readonly actorName: string;

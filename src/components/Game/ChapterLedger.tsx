@@ -10,12 +10,17 @@
  *  - Full-screen from GameView (`embedded={false}`, wrapped in a Modal).
  *  - Embedded in the agent profile's Chapters tab (`embedded`, `filterAgentId` set).
  *
+ * THR-1715 — daily life: routine chapters (chores, authored `threatRating: 'trivial'`)
+ * never appear in the default view or the launcher badge. A **Daily life** chip lists
+ * them instead (Law 55: nothing is lost, only demoted), globally and per agent.
+ *
  * Memoization keys on the archive/action array identities + `runtime.worldVersion`,
  * never on graph object identity (the graph is mutated in place).
  */
 
 import { useMemo, useState } from 'react';
 import { Modal } from '../shared/Modal';
+import { Tooltip } from '../shared/Tooltip';
 import { ChapterView } from './ChapterView';
 import type { ChapterRecord } from '../../types/chapterRecord';
 import type { GameState } from '../../types/gameState';
@@ -24,12 +29,17 @@ import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import {
   buildChapterRecord,
   isEncounterAction,
+  isRoutineChapter,
   getChapterTemplateName,
   CHAPTER_LEDGER_PAGE_SIZE,
 } from '../../engine/chapterArchive';
 import { outcomePhrase } from '../../engine/aftermathWords';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { stakesLineForAction } from '../../engine/encounters/stakesLine';
+import { isRoutineTemplate } from '../../engine/attentionCadence';
+
+/** C3 (THR-1715): the Daily-life filter's empty state. Plain register, no second person (Law 42). */
+export const DAILY_LIFE_EMPTY_STATE = 'Nothing ordinary has happened yet.';
 
 interface ChapterLedgerProps {
   gameState: GameState;
@@ -55,6 +65,8 @@ interface LedgerRow {
   statusLabel: string;
   sortTick: number;
   threaded: boolean;
+  /** THR-1715 — daily life: shown only under the Daily-life filter. */
+  routine: boolean;
 }
 
 /** THR-1727 — a live encounter's opening stakes line, or undefined when it has none. */
@@ -83,11 +95,15 @@ function isThreaded(gameState: GameState, actorId: string): boolean {
  * threaded chapters, archived and in progress. The launcher's badge reads this,
  * not `chapterArchive.length`, so it never promises chapters the ledger then
  * says it does not have (the cold playtest saw "416" beside "No chapters yet").
+ *
+ * THR-1715: routine (daily-life) chapters are excluded — the default view does not
+ * list them, so the badge must not count them.
  */
 export function countThreadedChapters(gameState: GameState): number {
-  const archived = (gameState.chapterArchive ?? []).filter(r => r.threaded).length;
+  const archived = (gameState.chapterArchive ?? []).filter(r => r.threaded && !isRoutineChapter(r)).length;
   const active = gameState.unifiedActions.filter(
-    a => !a.resolved && isEncounterAction(a.templateId) && isThreaded(gameState, a.actorId),
+    a => !a.resolved && isEncounterAction(a.templateId) && !isRoutineTemplate(a.templateId)
+      && isThreaded(gameState, a.actorId),
   ).length;
   return archived + active;
 }
@@ -123,6 +139,7 @@ export function ChapterLedger({
 }: ChapterLedgerProps) {
   const [selected, setSelected] = useState<ChapterRecord | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [dailyLife, setDailyLife] = useState(false);
   const [page, setPage] = useState(0);
 
   const archive = gameState.chapterArchive ?? [];
@@ -144,6 +161,7 @@ export function ChapterLedger({
         statusLabel: resolvedStatusLabel(r.outcome),
         sortTick: r.resolvedTick,
         threaded: r.threaded,
+        routine: isRoutineChapter(r),
       }));
 
     const activeRows: LedgerRow[] = activeEncounters
@@ -162,16 +180,19 @@ export function ChapterLedger({
         statusLabel: `active · step ${a.currentStep + 1}`,
         sortTick: gameState.tick,
         threaded: isThreaded(gameState, a.actorId),
+        routine: isRoutineTemplate(a.templateId),
       }));
 
     let merged = [...activeRows, ...archivedRows];
+    // THR-1715: story by default; the Daily-life chip lists the chores instead.
+    merged = merged.filter(r => r.routine === dailyLife);
     // Default view (global ledger): threaded chapters only, unless "show all".
     if (!filterAgentId && !showAll) merged = merged.filter(r => r.threaded);
     merged.sort((a, b) => b.sortTick - a.sortTick);
     return merged;
     // worldVersion covers graph-derived name/threaded reads; array identities cover data changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [archive, activeEncounters, filterAgentId, showAll, gameState.tick, runtime?.worldVersion]);
+  }, [archive, activeEncounters, filterAgentId, showAll, dailyLife, gameState.tick, runtime?.worldVersion]);
 
   const pageCount = Math.max(1, Math.ceil(rows.length / CHAPTER_LEDGER_PAGE_SIZE));
   const clampedPage = Math.min(page, pageCount - 1);
@@ -197,32 +218,37 @@ export function ChapterLedger({
     <ChapterView chapter={selected} onOpenEntity={onOpenEntity} onBack={() => setSelected(null)} />
   ) : (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2, 8px)' }}>
-      {!filterAgentId && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2, 8px)' }}>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)' }}>
-            {showAll ? 'All chapters' : 'Threaded chapters'} · {rows.length}
-          </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2, 8px)' }}>
+        {!filterAgentId && (
+          <>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)' }}>
+              {dailyLife ? 'Daily life' : showAll ? 'All chapters' : 'Threaded chapters'} · {rows.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => { setShowAll(v => !v); setPage(0); }}
+              style={chipStyle(false)}
+            >
+              {showAll ? 'Show threaded only' : 'Show all'}
+            </button>
+          </>
+        )}
+        <Tooltip id="ui.ledger.daily_life" focusable={false}>
           <button
             type="button"
-            onClick={() => { setShowAll(v => !v); setPage(0); }}
-            style={{
-              background: 'none',
-              border: '1px solid var(--border-subtle, #40382c)',
-              borderRadius: '6px',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontSize: 'var(--text-xs)',
-              padding: '2px 8px',
-            }}
+            data-testid="chapter-ledger-daily-life"
+            aria-pressed={dailyLife}
+            onClick={() => { setDailyLife(v => !v); setPage(0); }}
+            style={chipStyle(dailyLife)}
           >
-            {showAll ? 'Show threaded only' : 'Show all'}
+            Daily life
           </button>
-        </div>
-      )}
+        </Tooltip>
+      </div>
 
       {rows.length === 0 && (
         <div style={{ color: 'var(--text-tertiary, #6a6255)', fontStyle: 'italic', padding: 'var(--space-2, 8px) 0' }}>
-          No chapters yet. Weave threads and the world will start writing them.
+          {dailyLife ? DAILY_LIFE_EMPTY_STATE : 'No chapters yet. Weave threads and the world will start writing them.'}
         </div>
       )}
 
@@ -301,6 +327,18 @@ export function ChapterLedger({
       <Modal.Body>{body}</Modal.Body>
     </Modal>
   );
+}
+
+function chipStyle(active: boolean): React.CSSProperties {
+  return {
+    background: active ? 'var(--bg-hover, rgba(255,255,255,0.06))' : 'none',
+    border: `1px solid ${active ? 'var(--accent-gold-dim, #8a7330)' : 'var(--border-subtle, #40382c)'}`,
+    borderRadius: '6px',
+    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+    cursor: 'pointer',
+    fontSize: 'var(--text-xs)',
+    padding: '2px 8px',
+  };
 }
 
 function pagerStyle(disabled: boolean): React.CSSProperties {

@@ -37,6 +37,7 @@ import {
   ATTENTION_BASE_REGEN,
 } from '../data/attention-constants';
 import { emitTrace } from './traceBuffer';
+import { isRoutineTemplate } from './attentionCadence';
 import type { TraceEntry } from '../types/trace';
 import { classifyChainStage, getChainProgress } from './encounterChains';
 import { agentPursuesReach } from './encounterScoring';
@@ -184,6 +185,10 @@ export function phaseAttention(
 
     // dormant agents should not generate tugs
     if (!courtPosition || (courtPosition as string) === 'dormant') continue;
+
+    // THR-1715: daily life never asks the god — no tug, so no curation slot spent
+    // on a beat whose notification the visibility phase will never build.
+    if (isRoutineTemplate(ua.templateId)) continue;
 
     // Look up the template for reach domain and threat rating
     const template = templateById.get(ua.templateId);

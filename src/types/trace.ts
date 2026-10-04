@@ -90,6 +90,7 @@ export type TraceCategory =
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
+  | 'attention.story_breath_start' | 'attention.routine_suppressed' // THR-1715
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
@@ -620,6 +621,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
+  'attention.story_breath_start', 'attention.routine_suppressed',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
@@ -1925,6 +1927,35 @@ export interface FilterPipelineTrace extends TraceBase {
   afterCap: number;
   /** Distinct templates entering the cap stage minus distinct templates leaving it (THR-1633 S1). Optional: traces from before THR-1633 lack it. */
   capCutTemplates?: number;
+  /**
+   * Candidates after the story-breath stage (THR-1715). Equal to
+   * `afterPrerequisites` for every agent not inside a pause-mode breath.
+   * Optional: traces from before THR-1715 lack it.
+   */
+  storyBreath?: number;
+}
+
+/** Trace: a pause-mode mortal's story chapter ended and the story breath began (THR-1715). */
+export interface StoryBreathStartTrace extends TraceBase {
+  category: 'attention.story_breath_start';
+  agentId: string;
+  /** The chapter that ended. */
+  actionId: string;
+  templateId: string;
+  /** tick + PAUSED_STORY_BREATH_TICKS */
+  breathUntilTick: number;
+}
+
+/**
+ * Trace: routine (daily-life) actions kept off the player's screen this tick
+ * (THR-1715). Aggregated: at most one per tick.
+ */
+export interface RoutineSuppressedTrace extends TraceBase {
+  category: 'attention.routine_suppressed';
+  /** Routine notifications not built this tick. */
+  count: number;
+  /** Threaded actors affected (capped at ROUTINE_SUPPRESSED_TRACE_AGENT_CAP). */
+  agentIds: string[];
 }
 
 /** Trace: agent movement transition or decision */
@@ -4447,6 +4478,8 @@ export type TraceEntry =
   | BindingSeveredTrace
   | BinderMintTrace
   | FilterPipelineTrace
+  | StoryBreathStartTrace
+  | RoutineSuppressedTrace
   | ScoringTrace
   | MovementTrace
   | IdleDecisionTrace

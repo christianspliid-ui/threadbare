@@ -1385,6 +1385,43 @@ if (import.meta.env.DEV) {
       ?? { success: false, locationId: null, locationName: null, message: 'Encounter bridge not registered' },
 
     /**
+     * THR-1715 D1 — The First's attention cadence (or a named agent's).
+     *
+     * Returns the effective attention mode, the story-breath anchor and how many
+     * turns of breath remain, and how many of the agent's live actions are daily
+     * life (routine) vs story. Omit `agentId` to read the thread at court
+     * position `the_first`. How a Done-when proves "The First asks" is wired.
+     */
+    getAttentionCadence: async (agentId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'Game state not available — is the game loaded?' };
+      const { isRoutineTemplate, resolveAttentionMode, storyBreathRemaining } = await import('./engine/attentionCadence');
+      const { PAUSED_STORY_BREATH_TICKS } = await import('./types/encounterVisibility');
+      const { graph, ascendantId, tick } = state;
+      const thread = agentId
+        ? graph.getIncomingEdges(agentId, 'thread').find(e => e.source === ascendantId)
+        : graph.getOutgoingEdges(ascendantId, 'thread')
+          .find(e => (e.properties as Record<string, unknown>)['courtPosition'] === 'the_first');
+      if (!thread) {
+        return { error: agentId ? `No thread from the ascendant to ${agentId}` : 'No thread at court position the_first — The First is not bonded yet' };
+      }
+      const props = thread.properties as unknown as import('./types/influence').ThreadEdgeProperties;
+      const live = (state.unifiedActions ?? []).filter(a => !a.resolved && a.actorId === thread.target);
+      return {
+        agentId: thread.target,
+        agentName: graph.getNode(thread.target)?.name ?? '(unknown)',
+        attentionMode: resolveAttentionMode(props),
+        storedAttentionMode: props.attentionMode ?? null,
+        lastStoryChapterEndTick: props.lastStoryChapterEndTick ?? null,
+        breathRemaining: storyBreathRemaining(graph, thread.target, tick),
+        breathTicks: PAUSED_STORY_BREATH_TICKS,
+        routineActive: live.filter(a => isRoutineTemplate(a.templateId)).length,
+        storyActive: live.filter(a => !isRoutineTemplate(a.templateId)).length,
+        tick,
+      };
+    },
+
+    /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
      * Returns thread edges, active encounterProgress entries, and pending encounterNotifications.
