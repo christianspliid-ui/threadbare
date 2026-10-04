@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### A finished change stuck for 32 hours: the fair draw for experts ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+### A finished change stuck for 33 hours: the fair draw for experts ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 32 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 33 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
 **You don't need to do anything.** It is held on purpose until its veto window closes (~02:45 Monday). After that, a builder clears the conflict. The code is safe on the pull request.
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: spells now reach mortals as divine gifts and found tomes** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)). Merged via [#2220](https://github.com/christianspliid-ui/threadbare/pull/2220) at 14:39 and live.
 - **2026-10-04: Linear sub-issue auto-complete is off.** You, on Discord at 11:30: *"i have disabled sub-issue autocomplete"*. Linear does not expose that setting to me, so the proof will be the next parent that closes without taking its children with it.
 - **2026-10-04: the encounter stakes line is live** ([THR-1727](https://linear.app/threadbare/issue/THR-1727/encounter-stakes-line-one-formula-sentence-replaces-the-summary-and)), the third of your four Unsafe Bridge jobs: one sentence opens an encounter, and its result line names the chapter. Merged via [#2217](https://github.com/christianspliid-ui/threadbare/pull/2217).
 - **2026-10-04: the bridge keeper has her name back** ([THR-1726](https://linear.app/threadbare/issue/THR-1726/the-unsafe-bridge-the-keepers-name-is-missing-from-the-scene-prose-the)), the second of your four Unsafe Bridge jobs. Merged via [#2216](https://github.com/christianspliid-ui/threadbare/pull/2216) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: the word *Tradition* is now in the game glossary** ([THR-1701](https://linear.app/threadbare/issue/THR-1701)). Merged via [#2210](https://github.com/christianspliid-ui/threadbare/pull/2210).
 - **2026-10-04: an encounter choice the god can't afford can no longer be played** ([THR-1720](https://linear.app/threadbare/issue/THR-1720/an-authored-encounter-choice-the-god-cant-afford-is-still-playable)). Merged via [#2205](https://github.com/christianspliid-ui/threadbare/pull/2205).
 - **2026-10-04: a descendant can want the old homeland back** ([THR-1658](https://linear.app/threadbare/issue/THR-1658/a-descendant-can-want-the-old-homeland-back-a-reclaim-homeland-rule)): the "Raise the Old Banner" ambition. Merged via [#2208](https://github.com/christianspliid-ui/threadbare/pull/2208).
-- **2026-10-04: the encounter-nudge reader sees what a spawn opened** ([THR-893](https://linear.app/threadbare/issue/THR-893/spawnnudgeexemplar-opens-a-stage-getencounternudges-cannot-see-the-two)), a review-tool fix. Merged via [#2209](https://github.com/christianspliid-ui/threadbare/pull/2209).
 
 ---
 
