@@ -49,6 +49,7 @@ import { REALM_FACTION_CLASS } from '../data/realm-content';
 import { pickCulturalName } from '../data/culture-name-pools';
 import { TICKS_PER_SEASON, SEASONS_PER_YEAR } from '../types/temporal';
 import { emitTrace } from './traceBuffer';
+import { historicalCultureOfRegion } from './descent';
 import {
   WORLD_PAST_DEFAULTS,
   WORLDGEN_PAST_PRIME,
@@ -461,9 +462,9 @@ export function seedWorldPast(
     const empireOfRegion = new Map<string, string | undefined>();
     const empireOf = (regionId: string): string | undefined => {
       if (empireOfRegion.has(regionId)) return empireOfRegion.get(regionId);
-      const hit = graph.getOutgoingEdges(regionId, 'belongs_to')
-        .filter(e => (e.properties as P | undefined)?.cultureLayer === 'historical')
-        .map(e => e.target).sort()[0];
+      // The shared predicate (THR-1658): every play-time reader of descent asks the
+      // same question about "the old land", so writer and readers cannot disagree.
+      const hit = historicalCultureOfRegion(graph, regionId);
       empireOfRegion.set(regionId, hit);
       return hit;
     };

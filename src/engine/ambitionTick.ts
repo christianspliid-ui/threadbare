@@ -61,6 +61,9 @@ import {
   traceUnevaluableAmbition,
 } from './ambitionShape';
 import { recomputeCalling } from './calling';
+import { getDescentCultureIds } from './descent';
+import { empireWords } from './worldPastWords';
+import { OLD_BANNER_LABEL_STEM } from '../data/descent-constants';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -201,7 +204,26 @@ export function buildAmbitionAgentSnapshot(
     | AxiologicalProfile
     | undefined;
 
-  return { domainCapabilities: caps, traits, culturalSpheres, bonds, axiologicalProfile };
+  // Descent (THR-1658): read here for the same single-funnel reason — the descent gate
+  // in `passesEligibility` fails closed on a snapshot without it.
+  const descentCultureIds = getDescentCultureIds(actor);
+
+  return { domainCapabilities: caps, traits, culturalSpheres, bonds, axiologicalProfile, descentCultureIds };
+}
+
+/** True when the pool template carries the descent gate (THR-1658). */
+function templateRequiresDescent(templateId: string): boolean {
+  return AMBITION_TEMPLATES.find(t => t.id === templateId)?.requiresDescent === true;
+}
+
+/**
+ * The provenance stem a descent drive carries (THR-1658): "the old blood of the
+ * Ash-Crowned", worded exactly as the chronicle words the empire. No descent culture
+ * (cannot happen behind the gate, but fail soft) → the chronicle's fallback words.
+ */
+export function oldBannerLabel(graph: WorldGraph, descentCultureIds: readonly string[] | undefined): string {
+  const cultureId = descentCultureIds?.[0];
+  return `${OLD_BANNER_LABEL_STEM} ${cultureId ? empireWords(graph, cultureId) : 'a people long gone'}`;
 }
 
 /** Template ids the agent already pursues (active or resolved) — never re-mint. */
@@ -1053,6 +1075,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               followedAgentIds,
               projects: strategicProjects,
               skipSpotlightPull: actorPullSpent,
+              // THR-1658: a descent drive names the blood it comes from on its edge,
+              // which the intent line reads as "Because of the old blood of …".
+              ...(templateRequiresDescent(assignment.templateId)
+                ? { mintedByLabel: oldBannerLabel(graph, agentSnapshot.descentCultureIds) }
+                : {}),
             });
             if (!reevalAssignment.assigned) continue;
             if (reevalAssignment.pull?.pulled) newEvents.push(reevalAssignment.pull.event);
