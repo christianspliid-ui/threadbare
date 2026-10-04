@@ -1512,6 +1512,34 @@ Three things follow with no authoring:
 
 ---
 
+### Capability 34: The Stakes Line — One Sentence Says What the Encounter Is About (THR-1727)
+
+**What it does:** a template's optional `stakes` block authors the parts of one formula sentence the veil opens with, in the subtitle slot under the title:
+
+> *Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack.*
+
+The lead ("Passing through Sacred Grove,") comes from why the mortal is there — the motive classification, frozen when the encounter starts — and is never authored. You author `goal` (after "must") and `risk` (after "— or": the **worst ending the encounter can reach**, not a choice inside the scene). When the encounter ends, the same parts become the **result line**, chosen by outcome band: `won` for the winning bands ("Vara crossed the rotten toll bridge."), `lost` for plain failure, `lostBadly` for critical failure. Write `lost` and `lostBadly` from the template's own authored failure endings so the ledger never tells a different story from the screen. A fork whose arms end differently authors `arms: { <variantKey>: { won, lost, lostBadly } }` for every arm but the one the top-level endings describe. The result line feeds the Chapter Ledger, the encounter badge and the agent's thread row.
+
+```ts
+stakes: {
+  goal: 'cross the rotten toll bridge',
+  risk: 'go into the river with the pack',
+  won: 'crossed the rotten toll bridge',
+  lost: 'turned back to the long ford and lost the day',
+  lostBadly: 'went into the river with the pack',
+},
+```
+
+**Rules (the validator enforces them):** lowercase bare verb phrases, no final period, no `{tokens}`, never "traveler", "god", "you" or "your", ≤ 60 characters each (`STAKES_GOAL_MAX_CHARS` / `STAKES_RISK_MAX_CHARS`). `lostBadly` is required when the template authors a distinct `critical_failure` ending. Raw entries in `encounter-content.ts` and `faction-encounter-content.ts` carry `stakes` through their converters.
+
+**Why you want it:** without it the veil shows `template.description`, a hand-written summary with no shared shape, and the ledger names the chapter by its title alone.
+
+**How to tell whether yours landed.** `npx vitest run src/data/encounters/__tests__/encounterStakes.validator.test.ts` fails a malformed block and lists templates still without one. In the browser, `await window.__DEBUG.getEncounterStakes()` returns the built line, the rendered line and `hasStakes`.
+
+**Where to find the implementation:** `src/engine/encounters/stakesLine.ts` (builders and the tick-path stamp); tables in `src/data/nudge-stage-content.ts` (`STAKES_LEAD_VARIANTS`, `STAKES_RESULT_FORMS`). Plan: `Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

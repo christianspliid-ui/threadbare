@@ -27,7 +27,6 @@ import {
   NUDGE_COMMIT_LABEL,
   NUDGE_EMPTY_HAND_LINE,
 } from '../../../../data/nudge-stage-content';
-import { NudgeMotiveIntro } from './NudgeMotiveIntro';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
 import {
   isNudgeDesignerViewEnabled,
@@ -85,23 +84,16 @@ export interface NudgePhaseShellProps {
   focalActorId?: string;
   /** Commit the selected hand and let the step resolve. */
   onCommit: (nudgeIds: string[], essenceCost: number) => void;
-  /** Open the motive explainer. Absent ⇒ the line renders as static text. */
-  onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
   /**
-   * Render the motive intro line inside this shell (THR-972).
-   *
-   * Defaults to true so a host that mounts the shell whole — the meeting beats —
-   * keeps the line without changing. `EncounterVeil` passes **false**, because it
-   * renders `NudgeMotiveIntro` itself, above its prose block, which is the
-   * placement the directive asked for and which this shell cannot reach from
-   * inside its own subtree.
+   * Open the motive explainer. Unread since THR-1727 retired the motive intro
+   * line it was attached to; kept so hosts that pass it still type-check (NFP #6).
    */
-  renderMotiveIntro?: boolean;
+  onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
   /**
    * Render the reading — reach, difficulty, forecast, factor lines — inside this
    * shell (THR-1478).
    *
-   * Same shape as {@link renderMotiveIntro}, for the same reason. Defaults to
+   * Defaults to
    * true so a host that mounts the shell whole (the meeting beats) keeps the
    * panel. `EncounterVeil` passes **false** and draws the marks inside its own
    * context strip above the prose, which is the merge the director asked for.
@@ -213,8 +205,6 @@ export function NudgePhaseShell({
   agentName,
   focalActorId,
   onCommit,
-  onOpenMotive,
-  renderMotiveIntro = true,
   renderTestHeader = true,
   hand: externalHand,
 }: NudgePhaseShellProps) {
@@ -237,20 +227,9 @@ export function NudgePhaseShell({
   return (
     <div data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
       {/* ── Motive ──────────────────────────────────────────────
-          THR-972 moved the motive out of this shell entirely. It now renders as
-          the scene's opening line *above* the veil's prose (`NudgeMotiveIntro`),
-          which is a different subtree — the chip+sentence strip that used to sit
-          here could only ever appear below the fiction it was framing.
-
-          `renderMotiveIntro` lets a host that has no prose block of its own (the
-          meeting beats, which mount this shell whole) keep the line inside the
-          shell rather than losing it. EncounterVeil passes false and mounts the
-          line itself. */}
-      {renderMotiveIntro && (
-        <div style={{ marginBottom: 18 }}>
-          <NudgeMotiveIntro phase={phase} onOpen={onOpenMotive} />
-        </div>
-      )}
+          THR-1727 retired the motive intro line (THR-972) everywhere. Why the
+          mortal is here is now the lead clause of the encounter's stakes line,
+          which the veil renders in its subtitle slot (`EncounterStakesLine`). */}
 
       {/* ── The reading (THR-1478) ──────────────────────────────
           One block, and on the veil's path it is not this one. `EncounterVeil`

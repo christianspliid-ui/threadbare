@@ -203,6 +203,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
+import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
 import {
   selectEntityNoticeBadges, buildRevealedNotices,
@@ -1638,8 +1639,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // notifications become badges on the agent's thread row instead of toasts in
   // the global queue.
   const encounterBadges = useMemo(
-    () => selectEncounterBadges(gameState.encounterNotifications),
-    [gameState.encounterNotifications],
+    // THR-1727 — the badge names its encounter by the stakes / result line too.
+    () => selectEncounterBadges(
+      gameState.encounterNotifications,
+      (notif) => stakesLineForNotification(gameState, notif),
+    ),
+    // The line reads the action and the archive; both change only with the tick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState.encounterNotifications, gameState.tick],
+  );
+
+  // THR-1727 — each agent row's story line: the live encounter's stakes line,
+  // else the last chapter's result line.
+  const encounterStakesLines = useMemo(
+    () => selectEncounterStakesLines(
+      gameState,
+      threadedNodes.filter(n => n.category === 'agent').map(n => n.id),
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [threadedNodes, gameState.unifiedActions, gameState.chapterArchive, gameState.tick],
   );
 
   // THR-665: the same treatment for thread tugs — the shaping-tier "about to
@@ -5446,6 +5464,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
                   appointmentBadges={appointmentBadges}
+                  encounterStakesLines={encounterStakesLines}
                   encounterBadges={encounterBadges}
                   onOpenEncounterBadge={handleOpenEncounterBadge}
                   tugBadges={tugBadges}

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 155 |
+| 🟢 LIVE | 156 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **215** |
+| **Total** | **216** |
 
 ## Contracts by producing subsystem
 
@@ -186,6 +186,7 @@ remediation ticket or the build fails.
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-seed-resolves-by-query` | An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481). | function: `seedContentQuery`, `ENCOUNTER_FAMILY_TAGS`, `validateEncounterSeedRefs`, `describeContentQuery` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `encounter-stakes-line-reaches-veil-ledger-badge-row` | An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere. | function: `stampStakesContext`, `buildStakesLine`, `buildResultLine`, `stakesLineForAction`, `rememberedStakesLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `encounter-timeline-to-incident-bundle` | The mortals the player watches are the ones they will ask about, so each one arrives with the tail of what actually happened to them. | function: `getTimeline`, `getTrackedAgentIds` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `engagement-forecast-gates-choice` | A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner's whole-encounter survival odds, or an undertaking's checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate's score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins. | function: `computeEngagementFit`, `computeSetbackShift` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `essence-spend-moves-the-bar` | A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it. | node-prop: `essencePool`, `selectEssenceRows` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
@@ -1061,10 +1062,10 @@ exit
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
+- **Production hits:** 14 total — 2 write, 2 read, 10 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +4 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/nudge-stage-content.ts` +5 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
@@ -1270,6 +1271,18 @@ exit
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/content-tags.ts`, `src/engine/contentQuery.ts`, `src/engine/seedOnlySequels.ts` +1 more
 - **Verdict:** Verified 2026-09-12: THR-1488 slice 4. Seventeen family tags seated and applied to 78 templates by prefix, so every aliased family names exactly the set its prefix named (asserted as a superset-both-ways guard in encounterSeedLiveness.test.ts — the tag may be wider, as #delve became when encounter.delve_into_depths joined a family its id spelling could never reach, but never narrower). ENCOUNTER_FAMILY_TAGS rewrites the prefix form for one release; a prefix with no row falls through to the pre-change scan, so the 41 dead families behave exactly as before while being counted. The gate validateEncounterSeedRefs is fatal on a dead templateId and an empty query and advisory on a dead prefix; wired into check:encounter (which sweeps encounter.* only) and into a corpus-wide vitest over all 744 templates, because every one of the seven fatal findings lived OUTSIDE the encounter. prefix and the runner alone reported the corpus clean. Both fatal arms falsified on encounter.slice.bargain_at_crossroads and each failed by name in both the runner and the vitest, then reverted. The seven dead references were repaired onto family queries in the same pass: the Court's tip to the watch, its two district inquiries, and the courtier's off-books commission can now arrive for the first time.
+
+### `encounter-stakes-line-reaches-veil-ledger-badge-row` — 🟢 LIVE
+
+- **Intent:** An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Encounter*, *UnifiedActionTemplate*
+- **Module:** `src/engine/encounters/stakesLine.ts`
+- **Production hits:** 8 total — 1 write, 4 read, 3 unclassified
+- **Write sites:** `src/engine/chapterArchive.ts`
+- **Read sites:** `src/components/Game/ChapterLedger.tsx`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterStakesRows.ts`, `src/debug-bridge.ts`
+- **Other hits:** `src/data/nudge-stage-content.ts`, `src/engine/encounters/stakesLine.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-10-04: THR-1727. Browser, `?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge`: `__DEBUG.getEncounterStakes()` → hasStakes true, built line === rendered DOM line ("Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack."), no `nudge-motive-intro`. With `&outcome=failure` (pin verdict band_rendered) the Chapter Ledger row and the thread row read "Vara turned back to the long ford and lost the day."; with `&outcome=critical_failure` "Vara went into the river with the pack." — each matching the band prose on screen. CLI seed 42 medium, tick 30: 105 of 105 unified actions carry a stamped `stakesContext`, none live unstamped.
 
 ### `encounter-timeline-to-incident-bundle` — 🟢 LIVE
 
@@ -2043,7 +2056,7 @@ exit
 - **Production hits:** 31 total — 3 write, 1 read, 27 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/groups/groupNames.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +22 more
+- **Other hits:** `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts`, `src/data/item-generator-cores.ts` +22 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `pilgrim-way-reaches-location-and-faction-sheets` — 🟢 LIVE
@@ -2167,10 +2180,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 344 total — 1 write, 1 read, 342 unclassified
+- **Production hits:** 346 total — 1 write, 1 read, 344 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +337 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +339 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

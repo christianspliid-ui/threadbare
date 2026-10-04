@@ -735,6 +735,15 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
     success: 'The bridge held, and the road goes on from the far bank.',
     failure: 'The bridge could not be trusted, and the long ford cost the rest of the day.',
   },
+  // THR-1727 — the stakes line. `risk` is the worst ending (the river, the
+  // critical_failure band); `lost` is the plain failure (the long ford).
+  stakes: {
+    goal: 'cross the rotten toll bridge',
+    risk: 'go into the river with the pack',
+    won: 'crossed the rotten toll bridge',
+    lost: 'turned back to the long ford and lost the day',
+    lostBadly: 'went into the river with the pack',
+  },
   description:
     'A failing toll bridge stands on the only crossing within a day’s walk, and the family ' +
     'that keeps it swears it will hold. The traveler weighs a cheap crossing against a long ' +
@@ -1222,6 +1231,15 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
     initiation: 'The pass is a half day up, and the weather is a half day behind.',
     success: 'They crossed ahead of the season and came down the far side whole.',
     failure: 'The mountain kept them longer than planned and charged for the stay.',
+  },
+  // THR-1727 — failure is a night in the open below the saddle; critical
+  // failure is two days held on the mountain.
+  stakes: {
+    goal: 'reach the pass shelter ahead of the snow',
+    risk: 'be held on the open mountain by the storm',
+    won: 'reached the pass shelter ahead of the snow',
+    lost: 'spent the night in the open below the saddle',
+    lostBadly: 'lost two days to the storm on the open mountain',
   },
   description:
     'A mountain pass with the weather closing in behind it, and a shelter somewhere ahead ' +
@@ -1722,6 +1740,15 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
     initiation: 'Two riders have kept pace with the caravan since the river, and they are not lost.',
     success: 'The caravan reached the gates whole, and the hunt went home empty.',
     failure: 'The hunt closed on the column before the gates could.',
+  },
+  // THR-1727 — failure lets the hunted walk on to the gates and the riders;
+  // critical failure brings the riders down on the camp.
+  stakes: {
+    goal: 'slip the hunted one out of the column unseen',
+    risk: 'see the riders come down on the camp',
+    won: 'slipped the hunted one out of the column unseen',
+    lost: 'let the hunted one walk on to the gates and the riders',
+    lostBadly: 'saw the riders come down on the camp at night',
   },
   description:
     'Riders have shadowed a crowded column since the river, hunting one traveler among many. ' +
@@ -2320,6 +2347,23 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
     initiation: 'A stranger at the crossroads knows the traveler’s name, and has an offer priced in promises.',
     success: 'The crossroads was left behind on the traveler’s own terms.',
     failure: 'The crossroads kept more of the evening than it gave back.',
+  },
+  // THR-1727 — the fork arms pursue different ends: `positive` (also the
+  // fallback) refuses the bargain, `negative` strikes it. Top-level endings are
+  // the refusal; `arms.negative` carries the bargain's.
+  stakes: {
+    goal: 'answer a stranger’s bargain priced in promises',
+    risk: 'leave the crossroads with something of theirs gone',
+    won: 'refused the stranger’s bargain and owed nothing',
+    lost: 'refused the bargain, but the offer followed them a mile',
+    lostBadly: 'refused, but let the stranger see what they wanted',
+    arms: {
+      negative: {
+        won: 'struck the stranger’s bargain on clean terms',
+        lost: 'struck the bargain with a hedge the moon will not honour',
+        lostBadly: 'struck the bargain and left a piece of themselves with it',
+      },
+    },
   },
   description:
     'A stranger at a crossroads knows the traveler’s name and offers a bargain priced in ' +
@@ -3270,6 +3314,23 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
     initiation: 'A cheerful family is walking into a salt fen with a worthless paper for a map.',
     success: 'The family’s road was mended, or honestly left — both on purpose.',
     failure: 'The meeting went poorly, and both roads kept their troubles.',
+  },
+  // THR-1727 — `positive` guides the family off the fen road; `negative` (also
+  // the fallback) keeps to the mortal's own road. Top-level endings are the
+  // guiding arm's; `arms.negative` carries the passing arm's.
+  stakes: {
+    goal: 'turn a swindled family away from the salt fen',
+    risk: 'watch them walk on into the salt fen',
+    won: 'turned the family south, away from the salt fen',
+    lost: 'lost the light before the turn was found',
+    lostBadly: 'lost the family’s trust and the road south both',
+    arms: {
+      negative: {
+        won: 'kept their own road and made the town by dark',
+        lost: 'made the town, with the family still bound for the fen',
+        lostBadly: 'made the town, with the fen on their mind all evening',
+      },
+    },
   },
   description:
     'A cheerful family is walking into a salt fen carrying a worthless deed for a map. ' +

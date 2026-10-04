@@ -2712,6 +2712,15 @@ export interface UnifiedActionTemplate {
   readonly description?: string;
 
   /**
+   * THR-1727 — the parts of the encounter's **stakes line** (`[lead], [actor] must
+   * [goal] — or [risk].`) and its **result line**. Where present, the stakes line
+   * replaces `description` on the encounter veil; `description` stays as the
+   * fallback for a template without stakes and for every other reader.
+   * Builder: `src/engine/encounters/stakesLine.ts`.
+   */
+  readonly stakes?: import('./encounterStakes').EncounterStakes;
+
+  /**
    * Technical game-mechanical statement of what this action does (THR-604).
    * 1–3 sentences, wiki-facing register — names the state that changes (node
    * property, edge, condition, resource, visibility), the direction/nature of the
@@ -3174,6 +3183,13 @@ export interface UnifiedAction {
   readonly spawnedFromSeedId?: string;
   /** Seed label that spawned this action, for causation edge properties (THR-143). */
   readonly spawnedFromSeedLabel?: string;
+  /**
+   * THR-1727 — why the mortal is here, frozen by `stampStakesContext` on the tick
+   * path once the encounter action exists, so the stakes line and the result line
+   * share one lead. Absent on an action that has not been stamped yet (or an old
+   * save); readers rebuild it from the live receipt then (fail-open).
+   */
+  readonly stakesContext?: import('./encounterStakes').StakesContext;
 }
 
 /**
