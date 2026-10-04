@@ -396,7 +396,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
-| `spell` (2) | `spellActivation.ts`, `spellCasting.ts` | `THR-1571` |
+| `spell` (2) | `spellActivation.ts`, `spellCasting.ts` | `THR-1571`, `THR-1572` |
+| `spellgenerator` (9) | `spellGenerator/casterTradition.ts`, `spellGenerator/describeSpell.ts`, `spellGenerator/generateSpell.ts`, `spellGenerator/notice.ts`, `spellGenerator/readBack.ts`, `spellGenerator/spellLibrary.ts`, `spellGenerator/traditionCatalog.ts`, `spellGenerator/types.ts`, `spellGenerator/validateGeneratedSpell.ts` | `THR-1230`, `THR-1232`, `THR-1572` |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
@@ -434,4 +435,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 205 engine domains · 630 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 206 engine domains · 639 modules._

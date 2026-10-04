@@ -103,7 +103,9 @@ import { holdsMotive } from '../engine/undertakingMotive';
 import { instantiateReward } from '../engine/rewardPool';
 import { raiseConditionLanded } from '../engine/effects/conditionProxyEvents';
 import { isSpellSuppressedFor } from '../engine/effects/effectSuppression';
-import { getSpellTemplate } from './spell-templates';
+import { resolveSpellTemplate } from './spell-templates';
+import { casterTraditionOf } from '../engine/spellGenerator/casterTradition';
+import { placeSpellNotice } from '../engine/spellGenerator/notice';
 import { SLOT_CAPS } from './attachment-slot-constants';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
@@ -947,6 +949,14 @@ function emitKindTrace(entry: PowerLearnedTrace | ConditionInflictedTrace): void
 export { isCaster };
 
 /** The `spell`-class definition nodes in the world, sorted by id (NFP #3 — no draw anywhere here). */
+/** THR-1572 — the tradition recorded on a caster's tradition-sourced `knows_spell` edge, if any. */
+function knownTraditionOf(graph: WorldGraph, actorId: string): string | undefined {
+  const edges = graph.getOutgoingEdges(actorId, 'knows_spell')
+    .filter(e => typeof (e.properties as { tradition?: unknown } | undefined)?.tradition === 'string')
+    .sort((a, b) => a.id.localeCompare(b.id));
+  return edges[0] ? String((edges[0].properties as { tradition: string }).tradition) : undefined;
+}
+
 function spellDefinitions(graph: WorldGraph): GraphNode[] {
   return graph.getNodesByType('trait')
     .filter(n => n.properties.subcategory === 'spell')
@@ -2298,10 +2308,22 @@ const POWER: UndertakingObjectType = {
       // The tradition shelf: the actor's aligned spheres first. An unaligned mortal —
       // measured as ~99% of them — studies from the open shelf rather than from
       // nothing, which is what keeps the cell from being dead on arrival.
+      // THR-1572 — the caster's own tradition library comes first, lowest tier first. A
+      // caster's tradition is read off their seeded `knows_spell` edge, else derived.
+      // Generated spells of *other* traditions never reach the sphere or open shelf: a
+      // priest does not stumble into a necromancer's book.
+      const casterTradition = knownTraditionOf(ctx.graph, ctx.actorId)
+        ?? casterTraditionOf(ctx.graph, ctx.actorId, Number(ctx.state.seed ?? 0));
+      const generatedOf = (n: GraphNode) => (n.properties.generated as { traditionId?: string } | undefined)?.traditionId;
+      const librarySpells = definitions
+        .filter(n => n.properties.origin === 'generated' && generatedOf(n) === casterTradition)
+        .sort((a, b) => Number(a.properties.tier ?? 0) - Number(b.properties.tier ?? 0) || a.id.localeCompare(b.id));
+      const authored = definitions.filter(n => n.properties.origin !== 'generated');
       const aligned = alignedSpheres(ctx.graph, ctx.actorId);
-      const shelf = aligned.length > 0
-        ? definitions.filter(n => aligned.includes(String(n.properties.sphereAffinity)))
-        : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? definitions : []);
+      const sphereShelf = aligned.length > 0
+        ? authored.filter(n => aligned.includes(String(n.properties.sphereAffinity)))
+        : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? authored : []);
+      const shelf = [...librarySpells, ...sphereShelf];
 
       const { known, wielded } = spellsOfActor(ctx.graph, ctx.actorId);
       const pick = shelf.find(n => !known.has(n.id));
@@ -2321,7 +2343,10 @@ const POWER: UndertakingObjectType = {
         source: ctx.actorId,
         target: pick.id,
         type: 'knows_spell',
-        properties: { learnedTick: ctx.tick, sphereAffinity: tradition, source: op },
+        properties: {
+          learnedTick: ctx.tick, sphereAffinity: tradition, source: op,
+          ...(generatedOf(pick) ? { tradition: generatedOf(pick) } : {}),
+        },
       });
 
       // Wielded — only if a slot is free. The cap is the attachment system's own
@@ -2342,6 +2367,11 @@ const POWER: UndertakingObjectType = {
             modifiers: {},
           },
         });
+      }
+
+      // THR-1572 — a carried transgression is noticed the first time it is carried.
+      if (freeSlot && pick.properties.agency === 'fate_woven') {
+        placeSpellNotice(ctx.state, ctx.actorId, { id: spellTemplateId, name: pick.name }, ctx.tick, 'carried', ctx.graph);
       }
 
       emitKindTrace({
@@ -2433,7 +2463,7 @@ const POWER: UndertakingObjectType = {
       }
 
       const spellId = str(node.properties, 'spellTemplateId') ?? str(node.properties, 'spellId') ?? node.id;
-      const spell = getSpellTemplate(spellId);
+      const spell = resolveSpellTemplate(ctx.graph, spellId);
       if (!spell) return fail('activate_spell', `no_spell_template:${spellId}`);
       // Exhaustion's reader (THR-1428 R4): `tick_exhaust` has always stamped a
       // deadline nobody checked. A caster still spent is refused here, which is what

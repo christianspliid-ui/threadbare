@@ -60,6 +60,7 @@ import {
   STRAIN_TICKS_PER_UNIT,
 } from '../data/spell-casting-constants';
 import { strainConditionId } from '../data/strain-conditions';
+import { resolveConditionDurationTicks } from './effects/conditionApplier';
 
 // ═══════════════════════════════════════════════════════════════════
 // Activation Result
@@ -320,12 +321,19 @@ export function payCosts(
             properties: { subcategory: 'condition', tags: [cost.template] },
           });
         }
+        // THR-1572 review — the bearing carries the condition's own term, so a price
+        // condition with a `CONDITION_DURATIONS` row (Exhausted: one day) wears off
+        // through decayConditions instead of sitting on the caster forever, one more
+        // copy per cast. A condition with no row stays indefinite, as before.
+        const durationTicks = resolveConditionDurationTicks(condId);
         graph.addEdge({
           id: `e_cond_${agentId}_${cost.template}_${conditionCounter++}`,
           type: 'has_trait',
           source: agentId,
           target: condId,
-          properties: {},
+          properties: durationTicks > 0
+            ? { appliedAt: tick ?? 0, durationTicks, ticksRemaining: durationTicks, source: 'spell_price' }
+            : {},
         });
         break;
       }

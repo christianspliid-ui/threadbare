@@ -141,7 +141,7 @@ import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { computeStandingModifierTotal } from './resolutionModifiers';
 import { stepCastRecordFor, traceStepCastDecided } from './stepCast';
 import { resolveCast } from './spellCasting';
-import { getSpellTemplate } from '../data/spell-templates';
+import { resolveSpellTemplate } from '../data/spell-templates';
 import { processFactionEncounterReputation } from './factionReputation';
 import { processReputationTally } from './phaseReputationTraits';
 import {
@@ -658,7 +658,7 @@ function resolveStepCastOnBand(
   tick: number,
 ): StepCastRecord | undefined {
   if (!record || record.decision !== 'cast' || !record.spellId) return record;
-  const spell = getSpellTemplate(record.spellId);
+  const spell = resolveSpellTemplate(state.graph, record.spellId);
   if (!spell) return { ...record, band, landed: false, refused: 'no_spell_template' };
   const result = resolveCast(state, {
     casterId: record.casterId,
@@ -2522,7 +2522,7 @@ export function executeStepResult(
   // writes a chip may name, and the cast line and backlash line in words.
   if (stepCastRecord) {
     if (stepCastRecord.decision === 'cast' && stepCastRecord.spellId && !stepCastRecord.refused) {
-      const spell = getSpellTemplate(stepCastRecord.spellId);
+      const spell = resolveSpellTemplate(state.graph, stepCastRecord.spellId);
       const prose = freezeCastLine(
         state,
         stepCastRecord.landed ? spell?.castProse?.landed : spell?.castProse?.fizzled,

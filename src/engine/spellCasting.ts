@@ -15,6 +15,8 @@
  *      its own seeded stream, and applies it the same way;
  *   5. raises `'spell_cast'` on the caster's own carried triggers;
  *   6. queues the soul price as a `spell_price` quintessence event (FB3's split);
+ *   6b. (THR-1572) a generated transgression spell is noticed: a `forbidden_contact`
+ *      hidden mark on the caster, once per caster per spell, landed or fizzled;
  *   7. traces `spell.cast_resolved` (and `spell.backlash` when it bit).
  *
  * The band is the roll that already happened — a step's, or an undertaking's final
@@ -56,6 +58,7 @@ import { CAST_LANDED_BANDS, CAST_ENEMY_FILTER_ADMITS_STRANGERS } from '../data/s
 import { isAlly, actorFactionId } from './allegiance';
 import { areFactionsHostile } from './factionNetwork';
 import { applyCastChannel, splitCastEffects, type CastChannelResult } from './castChannel';
+import { placeSpellNotice, spellNoticeMarkId, spellProvenance } from './spellGenerator/notice';
 
 // ═══════════════════════════════════════════════════════════════════
 // Request / result
@@ -113,6 +116,12 @@ export interface CastResult {
   readonly soulPrice?: number;
   readonly writes: readonly CastWrite[];
   readonly refused?: CastRefusal;
+  /**
+   * THR-1572 — a transgression's notice: the caster's mark for this spell, and whether
+   * this cast placed it (a second cast of the same spell places none). Absent for a spell
+   * that carries no notice.
+   */
+  readonly notice?: { readonly markId: string; readonly placed: boolean };
 }
 
 const REFUSED = (refused: CastRefusal): CastResult => ({ landed: false, applied: [], paid: [], writes: [], refused });
@@ -353,6 +362,13 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     } satisfies QuintessenceEvent);
   }
 
+  // 6b. A transgression is noticed (THR-1572, Lane decision 5) — on every cast, landed or not.
+  let notice: CastResult['notice'];
+  if (spellProvenance(graph, spell.id)?.notice) {
+    const placed = placeSpellNotice(state, casterId, spell, tick, 'cast');
+    notice = { markId: spellNoticeMarkId(casterId, spell.id), placed: placed !== null };
+  }
+
   const result: CastResult = {
     landed,
     applied,
@@ -360,6 +376,7 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     paid: activation.paidCosts,
     ...(soulPrice > 0 ? { soulPrice } : {}),
     writes,
+    ...(notice ? { notice } : {}),
   };
   traceResolved(req, result, triggersFired, channelResult);
   return result;
