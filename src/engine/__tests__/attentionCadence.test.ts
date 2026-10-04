@@ -119,6 +119,20 @@ describe('the story breath', () => {
     expect(threadProps(auto).lastStoryChapterEndTick).toBeUndefined();
   });
 
+  it('recordStoryChapterEnd is idempotent per tick (no second trace or write)', () => {
+    const g = makeGraph('pause');
+    expect(recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10)).toBe(true);
+    expect(recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10)).toBe(false);
+    expect(threadProps(g).lastStoryChapterEndTick).toBe(10);
+  });
+
+  it('a dormant thread is never paced, even when its stored mode is pause', () => {
+    const g = makeGraph('pause', 'dormant');
+    expect(recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10)).toBe(false);
+    g.updateEdge('thread_1', { properties: { lastStoryChapterEndTick: 10 } });
+    expect(storyBreathRemaining(g, 'agent_1', 12)).toBe(0);
+  });
+
   it('storyBreathRemaining counts down and ignores a future anchor', () => {
     const g = makeGraph('pause');
     expect(storyBreathRemaining(g, 'agent_1', 10)).toBe(0);

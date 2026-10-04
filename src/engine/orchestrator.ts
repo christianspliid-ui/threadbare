@@ -3237,6 +3237,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = runRegisteredPhases(s, phaseCtx, 'post-resolution', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2a.99: Story breath anchors (THR-1715) — a pause-mode mortal's story
+  // chapter that resolved earlier this tick starts her breath BEFORE agent
+  // decision, or the same tick's decision would pick her next story chapter at
+  // once. The archive write below records anything resolved after 2b.
+  for (const a of s.unifiedActions ?? []) {
+    if (a.resolved && a.completedAtTick == null && isEncounterAction(a.templateId)) {
+      recordStoryChapterEnd(s.graph, a.actorId, a.actionId, a.templateId, s.tick);
+    }
+  }
+
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);

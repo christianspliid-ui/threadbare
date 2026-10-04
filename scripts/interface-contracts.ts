@@ -6018,7 +6018,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.',
+      'The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.',
     ulTerms: ['Daily life', 'Chapter'],
     mechanism: {
       kind: 'edge-prop',

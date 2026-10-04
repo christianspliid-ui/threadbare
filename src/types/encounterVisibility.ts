@@ -39,14 +39,14 @@ export const ATTENTION_MODE_CHANGE_COST = 0;
 
 /**
  * The story breath (THR-1715): turns after a pause-mode mortal's story chapter
- * ends before she may start another. Two in-game days. During the breath she
+ * ends before she may start another: just under two in-game days. During the breath she
  * lives her daily life (routine chores, travel, social life), all of it silent.
  *
  * The cadence knob. The plan's verification band is 5–8 halting chapters per
  * 150 turns for The First on seeds 42 / 99 / 7; retune within 12–36 to land in
  * it. Measured value is recorded in Docs/status/2026-10-04-thr-1715.md.
  */
-export const PAUSED_STORY_BREATH_TICKS = 24;
+export const PAUSED_STORY_BREATH_TICKS = 22;
 
 /**
  * The authored threat rating that marks a raw encounter as daily life

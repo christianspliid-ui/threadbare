@@ -23,7 +23,7 @@ A procedurally generated hex map. Hexes are mutable state (not graph nodes). Eve
 
 ## The Three-Beat Turn
 
-**Scan → Curated Moment → Aftermath.** Each tick is two in-world hours; 12 ticks per day. The world runs in real time between moments and **halts for every moment that matters**; when it closes, the clock returns to the state you left it in [IMPL — the Stellaris model, 2026-09-27; interrupt registry + resume-to-prior, THR-1608]. **The First is born asking:** her story chapters stop the world; after one ends she lives two days of ordinary life before the next can begin, and her chores never ask [IMPL — THR-1715]. Order is load-bearing: scan means you chose to look; encounter is the chapter; aftermath is the breath before the next scan.
+**Scan → Curated Moment → Aftermath.** Each tick is two in-world hours; 12 ticks per day. The world runs in real time between moments and **halts for every moment that matters**; when it closes, the clock returns to the state you left it in [IMPL — the Stellaris model, 2026-09-27; interrupt registry + resume-to-prior, THR-1608]. **The First is born asking:** her story chapters stop the world; after one ends she lives about two days of ordinary life before the next can begin, and her chores never ask [IMPL — THR-1715]. Order is load-bearing: scan means you chose to look; encounter is the chapter; aftermath is the breath before the next scan.
 
 ## What You Can Do
 

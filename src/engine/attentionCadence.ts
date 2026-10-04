@@ -20,7 +20,7 @@
  * tick path, and those modules would otherwise import each other.
  *
  * ─── Constants ───────────────────────────────────────────────────
- * | PAUSED_STORY_BREATH_TICKS | 24        | types/encounterVisibility.ts |
+ * | PAUSED_STORY_BREATH_TICKS | 22        | types/encounterVisibility.ts |
  * | ROUTINE_THREAT_RATING     | 'trivial' | types/encounterVisibility.ts |
  *
  * ─── Fail-soft ───────────────────────────────────────────────────
@@ -72,6 +72,8 @@ export function storyBreathRemaining(graph: WorldGraph, agentId: string, tick: n
   const thread = getThreadTo(graph, agentId);
   if (!thread) return 0;
   const props = thread.properties as unknown as ThreadEdgeProperties;
+  // A dormant thread never halts, so it has nothing to pace.
+  if (props.courtPosition === 'dormant') return 0;
   if (resolveAttentionMode(props) !== 'pause') return 0;
   const anchor = props.lastStoryChapterEndTick;
   if (typeof anchor !== 'number' || anchor > tick) return 0;
@@ -82,8 +84,11 @@ export function storyBreathRemaining(graph: WorldGraph, agentId: string, tick: n
  * Write the story-breath anchor (THR-1715 E5): a pause-mode mortal's story
  * chapter (a non-routine encounter) just resolved, so her breath begins.
  *
- * Called at the chapter-archive write in the orchestrator, for actions that
- * already passed `isEncounterAction`. A relationship-internal datum, so it
+ * Called twice per tick by the orchestrator, for actions that already passed
+ * `isEncounterAction`: once just before agent decision (2b), for chapters the
+ * progress phases resolved this tick, so the same tick's decision already sees
+ * the breath; and again at the chapter-archive write, for anything resolved
+ * after 2b. A relationship-internal datum, so it
  * lives on the thread edge. Returns whether an anchor was written. Fail-soft:
  * a missing thread, an auto-mode thread or a routine template writes nothing.
  */
@@ -97,7 +102,12 @@ export function recordStoryChapterEnd(
   if (isRoutineTemplate(templateId)) return false;
   const thread = getThreadTo(graph, actorId);
   if (!thread) return false;
-  if (resolveAttentionMode(thread.properties as unknown as ThreadEdgeProperties) !== 'pause') return false;
+  const props = thread.properties as unknown as ThreadEdgeProperties;
+  if (props.courtPosition === 'dormant') return false;
+  if (resolveAttentionMode(props) !== 'pause') return false;
+  // Idempotent per tick: the orchestrator records before agent decision and again
+  // at the archive write, so a chapter resolved in either half of the tick anchors.
+  if (props.lastStoryChapterEndTick === tick) return false;
   try {
     graph.updateEdge(thread.id, { properties: { lastStoryChapterEndTick: tick } });
   } catch {
