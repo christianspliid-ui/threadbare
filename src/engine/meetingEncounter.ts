@@ -76,10 +76,13 @@ import {
   MEETING_TEST_SPHERE_FACTOR,
 } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
+import { emitTrace } from './traceBuffer';
+import { selectBondFateLine, selectFormativeFateLine } from './meetingFateLine';
 import { applyRider, selectActiveRider, totalNudgeCost } from './encounters/nudges';
 import { classifyNetLean, sumHandLean } from './encounters/poleLean';
 import { mapResolverOutcomeToStep } from './unifiedActionResolution';
-import { resolveAction } from './resolutionService';
+import { forecastAction, resolveAction } from './resolutionService';
+import type { ForecastTier, ResolutionInput } from '../types/resolution';
 import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-vignettes';
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
@@ -683,6 +686,54 @@ export function computeNetPoleLean(
 }
 
 /**
+ * The one `ResolutionInput` a meeting test rolls against (THR-1714).
+ *
+ * Three readers share it: the band roll below, the two forecasts stamped on
+ * each outcome, and `buildMeetingNudgePhaseModel`, which shows the player the
+ * forecast word before they commit. One builder means the word read before the
+ * roll, the word the fate line quotes, and the band rolled cannot drift apart.
+ *
+ * Pure; takes no rng draw.
+ */
+export function meetingResolutionInput(difficulty: number, nudgeDelta: number): ResolutionInput {
+  return {
+    actorId: MEETING_TEST_ACTOR_ID,
+    domain: MEETING_TEST_REACH,
+    capability: MEETING_TEST_CAPABILITY,
+    difficulty: Math.max(0, Math.min(1, Number.isFinite(difficulty) ? difficulty : 0.5)),
+    sphereFactor: MEETING_TEST_SPHERE_FACTOR,
+    actionModifiers: nudgeDelta,
+  };
+}
+
+/** Summed `forecastDelta` of a played hand. Unknown ids contribute nothing. */
+function handNudgeDelta(
+  nudges: readonly MeetingStepNudge[],
+  playedNudgeIds: readonly string[],
+): number {
+  const byId = new Map(nudges.map((n) => [n.id, n]));
+  return playedNudgeIds.reduce((sum, id) => sum + (byId.get(id)?.forecastDelta ?? 0), 0);
+}
+
+/**
+ * The forecast going in, with and without the hand (THR-1714). Both use the
+ * pure `forecastAction` on the exact input the band rolls against, so neither
+ * touches `rng` — every seeded meeting keeps its draw order.
+ */
+function meetingForecastTiers(
+  difficulty: number,
+  nudges: readonly MeetingStepNudge[],
+  playedNudgeIds: readonly string[],
+): { baseForecastTier: ForecastTier; handForecastTier: ForecastTier } {
+  return {
+    baseForecastTier: forecastAction(meetingResolutionInput(difficulty, 0)).forecastTier,
+    handForecastTier: forecastAction(
+      meetingResolutionInput(difficulty, handNudgeDelta(nudges, playedNudgeIds)),
+    ).forecastTier,
+  };
+}
+
+/**
  * Resolve one band on the shared attended ladder, given a hand.
  *
  * Returns the post-rider `StepOutcome`. Riders take **zero** rng draws (WS0
@@ -695,21 +746,8 @@ function resolveMeetingBand(
   playedNudgeIds: readonly string[],
   rng: () => number,
 ): StepOutcome {
-  const byId = new Map(nudges.map((n) => [n.id, n]));
-  const nudgeDelta = playedNudgeIds.reduce(
-    (sum, id) => sum + (byId.get(id)?.forecastDelta ?? 0),
-    0,
-  );
-
   const result = resolveAction(
-    {
-      actorId: MEETING_TEST_ACTOR_ID,
-      domain: MEETING_TEST_REACH,
-      capability: MEETING_TEST_CAPABILITY,
-      difficulty: Math.max(0, Math.min(1, Number.isFinite(difficulty) ? difficulty : 0.5)),
-      sphereFactor: MEETING_TEST_SPHERE_FACTOR,
-      actionModifiers: nudgeDelta,
-    },
+    meetingResolutionInput(difficulty, handNudgeDelta(nudges, playedNudgeIds)),
     rng,
     undefined,
     'encounter',
@@ -794,6 +832,7 @@ export function resolveFormativeTest(
     quintessenceErosion: MEETING_SCAR_EROSION_BY_BAND[band] ?? 0,
     essenceSpent: totalNudgeCost({ nudges: test.nudges }, playedNudgeIds),
     prose: selectFormativeProse(test, band, writtenPole),
+    ...meetingForecastTiers(test.difficulty, test.nudges, playedNudgeIds),
   };
 }
 
@@ -834,6 +873,7 @@ export function resolveBondTest(
     essenceSpent: totalNudgeCost({ nudges: bondTest.nudges }, playedNudgeIds),
     prose: content?.prose ?? '',
     traitSeed: content?.traitSeed ?? '',
+    ...meetingForecastTiers(bondTest.difficulty, bondTest.nudges, playedNudgeIds),
   };
 }
 
@@ -879,6 +919,7 @@ export function applyMeetingOutcomes(
     traitSeeds,
     startingQuintessence,
     bondReception: bondOutcome?.reception,
+    ...(bondOutcome ? { bondOutcome: { ...bondOutcome } } : {}),
     meetingChoiceRecord: {
       ...result.meetingChoiceRecord,
       formativeOutcomes: formativeOutcomes.map((o) => ({ ...o })),
@@ -1021,7 +1062,71 @@ export function createAgentFromMeeting(
     },
   });
 
+  emitMeetingResolutionTraces(result, agentId, tick);
+
   return agentId;
+}
+
+/** Forecast recorded on a trace whose outcome predates the forecast fields. */
+const MEETING_TRACE_FORECAST_FALLBACK: ForecastTier = 'uncertain';
+
+/**
+ * Emit the meeting's two resolution traces (THR-1714), declared by THR-868 and
+ * never emitted until now: one `meeting.test_resolved` per formative test and
+ * one `meeting.bond_resolved` per completed meeting, each carrying the forecast
+ * going in and the key of the fate line the player read.
+ *
+ * Emitted here, at the fold, rather than from the React beats: the agent id the
+ * traces attach to exists only now, and the beats stay trace-free. An outcome
+ * array that is absent (a legacy-path meeting, or one in flight from before this
+ * change) emits nothing. Tracing is never on the critical path — `emitTrace` is
+ * a no-op while tracing is off, and the agent is already written.
+ */
+function emitMeetingResolutionTraces(
+  result: MeetingEncounterResult,
+  agentId: string,
+  tick: number,
+): void {
+  for (const o of result.meetingChoiceRecord?.formativeOutcomes ?? []) {
+    const line = selectFormativeFateLine(o, result.name);
+    emitTrace({
+      category: 'meeting.test_resolved',
+      tick,
+      agentId,
+      summary: `${result.name}: test ${o.testIndex + 1} resolved ${o.band}, wrote pole ${o.writtenPole} (lean ${o.netLean}) — ${line.key}`,
+      testIndex: o.testIndex,
+      templateId: o.templateId,
+      valuePair: o.valuePair,
+      netLean: o.netLean,
+      playedNudgeIds: [...o.playedNudgeIds],
+      band: o.band,
+      writtenPole: o.writtenPole,
+      shift: o.shift,
+      quintessenceErosion: o.quintessenceErosion,
+      essenceSpent: o.essenceSpent,
+      baseForecastTier: o.baseForecastTier ?? MEETING_TRACE_FORECAST_FALLBACK,
+      handForecastTier: o.handForecastTier ?? MEETING_TRACE_FORECAST_FALLBACK,
+      fateLineKey: line.key,
+    });
+  }
+
+  const bond = result.bondOutcome;
+  if (bond) {
+    const line = selectBondFateLine(bond, result.name);
+    emitTrace({
+      category: 'meeting.bond_resolved',
+      tick,
+      agentId,
+      summary: `${result.name}: bond resolved ${bond.band}, received as ${bond.reception} — ${line.key}`,
+      band: bond.band,
+      receptionId: bond.reception,
+      playedNudgeIds: [...bond.playedNudgeIds],
+      startingQuintessence: result.startingQuintessence ?? QUINTESSENCE_DEFAULT,
+      baseForecastTier: bond.baseForecastTier ?? MEETING_TRACE_FORECAST_FALLBACK,
+      handForecastTier: bond.handForecastTier ?? MEETING_TRACE_FORECAST_FALLBACK,
+      fateLineKey: line.key,
+    });
+  }
 }
 
 // ─── Narrative Candidate Generation ─────────────────────────────────

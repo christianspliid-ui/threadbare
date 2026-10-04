@@ -2170,6 +2170,11 @@ export interface DebugBridge {
         netLean: 'a' | 'b' | 'none';
         shift: number;
         playedNudgeIds: string[];
+        /** THR-1714 — forecast tier with no cards, and with the played hand. */
+        baseForecastTier?: 'doomed' | 'perilous' | 'uncertain' | 'favorable' | 'fated';
+        handForecastTier?: 'doomed' | 'perilous' | 'uncertain' | 'favorable' | 'fated';
+        /** THR-1714 — the fate line the reveal showed, `${leanState}.${fateAnswer}`. */
+        fateLineKey: string;
       }>;
       bondOutcome?: {
         band: string;

@@ -967,7 +967,7 @@ export function buildUnifiedEncounterStageModel(
   // producer is retired, so `choices` is now empty for every unauthored step and
   // the branch below would have rendered a screen with no move on it at all.
   // Fate-alone is the replacement: the stage still frames the moment (motive,
-  // test, cast) and offers `Let fate decide`. Note the check reads the built
+  // test, cast) and offers `Stay silent, let fate answer`. Note the check reads the built
   // `choices`, not `template.authoredChoices` — the authored hand reaches the
   // stage through `buildChoices`' own step resolution, and re-deriving the
   // condition here is how the two would drift apart.

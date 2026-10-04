@@ -7,6 +7,7 @@ import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell'
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { resolveBondTest } from '../../engine/meetingEncounter';
+import { selectBondFateLine } from '../../engine/meetingFateLine';
 import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
@@ -165,6 +166,8 @@ export function BondBeat({
 
   // ── Fate's answer ──────────────────────────────────────────────
   if (stage === 'reveal' && outcome) {
+    // THR-1714 — what the hand made the odds, and what fate did with it.
+    const fateLine = selectBondFateLine(outcome, candidate.name);
     return (
       <div
         className="h-screen flex flex-col items-center justify-center"
@@ -172,6 +175,22 @@ export function BondBeat({
         data-testid="bond-reveal-stage"
       >
         <div style={{ maxWidth: 640, textAlign: 'center', padding: '0 6vw' }}>
+          {fateLine.text && (
+            <p
+              data-testid="bond-fate-line"
+              data-fate-key={fateLine.key}
+              style={{
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: '1rem',
+                color: 'var(--veil-gold-text)',
+                lineHeight: 1.6,
+                marginBottom: '2vh',
+              }}
+            >
+              {fateLine.text}
+            </p>
+          )}
           <p
             data-testid="bond-reception-prose"
             data-reception={outcome.reception}

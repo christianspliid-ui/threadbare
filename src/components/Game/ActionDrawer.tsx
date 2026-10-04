@@ -3,7 +3,7 @@
  *
  * A row of cards along the bottom of the screen. Click a card to **arm** it;
  * the footer's one **Cast** button **fires** it (Law 48, the nudge stage's
- * *Let fate decide* shape). Escape clears the armed card, then closes the drawer.
+ * *Play your hand, let fate answer* shape). Escape clears the armed card, then closes the drawer.
  *
  * ─── What this replaced, and why ──────────────────────────────────
  *

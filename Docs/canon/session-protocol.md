@@ -30,15 +30,17 @@ This is the reference card. The full protocol — and why each rule is non-negot
 
 ### Prioritization: Finish Before You Start
 
-**Rule 0 — a flow impediment with demonstrated cost outranks everything below, including Urgent feature work** (director decision, 2026-08-02). Rules 1–3 order *feature* delivery; Rule 0 sits above all of them and is checked first.
+**Rule 0 — a flow impediment with demonstrated cost outranks everything below, including Urgent feature work** (director decision, 2026-08-02). The pick order below sorts the rest of the queue; Rule 0 sits above all of it and is checked first.
 
 **The membership predicate** (THR-688 rule A): a ticket qualifies when its body or comments record that the delivery machine **already lost work** — and the evidence must be in the ticket and quotable (a count, a duration, a commit SHA, a log line), else it sorts at rule 3. **Materiality bar** (Christian, 2026-08-08): the loss must clear ≥ ~1 hour lost, a shipped artifact corrupted, or ≥3 recurrences in a week — below the bar it is an **impediment-log row, not a ticket**, batched by the weekly retro; every process ticket carries one cost/benefit line (*"costs ~X to fix; not fixing costs ~Y per week"*). **Budget:** product work first; at most **one process ticket per three runs**; a process-only queue is a **starved shelf, not a license to binge** — the headline finding is "feature pipeline needs supply", never more tidying. **Explicitly not qualifying:** dead-code pruning, doc drift, naming/test tidying, and hardening against failures that have not happened — prevention sorts by priority, it does not jump the queue, and `Infrastructure`/`Improvement` labels are not qualifying signals. The incidents behind each clause (the 88-failure pileup THR-834, the April TB-120 stall, the 2026-08-08 measurement): `Docs/plans/2026-04-13-linear-coordination-protocol.md` and the director rulings recorded there.
 
-Then, choose work in this order — finish projects before starting new ones:
+Then, choose work in the order the pickup lane actually runs (`.claude/skills/pull-work/SKILL.md` § Step 1):
 
-1. **Deferrals in active projects** — `Deferral`-labeled issues belonging to a project with active work (`list_issues label:"Deferral" state:"Ready for Dev"`).
-2. **Remaining issues in active projects** — clear a project's Ready-for-Dev backlog before pulling from a different project.
-3. **New work by priority** — only start a fresh project once active ones have no remaining items.
+1. **Rule 0 first** — a qualifying flow impediment, as above.
+2. **Then priority** — Urgent → High → Medium → Low → none, over the claimable `Ready for Dev` queue (held `Claimable from:` tickets dropped first, product work ahead of process work under the budget above). A `Deferral` label is not a bucket of its own: a deferral sorts by its priority like any other issue.
+3. **Then oldest first** — `createdAt` breaks a priority tie. **Finish active projects before starting new ones** is the judgment tie-break inside a priority level: between equals, prefer the item in a project that already has work moving.
+
+*Changed by THR-984 (folding THR-871).* This list used to read "1. Deferrals in active projects, 2. remaining issues in active projects, 3. new work by priority". No lane ever implemented the deferral bucket — `pull-work` has always sorted by priority — and because deferrals are filed Low, the rule was unreachable by construction. **Rejected alternatives** (do not re-litigate): teaching `pull-work` a `(bucket, priority)` sort (starves the program work the orchestrator partitions); making deferrals inherit their parent's priority at filing (a filer-side change no lane owns, and it hides what was deliberately deferred); a periodic orchestrator drain of N deferrals a day regardless of priority (a second queue rule competing with the first).
 
 **Every Linear issue belongs to a project** — no orphans. Deferrals inherit their parent issue's project.
 
