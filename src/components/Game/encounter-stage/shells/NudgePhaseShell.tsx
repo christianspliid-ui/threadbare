@@ -17,7 +17,7 @@ import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { CostPips } from '../../../shared/OddsPips';
-import { CardFace, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
+import { CardFace, CARD_WIDTH_PX } from '../../../shared/CardFace';
 import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
@@ -26,7 +26,6 @@ import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
   NUDGE_EMPTY_HAND_LINE,
-  NUDGE_HAND_HEADING,
 } from '../../../../data/nudge-stage-content';
 import { NudgeMotiveIntro } from './NudgeMotiveIntro';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
@@ -61,8 +60,17 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 // The card's own glyph sizes moved to `shared/CardFace` with the zones that
 // used them (THR-1002); the legend is the shell's, not the card's.
 
-/** Legend glyphs under the hand heading. */
+/** Legend glyphs on the hand's chrome row. */
 const LEGEND_GLYPH_PX = 12;
+
+/**
+ * THR-1724 — the hand wraps into rows of at most this many cards (Law 33,
+ * amended 2026-10-04), replacing the sideways-scrolling single row.
+ */
+export const CARDS_PER_ROW = 4;
+
+/** Gap between cards, both axes. */
+const CARD_GAP_PX = 12;
 
 export interface NudgePhaseShellProps {
   phase: EncounterStageNudgePhaseModel;
@@ -303,11 +311,9 @@ export function NudgePhaseShell({
       {/* ── The hand ───────────────────────────────────────────── */}
       <div style={{ marginTop: 22 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-          <Tooltip id="ui.nudge_hand">
-            <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: TEXT_WARM, letterSpacing: '0.08em' }}>
-              {NUDGE_HAND_HEADING}
-            </span>
-          </Tooltip>
+          {/* THR-1724 — the "What you can do" heading is gone (Christian,
+              2026-10-04): playable cards light up on hover instead, which says
+              the same thing where the player's hand already is. */}
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}
           <Tooltip id="ui.nudge_essence">
@@ -361,23 +367,16 @@ export function NudgePhaseShell({
           <div
             data-testid="nudge-card-row"
             style={{
+              // THR-1724 — rows of at most CARDS_PER_ROW that wrap, replacing the
+              // one sideways-scrolling row (Law 33, amended 2026-10-04). The cap
+              // is a max-width, so a narrower column simply wraps sooner; the
+              // veil's content column, not this row, owns any overflow.
               display: 'flex',
-              // One line, scrolled sideways — a *row*, not a grid.
-              //
-              // Wrapping was tried first and measured worse: the stage column
-              // fits four cards, so a five-card hand wrapped to a second line
-              // that the height cap then clipped mid-card. Scrolling the axis the
-              // cards are laid out along keeps every card whole and legible, and
-              // still satisfies the viewport contract — what that contract forbids
-              // is the *page* scrolling, which this prevents by capping height.
-              flexWrap: 'nowrap',
-              // Cards match the tallest in the row, so quotes line up across it.
+              flexWrap: 'wrap',
+              // Cards in a row match the tallest, so quotes line up across it.
               alignItems: 'stretch',
-              gap: 12,
-              maxHeight: HAND_MAX_HEIGHT_PX,
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              paddingBottom: 6,
+              gap: CARD_GAP_PX,
+              maxWidth: CARDS_PER_ROW * CARD_WIDTH_PX + (CARDS_PER_ROW - 1) * CARD_GAP_PX,
             }}
           >
             {hand.cards.map((card) => (

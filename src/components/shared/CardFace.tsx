@@ -90,13 +90,18 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
  * `--veil-void` — below the 4.5:1 floor. Full loss red is 7.14:1 and makes the
  * ladder symmetric: perilous 0.85 → doomed 1.0 mirrors favorable 0.8 → fated 1.0,
  * so severity reads as intensity rather than as a different red.
+ *
+ * THR-1724 (Christian, 2026-10-04): the ladder is now the quest-difficulty
+ * colours — doomed red, perilous orange, uncertain yellow, favorable green,
+ * fated grey — one hue per rung on the `--forecast-*-rgb` tokens, so the
+ * header pill and the card odds word read one table.
  */
 export const FORECAST_TIER_COLORS: Record<string, string> = {
-  doomed: 'rgb(var(--veil-loss-rgb) / 1)',
-  perilous: 'rgb(var(--veil-loss-rgb) / 0.85)',
-  uncertain: 'rgb(var(--veil-gold-rgb) / 0.85)',
-  favorable: 'rgb(var(--veil-gain-rgb) / 0.8)',
-  fated: 'rgb(var(--veil-gain-rgb) / 1)',
+  doomed: 'rgb(var(--forecast-doomed-rgb) / 1)',
+  perilous: 'rgb(var(--forecast-perilous-rgb) / 1)',
+  uncertain: 'rgb(var(--forecast-uncertain-rgb) / 1)',
+  favorable: 'rgb(var(--forecast-favorable-rgb) / 1)',
+  fated: 'rgb(var(--forecast-fated-rgb) / 1)',
 };
 
 // ── Card-row layout (THR-890) ──────────────────────────────────────
@@ -105,8 +110,13 @@ export const FORECAST_TIER_COLORS: Record<string, string> = {
 
 /** Card width. Four fit the encounter stage's column at 1920×1080 without wrap. */
 export const CARD_WIDTH_PX = 210;
-/** Picture band height — "small generic image", not a hero illustration. */
-export const CARD_PICTURE_BAND_PX = 78;
+/**
+ * Picture band height at the card's width, at the hero 16:9 ratio (Law 5,
+ * amended 2026-10-04 by THR-1724). Still a small generic image, not a scene
+ * hero — it is simply no longer cropped to a third of its height. Derived, so
+ * re-proportioning the card is one number (NFP #1).
+ */
+export const CARD_PICTURE_BAND_PX = Math.round((CARD_WIDTH_PX * 9) / 16);
 /**
  * How a dimmed card recedes (THR-1587). A filter, not `opacity`: opacity made the
  * whole face see-through, so a dimmed card in the backdrop-less ActionDrawer let
@@ -359,7 +369,7 @@ export function CardFace({
   return (
     <button
       type="button"
-      className="focus-ring"
+      className={model.disabled || dimmed ? 'focus-ring' : 'focus-ring card-face--playable'}
       data-testid={`${p}-${id}`}
       aria-pressed={model.selected}
       disabled={model.disabled}
@@ -407,8 +417,10 @@ export function CardFace({
         descriptor={model.picture}
         aria-label={model.name}
         style={{
+          // THR-1724 — the hero 16:9 band (Law 5). The source art is 1376×768,
+          // which the old 78px band cropped by about a third.
           height: CARD_PICTURE_BAND_PX,
-          aspectRatio: 'auto',
+          aspectRatio: '16 / 9',
           borderRadius: 0,
           borderWidth: '0 0 1px 0',
         }}

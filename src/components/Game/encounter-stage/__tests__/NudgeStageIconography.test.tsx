@@ -30,7 +30,6 @@ import {
   MOTIVE_INTRO_VARIANTS,
   MOTIVE_MISSION_FALLBACK,
   NUDGE_READING_LEGEND_ENTRIES,
-  TEST_GLYPH,
 } from '../../../../data/nudge-stage-content';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
 import {
@@ -38,6 +37,7 @@ import {
   generateDifficultyScalesSvg,
   generateForecastDieSvg,
 } from '../../../icons';
+import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 
@@ -275,85 +275,55 @@ describe('THR-972 · test panel', () => {
     expect(document.body.innerHTML).not.toContain('/assets/reaches/');
   });
 
-  it('draws the difficulty as a tilted balance and spends no word on it', () => {
+  it('draws no difficulty mark — the forecast already weighs it (THR-1724)', () => {
     const phase = buildPhase();
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
 
-    const unit = screen.getByTestId('nudge-test-unit');
-    const band = phase.testPanel.difficultyWord;
-
-    // THR-1478, director ask 2026-09-12: *"find a way to iconify the difficulty
-    // (fair) without a text."* The pairing rule — assert the mark AND the
-    // absence of the word, because a frame drawing both looks exactly like the
-    // bug the directive was filed against.
+    // Christian, 2026-10-04: *"remove the difficulty marker — the forecast
+    // already includes difficulty."* Neither the mark nor its word renders; the
+    // raw difficulty stays in the model for the designer view and the traces.
+    expect(screen.queryByTestId('nudge-test-unit'), 'the difficulty mark survived').toBeNull();
     expect(screen.queryByTestId('nudge-difficulty-word'), 'difficulty word survived').toBeNull();
-    expect(unit.textContent, 'the frame still spells the band').not.toContain(band);
-    expect(unit.textContent, 'the glyph the SVG replaced is back').not.toContain(TEST_GLYPH);
-    // Ruling 6 — the numeral stays designer-view only.
-    expect(unit.textContent).not.toMatch(/\d/);
+    expect(phase.testPanel.difficultyWord, 'the model lost its difficulty word').toBeTruthy();
 
-    // The frame survives the word: *"the difficulty cant stand alone"* was a
-    // ruling about the reading, not about the word, so the anchor stays.
-    const scales = unit.querySelector('svg');
-    expect(scales, 'difficulty drew no scales').toBeTruthy();
-    expect(unit.getAttribute('data-difficulty-band')).toBe(band);
-
-    // Law 11 — a glyph carrying meaning alone states its reading in words one
-    // hover away. Without this the icon is a picture nobody can read.
-    expect(unit.getAttribute('aria-label')).toContain(band);
-
-    // The tilt is the shape channel that colour alone could not be (Law 11).
-    // Falsify it across the *whole* vocabulary: four bands must draw four
-    // beams, or the ladder is one icon in four colours and a player without
-    // colour vision reads nothing.
+    // The icon itself stays in the shared set (other surfaces may still draw
+    // it), and its own contract still holds: four bands, four beams, monotone.
     const beams = (['gentle', 'fair', 'steep', 'severe'] as const)
       .map((b) => generateDifficultyScalesSvg(b, 30));
     expect(new Set(beams).size, 'two bands draw the same beam').toBe(4);
-    // And the tilt is monotone in difficulty — the beam falls further away from
-    // the mortal as the step hardens, rather than merely differing per band.
     const angle = (svg: string) => Number(/rotate\((-?[\d.]+)/.exec(svg)![1]);
     const angles = beams.map(angle);
     expect(angles).toEqual([...angles].sort((a, b) => a - b));
-
-    // Fail-soft (NFP #4): an unbanded word draws a level beam, never nothing.
     expect(generateDifficultyScalesSvg('nonsense', 30)).toBe(
       generateDifficultyScalesSvg('fair', 30),
     );
   });
 
-  it('draws the forecast as a die whose pips are its rung on the ladder', () => {
+  it('draws the forecast as its word in a ladder-coloured pill (THR-1724)', () => {
     const phase = buildPhase();
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
 
-    // *"remove the word forecast. make the forecast score 'uncertain' into an
-    // icon like a dice."* Both halves asserted: the die is present, the label
-    // and the tier word are gone from the surface.
-    const die = screen.getByTestId('nudge-forecast-die');
-    expect(screen.queryByTestId('nudge-forecast-word'), 'tier word survived').toBeNull();
-    expect(screen.queryByTestId('nudge-forecast-pips'), 'the pip row survived beside the die').toBeNull();
-    expect(die.textContent, 'the die spells its tier').not.toMatch(/doomed|perilous|uncertain|favorable|fated/i);
-    expect(die.querySelector('svg'), 'forecast drew no die').toBeTruthy();
-    expect(die.getAttribute('data-forecast-tier')).toBe(phase.baseForecast.tier);
+    // Christian, 2026-10-04: the forecast word in a coloured pill, on the
+    // quest-difficulty ladder. Law 31: the word always shows; the hue repeats it.
+    const pill = screen.getByTestId('nudge-forecast-pill');
+    expect(screen.queryByTestId('nudge-forecast-die'), 'the die survived beside the pill').toBeNull();
+    expect(pill.textContent).toBe(phase.baseForecast.word);
+    expect(pill.getAttribute('data-forecast-tier')).toBe(phase.baseForecast.tier);
+    expect(pill.getAttribute('aria-label')).toContain(phase.baseForecast.word);
+    // The colour is the tier's named token, never a literal (Law 30).
+    expect(pill.style.color).toContain(`--forecast-${phase.baseForecast.tier}-rgb`);
 
-    // Law 11 again — the word is the die's accessible name.
-    expect(die.getAttribute('aria-label')).toContain(phase.baseForecast.word);
-
-    // The pip count *is* the ladder, so the five tiers must draw five faces.
-    // Counting distinct renderings is what makes this an ordinal test rather
-    // than a "does it render" one.
+    // Five tiers, five tokens: no two rungs share a colour.
     const tiers = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'] as const;
+    const inks = tiers.map((t) => FORECAST_TIER_COLORS[t]);
+    expect(new Set(inks).size, 'two tiers share a colour').toBe(5);
+    inks.forEach((ink, i) => expect(ink).toContain(`--forecast-${tiers[i]}-rgb`));
+
+    // The die icon keeps its own ordinal contract for any surface still using it.
     const faces = tiers.map((tier) => generateForecastDieSvg(tier, 30));
     expect(new Set(faces).size, 'two tiers share a die face').toBe(5);
-
-    // Ordinal, not merely distinct: the pip count rises with the tier, and the
-    // drawn face carries that count. A die that differed per tier without
-    // ordering would be five arbitrary symbols to memorise.
     const counts = tiers.map((t) => FORECAST_TIER_PIPS[t]);
     expect(counts).toEqual([...counts].sort((a, b) => a - b));
-    faces.forEach((svg, i) => {
-      expect((svg.match(/<circle/g) ?? []).length, `${tiers[i]} drew the wrong pip count`)
-        .toBe(counts[i]);
-    });
   });
 
   it('drops the objective line from the player surface', () => {

@@ -152,6 +152,20 @@
     --veil-neutral-rgb: 160 160 170;
     --veil-coercive-rgb: 249 115 22;
 
+    /* ── Forecast ladder (THR-1724, Law 30/31) ───────────────────────────────
+       Christian, 2026-10-04: the forecast reads as a coloured word pill in the
+       quest-difficulty colours a player already knows — doomed red, perilous
+       orange, uncertain yellow, favorable green, fated grey. Grey for `fated`
+       is the "trivial" rung: a sure thing needs no god. The word always renders
+       inside the pill (Law 31, never hue alone). Channels, because the pill
+       paints its edge and wash at lower alphas than its word. Ratios are the
+       word at full alpha on `--veil-void`, locked by `encounterVeilLaws.test.ts`. */
+    --forecast-doomed-rgb: 232 64 56;      /* 4.9:1 */
+    --forecast-perilous-rgb: 242 140 56;   /* 8.0:1 */
+    --forecast-uncertain-rgb: 236 208 72;  /* 13.3:1 */
+    --forecast-favorable-rgb: 88 196 88;   /* 8.9:1 */
+    --forecast-fated-rgb: 150 150 150;     /* 6.7:1 */
+
     /* ── Premonition — the two dream tones (Law 30/45, THR-1031) ─────────────
        `PremonitionModal` built its whole surface from six inline hex values and
        four inline rgba()s. Same treatment as the veil: a named variant set, not
@@ -718,6 +732,17 @@
   .focus-ring:focus-visible {
     outline: 2px solid var(--accent-gold-dim);
     outline-offset: 2px;
+  }
+
+  /* THR-1724 — a playable card lights up on hover, and the same light shows
+     on keyboard focus (Law 23). Only `card-face--playable` carries it: a
+     disabled or unaffordable card does not light up, it shows its reason
+     (Law 25). A class, because `:hover` / `:focus-visible` cannot be inline;
+     the inline `box-shadow` a *selected* card wears still wins over this. */
+  .card-face--playable:hover,
+  .card-face--playable:focus-visible {
+    border-color: var(--veil-gold) !important;
+    box-shadow: 0 0 14px rgb(var(--veil-gold-rgb) / 0.28);
   }
 }
 

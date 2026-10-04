@@ -115,6 +115,14 @@ function buildAction(template: UnifiedActionTemplate): UnifiedAction {
   };
 }
 
+/**
+ * THR-1724 — the skill sentence left the factor list: it is the title-row reach
+ * readout's accessible name and tooltip now, so the grammar is read there.
+ */
+function skillSentence(): string {
+  return screen.getByTestId('nudge-skill-chip').getAttribute('aria-label') ?? '';
+}
+
 function renderFor(reach: ReachDomain, authored = true) {
   const template = buildTemplate(reach, authored);
   const [entry] = template.steps;
@@ -141,7 +149,7 @@ function renderFor(reach: ReachDomain, authored = true) {
 describe('scene-screen factor lines read as sentences (THR-1494)', () => {
   it('renders the noun tier word with its article — the exact line the ticket found', () => {
     renderFor('eye');
-    const text = screen.getByTestId('nudge-factor-skill:eye').textContent ?? '';
+    const text = skillSentence();
 
     // The defect, verbatim from the ticket's DOM read.
     expect(text).not.toContain('Vara is oracle in eye');
@@ -151,7 +159,7 @@ describe('scene-screen factor lines read as sentences (THR-1494)', () => {
 
   it('leaves an adjective tier word article-less', () => {
     renderFor('iron');
-    const text = screen.getByTestId('nudge-factor-skill:iron').textContent ?? '';
+    const text = skillSentence();
 
     expect(text).toContain('Vara is legendary in Iron.');
     expect(text).not.toContain('is a legendary');
@@ -164,7 +172,7 @@ describe('scene-screen factor lines read as sentences (THR-1494)', () => {
     ];
     for (const reach of reaches) {
       renderFor(reach);
-      const text = screen.getByTestId(`nudge-factor-skill:${reach}`).textContent ?? '';
+      const text = skillSentence();
       const label = reach.charAt(0).toUpperCase() + reach.slice(1);
       expect(text, `reach ${reach}`).toContain(` in ${label}.`);
       expect(text, `reach ${reach}`).not.toContain(` in ${reach}.`);
@@ -172,18 +180,15 @@ describe('scene-screen factor lines read as sentences (THR-1494)', () => {
     }
   });
 
-  it('renders the unauthored forecast factor as a sentence, not a fragment', () => {
-    // The `authored:0` half. With no `factorLines` on the step the adapter falls
-    // through to the contract's default pool, which shipped a bare fragment.
+  it('renders no placeholder factor line when a step authors none (THR-1724)', () => {
+    // The `authored:0` half. With no `factorLines` on the step the adapter used
+    // to fall through to the contract's stock "The threads are shifting." —
+    // filler, not an account of the odds. A step with nothing authored now shows
+    // no authored line at all.
     const phase = renderFor('eye', false);
     const authored = phase.testPanel.factors.filter((f) => f.id.startsWith('authored:'));
-    expect(authored.length, 'fallback produced no authored line — arm is vacuous').toBeGreaterThan(0);
-
-    for (const factor of authored) {
-      const text = screen.getByTestId(`nudge-factor-${factor.id}`).textContent ?? '';
-      expect(text).not.toContain('threads shifting,');
-      expect(text.trim().endsWith('.'), `factor ${factor.id}: "${text}"`).toBe(true);
-    }
+    expect(authored).toHaveLength(0);
+    expect(document.body.textContent ?? '').not.toContain('threads are shifting');
     cleanup();
   });
 });

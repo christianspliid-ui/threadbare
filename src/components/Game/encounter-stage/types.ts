@@ -805,6 +805,21 @@ export interface EncounterStageTestPanelModel {
   /** Raw 0–1 difficulty — designer view only. */
   difficultyValue: number;
   factors: EncounterStageFactorLineModel[];
+  /**
+   * THR-1724 — the acting mortal's standing in this step's reach, shown in the
+   * title row as the character sheet's readout ("STONE · Skilled ●●●○○").
+   * It replaced the "{actor} is {word} in {reach}." factor line; `sentence` is
+   * that line's text, kept as the chip's tooltip so the actor is still named.
+   * Absent when the producer has no actor capability (the meeting's tests).
+   */
+  skill?: EncounterStageSkillModel;
+}
+
+export interface EncounterStageSkillModel {
+  /** 0-indexed tier (0–4) on `DOMAIN_WORD_SCALES`, the sheet's own scale. */
+  tier: number;
+  /** "Vara is skilled in Stone." */
+  sentence: string;
 }
 
 export interface EncounterStageForecastModel {

@@ -55,6 +55,7 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 |------|-----------|-------|
 | Generic content wrapper with header/body/footer | `Card` (shared primitive) | Compound: Card.Header, Card.Body, Card.Footer. Variants: surface, raised, glass. |
 | Domain reach tier display | `DomainCard` | Shows reach art thumbnail + tier prose. |
+| A mortal's standing in one reach, as a compact readout ("STONE · Skilled ●●●○○") | `ReachStanding` (shared primitive) | THR-1724. The sheet's name · rank word · magnitude dots; `layout="stacked"` inside `DomainCard`, `layout="inline"` in the encounter title row. Not for odds (use pips) or progress (use `StepDots` directly). |
 | Rarity-accented wrapper | `RarityBorderBox` | Left-border accent by rarity tier. Wraps any content — use around a sheet or ListRow for rarity emphasis. |
 | Agent compact card | `AgentInfoCard` | Name, tier, activity status. For hover popups or list embeds. |
 
@@ -184,6 +185,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `EntityLink` | A named entity inside a sentence | Prose that names an agent, faction or artifact and should click through to it. Renders plain text when the surface passes no `onOpenEntity`, so a caller that forgets the handler loses the click and never the name. |
 | `HeldByLine` | A place's allegiance | The one row that says who holds a town — a Realm, a guild with a hall there, or nobody. Use it wherever a place is described; never hand-roll a "controlled by" line, or the sheet and the map's border will drift apart. |
 | `DomainCard` | Reach tier card | Domain/reach display with art. |
+| `ReachStanding` | Reach readout | Reach name · rank word · five magnitude dots (THR-1724). |
 | `RarityBorderBox` | Rarity accent wrapper | Wrap anything that should show rarity visually. |
 | `RarityBadge` | Rarity tier label | Inline tag showing rarity. |
 | `SphereIcon` | Sphere symbol | Any sphere reference. SVG primary, PNG fallback. |

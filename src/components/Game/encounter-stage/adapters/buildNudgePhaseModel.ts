@@ -47,6 +47,8 @@ import type {
 } from '../../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
+import { getCapabilityTier } from '../../../../data/domain-words';
+import { DEFAULT_FORECAST_FACTORS } from '../../../../data/encounter-contract-builder';
 import {
   composeDealtStep,
   isDealtNudgeId,
@@ -118,6 +120,7 @@ import type {
   EncounterStageForecastModel,
   EncounterStageNudgeCardModel,
   EncounterStageNudgePhaseModel,
+  EncounterStageSkillModel,
   EncounterStageWithheldNudgeModel,
 } from '../types';
 
@@ -352,6 +355,8 @@ function forecastModelFrom(tier: ForecastTier, probability: number): EncounterSt
  * template with no decodable contract, or a step past the end of the beat list,
  * contributes no lines rather than throwing.
  */
+const PLACEHOLDER_FACTOR_LINES: ReadonlySet<string> = new Set(DEFAULT_FORECAST_FACTORS);
+
 function authoredFactorLines(
   template: UnifiedActionTemplate,
   stepIndex: number,
@@ -362,8 +367,12 @@ function authoredFactorLines(
     const beat = contract.encounter.beats[stepIndex];
     // `EncounterForecastFactors` is a tuple with optional tail entries, so the
     // holes are dropped before the pool is sliced.
+    // THR-1724 — the contract builder's stock "The threads are shifting." is a
+    // placeholder, not an authored account of the odds; a step with nothing
+    // authored shows no factor line at all rather than filler.
     const pool = (beat?.forecast_factors ?? []).filter(
-      (line): line is string => typeof line === 'string' && line.length > 0,
+      (line): line is string => typeof line === 'string' && line.length > 0
+        && !PLACEHOLDER_FACTOR_LINES.has(line),
     );
     return computeForecast(
       { forecastFactors: pool },
@@ -853,6 +862,10 @@ export function buildNudgePhaseModel(
   //
   // Appended after the authored/trait lines so the encounter's own account leads
   // and the world's contribution follows.
+  // THR-1724 — the skill line ("Vara is skilled in Stone.") leaves the list:
+  // its content is the title row's reach readout now, and its sentence rides
+  // along as that chip's tooltip so the actor is still named.
+  let skill: EncounterStageSkillModel | undefined;
   for (const line of deriveStepFactorLines({
     actorName: graph.getNode(actorId)?.name,
     reach: stepReach,
@@ -860,6 +873,13 @@ export function buildNudgePhaseModel(
     contributions: standing.contributions,
     carryover,
   })) {
+    if (line.kind === 'skill') {
+      skill = {
+        tier: getCapabilityTier(Number.isFinite(capability) ? capability : 0),
+        sentence: line.text,
+      };
+      continue;
+    }
     factors.push({
       id: line.id,
       text: line.text,
@@ -976,6 +996,7 @@ export function buildNudgePhaseModel(
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
       factors,
+      ...(skill ? { skill } : {}),
     },
     baseForecast,
     forecastInput,
