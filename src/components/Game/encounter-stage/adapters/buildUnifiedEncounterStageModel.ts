@@ -11,6 +11,7 @@
 
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
+import type { SphereName } from '../../../../types/index';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
@@ -98,6 +99,12 @@ export interface BuildUnifiedEncounterStageModelArgs {
    * no realm chip never pays for the map.
    */
   realmProjection?: RealmProjectionThunk;
+  /**
+   * THR-1720 — the sphere `handleEncounterIntervene` bills an authored choice
+   * to. Wins over the identity's primary so the row the veil dims and the
+   * spend the handler rejects price the same pool.
+   */
+  payingSphere?: SphereName;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -401,7 +408,9 @@ function buildChoices(
     // (`handleEncounterIntervene`), so it is priced against that pool and the
     // row names it. Pricing it against all twelve pools summed let a choice
     // read affordable and then floor the one pool it actually drew on.
-    const payingSphere = args.gameState?.ascendantIdentity?.sphereAlignment?.primary;
+    // THR-1720 — the caller's paying sphere wins: it is the one the handler
+    // charges, and an identity-less run (archetype selection) has no identity.
+    const payingSphere = args.payingSphere ?? args.gameState?.ascendantIdentity?.sphereAlignment?.primary;
     const payingEssence = payingSphere
       ? (args.gameState?.essencePool?.[payingSphere] ?? 0)
       : essence;

@@ -170,10 +170,11 @@ import { PREMONITION_EXPIRY_TICKS } from '../../data/premonition-constants';
 import { mulberry32 } from '../../lib/prng';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
-import { spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
+import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
+import { sphereWord } from '../shared/formatEssence';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
 import { DivineReceiptModal } from './DivineReceiptModal';
@@ -1529,6 +1530,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         threadTier: tieredEncounterState.threadTier,
         graph: gameState.graph,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+        payingSphere: archetype.sphereAlignment.primary,
         doomIdentityMatrix: gameState.doomIdentityMatrix,
         gameState,
         tick: gameState.tick,
@@ -1552,6 +1555,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isGateDutyEncounterStage,
     unifiedTemplateForStage,
     tieredEncounterState,
+    archetype.sphereAlignment.primary,
   ]);
 
   // ── Unified model for EncounterVeil: reuses existing adapters when available,
@@ -1571,6 +1575,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       graph: gameState.graph,
       threadTier: tieredEncounterState.threadTier,
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+      payingSphere: archetype.sphereAlignment.primary,
       tick: gameState.tick,
       gameState,
       // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
@@ -1580,7 +1586,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ? gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
         : undefined) ?? tieredEncounterState.activeActionSnapshot ?? undefined,
     });
-  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
+  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick, archetype.sphereAlignment.primary]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
@@ -3686,8 +3692,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [applyAftermathReactionForAgent]);
 
   /** Intervention handler — player chose an intervention for the current encounter step */
-  const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {
-    if (!tieredEncounterState) return;
+  const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number): boolean => {
+    if (!tieredEncounterState) return false;
     const {
       notification,
       agentId,
@@ -3702,20 +3708,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       notification.choices,
       choiceId,
     );
-    if (!choice) return;
+    if (!choice) return false;
+
+    // THR-1720 — pre-roll rejection, as `handleCommitNudges` does for a hand:
+    // a choice the paying pool cannot cover changes nothing and says so. This
+    // used to floor the pool at zero and apply the choice anyway, so a choice
+    // costing 5 could be bought with 1.
+    const payingSphere = archetype.sphereAlignment.primary;
+    if (!spendAuthoredChoiceEssence(gameState.essencePool, essenceSpent, payingSphere).ok) {
+      handlePushToast({
+        id: `choice-reject-${notification.id}-${gameState.tick}`,
+        message: `Not enough ${sphereWord(payingSphere)} essence — the moment passes untouched.`,
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+        sphere: payingSphere,
+      });
+      return false;
+    }
 
     setGameState(prev => {
-      const newPool = { ...prev.essencePool };
-      if (essenceSpent > 0) {
-        newPool[archetype.sphereAlignment.primary] = Math.max(
-          0,
-          newPool[archetype.sphereAlignment.primary] - essenceSpent,
-        );
-      }
+      // Re-charged against `prev`: the pool can move between the check above
+      // and this update, and the rule is the same all-or-nothing one.
+      const spend = spendAuthoredChoiceEssence(prev.essencePool, essenceSpent, payingSphere);
+      if (!spend.ok) return prev;
 
       return {
         ...prev,
-        essencePool: newPool,
+        essencePool: spend.pool,
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           const matchesActiveAction =
             (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
@@ -3773,7 +3793,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       interventionType: choice.interventionType,
       probabilityBoost: choice.probabilityBoost,
     });
-  }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
+    return true;
+  }, [
+    tieredEncounterState,
+    setGameState,
+    archetype.sphereAlignment.primary,
+    gameState.essencePool,
+    gameState.tick,
+    handlePushToast,
+  ]);
 
   /**
    * THR-775 — commit the player's nudge hand for the current step.
@@ -3911,7 +3939,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
     if (!tieredEncounterState) return;
-    handleEncounterIntervene(choiceId, essenceSpent);
+    // THR-1720 — a rejected spend leaves the stage open, like a rejected hand.
+    if (!handleEncounterIntervene(choiceId, essenceSpent)) return;
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
