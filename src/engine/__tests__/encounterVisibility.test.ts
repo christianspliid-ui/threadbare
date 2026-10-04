@@ -276,7 +276,7 @@ describe('toggleAttentionMode', () => {
 
     const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
     expect(result).toEqual({ ok: false, reason: 'thread_too_thin' });
-    expect((g.getEdge('thread_1')?.properties as ThreadEdgeProperties).attentionMode).toBe('auto_resolve');
+    expect((g.getEdge('thread_1')?.properties as unknown as ThreadEdgeProperties).attentionMode).toBe('auto_resolve');
   });
 
   it('reaches pause for a tier-1 the_first thread — she is exempt from the tier gate (THR-1715)', () => {
@@ -285,7 +285,7 @@ describe('toggleAttentionMode', () => {
 
     const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
     expect(result).toEqual({ ok: true, newMode: 'pause', essenceCost: 0 });
-    expect((g.getEdge('thread_1')?.properties as ThreadEdgeProperties).attentionMode).toBe('pause');
+    expect((g.getEdge('thread_1')?.properties as unknown as ThreadEdgeProperties).attentionMode).toBe('pause');
   });
 
   it('reads a missing attentionMode as the court-position default (THR-1715)', () => {

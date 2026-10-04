@@ -92,7 +92,7 @@ describe('Chapter Ledger — daily life (THR-1715)', () => {
 /** Mirrors GameView's handler: toggle the graph in place, then force a render. */
 function ToggleHarness({ graph }: { graph: WorldGraph }) {
   const [, setVersion] = useState(0);
-  const mode = resolveAttentionMode(graph.getEdge('thread_1')!.properties as ThreadEdgeProperties);
+  const mode = resolveAttentionMode(graph.getEdge('thread_1')!.properties as unknown as ThreadEdgeProperties);
   return (
     <AutoToggle
       asking={mode === 'pause'}
@@ -109,11 +109,11 @@ function ToggleHarness({ graph }: { graph: WorldGraph }) {
 
 function threadGraph(courtPosition: string, tier: number, attentionMode: 'pause' | 'auto_resolve'): WorldGraph {
   const g = new WorldGraph();
-  g.addNode({ id: 'asc_1', type: 'ascendant', name: 'The God', properties: {} });
+  g.addNode({ id: 'asc_1', type: 'actor', name: 'The God', properties: {} });
   g.addNode({ id: 'agent_1', type: 'actor', name: 'Thessa', properties: {} });
   g.addEdge({
     id: 'thread_1', source: 'asc_1', target: 'agent_1', type: 'thread',
-    properties: { courtPosition, tier, attentionMode } as unknown as ThreadEdgeProperties,
+    properties: { courtPosition, tier, attentionMode },
   });
   return g;
 }

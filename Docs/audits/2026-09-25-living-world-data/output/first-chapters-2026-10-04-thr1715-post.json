@@ -6,81 +6,70 @@
   "worlds": {
     "7": {
       "firstId": "ind_dev_the_first",
-      "totalActions": 27,
-      "ledgerRows": 26,
-      "ledgerRowsByTick30": 8,
+      "totalActions": 21,
+      "ledgerRows": 21,
+      "ledgerRowsByTick30": 4,
       "byLedger": {
-        "true": 26,
-        "false": 1
+        "true": 21
       },
       "byIntrinsic": {
-        "background": 26
+        "background": 21
       },
       "byEffective": {
-        "shaping": 26
+        "shaping": 21
       },
       "byRarity": {
-        "1": 26
+        "1": 21
       },
       "byType": {
-        "explore": 10,
-        "acquire": 5,
+        "explore": 9,
+        "acquire": 4,
         "assist": 7,
-        "lead": 1,
-        "trade": 2,
-        "build": 1
+        "lead": 1
       },
       "byThreat": {
         "easy": 3,
-        "moderate": 2,
-        "trivial": 21
+        "moderate": 4,
+        "trivial": 14
       },
-      "storyRows": 5,
+      "storyRows": 7,
       "storyRowsByTick30": 2,
       "storyGapTicks": {
         "min": 2,
-        "median": 37,
+        "median": 35,
         "max": 42
       },
       "topTemplates": [
         [
-          "encounter.forage_the_land",
+          "encounter.rest_and_recover",
           4
         ],
         [
+          "encounter.forage_the_land",
+          3
+        ],
+        [
           "encounter.decipher_old_markings",
-          3
-        ],
-        [
-          "encounter.forage_provisions",
-          3
-        ],
-        [
-          "encounter.mend_fishing_nets",
-          3
-        ],
-        [
-          "encounter.harvest_bounty",
-          3
-        ],
-        [
-          "encounter.rest_and_recover",
-          2
-        ],
-        [
-          "encounter.barter_survival",
           2
         ],
         [
           "encounter.beast_hunt",
-          1
+          2
         ],
         [
           "encounter.gather_firewood",
-          1
+          2
         ],
         [
-          "encounter.tend_to_wounds",
+          "encounter.trade_caravan_escort",
+          2
+        ],
+        [
+          "encounter.forage_provisions",
+          2
+        ],
+        [
+          "encounter.mend_fishing_nets",
           1
         ],
         [
@@ -88,27 +77,27 @@
           1
         ],
         [
-          "encounter.trade_caravan_escort",
+          "encounter.listen_for_rumors",
           1
         ],
         [
-          "encounter.sharpen_blades",
+          "encounter.map_the_passages",
           1
         ]
       ],
       "notifications": {
-        "encounter|unified_action|pops": 11,
-        "aftermath|unified_action|pops": 6
+        "encounter|unified_action|pops": 13,
+        "aftermath|unified_action|pops": 7
       },
       "storyStepNotifs": {
-        "pops": 11,
+        "pops": 13,
         "auto": 0
       },
-      "compulsionsDismissed": 4,
-      "haltingStoryChapters": 6,
-      "routineRowsArchived": 21,
+      "compulsionsDismissed": 5,
+      "haltingStoryChapters": 7,
+      "routineRowsArchived": 14,
       "routineBadgeRows": 0,
-      "routineRowsExcludedFromBadge": 21,
+      "routineRowsExcludedFromBadge": 13,
       "timeline": [
         {
           "tick": 1,
@@ -153,77 +142,7 @@
           "routine": true
         },
         {
-          "tick": 10,
-          "templateId": "encounter.forage_provisions",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 12,
-          "templateId": "encounter.mend_fishing_nets",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 17,
-          "templateId": "encounter.tend_to_wounds",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 19,
-          "templateId": "encounter.drill_the_watch",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "lead",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 22,
-          "templateId": "encounter.forage_the_land",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 43,
+          "tick": 29,
           "templateId": "encounter.rest_and_recover",
           "ledger": true,
           "rarityTier": 1,
@@ -237,63 +156,7 @@
           "routine": true
         },
         {
-          "tick": 45,
-          "templateId": "encounter.decipher_old_markings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 46,
-          "templateId": "encounter.forage_provisions",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 50,
-          "templateId": "encounter.mend_fishing_nets",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 54,
-          "templateId": "encounter.harvest_bounty",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "acquire",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 60,
+          "tick": 43,
           "templateId": "encounter.forage_the_land",
           "ledger": true,
           "rarityTier": 1,
@@ -307,35 +170,7 @@
           "routine": true
         },
         {
-          "tick": 62,
-          "templateId": "ts.quest.heal_the_sick",
-          "ledger": false,
-          "rarityTier": 1,
-          "intrinsicTier": "shaping",
-          "effectiveTier": null,
-          "encounterType": null,
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "system",
-          "threat": "unrated",
-          "routine": false
-        },
-        {
-          "tick": 64,
-          "templateId": "encounter.barter_survival",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 71,
+          "tick": 45,
           "templateId": "encounter.trade_caravan_escort",
           "ledger": true,
           "rarityTier": 1,
@@ -349,7 +184,21 @@
           "routine": false
         },
         {
-          "tick": 75,
+          "tick": 62,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 79,
           "templateId": "encounter.mend_fishing_nets",
           "ledger": true,
           "rarityTier": 1,
@@ -364,76 +213,6 @@
         },
         {
           "tick": 83,
-          "templateId": "encounter.forage_the_land",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 86,
-          "templateId": "encounter.harvest_bounty",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "acquire",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 106,
-          "templateId": "encounter.rest_and_recover",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 108,
-          "templateId": "encounter.decipher_old_markings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 110,
-          "templateId": "encounter.sharpen_blades",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "build",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 120,
           "templateId": "encounter.forage_provisions",
           "ledger": true,
           "rarityTier": 1,
@@ -447,7 +226,49 @@
           "routine": true
         },
         {
-          "tick": 122,
+          "tick": 85,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 87,
+          "templateId": "encounter.decipher_old_markings",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "easy",
+          "routine": false
+        },
+        {
+          "tick": 89,
+          "templateId": "encounter.trade_caravan_escort",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "moderate",
+          "routine": false
+        },
+        {
+          "tick": 92,
           "templateId": "encounter.forage_the_land",
           "ledger": true,
           "rarityTier": 1,
@@ -461,13 +282,13 @@
           "routine": true
         },
         {
-          "tick": 129,
-          "templateId": "encounter.barter_survival",
+          "tick": 103,
+          "templateId": "encounter.drill_the_watch",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "trade",
+          "encounterType": "lead",
           "steps": 3,
           "authoredChoices": false,
           "source": "agent",
@@ -475,8 +296,92 @@
           "routine": true
         },
         {
-          "tick": 141,
-          "templateId": "encounter.harvest_bounty",
+          "tick": 122,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 124,
+          "templateId": "encounter.beast_hunt",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "acquire",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "moderate",
+          "routine": false
+        },
+        {
+          "tick": 127,
+          "templateId": "encounter.listen_for_rumors",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "easy",
+          "routine": false
+        },
+        {
+          "tick": 129,
+          "templateId": "encounter.forage_the_land",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 138,
+          "templateId": "encounter.map_the_passages",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 146,
+          "templateId": "encounter.forage_provisions",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 148,
+          "templateId": "encounter.gather_firewood",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
@@ -492,46 +397,46 @@
     },
     "42": {
       "firstId": "ind_dev_the_first",
-      "totalActions": 12,
-      "ledgerRows": 12,
-      "ledgerRowsByTick30": 1,
+      "totalActions": 17,
+      "ledgerRows": 17,
+      "ledgerRowsByTick30": 2,
       "byLedger": {
-        "true": 12
+        "true": 17
       },
       "byIntrinsic": {
-        "background": 12
+        "background": 17
       },
       "byEffective": {
-        "shaping": 12
+        "shaping": 17
       },
       "byRarity": {
-        "1": 12
+        "1": 17
       },
       "byType": {
-        "assist": 4,
-        "acquire": 1,
-        "explore": 6,
-        "steal": 1
+        "assist": 7,
+        "trade": 3,
+        "acquire": 2,
+        "explore": 5
       },
       "byThreat": {
         "moderate": 4,
-        "trivial": 6,
+        "trivial": 11,
         "easy": 2
       },
       "storyRows": 6,
-      "storyRowsByTick30": 1,
+      "storyRowsByTick30": 2,
       "storyGapTicks": {
-        "min": 3,
-        "median": 27,
-        "max": 57
+        "min": 2,
+        "median": 25,
+        "max": 50
       },
       "topTemplates": [
         [
-          "encounter.trade_caravan_escort",
-          2
+          "encounter.rest_and_recover",
+          3
         ],
         [
-          "encounter.decipher_old_markings",
+          "encounter.gather_firewood",
           2
         ],
         [
@@ -539,39 +444,59 @@
           2
         ],
         [
-          "encounter.forage_the_land",
-          2
-        ],
-        [
           "encounter.healers_oath",
           1
         ],
         [
-          "encounter.gather_firewood",
+          "encounter.merchants_gambit",
           1
         ],
         [
-          "encounter.rest_and_recover",
+          "encounter.assess_holdings",
           1
         ],
         [
-          "encounter.smuggle_goods",
+          "encounter.mend_fishing_nets",
+          1
+        ],
+        [
+          "encounter.trade_caravan_escort",
+          1
+        ],
+        [
+          "encounter.barter_with_travelers",
+          1
+        ],
+        [
+          "encounter.forage_the_land",
+          1
+        ],
+        [
+          "encounter.map_the_passages",
+          1
+        ],
+        [
+          "encounter.decipher_old_markings",
+          1
+        ],
+        [
+          "encounter.defend_against_predators",
           1
         ]
       ],
       "notifications": {
-        "encounter|unified_action|pops": 13,
+        "encounter|unified_action|pops": 11,
         "aftermath|unified_action|pops": 6
       },
       "storyStepNotifs": {
-        "pops": 13,
+        "pops": 11,
         "auto": 0
       },
-      "compulsionsDismissed": 5,
+      "compulsionsDismissed": 6,
       "haltingStoryChapters": 6,
-      "routineRowsArchived": 6,
+      "routineRowsArchived": 11,
       "routineBadgeRows": 0,
-      "routineRowsExcludedFromBadge": 6,
+      "routineRowsExcludedFromBadge": 11,
       "timeline": [
         {
           "tick": 1,
@@ -588,7 +513,21 @@
           "routine": false
         },
         {
-          "tick": 38,
+          "tick": 26,
+          "templateId": "encounter.merchants_gambit",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "trade",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "moderate",
+          "routine": false
+        },
+        {
+          "tick": 42,
           "templateId": "encounter.gather_firewood",
           "ledger": true,
           "rarityTier": 1,
@@ -602,41 +541,13 @@
           "routine": true
         },
         {
-          "tick": 58,
-          "templateId": "encounter.trade_caravan_escort",
+          "tick": 46,
+          "templateId": "encounter.assess_holdings",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "moderate",
-          "routine": false
-        },
-        {
-          "tick": 61,
-          "templateId": "encounter.decipher_old_markings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 65,
-          "templateId": "encounter.forage_provisions",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
+          "encounterType": "trade",
           "steps": 2,
           "authoredChoices": false,
           "source": "agent",
@@ -644,21 +555,7 @@
           "routine": true
         },
         {
-          "tick": 68,
-          "templateId": "encounter.forage_the_land",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 90,
+          "tick": 48,
           "templateId": "encounter.rest_and_recover",
           "ledger": true,
           "rarityTier": 1,
@@ -672,35 +569,35 @@
           "routine": true
         },
         {
-          "tick": 92,
-          "templateId": "encounter.decipher_old_markings",
+          "tick": 70,
+          "templateId": "encounter.mend_fishing_nets",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 119,
-          "templateId": "encounter.smuggle_goods",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "steal",
+          "encounterType": "assist",
           "steps": 3,
           "authoredChoices": false,
           "source": "agent",
-          "threat": "moderate",
-          "routine": false
+          "threat": "trivial",
+          "routine": true
         },
         {
-          "tick": 123,
+          "tick": 74,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 76,
           "templateId": "encounter.trade_caravan_escort",
           "ledger": true,
           "rarityTier": 1,
@@ -714,7 +611,21 @@
           "routine": false
         },
         {
-          "tick": 127,
+          "tick": 98,
+          "templateId": "encounter.barter_with_travelers",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "trade",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "easy",
+          "routine": false
+        },
+        {
+          "tick": 100,
           "templateId": "encounter.forage_provisions",
           "ledger": true,
           "rarityTier": 1,
@@ -728,7 +639,7 @@
           "routine": true
         },
         {
-          "tick": 131,
+          "tick": 102,
           "templateId": "encounter.forage_the_land",
           "ledger": true,
           "rarityTier": 1,
@@ -740,47 +651,130 @@
           "source": "agent",
           "threat": "trivial",
           "routine": true
+        },
+        {
+          "tick": 121,
+          "templateId": "encounter.map_the_passages",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 126,
+          "templateId": "encounter.decipher_old_markings",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "easy",
+          "routine": false
+        },
+        {
+          "tick": 128,
+          "templateId": "encounter.defend_against_predators",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "moderate",
+          "routine": false
+        },
+        {
+          "tick": 131,
+          "templateId": "encounter.forage_provisions",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 143,
+          "templateId": "encounter.gather_firewood",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "acquire",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 147,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
         }
       ]
     },
     "99": {
       "firstId": "ind_dev_the_first",
-      "totalActions": 29,
-      "ledgerRows": 29,
-      "ledgerRowsByTick30": 8,
+      "totalActions": 22,
+      "ledgerRows": 22,
+      "ledgerRowsByTick30": 7,
       "byLedger": {
-        "true": 29
+        "true": 22
       },
       "byIntrinsic": {
-        "background": 29
+        "background": 22
       },
       "byEffective": {
-        "shaping": 29
+        "shaping": 22
       },
       "byRarity": {
-        "1": 28,
+        "1": 21,
         "2": 1
       },
       "byType": {
         "assist": 12,
-        "trade": 8,
+        "trade": 2,
         "null": 1,
-        "explore": 5,
         "acquire": 2,
-        "steal": 1
+        "explore": 5
       },
       "byThreat": {
-        "trivial": 21,
+        "trivial": 15,
         "unrated": 1,
-        "moderate": 4,
+        "moderate": 3,
         "easy": 3
       },
-      "storyRows": 8,
+      "storyRows": 7,
       "storyRowsByTick30": 2,
       "storyGapTicks": {
         "min": 2,
-        "median": 26,
-        "max": 36
+        "median": 31,
+        "max": 38
       },
       "topTemplates": [
         [
@@ -788,11 +782,7 @@
           4
         ],
         [
-          "encounter.assess_holdings",
-          3
-        ],
-        [
-          "encounter.mend_fishing_nets",
+          "encounter.forage_provisions",
           3
         ],
         [
@@ -800,35 +790,15 @@
           2
         ],
         [
-          "encounter.forage_provisions",
-          2
-        ],
-        [
-          "encounter.tend_to_wounds",
-          2
-        ],
-        [
-          "encounter.barter_survival",
-          2
-        ],
-        [
-          "encounter.barter_with_travelers",
-          2
+          "encounter.assess_holdings",
+          1
         ],
         [
           "encounter.slice.swindled_family",
           1
         ],
         [
-          "encounter.rest_and_reflect",
-          1
-        ],
-        [
-          "encounter.forage_the_land",
-          1
-        ],
-        [
-          "encounter.decipher_old_markings",
+          "encounter.mend_fishing_nets",
           1
         ],
         [
@@ -836,7 +806,27 @@
           1
         ],
         [
+          "encounter.forage_the_land",
+          1
+        ],
+        [
           "encounter.offer_small_prayer",
+          1
+        ],
+        [
+          "encounter.tend_to_wounds",
+          1
+        ],
+        [
+          "encounter.tend_the_weary",
+          1
+        ],
+        [
+          "encounter.decipher_old_markings",
+          1
+        ],
+        [
+          "encounter.barter_with_travelers",
           1
         ],
         [
@@ -844,27 +834,27 @@
           1
         ],
         [
-          "encounter.smuggle_goods",
+          "encounter.guild_aid",
           1
         ],
         [
-          "encounter.merchants_gambit",
+          "encounter.aid_refugees",
           1
         ]
       ],
       "notifications": {
-        "encounter|unified_action|pops": 17,
-        "aftermath|unified_action|pops": 8
+        "encounter|unified_action|pops": 15,
+        "aftermath|unified_action|pops": 7
       },
       "storyStepNotifs": {
-        "pops": 17,
+        "pops": 15,
         "auto": 0
       },
-      "compulsionsDismissed": 5,
-      "haltingStoryChapters": 8,
-      "routineRowsArchived": 21,
+      "compulsionsDismissed": 4,
+      "haltingStoryChapters": 7,
+      "routineRowsArchived": 15,
       "routineBadgeRows": 0,
-      "routineRowsExcludedFromBadge": 20,
+      "routineRowsExcludedFromBadge": 15,
       "timeline": [
         {
           "tick": 1,
@@ -924,27 +914,13 @@
         },
         {
           "tick": 20,
-          "templateId": "encounter.rest_and_reflect",
+          "templateId": "encounter.mend_fishing_nets",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 22,
-          "templateId": "encounter.forage_provisions",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
+          "encounterType": "assist",
+          "steps": 3,
           "authoredChoices": false,
           "source": "agent",
           "threat": "trivial",
@@ -966,76 +942,6 @@
         },
         {
           "tick": 30,
-          "templateId": "encounter.forage_the_land",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 37,
-          "templateId": "encounter.mend_fishing_nets",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 44,
-          "templateId": "encounter.decipher_old_markings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 46,
-          "templateId": "encounter.forage_provisions",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "explore",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 48,
-          "templateId": "encounter.rest_and_recover",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 50,
           "templateId": "encounter.gather_firewood",
           "ledger": true,
           "rarityTier": 1,
@@ -1049,13 +955,13 @@
           "routine": true
         },
         {
-          "tick": 54,
-          "templateId": "encounter.tend_to_wounds",
+          "tick": 34,
+          "templateId": "encounter.forage_provisions",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "assist",
+          "encounterType": "explore",
           "steps": 2,
           "authoredChoices": false,
           "source": "agent",
@@ -1063,7 +969,21 @@
           "routine": true
         },
         {
-          "tick": 56,
+          "tick": 36,
+          "templateId": "encounter.forage_the_land",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 38,
           "templateId": "encounter.offer_small_prayer",
           "ledger": true,
           "rarityTier": 1,
@@ -1077,91 +997,7 @@
           "routine": true
         },
         {
-          "tick": 62,
-          "templateId": "encounter.barter_survival",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 66,
-          "templateId": "encounter.mend_fishing_nets",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 70,
-          "templateId": "encounter.barter_with_travelers",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "easy",
-          "routine": false
-        },
-        {
-          "tick": 72,
-          "templateId": "encounter.rest_and_recover",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 74,
-          "templateId": "encounter.assess_holdings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 2,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 76,
-          "templateId": "encounter.harvest_bounty",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "acquire",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
-        },
-        {
-          "tick": 82,
+          "tick": 40,
           "templateId": "encounter.tend_to_wounds",
           "ledger": true,
           "rarityTier": 1,
@@ -1175,41 +1011,13 @@
           "routine": true
         },
         {
-          "tick": 105,
-          "templateId": "encounter.smuggle_goods",
+          "tick": 46,
+          "templateId": "encounter.tend_the_weary",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "steal",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "moderate",
-          "routine": false
-        },
-        {
-          "tick": 109,
-          "templateId": "encounter.merchants_gambit",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "moderate",
-          "routine": false
-        },
-        {
-          "tick": 133,
-          "templateId": "encounter.assess_holdings",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
+          "encounterType": "assist",
           "steps": 2,
           "authoredChoices": false,
           "source": "agent",
@@ -1217,21 +1025,21 @@
           "routine": true
         },
         {
-          "tick": 141,
-          "templateId": "encounter.mend_fishing_nets",
+          "tick": 48,
+          "templateId": "encounter.decipher_old_markings",
           "ledger": true,
           "rarityTier": 1,
           "intrinsicTier": "background",
           "effectiveTier": "shaping",
-          "encounterType": "assist",
-          "steps": 3,
+          "encounterType": "explore",
+          "steps": 2,
           "authoredChoices": false,
           "source": "agent",
-          "threat": "trivial",
-          "routine": true
+          "threat": "easy",
+          "routine": false
         },
         {
-          "tick": 145,
+          "tick": 50,
           "templateId": "encounter.barter_with_travelers",
           "ledger": true,
           "rarityTier": 1,
@@ -1245,7 +1053,105 @@
           "routine": false
         },
         {
-          "tick": 147,
+          "tick": 52,
+          "templateId": "encounter.harvest_bounty",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "acquire",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 58,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 81,
+          "templateId": "encounter.forage_provisions",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 83,
+          "templateId": "encounter.guild_aid",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "moderate",
+          "routine": false
+        },
+        {
+          "tick": 117,
+          "templateId": "encounter.rest_and_recover",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 119,
+          "templateId": "encounter.forage_provisions",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "explore",
+          "steps": 2,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "trivial",
+          "routine": true
+        },
+        {
+          "tick": 121,
+          "templateId": "encounter.aid_refugees",
+          "ledger": true,
+          "rarityTier": 1,
+          "intrinsicTier": "background",
+          "effectiveTier": "shaping",
+          "encounterType": "assist",
+          "steps": 3,
+          "authoredChoices": false,
+          "source": "agent",
+          "threat": "easy",
+          "routine": false
+        },
+        {
+          "tick": 129,
           "templateId": "encounter.trade_caravan_escort",
           "ledger": true,
           "rarityTier": 1,
@@ -1257,20 +1163,6 @@
           "source": "agent",
           "threat": "moderate",
           "routine": false
-        },
-        {
-          "tick": 150,
-          "templateId": "encounter.barter_survival",
-          "ledger": true,
-          "rarityTier": 1,
-          "intrinsicTier": "background",
-          "effectiveTier": "shaping",
-          "encounterType": "trade",
-          "steps": 3,
-          "authoredChoices": false,
-          "source": "agent",
-          "threat": "trivial",
-          "routine": true
         }
       ]
     }

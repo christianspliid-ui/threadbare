@@ -29,7 +29,7 @@ const STORY = 'encounter.deep_descent';
 
 function makeGraph(attentionMode: 'pause' | 'auto_resolve' | undefined, courtPosition = 'the_first'): WorldGraph {
   const g = new WorldGraph();
-  g.addNode({ id: 'asc_1', type: 'ascendant', name: 'The God', properties: {} });
+  g.addNode({ id: 'asc_1', type: 'actor', name: 'The God', properties: {} });
   g.addNode({ id: 'agent_1', type: 'actor', name: 'Thessa', properties: {} });
   g.addEdge({
     id: 'thread_1', source: 'asc_1', target: 'agent_1', type: 'thread',
@@ -42,13 +42,13 @@ function makeGraph(attentionMode: 'pause' | 'auto_resolve' | undefined, courtPos
       totalEssenceSpent: 0,
       maintenanceCurrent: true,
       readBackstoryTier: 0,
-    } as ThreadEdgeProperties,
+    } as unknown as Record<string, unknown>,
   });
   return g;
 }
 
 function threadProps(g: WorldGraph): ThreadEdgeProperties {
-  return g.getEdge('thread_1')!.properties as ThreadEdgeProperties;
+  return g.getEdge('thread_1')!.properties as unknown as ThreadEdgeProperties;
 }
 
 function entry(templateId: string): EncounterCacheEntry {
@@ -134,6 +134,14 @@ describe('the story breath', () => {
     recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10);
     const out = filterByStoryBreath([entry(CHORE), entry(STORY)], 'agent_1', g, 20);
     expect(out.map(e => e.templateId)).toEqual([CHORE]);
+  });
+
+  it('filterByStoryBreath keeps the story encounter she walked to (journeyGoal, THR-1639)', () => {
+    const g = makeGraph('pause');
+    recordStoryChapterEnd(g, 'agent_1', 'ua_1', STORY, 10);
+    const goal = { ...entry(STORY), journeyGoal: true } as EncounterCacheEntry;
+    const out = filterByStoryBreath([entry(CHORE), goal, entry('encounter.beast_hunt')], 'agent_1', g, 20);
+    expect(out.map(e => e.templateId)).toEqual([CHORE, STORY]);
   });
 
   it('filterByStoryBreath passes everything for auto-mode threads', () => {

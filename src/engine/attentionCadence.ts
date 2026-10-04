@@ -71,7 +71,7 @@ export function resolveAttentionMode(props: ThreadEdgeProperties): 'pause' | 'au
 export function storyBreathRemaining(graph: WorldGraph, agentId: string, tick: number): number {
   const thread = getThreadTo(graph, agentId);
   if (!thread) return 0;
-  const props = thread.properties as ThreadEdgeProperties;
+  const props = thread.properties as unknown as ThreadEdgeProperties;
   if (resolveAttentionMode(props) !== 'pause') return 0;
   const anchor = props.lastStoryChapterEndTick;
   if (typeof anchor !== 'number' || anchor > tick) return 0;
@@ -97,7 +97,7 @@ export function recordStoryChapterEnd(
   if (isRoutineTemplate(templateId)) return false;
   const thread = getThreadTo(graph, actorId);
   if (!thread) return false;
-  if (resolveAttentionMode(thread.properties as ThreadEdgeProperties) !== 'pause') return false;
+  if (resolveAttentionMode(thread.properties as unknown as ThreadEdgeProperties) !== 'pause') return false;
   try {
     graph.updateEdge(thread.id, { properties: { lastStoryChapterEndTick: tick } });
   } catch {

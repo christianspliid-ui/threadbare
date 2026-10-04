@@ -626,7 +626,13 @@ export function filterByStoryBreath(
   tick: number,
 ): EncounterCacheEntry[] {
   if (storyBreathRemaining(graph, agentId, tick) <= 0) return entries;
-  return entries.filter(entry => isRoutineTemplate(entry.templateId));
+  // The encounter she walked to (`journeyGoal`, THR-1639) survives the breath. A
+  // journey chosen on the tick her last chapter resolved predates the anchor
+  // (agent decision runs before the archive write), and cutting its goal on
+  // arrival sent The First 12 turns back the way she came — seed 42 went quiet
+  // for 37 turns, past FIRST_ENCOUNTER_MAX_GAP_TICKS. The breath governs new
+  // choices, not a walk already made.
+  return entries.filter(entry => entry.journeyGoal === true || isRoutineTemplate(entry.templateId));
 }
 
 // ─── Stage 4: Threat tolerance ──────────────────────────────────

@@ -1405,7 +1405,7 @@ if (import.meta.env.DEV) {
       if (!thread) {
         return { error: agentId ? `No thread from the ascendant to ${agentId}` : 'No thread at court position the_first — The First is not bonded yet' };
       }
-      const props = thread.properties as import('./types/influence').ThreadEdgeProperties;
+      const props = thread.properties as unknown as import('./types/influence').ThreadEdgeProperties;
       const live = (state.unifiedActions ?? []).filter(a => !a.resolved && a.actorId === thread.target);
       return {
         agentId: thread.target,
