@@ -4046,6 +4046,40 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     );
   }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
 
+  // THR-1724 (review gate) — a minimised step the world resolved without the
+  // player (the engine does not hold steps; THR-1730) must not leave a badge
+  // that opens nothing. Once its step can no longer be opened — the same three
+  // checks `handleOpenEncounterFromNotification` makes — the notification is
+  // resolved, which retires the badge and prunes the minimised set. Pause-tier
+  // records carry no `autoResolveTick`, so nothing else would ever retire it.
+  useEffect(() => {
+    const minimised = minimisedEncounterNotificationIds.current;
+    if (minimised.size === 0) return;
+    const notifications = gameState.encounterNotifications ?? [];
+    const spent = new Set<string>();
+    for (const notif of notifications) {
+      if (!minimised.has(notif.id) || notif.resolved || notif.kind === 'aftermath') continue;
+      const { encounter, activeAction } = selectEncounterRuntimeForNotification(
+        notif,
+        gameState.encounterProgress,
+        gameState.unifiedActions,
+        gameState.tick,
+      );
+      const stillOpenable = Boolean(encounter)
+        && (notif.stepIndex === undefined || notif.stepIndex === encounter!.currentStepIndex)
+        && !isStepNotificationSupersededByAftermath(notif, activeAction, notifications);
+      if (!stillOpenable) spent.add(notif.id);
+    }
+    if (spent.size === 0) return;
+    for (const id of spent) minimised.delete(id);
+    setGameState(prev => ({
+      ...prev,
+      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+        spent.has(n.id) ? { ...n, resolved: true } : n,
+      ),
+    }));
+  }, [gameState.encounterNotifications, gameState.encounterProgress, gameState.unifiedActions, gameState.tick, setGameState]);
+
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
 
