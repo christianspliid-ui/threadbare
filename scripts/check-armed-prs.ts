@@ -200,7 +200,8 @@
  * Usage:
  *   npm run check:armed-prs               # advisory; always exits 0
  *   npm run check:armed-prs -- --json     # machine-readable single-line JSON
- *   npm run check:armed-prs -- --strict   # exits 1 when a human is needed
+ *   npm run check:armed-prs -- --strict   # exits 1 when a session must act (needsSession);
+ *                                         # no verdict sets needsChristian since THR-1735
  */
 
 import path from "node:path";
@@ -1204,7 +1205,9 @@ function main(): void {
     }
   }
 
-  process.exit(strict && result.needsChristian ? 1 : 0);
+  // THR-1735: no verdict sets needsChristian any more, so `--strict` keys on the
+  // signal that still fires — a session must act (conflict, abandoned, red check).
+  process.exit(strict && result.needsSession ? 1 : 0);
 }
 
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
