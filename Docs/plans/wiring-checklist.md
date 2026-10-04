@@ -6,6 +6,21 @@
 
 ---
 
+## The First asks — pause by default, daily life, the story breath (THR-1715)
+
+Plan: `Docs/plans/2026-10-03-thr-1715-the-first-asks.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `meetingEncounter.ts` / `gameInit.ts` (E1 — thread born `attentionMode: 'pause'`; `VISIBILITY_BY_POSITION.the_first` default `pause`) | bond / init | — | thread edge `attentionMode` | existing | `__DEBUG.getAttentionCadence()` |
+| `engine/attentionCadence.ts` (new — `isRoutineTemplate`, `resolveAttentionMode`, `storyBreathRemaining`, `recordStoryChapterEnd`) | read on the tick path by the three rows below | — | — | `attention.story_breath_start` | `getAttentionCadence` |
+| `toUnifiedTemplate` carries `routine: true` from authored `threatRating: 'trivial'` (E2) | load time | — | template `routine` | — | `getAttentionCadence.routineActive` |
+| `encounterVisibility.ts` (E3 — routine never notifies; a pause-mode thread's `shaping` step needs no tug) | encounter visibility | EncounterVeil (existing) | `encounterNotifications` | `attention.routine_suppressed` (aggregated, one per tick) | `getEncounterNotifications` |
+| `encounterFilterPipeline.ts` `filterByStoryBreath` (E4, stage 3b) | agent decision | — | — | `FilterPipelineTrace.storyBreath` | `getAttentionCadence.breathRemaining` |
+| `orchestrator.ts` chapter-archive write → `recordStoryChapterEnd` (E5) | unified-action cleanup (newly-resolved transition) | — | thread edge `lastStoryChapterEndTick` | `attention.story_breath_start` | `getAttentionCadence` |
+| `toggleAttentionMode` (E6 — the_first exempt from the tier gate, `{ok, reason}`, cost 0) + `GameView` handler (`touchWorld` + render) | player action | `ThreadsPanel` `AutoToggle` — *Asks you* / *Lives on* | thread edge `attentionMode` | `attention_mode_change` (existing) | existing trace |
+| `ChapterLedger` Daily-life chip + `countThreadedChapters` excludes routine (U2) | — | `ChapterLedger.tsx`, launcher badge | `chapterArchive[].routine` | — | DOM (`chapter-ledger-daily-life`) |
+
 ## Raise the Old Banner — descent becomes a want (THR-1658)
 
 Plan: `Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md`.

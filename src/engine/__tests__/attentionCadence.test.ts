@@ -177,4 +177,23 @@ describe('encounter visibility — The First asks', () => {
     const { notifications } = phaseEncounterVisibility(state);
     expect(notifications.filter(n => n.encounterId === CHORE)).toHaveLength(0);
   });
+
+  it('the pause-only pass (orchestrator 2b.2) builds step 0 for pause threads and skips auto threads', () => {
+    const pause = phaseEncounterVisibility(makeState(makeGraph('pause'), [action(STORY)]), { pauseModeOnly: true });
+    expect(pause.notifications.find(n => n.encounterId === STORY && n.stepIndex === 0)?.autoResolveTick).toBeNull();
+
+    const autoState = makeState(makeGraph('auto_resolve'), [action(STORY)]);
+    (autoState as { activeThreadTugs: unknown[] }).activeThreadTugs = [
+      { agentId: 'agent_1', actionId: `ua_${STORY}`, attended: true },
+    ];
+    expect(phaseEncounterVisibility(autoState).notifications.length).toBeGreaterThan(0);
+    expect(phaseEncounterVisibility(autoState, { pauseModeOnly: true }).notifications).toHaveLength(0);
+  });
+
+  it('the pause-only pass never doubles a notification the main pass built', () => {
+    const state = makeState(makeGraph('pause'), [action(STORY)]);
+    const first = phaseEncounterVisibility(state);
+    state.encounterNotifications = first.notifications;
+    expect(phaseEncounterVisibility(state, { pauseModeOnly: true }).notifications).toHaveLength(0);
+  });
 });

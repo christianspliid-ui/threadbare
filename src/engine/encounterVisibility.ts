@@ -462,14 +462,35 @@ export function collectThreadedAgents(
   return threadedAgents;
 }
 
+export interface EncounterVisibilityOptions {
+  /**
+   * THR-1715: restrict the pass to pause-mode threads. The orchestrator runs a
+   * second, pause-only pass right after agent decision, because the main pass
+   * (2a.6) runs before agent decision and the next tick's progress phase
+   * resolves a new action's step 0 before the main pass sees it — so a step 0
+   * was never notified for anyone. Pause mode promises every beat asks (Law
+   * 39), so for those threads the opening step must reach the player on the
+   * tick it is created. Dedup keys make the second pass idempotent. Auto-mode
+   * threads are untouched. The routine-suppressed trace is emitted by the
+   * main pass only.
+   */
+  pauseModeOnly?: boolean;
+}
+
 export function phaseEncounterVisibility(
   state: GameState,
+  opts: EncounterVisibilityOptions = {},
 ): { notifications: EncounterNotification[]; events: TickEvent[] } {
   const { graph, ascendantId, tick } = state;
   const notifications: EncounterNotification[] = [];
   const events: TickEvent[] = [];
 
   const threadedAgents = collectThreadedAgents(graph, ascendantId);
+  if (opts.pauseModeOnly) {
+    for (const [agentId, info] of threadedAgents) {
+      if (resolveAttentionMode(info.props) !== 'pause') threadedAgents.delete(agentId);
+    }
+  }
 
   if (threadedAgents.size === 0) return { notifications, events };
 
@@ -770,7 +791,7 @@ export function phaseEncounterVisibility(
     }
   }
 
-  if (routineSuppressed > 0) {
+  if (routineSuppressed > 0 && !opts.pauseModeOnly) {
     emitTrace({
       category: 'attention.routine_suppressed',
       tick,

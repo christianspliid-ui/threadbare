@@ -3262,6 +3262,25 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2b.2: Encounter Visibility, pause-mode pass (THR-1715) — a pause-mode
+  // mortal's encounter created by agent decision this tick gets its step-0
+  // notification now. Otherwise the next tick's progress phase (2a) resolves
+  // step 0 before the main pass (2a.6) runs, and the opening step never asks.
+  // Dedup-keyed against the main pass, so it never doubles a notification.
+  {
+    const pauseVis = timeInlinePhase('encounter_visibility_pause', s, () =>
+      phaseEncounterVisibility(s, { pauseModeOnly: true }));
+    if (pauseVis.notifications.length > 0 || pauseVis.events.length > 0) {
+      s = {
+        ...s,
+        tickEvents: [...s.tickEvents, ...pauseVis.events],
+        encounterNotifications: [...(s.encounterNotifications ?? []), ...pauseVis.notifications],
+      };
+    }
+    phaseEventCounts['encounter_visibility_pause'] = pauseVis.notifications.length;
+  }
+  prevEventCount = s.tickEvents.length;
+
   // Phases 2.32 (Initiative Progress) and 2.33 (Mentorship Lifecycle) were deleted with
   // the initiative retirement (THR-1292 §3). Both folded into the undertaking checkpoint
   // pass at 2a.55: `phaseStrategicProjects` now expires the festival boost 2.32 owned and

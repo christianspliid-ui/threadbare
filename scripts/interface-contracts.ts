@@ -5992,6 +5992,42 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1727. Browser, `?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge`: `__DEBUG.getEncounterStakes()` → hasStakes true, built line === rendered DOM line ("Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack."), no `nudge-motive-intro`. With `&outcome=failure` (pin verdict band_rendered) the Chapter Ledger row and the thread row read "Vara turned back to the long ford and lost the day."; with `&outcome=critical_failure` "Vara went into the river with the pack." — each matching the band prose on screen. CLI seed 42 medium, tick 30: 105 of 105 unified actions carry a stamped `stakesContext`, none live unstamped.',
     },
   },
+  // ── The First asks (THR-1715) ─────────────────────────────────────────────
+  {
+    id: 'routine-flag-keeps-daily-life-off-notifications-and-ledger',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger\'s default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer\'s quit point returns: "14 chapters by herself in seconds".',
+    ulTerms: ['Daily life', 'Chapter Ledger'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['isRoutineTemplate', 'isRoutineChapter'],
+      module: 'src/engine/attentionCadence.ts',
+    },
+    writeSites: ['src/data/encounter-content.ts', 'src/engine/chapterArchive.ts'],
+    readSites: [
+      'src/engine/encounterVisibility.ts',
+      'src/engine/encounterFilterPipeline.ts',
+      'src/components/Game/ChapterLedger.tsx',
+      'src/debug-bridge.ts',
+    ],
+  },
+  {
+    id: 'story-breath-anchor-paces-pause-mode-chapters',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.',
+    ulTerms: ['Daily life', 'Chapter'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['lastStoryChapterEndTick'],
+      module: 'src/engine/attentionCadence.ts',
+    },
+    writeSites: ['src/engine/attentionCadence.ts', 'src/engine/orchestrator.ts'],
+    readSites: ['src/engine/attentionCadence.ts', 'src/engine/encounterFilterPipeline.ts', 'src/debug-bridge.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

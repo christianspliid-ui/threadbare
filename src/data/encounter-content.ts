@@ -2929,7 +2929,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     reachPrimary: 'shadow',
     reachSecondary: 'gold',
     encounterType: 'steal',
-    threatRating: 'trivial',
+    threatRating: 'easy', // THR-1715 C2: a scene, not a chore — re-rated off daily life
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
@@ -3983,7 +3983,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     reachPrimary: 'eye',
     reachSecondary: 'heart',
     encounterType: 'assist',
-    threatRating: 'trivial',
+    threatRating: 'easy', // THR-1715 C2: a scene, not a chore — re-rated off daily life
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
