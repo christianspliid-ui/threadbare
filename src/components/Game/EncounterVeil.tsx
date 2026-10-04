@@ -36,9 +36,9 @@ import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeS
 import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { OpponentHeader } from './encounter-stage/OpponentHeader';
-import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { formatEssence, formatEssencePool, sphereWord } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
-import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
+import { NUDGE_BLOCKED_REASONS, NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -501,7 +501,8 @@ export function EncounterVeil({
   const handleIntervene = useCallback(() => {
     if (!selectedChoiceId) return;
     const choice = model.choices.find((c) => c.id === selectedChoiceId);
-    if (choice) {
+    // THR-1720 — a choice the paying pool cannot cover is never committed.
+    if (choice && choice.affordable) {
       onIntervene(choice.id, choice.essenceCost);
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
@@ -2409,7 +2410,9 @@ export function EncounterVeil({
                   authored ending the aftermath resolves to. */}
               {model.choices.length > 0 && (
                 <StageCommit
-                  disabled={!selectedChoice}
+                  // THR-1720 — selecting an unaffordable choice still lets the
+                  // player read it, but it cannot be committed.
+                  disabled={!selectedChoice || !selectedChoice.affordable}
                   essenceCost={selectedChoice?.essenceCost ?? 0}
                   onCommit={handleIntervene}
                 />
@@ -2714,9 +2717,25 @@ function StageCommit({
   );
 }
 
+/**
+ * THR-1720 — how far an authored choice the paying pool cannot cover dims.
+ * It dims rather than hides (the nudge card's `essence_unavailable` treatment):
+ * the pool moves while the veil is open, and a choice that vanished and
+ * reappeared would flicker.
+ */
+const UNAFFORDABLE_CHOICE_OPACITY = 0.45;
+
+/** The reason line an unaffordable choice shows, naming the pool that pays. */
+function unaffordableReason(choice: EncounterStageChoiceModel): string {
+  return choice.payingSphere
+    ? `Not enough ${sphereWord(choice.payingSphere)} essence`
+    : NUDGE_BLOCKED_REASONS.essence_unavailable;
+}
+
 function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
   const [hovered, setHovered] = useState(false);
   const active = hovered || selected;
+  const unaffordable = !choice.affordable;
 
   const typeColor = choice.interventionType
     ? TYPE_COLORS[choice.interventionType]
@@ -2740,12 +2759,15 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      data-testid="veil-choice"
+      data-choice-affordable={choice.affordable}
       style={{
         position: 'relative',
         padding: '18px 22px',
         marginBottom: 12,
         borderRadius: 2,
         cursor: 'pointer',
+        opacity: unaffordable ? UNAFFORDABLE_CHOICE_OPACITY : 1,
         background: selected
           ? 'rgb(var(--veil-gold-rgb) / 0.06)'
           : hovered
@@ -2841,8 +2863,15 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
             transition: 'opacity 0.5s ease',
           }}
         >
-          &#9670; {formatEssence(choice.essenceCost)} essence
+          &#9670; {formatEssence(choice.essenceCost)}{' '}
+          {/* THR-1706 — say which pool pays. */}
+          {choice.payingSphere && choice.essenceCost > 0 ? `${sphereWord(choice.payingSphere)} essence` : 'essence'}
         </span>
+        {unaffordable && (
+          <span data-testid="choice-unaffordable-reason" style={{ color: TEXT_WARM }}>
+            {unaffordableReason(choice)}
+          </span>
+        )}
         {boostLabel && (
           <span style={{ color: TEXT_GHOST }}>{boostLabel}</span>
         )}

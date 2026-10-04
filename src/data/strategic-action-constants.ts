@@ -1752,3 +1752,22 @@ export const FAVOR_REDEEM_STANDING_GAIN = 0.1;
 
 /** What forgiving a debt earns with the debtor — generosity the debtor notices. */
 export const FAVOR_FORGIVE_STANDING_GAIN = 0.05;
+
+// ─── Pilgrim ways (THR-1660) ────────────────────────────────────────
+
+/**
+ * Where a pilgrim way may be consecrated. Shrines and temples are left out on purpose:
+ * every pilgrimage encounter already accepts them, so a way to one adds nothing to the
+ * pool (the legacy template's defect, THR-1184).
+ */
+export const PILGRIM_WAY_SITE_SUBTYPES: readonly string[] = ['town', 'city', 'capital'];
+
+/**
+ * The reaches a consecration leans on — Star work, not the builder's Stone/Gold that
+ * `create` carries generically. Growth on completion reads this, so a zealot who
+ * consecrates grows in faith work.
+ */
+export const PILGRIM_WAY_REACH_PROFILE = { star: 0.6, heart: 0.4 } as const;
+
+/** The `origin` stamp on a consecrated way; the worldgen seeding writes `'worldgen'`. */
+export const PILGRIM_WAY_EDGE_ORIGIN = 'undertaking';

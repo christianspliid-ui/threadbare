@@ -274,6 +274,36 @@ interface EncounterFilterTrace {
 - If the rise clause passes but in-window does not (or the reverse), split the clause rather than skipping both.
 - The master everyday batch (THR-1627 D3) is filed as its own ticket, blocked by this one. Do not author it here.
 
+## D4 — The flip (design lane, run 2026-10-04a; decided under delegation, open to veto)
+
+*Added 2026-10-04. The pickup built D1 behind the switch and shipped `'walk'` because the `start_local` guard rail (Done-when 5) failed: seed 42 753 → 620 (−17.7%), and strategic decisions fell 44 → 28 (seed 99 104 → 38). This section is the "separate decision" the Kill criteria asked for.*
+
+**Decision.** Flip `CAP_FILL_LOCAL_ORDER` to `'template_hash'`, **after** [THR-1722](https://linear.app/threadbare/issue/THR-1722) lands. The `start_local` failure is a counting artefact, not lost work. The strategic drop is the agreed decision board doing its job, not the cap.
+
+**Why: the `start_local` drop is a crash in the counter, not fewer encounters.** Full evidence: [`Docs/audits/2026-10-04-thr-1687-start-local-drop.md`](../audits/2026-10-04-thr-1687-start-local-drop.md). The planner looks a chosen encounter up in the legacy catalogue and then reads `template.name` (`phaseAgentDecision.ts:1895` on `dac362eb`). For the 86 encounter/reputation templates that exist only in the unified catalogue, that read throws *after* the action is pushed, and the per-agent `catch` swallows it. The encounter runs; its decision record and news line never happen. The fair draw reaches exactly those templates (`encounter.town.*` and `reputation.*` starts 14 → 196 on seed 42, 3 → 225 on seed 99), so more of its starts go uncounted. Measured on the #2180 branch, medium, 200 ticks:
+
+| | seed 42 walk → hash | seed 99 walk → hash |
+|---|---|---|
+| recorded `start_local` | 753 → 620 | 706 → 645 |
+| swallowed throws at that site | 134 → 314 | 123 → 339 |
+| **encounters the planner actually began** | **886 → 934 (+5.4%)** | **824 → 980 (+18.9%)** |
+| actions attempted (balance counter) | 977 → 1,037 | 912 → 1,099 |
+| mortals alive at tick 200 | 653 → 762 | 803 → 964 |
+
+**Why: strategic decisions fall because encounters now win the board, on the board's own terms.** Strategic actions and encounters compete on the unified decision board (THR-1292); the cap never sees strategic candidates. Board contests with a strategic candidate present held steady (952 → 946; 1,094 → 1,000), and strategic candidates won fewer of them (44 → 28, 4.6% → 3.0%; 104 → 38, 9.5% → 3.8%). Nothing about ambitions changed. The walk was hiding encounters the board scores higher, and that inflated their share. D2 already ruled that preference lives in scoring, never in the cap. Holding `'walk'` to protect ambitions would put a preference back into the cap by positional starvation, the THR-814 / THR-1614 failure.
+
+**Options weighed.** *Hold at `'walk'`.* That keeps the expert ÷ novice keep rate at 0.09–0.14 and leaves the 16 expert encounters and the master batch (THR-1688) unreachable, to protect a number that turned out to be a crash. *Explain first in a separate measurement ticket.* That is done now (this section). *Retune the slot count.* The Kill criteria forbid it.
+
+**Would change the call.** If Christian wants ambitions to keep their old share of mortal choices, that is a board-weight question for the strategic family (a new ticket), not a reason to keep the cap biased. Also: if the re-measure after THR-1722 shows *honest* `start_local` down more than 10% on seed 42.
+
+### Revised Done-when for the flip (replaces Done-when 5's `start_local` clause; the rest of Done-when 1–7 stands)
+
+- [ ] 8. **Order:** THR-1722 is merged to `main` first. The flip goes on PR #2180's branch (merge `main` in, set the constant), so one PR ships the switch and the flip and closes this ticket.
+- [ ] 9. **Guard rail, honest count:** `start_local` (now recorded for every start) and *planner-begun encounters* on seed 42 and 99 within −10% of `'walk'`, same session, 200 ticks. Firings, drawable-fired and top-10 share as Done-when 5.
+- [ ] 10. **Report, not a guard rail:** strategic board wins as a share of contests with a strategic candidate present, walk vs hash, seeds 42 and 99. Quote it in the closeout so the living-world owner can see it.
+- [ ] 11. **Invariant:** un-skip *experts attempt harder content than journeymen* (remove its `TODO(THR-1687)`). The master success-rate ceiling (0.76 on seed 42 against 0.70) stays a known failure until the master batch lands: skip **that clause only**, with `TODO(THR-1688)`. Do not raise the ceiling.
+- [ ] 12. The constant's doc-comment drops "TODO(THR-1687): flip …" and gains one line pointing at this section.
+
 ## Intent-judge verdict
 
 **Allow** (2026-10-01, `fable`, cold context; impact class Reversible confirmed). Ten of eleven dimensions PASS; it re-derived the keep-rate ratios 0.15 / 0.77, 0.13 / 0.78, 0.10 / 0.81 from the raw output. One GAP, fixed before commit: § Systems design sent an unknown `CAP_FILL_LOCAL_ORDER` value to the hashed branch while the fail-soft table sent it to `'walk'`; step 1 now reads `!== 'template_hash'`. Advisory notes folded in: the seed-42 prototype form and the ticket-vs-reader baseline difference are now footnoted under the keep-rate table. It also noted that the 0.7 threshold was set with seed 42's 0.77 in hand and that the exposure explanation for the residual gap is asserted rather than measured; both stand as written, because the shipped pass fails the threshold five- to eightfold and Done-when 3 re-measures on the branch.

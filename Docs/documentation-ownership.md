@@ -158,3 +158,84 @@ Some facts change so frequently they must not be documented statically:
 When any documentation surface is updated:
 - Add a dated inline note near the change (date, what, why — one line)
 - Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`)
+
+---
+
+## Relocated from CLAUDE.md (THR-1718) — documentation strategy, canon routing, key links, audit trail, codesight
+
+> **Relocated verbatim from `CLAUDE.md` by THR-1718 (2026-10-04).** These are the documentation-surface sections CLAUDE.md used to carry in full. The text below is unchanged; paths in it are repo-root relative, and "this file" / "this section" mean their original place in `CLAUDE.md`. `CLAUDE.md` now carries a short card pointing here.
+
+### Documentation Strategy
+
+Four surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
+
+- **Obsidian vault** — Two roles. (a) Domain model: systems, mechanics, terminology (wikilinks) — read `Index.md` first. (b) **Exploratory design drafts** (`Brainstorms/YYYY-MM-DD-<topic>.md`): brainstorming and rapid-prototyping thinking lives here, not in the repo — no git, no PR, no CI, no lint, rewrite freely. It is promoted into `Docs/plans/` **only when its issue moves toward Ready for Dev**, and governance applies from that moment (THR-918). The vault is not git-backed, so an unpromoted draft has no history — that is the accepted price of zero ceremony. See `Docs/canon/process.md` § Plan-doc lifecycle.
+- **Repo `.planning/`** — Legacy milestone roadmap, phase history (backlog and handover retired — use Linear)
+- **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
+- **Canon pages** (`Docs/canon/`) — Per-domain navigation layer (current spec pointers, rejected approaches, open questions). **Agent Step 0 for authoring tasks.** See `Docs/canon/README.md` for the schema.
+
+#### Canon Pages (agent Step 0 for authoring)
+
+When starting any encounter, prose, attachment, or other content authoring task, load the relevant Canon page **before any other reference material**:
+
+| Domain | Canon page | When to load |
+|--------|-----------|-------------|
+| Encounters | `Docs/canon/encounters.md` | Before running `encounter-pipeline`, `template-encounter-rewrite`, or any encounter content work |
+| Cosmology | `Docs/canon/cosmology.md` | Before any content that references Reaches, Spheres, or Quintessence — includes encounters, agents, and faction content |
+| Process | `Docs/canon/process.md` | At session start, instead of re-reading CLAUDE.md sections on NFPs, three-pillar rule, definition of done, design governance, coordination protocol, drift scan, retrospectives, and UL-proposal flow. Meta-canon for every design session. |
+| Prose | `Docs/canon/prose.md` | Before any prose, vignette, enrichment, or content-table work — picks the right prose skill (`prose-pipeline`, `prose-content-systems`, `prose-vignettes-and-enrichment`), names the four pipelines, and asserts Threadbare voice + player-as-god framing. |
+| Hex map | `Docs/canon/hex-map.md` | Before any HexMapV2 / Three.js / hex-renderer work — picks the right hex-map skill (`hexmap-core`, `hexmap-layers`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches. |
+| Rulebook (quick-reference) | `Docs/canon/rulebook-quick-reference.md` | **Always-load at session start** — board-game card, ~80 lines, current rules of play only. Companion to the full rulebook. |
+| Rulebook (full synthesis) | `Docs/canon/rulebook.md` | Before any design or content work that touches **rules of play** — turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss. Each rule carries `[IMPL] / [DESIGN] / [OPEN]`. The single synthesis surface for how the systems combine into a game. |
+| World objects | `Docs/canon/world-objects.md` | **Step 0 for any work that adds, names, targets or retires a kind of thing in the world** — an undertaking object, a chip anchor, a subtype, a content target rule. The catalogue of world objects in game words (Area · Hex · Location · Place · Route · Mortal · … · Event), the registry that derives the node schema (`src/data/world-objects.ts`), and the one-PR rule for adding a kind (registry row + UL term + canon row). Generated companion `world-objects.generated.md` (`npm run generate-world-objects`) carries the census badges and the drift verdict. |
+| Content objects | `Docs/canon/content-objects.md` | **Step 0 for any work that adds, names, targets or retires a kind of authored content** — a template type, a catalog, a content-to-content reference, a gate over authored entries. The thirteen content kinds in game words (Encounter · Action · Undertaking · Item · … · Trait · … · Card), the catalogs that hold each, the world object a granted entry becomes, and the one-PR rule (row + UL term + canon row). Sibling of World objects: that page says what is *in* the world, this one what an author may *write*. Generated companion `content-objects.generated.md` (`npm run generate-content-objects`) carries the census and the drift verdict. |
+| Systems inventory | `Docs/canon/systems-inventory.md` | **Required Step-0 load for any Engine-pillar design work.** Generated (`npm run generate-systems-inventory`) map of every subsystem wired into the engine — aliases (incl. legacy names like `TB-073`), the modules + tick phases that implement it, and an ACTIVE/DORMANT badge. Grep it for your premise nouns *before* drafting so you extend/activate an existing system instead of green-fielding a duplicate (the THR-614 failure). Cannot drift the way hand-written canon did. |
+
+This table routes the common authoring domains; **the one full canon index — all 18 pages — is `Docs/canon/README.md`** (THR-1334).
+
+**Why Canon pages exist:** agents triangulating canonical content from 6–12 files make silent errors (wrong reach count, stale formats, deprecated systems). A Canon page is a single ≤200-line entrypoint that answers "what is current?" and lists stale sources to avoid. The UL remains the terminology authority; Canon pages point to UL and add the navigation layer on top.
+
+#### Obsidian vault
+
+Vault work goes through the **filesystem**, not the Obsidian MCP — set `OBSIDIAN_VAULT_PATH` (see § Known Sandbox Limitations). The vault's structure, maintenance scripts, and frontmatter conventions live in **`Docs/documentation-ownership.md` § Obsidian Vault as LLM Knowledge Base**; each `vault-*` skill documents its own workflow.
+
+### Key Links
+
+- **Backlog & issue tracking: [Linear (Threadbare team)](https://linear.app/threadbare)** — single source of truth for all issues, states, and dependencies
+- Linear coordination protocol: `Docs/plans/2026-04-13-linear-coordination-protocol.md`
+- **Roadmap milestones: [Linear Projects](https://linear.app/threadbare/projects)** — 8 projects (Linear Setup, UI/UX Design Infrastructure, Procedural Hex Vignettes, Content Architecture, Attention Tier Model, Thematic Pressure, Social Systems Expansion, Rarity Model) with lifecycle statuses (Idea → Next → Research → Discovery → Now → Done)
+- Legacy milestone roadmap: `.planning/ROADMAP.md` (still maintained for high-level overview)
+- Completed items archive: `.planning/BACKLOG_HISTORY.md` (pre-Linear history)
+- Obsidian vault index: `TheFantasyWorldSimulator/Index.md`, read from the filesystem via `OBSIDIAN_VAULT_PATH` (no Obsidian MCP for vault work — THR-654)
+- Documentation ownership: `Docs/documentation-ownership.md`
+- Integration wiring checklist: `Docs/plans/wiring-checklist.md`
+- Design Reference Wiki (self-maintaining served HTML pages): `Docs/design-reference-wiki.md` — register a new served reference page in `public/wiki-manifest.json`; `npm run build` regenerates the hub + nav.
+- Impediment log: `Docs/impediments.md` · Retrospectives: `Design/retros/`
+
+Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). New plans copy `Docs/plans/_template.md` as a skeleton. Find existing plans by browsing the directory or loading the relevant domain skill.
+
+
+### Change Audit Trail
+
+When modifying Obsidian vault notes:
+
+- **In the document:** Dated inline note near the change (date, what, why — one line).
+- **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
+- **In the vault log:** Append to `log.md` via the `vault-log` skill — a filesystem write to `OBSIDIAN_VAULT_PATH` (format: `- **<type>** | <description>`).
+
+
+## Codesight — Codebase Intelligence
+
+Codesight is installed as both a **static analysis output** (`.codesight/`) and an **MCP server** (`codesight` in `.mcp.json`). A SessionStart hook regenerates the analysis each session.
+
+**Use codesight actively:**
+- Before touching unfamiliar code, check `.codesight/wiki/index.md` for orientation (WHERE things live), then read actual source files.
+- Use `.codesight/CODESIGHT.md` for the full context map: components, libraries, config, middleware, dependency graph.
+- Use `.codesight/components.md` for the component catalog with props.
+- Use `.codesight/graph.md` for the import dependency graph and high-impact files.
+- Use the codesight MCP tools when available for live queries (blast radius, dependency chains).
+- To refresh mid-session after significant changes: `npx codesight --wiki`
+
+**High-impact files:** read the current list from **`.codesight/graph.md`** (regenerated by the SessionStart hook each session) — importer counts are too volatile to snapshot here (a 2026-07-03 snapshot was ~50% understated by 2026-08-29, THR-1362). The stable shape: `src/engine/graph.ts`, `src/types/gameState.ts`, `src/types/unifiedAction.ts`, `src/engine/traceBuffer.ts` and their `src/types/` siblings sit at the top with hundreds of importers each — treat any change to them as wide-blast and check `.codesight/graph.md` for the live numbers before sizing the change.
+
+Wiki articles are navigation aids, not implementation guides — always read source files before implementing.

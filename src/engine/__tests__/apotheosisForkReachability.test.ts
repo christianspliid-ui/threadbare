@@ -36,6 +36,7 @@ import {
   resolveAftermathVariant,
 } from '../../types/unifiedAction';
 import { resolveStepDefinition } from '../unifiedActionLifecycle';
+import { godTouchedEncounter } from '../unifiedActionResolution';
 import type { ActionStep, StepOutcome, UnifiedAction } from '../../types/unifiedAction';
 import type { GameState } from '../../types/gameState';
 
@@ -247,5 +248,19 @@ describe('taking the fork moves the mortal', () => {
     // Opposite directions, which is what "the choice is theirs to keep" means.
     expect(movement(martyr.archetypeDrift)).toBeGreaterThan(0);
     expect(movement(survivor.archetypeDrift)).toBeLessThan(0);
+  });
+});
+
+describe('THR-1708 — a hand that leaned the fork is remembered as the god’s touch', () => {
+  it('marks the decided entry when a hand was committed, and not otherwise', () => {
+    const leaned = draw(0, ['apotheosis.the_years_they_gave']).history[0];
+    expect(leaned.interventionType).toBe('agent_decided');
+    expect(leaned.handCommitted).toBe(true);
+    // A later empty commit clears `activeNudges`; the history alone must still answer.
+    expect(godTouchedEncounter({ choiceHistory: [leaned], activeNudges: [] })).toBe(true);
+
+    const alone = draw(0.9).history[0];
+    expect(alone.handCommitted).toBeUndefined();
+    expect(godTouchedEncounter({ choiceHistory: [alone] })).toBe(false);
   });
 });

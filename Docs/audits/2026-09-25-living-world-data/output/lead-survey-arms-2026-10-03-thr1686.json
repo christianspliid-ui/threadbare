@@ -1,0 +1,868 @@
+{
+ "_about": "THR-1686 census (pickup lane, 2026-10-03, branch claude/thr-1686-lead-survey-kept-visit off main f184fa93, final head after the review gate). Medium map, 300 ticks, unattended. Reader: readers/lead-survey-arms.ts, one seed per process, one esbuild bundle per arm. Arms: base = all three kill switches false (main's behaviour); p12 = CLUE_LEAD_SURVEY_SKIPS_WINDOW + APPOINTMENT_WAITING_HOLD_ENABLED (part 3 off); all = all three on (shipped). `located` counts a visit's sharpen to located (re-surveys that refresh a located lead are not counted). waitingThenLost = a visit whose regime read waiting and was then lost or missed.",
+ "arms": {
+  "base": {
+   "1": {
+    "ruinSurveys": 3,
+    "visitsArranged": 2,
+    "visitsKept": 0,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2611,
+    "undertakingsStarted": 242,
+    "observeStarted": 111,
+    "observeNetOfRuinSurveys": 108,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 2,
+     "missed:absent": 1,
+     "refused:lead_visit_visit_pending": 1,
+     "sharpen:success>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "waiting"
+    ]
+   },
+   "2": {
+    "ruinSurveys": 0,
+    "visitsArranged": 0,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1855,
+    "undertakingsStarted": 82,
+    "observeStarted": 31,
+    "observeNetOfRuinSurveys": 31,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {},
+    "visitPaths": []
+   },
+   "3": {
+    "ruinSurveys": 2,
+    "visitsArranged": 1,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2249,
+    "undertakingsStarted": 170,
+    "observeStarted": 49,
+    "observeNetOfRuinSurveys": 47,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 1,
+     "refused:lead_visit_visit_pending": 1
+    },
+    "visitPaths": [
+     "far>leaning"
+    ]
+   },
+   "4": {
+    "ruinSurveys": 3,
+    "visitsArranged": 2,
+    "visitsKept": 1,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 1,
+    "encounterEngagements": 1835,
+    "undertakingsStarted": 112,
+    "observeStarted": 47,
+    "observeNetOfRuinSurveys": 44,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 2,
+     "refused:lead_visit_visit_pending": 1,
+     "kept": 1,
+     "sharpen:success>located": 1
+    },
+    "visitPaths": [
+     "waiting",
+     "waiting"
+    ]
+   },
+   "5": {
+    "ruinSurveys": 0,
+    "visitsArranged": 0,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1789,
+    "undertakingsStarted": 113,
+    "observeStarted": 67,
+    "observeNetOfRuinSurveys": 67,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {},
+    "visitPaths": []
+   },
+   "6": {
+    "ruinSurveys": 0,
+    "visitsArranged": 0,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1765,
+    "undertakingsStarted": 109,
+    "observeStarted": 37,
+    "observeNetOfRuinSurveys": 37,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {},
+    "visitPaths": []
+   },
+   "7": {
+    "ruinSurveys": 3,
+    "visitsArranged": 1,
+    "visitsKept": 0,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1879,
+    "undertakingsStarted": 141,
+    "observeStarted": 51,
+    "observeNetOfRuinSurveys": 48,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 1,
+     "refused:lead_visit_visit_pending": 2,
+     "missed:absent": 1,
+     "sharpen:critical_success>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost"
+    ]
+   },
+   "8": {
+    "ruinSurveys": 10,
+    "visitsArranged": 4,
+    "visitsKept": 1,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 1,
+    "encounterEngagements": 1845,
+    "undertakingsStarted": 209,
+    "observeStarted": 84,
+    "observeNetOfRuinSurveys": 74,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 4,
+     "refused:lead_visit_visit_pending": 6,
+     "kept": 1,
+     "sharpen:success>located": 1
+    },
+    "visitPaths": [
+     "far>departing>waiting",
+     "",
+     "far>leaning>departing>departing",
+     ""
+    ]
+   },
+   "11": {
+    "ruinSurveys": 0,
+    "visitsArranged": 0,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2308,
+    "undertakingsStarted": 177,
+    "observeStarted": 41,
+    "observeNetOfRuinSurveys": 41,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {},
+    "visitPaths": []
+   },
+   "13": {
+    "ruinSurveys": 2,
+    "visitsArranged": 1,
+    "visitsKept": 1,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1875,
+    "undertakingsStarted": 95,
+    "observeStarted": 41,
+    "observeNetOfRuinSurveys": 39,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 1,
+     "refused:lead_visit_visit_pending": 1,
+     "kept": 1,
+     "sharpen:failure>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>waiting"
+    ]
+   },
+   "42": {
+    "ruinSurveys": 1,
+    "visitsArranged": 1,
+    "visitsKept": 0,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1663,
+    "undertakingsStarted": 85,
+    "observeStarted": 14,
+    "observeNetOfRuinSurveys": 13,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 1
+    },
+    "visitPaths": [
+     ""
+    ]
+   },
+   "99": {
+    "ruinSurveys": 9,
+    "visitsArranged": 3,
+    "visitsKept": 0,
+    "visitsMissed": 2,
+    "waitingThenLost": 1,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1648,
+    "undertakingsStarted": 147,
+    "observeStarted": 51,
+    "observeNetOfRuinSurveys": 45,
+    "board": {
+     "certainOnBoard": 0,
+     "certainWon": 0,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 3,
+     "refused:lead_visit_visit_pending": 6,
+     "missed:absent": 2,
+     "sharpen:success>cold": 2
+    },
+    "visitPaths": [
+     "waiting>leaning>departing>departing>waiting>lost",
+     "",
+     "far>far>leaning>leaning>leaning>leaning>departing>lost"
+    ]
+   }
+  },
+  "p12": {
+   "4": {
+    "ruinSurveys": 16,
+    "visitsArranged": 8,
+    "visitsKept": 1,
+    "visitsMissed": 3,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1847,
+    "undertakingsStarted": 139,
+    "observeStarted": 57,
+    "observeNetOfRuinSurveys": 41,
+    "board": {
+     "certainOnBoard": 42,
+     "certainWon": 16,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 8,
+     "missed:absent": 3,
+     "refused:lead_visit_visit_pending": 8,
+     "sharpen:success>cold": 2,
+     "kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:failure>cold": 1,
+     "sharpen:critical_failure>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "far",
+     "",
+     "far>leaning>leaning>departing>lost>lost",
+     "",
+     "far>leaning>leaning>departing>departing",
+     "far>leaning>lost",
+     "far>leaning>departing>waiting"
+    ]
+   },
+   "8": {
+    "ruinSurveys": 25,
+    "visitsArranged": 11,
+    "visitsKept": 2,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2054,
+    "undertakingsStarted": 250,
+    "observeStarted": 115,
+    "observeNetOfRuinSurveys": 90,
+    "board": {
+     "certainOnBoard": 39,
+     "certainWon": 24,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 11,
+     "refused:lead_visit_visit_pending": 14,
+     "kept": 2,
+     "sharpen:success_at_cost>narrowed": 2
+    },
+    "visitPaths": [
+     "far>departing>waiting",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "far>waiting>far",
+     "far"
+    ]
+   },
+   "42": {
+    "ruinSurveys": 16,
+    "visitsArranged": 7,
+    "visitsKept": 0,
+    "visitsMissed": 3,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1569,
+    "undertakingsStarted": 109,
+    "observeStarted": 31,
+    "observeNetOfRuinSurveys": 15,
+    "board": {
+     "certainOnBoard": 42,
+     "certainWon": 16,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 7,
+     "refused:lead_visit_visit_pending": 9,
+     "missed:absent": 3,
+     "sharpen:success>cold": 1,
+     "sharpen:success_at_cost>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "",
+     "far>leaning>departing>lost",
+     "far>leaning>departing>lost",
+     "",
+     "far>leaning>departing>waiting",
+     "leaning"
+    ]
+   },
+   "99": {
+    "ruinSurveys": 41,
+    "visitsArranged": 12,
+    "visitsKept": 3,
+    "visitsMissed": 4,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1782,
+    "undertakingsStarted": 186,
+    "observeStarted": 85,
+    "observeNetOfRuinSurveys": 56,
+    "board": {
+     "certainOnBoard": 73,
+     "certainWon": 40,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 12,
+     "refused:lead_visit_visit_pending": 19,
+     "kept": 3,
+     "sharpen:success>located": 1,
+     "refused:lead_visit_not_narrowed": 10,
+     "sharpen:failure>cold": 1,
+     "missed:absent": 4,
+     "sharpen:success>cold": 3,
+     "sharpen:success_at_cost>narrowed": 1,
+     "sharpen:critical_success>cold": 1
+    },
+    "visitPaths": [
+     "waiting>leaning>departing>departing>waiting>waiting",
+     "far>leaning>departing",
+     "far>departing>lost",
+     "far>leaning>departing>waiting",
+     "far>leaning>departing>lost",
+     "leaning>departing>lost",
+     "",
+     "far>leaning>lost",
+     "",
+     "far>leaning>departing>lost",
+     "",
+     "far>leaning>departing>leaning>departing"
+    ]
+   }
+  },
+  "all": {
+   "1": {
+    "ruinSurveys": 13,
+    "visitsArranged": 5,
+    "visitsKept": 2,
+    "visitsMissed": 2,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 1,
+    "encounterEngagements": 2550,
+    "undertakingsStarted": 278,
+    "observeStarted": 143,
+    "observeNetOfRuinSurveys": 130,
+    "board": {
+     "certainOnBoard": 32,
+     "certainWon": 13,
+     "discountOnBoard": 1
+    },
+    "visit": {
+     "arranged": 5,
+     "refused:lead_visit_visit_pending": 8,
+     "kept": 2,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:success_at_cost>narrowed": 1,
+     "missed:absent": 2,
+     "sharpen:success>cold": 1,
+     "sharpen:success>located": 1,
+     "sharpen:critical_success>cold": 1
+    },
+    "visitPaths": [
+     "",
+     "far>leaning>departing>waiting",
+     "far>leaning>departing>lost",
+     "far>leaning>departing>lost",
+     "far>leaning>departing>waiting>departing>departing"
+    ]
+   },
+   "2": {
+    "ruinSurveys": 8,
+    "visitsArranged": 3,
+    "visitsKept": 0,
+    "visitsMissed": 1,
+    "waitingThenLost": 1,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1797,
+    "undertakingsStarted": 106,
+    "observeStarted": 29,
+    "observeNetOfRuinSurveys": 21,
+    "board": {
+     "certainOnBoard": 10,
+     "certainWon": 8,
+     "discountOnBoard": 1
+    },
+    "visit": {
+     "arranged": 3,
+     "refused:lead_visit_visit_pending": 5,
+     "missed:absent": 1,
+     "sharpen:failure>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>waiting>lost",
+     "far>leaning>departing>lost",
+     ""
+    ]
+   },
+   "3": {
+    "ruinSurveys": 4,
+    "visitsArranged": 2,
+    "visitsKept": 0,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2241,
+    "undertakingsStarted": 162,
+    "observeStarted": 55,
+    "observeNetOfRuinSurveys": 51,
+    "board": {
+     "certainOnBoard": 20,
+     "certainWon": 4,
+     "discountOnBoard": 3
+    },
+    "visit": {
+     "arranged": 2,
+     "missed:absent": 1,
+     "refused:lead_visit_visit_pending": 2,
+     "sharpen:success>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>lost",
+     "far>leaning"
+    ]
+   },
+   "4": {
+    "ruinSurveys": 16,
+    "visitsArranged": 8,
+    "visitsKept": 1,
+    "visitsMissed": 3,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1847,
+    "undertakingsStarted": 139,
+    "observeStarted": 57,
+    "observeNetOfRuinSurveys": 41,
+    "board": {
+     "certainOnBoard": 42,
+     "certainWon": 16,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 8,
+     "missed:absent": 3,
+     "refused:lead_visit_visit_pending": 8,
+     "sharpen:success>cold": 2,
+     "kept": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:failure>cold": 1,
+     "sharpen:critical_failure>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "far",
+     "",
+     "far>leaning>leaning>departing>lost>lost",
+     "",
+     "far>leaning>leaning>departing>departing",
+     "far>leaning>lost",
+     "far>leaning>departing>waiting"
+    ]
+   },
+   "5": {
+    "ruinSurveys": 5,
+    "visitsArranged": 2,
+    "visitsKept": 1,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1813,
+    "undertakingsStarted": 132,
+    "observeStarted": 77,
+    "observeNetOfRuinSurveys": 72,
+    "board": {
+     "certainOnBoard": 26,
+     "certainWon": 5,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 2,
+     "refused:lead_visit_visit_pending": 3,
+     "missed:absent": 1,
+     "sharpen:failure>cold": 2,
+     "kept": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "far>far>departing>waiting"
+    ]
+   },
+   "6": {
+    "ruinSurveys": 14,
+    "visitsArranged": 7,
+    "visitsKept": 4,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 1,
+    "encounterEngagements": 1849,
+    "undertakingsStarted": 140,
+    "observeStarted": 71,
+    "observeNetOfRuinSurveys": 57,
+    "board": {
+     "certainOnBoard": 52,
+     "certainWon": 14,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 7,
+     "refused:lead_visit_visit_pending": 6,
+     "kept": 4,
+     "sharpen:success>located": 1,
+     "refused:lead_visit_not_narrowed": 1,
+     "missed:absent": 1,
+     "sharpen:failure>cold": 2,
+     "sharpen:critical_failure>cold": 1,
+     "sharpen_noop:not_terminal": 1,
+     "sharpen:success_at_cost>narrowed": 1
+    },
+    "visitPaths": [
+     "waiting>departing",
+     "",
+     "far>leaning>departing>lost",
+     "far>departing>waiting",
+     "far>leaning>departing>departing>waiting",
+     "far>leaning>departing>waiting",
+     "far>leaning>departing"
+    ]
+   },
+   "7": {
+    "ruinSurveys": 6,
+    "visitsArranged": 2,
+    "visitsKept": 0,
+    "visitsMissed": 2,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2013,
+    "undertakingsStarted": 120,
+    "observeStarted": 40,
+    "observeNetOfRuinSurveys": 34,
+    "board": {
+     "certainOnBoard": 6,
+     "certainWon": 6,
+     "discountOnBoard": 3
+    },
+    "visit": {
+     "arranged": 2,
+     "refused:lead_visit_visit_pending": 4,
+     "missed:absent": 2,
+     "sharpen:success>cold": 1,
+     "sharpen:failure>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>leaning>lost>departing>lost",
+     "far>departing>lost"
+    ]
+   },
+   "8": {
+    "ruinSurveys": 25,
+    "visitsArranged": 11,
+    "visitsKept": 2,
+    "visitsMissed": 0,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2054,
+    "undertakingsStarted": 250,
+    "observeStarted": 115,
+    "observeNetOfRuinSurveys": 90,
+    "board": {
+     "certainOnBoard": 39,
+     "certainWon": 24,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 11,
+     "refused:lead_visit_visit_pending": 14,
+     "kept": 2,
+     "sharpen:success_at_cost>narrowed": 2
+    },
+    "visitPaths": [
+     "far>departing>waiting",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "far>waiting>far",
+     "far"
+    ]
+   },
+   "11": {
+    "ruinSurveys": 4,
+    "visitsArranged": 2,
+    "visitsKept": 0,
+    "visitsMissed": 1,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 2418,
+    "undertakingsStarted": 236,
+    "observeStarted": 61,
+    "observeNetOfRuinSurveys": 59,
+    "board": {
+     "certainOnBoard": 9,
+     "certainWon": 3,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 2,
+     "refused:lead_visit_visit_pending": 2,
+     "missed:absent": 1,
+     "sharpen_noop:no_lead": 1
+    },
+    "visitPaths": [
+     "far>leaning>lost",
+     "waiting>leaning"
+    ]
+   },
+   "13": {
+    "ruinSurveys": 10,
+    "visitsArranged": 5,
+    "visitsKept": 2,
+    "visitsMissed": 2,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 1,
+    "encounterEngagements": 1951,
+    "undertakingsStarted": 96,
+    "observeStarted": 43,
+    "observeNetOfRuinSurveys": 33,
+    "board": {
+     "certainOnBoard": 29,
+     "certainWon": 10,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 5,
+     "refused:lead_visit_visit_pending": 5,
+     "missed:absent": 2,
+     "sharpen:success>cold": 1,
+     "sharpen:failure>cold": 1,
+     "kept": 2,
+     "sharpen:critical_failure>cold": 1,
+     "sharpen:success>located": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing",
+     "far>leaning>lost",
+     "far>leaning>departing",
+     "far>leaning>departing>waiting",
+     ""
+    ]
+   },
+   "42": {
+    "ruinSurveys": 16,
+    "visitsArranged": 7,
+    "visitsKept": 0,
+    "visitsMissed": 3,
+    "waitingThenLost": 0,
+    "located": 0,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1569,
+    "undertakingsStarted": 109,
+    "observeStarted": 31,
+    "observeNetOfRuinSurveys": 15,
+    "board": {
+     "certainOnBoard": 42,
+     "certainWon": 16,
+     "discountOnBoard": 0
+    },
+    "visit": {
+     "arranged": 7,
+     "refused:lead_visit_visit_pending": 9,
+     "missed:absent": 3,
+     "sharpen:success>cold": 1,
+     "sharpen:success_at_cost>cold": 1
+    },
+    "visitPaths": [
+     "far>leaning>departing>lost",
+     "",
+     "far>leaning>departing>lost",
+     "far>leaning>departing>lost",
+     "",
+     "far>leaning>departing>waiting",
+     "leaning"
+    ]
+   },
+   "99": {
+    "ruinSurveys": 40,
+    "visitsArranged": 12,
+    "visitsKept": 4,
+    "visitsMissed": 4,
+    "waitingThenLost": 0,
+    "located": 1,
+    "delveAdmitted": 0,
+    "encounterEngagements": 1757,
+    "undertakingsStarted": 174,
+    "observeStarted": 85,
+    "observeNetOfRuinSurveys": 57,
+    "board": {
+     "certainOnBoard": 74,
+     "certainWon": 39,
+     "discountOnBoard": 3
+    },
+    "visit": {
+     "arranged": 12,
+     "refused:lead_visit_visit_pending": 18,
+     "kept": 4,
+     "sharpen:success>located": 1,
+     "refused:lead_visit_not_narrowed": 10,
+     "sharpen:failure>cold": 2,
+     "missed:absent": 4,
+     "sharpen:success>cold": 3,
+     "sharpen:success_at_cost>narrowed": 1,
+     "sharpen:critical_success>cold": 1
+    },
+    "visitPaths": [
+     "waiting>leaning>departing>departing>waiting>waiting",
+     "far>leaning>departing",
+     "far>departing>lost",
+     "far>leaning>departing>waiting",
+     "far>leaning>departing>lost",
+     "leaning>departing>lost",
+     "",
+     "far>leaning>departing>lost",
+     "far>leaning>leaning>departing",
+     "",
+     "",
+     ""
+    ]
+   }
+  }
+ }
+}

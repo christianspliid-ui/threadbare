@@ -31,7 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
-import type { ItemGeneratedTrace, ItemGenerateFallbackTrace } from './traces/item-generator-traces';
+import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -384,6 +384,7 @@ export type TraceCategory =
   | 'beat.delivery_skipped'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
+  | 'meeting.essence_spent'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -584,7 +585,9 @@ export type TraceCategory =
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
-  | 'item.generate_fallback';
+  | 'item.generate_fallback'
+  // Found things in the reward draw (THR-1626).
+  | 'reward.generated';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -879,6 +882,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
+  // Found things in the reward draw (THR-1626)
+  'reward.generated',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -905,6 +910,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.delivery_skipped',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
+  'meeting.essence_spent',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -1812,6 +1818,8 @@ export interface TargetActionFilterTrace extends TraceBase {
   filteredByRange: number;
   /** Templates hidden by the reach gate (THR-503). Optional — older traces omit it. */
   filteredByReach?: number;
+  /** Cards locked "Already held" by the held lock (THR-1700). Optional — older traces omit it. */
+  lockedByHeld?: number;
   slotsGenerated: number;
 }
 
@@ -1993,7 +2001,7 @@ export interface ScoringTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this candidate (already in `finalScore`). */
     forecastFit?: number;
     /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */
@@ -2845,6 +2853,29 @@ export interface SpellCastResolvedTrace extends TraceBase {
   refused?: string;
   /** Carried triggers the cast's `'spell_cast'` raise fired on the caster. */
   triggersFired: number;
+  /**
+   * THR-1683 — the cast's graph writes (the chips' source). `channel: 'cast_condition'`
+   * marks the bearing the cast channel wrote for the spell's modifier-only effects.
+   */
+  writes?: Array<{
+    kind: string;
+    actorId: string;
+    ref: string;
+    channel?: 'cast_condition';
+    harmful?: boolean;
+    fromBacklash?: boolean;
+    fromPrice?: boolean;
+  }>;
+  /** THR-1683 — the cast channel: what rode it, what could not (stateful), and why not, if not. */
+  channel?: {
+    applied: boolean;
+    carried: string[];
+    skipped: string[];
+    durationTicks?: number;
+    reason?: string;
+  };
+  /** THR-1683 — mortals the spell's target filter (`ally`/`enemy`) turned away. */
+  filterRejected?: number;
 }
 
 /** Trace: a cast's backlash fired (THR-1571). */
@@ -3107,7 +3138,7 @@ export interface EngagementDecisionTrace extends TraceBase {
     /** Mean demanded proficiency after the scale offset; NaN when unknown. */
     difficulty: number;
     fit: number;
-    zone: 'refused' | 'below' | 'in' | 'above';
+    zone: 'refused' | 'below' | 'in' | 'above' | 'certain';
     exempt?: 'too_easy';
   }>;
   chosenId: string | null;
@@ -3148,11 +3179,13 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this entry (already in `score`). */
     forecastFit?: number;
     /** THR-1582 — where the entry's forecast sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
     /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
     leadPull?: number;
+    /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
+    appointmentDiscount?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -3755,6 +3788,13 @@ export interface AppointmentRegimeTrace extends TraceBase {
   leaveMargin: number;
   /** True when this tick queued the journey to the place. */
   journeyQueued?: boolean;
+  /**
+   * THR-1686 — set when the waiting hold kept the mortal at the place: where it would
+   * have gone (`heldFrom`, a location id) and which mover was refused (`heldBy`). Fires
+   * on every hold, not on change, so a mortal that stayed behind can be explained.
+   */
+  heldFrom?: string;
+  heldBy?: 'idle_drift' | 'forced_travel' | 'company';
 }
 
 /** Trace: present in the window; the kept sequel fired at the place. */
@@ -4578,6 +4618,7 @@ export type TraceEntry =
   | MonsterMintedTrace
   | ItemGeneratedTrace
   | ItemGenerateFallbackTrace
+  | RewardGeneratedTrace
   | MonsterHardenedTrace
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
@@ -4614,6 +4655,7 @@ export type TraceEntry =
   | BeatSeededTrace
   | BeatDeliveryTrace
   | MeetingLocationPickedTrace
+  | MeetingEssenceSpentTrace
   | DoomWakeTrace
   | DoomExpiryHeldTrace
   | RivalGraceHoldTrace
@@ -5025,6 +5067,22 @@ export interface MeetingLocationPickedTrace extends TraceBase {
   /** Picked for its current culture. */
   cultured: boolean;
   fallback: boolean;
+}
+
+/**
+ * Trace: a Meet-The-First test hand was paid for (THR-1706). Before this the
+ * meeting's cards previewed a spend and never charged it. One per test the
+ * player commits with priced cards; `ok: false` means the pool could not cover
+ * the hand at commit time and nothing was charged.
+ */
+export interface MeetingEssenceSpentTrace extends TraceBase {
+  category: 'meeting.essence_spent';
+  /** Formative test index, or the bond test's step index. */
+  testIndex: number;
+  /** The sphere billed first — the god's primary. */
+  primarySphere: string;
+  spent: number;
+  ok: boolean;
 }
 
 /**

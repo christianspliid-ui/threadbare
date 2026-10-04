@@ -217,10 +217,10 @@ A power is **not** a possession, a condition, or an agreement, though it shares 
 ### Spell
 
 **Aliases:** the `'spell'` `AttachmentCategory`
-**Also see:** `[[Power]]`, `[[Bestowal]]`, `[[Innate Power]]`, `[[Attachment]]`
+**Also see:** `[[Power]]`, `[[Bestowal]]`, `[[Innate Power]]`, `[[Attachment]]`, `[[Tradition]]`
 **Status:** canonical
 
-A `[[Power]]` a caster **learns from a magic tradition**. Casters are an earned identity, never a starting class — a mortal becomes one through the world, which is what keeps spells story-priced rather than character-sheet-priced.
+A `[[Power]]` a caster **learns from a magic `[[Tradition]]`**. Casters are an earned identity, never a starting class — a mortal becomes one through the world, which is what keeps spells story-priced rather than character-sheet-priced.
 
 Three authored axes carry a spell's design: **agency** (fate-woven or deliberate), **arena** (encounter or map), and **price** (free → strain → gamble → transgression). Code anchor: the `'spell'` member of `AttachmentCategory`.
 

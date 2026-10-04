@@ -27,7 +27,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 
 | Slot | Cadence | Task | Cron | Fires | Writes |
 |------|---------|------|------|-------|--------|
-| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
+| **:00 / :20 / :40** | Every 20 min | CC pickup (`tb-opus-pickup` — single executor lane; back-to-back since THR-1717) | `*/20 * * * *` | ~:11 / :31 / :51 (jitter ~11 min observed 2026-10-03) | — |
 | **:25** | Hourly | `tb-orchestrator` (decides what happens next — T1 unblock sweep, T2 design authoring, T3 daily architecture health) | `25 * * * *` | ~:26:16 | `Docs/ops/orchestrator-<date>.md` + Linear `Todo`→`Ready for Dev` promotions |
 | **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`; since THR-1385 also measures engine tick cost and appends the trend row) | `45 * * * *` | ~:53:13 | briefing + user-actions + `Docs/ops/tick-cost-trend.tsv` |
 | **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
@@ -37,7 +37,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
 | **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:17:39 (jitter 219 s at registration) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |
-| **10:37** | Daily | `tb-cold-playtest` (cold playtest loop — runs the next no-knowledge round only when the last round's milestone is closed and deployed; `cold-playtest` skill, prompt mirror `scheduled-task-prompts/tb-cold-playtest.md`) — row added 2026-09-25 by THR-1610; **awaiting attended registration** (the pickup lane does not create scheduler config) | `37 10 * * *` | not yet registered — record the observed fire time at registration | `Docs/ops/cold-playtest-round-<N>.md` + `Docs/ops/cold-playtest-scorecard.tsv` on `ops` + Linear round milestone and findings |
+| **10:37** | Daily | `tb-cold-playtest` (cold playtest loop — runs the next no-knowledge round only when the last round's milestone is closed and deployed; `cold-playtest` skill, prompt mirror `scheduled-task-prompts/tb-cold-playtest.md`) — row added 2026-09-25 by THR-1610; **registered 2026-10-03** in an attended session (the pickup lane cannot create scheduler config, so the lane sat unregistered for 8 days and round 2 never fired on its own) | `37 10 * * *` | ~10:48 (jitter 654 s at registration) | `Docs/ops/cold-playtest-round-<N>.md` + `Docs/ops/cold-playtest-scorecard.tsv` on `ops` + Linear round milestone and findings |
 
 ## CC automation lane — registered but not Threadbare work
 
@@ -135,7 +135,7 @@ CC cannot read or disable these: they live in Cowork app state, are invisible to
 
 ## Slot allocation
 
-Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `tb-orchestrator` at ~:26:16, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09).
+**`tb-opus-pickup` runs every 20 minutes since THR-1717 (2026-10-03).** The scheduler never runs two runs of the same task at once — a slot that fires while a run is alive is held and fires the moment that run ends (`list_task_runs`: 04:11→05:41 run, next run 05:42) — so a 20-minute cron yields back-to-back runs with at most a 20-minute idle gap, never two concurrent claims. Its runs (~31 min) already overlapped the orchestrator's and the briefing's slots under the hourly cron, so fire-time spacing below is about the *other* lanes. If the lane starts dying on its model's usage limit, widen the cron to `*/30` before touching anything else. Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` (pre-THR-1717) at ~:00:53, `tb-orchestrator` at ~:26:16, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09).
 
 **`tb-design-lane` (THR-1611) takes `:14` four times a day**: after the pickup's jittered fire (up to ~`:11`), clear of the orchestrator's `~:26`, the reaper's `:40` and autosync's `:50`. Its runs are long (a governed plan doc spawns the intent judge and three auditors), so a six-hour gap is deliberate — a hung or overrunning run eats only its own next slot (THR-837), never a sibling's.
 

@@ -81,7 +81,7 @@ import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
-import { getGroupOf, getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
+import { getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
 import { setCommander } from '../engine/groups/groupCommand';
 import { applyCohesionDelta } from '../engine/groups/groupCohesion';
 import { writeGrudge } from '../engine/grievance/grudgeEdge';
@@ -113,10 +113,12 @@ import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
 import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES, CONDITION_SUBCATEGORIES } from './world-objects';
 import { getFactionLeaderId } from '../engine/factionNetwork';
+import { isAlly, actorFactionId } from '../engine/allegiance';
 import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
 import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
 import { isMonster } from '../engine/monsters/isMonster';
 import { isLiveMonster, huntReason, monsterLairId, liveHuntFavourAt } from '../engine/monsters/hunts';
+import { congregationOfSite, isPilgrimDestination } from '../engine/pilgrimWays';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -147,6 +149,8 @@ import {
   ARMY_SCOUT_INTELLIGENCE_TYPE,
   UNDERTAKING_DEFAULT_FACTION_SEED,
   UNDERTAKING_DEFAULT_TIER,
+  PILGRIM_WAY_SITE_SUBTYPES,
+  PILGRIM_WAY_EDGE_ORIGIN,
   OBSERVE_CLUE_PRECISION_BY_BAND,
   OBSERVE_CLUE_MAGNITUDE,
   OBSERVE_AREA_FAMILIARITY_CAP,
@@ -159,7 +163,6 @@ import {
   // The dormant kinds I (THR-1429)
   MOTIVE_GATE_KINDS,
   LEARN_SPELL_UNALIGNED_SHELF_OPEN,
-  CONDITION_ALLY_STANDING_MIN,
   CONDITION_TIER_CAP_BY_BAND,
   CONDITION_TIER_CAP_DEFAULT,
   CURSE_DURATION_TICKS_BY_BAND,
@@ -578,14 +581,6 @@ function rosterSize(graph: WorldGraph, groupId: string): number {
   return graph.getIncomingEdges(groupId, 'member_of').length;
 }
 
-/** The first faction the actor is a member of, if any. */
-function actorFactionId(graph: WorldGraph, actorId: string): string | null {
-  for (const e of graph.getOutgoingEdges(actorId, 'member_of')) {
-    const n = graph.getNode(e.target);
-    if (n?.type === 'actor' && n.properties.actorType === 'faction') return n.id;
-  }
-  return null;
-}
 
 /**
  * `observe × anything`: intelligence about the object, keyed on the actor.
@@ -984,28 +979,9 @@ function spellsOfActor(graph: WorldGraph, actorId: string): { known: Set<string>
   return { known, wielded };
 }
 
-/**
- * Whether two mortals are allies — the blessing half of the sign.
- *
- * Three readings in order, the first that answers wins: the same faction, the same
- * company, or standing at or above `CONDITION_ALLY_STANDING_MIN`. Self is handled by
- * the caller, because blessing oneself needs no test at all.
- */
-function isAlly(graph: WorldGraph, actorId: string, targetId: string): boolean {
-  const actorFaction = actorFactionId(graph, actorId);
-  if (actorFaction && actorFaction === actorFactionId(graph, targetId)) return true;
-
-  // Compare ids, not node objects — `getGroupOf` returns a fresh handle per call.
-  const actorGroup = getGroupOf(graph, actorId)?.id;
-  if (actorGroup && actorGroup === getGroupOf(graph, targetId)?.id) return true;
-
-  for (const e of graph.getOutgoingEdges(actorId, 'reputation_with')) {
-    if (e.target !== targetId) continue;
-    const score = num(e.properties, 'score');
-    if (score !== null && score >= CONDITION_ALLY_STANDING_MIN) return true;
-  }
-  return false;
-}
+// `isAlly` — the blessing half of the sign — lives in `src/engine/allegiance.ts` since
+// THR-1683, so the cast resolver's target filter reads the same allegiance without an
+// import cycle back through this file.
 
 /** The first motive the actor holds against the target, or null. The curse half of the sign. */
 function motiveAgainst(graph: WorldGraph, actorId: string, targetId: string): MotiveKind | null {
@@ -1409,6 +1385,62 @@ const ROUTE: UndertakingObjectType = {
     },
     observe,
   },
+};
+
+// ─── Pilgrim ways (THR-1660) ────────────────────────────────────────
+//
+// A class of the Route kind (`world-objects.ts` already lists `pilgrim_way:
+// ['sacred_route']`), the way MONSTER is a class of Mortal. One verb: a faith-spreading
+// mortal consecrates a town to the congregation that keeps the faith on its ground, and
+// from then on the encounter cache pools the pilgrimage there. The way belongs to the
+// congregation, not to whoever made it (D2), and nothing unmakes it (D5).
+
+/** Why a site cannot take a pilgrim way, or `null` when it can (D3). Board hook and completion re-check. */
+export function pilgrimWaySiteEligibility(graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle): string | null {
+  if (isAgentGone(graph.getNode(actorId))) return 'consecrator_gone';
+  const site = nodeOf(graph, handle);
+  const subtype = site?.properties.locationSubtype;
+  if (!site || !isLocationNode(site) || typeof subtype !== 'string' || !PILGRIM_WAY_SITE_SUBTYPES.includes(subtype)) {
+    return 'site_gone';
+  }
+  if (!congregationOfSite(graph, site.id)) return 'no_congregation_here';
+  // The reader is a boolean: a second way to the same town adds nothing to its pool.
+  if (isPilgrimDestination(graph, site.id)) return 'already_a_pilgrim_destination';
+  return null;
+}
+
+function consecratePilgrimWay(ctx: ObjectVerbContext): GraphOpResult {
+  // The site chosen at proposal; never substituted — the world moved during the work,
+  // so it is asked again before anything is written.
+  const siteId = ctx.targetNodeId ?? nodeIdOf(ctx.handle);
+  if (!siteId) return fail('consecrate_pilgrim_way', 'site_gone');
+  const site: UndertakingObjectHandle = { kind: 'node', nodeId: siteId };
+  const refusal = pilgrimWaySiteEligibility(ctx.graph, ctx.actorId, site);
+  if (refusal) return fail('consecrate_pilgrim_way', refusal);
+  const congregationId = congregationOfSite(ctx.graph, siteId);
+  if (!congregationId) return fail('consecrate_pilgrim_way', 'no_congregation_here');
+  // Never by hand: the one writer validates the schema and refuses a duplicate.
+  return createRelationEdge(ctx.graph, congregationId, siteId, 'sacred_route', ctx.tick, {
+    origin: PILGRIM_WAY_EDGE_ORIGIN,
+    ...(ctx.projectId ? { projectId: ctx.projectId } : {}),
+  });
+}
+
+const PILGRIM_WAY: UndertakingObjectType = {
+  id: 'pilgrim_way',
+  displayName: 'Pilgrim way',
+  classOf: 'route',
+  shape: { edgeType: 'sacred_route' },
+  // Edge objects are held by the edge's own source — the congregation.
+  ownedVia: [],
+  // One tier: a way is consecrated or it is not.
+  tierOf: () => 1,
+  lexicon: 'route',
+  // Required, unreachable: there is no destroy verb (D5).
+  harmOnDestroy: 'network_severed',
+  reasonWords: 'Only where its people keep a congregation, and no pilgrim way runs yet',
+  eligibility: { create: pilgrimWaySiteEligibility },
+  verbs: { create: consecratePilgrimWay },
 };
 
 // ─── The ownership of people-things (THR-1438) ──────────────────────
@@ -2456,13 +2488,14 @@ const POWER: UndertakingObjectType = {
       const band = (STEP_OUTCOMES as readonly string[]).includes(ctx.outcome ?? '')
         ? ctx.outcome as StepOutcome
         : 'success';
-      const { targetId, targetHex } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
+      const { targetId, targetHex, filterRejected } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
       const result = resolveCast(ctx.state, {
         casterId: ctx.actorId,
         spell,
         band,
         ...(targetId ? { targetId } : {}),
         ...(targetHex ? { targetHex } : {}),
+        ...(filterRejected ? { filterRejected } : {}),
         tick: ctx.tick,
         site: 'undertaking',
         siteRef: ctx.projectId ?? `use:${ctx.actorId}:${ctx.tick}`,
@@ -2759,7 +2792,7 @@ const STANDING: UndertakingObjectType = {
 // ─── Registry ───────────────────────────────────────────────────────
 
 export const UNDERTAKING_OBJECT_TYPES: readonly UndertakingObjectType[] = [
-  AREA, LOCATION, PLACE, ROUTE,
+  AREA, LOCATION, PLACE, ROUTE, PILGRIM_WAY,
   MORTAL, MONSTER,
   FACTION, COMPANY, ARMY, NETWORK, COMPANION,
   ITEM, POWER, CONDITION, AGREEMENT, STANDING,

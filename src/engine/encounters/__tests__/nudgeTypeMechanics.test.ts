@@ -74,20 +74,25 @@ const UNDERTOW_AXIS: ValuePair = 'mercy_ruthlessness';
 /**
  * A world with the actor placed in a resolvable region.
  *
- * The region matters: `dispatchNudgeCommitments` walks `located_at` → the node's
- * `regionId` to decide where a detection cost lands, and falls back to a sentinel
+ * The region matters: `dispatchNudgeCommitments` walks `located_at` → the region's
+ * `contains` edge to decide where a detection cost lands, and falls back to a sentinel
  * when it cannot. A test that skipped the placement would still see pressure move
  * — on the fallback region — and so would pass with the position walk broken.
  */
 function buildState(): GameState {
   const graph = new WorldGraph();
   graph.addNode({ id: ACTOR, type: 'actor', name: 'Hero', properties: { actorType: 'individual' } });
+  // Region membership is the region's `contains` edge — the only location→region
+  // linkage worldgen writes (THR-841). A `properties.regionId` stamp has no
+  // production writer, so a fixture built on it tests a world that never exists.
+  graph.addNode({ id: REGION, type: 'region', name: 'The Vale', properties: {} });
   graph.addNode({
     id: 'loc-hold',
     type: 'location',
     name: 'The Hold',
-    properties: { regionId: REGION, hexCol: 4, hexRow: 4 },
+    properties: { hexCol: 4, hexRow: 4 },
   });
+  graph.addEdge({ id: 'vale_contains_hold', source: REGION, target: 'loc-hold', type: 'contains', properties: {} });
   graph.addEdge({ id: 'hero_at_hold', source: ACTOR, target: 'loc-hold', type: 'located_at', properties: {} });
   return {
     tick: TICK, seed: 42, cycle: 1, phase: 'playing', graph,

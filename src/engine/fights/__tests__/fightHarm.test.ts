@@ -396,7 +396,8 @@ describe('applyConditionToActor: the extracted writer', () => {
 
   it('an indefinite condition carries no ticksRemaining counter', () => {
     const state = baseState(fightWorld());
-    applyConditionToActor(state, 'hero', SHAKEN, { tick: 3 });
+    // THR-1697: an omitted duration now takes the condition's own term; 0 is the indefinite spelling.
+    applyConditionToActor(state, 'hero', SHAKEN, { tick: 3, durationTicks: 0 });
     expect(state.graph.getOutgoingEdges('hero', 'has_trait')[0].properties.ticksRemaining).toBeUndefined();
   });
 });

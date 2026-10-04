@@ -227,21 +227,39 @@ function nodeName(node: GraphNode | undefined, fallback: string): string {
   return node?.name?.trim() ? node.name : fallback;
 }
 
+/**
+ * A node's name mid-sentence, or the fallback phrase as written. The fallbacks are
+ * already whole noun phrases ("a place since lost"); passing them through
+ * `midSentence` read "the a place since lost" (THR-1658 found it via the banner label).
+ */
+function midName(node: GraphNode | undefined, fallback: string): string {
+  return node?.name?.trim() ? midSentence(node.name) : fallback;
+}
+
 function personSeg(graph: WorldGraph, id: string): PastSegment {
   return { text: nodeName(graph.getNode(id), 'someone long dead'), ref: { kind: 'agent', id } };
 }
 
 function placeSeg(graph: WorldGraph, id: string): PastSegment {
-  return { text: midSentence(nodeName(graph.getNode(id), 'a place since lost')), ref: { kind: 'location', id } };
+  return { text: midName(graph.getNode(id), 'a place since lost'), ref: { kind: 'location', id } };
 }
 
 function realmSeg(graph: WorldGraph, id: string): PastSegment {
-  return { text: midSentence(nodeName(graph.getNode(id), 'a realm since gone')), ref: { kind: 'faction', id } };
+  return { text: midName(graph.getNode(id), 'a realm since gone'), ref: { kind: 'faction', id } };
+}
+
+/**
+ * A dead empire's name read mid-sentence — "the Ash-Crowned", or "a people long gone"
+ * when the culture node cannot be resolved. One rule for the chronicle and for the
+ * Raise-the-Old-Banner provenance line (THR-1658), so the two never word it apart.
+ */
+export function empireWords(graph: Pick<WorldGraph, 'getNode'>, cultureId: string): string {
+  return midName(graph.getNode(cultureId), 'a people long gone');
 }
 
 /** A dead empire has no page to link to; its name carries the concept's tooltip instead. */
 function empireSeg(graph: WorldGraph, id: string): PastSegment {
-  return { text: midSentence(nodeName(graph.getNode(id), 'a people long gone')), tooltipId: WORLD_PAST_TOOLTIPS.elderRuinEmpire };
+  return { text: empireWords(graph, id), tooltipId: WORLD_PAST_TOOLTIPS.elderRuinEmpire };
 }
 
 function agoWords(years: number): string {

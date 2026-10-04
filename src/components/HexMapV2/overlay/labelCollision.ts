@@ -20,6 +20,19 @@ export interface ScreenLabel {
   visible: boolean;
   /** Screen-space width of the realm/area (pixels), for letter-spacing calc */
   screenWidth?: number;
+  /**
+   * The label's actual rendered font size (px). Overrides the tier estimate in
+   * `TIER_FONT_SIZE` — location labels borrow a map tier for *priority* but
+   * render at their own sizes (16/13/11), and a box sized for 12 px under a 16 px
+   * capital let labels pile (THR-1711).
+   */
+  fontSize?: number;
+  /**
+   * Where `screenY` sits on the label. `'center'` (default) is how region labels
+   * render; `'top'` is how location labels render (hung below their icon via
+   * `translate(-50%, 0)`), so their box must extend downward from `screenY`.
+   */
+  anchorY?: 'center' | 'top';
 }
 
 export interface ScreenBBox {
@@ -73,7 +86,7 @@ const TIER_PRIORITY: Record<ScreenLabel['tier'], number> = {
  * not to match exact browser text metrics.
  */
 export function estimateBBox(label: ScreenLabel): ScreenBBox {
-  const fontSize = TIER_FONT_SIZE[label.tier];
+  const fontSize = label.fontSize ?? TIER_FONT_SIZE[label.tier];
   const charWidth = fontSize * CHAR_WIDTH_FACTOR;
   let width = label.text.length * charWidth;
   let height = fontSize * LINE_HEIGHT_FACTOR;
@@ -86,11 +99,12 @@ export function estimateBBox(label: ScreenLabel): ScreenBBox {
       height = height * scale; // font size scales proportionally
     }
   }
+  const centerY = label.anchorY === 'top' ? label.screenY + height / 2 : label.screenY;
   return {
     left: label.screenX - width / 2 - BBOX_PADDING_PX,
-    top: label.screenY - height / 2 - BBOX_PADDING_PX,
+    top: centerY - height / 2 - BBOX_PADDING_PX,
     right: label.screenX + width / 2 + BBOX_PADDING_PX,
-    bottom: label.screenY + height / 2 + BBOX_PADDING_PX,
+    bottom: centerY + height / 2 + BBOX_PADDING_PX,
   };
 }
 
@@ -141,4 +155,21 @@ export function removeOverlaps(labels: ScreenLabel[], prePlaced: ScreenBBox[] = 
   }
 
   return result;
+}
+
+/**
+ * Applies the visibility decided by the last `removeOverlaps` run to freshly
+ * projected labels (THR-1711).
+ *
+ * Collision runs on a debounce, but positions are re-projected every frame. The
+ * frames between used to render the raw list with every label visible, so dense
+ * clusters flickered into piles. Positions stay fresh; visibility is the cached
+ * verdict. A label the last run never saw (it just scrolled in) stays hidden
+ * until the next run places it — a ≤ debounce-interval delay, never a pile.
+ */
+export function applyCachedVisibility(
+  labels: ScreenLabel[],
+  visibleById: ReadonlyMap<string, boolean>,
+): ScreenLabel[] {
+  return labels.map(l => ({ ...l, visible: visibleById.get(l.id) ?? false }));
 }

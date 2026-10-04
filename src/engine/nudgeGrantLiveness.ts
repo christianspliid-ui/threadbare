@@ -22,7 +22,11 @@ import type {
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
 import { runnableStepSites } from '../types/unifiedAction';
-import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import {
+  AMBITION_TEMPLATES,
+  EVENT_MINTED_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
+} from '../data/ambition-templates';
 import { ARTIFACT_TEMPLATES } from '../data/artifact-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
 // THR-1248 — the library play profiles, the one grant site that lives outside
@@ -92,7 +96,11 @@ export interface NudgeGrantLivenessReport {
 
 function buildLiveIndex(): Readonly<Record<NudgeGrantRefKind, ReadonlySet<string>>> {
   return {
-    ambition: new Set(AMBITION_TEMPLATES.map((t) => t.id)),
+    // The same three pools `findAmbitionTemplateById` resolves an `assign_ambition`
+    // against (THR-1703): a grant the runtime honours is live, wherever it is filed.
+    ambition: new Set(
+      [...AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES].map((t) => t.id),
+    ),
     artifact: new Set(ARTIFACT_TEMPLATES.map((t) => t.id)),
     condition: new Set(CONDITION_TRAIT_DEFINITIONS.map((n) => n.id)),
     attachment: new Set([

@@ -573,6 +573,14 @@ export interface ScoredCandidate {
   engagementFit: number;
   /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
   engagementZone: EngagementZone;
+  /**
+   * THR-1686 — the `leaning` appointment regime's overrun discount
+   * (`APPOINTMENT_OVERRUN_DISCOUNT`), set by the regime block on a candidate that would
+   * outlast the slack. The regime also scales `finalScore`, but the live board never
+   * reads `finalScore`, so this is the channel that reaches it (behind
+   * `APPOINTMENT_DISCOUNT_ON_BOARD`). Absent on every other candidate.
+   */
+  appointmentDiscount?: number;
   /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
   pushBenefit: number;
   /** Phase 4: Estimated benefit of resist option, 0 if not applicable */

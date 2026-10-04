@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseInterruptAutoPauseParams {
   /**
@@ -17,6 +17,28 @@ export interface InterruptAutoPauseHandle {
    * `null` while no interrupt is open. Read by `__DEBUG.getInterruptState()`.
    */
   getWasRunningBeforeInterrupt: () => boolean | null;
+  /**
+   * A play/pause toggle pressed while an interrupt holds the clock (THR-1711).
+   * Flips the *saved* state the clock returns to on close, instead of `running`
+   * — which the hold would silently force back to false, so the press used to
+   * be undone on close. Returns `true` when it handled the toggle; `false`
+   * (no interrupt open) means the caller toggles `running` as usual.
+   */
+  toggleIfHeld: () => boolean;
+  /**
+   * A pause requested while an interrupt holds the clock (THR-1711) — e.g. the
+   * avatar-arrival auto-pause. Sets the saved state to paused, so closing the
+   * interrupt does not resume a world the game meant to stop. Returns `true`
+   * when handled; `false` means the caller pauses `running` directly.
+   */
+  pauseIfHeld: () => boolean;
+  /**
+   * The state the clock returns to when the open interrupt(s) close, as React
+   * state so the time controls can show it (THR-1711 review). `null` while no
+   * interrupt holds the clock. Without it the control is drawn from the forced
+   * `running=false` and shows Play while a press would actually pause.
+   */
+  heldRunning: boolean | null;
 }
 
 /**
@@ -31,6 +53,10 @@ export interface InterruptAutoPauseHandle {
  *   state — stacked interrupts cannot leak a running world.
  * - When the last interrupt closes, restore the recorded state. A player who
  *   paused stays paused; a running world runs on.
+ * - A toggle or pause made *while* an interrupt is open changes the recorded
+ *   state, not `running` (`toggleIfHeld` / `pauseIfHeld`, THR-1711). Before,
+ *   Space or the play button flipped `running`, the hold forced it back, and
+ *   close restored the old state — a pause pressed inside a popup was undone.
  *
  * There is no forced-resume side channel. THR-668 kept one for encounter
  * commit-and-continue and interrupt-opened encounters; both are resume-to-prior
@@ -45,20 +71,41 @@ export function useInterruptAutoPause({
 }: UseInterruptAutoPauseParams): InterruptAutoPauseHandle {
   /** `null` = no interrupt open; otherwise the clock state before the first one opened. */
   const priorRunning = useRef<boolean | null>(null);
+  /** Render mirror of `priorRunning` — the ref drives logic, this drives the controls. */
+  const [heldRunning, setHeldRunning] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (interruptOpen) {
-      if (priorRunning.current === null) priorRunning.current = running;
+      if (priorRunning.current === null) {
+        priorRunning.current = running;
+        setHeldRunning(running);
+      }
       if (running) setRunning(false);
       return;
     }
     if (priorRunning.current !== null) {
       const resume = priorRunning.current;
       priorRunning.current = null;
+      setHeldRunning(null);
       if (resume) setRunning(true);
     }
   }, [interruptOpen, running, setRunning]);
 
-  const getWasRunningBeforeInterrupt = useCallback(() => priorRunning.current, []);
-  return { getWasRunningBeforeInterrupt };
+  const methods = useMemo(() => ({
+    getWasRunningBeforeInterrupt: () => priorRunning.current,
+    toggleIfHeld: () => {
+      if (priorRunning.current === null) return false;
+      priorRunning.current = !priorRunning.current;
+      setHeldRunning(priorRunning.current);
+      return true;
+    },
+    pauseIfHeld: () => {
+      if (priorRunning.current === null) return false;
+      priorRunning.current = false;
+      setHeldRunning(false);
+      return true;
+    },
+  }), []);
+
+  return useMemo<InterruptAutoPauseHandle>(() => ({ ...methods, heldRunning }), [methods, heldRunning]);
 }

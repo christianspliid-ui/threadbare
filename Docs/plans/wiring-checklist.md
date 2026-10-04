@@ -6,6 +6,22 @@
 
 ---
 
+## Raise the Old Banner — descent becomes a want (THR-1658)
+
+Plan: `Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `engine/descent.ts` (new — `getDescentCultureIds`, `historicalCultureOfRegion`, `ancestralRuinIds`, `isAtAncestralRuin`, `tookAncestralGround`) | read-only; called from the two passes below and from worldgen S1e | — | graph (`backstoryStrata`, `belongs_to` historical, `elder_ruin.originCultureId`, `owns.acquiredTick`) | — | `__DEBUG.getDescent()` |
+| `ambitionSelection.passesEligibility` descent gate + `buildAmbitionAgentSnapshot.descentCultureIds` | `phaseAmbitionProgress` → re-evaluation (25 ticks) | — | graph (`pursues`) | existing `ambition_assigned` event / `ambition_progress` trace | existing ambition accessors |
+| `graphConditions` `agent_at_ancestral_ruin`, `agent_took_ancestral_ground` | milestone pass (15 ticks) | ambition progress surfaces (existing) | graph | existing milestone / completion events | existing ambition accessors |
+| `ambitionTick` refill label (`oldBannerLabel`) + decider-only offer | re-evaluation | `IntentSection` (existing, renders `mintedByLabel`) | `pursues.mintedByLabel` | — | `getDescent()` (`holdsOldBanner`) |
+
+- [x] Engine module called from a live path: `descent.ts` ← `graphConditions` (milestone pass), `ambitionTick` (snapshot), `worldPast` S1e.
+- [x] UI renders the output: the existing intent line, *"Because of the old blood of …"*; no new component.
+- [x] No new trace type (read model only; plan § Tracing).
+- [x] Debug lever: `__DEBUG.getDescent(nameOrId)` (async, JSDoc in `debug-bridge.d.ts`).
+
 ## The seeded item generator — a masterwork is made with an idea (THR-1570)
 
 Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
@@ -25,7 +41,25 @@ Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
 - [x] UI renders the output: `ArtifactSheet` *Made by* / *What it does* / *The catch* (generated items only; Law 4).
 - [x] Traces registered in the THR-928 trio (`types/traces/item-generator-traces.ts`).
 - [x] Debug levers: `getGeneratedItems`, `previewGeneratedItem`, `mintGeneratedItem`; CLI `generate items`.
-- [ ] Found-origin minting point (reward draws) — THR-1626; live past for found things — THR-1637.
+- [x] Found-origin minting point (reward draws) — THR-1626, § below; live past for found things — THR-1637.
+
+## Found things in the reward draw — the item generator's second minting point (THR-1626)
+
+Plan: `Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `itemGenerator/rewardMinting.ts` (new — `tryGeneratedReward`) | inside `drawSeededReward` (step resolution's `step_reward_pool`; aftermath `reward_draw` and fight trophies share it) | aftermath reward line → `ArtifactSheet` | graph only | `reward.generated`; `item.generated` via the minter | `forceGeneratedRewards`, `getGeneratedItems` (`origin: 'found'`) |
+| `rewardPool.ts` `drawSeededReward` (edited — calls it after the pick, prize draws only; `SeededRewardDraw.generated`) | same | same | — | existing `content.query_*` unchanged | — |
+| `itemGenerator/generateItem.ts` (edited — `requiredTags`: core eligibility, reach/sphere steering, `missing_required_tags` refusal) | same | — | — | — | `previewGeneratedItem` |
+| `data/item-generator-cores.ts` (edited — `coreTagReach`, `signatureTags`, the `argued_book` core) | — | — | — | — | CLI `generate items --origin found` |
+| `engine/debugGeneratedRewardPin.ts` (new) | — | — | — | — | `forceGeneratedRewards` |
+
+- [x] Engine module called from a live path: `tryGeneratedReward` ← `drawSeededReward` ← `resolveUnifiedReward` / `reward_draw` aftermath / fight trophy.
+- [x] UI renders the output: the reward line names and links the instance (`rewardSentence`), the link opens `ArtifactSheet`, which already reads a generated item; a found thing has no *Made by* row (Law 4).
+- [x] Trace registered in the THR-928 trio (`types/traces/item-generator-traces.ts`, `types/trace.ts`).
+- [x] Debug lever: `forceGeneratedRewards` (`.d.ts` JSDoc).
+- [ ] Not touched: the legacy encounter-progress reward block in `orchestrator.ts` runs its own draw and stays authored (plan § Notes).
 
 ## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
 
@@ -1379,7 +1413,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
-| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964; nudge wiring is THR-1690) |
+| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964). Its live caller is the nudge detection write in `nudgeDispatch.dispatchNudgeCommitments` (THR-1690). The planted `shadow.rival_strike` seed resolves through `ENCOUNTER_FAMILY_TAGS` → `#rival_strike` → `encounter.rival.hired_knives` (THR-1703) |
 | 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
@@ -2946,6 +2980,16 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 
 **Wired and asserted:** `worldScenario.test.ts` (fast, generated small world) — resolver clamps; the all-"today" block seeds today's single Temple and writes no fringe, route or label; one congregation per living culture seated at its capital with every hall on its heartland; dispositions both ways; a Temple reputation effect lands on the actor's own congregation; the cache pools the pilgrimage at every seat; fringe links are current-only, half strength, never on non-settlements, never promoted or Realm-held; unheld settlements within one of today; determinism. The all-"today" t0 graph hashes identical to `origin/main` on medium seeds 42 and 99. `scripts/realm-census.ts` skips fringe links (not domain ground).
 
+## Consecrate a pilgrim way (THR-1660)
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `data/undertaking-objects.ts` `PILGRIM_WAY` (class of Route) + `consecratePilgrimWay` + `pilgrimWaySiteEligibility` | strategic decision (candidate walk, THR-1617 hook) → checkpoint pass → resolver | moment card + Journey deed line (existing) | `strategicState.projects` / `.history` | `strategic_world_change`, `strategic_project_progress`; board refusals `ineligible:<reason>:<site>` | `getStrategicProjects`, `startUndertaking` |
+| `engine/pilgrimWays.ts` (new: `selectPilgrimWays`, `congregationOfSite`, `siteCultureOf`, `isPilgrimDestination`) | read-only, no phase | `Game/PilgrimWayLine` on `LocationProfileModal` (Allegiance) and `FactionSheet` | graph (`sacred_route`, `belongs_to`) | — | `await __DEBUG.getPilgrimWays()` |
+| `data/undertaking-cells.ts` (`CREATE_SITE_RULE`, `CELL_FAMILY_BY_TYPE`, catalyst row, new `UNDERTAKING_CELL_REACH`) · `ambition_spread_faith.cells` | synthesis at import; candidate walk | codex glyph `✶` | — | — | grid `LIVE_CLASS_CELL_NOTES.pilgrim_way` |
+
+**Wired and asserted:** `pilgrimWay.test.ts` (12) — the board offers a non-member zealot its own town and a city on the same ground, never a shrine, refuses `no_congregation_here` and `already_a_pilgrim_destination` by name; completion writes one congregation → town way with `origin`/`establishedTick`/`projectId`, invalidates the town, and a full `EncounterCacheManager` then pools `encounter.pilgrimage_trial`; completion re-checks a second way and a dissolved congregation; the deed reads *Consecrated the way to Brindle*. `PilgrimWayLine.test.tsx` — both sheet lines render seeded and consecrated ways and nothing for a town no way reaches.
+
 ## The power runtime, S1 — spells that work (THR-1571)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
@@ -2983,6 +3027,16 @@ Plan: `Docs/plans/2026-09-23-hunts.md` § Wiring. A beast is a class of Mortal a
 | `engine/agentAttachments.ts` (`innate_power` branch, `powerClass: 'innate'`) · `data/attachment-slot-constants.ts` · `components/Game/attachmentGlyphs.ts` | sheet build | `AttachmentsTab` | — | — | — |
 
 **Wired and asserted:** `monsters/__tests__/innatePower.test.ts` (16 tests) — eight definitions, one per family, sphere-true, stateless, every primitive `live`; no `enemies` aura (a lair elite has no faction, so it could never apply); an elite of each family minted through `phaseLairEscalation` carries exactly one innate edge to its family's power; the sheet lists it as Innate; on-demand definition, idempotent stamp, fail-soft unknown family. `fightStepInputs.test.ts`: Thick Hide adds +0.05 to a beast's clash difficulty; Crackling Air thins the fighter's standing by 0.03. Census (CLI 150 ticks, seed 42 medium): 22 elites, 22 stamped, 8 definitions.
+
+## A landed cast holds — the cast channel and the target filter (THR-1683)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/castChannel.ts` (new: `splitCastEffects`, `castChannelPlan`, `applyCastChannel`, `castChannelConditionId`) | `resolveCast` landed branch (both sites: `use × Power`, the step cast) | the cast chip "*Spell* holds around *caster* for a while." (`cast_condition` in `buildStepCastModel.ts` / `spell-cast-screen-content.ts`) | `graph` (`trait.condition.cast.<spellId>` + `has_trait` with `ticksRemaining`) | `spell.cast_resolved` `writes[].channel`, `channel` | `await __DEBUG.castSpell(...)` → `writes`; `getStepCast` `writes` |
+| `engine/allegiance.ts` (new: `isAlly`, `actorFactionId` — moved from `undertaking-objects.ts`) | `create × Condition` sign; `resolveCastTarget` / `passesTargetFilter` | — | `graph` | `spell.cast_resolved` `filterRejected` | — |
+| `engine/effectExecutors.ts` (`MODIFIER_ONLY_EFFECT_TYPES`, `isModifierOnlyEffect`) | read by `castChannel` | — | — | — | — |
+
+**Wired and asserted:** `castChannel.test.ts` (15 tests) — every modifier-only type writes nothing in `executeEffect`; Veilwalk's `duration` rides as a 3-tick passive and Soulfire's `stacking` is skipped; a landed Hollow Crown bears the cast condition and an enemy one hex away reads −0.08 Gold until `decayConditions` expires it, then 0; a fizzle writes nothing; a re-cast refreshes one bearing; the trace carries the channel; with the bonded ally and a stranger beside the caster the target is the stranger, a named ally is refused, only-an-ally refuses `no_target` and the step cast declines. `stepCast.thr1670.test.ts`: the channel chip is a boon whose sentence never lowercases the spell. Census: zero casts resolve in 150 ticks on seed 42 medium (main too), so no in-play cast has exercised the channel yet.
 
 ## Dialogue contexts (THR-1586)
 

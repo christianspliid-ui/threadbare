@@ -955,6 +955,15 @@ export function buildNudgePhaseModel(
 
   const committedIds = [...(activeAction.activeNudges ?? [])];
 
+  // THR-1706 — who pays. A sphere-less card bills the god's primary first
+  // (`spendNudgeEssence`), and the commit path reads `budgetSphere` off this
+  // model, so the name on the card and the pool that is charged cannot drift.
+  const budgetSphere = identity?.sphereAlignment?.primary;
+  const pricedCards = cards.map((card) => {
+    const payingSphere = card.sphere ?? budgetSphere;
+    return payingSphere ? { ...card, payingSphere } : card;
+  });
+
   return {
     actionId: activeAction.actionId,
     templateId: template.id,
@@ -972,7 +981,7 @@ export function buildNudgePhaseModel(
     forecastInput,
     ...(forecastScale ? { forecastScale } : {}),
     traitModifierTotal,
-    cards,
+    cards: pricedCards,
     withheld,
     committedIds,
     availableEssence: availableEssenceFor(undefined),
@@ -985,5 +994,8 @@ export function buildNudgePhaseModel(
     // Reading the authored step here would show a dealt card's price on its face
     // and then charge nothing for it.
     committedCost: totalNudgeCost(composedStep, committedIds, accessibleSpheres),
+    ...(budgetSphere
+      ? { budgetSphere, budgetSphereEssence: availableEssenceFor(budgetSphere) }
+      : {}),
   };
 }

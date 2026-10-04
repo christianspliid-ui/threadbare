@@ -94,7 +94,7 @@ function synthesizeFallbackName(index: number, usedNames: Set<string>): string {
 export const FOUNDATION_NAMES: Record<string, string[]> = {
   chaos: [
     'Ryx', 'Zephka', 'Torva', 'Jaxis', 'Ylura', 'Krenn', 'Shivex',
-    'Azra', 'Flick', 'Bressa', 'Nyx', 'Quirra', 'Vendal', 'Ossa',
+    'Azra', 'Flicka', 'Bressa', 'Nyx', 'Quirra', 'Vendal', 'Ossa',
     'Tavik', 'Ildra', 'Mokk', 'Sylene', 'Haxx', 'Druja',
     'Vraxx', 'Skell', 'Turvane', 'Ziksa', 'Ekko', 'Draska', 'Qell', 'Marn',
   ],
@@ -107,17 +107,17 @@ export const FOUNDATION_NAMES: Record<string, string[]> = {
   ],
   light: [
     'Solenne', 'Aurel', 'Liora', 'Cael', 'Luminara', 'Davin',
-    'Alethia', 'Sevrin', 'Ilina', 'Beacon', 'Clariel', 'Orin',
-    'Asha', 'Gallant', 'Miriel', 'Caelen', 'Adara', 'Lucen',
+    'Alethia', 'Sevrin', 'Ilina', 'Beatrix', 'Clariel', 'Orin',
+    'Asha', 'Gallen', 'Miriel', 'Caelen', 'Adara', 'Lucen',
     'Theron', 'Suria',
-    'Serapha', 'Elowen', 'Castian', 'Aurin', 'Halcyon', 'Veren', 'Solara', 'Elior',
+    'Serapha', 'Elowen', 'Castian', 'Aurin', 'Halcy', 'Veren', 'Solara', 'Elior',
   ],
   darkness: [
     'Vesper', 'Morthane', 'Lilith', 'Ashke', 'Corvane', 'Noctis',
-    'Umbra', 'Ravka', 'Selene', 'Grigor', 'Morvyn', 'Hesper',
-    'Dhalia', 'Cinder', 'Kethra', 'Luthane', 'Shade', 'Ravenna',
+    'Umbrel', 'Ravka', 'Selene', 'Grigor', 'Morvyn', 'Hesper',
+    'Dhalia', 'Cindra', 'Kethra', 'Luthane', 'Shayla', 'Ravenna',
     'Bael', 'Sorcha',
-    'Mordecai', 'Nyssa', 'Draven', 'Corvus', 'Malka', 'Threnody', 'Ossric', 'Erebos',
+    'Mordecai', 'Nyssa', 'Draven', 'Corvus', 'Malka', 'Thren', 'Ossric', 'Erebos',
   ],
 };
 
@@ -126,22 +126,22 @@ export const FOUNDATION_NAMES: Record<string, string[]> = {
 
 export const SPHERE_NAMES_POOL: Record<string, string[]> = {
   force: [
-    'Ironhide', 'Braga', 'Riven', 'Thane', 'Korr', 'Wulfgar',
+    'Ivor', 'Braga', 'Riven', 'Thane', 'Korr', 'Wulfgar',
     'Skara', 'Varric', 'Haldra', 'Grint', 'Sable', 'Fenrik',
     'Tyra', 'Bron', 'Kael-Mar',
     'Torvald', 'Maulk', 'Ryza', 'Dolf', 'Grendan',
   ],
   matter: [
-    'Delver', 'Petra', 'Anvik', 'Quarren', 'Cobalt', 'Marl',
-    'Ingrid', 'Tarn', 'Basalt', 'Henna', 'Slatewood', 'Forren',
-    'Odda', 'Cleft', 'Gneiss',
-    'Corbel', 'Argile', 'Steda', 'Flintlock', 'Corben',
+    'Delva', 'Petra', 'Anvik', 'Quarren', 'Kobal', 'Marla',
+    'Ingrid', 'Tarn', 'Bastan', 'Henna', 'Slade', 'Forren',
+    'Odda', 'Clefa', 'Neyssa',
+    'Corbett', 'Argile', 'Steda', 'Flinn', 'Corben',
   ],
   energy: [
-    'Volta', 'Pyrra', 'Strahl', 'Embra', 'Coronal', 'Flux',
-    'Vittra', 'Galvyn', 'Seren', 'Arken', 'Kindra', 'Bolter',
-    'Nimbus', 'Elysca', 'Whiteflash',
-    'Ignis', 'Radia', 'Fulmen', 'Voltane', 'Sear',
+    'Volta', 'Pyrra', 'Strahl', 'Embra', 'Coran', 'Fluvia',
+    'Vittra', 'Galvyn', 'Seren', 'Arken', 'Kindra', 'Boltan',
+    'Nimra', 'Elysca', 'Wystan',
+    'Ignis', 'Radia', 'Fulmen', 'Voltane', 'Seara',
   ],
   life: [
     'Rowan', 'Linden', 'Briar', 'Fern', 'Hazel', 'Sylva',
@@ -150,28 +150,28 @@ export const SPHERE_NAMES_POOL: Record<string, string[]> = {
     'Sorrel', 'Vervain', 'Fennow', 'Cress', 'Elm',
   ],
   mind: [
-    'Lexan', 'Cipher', 'Sage', 'Rune', 'Quill', 'Noema',
-    'Dex', 'Lorica', 'Pensiv', 'Axton', 'Lograine', 'Mnemis',
+    'Lexan', 'Cyprian', 'Salvi', 'Runa', 'Quilla', 'Noema',
+    'Dex', 'Lorica', 'Pensa', 'Axton', 'Lograine', 'Mnemis',
     'Scrivell', 'Lucian', 'Aphra',
-    'Codex', 'Glypha', 'Vellum', 'Syntar', 'Ponder',
+    'Codrin', 'Glypha', 'Vela', 'Syntar', 'Pondra',
   ],
   spirit: [
-    'Eidolon', 'Wraith', 'Somna', 'Reverie', 'Hallow', 'Whisper',
-    'Seraphiel', 'Myst', 'Koda', 'Animus', 'Litany', 'Vigil',
-    'Psalm', 'Requiem', 'Aethel',
-    'Threnos', 'Cantor', 'Orison', 'Shrive', 'Psalter',
+    'Eidra', 'Wrenna', 'Somna', 'Reva', 'Hallan', 'Wisla',
+    'Seraphiel', 'Mysia', 'Koda', 'Annick', 'Lita', 'Virgil',
+    'Salma', 'Rhiannon', 'Aethel',
+    'Threnos', 'Cantrel', 'Orrisa', 'Shrevan', 'Psaltra',
   ],
   time: [
-    'Epoch', 'Meridian', 'Solstice', 'Duskwell', 'Relic', 'Chronn',
-    'Vestige', 'Hourglass', 'Dial', 'Aeon', 'Twillen', 'Yester',
-    'Memento', 'Kairn', 'Perdure',
-    'Gloaming', 'Antique', 'Waneth', 'Dusklen', 'Horolo',
+    'Ephram', 'Merida', 'Solveig', 'Duskwell', 'Rellis', 'Chronn',
+    'Vesta', 'Horace', 'Diala', 'Aeona', 'Twillen', 'Yestin',
+    'Mena', 'Kairn', 'Perdure',
+    'Glenna', 'Antia', 'Waneth', 'Dusklen', 'Horolo',
   ],
   entropy: [
-    'Ashward', 'Decay', 'Wane', 'Corrode', 'Marrow', 'Attrith',
-    'Erode', 'Blight', 'Rust', 'Hollow', 'Cinder', 'Scour',
-    'Remnant', 'Tatter', 'Pallid',
-    'Moulder', 'Frayn', 'Ruinal', 'Slough', 'Wither',
+    'Ashward', 'Desmond', 'Wenna', 'Corvel', 'Marra', 'Attrith',
+    'Eroth', 'Blaise', 'Rusk', 'Holle', 'Cindra', 'Scorvin',
+    'Remy', 'Tatha', 'Palla',
+    'Mauld', 'Frayn', 'Ruel', 'Sloane', 'Wytha',
   ],
 };
 
@@ -192,6 +192,76 @@ export const GENERIC_NAMES: string[] = [
   'Halven', 'Prewitt', 'Sannis', 'Dolan', 'Brisa', 'Corry', 'Feln', 'Marek',
   'Tovin', 'Sella', 'Rhoen', 'Casp', 'Delwyn', 'Nira', 'Perrin', 'Vann',
 ];
+
+// ─── Gendered Personal Names (THR-1712) ─────────────────────────
+// The general pools above are drawn without gender — fine for the world's
+// thousands of unseen mortals, wrong for a candidate whose portrait and prose
+// already fix who they are. Meet The First named a woman's portrait "Aldric"
+// until this split. Each list draws from the foundation pool above (plus a few
+// additions) and reads unambiguously as its gender; the sphere layer is left
+// out on purpose, since it carries most of the epithet-like names.
+
+/** Person names that read as women, keyed by culture foundation. */
+export const FOUNDATION_NAMES_FEMALE: Record<string, string[]> = {
+  chaos: ['Zephka', 'Torva', 'Ylura', 'Azra', 'Bressa', 'Quirra', 'Ossa', 'Ildra', 'Sylene', 'Druja', 'Ziksa', 'Draska', 'Flicka'],
+  order: ['Seren', 'Elara', 'Callista', 'Valda', 'Maren', 'Linnea', 'Thessa', 'Astrid', 'Helena', 'Brenna', 'Cordelia', 'Sabina'],
+  light: ['Solenne', 'Liora', 'Luminara', 'Alethia', 'Ilina', 'Clariel', 'Asha', 'Miriel', 'Adara', 'Suria', 'Serapha', 'Elowen', 'Solara', 'Beatrix'],
+  darkness: ['Lilith', 'Ravka', 'Selene', 'Hesper', 'Dhalia', 'Kethra', 'Ravenna', 'Sorcha', 'Nyssa', 'Malka', 'Shayla', 'Cindra'],
+};
+
+/** Person names that read as men, keyed by culture foundation. */
+export const FOUNDATION_NAMES_MALE: Record<string, string[]> = {
+  chaos: ['Ryx', 'Jaxis', 'Krenn', 'Shivex', 'Vendal', 'Tavik', 'Mokk', 'Haxx', 'Vraxx', 'Skell', 'Turvane', 'Marn', 'Qell'],
+  order: ['Aldric', 'Tormund', 'Baldur', 'Hemming', 'Osric', 'Geralt', 'Edric', 'Conrad', 'Sigurd', 'Leofric', 'Roderic', 'Ingmar', 'Halvard', 'Ansel', 'Bertrand', 'Wulfram'],
+  light: ['Aurel', 'Cael', 'Davin', 'Sevrin', 'Orin', 'Caelen', 'Lucen', 'Theron', 'Castian', 'Aurin', 'Veren', 'Elior', 'Gallen'],
+  darkness: ['Morthane', 'Corvane', 'Noctis', 'Grigor', 'Luthane', 'Bael', 'Mordecai', 'Draven', 'Corvus', 'Ossric', 'Erebos', 'Thren'],
+};
+
+/** Gendered fallbacks when a foundation's gendered list is exhausted or unknown. */
+export const GENERIC_NAMES_FEMALE: string[] = [
+  'Mirael', 'Lyssa', 'Isolde', 'Ashara', 'Brynn', 'Dara', 'Hestia', 'Kira', 'Talia', 'Ileska', 'Nieve', 'Dessi',
+  'Larke', 'Ondra', 'Yael', 'Eryn', 'Jevra', 'Essra', 'Nesrin', 'Sella', 'Nira', 'Brisa', 'Effra', 'Brinne',
+];
+
+/** Gendered fallbacks when a foundation's gendered list is exhausted or unknown. */
+export const GENERIC_NAMES_MALE: string[] = [
+  'Kael', 'Thorne', 'Dren', 'Varn', 'Jorik', 'Morath', 'Selwyn', 'Orrin', 'Garren', 'Cadel', 'Emrys', 'Hadren',
+  'Idris', 'Jessen', 'Soren', 'Dorin', 'Marek', 'Tovin', 'Perrin', 'Corran', 'Feldin', 'Oswen', 'Kelven', 'Dolan',
+];
+
+/**
+ * Pick an unused name that reads as `gender` (THR-1712).
+ *
+ * Order: the culture foundation's gendered list → the gendered generic list →
+ * every foundation's gendered list (an unknown foundation still gets a name of
+ * the right gender) → the ungendered {@link pickCulturalName} chain as the
+ * last resort, so the picker never throws and never returns empty (NFP #4).
+ * Seeded — same rng state, same name (NFP #3).
+ */
+export function pickGenderedName(
+  foundationBias: string,
+  gender: 'female' | 'male',
+  rng: () => number,
+  usedNames: Set<string>,
+): string {
+  const byFoundation = gender === 'female' ? FOUNDATION_NAMES_FEMALE : FOUNDATION_NAMES_MALE;
+  const generic = gender === 'female' ? GENERIC_NAMES_FEMALE : GENERIC_NAMES_MALE;
+  const tiers: string[][] = [
+    byFoundation[foundationBias] ?? [],
+    generic,
+    Object.values(byFoundation).flat(),
+  ];
+  for (const tier of tiers) {
+    const shuffled = [...tier].sort(() => rng() - 0.5);
+    for (const name of shuffled) {
+      if (!usedNames.has(name)) {
+        usedNames.add(name);
+        return name;
+      }
+    }
+  }
+  return pickCulturalName(foundationBias, '', rng, usedNames);
+}
 
 // ─── Settlement Name Fragments (Culture-Keyed) ─────────────────
 // Roots and suffixes that get mixed into location name generation

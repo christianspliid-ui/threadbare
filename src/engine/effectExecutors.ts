@@ -968,6 +968,27 @@ export function executeEffect(
   };
 }
 
+/**
+ * The effect types `executeEffect` sends to `modifierOnlyResult` — traced, never
+ * executed. Exported for the cast channel (THR-1683): a landed spell routes these to
+ * a timed condition on the caster instead, so they hold state a chip can name.
+ * Kept in step with the switch above by `castChannel.test.ts`, which runs every
+ * member through `executeEffect` and asserts it writes nothing.
+ */
+export const MODIFIER_ONLY_EFFECT_TYPES: ReadonlySet<AttachmentEffect['type']> = new Set<AttachmentEffect['type']>([
+  'passive', 'permanent', 'duration', 'conditional', 'cooldown', 'tradeoff', 'stacking', 'decay',
+  'until_event', 'consumable_charge', 'trait_grant', 'aura', 'reactive', 'transform', 'reveal',
+  'suppress', 'test_shaper', 'prevent_loss', 'content_grant', 'resource_delta', 'action_trigger',
+  'behavior_weight', 'social_modifier', 'action_gate', 'axiological_drift', 'range_modifier',
+  'tag_immunity', 'hex_effect', 'slot_bonus', 'stat_contribution',
+]);
+
+/** True when `executeEffect` would trace this effect and write nothing (incl. non-clock `resource_manipulate`). */
+export function isModifierOnlyEffect(effect: AttachmentEffect): boolean {
+  if (effect.type === 'resource_manipulate') return effect.resource !== 'fight_clock';
+  return MODIFIER_ONLY_EFFECT_TYPES.has(effect.type);
+}
+
 /** A modifier/state effect: applied by the resolver or the tick, never executed. */
 function modifierOnlyResult(effectType: AttachmentEffect['type'], ctx: ExecutionContext): ExecutionResult {
   return {

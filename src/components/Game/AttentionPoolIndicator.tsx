@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { AscendantAttentionState, AttentionVisualState } from '../../types/attention';
 import { getAttentionVisualState } from '../../engine/attentionPool';
+import { Tooltip } from '../shared/Tooltip';
 import {
   ATTENTION_BASE_CAPACITY,
   ATTENTION_BASE_REGEN,
@@ -11,6 +12,10 @@ export interface AttentionPoolIndicatorProps {
   attentionCapacity: number;
   attentionRegen: number;
 }
+
+/** What the meter measures — the hover tier's explanation (THR-1711). Passive: nothing to click. */
+const ATTENTION_TOOLTIP_DESC =
+  'How much of your notice is free. Attending a moment draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.';
 
 /** CSS variable name for each visual state's bar colour. */
 const STATE_COLOR: Record<AttentionVisualState, string> = {
@@ -42,6 +47,13 @@ const STATE_LABEL: Record<AttentionVisualState, string> = {
  * Shows a 40×4 px progress bar whose colour and opacity reflect the
  * ascendant's current attention pool fill ratio. A short text label
  * appears in non-focused states. Hover for numeric details.
+ *
+ * THR-1711 (3): a passive meter, not a tab. Its label is styled like the Doom
+ * and Omen tier labels, which *do* open a detail, so testers clicked it and
+ * nothing happened (two testers, two rounds). It now reads as what it is: a
+ * `role="meter"` with a help cursor and the shared, visible Tooltip that says
+ * what the meter measures — never a native `title`, which shows late or not at
+ * all and never explains itself.
  */
 export function AttentionPoolIndicator({
   attentionPool,
@@ -82,10 +94,15 @@ export function AttentionPoolIndicator({
   const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})`;
 
   return (
+    <Tooltip label={tooltipTitle} desc={ATTENTION_TOOLTIP_DESC}>
     <div
       className="topbar-tier"
-      style={{ opacity }}
-      title={tooltipTitle}
+      data-testid="attention-pool-indicator"
+      role="meter"
+      aria-valuemin={0}
+      aria-valuemax={attentionState.attentionCapacity}
+      aria-valuenow={attentionState.attentionPool}
+      style={{ opacity, cursor: 'help' }}
       aria-label={tooltipTitle}
     >
       <span className="topbar-section-label">Attention</span>
@@ -128,5 +145,6 @@ export function AttentionPoolIndicator({
         )}
       </div>
     </div>
+    </Tooltip>
   );
 }

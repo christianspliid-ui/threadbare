@@ -8,7 +8,7 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
-last_validated_against: 2026-09-12
+last_validated_against: 2026-10-04
 validated_doctrine: prose@2
 ---
 
@@ -44,6 +44,8 @@ Pass 3 runs `npm run check:attachment -- --all` before it writes the final packe
 **The authoring reference for tags is the generated catalog**, [`content-tag-catalog.generated.md`](../encounter-pipeline/reference/content-tag-catalog.generated.md) — one table per axis, what each tag means, and how many entries of each kind wear it. Write tags from that page, never from memory: the vocabulary is closed, and the nearest-sounding word is usually one of the sixty-three spellings the migration retired.
 
 **Do not add a tag to make an entry fit.** Seating a tag is a design-session decision recorded on `Docs/canon/content-objects.md`; an entry that needs a word the vocabulary lacks is a finding to surface, not a line to write.
+
+**The gate proves a tag exists, not that the entry earns it.** Pass 3 may run the tag-fit screen in [`content-judgments`](../content-judgments/SKILL.md): does each worn tag fit as the catalog defines it, and which closed-vocabulary tag fits best, if any? Treat flagged pairs as a worklist for the systems agent, never as a gate result. The screen skips silently with no `TYPESAFE_API_KEY`.
 
 ## Step 0 — Canon-First Pre-Read
 

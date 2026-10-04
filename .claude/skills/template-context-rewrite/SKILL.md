@@ -1,7 +1,7 @@
 ---
 name: template-context-rewrite
 description: Multiply an existing UnifiedActionTemplate family across context axes by authoring `contextFragments` — place and counterpart-role prose variants that make one skeleton read as many distinct scenes. Use for Tier-2 volume work. NOT for bespoke branching encounters (use `encounter-pipeline`) and NOT for format migration (use `template-encounter-rewrite`). Triggers on "context fragments", "multiply encounter", "Tier 2 surfaces", "surface multiplication", "{frag:", "context-multiplication".
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-04
 validated_doctrine: prose@2
 ---
 
@@ -95,6 +95,10 @@ npm run volume-model    # measured mode reports this template's surface count
 - Five-question bar per fragment.
 - Read at least **3 composed samples** end to end (skeleton + fragment as the player
   sees it), not just the fragments in isolation.
+- *Optional, advisory:* the fragment-distinctness screen in
+  [`content-judgments`](../content-judgments/SKILL.md) can pick *which* three samples to read.
+  It flags the pairs most likely to be the same scene in different words. Skip silently with no
+  `TYPESAFE_API_KEY`; the three-sample read is still mandatory.
 
 ## Pass 4 — Merge
 

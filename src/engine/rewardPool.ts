@@ -40,6 +40,7 @@ import type { TraceEntry } from '../types/trace';
 import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
 import { filterCompanionTemplates, getCompanionTemplate } from '../data/companion-templates';
 import { mintCompanion, isAtCompanionCap, isUniqueAlreadyInstanced } from './companions';
+import { tryGeneratedReward } from './itemGenerator/rewardMinting';
 
 export interface PoolEntry {
   nodeId: string;
@@ -553,7 +554,16 @@ export interface SeededRewardDraw {
   /** Null when the pool was empty or the template refused to instantiate. */
   readonly instantiation: InstantiateRewardResult | null;
   readonly tier: number | null;
+  /** The authored pick's name — or, when {@link generated} is set, the generated item's name. */
   readonly templateName: string | null;
+  /** Set when the generator stood in for the pool's pick (THR-1626). `drawnTemplateId` stays the authored pick. */
+  readonly generated?: {
+    readonly itemId: string;
+    readonly coreId: string;
+    readonly signatureId: string;
+    readonly band: 2 | 3;
+    readonly seedKey: string;
+  };
 }
 
 /**
@@ -676,6 +686,24 @@ export function drawSeededReward(
       isBadOutcome, poolSize: pool.length, drawRoll,
       drawnTemplateId: null, instantiation: null, tier: null, templateName: null,
     };
+  }
+
+  // THR-1626: after the pick, on a prize draw only, the item generator may stand a
+  // found thing in for an eligible authored item. It runs on its own hashed streams and
+  // never touches `rng`, so the roll order above is unchanged.
+  if (!isBadOutcome) {
+    const gen = tryGeneratedReward({
+      graph, seed, tick, recipientId, drawnTemplateId,
+      requiredTags: effectiveRecipe.tagFilters ?? [],
+      site: params.site ?? 'reward_draw',
+    });
+    if (gen.substituted) {
+      return {
+        isBadOutcome, poolSize: pool.length, drawRoll,
+        drawnTemplateId, instantiation: gen.instantiation, tier: gen.band, templateName: gen.item.name,
+        generated: { itemId: gen.instantiation.instanceId, coreId: gen.item.coreId, signatureId: gen.item.signatureId, band: gen.band, seedKey: gen.item.seedKey },
+      };
+    }
   }
 
   const instantiation = instantiateReward(graph, drawnTemplateId, recipientId, tick);

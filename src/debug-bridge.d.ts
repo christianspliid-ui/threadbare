@@ -530,6 +530,23 @@ export interface DebugBridge {
     reaches: Record<string, { raw: number; share: number }>;
   } | null>;
   /**
+   * THR-1658: an agent's descent from a dead empire (worldgen's `backstoryStrata`
+   * `relation: 'descent'`) and whether it holds the Raise-the-Old-Banner drive.
+   * `ancestralRuinIds` are the elder ruins of its descent cultures (the
+   * *walk the old stones* milestone's targets); `onAncestralLand` is true when its
+   * current region was one of those empires' land. A read model, not a trace.
+   * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not
+   * found. **Async — await it.**
+   */
+  getDescent: (nameOrId: string) => Promise<{
+    actorId: string;
+    descentCultureIds: string[];
+    descentCultureNames: string[];
+    ancestralRuinIds: string[];
+    onAncestralLand: boolean;
+    holdsOldBanner: boolean;
+  } | null>;
+  /**
    * Returns all attachments for an agent (possessions, conditions, powers, agreements).
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
@@ -729,7 +746,8 @@ export interface DebugBridge {
 
   /**
    * THR-1570: every generated item in the world (`properties.origin === 'generated'`) —
-   * masterworks made with an idea, and debug mints. `coreId` / `signatureId` name the
+   * masterworks made with an idea, found things handed out as rewards (THR-1626,
+   * `origin: 'found'`, id `gen_found_…`), and debug mints. `coreId` / `signatureId` name the
    * authored idea it grew around; `band` is 2 Storied / 3 Mythic / 4 Legendary;
    * `rerolls` is 0 in a healthy world. Empty when the game is not loaded. Always `await` it.
    */
@@ -737,6 +755,17 @@ export interface DebugBridge {
     id: string; name: string; coreId: string; signatureId: string; band: 2 | 3 | 4;
     origin: 'masterwork' | 'found'; makerId: string | null; tick: number | null; rerolls: number;
   }>>;
+
+  /**
+   * THR-1626: force the reward draw's generated-item share roll to pass (`true`) or give
+   * it back to the coin (`false`). While on, every eligible Storied or Mythic reward pick
+   * (an authored `artifact` of tier 2 or 3, not a service, on a prize draw) is offered to
+   * the generator — but the two-core floor and the recipe's tags still apply, so a pick
+   * can keep its authored item (`reward.generated` traces say why). A substituted reward
+   * shows in {@link getGeneratedItems} with `origin: 'found'` and an id starting
+   * `gen_found_`. Returns the new state. Module state — survives until reload. Always `await` it.
+   */
+  forceGeneratedRewards: (on: boolean) => Promise<boolean>;
 
   /**
    * THR-1570: preview a generated item without minting — the review batch's `index`-th
@@ -1869,13 +1898,14 @@ export interface DebugBridge {
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */
   spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };
-  /** THR-775 — Stage the nudge golden exemplar (`The Darkhollow Vault`) on an agent at
+  /** THR-775 — Stage the nudge golden exemplar (`The Swollen Ford`) on an agent at
    *  the attended tier, so the nudge hand is actually in play.
    *
    *  The exemplar is a fixture deliberately absent from every pool, so this registers it
    *  into the lookup index first (index only — never `UNIFIED_ACTION_TEMPLATES`, so no
-   *  scoring pass can draw it afterwards). The sanctioned browser-verify path for the
-   *  nudge stage until WS5 converts shipped templates. */
+   *  scoring pass can draw it afterwards). A fixture-only route: the sanctioned
+   *  browser-verify path for a shipped encounter is the `?spawn=<templateId>` URL lever
+   *  (THR-883). Read the staged hand back with `getEncounterNudges(agentQuery, result.actionId)`. */
   spawnNudgeExemplar: (agentQuery: string) => Promise<DebugSpawnEncounterResult & { notificationId?: string }>;
   /** Prepare encounter context (support bundle, anchor location) without spawning. */
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
@@ -2062,9 +2092,16 @@ export interface DebugBridge {
    *  is that nudges exist ONLY in the attended encounter, so an authored hand on a
    *  background action is inert by design, not by bug.
    *
-   *  Agent matching: exact id, then id prefix, then case-insensitive partial name.
+   *  Agent matching (THR-893): the same resolver the spawners use — `@hero`, `@avatar`,
+   *  `@ascendant`, then exact id, id prefix, case-insensitive partial name.
+   *
+   *  Action choice (THR-893): pass `actionId` (e.g. the `actionId` a spawn returned) to
+   *  read exactly that action. Without it, reads the newest unresolved action whose
+   *  notification is open (the encounter on screen), else the newest unresolved, else the
+   *  newest of any state — never merely the first unresolved one.
+   *
    *  Read-only. `{ error }` when no live state / no matching actor / no action / no template. */
-  getEncounterNudges: (agentRef: string) => Promise<
+  getEncounterNudges: (agentRef: string, actionId?: string) => Promise<
     | { error: string }
     | {
       actionId: string;
@@ -2186,6 +2223,19 @@ export interface DebugBridge {
     | { error: string }
     | ({ scenario: import('./data/world-scenario').WorldScenario | null }
       & import('./engine/worldScenarioCensus').WorldScenarioCensus)
+  >;
+
+  /** THR-1660 — every pilgrim way (`sacred_route`, congregation → settlement) whose two
+   *  ends still stand, sorted by edge id: the rows `selectPilgrimWays` returns — the same
+   *  read the Location sheet's *Pilgrims come here* line and the Faction sheet's *Pilgrim
+   *  ways to* line use — plus each end's name. `origin` is `'worldgen'` for the seeded
+   *  way to each congregation's seat, `'undertaking'` for one a mortal consecrated (with
+   *  its `projectId`), `'legacy'` when the writer left none.
+   *
+   *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
+  getPilgrimWays: () => Promise<
+    | { error: string }
+    | Array<import('./engine/pilgrimWays').PilgrimWayRow & { congregationName: string | null; siteName: string | null }>
   >;
 
   /** THR-1030 — What the `?outcome=<band>` review pin actually produced.
@@ -2397,7 +2447,9 @@ export interface DebugBridge {
    *  `huntedBy[]` (THR-1560, plan doc 6): the mortals with an active hunt
    *  (`cell.destroy.monster`, `work: 'hunt'`) or tracking (`cell.observe.monster`,
    *  `work: 'track'`) project on the monster, each with the door that admits them today —
-   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does. */
+   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does.
+   *  `apex` (THR-1698): the apex card id (`golem.colossus` / `behemoth.ancient`) when the
+   *  monster grew into one as its lair went legendary (THR-1682); absent otherwise. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
   /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4

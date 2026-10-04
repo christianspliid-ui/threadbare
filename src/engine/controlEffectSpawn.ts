@@ -40,6 +40,47 @@ export const NON_STACKING_CONTROL_TEMPLATE_IDS: ReadonlySet<string> = new Set([
   'sub.sanctify_tavern',
 ]);
 
+/**
+ * The active non-stacking effect `ownerId` already holds with `templateId` on
+ * `targetNodeId`, or undefined (THR-662, THR-1700). One predicate for both
+ * sides of the rule: the spawn guard below refuses the duplicate, and the
+ * action hand (`getTargetActionSlots`) locks the card as "Already held" so the
+ * player is never offered a cast that would establish nothing. Templates
+ * outside {@link NON_STACKING_CONTROL_TEMPLATE_IDS} always return undefined —
+ * stacking verbs stay castable on purpose.
+ */
+export function findHeldNonStackingEffect(
+  effects: readonly ControlEffect[] | undefined,
+  templateId: string,
+  ownerId: string,
+  targetNodeId: string,
+): ControlEffect | undefined {
+  if (!effects || !NON_STACKING_CONTROL_TEMPLATE_IDS.has(templateId)) return undefined;
+  return effects.find(e =>
+    e.active && e.templateId === templateId
+    && e.ownerId === ownerId && e.targetNodeId === targetNodeId);
+}
+
+/**
+ * An unresolved cast of non-stacking `templateId` by `ownerId` on
+ * `targetNodeId`, or undefined (THR-1700 review gate). A sustained cast takes
+ * its essence at dispatch and resolves over several ticks, so while it is in
+ * flight there is no effect for {@link findHeldNonStackingEffect} to see — yet
+ * a second cast in that window would be refused by the spawn guard all the
+ * same, after charging full price. The hand treats an in-flight cast as held.
+ */
+export function findPendingNonStackingCast(
+  actions: readonly Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'>[] | undefined,
+  templateId: string,
+  ownerId: string,
+  targetNodeId: string,
+): Pick<UnifiedAction, 'actorId' | 'templateId' | 'targetId' | 'resolved'> | undefined {
+  if (!actions || !NON_STACKING_CONTROL_TEMPLATE_IDS.has(templateId)) return undefined;
+  return actions.find(a =>
+    !a.resolved && a.templateId === templateId
+    && a.actorId === ownerId && a.targetId === targetNodeId);
+}
+
 /** Reset counter for deterministic testing. */
 export function resetEffectCounter(): void {
   effectCounter = 0;
@@ -122,10 +163,8 @@ export function spawnControlEffect(
 
   // THR-662: a non-stacking effect already held on this node by this owner →
   // no duplicate (it would only double the upkeep).
-  if (targetNodeId && NON_STACKING_CONTROL_TEMPLATE_IDS.has(action.templateId)) {
-    const held = existingEffects?.find(e =>
-      e.active && e.templateId === action.templateId
-      && e.ownerId === action.actorId && e.targetNodeId === targetNodeId);
+  if (targetNodeId) {
+    const held = findHeldNonStackingEffect(existingEffects, action.templateId, action.actorId, targetNodeId);
     if (held) {
       emitTrace({
         id: 0,

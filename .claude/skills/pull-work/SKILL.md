@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-02
+last_validated_against: 2026-10-03
 ---
 
 # Pull Work
@@ -852,6 +852,10 @@ git push -u origin HEAD
 [pull-work] mid-run: WIP pushed (thr-1529-wip-push, 1 commit) — entering verify.
 [pull-work] mid-run: WIP committed, push failed (<reason>) — entering verify; the local commit is the fallback.
 ```
+
+## Verify — one command (THR-1717)
+
+**Run the gates with `npm run gate`, not one by one.** It classifies the diff and runs the owed track of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) in parallel (code: test ∥ ratchet ∥ build ∥ encounter gate, ∥ CLI smoke on an engine diff, then `test:heavy` alone; docs: impediment ids ∥ predicate copies ∥ plan-doc lint; the CLI smoke is judged on its output, since a crashed tick still exits 0), logs each gate to `.cache/gate/`, and prints one `PASS`/`FAIL` line per gate plus the log tail of a failure. Paste the verdict block as evidence. After the closeout edits, `npm run gate -- --final` runs the impediment-id check and the two tree-diffing gates as the last action before `git push`. Read a full log only to diagnose a `FAIL` — the point is to keep 1,400 lines of vitest out of the session's context.
 
 ## Closeout — home-tree cleanliness gate (run before `git commit`)
 

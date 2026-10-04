@@ -66,6 +66,7 @@ function chipKindOf(write: StepCastWrite): CastChipKind {
     case 'lifted': return 'lifted';
     case 'silenced': return 'silenced';
     case 'condition':
+      if (write.channel === 'cast_condition') return write.harmful ? 'cast_condition_cost' : 'cast_condition';
       if (write.fromBacklash) return 'backlash_condition';
       if (write.fromPrice) return 'price_condition';
       return 'landed_condition';

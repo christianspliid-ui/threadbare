@@ -474,6 +474,44 @@ function formatIdleReason(idleReason?: string): string | null {
   }
 }
 
+/**
+ * The mortal's decision as one plain sentence, for normal play (THR-1707).
+ *
+ * The field rows below ("Decision: Queue Movement", "Heading", "Idle reason")
+ * are the planner's own vocabulary; cold playtest round 2 read them as
+ * "computer settings, not story". Normal play gets this one line instead and
+ * the rows stay in the designer view. Returns null for a decision type it has
+ * no words for, so an unknown planner verb renders nothing rather than a key.
+ */
+function describeDecisionInWords(decision: BalanceEvent): string | null {
+  const heading = decision.targetLocationSubtype
+    ? humanizeKeySegment(decision.targetLocationSubtype).toLowerCase()
+    : null;
+  switch (decision.decisionType) {
+    case 'queue_movement':
+      return heading ? `Heading for the ${heading}` : 'On the road';
+    case 'forced_travel':
+      return heading ? `Driven toward the ${heading}` : 'Driven onward';
+    case 'start_local':
+      return 'Taking on something close at hand';
+    case 'attempt_remote':
+      return heading ? `Reaching for something at the ${heading}` : 'Reaching for something further off';
+    case 'idle':
+      switch (decision.idleReason) {
+        case 'no_candidates_after_filter': return 'Nothing here calls to them';
+        case 'no_candidates_after_cooldown': return 'Resting after what they have just done';
+        case 'below_score_threshold': return 'Nothing here seems worth the risk';
+        default: return 'Biding their time';
+      }
+    case 'strategic_instant':
+    case 'strategic_project':
+    case 'strategic_control':
+      return 'Working toward a larger plan';
+    default:
+      return null;
+  }
+}
+
 function EncounterDecisionPanel({
   decision,
   agentId,
@@ -551,16 +589,28 @@ function EncounterDecisionPanel({
     }));
   }, [designerView, rankedPool]);
 
+  const decisionInWords = designerView ? null : describeDecisionInWords(decision);
+
   return (
-    <DetailSection title={isStrategic ? 'Strategic Action' : 'Encounter Pool'}>
+    <DetailSection title={designerView ? (isStrategic ? 'Strategic Action' : 'Encounter Pool') : 'On their mind'}>
+      {!designerView && decisionInWords && (
+        <div
+          data-testid="decision-in-words"
+          style={{ color: 'var(--text-primary)', fontSize: 'var(--text-xs)', lineHeight: 1.4 }}
+        >
+          {decisionInWords}
+        </div>
+      )}
       {designerView && !isStrategic && visiblePool !== null && (
         <DetailField label="Viable now" value={visiblePool} />
       )}
-      <DetailField label="Decision" value={formatDecisionType(decision.decisionType)} />
+      {designerView && (
+        <DetailField label="Decision" value={formatDecisionType(decision.decisionType)} />
+      )}
       {designerView && decision.templateId && (
         <DetailField label="Template" value={decision.templateId} />
       )}
-      {decision.targetLocationSubtype && (
+      {designerView && decision.targetLocationSubtype && (
         <DetailField label="Heading" value={humanizeKeyTitle(decision.targetLocationSubtype)} />
       )}
       {designerView && decision.travelCost !== undefined && decision.travelCost > 0 && (
@@ -569,7 +619,7 @@ function EncounterDecisionPanel({
       {designerView && decision.bestScore !== undefined && (
         <DetailField label="Best score" value={decision.bestScore.toFixed(2)} />
       )}
-      {formatIdleReason(decision.idleReason) && (
+      {designerView && formatIdleReason(decision.idleReason) && (
         <DetailField label="Idle reason" value={formatIdleReason(decision.idleReason)!} />
       )}
       {designerView && stages.length > 0 && (
@@ -678,7 +728,10 @@ function AgentDetailBody({
     [intelligenceRecords, node.id, graph, currentTick, worldVersion],
   );
 
-  const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER;
+  // A mortal whose card already reads at `transparent` is no stranger, whatever
+  // its thread tier — the god's own avatar has no thread edge (tier 0) but is
+  // always read at `transparent` (THR-1710), as is anyone under omniscience.
+  const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER && agentInfoCard?.knowledgeLevel !== 'transparent';
 
   if (agentInfoCard) {
     return (

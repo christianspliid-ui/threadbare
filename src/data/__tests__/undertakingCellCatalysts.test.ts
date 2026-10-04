@@ -87,12 +87,20 @@ describe('the cell catalyst table (THR-1497)', () => {
     // ticks were masterworks made in a capital. THR-1515 closed the hole every family
     // shared: none accepted `hamlet`, and every residual wither after THR-1511 had
     // both the anchor and the feet at a hamlet or in the wild.
+    //
+    // A create cell whose site rule names its subtypes can only anchor there: a pilgrim
+    // way is never consecrated at a hamlet (THR-1660), so its family owes only the tiers
+    // the rule admits. Every other row owes all four.
     const catalogs = staticContentCatalogs();
     for (const [cellId, query] of Object.entries(UNDERTAKING_CELL_CATALYSTS)) {
       const members = resolveContentQuery(query, catalogs)
         .map(hit => getUnifiedTemplateById(hit.id))
         .filter(t => t !== undefined && t.actorAffinities?.includes('individual'));
-      for (const subtype of SETTLEMENT_SUBTYPES) {
+      const rule = getCellTemplate(cellId)?.targetRule;
+      const anchors = rule?.type === 'location_subtype'
+        ? SETTLEMENT_SUBTYPES.filter(s => rule.subtypes.includes(s))
+        : SETTLEMENT_SUBTYPES;
+      for (const subtype of anchors) {
         const accepting = members.filter(t => !t!.locationSubtypes?.length || t!.locationSubtypes.includes(subtype));
         expect(
           accepting.length,

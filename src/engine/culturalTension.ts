@@ -44,7 +44,7 @@ function getActorCultureEdges(graph: WorldGraph, actorId: string) {
     });
 }
 
-function getLocationCultureIds(graph: WorldGraph, locationId: string, layer?: 'historical' | 'current'): string[] {
+export function getLocationCultureIds(graph: WorldGraph, locationId: string, layer?: 'historical' | 'current'): string[] {
   return graph.getOutgoingEdges(locationId, 'belongs_to')
     .filter(e => {
       const node = graph.getNode(e.target);

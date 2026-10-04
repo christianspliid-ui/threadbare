@@ -65,6 +65,22 @@ export const CLUE_LEAD_SURVEY_CANDIDATES_MAX = 2;
  */
 export const CLUE_LEAD_SURVEY_PULL_MULT = 2.5;
 
+/**
+ * THR-1686 (seeded things stay alive, re-plan after S3, part 1) — a survey of a ruin
+ * the mortal holds a lead on skips the forecast window on the decision board.
+ *
+ * A survey is an instant cell: it has no checkpoint and never rolls (it completes at
+ * `INSTANT_COMPLETION_BAND`). The window was scoring a roll that never happens, and
+ * on main `218cdfa7` no lead holder forecast inside it, so seeds 42 · 99 surveyed no
+ * ruin in 300 ticks. With this on, the board takes advance probability 1 for the
+ * survey's EVT and fit 1, and stamps zone `'certain'` on the entry.
+ *
+ * Only the *lead* survey (instant **and** `leadPull`): exempting every instant cell
+ * was measured at +560% to +2120% `observe` undertakings and rejected. `false`
+ * restores the window exactly.
+ */
+export const CLUE_LEAD_SURVEY_SKIPS_WINDOW = true;
+
 // ── The visit (THR-1664, seeded things stay alive S3) ─────────────────────────
 //
 // A survey of a ruin that leaves its surveyor holding a `narrowed` lead arranges a

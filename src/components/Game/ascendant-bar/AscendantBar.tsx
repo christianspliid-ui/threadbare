@@ -190,10 +190,12 @@ export function AscendantBar({
         <SignaturesBlock paths={signaturePaths} onOpenCodex={onOpenCodex} />
       </BarSection>
 
-      {/* 3. Essence */}
+      {/* 3. Essence — no count (THR-1706). Every other section's count is a
+          tally of things you hold; here it was the number of sphere rows (12),
+          which sits beside the per-sphere balances and reads as an essence
+          amount. Three of three cold testers took it for one. */}
       <BarSection
         label="Essence"
-        count={essenceRows.length}
         open={open.essence}
         onToggle={() => toggle('essence')}
       >
