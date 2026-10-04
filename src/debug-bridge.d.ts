@@ -530,6 +530,23 @@ export interface DebugBridge {
     reaches: Record<string, { raw: number; share: number }>;
   } | null>;
   /**
+   * THR-1658: an agent's descent from a dead empire (worldgen's `backstoryStrata`
+   * `relation: 'descent'`) and whether it holds the Raise-the-Old-Banner drive.
+   * `ancestralRuinIds` are the elder ruins of its descent cultures (the
+   * *walk the old stones* milestone's targets); `onAncestralLand` is true when its
+   * current region was one of those empires' land. A read model, not a trace.
+   * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not
+   * found. **Async — await it.**
+   */
+  getDescent: (nameOrId: string) => Promise<{
+    actorId: string;
+    descentCultureIds: string[];
+    descentCultureNames: string[];
+    ancestralRuinIds: string[];
+    onAncestralLand: boolean;
+    holdsOldBanner: boolean;
+  } | null>;
+  /**
    * Returns all attachments for an agent (possessions, conditions, powers, agreements).
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
