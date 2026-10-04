@@ -66,7 +66,7 @@ describe("bare lint:plan-doc (THR-984)", () => {
 
       const { status, stdout } = runBare(root, bundle);
 
-      expect(stdout).toContain("no paths given — linting staged");
+      expect(stdout).toContain("no paths given — linting as --staged");
       expect(stdout).toMatch(/\[ERROR\] \S+ Docs\/plans\/2026-01-01-malformed\.md/);
       expect(stdout).not.toContain("skipped");
       // Advisory without --strict (verification-gates.md step 5): findings, exit 0.
@@ -76,15 +76,34 @@ describe("bare lint:plan-doc (THR-984)", () => {
   );
 
   it(
-    "with nothing staged, skips with a reason that names the staged mode",
+    "with nothing staged, skips with a reason that names where it looked",
     () => {
       const { root, bundle } = makeSandbox();
 
       const { status, stdout } = runBare(root, bundle);
 
-      expect(stdout).toContain("no paths given — linting staged");
-      expect(stdout).toContain("lint:plan-doc skipped (no staged or changed plan docs).");
+      expect(stdout).toContain("no paths given — linting as --staged");
+      expect(stdout).toContain("lint:plan-doc skipped (no plan doc among working-tree changes).");
       expect(stdout).not.toContain("[ERROR]");
+      expect(status).toBe(0);
+    },
+    SUBPROCESS_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    "an unstaged plan doc beside a staged non-plan file is named as not considered",
+    () => {
+      const { root, bundle } = makeSandbox();
+      writeFileSync(path.join(root, "notes.txt"), "staged\n");
+      execFileSync("git", ["add", "notes.txt"], { cwd: root });
+      writeFileSync(path.join(root, "Docs", "plans", "2026-01-02-unstaged.md"), "# Unstaged\n");
+
+      const { status, stdout } = runBare(root, bundle);
+
+      expect(stdout).toContain("lint:plan-doc: candidates from staged files.");
+      expect(stdout).toContain(
+        "lint:plan-doc skipped (no plan doc among staged files (unstaged edits are not considered while anything is staged)).",
+      );
       expect(status).toBe(0);
     },
     SUBPROCESS_TEST_TIMEOUT_MS,
