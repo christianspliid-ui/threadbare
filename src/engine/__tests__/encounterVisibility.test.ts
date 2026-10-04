@@ -141,8 +141,8 @@ describe('generateEncounterProse', () => {
 // ─── Notification Building ─────────────────────────────────────────
 
 describe('buildEncounterNotification', () => {
-  it('defaults threaded legacy positions to auto-resolve mode', () => {
-    expect(VISIBILITY_BY_POSITION.the_first.defaultAttentionMode).toBe('auto_resolve');
+  it('defaults The First to pause (THR-1715) and other positions to auto-resolve', () => {
+    expect(VISIBILITY_BY_POSITION.the_first.defaultAttentionMode).toBe('pause');
     expect(VISIBILITY_BY_POSITION.retinue.defaultAttentionMode).toBe('auto_resolve');
   });
 
@@ -245,9 +245,10 @@ describe('toggleAttentionMode', () => {
     addThread(g, 'retinue', 3, 'auto_resolve');
 
     const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
-    expect(result).not.toBeNull();
-    expect(result!.newMode).toBe('pause');
-    expect(result!.essenceCost).toBe(ATTENTION_MODE_CHANGE_COST);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.newMode).toBe('pause');
+    expect(result.essenceCost).toBe(ATTENTION_MODE_CHANGE_COST);
 
     const edge = g.getEdge('thread_1');
     expect((edge?.properties as ThreadEdgeProperties).attentionMode).toBe('pause');
@@ -258,8 +259,7 @@ describe('toggleAttentionMode', () => {
     addThread(g, 'retinue', 3, 'pause');
 
     const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
-    expect(result).not.toBeNull();
-    expect(result!.newMode).toBe('auto_resolve');
+    expect(result.ok && result.newMode).toBe('auto_resolve');
   });
 
   it('blocks pause when tier is too low', () => {
@@ -267,13 +267,41 @@ describe('toggleAttentionMode', () => {
     addThread(g, 'watched', 1, 'auto_resolve');
 
     const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, reason: 'thread_too_thin' });
   });
 
-  it('returns null for nonexistent edge', () => {
+  it('refuses a tier-1 retinue thread with its reason (THR-1715)', () => {
+    const g = createTestGraph();
+    addThread(g, 'retinue', 1, 'auto_resolve');
+
+    const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
+    expect(result).toEqual({ ok: false, reason: 'thread_too_thin' });
+    expect((g.getEdge('thread_1')?.properties as ThreadEdgeProperties).attentionMode).toBe('auto_resolve');
+  });
+
+  it('reaches pause for a tier-1 the_first thread — she is exempt from the tier gate (THR-1715)', () => {
+    const g = createTestGraph();
+    addThread(g, 'the_first', 1, 'auto_resolve');
+
+    const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
+    expect(result).toEqual({ ok: true, newMode: 'pause', essenceCost: 0 });
+    expect((g.getEdge('thread_1')?.properties as ThreadEdgeProperties).attentionMode).toBe('pause');
+  });
+
+  it('reads a missing attentionMode as the court-position default (THR-1715)', () => {
+    const g = createTestGraph();
+    addThread(g, 'the_first', 1);
+    delete (g.getEdge('thread_1')!.properties as Record<string, unknown>).attentionMode;
+
+    // the_first defaults to pause, so the toggle goes to auto.
+    const result = toggleAttentionMode(g, 'thread_1', 'asc_1', 10);
+    expect(result.ok && result.newMode).toBe('auto_resolve');
+  });
+
+  it('refuses a nonexistent edge with its reason', () => {
     const g = createTestGraph();
     const result = toggleAttentionMode(g, 'nonexistent', 'asc_1', 10);
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, reason: 'no_edge' });
   });
 });
 

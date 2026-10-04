@@ -20,6 +20,7 @@ import {
 } from './encounter-words';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
+import { ROUTINE_THREAT_RATING } from '../types/encounterVisibility';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
@@ -409,6 +410,10 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     ...(e.stakes ? { stakes: e.stakes } : {}),
     rarityTier: 1,
     intrinsicTier: 'background',
+    // THR-1715: the allowlist drops what it does not name — the authored
+    // threat rating is dropped here, so its one player-facing meaning (daily
+    // life) must be carried as its own field.
+    ...(e.threatRating === ROUTINE_THREAT_RATING ? { routine: true } : {}),
   });
 }
 

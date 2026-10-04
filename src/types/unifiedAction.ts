@@ -2418,6 +2418,15 @@ export interface UnifiedActionTemplate {
   readonly rarityTier: RarityTier;
   /** Attention tier classification — controls how this action surfaces to the player. */
   readonly intrinsicTier: AttentionTier;
+  /**
+   * Daily life (THR-1715, UL: *Daily life*): a chore — authored
+   * `threatRating: 'trivial'` on a raw encounter. It still happens, archives and
+   * has consequences, but it never notifies, never asks the god, and is never a
+   * row in the Chapter Ledger's default view or badge. Orthogonal to
+   * `intrinsicTier` on purpose. Absent = story. Read through
+   * `isRoutineTemplate` (`engine/attentionCadence.ts`).
+   */
+  readonly routine?: boolean;
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';

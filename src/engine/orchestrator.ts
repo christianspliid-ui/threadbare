@@ -180,6 +180,7 @@ import {
   emitChapterArchivedTrace,
   isEncounterAction,
 } from './chapterArchive';
+import { recordStoryChapterEnd } from './attentionCadence';
 import { stampStakesContexts } from './encounters/stakesLine';
 import { getUnifiedTemplateById as getStakesTemplateById } from '../data/unified-action-templates';
 import type { ChapterRecord } from '../types/chapterRecord';
@@ -3944,6 +3945,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (isEncounterAction(a.templateId)) {
           const record = buildChapterRecord(stampedAction, s, runtime);
           if (record) newlyArchived.push(record);
+          // THR-1715 E5: a pause-mode mortal's story chapter ended — her breath begins.
+          recordStoryChapterEnd(s.graph, a.actorId, a.actionId, a.templateId, s.tick);
         }
         newlyResolved.push(stampedAction);
         return stampedAction;

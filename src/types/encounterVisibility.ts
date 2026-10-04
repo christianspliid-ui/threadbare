@@ -27,8 +27,33 @@ export const BOOST_TO_PROBABILITY_RATIO = 0.03;
 /** Minimum thread tier required to set attention mode to 'pause' */
 export const PAUSE_MODE_MIN_TIER = 2;
 
-/** Essence cost to toggle a thread's attention mode */
-export const ATTENTION_MODE_CHANGE_COST = 2;
+/**
+ * Essence cost to toggle a thread's attention mode.
+ *
+ * THR-1715: 2 → 0. Law 51 files attention modes as player-set preferences, and
+ * the charge had never fired since TB-040 (the handler wrote a field `GameState`
+ * does not have). Kept as a named constant so pricing attention later is one
+ * number, not a rewrite.
+ */
+export const ATTENTION_MODE_CHANGE_COST = 0;
+
+/**
+ * The story breath (THR-1715): turns after a pause-mode mortal's story chapter
+ * ends before she may start another. Two in-game days. During the breath she
+ * lives her daily life (routine chores, travel, social life), all of it silent.
+ *
+ * The cadence knob. The plan's verification band is 5–8 halting chapters per
+ * 150 turns for The First on seeds 42 / 99 / 7; retune within 12–36 to land in
+ * it. Measured value is recorded in Docs/status/2026-10-04-thr-1715.md.
+ */
+export const PAUSED_STORY_BREATH_TICKS = 24;
+
+/**
+ * The authored threat rating that marks a raw encounter as daily life
+ * (THR-1715). A chore never asks the god, never raises an encounter
+ * notification, and never appears in the Chapter Ledger's default view or badge.
+ */
+export const ROUTINE_THREAT_RATING = 'trivial';
 
 // ─── Encounter Notification ────────────────────────────────────────
 
@@ -136,7 +161,8 @@ export const VISIBILITY_BY_POSITION: Record<CourtPosition, VisibilityConfig> = {
     proseDepth: 'full',
     maxChoices: 3,
     autoInterrupt: true,
-    defaultAttentionMode: 'auto_resolve',
+    // THR-1715: The First is born asking — her story chapters stop the world.
+    defaultAttentionMode: 'pause',
   },
   retinue: {
     proseDepth: 'medium',
@@ -184,3 +210,6 @@ export interface AttentionModeChangeTrace {
   newMode: 'pause' | 'auto_resolve';
   essenceCost: number;
 }
+
+/** Max agent ids carried on one `RoutineSuppressedTrace` (types/trace.ts). */
+export const ROUTINE_SUPPRESSED_TRACE_AGENT_CAP = 10;

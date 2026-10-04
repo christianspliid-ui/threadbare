@@ -1006,7 +1006,10 @@ export function createAgentFromMeeting(
       maintenanceCurrent: true,
       awareness: 'faith',
       readBackstoryTier: 0,
-      attentionMode: 'auto_resolve',
+      // THR-1715: The First is born asking — her story chapters stop the world
+      // and open the encounter veil. Both writers (bond and dev seed) agree, so
+      // the dev route matches the player's path.
+      attentionMode: 'pause',
       storyPhase: 'call',
       meetingChoiceRecord: result.meetingChoiceRecord,
       beatHistory: [],
