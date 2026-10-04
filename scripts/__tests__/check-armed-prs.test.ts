@@ -207,7 +207,7 @@ describe("classifyArmedPrs — age tiers", () => {
     expect(result.needsChristian).toBe(false);
   });
 
-  it("escalates to Christian past ARMED_DIRTY_ABANDONED_HOURS", () => {
+  it("turns abandoned past ARMED_DIRTY_ABANDONED_HOURS — louder, but still the lane's, never Christian's (THR-1735)", () => {
     const result = classifyArmedPrs(
       input({
         prs: [
@@ -221,9 +221,12 @@ describe("classifyArmedPrs — age tiers", () => {
     );
 
     expect(result.verdict).toBe("abandoned");
-    expect(result.needsChristian).toBe(true);
+    // Christian is chat-only and cannot resolve a conflict; the pickup lane's
+    // unstick duty (pull-work Step 0.8) owns every stuck PR at every age.
+    expect(result.needsChristian).toBe(false);
     expect(result.needsSession).toBe(true);
     expect(result.summary).toContain("#1132");
+    expect(result.summary).toContain("unstick duty");
   });
 
   it("writes the abandoned summary in plain language, with no git jargon", () => {
@@ -385,7 +388,7 @@ describe("classifyArmedPrs — the THR-930 defect (unarmed PRs are in the set)",
     expect(result.needsChristian).toBe(false);
   });
 
-  it("escalates an unarmed conflict to Christian past UNARMED_DIRTY_ABANDONED_HOURS", () => {
+  it("turns an unarmed conflict abandoned past UNARMED_DIRTY_ABANDONED_HOURS, still the lane's (THR-1735)", () => {
     const result = classifyArmedPrs(
       input({
         prs: [
@@ -399,7 +402,8 @@ describe("classifyArmedPrs — the THR-930 defect (unarmed PRs are in the set)",
     );
 
     expect(result.verdict).toBe("abandoned");
-    expect(result.needsChristian).toBe(true);
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(true);
     expect(result.prs[0].abandoned).toBe(true);
   });
 
@@ -534,15 +538,19 @@ describe("classifyArmedPrs — the THR-985 defect (a parked PR is not a stuck on
 
   it("STILL escalates a genuinely stuck PR — the same age and state, no hold", () => {
     // The falsifying arm. If this ever goes quiet, the fix has become a
-    // suppression: a stall silently relabelled as a decision.
+    // suppression: a stall silently relabelled as a decision. Since THR-1735 the
+    // escalation is to the lane (`needsSession`), never to Christian.
     const stuck = classifyArmedPrs(input({ prs: [unarmedPr(pr1114)] }));
 
     expect(stuck.verdict).toBe("abandoned");
-    expect(stuck.needsChristian).toBe(true);
+    expect(stuck.needsSession).toBe(true);
+    expect(stuck.needsChristian).toBe(false);
     expect(stuck.prs[0].klass).toBe("conflicted");
 
     // Same PR, same clock, one marker's difference.
     const held = classifyArmedPrs(input({ prs: [heldPr(pr1114)] }));
+    expect(held.verdict).not.toBe("abandoned");
+    expect(held.prs[0].klass).toBe("held");
     expect(held.needsChristian).toBe(false);
   });
 
