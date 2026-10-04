@@ -850,7 +850,7 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'A cast resolves through one resolver: the band decides whether its effects land, the landed effects and any backlash reach the graph through the live applier, and its soul price reaches quintessence.',
     ulTerms: ['Spell', 'Strained'],
     mechanism: { kind: 'function', symbols: ['resolveCast', 'activateSpell', 'applyExecutionResult'], module: 'src/engine/spellCasting.ts' },
-    writeSites: ['src/engine/spellCasting.ts', 'src/engine/spellActivation.ts', 'src/engine/castChannel.ts'],
+    writeSites: ['src/engine/spellCasting.ts', 'src/engine/spellActivation.ts', 'src/engine/castChannel.ts', 'src/engine/agentDetection.ts'],
     readSites: [
       'src/data/undertaking-objects.ts',
       'src/engine/effects/effectEventDispatch.ts',
@@ -1234,7 +1234,10 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['assembleRewardPool', 'assembleRewardPoolDetailed', 'heldTemplateIdsOf', 'instantiateReward', 'instantiateAgreementReward'],
       module: 'src/engine/rewardPool.ts',
     },
-    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts'],
+    // THR-1672: a teaching book teaches its new holder on the way in (`onItemAcquired`,
+    // after the `possesses` write), and a spell-definition template routes to `grantSpell`
+    // instead of being cloned; the reward line reads `taughtSpellName` back.
+    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts'],
     readSites: [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
@@ -2414,7 +2417,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/encounters/nudgeDispatch.ts',
     },
     writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
-    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts'],
+    // THR-1672: `spell_grant` dispatches to the grant seam (`applyTeachSpell` → `grantSpell`).
+    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts', 'src/engine/ascendantExpression.ts', 'src/engine/spellGrant.ts'],
     // Card grants ride the existing `EncounterAftermathReactionEffect` vocabulary and
     // are applied by the existing applier, so `emit_omen` / `remove_condition` /
     // `spawn_artifact` / `hidden_mark` / `favor_creation` needed no new path at all.
@@ -4289,6 +4293,38 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-07',
       evidence:
         'THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.',
+    },
+  },
+  {
+    id: 'a-mortal-is-taught-a-spell-by-a-god-or-a-book',
+    producerSystem: 'Ascendant Beats & Progression',
+    consumerSystem: 'Attachments, Items & Possessions',
+    intent:
+      'A god can teach a mortal a spell, and some books teach whoever comes to hold them (THR-1231 acquisition channels 1 and 4). Every channel writes through one seam, grantSpell, which records where the spell came from on the knows_spell edge (source divine + grantedBy, or tome + viaItemId); the sheet reads that edge to say who or what taught it, and the cast resolver reads it to make a god-taught transgression echo back to the god.',
+    ulTerms: ['Spell', 'Bestowal'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['knows_spell', 'grantSpell', 'applyTeachSpell', 'onItemAcquired', 'spell_grant'],
+      module: 'src/engine/spellGrant.ts',
+    },
+    writeSites: [
+      'src/engine/spellGrant.ts',
+      'src/engine/ascendantExpression.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/rewardPool.ts',
+      'src/engine/itemGenerator/mintGeneratedItem.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/agentAttachments.ts',
+      'src/engine/spellCasting.ts',
+      'src/engine/targetActions.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        'THR-1672. spellGrant.test.ts: Teach a Spell on a threaded priest writes knows_spell { source: divine, grantedBy }; with no thread it no-ops (no_thread). Teaching a library transgression raises the doom clock tickModifier by DIVINE_TEACH_DARK_DOOM and the mortal’s region pressure by DIVINE_TEACH_DARK_DETECTION; teaching an authored spell moves neither. A cast of the god-taught transgression adds DIVINE_TAUGHT_CAST_DETECTION and its forbidden_contact mark reads "… was cast — <god>’s teaching". instantiateReward of reward_tomes_scrolls_veilscript_fragment teaches a farmer (source tome, viaItemId = the clone), once; the sheet entry carries learnedFrom "Veilscript Fragment"; a seized book teaches its new holder. A spell_grant nudge reaction teaches the scene actor from the god. The three pre-existing writers (seedSpellKnowing, create × Power, applySpellStamp) write byte-identical edges through grantSpell (spellGrant.pin.test.ts snapshots, written before the repoint).',
     },
   },
   {

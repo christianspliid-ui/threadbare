@@ -2637,7 +2637,10 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: TEACH_SPELL_ESSENCE_COST,
     actorAffinities: ['ascendant'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // `actor` + `individual`, not Bestow's `['agent']`: no target context carries the node
+    // type `agent`, so the node-type gate never admits that card on a mortal (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     motivations: ['tradition_novelty', 'loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'leans close to a faithful soul and leaves a working behind',

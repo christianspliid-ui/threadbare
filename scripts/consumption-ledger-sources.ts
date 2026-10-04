@@ -224,6 +224,10 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: "an attachment node owned by the bearer, carrying `effects[]`",
     consumers: [acts('src/engine/effectAura.ts', 'effects')],
   },
+  spell_grant: {
+    writes: "a `knows_spell` edge (`source: 'divine'`, `grantedBy`) and, while a slot is free, a `has_trait` edge to the shared spell definition node; dark teaching also writes doom and regional detection",
+    consumers: [acts('src/engine/spellCasting.ts', 'knowsSpellEdge'), acts('src/engine/effects/effectWalker.ts', 'collectAttachmentEffects')],
+  },
   spawn_artifact: {
     writes: "an artifact node plus an `owns` edge to the bearer",
     consumers: [acts('src/engine/effectAura.ts', 'effects')],
@@ -437,6 +441,10 @@ export const GRAPH_OP_ROWS: Readonly<Record<string, LedgerRow>> = {
   bestow_power: {
     writes: 'a divine-gift artifact granted to a threaded agent',
     consumers: [acts('src/engine/effectAura.ts', 'effects')],
+  },
+  teach_spell: {
+    writes: "a `knows_spell` edge (`source: 'divine'`, `grantedBy`) and, while a slot is free, a `has_trait` edge to the spell's definition node; dark teaching also writes doom and regional detection",
+    consumers: [acts('src/engine/spellCasting.ts', 'knowsSpellEdge'), acts('src/engine/effects/effectWalker.ts', 'collectAttachmentEffects')],
   },
   grant_companion: {
     writes: 'a companion minted and attached to the target',

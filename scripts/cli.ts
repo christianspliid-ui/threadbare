@@ -127,6 +127,7 @@ import { resolveContentQueryDetailed, CONTENT_QUERY_MAX_CANDIDATES } from '../sr
 import { sessionContentCatalogs } from '../src/engine/contentCatalogView';
 import { contentQueryAdmitsBearer } from '../src/engine/contentQueryBearer';
 import { heldTemplateIdsOf } from '../src/engine/rewardPool';
+import { onItemAcquired } from '../src/engine/spellGrant';
 import type { ContentQuery } from '../src/types/contentQuery';
 import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
 import { CONTENT_CATALOGS, catalogKey, entriesOfKind } from '../src/data/contentCatalogs';
@@ -2003,6 +2004,12 @@ function handleSpawnAttachment(agentQuery: string, templateQuery: string): void 
     : ' (legacy reachBonus)';
 
   console.log(`${GREEN}✓${RESET} Attached ${BOLD}${template.name}${RESET} to ${agent.name ?? agent.id} via ${edgeType}${effectInfo}`);
+
+  // THR-1672 — a book that teaches teaches its new holder, as a real reward would.
+  if (edgeType === 'possesses') {
+    const taught = onItemAcquired(state.graph, agent.id, instanceId, state.tick, 'reward', state.seed);
+    if (taught) console.log(`  ${CYAN}…and ${agent.name ?? agent.id} learned ${BOLD}${taught.spellName}${RESET}${CYAN} from it${taught.wielded ? '' : ' (known, not carried)'}${RESET}`);
+  }
 }
 
 /** `spawn undertaking <agent|@first> <templateId> [--target x] [--band b]` (THR-1300 slice 2). */

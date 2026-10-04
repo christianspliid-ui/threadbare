@@ -1089,7 +1089,7 @@ export function applyEncounterAftermathReaction(
   let nextUnlockedActionIds: readonly string[] | undefined = undefined;
   // THR-551: ControlEffects spawned by `sphere_influence_amplify` (rift) effects.
   const nextControlEffects: ControlEffect[] = [];
-  // THR-1672: the god's teaching price (doom, detection, a rival strike) lands here,
+  // THR-1672: the god's teaching price (doom, detection) lands here,
   // created on the first `spell_grant` and merged into the next state below.
   let teachSink: TeachSpellSink | undefined;
 
@@ -2833,14 +2833,13 @@ export function applyEncounterAftermathReaction(
             effectKind: 'spell_grant', effectDetail: { selector: effect.selector },
             success: false, failReason: sgTargetId ? 'no_ascendant' : 'no_actor_id',
             summary: `spell_grant[${i}] skipped: ${sgTargetId ? 'no god to teach' : 'no one to teach'}`,
-          } as unknown as TraceEntry);
+          });
           break;
         }
         teachSink ??= {
           graph: state.graph,
           regionalDetectionPressure: state.regionalDetectionPressure,
           doomClock: state.doomClock,
-          pendingEncounterSeeds: state.pendingEncounterSeeds,
           seed: state.seed,
         };
         const sgTaught = applyTeachSpell(teachSink, sgAscendantId, sgTargetId, tick, {
@@ -2857,7 +2856,7 @@ export function applyEncounterAftermathReaction(
             effectiveTargetId: sgTargetId,
             effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `spell_grant[${i}] skipped: ${sgTaught.failSoft ?? 'grant_refused'}`,
-          } as unknown as TraceEntry);
+          });
           break;
         }
         mutationSummary.touchedStructure = true;
@@ -2881,7 +2880,7 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: sgTargetId,
           effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `spell_grant[${i}]: ${sgName} learns ${sgTaught.spellName}${sgTaught.dark ? ' (dark — the god pays)' : ''}`,
-        } as unknown as TraceEntry);
+        });
         break;
       }
 
@@ -5170,7 +5169,6 @@ export function applyEncounterAftermathReaction(
       ? {
         doomClock: teachSink.doomClock ?? state.doomClock,
         regionalDetectionPressure: teachSink.regionalDetectionPressure,
-        pendingEncounterSeeds: [...(teachSink.pendingEncounterSeeds ?? []), ...nextSeeds],
       }
       : {}),
   };

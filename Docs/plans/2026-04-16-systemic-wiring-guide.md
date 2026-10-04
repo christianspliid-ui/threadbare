@@ -4947,6 +4947,18 @@ What this means for authors:
 
 Inspect: `await __DEBUG.getStepCast(actionId?)` (`recorded` per step, `pending` for the current one); trace `spell.cast_decided`. Review: `?spell=<templateId>` stamps the hero with the spell beside `?testavatar` / `?spawn=`.
 
+### Taught spells — a god or a book (THR-1672)
+
+A spell can now be **given**, through two channels, both written by the one grant seam (`grantSpell`, `src/engine/spellGrant.ts`) and recorded on the mortal's `knows_spell` edge.
+
+What this means for authors:
+
+- **`spell_grant` is the aftermath kind for "the god left a working with them".** `{ kind: 'spell_grant', targetAgentId: '$actor', selector: 'god' | 'tradition', maxTier? }` teaches the mortal one spell: `'god'` from the player's own spheres, then the mortal's tradition; `'tradition'` from the tradition only. It is a persistent effect (`PERSISTENT_EFFECT_KINDS`). No pick (they already know everything) skips with a trace; the card's other effects still land. Teaching a transgression costs the god doom and detection, exactly as the Teach a Spell card. Shipped user: the Cache member `card.cache.variation.spirit` (*Leave A Word Behind*).
+- **A book teaches by what it is, not by a list.** To author a book that teaches, give a `tomes_scrolls` item the tag `#arcane` (teaches up to tier 2, prefers the reader's tradition, then spells of the book's Reach tag) or `#ancient` (up to tier 3, prefers elder Foundation-sphere magic). `#map` excludes it — the treasure maps carry `#ancient`. A generated *forbidden book* teaches wherever it is minted into someone's hands. A book teaches each holder once (`taughtHolderIds`), and a maker never learns from the book they made.
+- **Knowing a spell does not make a mortal a caster.** A farmer handed the Veilscript Fragment carries its working and can cast it in a step, but cannot study for more.
+
+Inspect: `__DEBUG.getSpellHolders()[i].grants` (per-edge `source` / `grantedBy` / `viaItemId`); traces `spell.granted`, `spell.tome_unread`, `spell.divine_teaching_priced`, `spell.divine_echo`. Review: `await __DEBUG.giveTome('@hero')`, `await __DEBUG.teachSpell('@hero')`.
+
 ### Innate powers (THR-1671, power runtime S3)
 
 A lair's elite is born with its family's **Innate Power** — `power.innate.<family>`, a shared `trait` node with `subcategory: 'innate_power'` (`src/data/innate-powers.ts`), stamped in `createNamedElite` as a `has_trait` edge with `source: 'innate'`. It is fate-woven: never cast, and its effects ride the shared node, so the same stateless-only rule as a carried spell applies.

@@ -3418,6 +3418,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     | 'faction_reputation_gain'
     // THR-1664 — the visit's band sets the actor's own lead; emitted unlaundered.
     | 'sharpen_clue'
+    | 'spell_grant'
     // THR-1206 — added here rather than cast at the call site, which is the
     // direction of travel this union's own note describes. Its arm emits four
     // traces (no-actor, no-counterparty, refused write, applied) and all four go

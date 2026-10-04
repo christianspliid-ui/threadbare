@@ -354,7 +354,7 @@ function emitBestowNoOp(
 
 /** The state a teaching reads and writes: the graph, and the god's two prices. */
 export type TeachSpellSink = Pick<GameState, 'graph' | 'regionalDetectionPressure'>
-  & Partial<Pick<GameState, 'doomClock' | 'pendingEncounterSeeds' | 'seed'>>;
+  & Partial<Pick<GameState, 'doomClock' | 'seed'>>;
 
 export interface TeachSpellOptions {
   /** Debug lever: skip the switch and the thread/awareness gates (the `applySpellStamp` pattern). */
