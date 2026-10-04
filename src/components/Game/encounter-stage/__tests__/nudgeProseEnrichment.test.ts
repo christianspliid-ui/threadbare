@@ -130,7 +130,6 @@ function proseStrings(phase: NonNullable<ReturnType<typeof buildNudgePhaseModel>
     ...phase.testPanel.factors.map((f) => f.text),
     ...phase.cards.flatMap((c) => [c.name, c.effectLine]),
     ...phase.withheld.map((w) => w.name),
-    phase.motive?.introLine ?? '',
     phase.motive?.sentence ?? '',
   ];
 }

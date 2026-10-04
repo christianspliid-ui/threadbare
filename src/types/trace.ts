@@ -404,6 +404,8 @@ export type TraceCategory =
   | 'ascendant.signature.unique_location'
   // Encounter chapter archive (THR-603)
   | 'encounter.chapter_archived'
+  // Encounter stakes line (THR-1727)
+  | 'encounter.stakes_line'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
   // Mortal economy — trade cargo manifests (THR-616)
@@ -943,6 +945,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.signature.unique_location',
   // Encounter chapter archive (THR-603)
   'encounter.chapter_archived',
+  // Encounter stakes line (THR-1727)
+  'encounter.stakes_line',
   // Player action progression — god-side capability growth (THR-613)
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
@@ -4662,6 +4666,7 @@ export type TraceEntry =
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
+  | EncounterStakesLineTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
   // Mortal economy — trade cargo manifests (THR-616)
@@ -4997,6 +5002,26 @@ export interface ChapterArchivedTrace extends TraceBase {
   threaded: boolean;
   /** Post-append archive size — surfaces eviction pressure (inspectability). */
   archiveSize: number;
+}
+
+/**
+ * Trace: an encounter action's stakes context was frozen on the tick path, and the
+ * stakes line it yields (THR-1727). Emitted once per action. `fallback` names why
+ * the line is not the full formula, when it is not.
+ */
+export interface EncounterStakesLineTrace extends TraceBase {
+  category: 'encounter.stakes_line';
+  actionId: string;
+  templateId: string;
+  leadSource: 'choice' | 'mission' | 'chance' | 'divine' | 'none';
+  fallback:
+    | 'no_stakes_description_used'
+    | 'no_mission_name'
+    | 'no_location'
+    | 'over_length_lead_dropped'
+    | null;
+  /** The opening line as stamped (unenriched), for inspection. */
+  line: string;
 }
 
 /** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */

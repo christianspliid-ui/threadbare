@@ -46,6 +46,7 @@ import { ENTITY_GRADIENT_COUNT, gradientIndexForId } from '../../data/entity-vis
 import { getMonsterPortraitUrl } from '../../data/portrait-assets';
 import { MONSTER_FAMILIES, MONSTER_FAMILY_IDS } from '../../data/monster-families';
 import { DomainCard } from '../shared/DomainCard';
+import { ReachStanding } from '../shared/ReachStanding';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import type { RarityTier } from '../../types/rarity';
 import { SPHERE_NAMES } from '../../types/index';
@@ -138,6 +139,7 @@ const SECTIONS = [
   { id: 'held-by-line', label: 'HeldByLine (THR-1155)' },
   { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
   { id: 'domaincard', label: 'DomainCard' },
+  { id: 'reachstanding', label: 'ReachStanding (THR-1724)' },
   { id: 'activityicon', label: 'ActivityIcon' },
   { id: 'detail-page', label: 'DetailBreadcrumb / Section / DetailModal' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
@@ -1381,6 +1383,26 @@ export default function StyleGuide() {
                     />
                   </div>
                 ))}
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── ReachStanding (THR-1724) ──────────────────────── */}
+          <section id="section-reachstanding" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>ReachStanding</SectionHeading>
+            <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <GameErrorBoundary>
+                <Label>layout="inline" — the encounter title row (tier 0–4)</Label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {[0, 1, 2, 3, 4].map((tier) => (
+                    <ReachStanding key={tier} reach="stone" tier={tier} layout="inline" />
+                  ))}
+                </div>
+                <Label>layout="stacked" — the sheet's DomainCard · revealed=false</Label>
+                <div style={{ display: 'flex', gap: '24px' }}>
+                  <ReachStanding reach="eye" tier={3} layout="stacked" />
+                  <ReachStanding reach="veil" tier={1} layout="stacked" revealed={false} />
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

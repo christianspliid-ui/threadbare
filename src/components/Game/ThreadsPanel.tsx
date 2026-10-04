@@ -29,6 +29,7 @@ import {
 } from './encounterActivityPresentation';
 import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
 import type { AppointmentBadgeModel } from './appointmentBadgeModel';
+import type { EncounterStakesRowLine } from './encounterStakesRows';
 import { STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
@@ -129,6 +130,12 @@ interface ThreadsPanelProps {
    */
   appointmentBadges?: Map<string, AppointmentBadgeModel>;
   /**
+   * THR-1727: the line an agent row names its story by, keyed by agent id — the
+   * opening stakes line while an encounter is live, the result line once it
+   * resolves, until the next encounter replaces it.
+   */
+  encounterStakesLines?: Map<string, EncounterStakesRowLine>;
+  /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
    * and Sources sections in the right-bar plus a folded "claim status" line on
    * location rows when an effect targets a thread'd location.
@@ -157,6 +164,8 @@ interface CompactThreadRowProps {
   strategicSummary?: AgentStrategicSummary;
   /** THR-1479: the appointment clock line for this mortal, if they hold one. */
   appointmentBadge?: AppointmentBadgeModel;
+  /** THR-1727: the row's stakes line (live) or result line (resolved), if any. */
+  encounterStakesLine?: EncounterStakesRowLine;
   /** THR-664: pending encounter notifications anchored to this row, if any. */
   encounterBadge?: EncounterBadgeModel;
   /** Opens the encounter modal for the badge's primary notification. */
@@ -302,6 +311,7 @@ function CompactThreadRow({
   onToggleAttentionMode,
   strategicSummary,
   appointmentBadge,
+  encounterStakesLine,
   encounterBadge,
   onOpenEncounterBadge,
   tugBadge,
@@ -702,6 +712,35 @@ function CompactThreadRow({
             </Tooltip>
           )}
 
+          {/* THR-1727: the story line — what this mortal's encounter is about while
+              it runs, and how it ended after. Same one-line shape as the
+              doing-line (Law 49); the whole sentence on hover (Law 55). */}
+          {node.category === 'agent' && encounterStakesLine && (
+            <Tooltip
+              label={encounterStakesLine.kind === 'result' ? 'How it ended' : 'What is at stake'}
+              desc={encounterStakesLine.text}
+            >
+              <div
+                className="truncate"
+                data-testid="thread-stakes-line"
+                data-stakes-kind={encounterStakesLine.kind}
+                style={{
+                  padding: '1px 4px',
+                  minHeight: 24,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-xs)',
+                  fontStyle: 'italic',
+                  lineHeight: 1.2,
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <span className="truncate">{encounterStakesLine.text}</span>
+              </div>
+            </Tooltip>
+          )}
+
           {/* Row 3: auto toggle (agents only).
               THR-664 removed the encounter-pool button and the action chip — both
               duplicate the agent detail panel, and the encounter affordance is now
@@ -936,6 +975,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onToggleAttentionMode,
   agentStrategicSummaries,
   appointmentBadges,
+  encounterStakesLines,
   encounterBadges,
   onOpenEncounterBadge,
   tugBadges,
@@ -1113,6 +1153,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onToggleAttentionMode={onToggleAttentionMode}
                             strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
                             appointmentBadge={node.category === 'agent' ? appointmentBadges?.get(node.id) : undefined}
+                            encounterStakesLine={node.category === 'agent' ? encounterStakesLines?.get(node.id) : undefined}
                             encounterBadge={node.category === 'agent' ? encounterBadges?.get(node.id) : undefined}
                             onOpenEncounterBadge={onOpenEncounterBadge}
                             tugBadge={node.category === 'agent' ? tugBadges?.get(node.id) : undefined}

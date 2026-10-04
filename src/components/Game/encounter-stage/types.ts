@@ -38,9 +38,30 @@ export type EncounterCastRole =
 
 export type EncounterSignalVisibility = 'known' | 'hidden' | 'revealed';
 
+/**
+ * THR-1727 — the encounter's stakes line, as the veil renders it: the text plus
+ * the two names in it that link (the acting mortal, the place the lead names).
+ */
+export interface EncounterStageStakesLineModel {
+  /** Enriched line: `[lead], [actor] must [goal] — or [risk].` */
+  text: string;
+  actorId: string;
+  actorName: string;
+  locationId?: string;
+  locationName?: string;
+  leadSource: import('../../../engine/encounters/motiveClassifier').MotiveSource | 'none';
+  fallback: import('../../../engine/encounters/stakesLine').StakesFallbackReason;
+}
+
 export interface EncounterStageHeaderModel {
   title: string;
+  /**
+   * The template's hand-written summary. THR-1727: rendered only when the
+   * template authors no `stakes` — `stakesLine` takes the slot otherwise.
+   */
   subtitle?: string;
+  /** THR-1727 — the stakes line, present when the template authors `stakes`. */
+  stakesLine?: EncounterStageStakesLineModel;
   locationLabel: string;
   urgencyLabel?: string;
   /**
@@ -722,22 +743,12 @@ export interface EncounterStageMotiveModel {
   chipLabel: string;
   /** One authored sentence naming why this mortal is here. */
   sentence: string;
-  /**
-   * THR-972 — the motive as a line that *introduces* the scene, printed above the
-   * opening prose rather than below it.
-   *
-   * Already substituted: `{actor}` and `{mission}` are resolved by the adapter, so
-   * the shell renders this verbatim and a raw placeholder can never reach the
-   * stage. Variant choice is a stable hash of the action id and step index
-   * (`MOTIVE_INTRO_VARIANTS`), so re-opening an encounter never re-rolls its
-   * opening line.
-   *
-   * Optional because a caller may build a motive without one — the meeting beats
-   * carry no motive at all, and an absent intro renders nothing rather than a
-   * blank line. {@link sentence} is retained alongside it for the motive
-   * explainer modal, which still quotes the un-substituted fallback.
+  /*
+   * THR-972's `introLine` lived here until THR-1727 folded "why is this mortal
+   * here" into the lead clause of the encounter's stakes line
+   * (`header.stakesLine`). The chip label and sentence remain for the motive
+   * explainer.
    */
-  introLine?: string;
 }
 
 /**
@@ -805,6 +816,21 @@ export interface EncounterStageTestPanelModel {
   /** Raw 0–1 difficulty — designer view only. */
   difficultyValue: number;
   factors: EncounterStageFactorLineModel[];
+  /**
+   * THR-1724 — the acting mortal's standing in this step's reach, shown in the
+   * title row as the character sheet's readout ("STONE · Skilled ●●●○○").
+   * It replaced the "{actor} is {word} in {reach}." factor line; `sentence` is
+   * that line's text, kept as the chip's tooltip so the actor is still named.
+   * Absent when the producer has no actor capability (the meeting's tests).
+   */
+  skill?: EncounterStageSkillModel;
+}
+
+export interface EncounterStageSkillModel {
+  /** 0-indexed tier (0–4) on `DOMAIN_WORD_SCALES`, the sheet's own scale. */
+  tier: number;
+  /** "Vara is skilled in Stone." */
+  sentence: string;
 }
 
 export interface EncounterStageForecastModel {

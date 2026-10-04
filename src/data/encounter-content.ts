@@ -126,6 +126,8 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
 type EncounterEntry = {
   id: string;
   name: string;
+  /** THR-1727 — the stakes line's parts; passed through by the converter below. */
+  stakes?: import('../types/encounterStakes').EncounterStakes;
   /**
    * THR-884: the setting envelope — the preferred way to place an encounter.
    * Declare classes (`['rural', 'wayside']`); the converter expands them through
@@ -403,6 +405,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     aftermathConfig: e.aftermathConfig,
     consequenceDraw: e.consequenceDraw,
     consequenceSwap: e.consequenceSwap,
+    // THR-1727: the allowlist drops what it does not name — stakes must be named.
+    ...(e.stakes ? { stakes: e.stakes } : {}),
     rarityTier: 1,
     intrinsicTier: 'background',
   });

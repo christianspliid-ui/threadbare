@@ -22,9 +22,9 @@
 
 ## II. Images
 
-5. **[E] Three canonical sizes, three aspect ratios:** `hero` 16:9 (places, scenes, banners) · `portrait` 3:4 (people) · `chip` 40px square (secondary entities inline). New surfaces pick from these; a fourth size is a design decision, not an implementation choice. (`entity-visual-header.md`; `STYLE.md` §Aspect Ratios.)
+5. **[E] Three canonical sizes, three aspect ratios:** `hero` 16:9 (places, scenes, banners) · `portrait` 3:4 (people) · `chip` 40px square (secondary entities inline). New surfaces pick from these; a fourth size is a design decision, not an implementation choice. A card's picture band uses the `hero` 16:9 ratio at the card's width (amended 2026-10-04, Christian chat — THR-1724). (`entity-visual-header.md`; `STYLE.md` §Aspect Ratios.)
 6. **[E] Art is pre-baked and static** — generated ahead of time into registries, resolved at render; no runtime generation, no external fetches. Card art ships 1376×768 JPG q95 with letterbox bars cropped; map signifiers are 1:1 semi-transparent PNG. (`STYLE.md`; art-recipe precedent THR-740.)
-7. **[E] In-card image bands are "small generic images", not heroes.** A card's picture band (nudge cards: 78px) identifies the *kind* of thing; the hero illustration belongs to the stage, not the card. Do not promote card bands into scene art.
+7. **[E] In-card image bands are "small generic images", not heroes.** A card's picture band identifies the *kind* of thing; the hero illustration belongs to the stage, not the card. Do not promote card bands into scene art. The band is drawn at 16:9 (Law 5) — still a small generic image, simply no longer cropped to a third of its height (amended 2026-10-04, Christian chat — THR-1724; the old "78px" figure is retired).
 8. **[E] Person imagery is knowledge-gated; places, items, and encounters never are.** Below `recognised`, a person renders the silhouette fallback even when art exists. Intel is additive, never subtractive. Fail-open when the gate is unwired. (`entity-visual-header.md` §Knowledge gating.)
 
 ## III. Icons
@@ -81,7 +81,7 @@
 
 ## IX. Layout, viewport, and modularization
 
-33. **[E] The game fills exactly one viewport: 1920×1080 contract, nothing scrolls at page level, nothing renders below the fold.** Panels scroll internally (`flex-1 overflow-y-auto`); modals cap at 85vh; wide rows scroll on their own axis (the card row), never the page. At the 1280×720 minimum-support floor the contract holds at panel level and page scroll is tolerated (`INDEX.md` core constraints) — a 720p capture is not evidence of a violation (amended 2026-08-06). (CLAUDE.md §Viewport Contract; THR-890.)
+33. **[E] The game fills exactly one viewport: 1920×1080 contract, nothing scrolls at page level, nothing renders below the fold.** Panels scroll internally (`flex-1 overflow-y-auto`); modals cap at 85vh; never the page. The card hand wraps into rows of at most four cards (`CARDS_PER_ROW`) instead of scrolling sideways (amended 2026-10-04, Christian chat — THR-1724). At the 1280×720 minimum-support floor the contract holds at panel level and page scroll is tolerated (`INDEX.md` core constraints) — a 720p capture is not evidence of a violation (amended 2026-08-06). (CLAUDE.md §Viewport Contract; THR-890.)
 34. **[E] A scrollable centered column uses safe centering** — content centers when it fits and top-aligns scrollably when it does not; plain `justify-content: center` over a scroll zone strands the top unreachably. (THR-925.)
 35. **[E] New elements land in a named layout zone and z-band** (`layout-zones.md`); z-index is taken from the stacking table, never invented.
 36. **[E] Long lists are progressive, not exhaustive:** grouped sections with expand/collapse (`Section` + `ListRow`), counts on the group header, detail on demand. A panel that needs its own scrollbar within the first screenful of items should be collapsing groups instead. Expanded/collapsed state survives within a session.
@@ -109,7 +109,7 @@
 49. **[E] Notifications coalesce; they never storm.** A burst of same-kind events shows one affordance with a count, expandable to the list — never N stacked popups, never a silent overflow drop. Law 40 guards the badge; this guards the queue behind it.
 50. **[E] Focus follows the surface.** Opening an overlay moves keyboard focus into it, Tab cycles within it while modal, and closing returns focus to the invoking element.
 51. **[E] Player-set preferences outlive the session** via one namespaced store (attention modes, notification prefs, collapsed groups, designer toggles); ephemeral view state may reset. Supersedes Law 36's "within a session" clause.
-52. **[E] The simulation's temporal state is always visible, and every auto-pause names its cause.** Run/pause/speed lives in persistent chrome; a beat that pauses says so on its own surface. A god who does not know whether time is passing is not in control of it.
+52. **[E] The simulation's temporal state is always visible, and every auto-pause names its cause.** Run/pause/speed lives in persistent chrome. An encounter's auto-pause is named by the persistent time control ("paused · <encounter>"), not on the encounter surface itself; the veil starts below the top bar so that control stays in view (amended 2026-10-04, Christian chat — THR-1724). Any other beat that pauses still says so on its own surface. A god who does not know whether time is passing is not in control of it.
 53. **[E] Persistent HUD is a budget, not a shelf.** A datum earns always-on placement only if it matters every minute of play (essence, doom, sim state, avatar); everything else arrives by badge, panel, or interrupt. Additions to persistent chrome are a design decision against this budget.
 54. **[E] Waiting is a designed state.** Any operation that can exceed `--anim-normal` shows the sanctioned placeholder (`.animate-breathe` at expected size), never a blank, frozen, or layout-shifting surface.
 

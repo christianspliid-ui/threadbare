@@ -399,7 +399,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-09-27 by Claude Code (THR-1650 — Witness plays the delivery beat). **Added** 🟢 LIVE
+2026-10-04 by Claude Code (THR-1727 — the encounter stakes line). **Added** 🟢 LIVE
+`encounter-stakes-line-reaches-veil-ledger-badge-row` (Encounters & Dilemmas → Attention,
+Chronicle & Narrative: a template's authored `stakes` and the `stakesContext` the tick path
+freezes at encounter start build one opening line and one result line, read by the veil's
+subtitle slot, the Chapter Ledger row, the encounter badge tooltip and the agent thread row).
+**Retired** the THR-972 motive intro read (`MOTIVE_INTRO_VARIANTS` → `NudgeMotiveIntro`):
+the motive classification now feeds the stakes line's lead clause. `template.description`
+stays as the veil's fallback for a template with no `stakes`.
+Earlier: 2026-09-27 by Claude Code (THR-1650 — Witness plays the delivery beat). **Added** 🟢 LIVE
 `delivery-beat-plays-its-encounter` (Ascendant Beats & Progression → Encounters & Dilemmas:
 Witness mints the source encounter on The First and opens the veil; the Director withholds a
 vision that cannot bind The First). **Retired** the silent `runBeatTemplateAftermath` run for

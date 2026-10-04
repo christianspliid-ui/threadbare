@@ -5923,6 +5923,39 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1641. Before: 9 of the table\'s tags (plus `#loss`, `#fear`) had 0 drawable bearers; `npm run census:location-traits` read FLAT for blood-soaked (seed 42) and welcoming + blood-soaked (seed 99). After the rekey: every table tag has ≥ `LOCATION_TRAIT_TAG_MIN_BEARERS` (5) drawable bearers (lowest `#thieves_errand` 5, `#steal` 9); census reads MOVES for blood-soaked on seed 42 (`#duel` 14.4% at marked places vs 4.9% unmarked) and welcoming on seed 99 (`#heart` 32.8% vs 21.6%). Unit: `locationTraitBonus.test.ts` bearer-floor test.',
     },
   },
+  // ── Encounter stakes line (THR-1727) ──────────────────────────────────────
+  {
+    id: 'encounter-stakes-line-reaches-veil-ledger-badge-row',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere.',
+    ulTerms: ['Encounter', 'UnifiedActionTemplate'],
+    // The template carries the authored parts (`stakes`); the tick path freezes why
+    // the mortal is here (`stakesContext`) so the opening line and the result line
+    // share one lead. Retires the THR-972 motive intro line read.
+    mechanism: {
+      kind: 'function',
+      symbols: ['stampStakesContext', 'buildStakesLine', 'buildResultLine', 'stakesLineForAction', 'rememberedStakesLine'],
+      module: 'src/engine/encounters/stakesLine.ts',
+    },
+    writeSites: [
+      'src/data/encounters/vertical-slice.ts',
+      'src/engine/orchestrator.ts',
+      'src/engine/chapterArchive.ts',
+    ],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+      'src/components/Game/ChapterLedger.tsx',
+      'src/components/Game/encounterStakesRows.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        'THR-1727. Browser, `?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge`: `__DEBUG.getEncounterStakes()` → hasStakes true, built line === rendered DOM line ("Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack."), no `nudge-motive-intro`. With `&outcome=failure` (pin verdict band_rendered) the Chapter Ledger row and the thread row read "Vara turned back to the long ford and lost the day."; with `&outcome=critical_failure` "Vara went into the river with the pack." — each matching the band prose on screen. CLI seed 42 medium, tick 30: 105 of 105 unified actions carry a stamped `stakesContext`, none live unstamped.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

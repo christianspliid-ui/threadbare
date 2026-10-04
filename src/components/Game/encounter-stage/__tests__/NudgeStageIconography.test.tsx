@@ -16,7 +16,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { MotiveSource } from '../../../../engine/encounters/motiveClassifier';
@@ -27,10 +27,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import {
-  MOTIVE_INTRO_VARIANTS,
-  MOTIVE_MISSION_FALLBACK,
   NUDGE_READING_LEGEND_ENTRIES,
-  TEST_GLYPH,
 } from '../../../../data/nudge-stage-content';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
 import {
@@ -38,6 +35,7 @@ import {
   generateDifficultyScalesSvg,
   generateForecastDieSvg,
 } from '../../../icons';
+import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 
@@ -180,81 +178,26 @@ function buildPhase(
 
 const ALL_SOURCES: readonly MotiveSource[] = ['chance', 'mission', 'divine', 'choice'];
 
-// ─── 3. Motive line becomes the introduction ──────────────────────
+// ─── 3. Motive line retired into the stakes line (THR-1727) ───────
 
-describe('THR-972 · motive intro line', () => {
-  it('resolves a variant for every MotiveSource, with no placeholder left raw', () => {
+describe('THR-1727 · the motive intro line is retired', () => {
+  it('still classifies every MotiveSource, but builds no intro line', () => {
     const seen = new Set<MotiveSource>();
-
     for (const source of ALL_SOURCES) {
       const phase = buildPhase(source);
       seen.add(phase.motive!.source);
-
-      const line = phase.motive?.introLine;
-      expect(line, `${source} produced no intro line`).toBeTruthy();
-      // The Done-when's leak check: substitution must be total, so no `{token}`
-      // of any name survives onto the stage.
-      expect(line, `${source} leaked a raw placeholder: ${line}`).not.toMatch(/\{\w+\}/);
-      // And the substitution must have actually happened, not merely authored a
-      // placeholder-free line — the actor's name has to be in there.
-      expect(line).toContain(ACTOR_NAME);
+      // Why the mortal is here is now the stakes line's lead clause, built in the
+      // header; the phase model carries the classification and nothing to print.
+      expect(phase.motive).not.toHaveProperty('introLine');
     }
-
-    // Guards the arm against a classifier change collapsing every fixture onto
-    // one source, which would leave the loop above passing on four identical runs.
-    expect(seen, 'fixtures did not exercise all four sources').toEqual(
-      new Set(ALL_SOURCES),
-    );
+    expect(seen, 'fixtures did not exercise all four sources').toEqual(new Set(ALL_SOURCES));
   });
 
-  it('names the errand on a mission motive, and falls back when the graph cannot', () => {
-    const named = buildPhase('mission');
-    expect(named.motive?.introLine).toContain(MISSION_NAME);
-
-    // Same classification, culled provenance node — the fallback noun stands in
-    // rather than `{mission}` reaching the stage.
-    const orphaned = buildPhase('mission', { missionNode: false });
-    expect(orphaned.motive?.source).toBe('mission');
-    expect(orphaned.motive?.introLine).toContain(MOTIVE_MISSION_FALLBACK);
-    expect(orphaned.motive?.introLine).not.toMatch(/\{\w+\}/);
-  });
-
-  it('is deterministic per seed — same encounter, same line, every build', () => {
-    const a = buildPhase('chance', { actionId: 'ua_seed_alpha' });
-    const b = buildPhase('chance', { actionId: 'ua_seed_alpha' });
-    expect(a.motive?.introLine).toBe(b.motive?.introLine);
-  });
-
-  it('selects across the variant pool rather than pinning one line', () => {
-    // Falsifies "deterministic" being satisfied by a constant. Distinct action
-    // ids must reach more than one authored variant of the same source.
-    const lines = new Set(
-      Array.from({ length: 24 }, (_, i) =>
-        buildPhase('chance', { actionId: `ua_variant_${i}` }).motive?.introLine),
-    );
-    expect(lines.size).toBeGreaterThan(1);
-    expect(lines.size).toBeLessThanOrEqual(MOTIVE_INTRO_VARIANTS.chance.length);
-  });
-
-  it('renders above the hand inside the shell, and not at all when the host owns it', () => {
-    const phase = buildPhase('divine');
-
-    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
-    expect(screen.getByTestId('nudge-motive-intro').textContent).toBe(
-      phase.motive!.introLine,
-    );
-    // The chip+sentence strip this replaced must be gone, not merely relocated.
+  it('the shell draws no motive line, and neither does the strip it replaced', () => {
+    render(<NudgePhaseShell phase={buildPhase('divine')} onCommit={() => {}} />);
+    expect(screen.queryByTestId('nudge-motive-intro')).toBeNull();
     expect(screen.queryByTestId('nudge-motive-strip')).toBeNull();
     expect(screen.queryByTestId('nudge-motive-chip')).toBeNull();
-
-    cleanup();
-
-    // EncounterVeil renders the line above its prose block and passes false, so
-    // the shell must not draw a second copy.
-    render(
-      <NudgePhaseShell phase={phase} onCommit={() => {}} renderMotiveIntro={false} />,
-    );
-    expect(screen.queryByTestId('nudge-motive-intro')).toBeNull();
   });
 });
 
@@ -275,85 +218,55 @@ describe('THR-972 · test panel', () => {
     expect(document.body.innerHTML).not.toContain('/assets/reaches/');
   });
 
-  it('draws the difficulty as a tilted balance and spends no word on it', () => {
+  it('draws no difficulty mark — the forecast already weighs it (THR-1724)', () => {
     const phase = buildPhase();
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
 
-    const unit = screen.getByTestId('nudge-test-unit');
-    const band = phase.testPanel.difficultyWord;
-
-    // THR-1478, director ask 2026-09-12: *"find a way to iconify the difficulty
-    // (fair) without a text."* The pairing rule — assert the mark AND the
-    // absence of the word, because a frame drawing both looks exactly like the
-    // bug the directive was filed against.
+    // Christian, 2026-10-04: *"remove the difficulty marker — the forecast
+    // already includes difficulty."* Neither the mark nor its word renders; the
+    // raw difficulty stays in the model for the designer view and the traces.
+    expect(screen.queryByTestId('nudge-test-unit'), 'the difficulty mark survived').toBeNull();
     expect(screen.queryByTestId('nudge-difficulty-word'), 'difficulty word survived').toBeNull();
-    expect(unit.textContent, 'the frame still spells the band').not.toContain(band);
-    expect(unit.textContent, 'the glyph the SVG replaced is back').not.toContain(TEST_GLYPH);
-    // Ruling 6 — the numeral stays designer-view only.
-    expect(unit.textContent).not.toMatch(/\d/);
+    expect(phase.testPanel.difficultyWord, 'the model lost its difficulty word').toBeTruthy();
 
-    // The frame survives the word: *"the difficulty cant stand alone"* was a
-    // ruling about the reading, not about the word, so the anchor stays.
-    const scales = unit.querySelector('svg');
-    expect(scales, 'difficulty drew no scales').toBeTruthy();
-    expect(unit.getAttribute('data-difficulty-band')).toBe(band);
-
-    // Law 11 — a glyph carrying meaning alone states its reading in words one
-    // hover away. Without this the icon is a picture nobody can read.
-    expect(unit.getAttribute('aria-label')).toContain(band);
-
-    // The tilt is the shape channel that colour alone could not be (Law 11).
-    // Falsify it across the *whole* vocabulary: four bands must draw four
-    // beams, or the ladder is one icon in four colours and a player without
-    // colour vision reads nothing.
+    // The icon itself stays in the shared set (other surfaces may still draw
+    // it), and its own contract still holds: four bands, four beams, monotone.
     const beams = (['gentle', 'fair', 'steep', 'severe'] as const)
       .map((b) => generateDifficultyScalesSvg(b, 30));
     expect(new Set(beams).size, 'two bands draw the same beam').toBe(4);
-    // And the tilt is monotone in difficulty — the beam falls further away from
-    // the mortal as the step hardens, rather than merely differing per band.
     const angle = (svg: string) => Number(/rotate\((-?[\d.]+)/.exec(svg)![1]);
     const angles = beams.map(angle);
     expect(angles).toEqual([...angles].sort((a, b) => a - b));
-
-    // Fail-soft (NFP #4): an unbanded word draws a level beam, never nothing.
     expect(generateDifficultyScalesSvg('nonsense', 30)).toBe(
       generateDifficultyScalesSvg('fair', 30),
     );
   });
 
-  it('draws the forecast as a die whose pips are its rung on the ladder', () => {
+  it('draws the forecast as its word in a ladder-coloured pill (THR-1724)', () => {
     const phase = buildPhase();
     render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
 
-    // *"remove the word forecast. make the forecast score 'uncertain' into an
-    // icon like a dice."* Both halves asserted: the die is present, the label
-    // and the tier word are gone from the surface.
-    const die = screen.getByTestId('nudge-forecast-die');
-    expect(screen.queryByTestId('nudge-forecast-word'), 'tier word survived').toBeNull();
-    expect(screen.queryByTestId('nudge-forecast-pips'), 'the pip row survived beside the die').toBeNull();
-    expect(die.textContent, 'the die spells its tier').not.toMatch(/doomed|perilous|uncertain|favorable|fated/i);
-    expect(die.querySelector('svg'), 'forecast drew no die').toBeTruthy();
-    expect(die.getAttribute('data-forecast-tier')).toBe(phase.baseForecast.tier);
+    // Christian, 2026-10-04: the forecast word in a coloured pill, on the
+    // quest-difficulty ladder. Law 31: the word always shows; the hue repeats it.
+    const pill = screen.getByTestId('nudge-forecast-pill');
+    expect(screen.queryByTestId('nudge-forecast-die'), 'the die survived beside the pill').toBeNull();
+    expect(pill.textContent).toBe(phase.baseForecast.word);
+    expect(pill.getAttribute('data-forecast-tier')).toBe(phase.baseForecast.tier);
+    expect(pill.getAttribute('aria-label')).toContain(phase.baseForecast.word);
+    // The colour is the tier's named token, never a literal (Law 30).
+    expect(pill.style.color).toContain(`--forecast-${phase.baseForecast.tier}-rgb`);
 
-    // Law 11 again — the word is the die's accessible name.
-    expect(die.getAttribute('aria-label')).toContain(phase.baseForecast.word);
-
-    // The pip count *is* the ladder, so the five tiers must draw five faces.
-    // Counting distinct renderings is what makes this an ordinal test rather
-    // than a "does it render" one.
+    // Five tiers, five tokens: no two rungs share a colour.
     const tiers = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'] as const;
+    const inks = tiers.map((t) => FORECAST_TIER_COLORS[t]);
+    expect(new Set(inks).size, 'two tiers share a colour').toBe(5);
+    inks.forEach((ink, i) => expect(ink).toContain(`--forecast-${tiers[i]}-rgb`));
+
+    // The die icon keeps its own ordinal contract for any surface still using it.
     const faces = tiers.map((tier) => generateForecastDieSvg(tier, 30));
     expect(new Set(faces).size, 'two tiers share a die face').toBe(5);
-
-    // Ordinal, not merely distinct: the pip count rises with the tier, and the
-    // drawn face carries that count. A die that differed per tier without
-    // ordering would be five arbitrary symbols to memorise.
     const counts = tiers.map((t) => FORECAST_TIER_PIPS[t]);
     expect(counts).toEqual([...counts].sort((a, b) => a - b));
-    faces.forEach((svg, i) => {
-      expect((svg.match(/<circle/g) ?? []).length, `${tiers[i]} drew the wrong pip count`)
-        .toBe(counts[i]);
-    });
   });
 
   it('drops the objective line from the player surface', () => {
