@@ -27,8 +27,6 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import {
-  MOTIVE_INTRO_VARIANTS,
-  MOTIVE_MISSION_FALLBACK,
   NUDGE_READING_LEGEND_ENTRIES,
 } from '../../../../data/nudge-stage-content';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
@@ -180,81 +178,26 @@ function buildPhase(
 
 const ALL_SOURCES: readonly MotiveSource[] = ['chance', 'mission', 'divine', 'choice'];
 
-// ─── 3. Motive line becomes the introduction ──────────────────────
+// ─── 3. Motive line retired into the stakes line (THR-1727) ───────
 
-describe('THR-972 · motive intro line', () => {
-  it('resolves a variant for every MotiveSource, with no placeholder left raw', () => {
+describe('THR-1727 · the motive intro line is retired', () => {
+  it('still classifies every MotiveSource, but builds no intro line', () => {
     const seen = new Set<MotiveSource>();
-
     for (const source of ALL_SOURCES) {
       const phase = buildPhase(source);
       seen.add(phase.motive!.source);
-
-      const line = phase.motive?.introLine;
-      expect(line, `${source} produced no intro line`).toBeTruthy();
-      // The Done-when's leak check: substitution must be total, so no `{token}`
-      // of any name survives onto the stage.
-      expect(line, `${source} leaked a raw placeholder: ${line}`).not.toMatch(/\{\w+\}/);
-      // And the substitution must have actually happened, not merely authored a
-      // placeholder-free line — the actor's name has to be in there.
-      expect(line).toContain(ACTOR_NAME);
+      // Why the mortal is here is now the stakes line's lead clause, built in the
+      // header; the phase model carries the classification and nothing to print.
+      expect(phase.motive).not.toHaveProperty('introLine');
     }
-
-    // Guards the arm against a classifier change collapsing every fixture onto
-    // one source, which would leave the loop above passing on four identical runs.
-    expect(seen, 'fixtures did not exercise all four sources').toEqual(
-      new Set(ALL_SOURCES),
-    );
+    expect(seen, 'fixtures did not exercise all four sources').toEqual(new Set(ALL_SOURCES));
   });
 
-  it('names the errand on a mission motive, and falls back when the graph cannot', () => {
-    const named = buildPhase('mission');
-    expect(named.motive?.introLine).toContain(MISSION_NAME);
-
-    // Same classification, culled provenance node — the fallback noun stands in
-    // rather than `{mission}` reaching the stage.
-    const orphaned = buildPhase('mission', { missionNode: false });
-    expect(orphaned.motive?.source).toBe('mission');
-    expect(orphaned.motive?.introLine).toContain(MOTIVE_MISSION_FALLBACK);
-    expect(orphaned.motive?.introLine).not.toMatch(/\{\w+\}/);
-  });
-
-  it('is deterministic per seed — same encounter, same line, every build', () => {
-    const a = buildPhase('chance', { actionId: 'ua_seed_alpha' });
-    const b = buildPhase('chance', { actionId: 'ua_seed_alpha' });
-    expect(a.motive?.introLine).toBe(b.motive?.introLine);
-  });
-
-  it('selects across the variant pool rather than pinning one line', () => {
-    // Falsifies "deterministic" being satisfied by a constant. Distinct action
-    // ids must reach more than one authored variant of the same source.
-    const lines = new Set(
-      Array.from({ length: 24 }, (_, i) =>
-        buildPhase('chance', { actionId: `ua_variant_${i}` }).motive?.introLine),
-    );
-    expect(lines.size).toBeGreaterThan(1);
-    expect(lines.size).toBeLessThanOrEqual(MOTIVE_INTRO_VARIANTS.chance.length);
-  });
-
-  it('renders above the hand inside the shell, and not at all when the host owns it', () => {
-    const phase = buildPhase('divine');
-
-    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
-    expect(screen.getByTestId('nudge-motive-intro').textContent).toBe(
-      phase.motive!.introLine,
-    );
-    // The chip+sentence strip this replaced must be gone, not merely relocated.
+  it('the shell draws no motive line, and neither does the strip it replaced', () => {
+    render(<NudgePhaseShell phase={buildPhase('divine')} onCommit={() => {}} />);
+    expect(screen.queryByTestId('nudge-motive-intro')).toBeNull();
     expect(screen.queryByTestId('nudge-motive-strip')).toBeNull();
     expect(screen.queryByTestId('nudge-motive-chip')).toBeNull();
-
-    cleanup();
-
-    // EncounterVeil renders the line above its prose block and passes false, so
-    // the shell must not draw a second copy.
-    render(
-      <NudgePhaseShell phase={phase} onCommit={() => {}} renderMotiveIntro={false} />,
-    );
-    expect(screen.queryByTestId('nudge-motive-intro')).toBeNull();
   });
 });
 

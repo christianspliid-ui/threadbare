@@ -2311,6 +2311,30 @@ export interface DebugBridge {
       readonly pending: import('./types/unifiedAction').StepCastRecord | null;
     }
   >;
+  /** THR-1727 — the encounter's stakes line as built (`line`) and as the veil renders it
+   *  (`rendered`, null when no stakes line is mounted). No argument: the encounter behind
+   *  the newest open notification. With `actionId`: that action, and its `resultLine` once
+   *  resolved (archived actions read the Chapter Record). `hasStakes` is false for a
+   *  template that authors no `stakes` (the veil then shows its description).
+   *  **Async** — `await` it. */
+  getEncounterStakes: (actionId?: string) => Promise<
+    | null
+    | {
+      readonly actionId?: string;
+      readonly templateId: string | null;
+      readonly line: string | null;
+      readonly leadSource?: 'choice' | 'mission' | 'chance' | 'divine' | 'none' | null;
+      readonly fallback?: string | null;
+      readonly stamped?: boolean;
+      readonly stakesContext?: import('./types/encounterStakes').StakesContext | null;
+      readonly resultLine?: string | null;
+      readonly armKey?: string | null;
+      readonly rendered: string | null;
+      readonly hasStakes: boolean;
+      readonly archived?: boolean;
+      readonly reason?: string;
+    }
+  >;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

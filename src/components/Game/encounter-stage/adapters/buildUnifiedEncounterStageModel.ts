@@ -28,6 +28,7 @@ import { supportRoleWord } from '../../../../engine/supportRoleWords';
 import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
+import { stakesContextFor, stakesLineForAction } from '../../../../engine/encounters/stakesLine';
 import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
@@ -234,9 +235,33 @@ function buildHeader(
     }
   }
 
+  // THR-1727 — the stakes line replaces the hand-written summary wherever the
+  // template authors stakes. Read from the context the tick path froze; an action
+  // not yet stamped reads the live receipt (fail-open). A throw falls back to the
+  // summary rather than losing the slot (NFP #4).
+  let stakesLine: EncounterStageModel['header']['stakesLine'];
+  try {
+    const actorName = actorNode?.name ?? agentName;
+    const line = stakesLineForAction(activeAction, template, graph, actorName);
+    if (line) {
+      const stakesCtx = stakesContextFor(activeAction, graph);
+      const showsLocation = line.leadSource === 'chance' && stakesCtx.locationName;
+      stakesLine = {
+        text: enrichProse(line.text, ctx),
+        actorId: activeAction.actorId,
+        actorName,
+        ...(showsLocation ? { locationId: stakesCtx.locationId, locationName: stakesCtx.locationName } : {}),
+        leadSource: line.leadSource,
+        fallback: line.fallback,
+      };
+    }
+  } catch {
+    stakesLine = undefined;
+  }
+
   return {
     title: template.name,
-    subtitle: enrichProse(rawSubtitle, ctx),
+    ...(stakesLine ? { stakesLine } : { subtitle: enrichProse(rawSubtitle, ctx) }),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
     // THR-1551 (fight on screen F2) — a fight step states how hard it is once, in
     // the opponent header's card sentence; a threat word beside it would be a

@@ -51,6 +51,11 @@ export interface EncounterBadgeModel {
   label: string;
   /** "step 2 of 4 · faltered" / "concluded · held" — tooltip body. */
   meta: string;
+  /**
+   * THR-1727 — the encounter's stakes line (live beat) or result line (aftermath),
+   * leading the tooltip body. Absent when the encounter authors no stakes.
+   */
+  stakesLine?: string;
   /** Screen-reader label; includes the count, since the badge itself is aria-hidden. */
   ariaLabel: string;
 }
@@ -121,6 +126,8 @@ export function notificationAnchorIds(notif: EncounterNotification): string[] {
  */
 export function selectEncounterBadges(
   notifications: readonly EncounterNotification[] | undefined,
+  /** THR-1727 — resolves a notification's stakes/result line; omitted ⇒ none. */
+  stakesLineFor?: (notif: EncounterNotification) => string | undefined,
 ): Map<string, EncounterBadgeModel> {
   const byAgent = new Map<string, EncounterNotification[]>();
 
@@ -143,6 +150,7 @@ export function selectEncounterBadges(
 
     const kind = primary.kind === 'aftermath' ? 'aftermath' : 'encounter';
     const meta = buildEncounterNotificationMeta(primary);
+    const stakesLine = stakesLineFor?.(primary);
     const count = bucket.length;
     const countLabel = count > 1
       ? (count > BADGE_COUNT_DISPLAY_MAX ? `${BADGE_COUNT_DISPLAY_MAX}+` : String(count))
@@ -159,6 +167,7 @@ export function selectEncounterBadges(
       countLabel,
       label: primary.encounterName,
       meta,
+      ...(stakesLine ? { stakesLine } : {}),
       ariaLabel: kind === 'aftermath'
         ? `${primary.encounterName} concluded${others} — open aftermath`
         : `${primary.encounterName}, ${meta}${others} — open encounter`,

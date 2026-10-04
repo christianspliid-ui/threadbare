@@ -2851,6 +2851,65 @@ if (import.meta.env.DEV) {
      * **Async** (`await` it) — the bridge has no static imports, so the pin module
      * is pulled in on call. An unawaited call logs a Promise, not the verdict.
      */
+    /**
+     * THR-1727 — the encounter's stakes line, as built and as rendered.
+     *
+     * With no argument: the encounter behind the newest open encounter
+     * notification (what the veil shows). With an `actionId`: that action, live
+     * or archived, and its result line once resolved. `rendered` is the veil's
+     * DOM text (null when the veil is not showing a stakes line), so a check can
+     * compare what was built with what is on screen.
+     */
+    getEncounterStakes: async (actionId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const sl = await import('./engine/encounters/stakesLine');
+      const rendered = typeof document !== 'undefined'
+        ? document.querySelector('[data-testid="encounter-stakes-line"]')?.textContent ?? null
+        : null;
+
+      let id = actionId;
+      if (!id) {
+        const open = [...(state.encounterNotifications ?? [])]
+          .filter(n => !n.resolved && n.actionId)
+          .sort((x, y) => y.createdTick - x.createdTick)[0];
+        id = open?.actionId;
+      }
+      if (!id) return { templateId: null, line: null, rendered, hasStakes: false, reason: 'no open encounter' };
+
+      const action = state.unifiedActions.find(a => a.actionId === id);
+      if (!action) {
+        const record = state.chapterArchive?.find(r => r.actionId === id);
+        if (!record) return { templateId: null, line: null, rendered, hasStakes: false, reason: `no action ${id}` };
+        return {
+          actionId: id,
+          templateId: record.templateId,
+          line: null,
+          resultLine: record.stakesLine ?? null,
+          rendered,
+          hasStakes: Boolean(record.stakesLine),
+          archived: true,
+        };
+      }
+      const template = getUnifiedTemplateById(action.templateId);
+      const built = template ? sl.stakesLineForAction(action, template, state.graph) : null;
+      return {
+        actionId: id,
+        templateId: action.templateId,
+        line: built?.text ?? null,
+        leadSource: built?.leadSource ?? null,
+        fallback: built ? built.fallback : 'no_stakes_description_used',
+        stamped: Boolean(action.stakesContext),
+        stakesContext: action.stakesContext ?? null,
+        resultLine: template && action.resolved ? sl.rememberedStakesLine(action, template, state.graph) : null,
+        armKey: template ? sl.resolveStakesArmKey(template, action.choiceHistory) ?? null : null,
+        rendered,
+        hasStakes: Boolean(template?.stakes),
+        archived: false,
+      };
+    },
+
     getOutcomePinVerdict: async () => {
       const { getOutcomePinVerdict, getOutcomePin } = await import('./engine/debugOutcomePin');
       const verdict = getOutcomePinVerdict();

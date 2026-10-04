@@ -17,7 +17,7 @@
 import type { ForecastTier } from '../types/traces/encounter-traces';
 import type { MotiveSource } from '../engine/encounters/motiveClassifier';
 import type { NudgeBlockedCode } from '../engine/encounters/nudges';
-import type { NudgeRider } from '../types/unifiedAction';
+import type { NudgeRider, UnifiedActionOutcome } from '../types/unifiedAction';
 
 /**
  * Forecast tier → the single word the player reads. This *is* the probability
@@ -51,60 +51,70 @@ export const MOTIVE_FALLBACK_SENTENCES: Readonly<Record<MotiveSource, string>> =
 };
 
 /**
- * The motive as an **introductory line**, printed above the scene's opening
- * prose (THR-972, director review 2026-08-02).
+ * The **stakes line**'s lead clause — why this mortal is here (THR-1727).
  *
- * The chip+sentence pair these replace sat *below* the prose, where it read as a
- * footnote on a scene the player had already finished reading. As an introduction
- * it does the job the classifier was built for: it frames the scene before the
- * scene arrives, so "why is this mortal here" is answered on the way in.
+ * Replaces the THR-972 motive intro line. The line reads
+ * `[lead] [actor] must [goal] — or [risk].`, so each lead ends in a comma and
+ * hands over to the actor's name. `{mission}` and `{location}` are always
+ * substituted by `buildStakesLine`; a lead whose token cannot be filled is
+ * dropped rather than printed raw (NFP #4).
  *
- * **Register.** Plain and declarative — game prose, not novel prose
- * (`Docs/canon/prose.md` rule zero). These lines lead into authored fiction, so
- * anything lyrical here competes with the scene it is introducing. The director's
- * own examples set the ceiling for ornament and are preserved as the first variant
- * of `chance`, `mission`, and `divine`; only grammar and capitalization were
- * polished. The `choice` set is new authorship in the same register.
+ * **Register.** Plain, game prose (`Docs/canon/prose.md` rule zero).
+ * "As part of {mission}," is Christian's own phrasing and stays. The `divine`
+ * lead is the one place the god is addressed in second person (Law 42).
  *
- * `{actor}` is the acting mortal's name and `{mission}` the named errand — both
- * always substituted by the adapter, never rendered raw.
- *
- * Selection is a stable hash of the action id and step index — same encounter,
- * same line, every session. No rng draw (NFP #3).
+ * One variant per source at ship; authors may add more. Selection is a stable
+ * hash of the action id, never an rng draw (NFP #3). An empty list means
+ * "no lead", never a divide by zero.
  */
-export const MOTIVE_INTRO_VARIANTS: Readonly<Record<MotiveSource, readonly string[]>> = {
-  chance: [
-    'While travelling, {actor} is faced with this:',
-    'The road put this in front of {actor}.',
-    '{actor} was simply here when it started.',
-  ],
-  mission: [
-    'As part of {mission}, {actor} faces a challenge.',
-    '{mission} brought {actor} to this.',
-    'This stands between {actor} and {mission}.',
-  ],
-  divine: [
-    'You have led {actor} to this moment.',
-    'Your hand set {actor} on this road.',
-    '{actor} stands here because you willed it.',
-  ],
-  choice: [
-    '{actor} chose this road.',
-    '{actor} came here wanting this.',
-    'No one sent {actor}. They came anyway.',
-  ],
+export const STAKES_LEAD_VARIANTS: Readonly<Record<MotiveSource, readonly string[]>> = {
+  mission: ['As part of {mission},'],
+  divine: ['Led here by your hand,'],
+  choice: ['Choosing this road,'],
+  chance: ['Passing through {location},'],
 };
 
 /**
- * Stands in for `{mission}` when a mission-classified motive names no errand the
- * graph can resolve — a contribution whose provenance node has been culled, or a
- * receipt that recorded a weight without a node id.
- *
- * A generic noun rather than a raw placeholder: the classification is still true
- * (they were sent), only the errand's name is missing, and leaking `{mission}`
- * onto the stage would be worse than naming it vaguely (NFP #4).
+ * The band a result line is chosen by: the action's final outcome, plus the
+ * step-level `near_miss` so a caller holding a step outcome can ask too.
  */
-export const MOTIVE_MISSION_FALLBACK = 'the work they took on';
+export type StakesResultBand = UnifiedActionOutcome | 'near_miss';
+
+/**
+ * The **result line** — the stakes line's ending form, chosen by outcome band
+ * (THR-1727). `{actor}` is the mortal; `{won}` / `{lost}` / `{lostBadly}` are
+ * the template's authored endings, already resolved against the fork arm the
+ * encounter ran on. `{lostBadly}` falls back to `{lost}` when unauthored.
+ *
+ * The line names the story's ending, never its consequences — what the cost
+ * was lives in the aftermath chips (Law 56).
+ */
+export const STAKES_RESULT_FORMS: Readonly<Record<StakesResultBand, string>> = {
+  critical_success: '{actor} {won}.',
+  success: '{actor} {won}.',
+  contested_won: '{actor} {won}.',
+  success_at_cost: '{actor} {won}, at a cost.',
+  near_miss: '{actor} nearly {won}, but {lost}.',
+  failure: '{actor} {lost}.',
+  contested_lost: '{actor} {lost}.',
+  critical_failure: '{actor} {lostBadly}.',
+};
+
+/** Cap on `goal` and `won`, so the stakes line stays one line at 1920 wide. */
+export const STAKES_GOAL_MAX_CHARS = 60;
+/** Cap on `risk`, `lost` and `lostBadly`. */
+export const STAKES_RISK_MAX_CHARS = 60;
+/**
+ * Cap on the assembled opening line, lead and actor name included. Over it, the
+ * lead is dropped first; the line is never truncated mid-word.
+ */
+export const STAKES_LINE_MAX_CHARS = 150;
+/**
+ * Words the authored stakes parts may not contain: the mortal is the subject of
+ * their own stakes, never "the traveler", and the god is not in them at all.
+ * Matched as whole words, case-insensitive, by the validator.
+ */
+export const STAKES_FORBIDDEN_WORDS: readonly string[] = ['traveler', 'god', 'you', 'your'];
 
 /**
  * Drawn immediately before the difficulty word, inside one frame (THR-972).

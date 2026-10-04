@@ -36,7 +36,8 @@ export function EncounterBadge({ badge, onOpen }: EncounterBadgeProps) {
   const accent = badge.accentColor;
 
   return (
-    <Tooltip label={badge.label} desc={badge.meta}>
+    // THR-1727 — the story's own sentence leads; the step/band meta follows it.
+    <Tooltip label={badge.label} desc={badge.stakesLine ? `${badge.stakesLine} · ${badge.meta}` : badge.meta}>
       <IconButton
         size="sm"
         // `active` keeps IconButton's built-in hover mutation from resetting the

@@ -84,6 +84,13 @@ export interface ChapterRecord {
   readonly threaded: boolean;
   /** Support cast/places, snapshotted — enables the per-entity Chapters tab. */
   readonly participants: readonly ChapterParticipant[];
+  /**
+   * THR-1727 — the line the chapter is remembered by: the **result line** once the
+   * encounter resolved with an outcome, the opening **stakes line** while it is
+   * live. Absent for a template that authors no `stakes` (and for records
+   * archived before the field existed). Enriched, like the prose fields.
+   */
+  readonly stakesLine?: string;
   /** Enriched opening/setup prose (the encounter's initiation narrative). */
   readonly openingProse: string;
   readonly steps: readonly ChapterStepRecord[];
