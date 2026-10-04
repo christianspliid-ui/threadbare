@@ -80,6 +80,7 @@
         ".claude/skills/prose-pipeline/SKILL.md",
         ".claude/skills/attachment-pipeline/SKILL.md",
         ".claude/skills/attachment-pipeline/agents/editorial-prompt.md",
+        ".claude/skills/content-judgments/SKILL.md",
         "Docs/exemplars.md",
         "Docs/canon/encounters.md",
         "Docs/canon/rulebook.md",
