@@ -93,7 +93,6 @@ import {
 import {
   classifyMotive,
   readMotiveReceipt,
-  type MotiveSource,
 } from '../../../../engine/encounters/motiveClassifier';
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';

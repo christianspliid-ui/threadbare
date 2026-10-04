@@ -16,7 +16,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { MotiveSource } from '../../../../engine/encounters/motiveClassifier';
