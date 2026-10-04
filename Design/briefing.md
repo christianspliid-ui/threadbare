@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-04 06:56 local (04:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-04 07:58 local (05:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -12,7 +12,7 @@ Everything from your four feedback batches is live, including the "X begins Y" n
 
 ## Also waiting (6)
 
-- **A finished change has been stuck for 26 hours and cannot merge on its own: PR #2178 ("feat(thr-1572): the seeded spell generator — every tradition teaches its own spells") has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it.** *— from the armed-PR check* ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and)). Nothing for you to do: clearing the conflict is a builder's job. The fair-draw PR [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) is stuck the same way, but on purpose: it waits on its veto window (~02:45 Monday).
+- **A finished change has been stuck for 27 hours and cannot merge on its own: PR #2178 ("feat(thr-1572): the seeded spell generator — every tradition teaches its own spells") has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it.** *— from the armed-PR check* ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and)). Nothing for you to do: clearing the conflict is a builder's job.
 - **Was the app closed from Thursday ~17:00 to Friday ~13:45?** No lane ran for about 21 hours, and nothing recorded a pause. If you were away or the app was closed, just say so.
 - **The scheduled lanes went silent for 25h (2026-09-29T17:38:06.000Z → 2026-09-30T18:36:30.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.** *— from the lane-silence check* (Tuesday ~19:30 to Wednesday ~20:20 your time.)
 - **Were you away from the app on Monday 14 and Tuesday 15 September?** *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md)*
@@ -32,16 +32,15 @@ Say "veto spell gifts", "veto first asks", "veto show the roll" or "veto fair dr
 
 ## Queue
 
-**8 jobs ready** (healthy). Since the last brief, [unaffordable choices can no longer be played](https://linear.app/threadbare/issue/THR-1720/an-authored-encounter-choice-the-god-cant-afford-is-still-playable) ([#2205](https://github.com/christianspliid-ui/threadbare/pull/2205)) merged and is live.
+**7 jobs ready** (healthy). Since the last brief, the word *Tradition* got its glossary entry ([THR-1701](https://linear.app/threadbare/issue/THR-1701), [#2210](https://github.com/christianspliid-ui/threadbare/pull/2210)), merged and live.
 
 - **Next up:** [The First asks](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her) (Urgent) and [Show the roll](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice) (High), both after their veto windows today.
-- **Built, stuck:** [the ruin-visit fix](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed): [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) clashes with main, not queued, no owner for ~10.5 h. Code is safe on the pull request (nothing uncommitted). A builder's job.
-- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main, not queued, no owner for ~22 h (nothing uncommitted). The spell-gifts design waits on it. A builder's job.
+- **Built, stuck:** [the ruin-visit fix](https://linear.app/threadbare/issue/THR-1696/a-refused-visit-leaves-a-phantom-pendingvisitduetick-and-a-missed): [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) clashes with main (one file), not queued, no owner for ~11.5 h. Its local worktree is clean; the code is safe on the pull request. A builder's job.
+- **Built, stuck:** [the seeded spell generator](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and): [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) clashes with main (ten files), not queued, no owner for ~23 h. No local worktree for it; the code is on the pull request. The spell-gifts design waits on it. A builder's job.
 - **Old job at the bottom:** [THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies) has sat ready for two months. Not blocked; newer work keeps outranking it.
 
 ## Health
 
 - **Three pull requests clash with main and cannot merge:** [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) (fair draw, deliberately waiting), [#2178](https://github.com/christianspliid-ui/threadbare/pull/2178) (spell generator) and [#2199](https://github.com/christianspliid-ui/threadbare/pull/2199) (ruin visit). GitHub has scheduled no checks on #2180; a merge of main plus a push restarts them. A builder's job.
-- **The simulation is running slower.** tick cost 147 ms/tick steady, 39% above the 7-day median (106, 120 rows since 20269589); top phase agent_decision, 532 agents. Name the merges between 20269589 and 379b2007: git log --oneline --merges 20269589..379b2007. A builder's job.
-- **The worktree reaper has 6 worktrees waiting for a decision** (458 worktrees and 306 local branches on disk). That is the reaper's own job; noted for visibility.
-- Everything else is green. The live site serves the latest main (379b2007), the nightly background jobs are healthy again, and all 11 scheduled tasks are on time.
+- **The worktree reaper has 6 worktrees waiting for a decision** (459 worktrees and 307 local branches on disk). That is the reaper's own job; noted for visibility.
+- Everything else is green. The simulation speed is back to normal (106 ms/tick, level with the 7-day median). The live site serves the latest main (30f82b87), the nightly background jobs are healthy, and all 11 scheduled tasks are on time.
