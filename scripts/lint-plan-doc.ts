@@ -660,9 +660,21 @@ function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Fin
   checkInterfaceImpactConditional(repoPath, text, sections, findings);
 }
 
-function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMode; paths: string[] } {
+/**
+ * With no path and no mode flag, the bare command lints staged (or, failing that,
+ * changed) plan docs — the same set the pre-commit hook lints (THR-984). The old
+ * default, `paths`, read only CLI arguments, so the documented bare form linted
+ * zero files and printed a clean-looking `skipped` whatever the tree held
+ * (impediment #409).
+ */
+function parseCli(argv: readonly string[]): {
+  strict: boolean;
+  mode: CandidateMode;
+  paths: string[];
+  defaultedToStaged: boolean;
+} {
   let strict = false;
-  let mode: CandidateMode = 'paths';
+  let mode: CandidateMode | null = null;
   const paths: string[] = [];
 
   for (const arg of argv) {
@@ -681,7 +693,10 @@ function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMo
     paths.push(normalizeRepoPath(arg));
   }
 
-  return { strict, mode, paths };
+  if (mode === null && paths.length === 0) {
+    return { strict, mode: 'staged', paths, defaultedToStaged: true };
+  }
+  return { strict, mode: mode ?? 'paths', paths, defaultedToStaged: false };
 }
 
 function collectTargetFiles(
@@ -735,7 +750,10 @@ function printFindings(findings: Finding[], strict: boolean): number {
 }
 
 function main(): number {
-  const { strict, mode, paths } = parseCli(process.argv.slice(2));
+  const { strict, mode, paths, defaultedToStaged } = parseCli(process.argv.slice(2));
+  if (defaultedToStaged) {
+    console.log('lint:plan-doc: no paths given — linting staged (else changed) plan docs.');
+  }
   const { targets: targetFiles, waived } = collectTargetFiles(mode, paths);
 
   if (waived.length > 0) {
@@ -749,7 +767,9 @@ function main(): number {
         ? 'every candidate is waived'
         : mode === 'all'
           ? `no files matched ${PLAN_DOC_GLOB}`
-          : 'no candidate files found';
+          : mode === 'staged'
+            ? 'no staged or changed plan docs'
+            : `none of the ${paths.length} given path(s) is an existing ${PLAN_DOC_GLOB} file`;
     console.log(`lint:plan-doc skipped (${reason}).`);
     return 0;
   }
