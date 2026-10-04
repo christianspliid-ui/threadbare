@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-04 17:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-04 18:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,18 +23,18 @@ Say "veto show the roll", "veto fair draw", "veto arrival" or "veto hand bar" to
 
 ## Queue
 
-**4 jobs ready** (healthy), down from 6 — two finished this hour.
+**4 jobs ready** (healthy), unchanged this hour. Nothing merged since the last brief; it's Sunday evening and every ready job is waiting out a veto window.
 
-- **Merged this hour:** [nine god cards that never appeared](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries) now reach the card drawer ([#2225](https://github.com/christianspliid-ui/threadbare/pull/2225), live), and [a process tidy-up](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies), the two-month-old job at the bottom of the queue ([#2226](https://github.com/christianspliid-ui/threadbare/pull/2226), live).
-- **Being built now:** two rulebook clean-up jobs ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)) in one pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)), set to merge itself. It clashed with the tidy-up that merged just before it; a builder clears that. The work is pushed; nothing is sitting uncommitted.
-- **Next up:** [Show the roll](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice) (High), waiting out its veto window until ~20:45.
+- **Being built:** two rulebook clean-up jobs ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)) in one pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)), set to merge itself but still clashing with main ~1.5 h on. The work is pushed and its worktree is clean; nothing is sitting uncommitted. A builder clears the clash.
+- **Next up:** [Show the roll](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice) (High), buildable from ~20:45 tonight.
 - **Buildable Monday:** [the paused arrival](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) (~08:45) and [the five-card hand](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls) (~14:40).
 - **Held on purpose:** [the fair draw for experts](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)) waits for its veto window (~02:45 Monday). See Health for its conflict.
 
 ## Health
 
-- **Simulation speed is still well above its weekly norm, three hours running.** "tick cost 160 ms/tick steady, 40% above the 7-day median (114, 119 rows since 2bebc045); top phase agent_decision, 523 agents. Name the merges between 2bebc045 and 288083e6: git log --oneline --merges 2bebc045..288083e6". Down slightly from last hour's 166, so not getting worse, but not recovering. Executor's job to bisect.
-- **The fair-draw pull request has clashed with main for 36 hours** ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)). The stuck-PR check calls it abandoned: the builder's unstick duty ([THR-1735](https://linear.app/threadbare/issue/THR-1735/stuck-prs-are-the-pickup-lanes-to-fix-unstick-duty-in-step-08)) still has not fired on it, two hours after it merged. It can't merge before Monday ~02:45 anyway. A builder's job, not yours.
-- **The heavy simulation tests keep going red on main**: three of the last four merges failed (the latest, 288083e6, included); one passed in between. That pattern reads as a flaky or slow test rather than one bad merge. A builder owes a fix.
-- **The worktree reaper has 6 worktrees waiting for a decision** (463 worktrees, 308 local branches on disk). The reaper's own job; noted for visibility.
+- **Simulation speed is still above its weekly norm, four hours running, but easing.** "tick cost 149 ms/tick steady, 30% above the 7-day median (115, 120 rows since 2bebc045); top phase agent_decision, 523 agents. Name the merges between 2bebc045 and 288083e6: git log --oneline --merges 2bebc045..288083e6". Down from 160 last hour on the same commit, so part of this is run-to-run noise. Executor's job to bisect.
+- **The fair-draw pull request has clashed with main for 37 hours** ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)). The stuck-PR check calls it abandoned: the builder's unstick duty ([THR-1735](https://linear.app/threadbare/issue/THR-1735/stuck-prs-are-the-pickup-lanes-to-fix-unstick-duty-in-step-08)) has not fired on it. It can't merge before Monday ~02:45 anyway. A builder's job, not yours.
+- **The rulebook pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)) also clashes with main**, ~1.5 h. Same duty, same owner.
+- **The heavy simulation tests are red on the latest main** (288083e6), as last hour; a builder owes a fix.
+- **The worktree reaper has 6 worktrees waiting for a decision** (465 worktrees, 310 local branches on disk). The reaper's own job; noted for visibility.
 - Everything else is green. The live site serves the latest main (288083e6), automated checks run normally, and all 11 scheduled tasks are on time.
