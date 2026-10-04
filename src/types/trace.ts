@@ -392,6 +392,9 @@ export type TraceCategory =
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
   | 'meeting.essence_spent'
+  // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
+  | 'meeting.test_resolved'
+  | 'meeting.bond_resolved'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -926,6 +929,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // The opening (THR-1605 S1)
   'meeting.location_picked',
   'meeting.essence_spent',
+  // Meet The First resolutions (THR-1714)
+  'meeting.test_resolved',
+  'meeting.bond_resolved',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
