@@ -29,6 +29,9 @@ import type {
 /** THR-1724 — the CSS variable the top bar publishes its rendered height on. */
 export const TOPBAR_LIVE_HEIGHT_VAR = '--topbar-live-height';
 
+/** THR-1724 — how far the right group recedes while an encounter veil is open. */
+const TOPBAR_INERT_OPACITY = 0.4;
+
 export interface GameViewTopBarProps {
   gameState: GameState;
 
@@ -40,6 +43,13 @@ export interface GameViewTopBarProps {
   clockHeld?: boolean;
   /** THR-1724 — the name of what holds the clock (the open encounter), for the status line. */
   clockHeldBy?: string;
+  /**
+   * THR-1724 — an encounter veil is open below the bar. The right group's
+   * panels (settings, rivals, notables, doom) open beneath the veil's z-band,
+   * so while it is open they go inert and dim rather than take a click that
+   * shows nothing (Laws 21, 25). The time control stays live (THR-1711).
+   */
+  encounterOpen?: boolean;
   speed: number;
   handleToggleRunning: () => void;
   doTick: () => void;
@@ -107,6 +117,7 @@ export function GameViewTopBar({
   running,
   clockHeld = false,
   clockHeldBy,
+  encounterOpen = false,
   speed,
   handleToggleRunning,
   doTick,
@@ -242,8 +253,13 @@ export function GameViewTopBar({
         {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug — spacing-only separation */}
         <div
           className="flex items-center flex-shrink-0"
+          data-testid="topbar-right-group"
+          inert={encounterOpen}
+          aria-disabled={encounterOpen || undefined}
           style={{
             gap: 'var(--topbar-gap)',
+            opacity: encounterOpen ? TOPBAR_INERT_OPACITY : undefined,
+            transition: 'opacity 0.2s ease',
           }}
         >
           {showDoom && (

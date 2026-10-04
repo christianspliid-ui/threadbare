@@ -4923,6 +4923,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         clockHeldBy={interruptAutoPause.heldRunning !== null && tieredEncounterState && encounterVeilModel
           ? encounterVeilModel.header.title
           : undefined}
+        encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
         speed={speed}
         handleToggleRunning={handleToggleRunningRespectingHold}
         doTick={doTick}
