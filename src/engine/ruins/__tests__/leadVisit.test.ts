@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { maybePlantAppointmentPayoff } from '../../strategicActionLifecycle';
 import { phaseClueDecay } from '../clueLifecycle';
-import { claimLeadVisit, resolveVisitLead, siteClassAdmits } from '../leadVisit';
+import { claimLeadVisit, releaseLeadVisit, resolveVisitLead, siteClassAdmits } from '../leadVisit';
 import {
   CLUE_DECAY_CHECK_INTERVAL,
   CLUE_LEAD_VISIT_DELAY_TICKS,
@@ -27,6 +27,7 @@ import { RUIN_LEAD_COLD_ID } from '../../../data/encounters/ruin-lead-cold';
 import type { GameState } from '../../../types/gameState';
 import type { StrategicActionCandidate } from '../../../types/strategicAction';
 import type { UnifiedAction } from '../../../types/unifiedAction';
+import { APPOINTMENT_MAX_PER_MORTAL } from '../../../data/movement-content';
 
 const CELL = 'cell.observe.location';
 const TICK = 100;
@@ -195,5 +196,105 @@ describe('the ruin visit (THR-1664)', () => {
     expect(terminalActionOutcome(at(1, ['success']), 'near_miss', template)).toBe('success_at_cost');
     // Step 1 is fail_action.
     expect(terminalActionOutcome(at(1, ['success']), 'failure', template)).toBe('failure');
+  });
+
+  // ─── THR-1696: the stamp follows the visit it was written for ───────────────
+
+  /** A second ruin, and a narrowed lead on it; returns the lead's edge id. */
+  function addRuin(state: GameState, id: string, col: number, row: number): string {
+    state.graph.addNode({ id, type: 'location', name: id, properties: { hexCol: col, hexRow: row, locationSubtype: 'elder_ruin', ruinMagnitude: 0.6 } });
+    const leadId = `lead_${id}`;
+    state.graph.addEdge({
+      id: leadId, source: 'actor-hero', target: id, type: 'knows_clue_of',
+      properties: { magnitude: 0.5, precision: 'narrowed', source: 'undertaking_survey', discoveredTick: TICK, consumed: false },
+    });
+    return leadId;
+  }
+
+  it('a planter refusal leaves no stamp — over_max plants nothing and the lead stays unstamped', () => {
+    const state = buildState({ precision: 'narrowed' });
+    // Fill the mortal's appointment slots with visits to other ruins.
+    for (let i = 0; i < APPOINTMENT_MAX_PER_MORTAL; i++) {
+      addRuin(state, `loc-ruin-${i}`, 10 + i, 5);
+      expect(maybePlantAppointmentPayoff(state, survey(`loc-ruin-${i}`), TICK + i)).toBe(true);
+    }
+    const before = state.pendingEncounterSeeds!.length;
+    expect(maybePlantAppointmentPayoff(state, survey(), TICK + 10)).toBe(false);
+    expect(state.pendingEncounterSeeds).toHaveLength(before);
+    expect(getTraces().some(t => t.category === 'appointment_planted'
+      && (t as unknown as { refused?: string }).refused === 'over_max')).toBe(true);
+    expect(leadProps(state)?.pendingVisitDueTick).toBeUndefined();
+    expect(leadProps(state)?.pendingVisitSeedId).toBeUndefined();
+    // Nothing pending, so once a slot frees a repeat survey is not refused visit_pending.
+    state.pendingEncounterSeeds = [];
+    expect(maybePlantAppointmentPayoff(state, survey(), TICK + 11)).toBe(true);
+  });
+
+  it('releaseLeadVisit clears only the stamp its own claim wrote', () => {
+    const state = buildState({ precision: 'narrowed', pendingVisitDueTick: TICK + 48 });
+    releaseLeadVisit(state.graph, 'lead_1', TICK + 60);
+    expect(leadProps(state)?.pendingVisitDueTick).toBe(TICK + 48);
+    releaseLeadVisit(state.graph, 'lead_1', TICK + 48);
+    expect(leadProps(state)?.pendingVisitDueTick).toBeUndefined();
+    expect(() => releaseLeadVisit(state.graph, 'no_such_lead', TICK)).not.toThrow();
+  });
+
+  it('a successful plant stamps the seed id the visit rides', () => {
+    const state = buildState({ precision: 'narrowed' });
+    expect(maybePlantAppointmentPayoff(state, survey(), TICK)).toBe(true);
+    expect(leadProps(state)?.pendingVisitSeedId).toBe(state.pendingEncounterSeeds![0].seedId);
+  });
+
+  it('two ruins: a missed visit to A cools A even while the mortal stands on B', () => {
+    const state = buildState({ precision: 'narrowed' });
+    const leadB = addRuin(state, 'loc-ruin-b', 9, 9);
+    // Survey A (due T+48), then B (due T+60).
+    expect(claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin', TICK, TICK + 48, 'seed_a')).toMatchObject({ admitted: true });
+    expect(claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin-b', TICK, TICK + 60, 'seed_b')).toMatchObject({ admitted: true });
+    // The mortal walks to B; A's #lead_gone_cold sequel fires around T+72.
+    const loc = state.graph.getEdge('hero_loc')!;
+    state.graph.removeEdge(loc.id);
+    state.graph.addEdge({ id: 'hero_loc_b', source: 'actor-hero', target: 'loc-ruin-b', type: 'located_at', properties: {} });
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK + 72, { missed: true, seedId: 'seed_a' });
+    expect(result).toMatchObject({ success: true, ruinId: 'loc-ruin', to: 'cold' });
+    expect(leadProps(state)?.consumed).toBe(true);
+    const b = state.graph.getEdge(leadB)!.properties as Record<string, unknown>;
+    expect(b.consumed).toBe(false);
+    expect(b.precision).toBe('narrowed');
+    expect(b.pendingVisitDueTick).toBe(TICK + 60);
+    expect(b.pendingVisitSeedId).toBe('seed_b');
+  });
+
+  it('an expired stamp never wins the pick — the lead underfoot does', () => {
+    const state = buildState({ precision: 'narrowed' });
+    const leadFar = addRuin(state, 'loc-ruin-far', 15, 15);
+    (state.graph.getEdge(leadFar)!.properties as Record<string, unknown>).pendingVisitDueTick = TICK - CLUE_LEAD_VISIT_GRACE_TICKS - 1;
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK, { outcome: 'success' });
+    expect(result).toMatchObject({ success: true, ruinId: 'loc-ruin' });
+    expect((state.graph.getEdge(leadFar)!.properties as Record<string, unknown>).precision).toBe('narrowed');
+  });
+
+  it('a seed whose lead was re-stamped by a later survey never takes another visit’s lead', () => {
+    const state = buildState({ precision: 'narrowed' });
+    const leadB = addRuin(state, 'loc-ruin-b', 6, 2); // B shares the mortal's hex
+    claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin', TICK, TICK + 48, 'seed_a');
+    claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin-b', TICK, TICK + 60, 'seed_b');
+    // A's stamp lapses and a fresh survey re-stamps it for seed_a2 before seed_a's sequel resolves.
+    expect(claimLeadVisit(state.graph, 'actor-hero', 'loc-ruin', TICK + 73, TICK + 121, 'seed_a2')).toMatchObject({ admitted: true });
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK + 74, { missed: true, seedId: 'seed_a' });
+    expect(result).toEqual({ success: false, failReason: 'no_lead' });
+    const b = state.graph.getEdge(leadB)!.properties as Record<string, unknown>;
+    expect(b.consumed).toBe(false);
+    expect(b.pendingVisitSeedId).toBe('seed_b');
+    expect(leadProps(state)?.pendingVisitSeedId).toBe('seed_a2');
+  });
+
+  it('a seed that matches no lead never cools an unstamped lead underfoot', () => {
+    const state = buildState({ precision: 'located' }); // unstamped lead on the ruin the mortal stands on
+    const result = resolveVisitLead(state.graph, 'actor-hero', TICK, { missed: true, seedId: 'seed_gone' });
+    expect(result).toEqual({ success: false, failReason: 'no_lead' });
+    expect(leadProps(state)?.consumed).toBe(false);
+    // Without a seed (a ?spawn= review) the lead underfoot still answers.
+    expect(resolveVisitLead(state.graph, 'actor-hero', TICK, { outcome: 'success' })).toMatchObject({ success: true, ruinId: 'loc-ruin' });
   });
 });

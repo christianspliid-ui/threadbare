@@ -10,7 +10,8 @@
  * Three pure-ish helpers, each fail-soft (NFP #4):
  * - {@link siteClassAdmits} — the payoff's `siteClasses` gate, read by the planter.
  * - {@link claimLeadVisit} — the planter's lead gate: a `narrowed` lead on the site, no
- *   visit already pending; stamps `pendingVisitDueTick` when it admits.
+ *   visit already pending; stamps `pendingVisitDueTick` (and the seed it is for) when it admits.
+ * - {@link releaseLeadVisit} — undoes that stamp when the planter then refuses (THR-1696).
  * - {@link resolveVisitLead} — the `sharpen_clue` aftermath effect: how the visit ended sets the lead.
  *
  * No PRNG (NFP #3): the band is the encounter resolution's own seeded roll.
@@ -75,6 +76,11 @@ export function claimLeadVisit(
   siteId: string,
   tick: number,
   dueTick: number,
+  /**
+   * THR-1696 — the seed the visit will ride. Stamped beside the due tick so the visit's
+   * resolution (kept or missed) acts on *this* ruin's lead, wherever the mortal stands.
+   */
+  seedId?: string,
 ): { admitted: true; leadId: string } | { admitted: false; reason: LeadVisitRefusal } {
   try {
     const lead = heldLead(graph, actorId, siteId);
@@ -83,9 +89,31 @@ export function claimLeadVisit(
     if (isLeadVisitPending(props.pendingVisitDueTick, tick)) return { admitted: false, reason: 'visit_pending' };
     if (props.precision !== 'narrowed') return { admitted: false, reason: 'not_narrowed' };
     props.pendingVisitDueTick = dueTick;
+    if (seedId) props.pendingVisitSeedId = seedId;
+    else delete props.pendingVisitSeedId;
     return { admitted: true, leadId: lead.id };
   } catch {
     return { admitted: false, reason: 'no_lead' };
+  }
+}
+
+/**
+ * Undo a {@link claimLeadVisit} stamp the planter did not honour (THR-1696). The gate
+ * stamps before `plantAppointmentPromise` runs, and the planter can still refuse
+ * (`over_max`, `place_unresolved`); a stamp left behind would spare the lead decay
+ * and refuse every repeat survey `visit_pending` for a visit nobody arranged.
+ *
+ * Clears only the stamp this claim wrote (matched by due tick), so it never erases a
+ * different visit. Fail-soft: a missing lead is a no-op.
+ */
+export function releaseLeadVisit(graph: WorldGraph, leadId: string, dueTick: number): void {
+  try {
+    const props = graph.getEdge(leadId)?.properties as Record<string, unknown> | undefined;
+    if (!props || props.pendingVisitDueTick !== dueTick) return;
+    delete props.pendingVisitDueTick;
+    delete props.pendingVisitSeedId;
+  } catch {
+    // fail-soft (NFP #4)
   }
 }
 
@@ -99,30 +127,47 @@ export interface VisitLeadResult {
 }
 
 /**
- * The lead a visit acts on: the actor's lead that carries a visit stamp, the one on the
- * ruin they stand on first (the kept visit), else the soonest due (the missed one, which
- * fires wherever the mortal is). With no stamped lead — a `?spawn=` review, a stamp
- * that lapsed — the lead on a ruin at the actor's own hex. Deterministic: ties by edge id.
+ * The lead a visit acts on. First, the lead stamped with the seed that spawned this
+ * visit (THR-1696) — the ruin the visit was arranged for, wherever the mortal now
+ * stands, so a missed visit to ruin A never cools the lead on ruin B underfoot.
+ * A seed that matches no lead never takes another visit's stamped lead. Without a seed
+ * (a `?spawn=` review), or among unseeded pre-THR-1696 stamps: the actor's lead
+ * with a *live* visit stamp, the one on the ruin they stand on first, else the soonest
+ * due. A lapsed stamp never wins (THR-1696). With no live stamp, the lead on a ruin at
+ * the actor's own hex. Deterministic: ties by edge id.
  */
-function visitLead(graph: WorldGraph, actorId: string): GraphEdge | undefined {
+function visitLead(graph: WorldGraph, actorId: string, tick: number, seedId?: string): GraphEdge | undefined {
   const leads = graph.getOutgoingEdges(actorId, 'knows_clue_of')
     .filter(e => e.properties?.consumed !== true)
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   if (leads.length === 0) return undefined;
+  let pool = leads;
+  if (seedId) {
+    const arranged = leads.find(e => e.properties?.pendingVisitSeedId === seedId);
+    if (arranged) return arranged;
+    // The seed's lead was re-stamped by a later survey, or consumed. A lead stamped for a
+    // *different* seed belongs to another visit and is never this one's to resolve; only
+    // a pre-THR-1696 stamp (no seed id) stays eligible below.
+    // Nor is an unstamped lead: with a seed in hand, only a live unseeded stamp may stand in.
+    pool = leads.filter(e => typeof e.properties?.pendingVisitSeedId !== 'string'
+      && isLeadVisitPending(e.properties?.pendingVisitDueTick, tick));
+    if (pool.length === 0) return undefined;
+  }
   const hex = resolveAgentHex(graph, actorId);
   const onHex = (e: GraphEdge): boolean => {
     if (!hex) return false;
     const at = resolveLocationToHex(graph, e.target);
     return at !== null && at.col === hex.col && at.row === hex.row;
   };
-  const stamped = leads.filter(e => typeof e.properties?.pendingVisitDueTick === 'number');
+  const stamped = pool.filter(e => isLeadVisitPending(e.properties?.pendingVisitDueTick, tick));
   const stampedHere = stamped.find(onHex);
   if (stampedHere) return stampedHere;
   if (stamped.length > 0) {
     return [...stamped].sort((a, b) =>
       (a.properties.pendingVisitDueTick as number) - (b.properties.pendingVisitDueTick as number))[0];
   }
-  return leads.find(onHex);
+  // The unstamped lead underfoot answers only a visit with no seed (a `?spawn=` review).
+  return seedId ? undefined : pool.find(onHex);
 }
 
 /**
@@ -142,16 +187,24 @@ export function resolveVisitLead(
   graph: WorldGraph,
   actorId: string,
   tick: number,
-  opts: { outcome?: UnifiedActionOutcome; /** The last step's band, carried onto the trace only. */ band?: StepOutcome; missed?: boolean },
+  opts: {
+    outcome?: UnifiedActionOutcome;
+    /** The last step's band, carried onto the trace only. */
+    band?: StepOutcome;
+    missed?: boolean;
+    /** THR-1696 — the seed that spawned the visit (`UnifiedAction.spawnedFromSeedId`). */
+    seedId?: string;
+  },
 ): VisitLeadResult {
   try {
     if (!opts.missed && !opts.outcome) return { success: false, failReason: 'not_terminal' };
-    const lead = visitLead(graph, actorId);
+    const lead = visitLead(graph, actorId, tick, opts.seedId);
     if (!lead) return { success: false, failReason: 'no_lead' };
     const props = lead.properties as Record<string, unknown>;
     const from = (props.precision as CluePrecision | undefined) ?? 'vague';
     const to: ClueVisitVerdict = opts.missed ? 'cold' : (CLUE_VISIT_PRECISION_BY_OUTCOME[opts.outcome!] ?? 'narrowed');
     delete props.pendingVisitDueTick;
+    delete props.pendingVisitSeedId;
     if (to === 'cold') {
       props.consumed = true;
       props.consumedTick = tick;

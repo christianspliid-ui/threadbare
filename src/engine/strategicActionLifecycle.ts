@@ -84,7 +84,7 @@ import { isAgentGone } from './groups/groupQueries';
 import { isMonster } from './monsters/isMonster';
 import { monsterLairId } from './monsters/hunts';
 import { plantAppointmentPromise } from './appointments';
-import { claimLeadVisit, siteClassAdmits } from './ruins/leadVisit';
+import { claimLeadVisit, releaseLeadVisit, siteClassAdmits } from './ruins/leadVisit';
 import { APPOINTMENT_WINDOW_TICKS } from '../data/movement-content';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
@@ -2292,8 +2292,9 @@ export function maybePlantAppointmentPayoff(
   // THR-1664: the visit is to a lead the survey left `narrowed`, and one pending visit
   // per holder per ruin — the seed id below is tick-keyed, so a repeat survey would
   // otherwise plant a duplicate. The gate stamps `pendingVisitDueTick` on the lead.
+  let claimedLeadId: string | undefined;
   if (payoff.leadVisit) {
-    const claim = site ? claimLeadVisit(state.graph, candidate.actorId, site.id, tick, dueTick) : undefined;
+    const claim = site ? claimLeadVisit(state.graph, candidate.actorId, site.id, tick, dueTick, seedId) : undefined;
     if (!claim?.admitted) {
       const reason = claim?.reason ?? 'no_lead';
       emitTrace({
@@ -2306,6 +2307,7 @@ export function maybePlantAppointmentPayoff(
       });
       return false;
     }
+    claimedLeadId = claim.leadId;
   }
   // A beast's meeting is at its den (the lair it belongs to), the place the one-confront
   // refusal and the draw gate both read; every other site is where the work stands.
@@ -2342,6 +2344,10 @@ export function maybePlantAppointmentPayoff(
 
   // THR-1560: a meeting that must have a place is never planted placeless — a refused
   // promise pushes no seed (the planter traced the refusal with `seedWithheld`).
+  // THR-1696: the lead gate stamped before the planter could refuse; no appointment
+  // means no visit, so the stamp goes too (else the lead is spared decay and every
+  // repeat survey is refused `visit_pending` for a visit nobody arranged).
+  if (claimedLeadId && !result.planted) releaseLeadVisit(state.graph, claimedLeadId, dueTick);
   if (payoff.requirePlace && !result.planted) return false;
 
   const seed: PendingEncounterSeed = {
