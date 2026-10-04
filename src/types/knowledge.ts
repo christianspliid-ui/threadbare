@@ -37,4 +37,10 @@ export interface KnowsClueOfEdgeProperties {
    * missed, via `sharpen_clue`) clears it.
    */
   pendingVisitDueTick?: number;
+  /**
+   * THR-1696 — the seed id of that visit. `sharpen_clue` resolves the lead whose stamp
+   * names the spawning seed, so a missed visit cools the ruin it was arranged for. Set
+   * and cleared with `pendingVisitDueTick`.
+   */
+  pendingVisitSeedId?: string;
 }
