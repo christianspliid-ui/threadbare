@@ -8,7 +8,7 @@ import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex'
 import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
 import type { ReachDomain } from '../types/traits';
 import { rawToReachShare } from '../data/reach-share-constants';
-import { isAtAncestralRuin, tookAncestralGround } from './descent';
+import { isAtAncestralRuin, tookAncestralGround, isOffAncestralLand } from './descent';
 import { OLD_BANNER_RUIN_REACH_HEXES } from '../data/descent-constants';
 
 /**
@@ -384,6 +384,15 @@ export function evaluateGraphCondition(
 
     case 'agent_took_ancestral_ground':
       return tookAncestralGround(graph, agentId, context?.windowStartTick, (locId) => resolveRegionId(graph, locId));
+
+    // Durational like `agent_settled_since` (same window rule), but region-aware: only
+    // a settled position *off* the old land counts as letting the banner go.
+    case 'agent_rooted_off_ancestral_land': {
+      if (typeof context?.currentTick !== 'number') return false;
+      if (!isOffAncestralLand(graph, agentId, (locId) => resolveRegionId(graph, locId))) return false;
+      const dwell = dwellTicks(readResidence(graph, agentId), context.currentTick, context.windowStartTick);
+      return dwell !== undefined && dwell >= condition.minTicks;
+    }
 
     // THR-812 repointed this at the real death flag and inverted the missing-node
     // fallback. Both halves were wrong in the same direction:

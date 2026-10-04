@@ -1075,9 +1075,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 2 },
     abandonmentTriggers: [
       {
-        // Rooted somewhere off the old land — the same residence reading the exile's
-        // drive uses, measured from this drive's own `assignedTick`.
-        condition: { type: 'agent_away_from_origin', minTicks: EXILE_ACCEPTED_DWELL_TICKS },
+        // Rooted somewhere off the old land, for the exile's dwell, measured from this
+        // drive's own `assignedTick`. Region-aware on purpose: the exile's
+        // `agent_away_from_origin` is location-exact, and would end the drive for an
+        // heir who settled at the next town — or at the ruin they came to walk.
+        condition: { type: 'agent_rooted_off_ancestral_land', minTicks: EXILE_ACCEPTED_DWELL_TICKS },
         prose: ['The old empire went back to being a story told by the fire.'],
       },
     ],

@@ -5650,7 +5650,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Location', 'Place'],
     mechanism: {
       kind: 'node-prop',
-      symbols: ['backstoryStrata', 'requiresDescent', 'descentCultureIds', 'agent_at_ancestral_ruin', 'agent_took_ancestral_ground', 'historicalCultureOfRegion'],
+      symbols: ['backstoryStrata', 'requiresDescent', 'descentCultureIds', 'agent_at_ancestral_ruin', 'agent_took_ancestral_ground', 'agent_rooted_off_ancestral_land', 'historicalCultureOfRegion'],
       module: 'src/engine/descent.ts',
     },
     writeSites: ['src/engine/worldPast.ts'],

@@ -164,6 +164,20 @@ describe('DW2 — agent_took_ancestral_ground', () => {
     expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 120, windowStartTick: 100 })).toBe(false);
   });
 
+  it('a claim (controls, establishedTick) on old land counts, windowed', () => {
+    const g = world();
+    g.addEdge({ id: 'e_ctl', source: 'heir', target: 'town_old', type: 'controls', properties: { establishedTick: 105, controlType: 'strategic' } });
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 120, windowStartTick: 100 })).toBe(true);
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 120, windowStartTick: 110 })).toBe(false);
+  });
+
+  it('a founding (incoming constructed_by, tick) of a Place on old land counts, windowed', () => {
+    const g = world();
+    g.addEdge({ id: 'e_built', source: 'place_old', target: 'heir', type: 'constructed_by', properties: { tick: 105 } });
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 120, windowStartTick: 100 })).toBe(true);
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 120, windowStartTick: 110 })).toBe(false);
+  });
+
   it('false with no window, with no descent, and for an edge without acquiredTick', () => {
     const g = world();
     own(g, 'place_old', 110);
@@ -175,5 +189,42 @@ describe('DW2 — agent_took_ancestral_ground', () => {
     const legacy = world();
     own(legacy, 'place_old');
     expect(evaluateGraphCondition(cond, legacy, 'heir', { currentTick: 120, windowStartTick: 100 })).toBe(false);
+  });
+});
+
+describe('agent_rooted_off_ancestral_land (the drive\u2019s abandonment)', () => {
+  const cond = { type: 'agent_rooted_off_ancestral_land', minTicks: 120 } as const;
+  const settle = (g: WorldGraph, at: string, arrivedTick: number) => {
+    const heir = g.getNode('heir')!;
+    heir.properties.originLocationId = 'town_old';
+    heir.properties.residencePositionId = at;
+    heir.properties.residenceArrivedTick = arrivedTick;
+  };
+
+  it('true once settled off the old land for the dwell, counted from the window', () => {
+    const g = world({ at: 'town_new' });
+    settle(g, 'town_new', 0);
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 300, windowStartTick: 100 })).toBe(true);
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 200, windowStartTick: 100 })).toBe(false);
+  });
+
+  it('false when settled away from home but still on the old land (a Place in town, the next town, the ruin)', () => {
+    const g = world({ at: 'place_old' });
+    settle(g, 'place_old', 0);
+    expect(evaluateGraphCondition(cond, g, 'heir', { currentTick: 300, windowStartTick: 100 })).toBe(false);
+    // The exile's location-exact trigger would have fired here.
+    expect(evaluateGraphCondition({ type: 'agent_away_from_origin', minTicks: 120 }, g, 'heir', { currentTick: 300, windowStartTick: 100 })).toBe(true);
+  });
+
+  it('false with no clock, no descent, or an unresolvable region', () => {
+    const g = world({ at: 'town_new' });
+    settle(g, 'town_new', 0);
+    expect(evaluateGraphCondition(cond, g, 'heir')).toBe(false);
+    const noBlood = world({ descent: false, at: 'town_new' });
+    settle(noBlood, 'town_new', 0);
+    expect(evaluateGraphCondition(cond, noBlood, 'heir', { currentTick: 300, windowStartTick: 100 })).toBe(false);
+    const lost = world({ at: 'salt_town' }); // salt_town has no region edge
+    settle(lost, 'salt_town', 0);
+    expect(evaluateGraphCondition(cond, lost, 'heir', { currentTick: 300, windowStartTick: 100 })).toBe(false);
   });
 });

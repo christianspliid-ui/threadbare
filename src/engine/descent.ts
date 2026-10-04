@@ -111,18 +111,46 @@ export function isAtAncestralRuin(graph: DescentRuinGraph, agentId: string, reac
   });
 }
 
+/** True when the location's region was one of `wanted`'s empires. Unresolvable → false. */
+function isOnOldLand(
+  graph: DescentGraph,
+  locationId: string,
+  wanted: ReadonlySet<string>,
+  regionOf: (locationId: string) => string | undefined,
+): boolean {
+  // A Location or a Place — both `type: 'location'` (THR-1183); the legacy
+  // `sublocation` type is still accepted from saved worlds, as every reader does.
+  const type = graph.getNode(locationId)?.type;
+  if (type !== 'location' && type !== 'sublocation') return false;
+  const regionId = regionOf(locationId);
+  if (!regionId) return false;
+  const empire = historicalCultureOfRegion(graph, regionId);
+  return !!empire && wanted.has(empire);
+}
+
+/** A stamped tick at or after the window start. A missing or non-numeric stamp never counts. */
+function since(tick: unknown, windowStartTick: number): boolean {
+  return typeof tick === 'number' && tick >= windowStartTick;
+}
+
 /**
- * *Take ground on the old land*: an `owns` edge acquired at or after `windowStartTick`
- * whose target is a Location or Place on a region that was one of the agent's dead
- * empires. `regionOf` resolves a location's region (the caller passes
- * `graphConditions.resolveRegionId`, kept out of this module to avoid an import cycle).
+ * *Take ground on the old land*: since `windowStartTick`, the agent has taken a Location
+ * or Place on a region that was one of its dead empires, by any of the three ways the
+ * drive's own strategic cells take ground:
  *
- * An edge without a numeric `acquiredTick` (a pre-THR-1297 world) does not count; no
- * window reads `false` — some heirs already own old ground at t0, and without the
+ * - a **holding** — `owns`, stamped `acquiredTick` (claim a Place, seize a Location);
+ * - a **claim** — `controls`, stamped `establishedTick` (`claimControl`, the claim-a-
+ *   Location cell writes a control stance, not a holding);
+ * - a **founding** — a Place whose incoming `constructed_by` edge names the agent,
+ *   stamped `tick` (`createSublocation`).
+ *
+ * `regionOf` resolves a location's region (the caller passes
+ * `graphConditions.resolveRegionId`, kept out of this module to avoid an import cycle).
+ * No window reads `false` — some heirs already own old ground at t0, and without the
  * window the drive would be half done before it began.
  */
 export function tookAncestralGround(
-  graph: DescentGraph,
+  graph: DescentGraph & { getIncomingEdges?(id: string, type?: string): ReadonlyArray<{ source: string; properties: Record<string, unknown> }> },
   agentId: string,
   windowStartTick: number | undefined,
   regionOf: (locationId: string) => string | undefined,
@@ -131,16 +159,30 @@ export function tookAncestralGround(
   const cultures = getDescentCultureIds(graph.getNode(agentId));
   if (cultures.length === 0) return false;
   const wanted = new Set(cultures);
-  return graph.getOutgoingEdges(agentId, 'owns').some(edge => {
-    const acquired = edge.properties.acquiredTick;
-    if (typeof acquired !== 'number' || acquired < windowStartTick) return false;
-    // A Location or a Place — both `type: 'location'` (THR-1183); the legacy
-    // `sublocation` type is still accepted from saved worlds, as every reader does.
-    const targetType = graph.getNode(edge.target)?.type;
-    if (targetType !== 'location' && targetType !== 'sublocation') return false;
-    const regionId = regionOf(edge.target);
-    if (!regionId) return false;
-    const empire = historicalCultureOfRegion(graph, regionId);
-    return !!empire && wanted.has(empire);
-  });
+  const onOldLand = (id: string) => isOnOldLand(graph, id, wanted, regionOf);
+  if (graph.getOutgoingEdges(agentId, 'owns').some(e => since(e.properties.acquiredTick, windowStartTick) && onOldLand(e.target))) return true;
+  if (graph.getOutgoingEdges(agentId, 'controls').some(e => since(e.properties.establishedTick, windowStartTick) && onOldLand(e.target))) return true;
+  const founded = graph.getIncomingEdges?.(agentId, 'constructed_by') ?? [];
+  return founded.some(e => since(e.properties.tick, windowStartTick) && onOldLand(e.source));
+}
+
+/**
+ * *Rooted off the old land* (THR-1658 abandonment): the agent's current position is on
+ * a region whose historical culture is none of its descent cultures. `false` when the
+ * agent has no descent or the region cannot be resolved — absence is never "elsewhere".
+ * Durational dwell is the caller's half (residence), so this reads place only.
+ */
+export function isOffAncestralLand(
+  graph: DescentGraph,
+  agentId: string,
+  regionOf: (locationId: string) => string | undefined,
+): boolean {
+  const cultures = getDescentCultureIds(graph.getNode(agentId));
+  if (cultures.length === 0) return false;
+  const here = graph.getOutgoingEdges(agentId, 'located_at')[0]?.target;
+  if (!here) return false;
+  const regionId = regionOf(here);
+  if (!regionId) return false;
+  const empire = historicalCultureOfRegion(graph, regionId);
+  return !empire || !cultures.includes(empire);
 }

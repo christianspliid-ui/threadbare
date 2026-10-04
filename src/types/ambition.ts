@@ -115,6 +115,15 @@ export type GraphCondition =
    */
   | { type: 'agent_took_ancestral_ground' }
   /**
+   * *Rooted off the old land* (THR-1658) — the descent drive's abandonment. The agent
+   * has held one position for `minTicks` (windowed, as `agent_settled_since`) and that
+   * position's region was none of its dead empires' land. Region-aware where
+   * `agent_away_from_origin` is location-exact: moving to the next town, a ruin or a
+   * Place on the old land is not leaving it. `false` with no descent, no clock, or an
+   * unresolvable region.
+   */
+  | { type: 'agent_rooted_off_ancestral_land'; minTicks: number }
+  /**
    * Region-literal conditions. **Unusable by authored content** — see the block above:
    * region ids are generated per world, so a literal written into a template can never
    * match one. `contentInvariants` pins that no template authors either.
