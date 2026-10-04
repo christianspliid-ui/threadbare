@@ -1307,8 +1307,9 @@ if (import.meta.env.DEV) {
      * Registration adds it to the index only — never to `UNIFIED_ACTION_TEMPLATES`
      * — so no scoring pass can draw it afterwards.
      *
-     * This is the sanctioned browser-verify path for the nudge stage until WS5
-     * converts shipped templates to the nudge format.
+     * A fixture-only route: shipped encounters are reviewed through the
+     * `?spawn=<templateId>` URL lever (THR-883). Read the hand back with
+     * `getEncounterNudges(agentQuery, result.actionId)` (THR-893).
      */
     spawnNudgeExemplar: async (agentQuery: string) => {
       const [{ NUDGE_GOLDEN_EXEMPLAR }, { registerDebugTemplate }] = await Promise.all([
@@ -2631,26 +2632,31 @@ if (import.meta.env.DEV) {
      *
      * WS0's visibility deliverable — WS2 owns the player-facing surface, so this
      * is the state assertion that proves the substrate is wired before any
-     * interface exists to show it. Read-only; resolves the agent by exact id,
-     * id prefix, then case-insensitive partial name (same as `getStepProse`).
+     * interface exists to show it. Read-only.
+     *
+     * THR-893: resolves the agent exactly as the spawners do (`findAgent` —
+     * `@hero` / `@avatar` / `@ascendant`, then id, id prefix, partial name), and
+     * reads the encounter on screen rather than whichever unresolved action comes
+     * first: an explicit `actionId`, else the newest opened one, else the newest
+     * unresolved (`selectDebugReaderAction`).
      */
-    getEncounterNudges: async (agentRef: string) => {
+    getEncounterNudges: async (agentRef: string, actionId?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
       const graph = state.graph;
-      const ref = agentRef.trim();
-      const lc = ref.toLowerCase();
-      const actors = graph.getNodesByType('actor');
-      const actor =
-        actors.find(n => n.id === ref) ??
-        actors.find(n => n.id.startsWith(ref)) ??
-        actors.find(n => (n.name ?? '').toLowerCase().includes(lc));
+      const { findAgent, selectDebugReaderAction } = await import('./engine/debugEncounterTools');
+      const actor = findAgent(state, agentRef);
       if (!actor) return { error: `no actor matched "${agentRef}"` };
-      const actions = state.unifiedActions ?? [];
-      const action =
-        actions.find(a => a.actorId === actor.id && !a.resolved) ??
-        actions.find(a => a.actorId === actor.id);
-      if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
+      const action = selectDebugReaderAction(
+        state.unifiedActions ?? [], state.encounterNotifications ?? [], actor.id, actionId,
+      );
+      if (!action) {
+        return {
+          error: actionId
+            ? `no unified action ${actionId} for ${actor.name ?? actor.id}`
+            : `no unified action for ${actor.name ?? actor.id}`,
+        };
+      }
 
       const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
       const template = getUnifiedTemplateById(action.templateId);
