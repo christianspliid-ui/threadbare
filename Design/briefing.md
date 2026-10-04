@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-04 21:55 local (19:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-04 22:56 local (20:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,13 @@ Say "veto fair draw", "veto arrival", "veto hand bar" or "veto set-down waits" t
 
 ## Queue
 
-**4 jobs ready** (healthy), all four waiting on the veto windows above, so the builder is idle on new work until ~02:45 Monday. [Show the roll](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice) merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and is live.
+**4 jobs ready** (healthy), all four waiting on the veto windows above, so the builder has no new work until ~02:45 Monday. The fair-draw pull request ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)) is no longer clashing with main; it is held on purpose until its veto window closes.
 
 - **Being built:** two rulebook clean-up jobs ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook) and [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)) share one pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)), set to merge itself but clashing with main. Covered under Health.
 
 ## Health
 
-- **The fair-draw pull request has clashed with main for 40 hours** ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)). The stuck-PR check calls it abandoned: the builder's unstick duty ([THR-1735](https://linear.app/threadbare/issue/THR-1735/stuck-prs-are-the-pickup-lanes-to-fix-unstick-duty-in-step-08)) has not fired on it. It can't merge before ~02:45 Monday anyway. A builder's job, not yours.
-- **The rulebook pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)) also clashes with main**, now ~6.5 h. Same duty, same owner.
-- **The heavy simulation tests are red on main**, now 4 h. A builder owes a fix.
-- **The worktree reaper has 6 worktrees waiting for a decision** (475 worktrees, 317 local branches on disk; log updated 21:46). Noted for visibility.
-- Everything else is green. Simulation speed is back to normal (96 ms per tick, below its weekly median of 118), the live site serves the latest commit, automated checks run normally, and all 11 scheduled tasks are on time.
+- **The rulebook pull request ([#2227](https://github.com/christianspliid-ui/threadbare/pull/2227)) clashes with main** (opened ~5.5 h ago). The builder's unstick duty ([THR-1735](https://linear.app/threadbare/issue/THR-1735/stuck-prs-are-the-pickup-lanes-to-fix-unstick-duty-in-step-08)) owns it. A builder's job, not yours.
+- **The heavy simulation tests are red on main**, now 5 h. A builder owes a fix.
+- **The worktree reaper has 6 worktrees waiting for a decision** (476 worktrees, 320 local branches on disk; log updated 22:42). Noted for visibility.
+- Everything else is green. Simulation speed is normal (101 ms per tick, below its weekly median of 117), the live site serves the latest commit, automated checks run normally, and all 11 scheduled tasks are on time.
