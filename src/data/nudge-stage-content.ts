@@ -156,7 +156,7 @@ export const DIFFICULTY_BAND_COLOR_FALLBACK = 'rgb(var(--veil-gold-rgb) / 0.85)'
 export const NUDGE_READING_LEGEND_STORE_KEY = 'threadbare.ui.nudgeReadingLegendSeen';
 
 export interface NudgeReadingLegendEntry {
-  readonly id: 'difficulty' | 'forecast' | 'balance';
+  readonly id: 'forecast' | 'balance';
   /** Tooltip registry id — the legend teaches, the tooltip explains (Law 17). */
   readonly tooltipId: string;
   /** One or two words. A legend names a vocabulary; it does not define it. */
@@ -167,13 +167,15 @@ export interface NudgeReadingLegendEntry {
  * Law 12 — the three readings the merged header now carries as marks, named at
  * first contact so none of them has to be inferred from context.
  *
+ * THR-1724 dropped `difficulty` ("how hard"): the header no longer draws a
+ * difficulty mark, because the forecast already weighs it.
+ *
  * `balance` is the entry that replaced the per-sentence "The Balance" hover
  * (THR-1478 item 5): the factor lines carry their polarity in their own colour,
  * and a colour vocabulary belongs in the legend rather than in a rulebook
  * tooltip repeated on every line.
  */
 export const NUDGE_READING_LEGEND_ENTRIES: readonly NudgeReadingLegendEntry[] = [
-  { id: 'difficulty', tooltipId: 'ui.nudge_difficulty', label: 'how hard' },
   { id: 'forecast', tooltipId: 'ui.nudge_forecast', label: 'how it looks' },
   { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'what weighs' },
 ];

@@ -56,6 +56,14 @@ export interface EncounterVeilProps {
   onBoost: (essenceCost: number) => void;
   onPeek: () => void;
   onDisregard: () => void;
+  /**
+   * THR-1724 — set the encounter down *without* deciding it: the veil closes,
+   * the encounter stays pending, its badge stays standing (Law 40), and the
+   * badge reopens it. Escape and "Show on map" minimise on the attended veil;
+   * the empty-hand commit is the one deliberate way to let it play out unspent.
+   * A host that omits it falls back to `onDisregard`, the old behaviour.
+   */
+  onMinimize?: () => void;
   onAcknowledgeAftermath: () => void;
   onAftermathReaction: (reactionId: string) => void;
   /**
@@ -317,12 +325,18 @@ const TYPE_LABEL_COLORS: Record<string, string> = {
   withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.8)',    /* 5.19:1 */
 };
 
-/** Thread tier display labels */
-const TIER_LABELS: Record<ThreadTier, string> = {
-  strong: 'Strongly Threaded',
-  light: 'Lightly Threaded',
-  watched: 'Watched',
-};
+// THR-1724 — the top-right "Strongly threaded · Paused" whisper and the
+// "Moderate threat" line under it are gone (Christian, 2026-10-04). The tier is
+// not something the player acts on here, the pause is named by the time control
+// (Law 52, amended), and "threat" was a third difficulty vocabulary (Law 13).
+
+/**
+ * THR-1724 — the scene's two columns: prose on the left, the cast and what is
+ * at stake on the right. The side column is fixed so the prose keeps its
+ * measure; the gap is the breathing room between them.
+ */
+const SCENE_SIDE_COLUMN_PX = 220;
+const SCENE_COLUMN_GAP_PX = 24;
 
 /** Staggered entrance animation delays (seconds) */
 const ENTRANCE_DELAYS = {
@@ -337,32 +351,9 @@ const ENTRANCE_DELAYS = {
   footer: 1.8,
 } as const;
 
-/** Mode label suffix per thread tier */
-const TIER_MODE_SUFFIX: Record<ThreadTier, string> = {
-  strong: 'Paused',
-  light: 'Notification',
-  watched: 'Watching',
-};
-
-/**
- * Walk-away label per thread tier.
- *
- * THR-1121 — `strong` used to read `Resume`, one half of the `Resume`/`Intervene`
- * pair the director called out as *"a legacy UX pattern from the old encounter"*.
- * `Resume` named a simulation control (un-pause the world), which is the wrong
- * noun for what the button does to the *encounter*: it sets the moment down and
- * lets the mortals carry it. The other two tiers already said something closer to
- * that, and `Look away` says it for all three registers without pretending the
- * player is operating a transport.
- *
- * The commit that used to sit beside it now lives in the stage body, where the
- * nudge pattern puts it (`Let fate decide`), so this is the footer's only move.
- */
-const DISREGARD_LABEL: Record<ThreadTier, string> = {
-  strong: 'Look away',
-  light: 'Look away',
-  watched: 'Dismiss',
-};
+// THR-1724 — the attended veil's walk-away label ("Look away") is gone with
+// its button: Escape and "Show on map" minimise, and the empty-hand commit is
+// the deliberate let-it-play-out. The watched tier keeps its own "Close".
 
 // ── Component ──────────────────────────────────────────────────────
 export function EncounterVeil({
@@ -376,6 +367,7 @@ export function EncounterVeil({
   onBoost,
   onPeek,
   onDisregard,
+  onMinimize,
   onAcknowledgeAftermath,
   onAftermathReaction,
   aftermathReactionTakenId,
@@ -468,17 +460,24 @@ export function EncounterVeil({
     }
   }, [open]);
 
+  // THR-1724 — on the attended veil (a pending step, strong or light tier)
+  // leaving is a *minimise*: the encounter stays pending behind its badge. The
+  // aftermath and the watched tier have nothing pending to keep, so they still
+  // close the old way.
+  const isAttendedPending = !model.aftermath && threadTier !== 'watched';
+  const leaveVeil = isAttendedPending && onMinimize ? onMinimize : onDisregard;
+
   // Escape key handler
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onDisregard();
+        leaveVeil();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onDisregard]);
+  }, [open, leaveVeil]);
 
   const hasArt = !!model.illustration;
 
@@ -756,7 +755,7 @@ export function EncounterVeil({
               threadTier={threadTier}
               onSelectAgent={onSelectAgent}
               onShowOnMap={onShowOnMap}
-              onDisregard={onDisregard}
+              onLeave={onDisregard}
               followState={followState}
               onToggleFollow={onToggleFollow}
             />
@@ -2050,48 +2049,6 @@ export function EncounterVeil({
         </div>
       )}
 
-      {/* ── Thread tier whisper (top-right) ────────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '4vh',
-          right: '5vw',
-          zIndex: 20,
-          textAlign: 'right' as const,
-          ...entranceStyle(ENTRANCE_DELAYS.tierLabel, 0.8, -8),
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-xs)',
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: GOLD,
-            opacity: 0.5,
-          }}
-        >
-          {TIER_LABELS[threadTier]} &middot; {TIER_MODE_SUFFIX[threadTier]}
-        </div>
-        {/* THR-1551 — absent on a fight step: the opponent header's card
-            sentence is the fight's one statement of how hard it is (Law 10). */}
-        {model.header.threatLabel && (
-          <div
-            data-testid="veil-threat-whisper"
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_GHOST,
-              marginTop: 4,
-              letterSpacing: '0.05em',
-            }}
-          >
-            {model.header.threatLabel} threat
-          </div>
-        )}
-      </div>
-
       {/* ── Content zone (reading area) ───────────────────── */}
       <div
         data-testid="veil-content-column"
@@ -2146,6 +2103,7 @@ export function EncounterVeil({
           }}
         >
           <div
+            data-testid="veil-title"
             style={{
               fontFamily: FONT_DISPLAY,
               fontSize: 'var(--text-xs)',
@@ -2156,6 +2114,22 @@ export function EncounterVeil({
           >
             {model.header.title}
           </div>
+          {/* THR-1724 — the title row is the encounter's metadata row: title ·
+              reach icon · the sheet's reach readout · forecast pill. */}
+          {model.nudgePhase && (
+            <span
+              data-testid="veil-title-marks"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 12, marginLeft: 6, flexWrap: 'wrap' }}
+            >
+              <NudgeReadingMarks
+                testPanel={model.nudgePhase.testPanel}
+                forecast={nudgeHand.forecast}
+                baseForecast={nudgeHand.baseForecast}
+                forecastMoved={nudgeHand.forecastMoved}
+                designerView={nudgeDesignerView}
+              />
+            </span>
+          )}
           <ProseTtsButton
             text={narratableProse}
             label="Narrate this scene"
@@ -2180,18 +2154,10 @@ export function EncounterVeil({
             threadTier={threadTier}
             onSelectAgent={onSelectAgent}
             onShowOnMap={onShowOnMap}
-            onDisregard={onDisregard}
+            onLeave={leaveVeil}
             followState={followState}
             onToggleFollow={onToggleFollow}
-            inlineMarks={model.nudgePhase ? (
-              <NudgeReadingMarks
-                testPanel={model.nudgePhase.testPanel}
-                forecast={nudgeHand.forecast}
-                baseForecast={nudgeHand.baseForecast}
-                forecastMoved={nudgeHand.forecastMoved}
-                designerView={nudgeDesignerView}
-              />
-            ) : undefined}
+            reachShownElsewhere={Boolean(model.nudgePhase)}
             belowBlock={model.nudgePhase ? (
               <NudgeBalance testPanel={model.nudgePhase.testPanel} onOpenEntity={onSelectEntity} />
             ) : undefined}
@@ -2235,8 +2201,19 @@ export function EncounterVeil({
           }}
         />
 
-        {/* Prose — live narrative, or a resolved step's frozen replay (THR-636) */}
-        <div style={entranceStyle(ENTRANCE_DELAYS.prose, 1.0, 12)}>
+        {/* Prose — live narrative, or a resolved step's frozen replay (THR-636).
+            THR-1724: two columns — the scene on the left, who is in it and what
+            it puts at stake on the right. */}
+        <div
+          data-testid="veil-scene-columns"
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: SCENE_COLUMN_GAP_PX,
+            ...entranceStyle(ENTRANCE_DELAYS.prose, 1.0, 12),
+          }}
+        >
+        <div data-testid="veil-scene-prose" style={{ flex: 1, minWidth: 0 }}>
           {replayEntry ? (
             <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} onSelectEntity={onSelectEntity} />
           ) : (
@@ -2355,10 +2332,18 @@ export function EncounterVeil({
               nobody; they sit here, after the prose and before the move, in the
               order the player needs them: who is here, what it costs, what you
               do. */}
-          <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />
-          <FalloutPreview fallout={model.falloutPreview} />
           </>
           )}
+        </div>
+        {!replayEntry && (model.cast.length > 0 || model.falloutPreview.length > 0) && (
+          <div
+            data-testid="veil-scene-side"
+            style={{ flex: `0 0 ${SCENE_SIDE_COLUMN_PX}px`, minWidth: 0 }}
+          >
+            <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />
+            <FalloutPreview fallout={model.falloutPreview} />
+          </div>
+        )}
         </div>
 
         {/* ── The player's move (hidden while replaying a resolved step) ──
@@ -2462,32 +2447,10 @@ export function EncounterVeil({
           &#9670; {formatEssencePool(essence)} essence
         </div>
 
-        {/* Action buttons */}
+        {/* THR-1724 — "Look away" is gone. Escape and "Show on map" minimise
+            (the encounter waits behind its badge); the empty-hand commit is the
+            one deliberate way to let it play out unspent. */}
         <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <button
-            className="focus-ring"
-            onClick={onDisregard}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.06em',
-              color: TEXT_GHOST,
-              cursor: 'pointer',
-              padding: '8px 0',
-              transition: 'color 0.4s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = TEXT_WHISPER;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = TEXT_GHOST;
-            }}
-          >
-            {DISREGARD_LABEL[threadTier]}
-          </button>
           {/* THR-1121 — the `Intervene` button that sat here is gone. It was the
               commit half of the legacy pair: a footer control, far from the
               choice it committed, that only lit up once a stance was selected.
@@ -2944,21 +2907,12 @@ function CastStrip({
   return (
     <div
       data-testid="veil-cast-strip"
-      style={{ marginTop: 22, paddingTop: 14, borderTop: '1px solid rgb(var(--veil-gold-rgb) / 0.15)' }}
+      // THR-1724 — the right-hand column of the scene, without its "In the
+      // scene" heading: placement beside the prose already says it. One entry
+      // per line, each still its portrait, tooltip and link (Laws 1, 21).
+      style={{ paddingLeft: 16, borderLeft: '1px solid rgb(var(--veil-gold-rgb) / 0.15)' }}
     >
-      <div
-        style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: 'var(--text-xs)',
-          letterSpacing: '0.16em',
-          textTransform: 'uppercase',
-          color: TEXT_WHISPER,
-          marginBottom: 10,
-        }}
-      >
-        In the scene
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {cast.map((member) => {
           // Law 21: the link is live only when there is somewhere to go. An
           // unbound spec has no node, so the chip stays a plain name rather
@@ -3077,7 +3031,7 @@ function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) 
   return (
     <div
       data-testid="veil-fallout-preview"
-      style={{ marginTop: 18, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
+      style={{ marginTop: 18, paddingLeft: 16, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
     >
       <span
         style={{
@@ -3117,25 +3071,25 @@ function ContextStrip({
   threadTier,
   onSelectAgent,
   onShowOnMap,
-  onDisregard,
+  onLeave,
   followState,
   onToggleFollow,
-  inlineMarks,
+  reachShownElsewhere = false,
   belowBlock,
 }: {
   header: EncounterStageHeaderModel;
   threadTier: ThreadTier;
   onSelectAgent?: (agentId: string) => void;
   onShowOnMap?: (col: number, row: number) => void;
-  onDisregard: () => void;
+  /** What "Show on map" does to the veil after panning (THR-1724: minimise on a pending step). */
+  onLeave: () => void;
   followState?: FollowDescriptor;
   onToggleFollow?: (agentId: string) => void;
   /**
-   * THR-1478 — marks the *stage* contributes to this row, rendered after the
-   * location. Present only on a nudge step; the aftermath and the legacy choice
-   * path pass nothing and draw exactly what they drew before.
+   * THR-1724 — the nudge stage draws the reach in the title row, so this row's
+   * text reach chip stands down (the reach appears exactly once, THR-1478).
    */
-  inlineMarks?: ReactNode;
+  reachShownElsewhere?: boolean;
   /** Anything the marks need beneath them — today, the balance and its legend. */
   belowBlock?: ReactNode;
 }) {
@@ -3216,7 +3170,7 @@ function ContextStrip({
           THR-1478: stands down where `inlineMarks` renders. The marks draw the
           reach as the icon-set `ReachIcon` (THR-972's directive), and the whole
           point of the merge was that the reach appears exactly once. */}
-      {header.reachLabel && !inlineMarks && (
+      {header.reachLabel && !reachShownElsewhere && (
         <span
           style={{
             fontFamily: FONT_PROSE,
@@ -3253,7 +3207,7 @@ function ContextStrip({
               className="focus-ring"
               onClick={() => {
                 onShowOnMap!(header.hexCol!, header.hexRow!);
-                onDisregard();
+                onLeave();
               }}
               style={{
                 background: 'transparent',
@@ -3276,9 +3230,6 @@ function ContextStrip({
         </span>
       )}
 
-      {/* THR-1478 — the stage's reading marks, in this row rather than in a
-          second panel below the prose. */}
-      {inlineMarks}
     </div>
     {belowBlock}
     </div>

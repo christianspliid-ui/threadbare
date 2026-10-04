@@ -3256,6 +3256,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
   const suppressedEncounterNotificationId = useRef<string | null>(null);
+  /**
+   * THR-1724 — notifications the player minimised. The auto-open scan skips
+   * them for as long as they stay pending; only the badge reopens them. A set,
+   * not the single suppression ref above, because two encounters can be set
+   * down in a row and the first must not pop back when the second is.
+   */
+  const minimisedEncounterNotificationIds = useRef<Set<string>>(new Set());
 
   // `openedAsInterrupt` no longer forces a resume (THR-1608): the central
   // auto-pause restores the clock to its state before the encounter opened.
@@ -3324,6 +3331,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
   }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+
+  /**
+   * THR-1724 — set the encounter down without deciding it. Nothing on the action
+   * or the notification changes: the step stays pending, the badge stays
+   * standing (Law 40), and the badge reopens it. The notification id is held in
+   * the auto-open suppression so the scan does not throw the veil straight back
+   * up; that suppression clears itself once the notification resolves.
+   */
+  const handleEncounterMinimize = useCallback(() => {
+    if (tieredEncounterState?.notification?.id) {
+      minimisedEncounterNotificationIds.current.add(tieredEncounterState.notification.id);
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+    }
+    closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
+  }, [closeEncounterModalAndResume, gameState.tick, tieredEncounterState]);
 
   const handleEncounterAcknowledgeAftermath = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {
@@ -4000,8 +4022,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         suppressedEncounterNotificationId.current = null;
       }
     }
+    // THR-1724 — a minimised encounter waits for its badge. Ids that are no
+    // longer pending are pruned so the set cannot grow without bound.
+    const minimised = minimisedEncounterNotificationIds.current;
+    if (minimised.size > 0) {
+      const pending = new Set(notifications.filter(n => !n.resolved).map(n => n.id));
+      for (const id of minimised) if (!pending.has(id)) minimised.delete(id);
+    }
     runEncounterAutoOpenScan(
-      notifications,
+      minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications,
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
@@ -4845,6 +4874,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         // to — that is what the button now toggles — and label it as held.
         running={interruptAutoPause.heldRunning ?? running}
         clockHeld={interruptAutoPause.heldRunning !== null}
+        // THR-1724 — Law 52 (amended): the time control names the encounter
+        // holding the clock, since the veil no longer says "Paused" itself.
+        clockHeldBy={interruptAutoPause.heldRunning !== null && tieredEncounterState && encounterVeilModel
+          ? encounterVeilModel.header.title
+          : undefined}
         speed={speed}
         handleToggleRunning={handleToggleRunningRespectingHold}
         doTick={doTick}
@@ -5718,6 +5752,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onBoost={handleEncounterBoost}
             onPeek={handleEncounterPeek}
             onDisregard={handleEncounterDisregard}
+            onMinimize={handleEncounterMinimize}
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             aftermathReactionTakenId={aftermathReactionTakenId}

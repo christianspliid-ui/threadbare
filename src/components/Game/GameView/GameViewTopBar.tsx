@@ -35,6 +35,8 @@ export interface GameViewTopBarProps {
   running: boolean;
   /** True while an interrupt holds the clock; `running` is then the state it returns to (THR-1711). */
   clockHeld?: boolean;
+  /** THR-1724 — the name of what holds the clock (the open encounter), for the status line. */
+  clockHeldBy?: string;
   speed: number;
   handleToggleRunning: () => void;
   doTick: () => void;
@@ -101,6 +103,7 @@ export function GameViewTopBar({
   year,
   running,
   clockHeld = false,
+  clockHeldBy,
   speed,
   handleToggleRunning,
   doTick,
@@ -168,6 +171,7 @@ export function GameViewTopBar({
             year={year}
             running={running}
             held={clockHeld}
+            heldBy={clockHeldBy}
             speed={speed}
             onToggle={handleToggleRunning}
             onStep={doTick}
