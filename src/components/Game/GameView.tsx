@@ -1530,6 +1530,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         threadTier: tieredEncounterState.threadTier,
         graph: gameState.graph,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+        payingSphere: archetype.sphereAlignment.primary,
         doomIdentityMatrix: gameState.doomIdentityMatrix,
         gameState,
         tick: gameState.tick,
@@ -1553,6 +1555,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isGateDutyEncounterStage,
     unifiedTemplateForStage,
     tieredEncounterState,
+    archetype.sphereAlignment.primary,
   ]);
 
   // ── Unified model for EncounterVeil: reuses existing adapters when available,
@@ -1572,6 +1575,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       graph: gameState.graph,
       threadTier: tieredEncounterState.threadTier,
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+      payingSphere: archetype.sphereAlignment.primary,
       tick: gameState.tick,
       gameState,
       // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
@@ -1581,7 +1586,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ? gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
         : undefined) ?? tieredEncounterState.activeActionSnapshot ?? undefined,
     });
-  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
+  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick, archetype.sphereAlignment.primary]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */

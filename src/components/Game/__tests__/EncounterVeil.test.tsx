@@ -20,6 +20,7 @@ import type { EncounterSupportBinding } from '../../../types/encounter';
 import { isDefaultSupportSpec } from '../../../data/default-support-bundles';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
+import type { GameState } from '../../../types/gameState';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../encounterNotificationRuntime';
 
@@ -2169,7 +2170,10 @@ describe('EncounterVeil — fallout preview (THR-1041)', () => {
 describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
   afterEach(() => resetNudgeDesignerView());
 
-  function buildAdapterModel(threadTier: 'strong' | 'watched'): EncounterStageModel {
+  function buildAdapterModel(
+    threadTier: 'strong' | 'watched',
+    overrides: Partial<Parameters<typeof buildSimpleEncounterStageModel>[0]> = {},
+  ): EncounterStageModel {
     const graph = new WorldGraph();
     graph.addNode({ id: 'agent-1', name: 'Vasara the Unbowed', type: 'actor', properties: {} });
 
@@ -2232,8 +2236,32 @@ describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
       threadTier,
       essence: 10,
       tick: 12,
+      ...overrides,
     });
   }
+
+  /**
+   * THR-1720 — the adapter prices a choice against the pool the commit handler
+   * charges. Against the twelve pools summed, a choice the handler will refuse
+   * read affordable, so the veil offered a commit the game then rejected.
+   */
+  it('prices a choice against the paying sphere, not the summed pool', () => {
+    const base = buildAdapterModel('strong');
+    const notification = {
+      ...({} as EncounterNotification),
+      id: 'notif-1', agentId: 'agent-1', agentName: 'Vasara', courtPosition: 'the_first',
+      encounterId: 'test.encounter', encounterName: 'Test Encounter', prose: 'A test encounter unfolds.',
+      createdTick: 10, autoResolveTick: null, viewed: false, resolved: false,
+      choices: [{ id: 'c-dear', text: 'Hold the gate', essenceCost: 5, interventionType: 'supportive', probabilityBoost: 0 }],
+    } as EncounterNotification;
+    const gameState = { essencePool: { life: 1, force: 40 } } as unknown as GameState;
+    const priced = buildAdapterModel('strong', { notification, essence: 41, gameState, payingSphere: 'life' });
+    expect(priced.choices[0]).toMatchObject({ affordable: false, payingSphere: 'life' });
+    // Without a paying sphere the old summed reading is kept (41 covers 5).
+    const summed = buildAdapterModel('strong', { notification, essence: 41 });
+    expect(summed.choices[0].affordable).toBe(true);
+    expect(base.choices).toEqual([]);
+  });
 
   it('the adapter still produces the readout — the model is not what changed', () => {
     expect(buildAdapterModel('strong').resolutionReadout).toBeDefined();
