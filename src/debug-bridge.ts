@@ -1558,6 +1558,35 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1658: an agent's descent from a dead empire and the Raise-the-Old-Banner
+     * drive it can feed. Accepts `@hero`, an agent id, id prefix, or partial name.
+     * Returns null if not found.
+     */
+    getDescent: async (nameOrId: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const match = await resolveAgentNode(nameOrId);
+      if (!match) return null;
+      const { getDescentCultureIds, ancestralRuinIds, historicalCultureOfRegion } = await import('./engine/descent');
+      const { resolveRegionId } = await import('./engine/graphConditions');
+      const { OLD_BANNER_TEMPLATE_ID } = await import('./data/descent-constants');
+      const descentCultureIds = getDescentCultureIds(match);
+      const here = resolveRegionId(graph, graph.getOutgoingEdges(match.id, 'located_at')[0]?.target);
+      const empireHere = here ? historicalCultureOfRegion(graph, here) : undefined;
+      const holdsOldBanner = graph.getOutgoingEdges(match.id, 'pursues').some(e =>
+        e.properties.status === 'active'
+        && graph.getNode(e.target)?.properties.templateId === OLD_BANNER_TEMPLATE_ID);
+      return {
+        actorId: match.id,
+        descentCultureIds,
+        descentCultureNames: descentCultureIds.map(id => graph.getNode(id)?.name ?? id),
+        ancestralRuinIds: ancestralRuinIds(graph, descentCultureIds),
+        onAncestralLand: !!empireHere && descentCultureIds.includes(empireHere),
+        holdsOldBanner,
+      };
+    },
+
+    /**
      * Returns all attachments (possessions, conditions, powers, agreements) for an agent.
      * Accepts `@hero`, an agent id, id prefix, or partial name (case-insensitive).
      * Returns null if not found.

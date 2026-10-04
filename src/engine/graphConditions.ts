@@ -8,6 +8,8 @@ import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex'
 import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
 import type { ReachDomain } from '../types/traits';
 import { rawToReachShare } from '../data/reach-share-constants';
+import { isAtAncestralRuin, tookAncestralGround, isOffAncestralLand } from './descent';
+import { OLD_BANNER_RUIN_REACH_HEXES } from '../data/descent-constants';
 
 /**
  * Minimal graph interface — keeps this module testable without the full WorldGraph.
@@ -45,6 +47,12 @@ export interface ConditionGraph {
     type: string;
     properties: Record<string, unknown>;
   }>;
+  /**
+   * Optional and additive (THR-1658): only `agent_at_ancestral_ruin` needs to enumerate
+   * nodes (to find elder ruins). `WorldGraph` provides it; a view that omits it simply
+   * reads that condition as `false`.
+   */
+  getNodesByType?(type: string): ReadonlyArray<{ id: string; properties: Record<string, unknown> }>;
 }
 
 /**
@@ -357,6 +365,33 @@ export function evaluateGraphCondition(
       const origin = resolveRegionId(graph, readResidence(graph, agentId).originLocationId);
       if (here === undefined || origin === undefined) return false;
       return here !== origin;
+    }
+
+    // ── Descent conditions (THR-1658) ──
+    //
+    // Both read descent through `descent.ts` and fail soft to `false` on every
+    // unresolvable input. The ruin walk needs `getNodesByType`, which the minimal view
+    // only optionally offers: a view without it cannot find ruins, so reads `false`.
+    case 'agent_at_ancestral_ruin': {
+      const { getNodesByType } = graph;
+      if (typeof getNodesByType !== 'function') return false;
+      return isAtAncestralRuin(
+        { getNode: (id) => graph.getNode(id), getOutgoingEdges: (id, t) => graph.getOutgoingEdges(id, t), getNodesByType: (t) => getNodesByType.call(graph, t) },
+        agentId,
+        OLD_BANNER_RUIN_REACH_HEXES,
+      );
+    }
+
+    case 'agent_took_ancestral_ground':
+      return tookAncestralGround(graph, agentId, context?.windowStartTick, (locId) => resolveRegionId(graph, locId));
+
+    // Durational like `agent_settled_since` (same window rule), but region-aware: only
+    // a settled position *off* the old land counts as letting the banner go.
+    case 'agent_rooted_off_ancestral_land': {
+      if (typeof context?.currentTick !== 'number') return false;
+      if (!isOffAncestralLand(graph, agentId, (locId) => resolveRegionId(graph, locId))) return false;
+      const dwell = dwellTicks(readResidence(graph, agentId), context.currentTick, context.windowStartTick);
+      return dwell !== undefined && dwell >= condition.minTicks;
     }
 
     // THR-812 repointed this at the real death flag and inverted the missing-node
