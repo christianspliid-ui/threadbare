@@ -20,6 +20,7 @@ import {
 } from './encounter-words';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
+import { ROUTINE_THREAT_RATING } from '../types/encounterVisibility';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
@@ -409,6 +410,10 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     ...(e.stakes ? { stakes: e.stakes } : {}),
     rarityTier: 1,
     intrinsicTier: 'background',
+    // THR-1715: the allowlist drops what it does not name — the authored
+    // threat rating is dropped here, so its one player-facing meaning (daily
+    // life) must be carried as its own field.
+    ...(e.threatRating === ROUTINE_THREAT_RATING ? { routine: true } : {}),
   });
 }
 
@@ -2924,7 +2929,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     reachPrimary: 'shadow',
     reachSecondary: 'gold',
     encounterType: 'steal',
-    threatRating: 'trivial',
+    threatRating: 'easy', // THR-1715 C2: a scene, not a chore — re-rated off daily life
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     steps: [
@@ -3978,7 +3983,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     reachPrimary: 'eye',
     reachSecondary: 'heart',
     encounterType: 'assist',
-    threatRating: 'trivial',
+    threatRating: 'easy', // THR-1715 C2: a scene, not a chore — re-rated off daily life
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [

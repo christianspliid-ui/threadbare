@@ -90,6 +90,7 @@ export type TraceCategory =
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
+  | 'attention.story_breath_start' | 'attention.routine_suppressed' // THR-1715
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
@@ -391,6 +392,9 @@ export type TraceCategory =
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
   | 'meeting.essence_spent'
+  // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
+  | 'meeting.test_resolved'
+  | 'meeting.bond_resolved'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -620,6 +624,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
+  'attention.story_breath_start', 'attention.routine_suppressed',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
@@ -924,6 +929,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // The opening (THR-1605 S1)
   'meeting.location_picked',
   'meeting.essence_spent',
+  // Meet The First resolutions (THR-1714)
+  'meeting.test_resolved',
+  'meeting.bond_resolved',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -1927,6 +1935,35 @@ export interface FilterPipelineTrace extends TraceBase {
   capCutTemplates?: number;
   /** Which own-hex order filled the cap's local slots (THR-1687). Absent when no own-hex pass ran (cap not reached, no agent hex, reserves took every slot). */
   capLocalOrder?: 'walk' | 'template_hash';
+  /**
+   * Candidates after the story-breath stage (THR-1715). Equal to
+   * `afterPrerequisites` for every agent not inside a pause-mode breath.
+   * Optional: traces from before THR-1715 lack it.
+   */
+  storyBreath?: number;
+}
+
+/** Trace: a pause-mode mortal's story chapter ended and the story breath began (THR-1715). */
+export interface StoryBreathStartTrace extends TraceBase {
+  category: 'attention.story_breath_start';
+  agentId: string;
+  /** The chapter that ended. */
+  actionId: string;
+  templateId: string;
+  /** tick + PAUSED_STORY_BREATH_TICKS */
+  breathUntilTick: number;
+}
+
+/**
+ * Trace: routine (daily-life) actions kept off the player's screen this tick
+ * (THR-1715). Aggregated: at most one per tick.
+ */
+export interface RoutineSuppressedTrace extends TraceBase {
+  category: 'attention.routine_suppressed';
+  /** Routine notifications not built this tick. */
+  count: number;
+  /** Threaded actors affected (capped at ROUTINE_SUPPRESSED_TRACE_AGENT_CAP). */
+  agentIds: string[];
 }
 
 /** Trace: agent movement transition or decision */
@@ -4449,6 +4486,8 @@ export type TraceEntry =
   | BindingSeveredTrace
   | BinderMintTrace
   | FilterPipelineTrace
+  | StoryBreathStartTrace
+  | RoutineSuppressedTrace
   | ScoringTrace
   | MovementTrace
   | IdleDecisionTrace
@@ -4921,6 +4960,15 @@ export interface MeetingTestResolvedTrace extends TraceBase {
   /** Erosion this band cost, before the floor clamp. 0 on non-scarring bands. */
   quintessenceErosion: number;
   essenceSpent: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**
@@ -4939,6 +4987,15 @@ export interface MeetingBondResolvedTrace extends TraceBase {
   playedNudgeIds: string[];
   /** Starting quintessence after scarring, post-floor. */
   startingQuintessence: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**

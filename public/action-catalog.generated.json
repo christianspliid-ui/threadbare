@@ -55,9 +55,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": false,
@@ -85,9 +87,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": false,
@@ -707,9 +711,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": true,
@@ -821,9 +827,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": false,
@@ -1195,9 +1203,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": false,
@@ -1225,9 +1235,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": false,
@@ -1455,9 +1467,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": true,
@@ -1627,9 +1641,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": true,
@@ -2441,9 +2457,11 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "agent"
+        "actor"
       ],
-      "targetSubtypes": [],
+      "targetSubtypes": [
+        "individual"
+      ],
       "requiresReach": null,
       "starter": false,
       "beatGranted": true,

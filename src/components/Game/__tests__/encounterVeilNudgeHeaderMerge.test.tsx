@@ -271,10 +271,11 @@ describe('THR-1478 — one header block above the prose', () => {
     expect(pill.getAttribute('data-forecast-tier')).toBe(expected.tier);
     // Law 31 — the word renders in the pill, never hue alone.
     expect(pill.textContent).toBe(expected.word);
-    // And the "was …" read appears, because the tier moved.
-    expect(screen.getByTestId('nudge-forecast-moved').textContent).toContain(
-      phase.baseForecast.word,
-    );
+    // And the shift line appears, because the tier moved — present tense and
+    // naming its cause (THR-1714): "was Perilous" read as an already-made roll.
+    const moved = screen.getByTestId('nudge-forecast-moved').textContent ?? '';
+    expect(moved).toBe(`your hand: ${phase.baseForecast.word} → ${expected.word}`);
+    expect(moved).not.toMatch(/was/);
   });
 
   it('shows the mortal\'s standing in the reach as the sheet does, naming them in its tooltip (THR-1724)', () => {

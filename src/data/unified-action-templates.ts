@@ -731,7 +731,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: REKINDLE_ESSENCE_COST,
     actorAffinities: ['ascendant'],
     sphereAffinity: 'spirit',
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     motivations: [],
     narrativeTemplates: {
       initiation: 'reaches for a thread gone slack and pours warmth back down it',
@@ -769,7 +771,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'mind',
     motivations: ['loyalty_ambition'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'breathes a word into the space between thoughts',
       success: 'the scales of the conversation shift — something in the negotiation tilts',
@@ -804,7 +808,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     motivations: ['courage_prudence'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'breathes divine courage into a mortal chest',
       success: 'the target\'s resolve hardens — they will not be moved',
@@ -840,7 +846,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'mind',
     motivations: ['loyalty_ambition'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'breathes a truth into the space between agents',
       success: 'the secret surfaces, and the room divides into those who knew and those who did not',
@@ -874,7 +882,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     motivations: ['loyalty_ambition'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'stirs the memory of a debt long owed',
       success: 'the obligation is discharged — a favor redeemed, the scales reset',
@@ -913,7 +923,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // says what the action does (THR-1114 — was `shadow`, a Reach in a Sphere field).
     sphereAffinity: 'darkness',
     motivations: ['honesty_cunning', 'loyalty_ambition'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'breathes a false truth into the space between certainties',
       success: 'the fabrication takes hold — a secret that was never real now carries the weight of one',
@@ -1259,7 +1271,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     motivations: ['loyalty_ambition', 'courage_prudence'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'lays the mantle of divine favor on a chosen mortal',
       success: 'the blessing settles — the anointed moves with the authority of the chosen',
@@ -1280,7 +1294,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   //
   // Drawer surfacing (§8.1 of plan doc): the verb appears when the focused
   // target is an agent who is a non-leader, non-army member of ≥1 faction.
-  // The drawer's existing targetCategories: ['agent'] filter handles surfacing;
+  // The drawer's targetCategories: ['actor'] + targetSubtypes: ['individual'] gate handles surfacing;
   // refinement (hide for current leaders) is the consumer's responsibility.
 
   {
@@ -1313,7 +1327,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     motivations: ['loyalty_ambition', 'tradition_novelty'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     narrativeTemplates: {
       initiation: 'weaves a silent thread of inheritance around a chosen mortal',
       success: 'the thread settles, unseen — it will hold until a crown falls',
@@ -2596,7 +2612,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: BESTOW_COST,
     actorAffinities: ['ascendant'],
-    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    // A mortal: no target context carries the node type 'agent' (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
     motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'reaches into a faithful soul to leave a portion of divine strength behind',
@@ -2637,8 +2655,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: TEACH_SPELL_ESSENCE_COST,
     actorAffinities: ['ascendant'],
-    // `actor` + `individual`, not Bestow's `['agent']`: no target context carries the node
-    // type `agent`, so the node-type gate never admits that card on a mortal (THR-1734).
+    // `actor` + `individual`: no target context carries the node type `agent` (THR-1734).
     targetCategories: ['actor'],
     targetSubtypes: ['individual'],
     motivations: ['tradition_novelty', 'loyalty_ambition'],
@@ -5591,6 +5608,12 @@ function withTechnicalEffectOverlay(t: UnifiedActionTemplate): UnifiedActionTemp
   return { ...t, technicalEffect: authored };
 }
 
+/** Whether a template targets an individual mortal — the agent hand's own target (THR-1734). */
+function targetsMortal(t: UnifiedActionTemplate): boolean {
+  return (t.targetCategories ?? []).includes('actor')
+    && (t.targetSubtypes ?? []).includes('individual');
+}
+
 /**
  * Templates surfaced on the agent action hand (THR-501).
  *
@@ -5599,12 +5622,18 @@ function withTechnicalEffectOverlay(t: UnifiedActionTemplate): UnifiedActionTemp
  * `getTargetActionSlots`, so they pass the same unlock + sphere + reach + context filters
  * as every other action surface. Curated (not the full `UNIFIED_ACTION_TEMPLATES`) so the
  * divine action rail does not surface mortal guild/social encounter templates: the eight
- * divine interventions, revelation (observe), and thread-creation cards only.
+ * divine interventions, revelation (observe), thread-creation cards, and the artifact-section
+ * cards that target a mortal (THR-1734) only.
  */
 export const AGENT_INTERVENTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...DIVINE_ACTION_TEMPLATES,
   ...REVELATION_ACTION_TEMPLATES,
   ...THREAD_CREATION_TEMPLATES,
+  // THR-1734: the artifact-section cards that target a mortal (Bestow Power, Teach a
+  // Spell). They live beside Imbue for their unlock story, but the non-agent drawer is
+  // the only surface that read that section, and it never focuses a mortal — so these
+  // two were granted and never shown on the hand that is their only target.
+  ...ATTACHMENT_ACTION_TEMPLATES.filter(targetsMortal),
   // THR-1002: through the same `ACTION_TECHNICAL_EFFECTS` overlay
   // `UNIFIED_ACTION_TEMPLATES` applies below. This assembly used to spread the raw
   // arrays, so 0 of these 44 carried a `technicalEffect` — and since the agent hand

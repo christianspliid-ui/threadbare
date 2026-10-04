@@ -30,8 +30,10 @@ const ALL_OUTCOMES: readonly UnifiedActionOutcome[] = [
 function makeChapter(outcome?: UnifiedActionOutcome): ChapterRecord {
   return {
     actionId: 'ua_1',
-    templateId: 'encounter.shrine_offering',
-    templateName: 'Leave a Shrine Offering',
+    // THR-1715: a story template — a routine (daily-life) one would sit behind the
+    // Daily-life chip and never reach the default view this test reads.
+    templateId: 'encounter.deep_descent',
+    templateName: 'The Deep Descent',
     actorId: 'actor-1',
     actorName: 'Vara',
     targetId: 'loc-1',

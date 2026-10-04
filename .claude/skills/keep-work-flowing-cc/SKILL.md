@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-04
 ---
 
 # Keep Work Flowing (CC)
@@ -65,6 +65,7 @@ npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/o
 |---|---|
 | `needsChristian: true` | The probe's `summary` **verbatim** into the ask list — never re-worded |
 | `needsSession: true`, or verdict `failing`/`stalled` | One § Health line naming the PRs/lanes — the executor's job, never Christian's |
+| armed-prs verdict `conflicted` / `abandoned` / `failing` | One § Health line. **Every stuck PR belongs to the pickup lane's unstick duty** (pull-work Step 0.8, THR-1735, director-directed 2026-10-04: *"I dont have the technical chops to help with CI/CD related troubleshooting"*); the probe no longer raises `needsChristian` for any of them. An `abandoned` verdict means the duty has not fired — name the PR and its age, and expect an impediment row from the run that clears it. Christian is asked only when the same PR re-sticks after a fix, and then as a product or externality question, never a merge-conflict one |
 | verdict `held` | **Omit.** A decision already taken is not an open question (THR-985) |
 | healthy verdicts (`deployed`, `healthy`, `ok`, `active`, `waiting`) | Silence |
 | `unknown`, or a probe that failed to run | One § Health line; **never read `unknown` as healthy** |

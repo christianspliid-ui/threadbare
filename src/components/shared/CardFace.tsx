@@ -288,6 +288,12 @@ export interface CardFaceModel {
    * copy belongs on the codex page.
    */
   readonly effectLine: string;
+  /**
+   * THR-1714 — the pole a card argues for, as one short neutral line under the
+   * effect ("Leans Brave"). A fact about the card, like its cost; never coloured
+   * as polarity (Law 31). Absent ⇒ nothing renders, and the face is unchanged.
+   */
+  readonly leanLabel?: string;
   readonly odds: CardFaceOdds | null;
   readonly rarityTier?: RarityTier;
   /** Zone 8. Rendered only when {@link dimmed}. */
@@ -661,6 +667,19 @@ export function CardFace({
           <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5, color: TEXT_WHISPER }}>
             {model.effectLine}
           </span>
+          {model.leanLabel && (
+            <span
+              data-testid={`${p}-lean-${id}`}
+              style={{
+                fontSize: 'var(--text-2xs, 11px)',
+                lineHeight: 1.4,
+                color: TEXT_WARM,
+                fontStyle: 'italic',
+              }}
+            >
+              {model.leanLabel}
+            </span>
+          )}
           {model.odds?.kind === 'delta' && (
             <OddsPips
               value={model.odds.value}

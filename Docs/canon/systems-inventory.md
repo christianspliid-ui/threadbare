@@ -40,7 +40,7 @@ names like `TB-073`) a premise might use.
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
 | **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
-| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma`, `fights` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2.361`, `2.5`, `2.55` |
+| **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma`, `fights` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2b.2`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits`, `artifact` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo, holding, freehold, wealth, tithe, toll | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity`, `holding`, `yield` | `6.62`, `6.628`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
@@ -53,7 +53,7 @@ names like `TB-073`) a premise might use.
 | **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
-| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | — |
+| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | `2.34` |
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation, appointment, rendezvous, due tick | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
 | **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence`, `grievance` | `6.05`, `6.55`, `6.6`, `6.634`, `6.64` |
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret`, `leverage` | — |
@@ -101,8 +101,8 @@ complete. (These phases still appear in the full wiring table below; they just l
 | Phase | Name | Tags |
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
+| `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
-| `2.34` | Companies | `THR-74` |
 | `3b` | Notable Agendas | `THR-630` |
 | `6.625b` | Companion expiry | `THR-1096` |
 | `6.637` | Unrest | — |
@@ -137,8 +137,10 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2a.8` | Evaluate encounter seeds planted by aftermath reactions | — | orchestrator |
 | `2a.85` | Slot Cap Enforcement — deactivate overflow possessions, handle condition overflow | — | orchestrator |
 | `2a.9` | Divine Premonition | — | orchestrator |
+| `2a.99` | Story breath anchors | `THR-1715` | orchestrator |
 | `2b` | Agent Decision — unified encounter-driven decision pipeline | — | orchestrator |
 | `2b.1` | Stakes context | `THR-1727` | orchestrator |
+| `2b.2` | Encounter Visibility, pause-mode pass | `THR-1715` | orchestrator |
 | `2.34` | Companies | `THR-74` | orchestrator |
 | `2.35` | Agent Movement | — | orchestrator |
 | `2.352` | Army Movement | `TB-073` | orchestrator |
@@ -241,7 +243,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
 | `attachment` (5) | `attachmentSlotResolver.ts`, `attachmentTemplateDetail.ts`, `attachmentTemplateIndex.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-1120`, `THR-1122`, `THR-718`, `THR-719`, `THR-723`, `THR-784`, `THR-974`, `THR-996`, `THR-997` |
-| `attention` (2) | `attentionPool.ts`, `attentionTier.ts` | — |
+| `attention` (3) | `attentionCadence.ts`, `attentionPool.ts`, `attentionTier.ts` | `THR-1715` |
 | `avatar` (1) | `avatarMove.ts` | — |
 | `backstory` (2) | `backstoryGenerator.ts`, `backstoryResolvers.ts` | — |
 | `balance` (4) | `balanceEvaluator.ts`, `balanceSummary.ts`, `balanceTargets.ts`, `balanceTelemetry.ts` | `Phase 1` |
@@ -294,7 +296,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
 | `effects` (18) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/castRelocation.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-1571`, `THR-1697`, `THR-719`, `THR-761` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
-| `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
+| `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-1715`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
 | `encounters` (17) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
 | `engagement` (1) | `engagementWindow.ts` | `THR-1582` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
@@ -336,7 +338,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `location` (1) | `locationTraitBonus.ts` | `THR-1481`, `THR-790` |
 | `magic` (1) | `magicPower.ts` | — |
 | `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198`, `THR-1618` |
-| `meeting` (1) | `meetingEncounter.ts` | `THR-1213` |
+| `meeting` (2) | `meetingEncounter.ts`, `meetingFateLine.ts` | `THR-1213`, `THR-1714` |
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
@@ -383,7 +385,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-611`, `THR-621`, `THR-66`, `THR-829` |
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |
-| `ruins` (11) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/leadVisit.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156`, `THR-1560`, `THR-1664` |
+| `ruins` (11) | `ruins/clueLifecycle.ts`, `ruins/clueRumors.ts`, `ruins/constants.ts`, `ruins/delveTypes.ts`, `ruins/delveVariant.ts`, `ruins/elderRuinSeeding.ts`, `ruins/leadVisit.ts`, `ruins/perceiveRelay.ts`, `ruins/placeOfPowerStreams.ts`, `ruins/questHooks.ts`, `ruins/ruinTransformation.ts` | `THR-149`, `THR-150`, `THR-1506`, `THR-151`, `THR-152`, `THR-153`, `THR-156`, `THR-1560`, `THR-1664`, `THR-1696` |
 | `scaled` (1) | `scaledForecast.ts` | `THR-1535`, `THR-1543` |
 | `scene` (3) | `sceneHere.ts`, `sceneRealm.ts`, `sceneSentinels.ts` | `THR-1025`, `THR-1110`, `THR-1143`, `THR-1144`, `THR-1175`, `THR-1446`, `THR-1462`, `THR-1499` |
 | `schism` (1) | `schismPlant.ts` | `THR-430` |
@@ -435,4 +437,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 206 engine domains · 642 modules._
+_Counts: 28 registered subsystems (3 dormant) · 104 tick phases · 206 engine domains · 644 modules._

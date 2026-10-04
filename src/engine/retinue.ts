@@ -13,6 +13,7 @@ import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction, getFactionMembershipEdges } from './graphQueries';
 import { isPlaceNode } from './sublocationShape';
+import { resolveAttentionMode } from './attentionCadence';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
 
@@ -156,7 +157,8 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       primaryDomain,
       activityLabel: 'Idling',
       courtPosition: (influenceProps.courtPosition as import('../types/influence').CourtPosition) ?? null,
-      attentionMode: (influenceProps.attentionMode as 'pause' | 'auto_resolve') ?? 'auto_resolve',
+      // THR-1715: the effective mode — a missing field reads its court position's default.
+      attentionMode: resolveAttentionMode(influenceProps as unknown as ThreadEdgeProperties),
       threadEdgeId: edge.id,
       // THR-479: living Aspect if an aspect_of edge targets this mortal.
       isAspect: graph.getIncomingEdges(agentId, 'aspect_of').some(e => e.properties.mythicEcho !== true),
@@ -423,7 +425,7 @@ export function getThreadedNodes(
 
     const nodeProps = targetNode.properties as Record<string, unknown>;
     const tierName = TIER_NAMES[tier];
-    const attentionMode = (influenceProps.attentionMode as 'pause' | 'auto_resolve') ?? 'auto_resolve';
+    const attentionMode = resolveAttentionMode(influenceProps);
     const courtPosition = (influenceProps.courtPosition as CourtPosition) ?? null;
 
     const threadStrength = typeof edge.properties.strength === 'number' ? edge.properties.strength : 1.0;

@@ -4347,7 +4347,9 @@ first that gates on the site and on the actor's own state rather than planting o
     work left the actor holding an unconsumed **`narrowed`** lead on the site and no visit to it is
     pending (**one pending visit per holder per ruin** — the planter's seed id is tick-keyed, so a
     repeat survey would otherwise plant a duplicate). On admission it stamps
-    `knows_clue_of.pendingVisitDueTick`, which `phaseClueDecay` reads to spare the lead until due +
+    `knows_clue_of.pendingVisitDueTick` and `pendingVisitSeedId` (the visit's seed, THR-1696); if
+    the planter then refuses (`over_max`, `place_unresolved`), `releaseLeadVisit` clears the stamp.
+    The due tick is what `phaseClueDecay` reads to spare the lead until due +
     `CLUE_LEAD_VISIT_GRACE_TICKS` (24). A refusal traces `appointment_planted` with
     `refused: 'lead_visit_no_lead' | 'lead_visit_not_narrowed' | 'lead_visit_visit_pending'` and
     `seedWithheld`.
@@ -4356,8 +4358,9 @@ first that gates on the site and on the actor's own state rather than planting o
   seed-only `ruins.lead.cold`), `delayTicks: CLUE_LEAD_VISIT_DELAY_TICKS` (48), `requirePlace`,
   `pricedByHex`.
 - **The `sharpen_clue` aftermath effect** (`{ kind: 'sharpen_clue', missed?: boolean }`) — sibling of
-  `spawn_clue`, but it acts only on **the actor's own lead** (the one carrying the visit stamp, else
-  the one on a ruin at their hex), never by Narrative Gravity. Author it in a step's
+  `spawn_clue`, but it acts only on **the actor's own lead** — the one stamped with the spawning
+  seed (`UnifiedAction.spawnedFromSeedId`, THR-1696), else one with a live visit stamp, else the one
+  on a ruin at their hex — never by Narrative Gravity. A lapsed stamp never wins. Author it in a step's
   `successMetadata` / `failureMetadata`: the step-outcome reaction now carries the encounter's
   **terminal outcome** (`EncounterAftermathReaction.actionOutcome`, from `terminalActionOutcome`,
   absent while the encounter goes on), and the effect maps it through

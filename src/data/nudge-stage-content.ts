@@ -215,8 +215,30 @@ export const NUDGE_FREE_COST_LABEL = 'Free';
 /** Heading above the hand. */
 export const NUDGE_HAND_HEADING = 'What you can do';
 
-/** The commit verb — the player never "attacks", they let the world resolve. */
-export const NUDGE_COMMIT_LABEL = 'Let fate decide';
+/**
+ * The commit verb with a hand staged — the player never "attacks", they play
+ * their hand and let the world resolve. THR-1714: it names the act, because
+ * "Let fate decide" read as *skip and roll randomly*. Also the veil's
+ * authored-choice commit, where choosing an option is playing your hand.
+ * Not "Whisper": that is already a nudge-card keyword.
+ */
+export const NUDGE_COMMIT_LABEL = 'Play your hand, let fate answer';
+
+/** The commit verb with nothing staged — silence is a choice with odds (THR-1714). */
+export const NUDGE_COMMIT_LABEL_SILENT = 'Stay silent, let fate answer';
+
+/**
+ * The moved-forecast note beside the pill (THR-1714). Present tense and names
+ * its cause: the old "was Perilous" read as *the roll already happened*.
+ */
+export const NUDGE_FORECAST_SHIFT_LINE = 'your hand: {from} → {to}';
+
+/**
+ * A meeting card that argues for a pole says which (THR-1714). `{word}` is the
+ * axis's own sheet word (`getAxisByValuePair`) — a fact about the card, like
+ * its cost, so the reveal's "Fate went with you" can be traced to it.
+ */
+export const NUDGE_LEAN_TAG = 'Leans {word}';
 
 /** Shown in place of the hand when every authored card is withheld. */
 export const NUDGE_EMPTY_HAND_LINE = 'Nothing here answers to you. Let it play out.';

@@ -1,8 +1,7 @@
 {
-  "total": 2799,
+  "total": 2795,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
-    "scripts/lint-encounter-content.ts": 2,
     "src/__tests__/debug-bridge.test.ts": 3,
     "src/__tests__/engine/sphereModifiers.test.ts": 4,
     "src/__tests__/engine/spherePressureWiring.test.ts": 5,
@@ -67,7 +66,7 @@
     "src/components/Game/encounterHandoff.ts": 1,
     "src/components/Game/encounterNotificationRuntime.ts": 3,
     "src/components/Game/FactionSheet.tsx": 1,
-    "src/components/Game/GameView.tsx": 67,
+    "src/components/Game/GameView.tsx": 66,
     "src/components/Game/HexChronicle.tsx": 3,
     "src/components/Game/HexPoiPanel.tsx": 1,
     "src/components/Game/HexSidebar.tsx": 1,
@@ -556,7 +555,6 @@
     "src/engine/npcSeeding.ts": 1,
     "src/engine/openingColoration.ts": 1,
     "src/engine/orchestrator.ts": 32,
-    "src/engine/orchestrator/phaseAscendantHandFilter.ts": 1,
     "src/engine/outcomeConsequences.ts": 1,
     "src/engine/pathfinding.ts": 1,
     "src/engine/phaseAgentDecision.ts": 2,

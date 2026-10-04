@@ -169,10 +169,18 @@ function parseNewlinePaths(raw: string): string[] {
     .filter((line) => line.length > 0);
 }
 
-function collectCandidateFilesFromGit(): string[] {
+/**
+ * Where `--staged` mode found its candidates. The first non-empty source wins, so
+ * when anything at all is staged, unstaged edits are not considered — the skip
+ * reason names the source so an empty set never reads as "nothing changed"
+ * (THR-984 review).
+ */
+type GitCandidateSource = 'staged files' | 'working-tree changes' | 'the last commit';
+
+function collectCandidateFilesFromGit(): { files: string[]; source: GitCandidateSource } {
   const staged = parseNewlinePaths(safeRunGit(['diff', '--name-only', '--cached', '--diff-filter=ACMR']));
   if (staged.length > 0) {
-    return staged;
+    return { files: staged, source: 'staged files' };
   }
 
   const porcelain = safeRunGit(['status', '--porcelain']);
@@ -181,17 +189,20 @@ function collectCandidateFilesFromGit(): string[] {
     .flatMap((line) => parsePorcelainLine(line))
     .filter((line) => line.length > 0);
   if (statusPaths.length > 0) {
-    return statusPaths;
+    return { files: statusPaths, source: 'working-tree changes' };
   }
 
   const lastCommitPaths = parseNewlinePaths(
     safeRunGit(['diff-tree', '--no-commit-id', '--name-only', '-r', '--diff-filter=ACMR', 'HEAD']),
   );
   if (lastCommitPaths.length > 0) {
-    return lastCommitPaths;
+    return { files: lastCommitPaths, source: 'the last commit' };
   }
 
-  return parseNewlinePaths(safeRunGit(['show', '--pretty=', '--name-only', '--diff-filter=ACMR', 'HEAD']));
+  return {
+    files: parseNewlinePaths(safeRunGit(['show', '--pretty=', '--name-only', '--diff-filter=ACMR', 'HEAD'])),
+    source: 'the last commit',
+  };
 }
 
 function collectAllPlanFiles(): string[] {
@@ -660,9 +671,21 @@ function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Fin
   checkInterfaceImpactConditional(repoPath, text, sections, findings);
 }
 
-function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMode; paths: string[] } {
+/**
+ * With no path and no mode flag, the bare command lints staged (or, failing that,
+ * changed) plan docs — the same set the pre-commit hook lints (THR-984). The old
+ * default, `paths`, read only CLI arguments, so the documented bare form linted
+ * zero files and printed a clean-looking `skipped` whatever the tree held
+ * (impediment #409).
+ */
+function parseCli(argv: readonly string[]): {
+  strict: boolean;
+  mode: CandidateMode;
+  paths: string[];
+  defaultedToStaged: boolean;
+} {
   let strict = false;
-  let mode: CandidateMode = 'paths';
+  let mode: CandidateMode | null = null;
   const paths: string[] = [];
 
   for (const arg of argv) {
@@ -681,19 +704,18 @@ function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMo
     paths.push(normalizeRepoPath(arg));
   }
 
-  return { strict, mode, paths };
+  if (mode === null && paths.length === 0) {
+    return { strict, mode: 'staged', paths, defaultedToStaged: true };
+  }
+  return { strict, mode: mode ?? 'paths', paths, defaultedToStaged: false };
 }
 
 function collectTargetFiles(
   mode: CandidateMode,
   cliPaths: string[],
-): { targets: string[]; waived: string[] } {
-  const sourceFiles =
-    mode === 'all'
-      ? collectAllPlanFiles()
-      : mode === 'staged'
-        ? collectCandidateFilesFromGit()
-        : cliPaths;
+): { targets: string[]; waived: string[]; gitSource: GitCandidateSource | null } {
+  const fromGit = mode === 'staged' ? collectCandidateFilesFromGit() : null;
+  const sourceFiles = mode === 'all' ? collectAllPlanFiles() : fromGit ? fromGit.files : cliPaths;
 
   const planDocs = sourceFiles
     .map((file) => normalizeRepoPath(file))
@@ -712,7 +734,7 @@ function collectTargetFiles(
     else targets.push(file);
   }
 
-  return { targets, waived };
+  return { targets, waived, gitSource: fromGit?.source ?? null };
 }
 
 function printFindings(findings: Finding[], strict: boolean): number {
@@ -735,8 +757,12 @@ function printFindings(findings: Finding[], strict: boolean): number {
 }
 
 function main(): number {
-  const { strict, mode, paths } = parseCli(process.argv.slice(2));
-  const { targets: targetFiles, waived } = collectTargetFiles(mode, paths);
+  const { strict, mode, paths, defaultedToStaged } = parseCli(process.argv.slice(2));
+  if (defaultedToStaged) {
+    console.log('lint:plan-doc: no paths given — linting as --staged (staged files, else working-tree changes, else the last commit).');
+  }
+  const { targets: targetFiles, waived, gitSource } = collectTargetFiles(mode, paths);
+  if (gitSource) console.log(`lint:plan-doc: candidates from ${gitSource}.`);
 
   if (waived.length > 0) {
     console.log(`lint:plan-doc waived ${waived.length} doc(s) (skip pattern or \`lint_plan_doc: exempt\`):`);
@@ -749,7 +775,9 @@ function main(): number {
         ? 'every candidate is waived'
         : mode === 'all'
           ? `no files matched ${PLAN_DOC_GLOB}`
-          : 'no candidate files found';
+          : mode === 'staged'
+            ? `no plan doc among ${gitSource ?? 'git changes'}${gitSource === 'staged files' ? ' (unstaged edits are not considered while anything is staged)' : ''}`
+            : `none of the ${paths.length} given path(s) is an existing ${PLAN_DOC_GLOB} file`;
     console.log(`lint:plan-doc skipped (${reason}).`);
     return 0;
   }

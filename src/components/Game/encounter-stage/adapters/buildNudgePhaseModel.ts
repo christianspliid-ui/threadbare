@@ -156,7 +156,7 @@ export interface BuildNudgePhaseModelArgs {
    * authored choices, and no generic stance set now that
    * `generateInterventionChoices` is retired. The result is the stage's
    * **fate-alone** screen: the motive line, the test panel, `Nothing here answers
-   * to you. Let it play out.` in place of the hand, and `Let fate decide` as the
+   * to you. Let it play out.` in place of the hand, and `Stay silent, let fate answer` as the
    * only move.
    *
    * That is the Nudge Model working rather than a gap — a step where the god has

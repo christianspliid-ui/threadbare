@@ -15,6 +15,7 @@
  */
 
 import type { StoredHungerId } from '../types/hunger';
+import type { StepOutcome } from '../types/unifiedAction';
 
 /** Beat 1 opening prose — what the god is looking for, per hunger. */
 export const SENSING_OPENING_PROSE: Record<StoredHungerId, string> = {
@@ -74,3 +75,77 @@ export const BOND_PROSE_FALLBACK = 'The bond holds. They are the first.';
 
 /** Beat 4 release button text. */
 export const BOND_RELEASE_TEXT = 'Let them walk.';
+
+// ─── Fate line (THR-1714) ─────────────────────────────────────────
+//
+// Every meeting reveal opens with one fate line: what the hand made the odds,
+// then what fate did with the lean. It is the narrator saying what happened —
+// never a number (ruling 6, Law 13), and never a tutorial (THR-868 verdict 10).
+// Selection is pure and lives in `src/engine/meetingFateLine.ts`; the words live
+// here. `{hand}` / `{base}` are forecast words, `{name}` the candidate's name,
+// `{leaned}` / `{other}` / `{written}` the axis's own sheet words. The candidate's
+// gender is unknown to the line, so every clause names them and none uses a
+// pronoun. Plan: `Docs/plans/2026-10-03-thr-1714-show-the-roll.md` § C1.
+
+/** How fate answered the hand — the column a fate clause is read from. */
+export type FateAnswer = 'with' | 'half' | 'turned_soft' | 'turned';
+
+/** What the hand argued for — the row. */
+export type FateLeanState = 'leaned' | 'odds_only' | 'silent';
+
+/**
+ * Which fate clause each band reads as. Total over `StepOutcome`, so changing
+ * how a band *reads* is one row. `half` is authored though the tempered band is
+ * unreachable in the meeting today (0 of 12,800 in the plan's census).
+ */
+export const FATE_ANSWER_BY_BAND: Readonly<Record<StepOutcome, FateAnswer>> = {
+  critical_success: 'with',
+  success: 'with',
+  success_at_cost: 'half',
+  near_miss: 'turned_soft',
+  failure: 'turned',
+  critical_failure: 'turned',
+};
+
+/** The forecast clause, by what the hand argued for. */
+export const MEETING_FATE_LINE_FORECAST_CLAUSES: Readonly<Record<FateLeanState, string>> = {
+  leaned: 'Your hand made it {hand}.',
+  odds_only: 'Your hand made it {hand}, but leaned nowhere.',
+  silent: 'You stayed silent. It stood {base}.',
+};
+
+/** The fate clause on a formative test. A hand that did not lean reads the `alone` row. */
+export const MEETING_FATE_LINE_FORMATIVE_CLAUSES: Readonly<
+  Record<'leaned' | 'alone', Readonly<Record<FateAnswer, string>>>
+> = {
+  leaned: {
+    with: 'Fate went with you: {name} came out {leaned}.',
+    half: 'Fate met you halfway: {name} came out {leaned}, at a cost.',
+    turned_soft: 'Fate turned it, barely: {name} edged toward {other}.',
+    turned: 'Fate turned against you: {name} came out {other}.',
+  },
+  alone: {
+    with: 'Fate chose alone, and well: {name} came out {written}.',
+    half: 'Fate chose alone: {name} came out {written}, at a cost.',
+    turned_soft: 'Fate chose alone: {name} edged toward {written}.',
+    turned: 'Fate chose alone, and hard: {name} came out {written}.',
+  },
+};
+
+/** The fate clause on the bond test, which has no poles to name. */
+export const MEETING_FATE_LINE_BOND_CLAUSES: Readonly<
+  Record<'leaned' | 'silent', Readonly<Record<FateAnswer, string>>>
+> = {
+  leaned: {
+    with: 'Fate went with you.',
+    half: 'Fate met you halfway.',
+    turned_soft: 'Fate turned it, barely.',
+    turned: 'Fate turned against you.',
+  },
+  silent: {
+    with: 'Fate answered alone, and kindly.',
+    half: 'Fate answered alone, halfway.',
+    turned_soft: 'Fate answered alone, coolly.',
+    turned: 'Fate answered alone, and hard.',
+  },
+};

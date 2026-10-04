@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 52 |
-| **Total** | **220** |
+| 🔵 UNVERIFIED-OK | 54 |
+| **Total** | **222** |
 
 ## Contracts by producing subsystem
 
@@ -110,6 +110,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `world-ref-opens-one-card` | Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended). | function: `SURFACE_BY_WORLD_REF`, `useRefRouter` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
@@ -230,6 +231,7 @@ remediation ticket or the build fails.
 | `requires-hold-gates-town-keeper-content` | A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss. | module-export: `requiresHold`, `filterByPrerequisites`, `standingFor`, `groundRealmOf` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `resolved-actions-feed-band-kpi` | Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen. | function: `stampEngagementCommit`, `recordEngagementResolution`, `recordBoardDecision`, `recordIdleDecision`, `computeEngagementKpiReport` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `routine-flag-keeps-daily-life-off-notifications-and-ledger` | Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger's default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer's quit point returns: "14 chapters by herself in seconds". | function: `isRoutineTemplate`, `isRoutineChapter` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seed-only-sequels-never-drawn` | A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0). | function: `isDrawable`, `isDeliverableBranchingEncounter`, `drawable` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
@@ -296,7 +298,7 @@ remediation ticket or the build fails.
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `monster-card-shows-on-lair` | A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does. | function: `buildLairMonsterCardModel`, `readOpponentCard`, `monsterState`, `getAgentInfoCard` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
-| `survey-arranges-a-ruin-visit` | A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold. | edge-prop: `knows_clue_of`, `pendingVisitDueTick`, `claimLeadVisit`, `resolveVisitLead`, `sharpen_clue` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `survey-arranges-a-ruin-visit` | A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold. | edge-prop: `knows_clue_of`, `pendingVisitDueTick`, `pendingVisitSeedId`, `claimLeadVisit`, `releaseLeadVisit`, `resolveVisitLead`, `sharpen_clue` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Secrets & Favors
 
@@ -497,10 +499,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
 - **UL terms:** *Appointment*, *Encounter Seed*
 - **Module:** `src/engine/appointments.ts`
-- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
+- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/engine/appointments.ts`, `src/engine/encounterSeeding.ts`, `src/engine/monsters/huntReport.ts`, `src/types/edgeSchema.ts`, `src/types/strategicAction.ts` +1 more
+- **Other hits:** `src/engine/appointments.ts`, `src/engine/encounterSeeding.ts`, `src/engine/monsters/huntReport.ts`, `src/engine/ruins/leadVisit.ts`, `src/types/edgeSchema.ts` +2 more
 - **Verdict:** Verified 2026-09-22: THR-1524 — the census HIT. Shipped by THR-1479 with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain); THR-1518 proved the mechanics on a seeded world through `check:encounter-live` (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken) and then MEASURED the reachability row UNREACHED on every seed — the Crossroads fired once in 1000 ticks and the mortal refused. Two content defects on the parent, both fixed in vertical-slice.ts: (1) `settings: [wayside]` alone is camp | oasis | wilderness, 8 of 974 locations on seed 42 / medium and 5.5% of mortal-ticks (urban 50%, rural 37%, ruin 2.3%, sampled every 10 ticks over 200) — none of the four wayside-only slice encounters fired in 200 ticks; the Crossroads now registers at rural + ruin + wayside with an opening per class. (2) `motivations: [tradition_novelty]` named the fork axis, and `computeDesireScore` sums the SIGNED profile value, so the board handed the scene to Archivists (positive pole, who refuse) and floored Heretics (negative pole, the planting arm) at MINIMUM_DESIRE — 34 of 65 profiled mortals lean novelty and none ever met him; selection moved to the Eye axis (`revelation_discretion`, the scene's own reach) and the fork stays on tradition. `npm run check:content-model-census -- --ticks 200 --seed 42 --map medium` now prints `Reachability: HIT` — parents fired 3, 2 planted, 0 kept, 0 missed; seed 99 / 200 ticks: 11 firings, 7 planted, one kept (the Full Moon Collection fired from the kept arm, `spawnedFromSeedId` set); seed 7 / 200 ticks: see the THR-1524 status fragment. Pinned by vertical-slice.test.ts (THR-1524 block): a slice fork whose planting arm is the negative pole may not name that axis in `motivations` — restoring the old axis fails it (falsified 2026-09-22) — and the Crossroads registers past wayside. Not a gate that reads the code: the census counts the seed off `pendingEncounterSeeds` per tick.
 
 ### `area-partition-to-map` — 🟢 LIVE
@@ -1754,10 +1756,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 165 total — 3 write, 7 read, 155 unclassified
+- **Production hits:** 166 total — 3 write, 7 read, 156 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +150 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +151 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1986,10 +1988,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Secrets & Favors
 - **UL terms:** *Appointment*, *Agreement*
 - **Module:** `src/engine/appointments.ts`
-- **Production hits:** 10 total — 3 write, 1 read, 6 unclassified
+- **Production hits:** 11 total — 3 write, 1 read, 7 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/encounterSeeding.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`
-- **Other hits:** `src/data/content-eval/chipAnchorDeclarations.ts`, `src/engine/appointments.ts`, `src/engine/fights/fightAdvantages.ts`, `src/engine/graphConditions.ts`, `src/types/edgeSchema.ts` +1 more
+- **Other hits:** `src/data/content-eval/chipAnchorDeclarations.ts`, `src/engine/appointments.ts`, `src/engine/fights/fightAdvantages.ts`, `src/engine/graphConditions.ts`, `src/engine/ruins/leadVisit.ts` +2 more
 - **Verdict:** Verified 2026-09-22: THR-1524 — flips with its sibling on the census HIT. Shipped by THR-1479 with the evaluator test proving kept redeems and missed breaks on a fixture world, and the sheet reads the broken favour; THR-1518 proved the miss on a seeded world through `check:encounter-live` (the mortal stood on another hex, `appointment_missed` written, the favour `broken`, the reckoning following). What was missing was a mortal on the live board planting a promise for the window to close on — the parent never reached them (see `appointment-pulls-agent-movement` for the two content defects and the numbers). After the fix `check:content-model-census -- --ticks 200 --seed 42 --map medium` prints `Reachability: HIT` (parents fired 3, 2 planted); seed 99 plants 7 in 200 ticks and keeps one. The miss itself is the same judgement on a seeded world that the live proof exercised — a promise planted by the board is broken by `evaluateEncounterSeeds` exactly as the harness-planted one was — so this row stands on the same HIT its sibling does, never on the evaluator test alone.
 
 ### `monster-card-shows-on-lair` — 🟢 LIVE
@@ -2186,10 +2188,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/data/encounter-content.ts`
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/data/encounter-content.ts`
 - **Read sites:** `src/engine/encounters/dealHand.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`
+- **Other hits:** `src/data/faction-encounter-content.ts`, `src/data/settingClasses.ts`, `src/engine/attentionCadence.ts`
 - **Verdict:** Verified 2026-09-28: THR-1634 S1. `src/data/__tests__/firedTemplateCompletion.test.ts` reads the shipped `encounter.barter_supplies` through `getUnifiedTemplateById` and finds both declarations on its steps, and finds none on `encounter.mend_equipment`, which declares none. In a browser on local dev at 1920×1080, `?view=game&seeded&size=medium&spawn=encounter.barter_with_travelers` opened the stage with a four-card hand, every card marked "From your repertoire". Dealing is pure: `readers/reach.ts 42,99 200` printed byte-identical output with the passthrough on and off, and `readers/attended.ts 42,99 150` gave the same 1,542 firing rows, outcomes included.
 
 ### `realm-holdings-to-political-map` — 🟢 LIVE
@@ -2208,10 +2210,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 351 total — 1 write, 1 read, 349 unclassified
+- **Production hits:** 353 total — 1 write, 1 read, 351 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +344 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +346 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2316,6 +2318,18 @@ exit
 - **Write sites:** `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/groups/groupQueries.ts`, `src/engine/groups/phaseGroups.ts`
 - **Other hits:** `src/data/group-constants.ts`, `src/data/undertaking-objects.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `routine-flag-keeps-daily-life-off-notifications-and-ledger` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger's default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer's quit point returns: "14 chapters by herself in seconds".
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Daily life*, *Chapter Ledger*
+- **Module:** `src/engine/attentionCadence.ts`
+- **Production hits:** 9 total — 1 write, 4 read, 4 unclassified
+- **Write sites:** `src/engine/chapterArchive.ts`
+- **Read sites:** `src/components/Game/ChapterLedger.tsx`, `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/phaseAttention.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
@@ -2549,6 +2563,18 @@ exit
 - **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts` +45 more
 - **Verdict:** Verified 2026-09-28: THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).
 
+### `story-breath-anchor-paces-pause-mode-chapters` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
+- **UL terms:** *Daily life*, *Chapter*
+- **Module:** `src/engine/attentionCadence.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/attentionCadence.ts`
+- **Read sites:** `src/debug-bridge.ts`
+- **Other hits:** `src/types/influence.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
 
 - **Intent:** Attention follows ambition (THR-1348): a strategic-profiled ambition assigned below the spotlight pulls its holder into the deciding tier and swaps out the least-recently-witnessed spotlight mortal with no strategic ambition, so the world's builders are the mortals the player can watch and the attention budget stays flat. When nobody without a strategic want can make room, an unwatched builder steps back (THR-1523): a strategic-want holder with no witnessed scene and no undertaking progress for SPOTLIGHT_UNWATCHED_BUILDER_TICKS, never travelling, followed or threaded, at most one per window; the retained dead hold no slot and a mortal is pulled once per batch. A notable’s graduation is the second door into the same budget (THR-1653): `phaseNpcGraduation` admits through `admitToSpotlight` — swap, else overflow, else refused `budget` and left notable to retry — and the ledger names the door.
@@ -2583,7 +2609,7 @@ exit
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/delveVariant.ts`
 - **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts` +19 more
-- **Verdict:** Verified 2026-09-29: THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply).
+- **Verdict:** Verified 2026-09-29: THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply). THR-1696 (2026-10-03): the stamp also carries the visit's seed id and is released when the planter refuses (`over_max`, `place_unresolved`); `sharpen_clue` resolves the lead stamped with the action's `spawnedFromSeedId`, and a lapsed stamp never wins the fallback pick. `leadVisit.test.ts` (18 tests) pins the over_max refusal, the two-ruin missed visit, a re-stamped seed never taking another visit's lead, and the expired-stamp pick.
 
 ### `t1-undertaking-objects-feed-existing-economies` — 🟢 LIVE
 
@@ -2868,10 +2894,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 271 total — 2 write, 6 read, 263 unclassified
+- **Production hits:** 272 total — 2 write, 6 read, 264 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +258 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +259 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

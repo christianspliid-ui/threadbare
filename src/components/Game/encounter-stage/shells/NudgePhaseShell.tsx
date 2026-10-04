@@ -25,6 +25,7 @@ import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
 import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
+  NUDGE_COMMIT_LABEL_SILENT,
   NUDGE_EMPTY_HAND_LINE,
 } from '../../../../data/nudge-stage-content';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
@@ -179,6 +180,7 @@ export function NudgeCard({
         ...(card.provenance ? { provenance: card.provenance } : {}),
         name: card.name,
         effectLine: card.effectLine,
+        ...(card.leanLabel ? { leanLabel: card.leanLabel } : {}),
         // A nudge *moves* the odds, so it reads them as pips (Law 10).
         odds: { kind: 'delta', value: card.forecastDelta },
         ...(card.blockedReason ? { blockedReason: card.blockedReason } : {}),
@@ -413,7 +415,10 @@ export function NudgePhaseShell({
             cursor: 'pointer',
           }}
         >
-          {NUDGE_COMMIT_LABEL}
+          {/* THR-1714 — the button names the act. With a hand staged it is
+              playing that hand; with none it is silence, which is a choice with
+              odds of its own, not a skip. Changes the instant a card stages (Law 47). */}
+          {hand.selectedIds.length > 0 ? NUDGE_COMMIT_LABEL : NUDGE_COMMIT_LABEL_SILENT}
         </button>
         {/* The running price of the selection, in the same pips the cards quote —
             the player should never have to convert between two cost notations to

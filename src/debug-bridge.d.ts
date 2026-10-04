@@ -509,6 +509,22 @@ export interface DebugBridge {
   /** @internal GameView registers a provider for the live GameState here */
   _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => void;
   /**
+   * THR-1715 D1 — The First's attention cadence (omit `agentId`), or a named
+   * agent's. Always `await`.
+   */
+  getAttentionCadence: (agentId?: string) => Promise<{
+    agentId: string;
+    agentName: string;
+    attentionMode: 'pause' | 'auto_resolve';
+    storedAttentionMode: 'pause' | 'auto_resolve' | null;
+    lastStoryChapterEndTick: number | null;
+    breathRemaining: number;
+    breathTicks: number;
+    routineActive: number;
+    storyActive: number;
+    tick: number;
+  } | { error: string }>;
+  /**
    * Inspect the encounter notification pipeline.
    * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
    * Returns thread edges, active encounterProgress entries, and pending encounterNotifications.
@@ -2154,6 +2170,11 @@ export interface DebugBridge {
         netLean: 'a' | 'b' | 'none';
         shift: number;
         playedNudgeIds: string[];
+        /** THR-1714 — forecast tier with no cards, and with the played hand. */
+        baseForecastTier?: 'doomed' | 'perilous' | 'uncertain' | 'favorable' | 'fated';
+        handForecastTier?: 'doomed' | 'perilous' | 'uncertain' | 'favorable' | 'fated';
+        /** THR-1714 — the fate line the reveal showed, `${leanState}.${fateAnswer}`. */
+        fateLineKey: string;
       }>;
       bondOutcome?: {
         band: string;

@@ -1467,7 +1467,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // adapter with `notification.choices` empty and no nudge phase to offer
     // instead — a stage with nothing on it to do. Widening the gate routes those
     // templates to the unified adapter, which builds the fate-alone nudge phase
-    // (`Let fate decide`) for a step that authored nothing. The gate lost its
+    // (`Stay silent, let fate answer`) for a step that authored nothing. The gate lost its
     // reason before it lost its condition; this removes both.
     //
     // `watched` tier and gate duty are still excluded above, and both are
@@ -4491,18 +4491,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleViewProfile, refRouter]);
 
   // ── Attention mode toggle (TB-040) ──
+  // THR-1715: changing attention mode is free (ATTENTION_MODE_CHANGE_COST = 0);
+  // the old charge wrote `prev.essence`, a field GameState does not have, so it
+  // never fired. The toggle mutates the graph in place, so the world is touched
+  // and a render forced — otherwise the threadedNodes memo serves the old label.
+  // A refusal comes back with its reason for the toggle's Law 47 feedback.
   const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
     const result = toggleAttentionMode(
       gameState.graph, threadEdgeId, gameState.ascendantId, gameState.tick,
     );
-    if (result) {
-      // Deduct essence cost
-      setGameState(prev => ({
-        ...prev,
-        essence: Math.max(0, (prev.essence ?? 0) - result.essenceCost),
-      }));
-    }
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState]);
+    if (!result.ok) return { ok: false as const, reason: result.reason };
+    touchWorld(runtime);
+    setGameState(prev => ({ ...prev }));
+    return { ok: true as const };
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, runtime]);
 
   // ── Journey vignette (auto-interrupt for The First) ──
   const activeVignette: PendingVignette | null = useMemo(() => {

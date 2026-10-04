@@ -13,14 +13,14 @@ import {
 } from '../types/encounter-contract';
 
 export const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
-export const DEFAULT_FORECAST_FACTORS = ['The threads are shifting.'] as const;
+/**
+ * THR-1725 — a beat with no authored factor lines carries none. The stock
+ * "The threads are shifting." it used to carry reached the player as a factor
+ * line ("makes no sense", Christian 2026-10-04); no line beats filler.
+ */
+export const DEFAULT_FORECAST_FACTORS = [] as const;
 export const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
 export const DEFAULT_TILTS_TOWARD = 'uncertain';
-export const DEFAULT_FALL_FORWARD = 'the threads tighten';
-export const DEFAULT_AGENT_REACTION = 'the moment shifts';
-export const DEFAULT_INITIATION_PROSE = 'The thread stirs and waits for a choice.';
-export const DEFAULT_SUCCESS_PROSE = 'The thread bends, and the world remembers.';
-export const DEFAULT_FAILURE_PROSE = 'The thread frays, but does not break.';
 export const DEFAULT_ENCOUNTER_REACH: EncounterChoiceReach = 'iron';
 
 export type EncounterChoiceIntervention = NonNullable<
@@ -131,6 +131,18 @@ export function encodeEncounterContractMetadata(contract: EncounterContract): st
   return `${ENCOUNTER_CONTRACT_METADATA_KEY}:${JSON.stringify(contract)}`;
 }
 
+/**
+ * THR-1725 — the contract's prose fields fall back to the template's own
+ * authored text, never to stock "thread" filler. The template name is the last
+ * resort only because the schema demands a non-empty string.
+ */
+function firstAuthored(template: UnifiedActionTemplate, ...candidates: readonly (string | undefined)[]): string {
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim().length > 0) return candidate;
+  }
+  return template.name;
+}
+
 export function buildFallbackEncounterChoice(
   template: UnifiedActionTemplate,
   stepIndex: number,
@@ -142,16 +154,18 @@ export function buildFallbackEncounterChoice(
     reach,
     cost: 'small_breath' as const,
     god_verb: `choice-${stepIndex + 1}`,
-    agent_reaction:
-      step && 'successAfterimage' in step
-        ? (step.successAfterimage ?? DEFAULT_AGENT_REACTION)
-        : DEFAULT_AGENT_REACTION,
+    agent_reaction: firstAuthored(
+      template,
+      step && 'successAfterimage' in step ? step.successAfterimage : undefined,
+      template.narrativeTemplates?.success,
+    ),
     tilts_toward: DEFAULT_TILTS_TOWARD,
     moral_axis_pole: poles[0],
-    fail_forward:
-      step && 'failureAfterimage' in step
-        ? (step.failureAfterimage ?? DEFAULT_FALL_FORWARD)
-        : DEFAULT_FALL_FORWARD,
+    fail_forward: firstAuthored(
+      template,
+      step && 'failureAfterimage' in step ? step.failureAfterimage : undefined,
+      template.narrativeTemplates?.failure,
+    ),
   };
 }
 
@@ -197,13 +211,7 @@ function getNarrativeText(
     }
   }
 
-  if (key === 'success') {
-    return DEFAULT_SUCCESS_PROSE;
-  }
-  if (key === 'failure') {
-    return DEFAULT_FAILURE_PROSE;
-  }
-  return DEFAULT_INITIATION_PROSE;
+  return firstAuthored(template, template.description);
 }
 
 export function buildLiteEncounterContract(template: UnifiedActionTemplate): EncounterContract {
@@ -230,10 +238,10 @@ export function buildLiteEncounterContract(template: UnifiedActionTemplate): Enc
         reach,
         cost: toEncounterChoiceCost(choice),
         god_verb: choice.label,
-        agent_reaction: choice.intent ?? DEFAULT_AGENT_REACTION,
+        agent_reaction: firstAuthored(template, choice.intent, choice.label),
         tilts_toward: choice.targetLabel ?? DEFAULT_TILTS_TOWARD,
         moral_axis_pole: resolveEncounterArchetypePole(reach, choice),
-        fail_forward: choice.likelyBurden ?? DEFAULT_FALL_FORWARD,
+        fail_forward: firstAuthored(template, choice.likelyBurden, template.narrativeTemplates?.failure),
       };
     });
 

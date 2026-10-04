@@ -5665,7 +5665,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Undertaking', 'Location'],
     mechanism: {
       kind: 'edge-prop',
-      symbols: ['knows_clue_of', 'pendingVisitDueTick', 'claimLeadVisit', 'resolveVisitLead', 'sharpen_clue'],
+      symbols: ['knows_clue_of', 'pendingVisitDueTick', 'pendingVisitSeedId', 'claimLeadVisit', 'releaseLeadVisit', 'resolveVisitLead', 'sharpen_clue'],
       module: 'src/engine/ruins/leadVisit.ts',
     },
     writeSites: [
@@ -5680,7 +5680,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-09-29',
       evidence:
-        "THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply).",
+        "THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply). THR-1696 (2026-10-03): the stamp also carries the visit's seed id and is released when the planter refuses (`over_max`, `place_unresolved`); `sharpen_clue` resolves the lead stamped with the action's `spawnedFromSeedId`, and a lapsed stamp never wins the fallback pick. `leadVisit.test.ts` (18 tests) pins the over_max refusal, the two-ruin missed visit, a re-stamped seed never taking another visit's lead, and the expired-stamp pick.",
     },
   },
   {
@@ -5991,6 +5991,42 @@ export const CONTRACTS: readonly Contract[] = [
       evidence:
         'THR-1727. Browser, `?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge`: `__DEBUG.getEncounterStakes()` → hasStakes true, built line === rendered DOM line ("Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack."), no `nudge-motive-intro`. With `&outcome=failure` (pin verdict band_rendered) the Chapter Ledger row and the thread row read "Vara turned back to the long ford and lost the day."; with `&outcome=critical_failure` "Vara went into the river with the pack." — each matching the band prose on screen. CLI seed 42 medium, tick 30: 105 of 105 unified actions carry a stamped `stakesContext`, none live unstamped.',
     },
+  },
+  // ── The First asks (THR-1715) ─────────────────────────────────────────────
+  {
+    id: 'routine-flag-keeps-daily-life-off-notifications-and-ledger',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger\'s default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer\'s quit point returns: "14 chapters by herself in seconds".',
+    ulTerms: ['Daily life', 'Chapter Ledger'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['isRoutineTemplate', 'isRoutineChapter'],
+      module: 'src/engine/attentionCadence.ts',
+    },
+    writeSites: ['src/data/encounter-content.ts', 'src/engine/chapterArchive.ts'],
+    readSites: [
+      'src/engine/encounterVisibility.ts',
+      'src/engine/encounterFilterPipeline.ts',
+      'src/components/Game/ChapterLedger.tsx',
+      'src/debug-bridge.ts',
+    ],
+  },
+  {
+    id: 'story-breath-anchor-paces-pause-mode-chapters',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.',
+    ulTerms: ['Daily life', 'Chapter'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['lastStoryChapterEndTick'],
+      module: 'src/engine/attentionCadence.ts',
+    },
+    writeSites: ['src/engine/attentionCadence.ts', 'src/engine/orchestrator.ts'],
+    readSites: ['src/engine/attentionCadence.ts', 'src/engine/encounterFilterPipeline.ts', 'src/debug-bridge.ts'],
   },
 ];
 
