@@ -23,6 +23,7 @@ import { buildLensFromIdentity } from '../../engine/ascendantLens';
 import { ENRICHED_DILEMMA_LIBRARY } from '../../data/meeting-dilemma-library';
 import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
 import { clearMeetingDebugState, publishMeetingDebugState } from './meetingDebugState';
+import { selectFormativeFateLine } from '../../engine/meetingFateLine';
 import { DILEMMA_TEMPLATES } from '../../data/meeting-content';
 import { SENSING_OPENING_PROSE, SENSING_OPENING_FALLBACK } from '../../data/meeting-narrative-prose';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
@@ -220,6 +221,9 @@ export function MeetTheFirstFlow({
         netLean: o.netLean,
         shift: o.shift,
         playedNudgeIds: [...o.playedNudgeIds],
+        baseForecastTier: o.baseForecastTier,
+        handForecastTier: o.handForecastTier,
+        fateLineKey: selectFormativeFateLine(o, selectedCandidate?.name ?? '').key,
       })),
     });
   }, [beat, selectedCandidate, dilemmas, convertedTests, formativeOutcomes]);

@@ -46,7 +46,7 @@ describe('wandering healer unified encounter', () => {
     // now arrives with an empty hand, and the step needs no commit to progress —
     // fate resolves it when `stepProgress` completes. Driving with the empty hand
     // is the current path, and it is what the fate-alone stage does when the
-    // player clicks `Let fate decide` on a step that authored nothing.
+    // player clicks `Stay silent, let fate answer` on a step that authored nothing.
     expect(prepared.notification!.choices).toEqual([]);
 
     state = {

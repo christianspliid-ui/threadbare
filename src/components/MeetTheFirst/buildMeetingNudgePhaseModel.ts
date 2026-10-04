@@ -34,13 +34,10 @@ import type { ForecastTier } from '../../types/traces/encounter-traces';
 import type { StepFactorLine } from '../../types/unifiedAction';
 import type { BondTest, FormativeTest, MeetingStepNudge } from '../../types/meetingEncounter';
 import { forecastAction } from '../../engine/resolutionService';
+import { meetingResolutionInput } from '../../engine/meetingEncounter';
+import { leanTagFor } from '../../engine/meetingFateLine';
 import { difficultyWord } from '../../engine/encounters/nudges';
-import {
-  MEETING_TEST_ACTOR_ID,
-  MEETING_TEST_CAPABILITY,
-  MEETING_TEST_REACH,
-  MEETING_TEST_SPHERE_FACTOR,
-} from '../../data/meeting-nudge-constants';
+import { MEETING_TEST_REACH } from '../../data/meeting-nudge-constants';
 import {
   FORECAST_TIER_WORDS,
   NUDGE_FREE_COST_LABEL,
@@ -57,6 +54,11 @@ import type {
   EncounterStageNudgePhaseModel,
 } from '../Game/encounter-stage/types';
 
+
+/** Spread helper: `{ leanLabel }` when there is one, nothing otherwise. */
+function leanLabelEntry(label: string | undefined): { leanLabel?: string } {
+  return label ? { leanLabel: label } : {};
+}
 
 /** Synthetic action id — the meeting has no `UnifiedAction` to borrow one from. */
 const MEETING_ACTION_ID = 'meeting:formative';
@@ -151,15 +153,13 @@ export function buildMeetingNudgePhaseModel(
   // The exact inputs `resolveMeetingBand` rolls against, with the nudge
   // contribution left at zero — `useNudgeHand` adds the selected deltas onto
   // `actionModifiers` and recalls `forecastAction`, which is the same pure call
-  // resolution makes. Hence the displayed word cannot drift from the rolled band.
-  const forecastInput: ResolutionInput = {
-    actorId: MEETING_TEST_ACTOR_ID,
-    domain: MEETING_TEST_REACH,
-    capability: MEETING_TEST_CAPABILITY,
-    difficulty,
-    sphereFactor: MEETING_TEST_SPHERE_FACTOR,
-    actionModifiers: 0,
-  };
+  // resolution makes. Built by the engine's own `meetingResolutionInput`
+  // (THR-1714), so the displayed word cannot drift from the rolled band.
+  const forecastInput: ResolutionInput = meetingResolutionInput(difficulty, 0);
+
+  // THR-1714 — a card that argues for a pole says which, in the axis's sheet
+  // word. Only a formative test has poles; the bond test has none.
+  const valuePair = 'valuePair' in test ? test.valuePair : undefined;
 
   const baseSummary = forecastAction(forecastInput);
   const baseForecast = forecastModelFrom(
@@ -192,6 +192,7 @@ export function buildMeetingNudgePhaseModel(
           : {}),
         riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
         forecastDelta: nudge.forecastDelta,
+        ...leanLabelEntry(leanTagFor(valuePair, nudge.poleLean)),
       };
     },
   );

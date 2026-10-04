@@ -1467,7 +1467,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // adapter with `notification.choices` empty and no nudge phase to offer
     // instead — a stage with nothing on it to do. Widening the gate routes those
     // templates to the unified adapter, which builds the fate-alone nudge phase
-    // (`Let fate decide`) for a step that authored nothing. The gate lost its
+    // (`Stay silent, let fate answer`) for a step that authored nothing. The gate lost its
     // reason before it lost its condition; this removes both.
     //
     // `watched` tier and gate duty are still excluded above, and both are

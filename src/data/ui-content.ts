@@ -319,7 +319,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.nudge_objective': {
     label: 'The Objective',
-    desc: 'What the mortal is trying to do in this step. When you let fate decide, fate rolls against exactly this — every outcome, from disaster to triumph, is an ending of this one attempt.',
+    desc: 'What the mortal is trying to do in this step. When you hand the moment to fate, fate rolls against exactly this — every outcome, from disaster to triumph, is an ending of this one attempt.',
   },
   'ui.nudge_difficulty': {
     label: 'Difficulty',

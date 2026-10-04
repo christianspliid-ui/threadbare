@@ -660,6 +660,13 @@ export interface EncounterStageNudgeCardModel {
   /** Player guidance, words only — never a number. */
   effectLine: string;
   /**
+   * THR-1714 — which way this card argues, as a sheet word ("Leans Brave").
+   * Filled only by the meeting adapter, whose tests name one value axis; an
+   * in-world card leaves it unset and renders exactly as before. Neutral, never
+   * polarity-coloured: a lean is not good or bad (Law 31).
+   */
+  leanLabel?: string;
+  /**
    * **Effective** essence price — after any sphere discount (THR-885).
    *
    * This is deliberately the discounted number rather than the authored one:
@@ -922,7 +929,7 @@ export interface EncounterStageModel {
    * THR-1121 — **also present, with an empty `cards` array, when the step
    * authored neither a hand nor choices.** That is the fate-alone screen:
    * `Nothing here answers to you. Let it play out.` over the usual motive/test
-   * framing, with `Let fate decide` as the only move. It exists because the
+   * framing, with `Stay silent, let fate answer` as the only move. It exists because the
    * generic supportive/coercive/withdrawn stance triple that used to carry such
    * steps is retired, so `choices` is now empty for every unauthored step and
    * the absent branch would render a scene with nothing to do on it.

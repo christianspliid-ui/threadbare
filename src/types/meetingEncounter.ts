@@ -19,6 +19,7 @@ import type { CooperationStrategy } from './disposition';
 import type { StepFactorLine, StepNudge, StepOutcome } from './unifiedAction';
 import type { BondReception } from '../data/meeting-nudge-constants';
 import type { HungerId, ResonanceTag } from './hunger';
+import type { ForecastTier } from './resolution';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -568,6 +569,13 @@ export interface MeetingEncounterResult {
   startingQuintessence?: number;
   /** How the mortal received the bond, for the thread edge. */
   bondReception?: BondReception;
+  /**
+   * The resolved bond test, whole (THR-1714) — read by `createAgentFromMeeting`
+   * to emit `meeting.bond_resolved`. Not persisted: the thread edge keeps only
+   * `bondReception`. The formative outcomes ride on
+   * `meetingChoiceRecord.formativeOutcomes`, which already carries them.
+   */
+  bondOutcome?: BondOutcome;
 }
 
 // ─── Dilemma Resonance & Lens Overlay (Enriched Templates) ──────
@@ -747,6 +755,15 @@ export interface FormativeOutcome {
   readonly essenceSpent: number;
   /** Prose slot selected for this outcome. */
   readonly prose: string;
+  /**
+   * Forecast tier with no cards played (THR-1714) — what the moment stood at
+   * before the god spoke. Computed from the same `ResolutionInput` the band
+   * rolls against, without an rng draw. Optional: outcomes from an in-flight
+   * meeting that predates the field have none, and the fate line degrades.
+   */
+  readonly baseForecastTier?: ForecastTier;
+  /** Forecast tier with the played hand (THR-1714). Equal to base when silent. */
+  readonly handForecastTier?: ForecastTier;
 }
 
 /** The resolved result of the bond test. */
@@ -757,4 +774,8 @@ export interface BondOutcome {
   readonly essenceSpent: number;
   readonly prose: string;
   readonly traitSeed: string;
+  /** Forecast tier with no cards played (THR-1714). */
+  readonly baseForecastTier?: ForecastTier;
+  /** Forecast tier with the played hand (THR-1714). */
+  readonly handForecastTier?: ForecastTier;
 }

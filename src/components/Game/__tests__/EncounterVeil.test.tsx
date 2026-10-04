@@ -212,7 +212,7 @@ describe('EncounterVeil', () => {
 
   /**
    * THR-1121 — the commit moved out of the footer and into the stage, and now
-   * says `Let fate decide` like every other commit in the nudge pattern. What it
+   * says `Play your hand, let fate answer` like every other commit in the nudge pattern. What it
    * *does* is unchanged, which is what this pins: select a choice, commit, and
    * `onIntervene` still receives that choice's id and price.
    */
@@ -279,7 +279,8 @@ describe('EncounterVeil', () => {
     render(<EncounterVeil {...defaultProps} />);
     expect(screen.queryByText('Intervene')).toBeNull();
     expect(screen.queryByText('Resume')).toBeNull();
-    expect(screen.getByText('Let fate decide')).toBeInTheDocument();
+    // THR-1714 — choosing an option is playing your hand.
+    expect(screen.getByText('Play your hand, let fate answer')).toBeInTheDocument();
   });
 
   /**

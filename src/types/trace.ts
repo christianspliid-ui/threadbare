@@ -4952,6 +4952,15 @@ export interface MeetingTestResolvedTrace extends TraceBase {
   /** Erosion this band cost, before the floor clamp. 0 on non-scarring bands. */
   quintessenceErosion: number;
   essenceSpent: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**
@@ -4970,6 +4979,15 @@ export interface MeetingBondResolvedTrace extends TraceBase {
   playedNudgeIds: string[];
   /** Starting quintessence after scarring, post-floor. */
   startingQuintessence: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**

@@ -32,6 +32,9 @@ import {
   BOND_PROSE,
   BOND_PROSE_FALLBACK,
   BOND_RELEASE_TEXT,
+  MEETING_FATE_LINE_FORECAST_CLAUSES,
+  MEETING_FATE_LINE_FORMATIVE_CLAUSES,
+  MEETING_FATE_LINE_BOND_CLAUSES,
 } from '../meeting-narrative-prose';
 
 /** Every hunger the meeting must speak for. Pinned so a dropped key fails loudly. */
@@ -110,6 +113,22 @@ const CORPUS: Entry[] = [
     fields: { fallback: BOND_PROSE_FALLBACK },
     scope: 'outcome' as const,
   },
+  // THR-1714 — the fate line reports a result, so it is held to outcome scope.
+  {
+    id: 'prose.fate_line.forecast',
+    fields: { ...MEETING_FATE_LINE_FORECAST_CLAUSES },
+    scope: 'outcome' as const,
+  },
+  ...Object.entries(MEETING_FATE_LINE_FORMATIVE_CLAUSES).map(([row, cells]) => ({
+    id: `prose.fate_line.formative.${row}`,
+    fields: { ...cells },
+    scope: 'outcome' as const,
+  })),
+  ...Object.entries(MEETING_FATE_LINE_BOND_CLAUSES).map(([row, cells]) => ({
+    id: `prose.fate_line.bond.${row}`,
+    fields: { ...cells },
+    scope: 'outcome' as const,
+  })),
 ];
 
 /** Label-class strings — held to the hard plainness rule, scored as labels not prose. */
