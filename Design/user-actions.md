@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: the rulebook clean-up merged** ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)). Its clash with main was cleared by the builder, and it merged via [#2227](https://github.com/christianspliid-ui/threadbare/pull/2227) at 23:00.
 - **2026-10-04: show the roll is live** ([THR-1714](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice)): the bonding scenes now say what the hand did. Merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and live.
 - **2026-10-04: nine god cards that never appeared now reach the card drawer** ([THR-1734](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries)): Bestow Power, Rekindle and seven others. Merged via [#2225](https://github.com/christianspliid-ui/threadbare/pull/2225) and live.
 - **2026-10-04: the two-month-old process tidy-up is done** ([THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Merged via [#2226](https://github.com/christianspliid-ui/threadbare/pull/2226).
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: spells now reach mortals as divine gifts and found tomes** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)). Merged via [#2220](https://github.com/christianspliid-ui/threadbare/pull/2220) at 14:39 and live.
 - **2026-10-04: Linear sub-issue auto-complete is off.** You, on Discord at 11:30: *"i have disabled sub-issue autocomplete"*. Linear does not expose that setting to me, so the proof will be the next parent that closes without taking its children with it.
 - **2026-10-04: the encounter stakes line is live** ([THR-1727](https://linear.app/threadbare/issue/THR-1727/encounter-stakes-line-one-formula-sentence-replaces-the-summary-and)), the third of your four Unsafe Bridge jobs: one sentence opens an encounter, and its result line names the chapter. Merged via [#2217](https://github.com/christianspliid-ui/threadbare/pull/2217).
-- **2026-10-04: the bridge keeper has her name back** ([THR-1726](https://linear.app/threadbare/issue/THR-1726/the-unsafe-bridge-the-keepers-name-is-missing-from-the-scene-prose-the)), the second of your four Unsafe Bridge jobs. Merged via [#2216](https://github.com/christianspliid-ui/threadbare/pull/2216) and live.
 
 ---
 
