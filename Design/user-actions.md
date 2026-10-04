@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 21:55 local (19:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: show the roll is live** ([THR-1714](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice)): the bonding scenes now say what the hand did. Merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and live.
 - **2026-10-04: nine god cards that never appeared now reach the card drawer** ([THR-1734](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries)): Bestow Power, Rekindle and seven others. Merged via [#2225](https://github.com/christianspliid-ui/threadbare/pull/2225) and live.
 - **2026-10-04: the two-month-old process tidy-up is done** ([THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Merged via [#2226](https://github.com/christianspliid-ui/threadbare/pull/2226).
 - **2026-10-04: The First now asks** ([THR-1715](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her)). Her story chapters wait for you and her chores stay out of the Ledger. Merged via [#2224](https://github.com/christianspliid-ui/threadbare/pull/2224) at 16:53 and live; the next cold playtest round judges it.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: Linear sub-issue auto-complete is off.** You, on Discord at 11:30: *"i have disabled sub-issue autocomplete"*. Linear does not expose that setting to me, so the proof will be the next parent that closes without taking its children with it.
 - **2026-10-04: the encounter stakes line is live** ([THR-1727](https://linear.app/threadbare/issue/THR-1727/encounter-stakes-line-one-formula-sentence-replaces-the-summary-and)), the third of your four Unsafe Bridge jobs: one sentence opens an encounter, and its result line names the chapter. Merged via [#2217](https://github.com/christianspliid-ui/threadbare/pull/2217).
 - **2026-10-04: the bridge keeper has her name back** ([THR-1726](https://linear.app/threadbare/issue/THR-1726/the-unsafe-bridge-the-keepers-name-is-missing-from-the-scene-prose-the)), the second of your four Unsafe Bridge jobs. Merged via [#2216](https://github.com/christianspliid-ui/threadbare/pull/2216) and live.
-- **2026-10-04: your encounter-screen layout pass is live** ([THR-1724](https://linear.app/threadbare/issue/THR-1724/encounter-screen-christians-2026-10-04-layout-pass-169-card-art-skill)), the first of the four. Merged via [#2215](https://github.com/christianspliid-ui/threadbare/pull/2215).
 
 ---
 
