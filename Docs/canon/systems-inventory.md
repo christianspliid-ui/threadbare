@@ -53,7 +53,7 @@ names like `TB-073`) a premise might use.
 | **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
-| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | — |
+| **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | `2.34` |
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation, appointment, rendezvous, due tick | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
 | **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence`, `grievance` | `6.05`, `6.55`, `6.6`, `6.634`, `6.64` |
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor`, `secret`, `leverage` | — |
@@ -103,7 +103,6 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `2a` | Progress + resolve existing unified actions | — |
 | `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
-| `2.34` | Companies | `THR-74` |
 | `3b` | Notable Agendas | `THR-630` |
 | `6.625b` | Companion expiry | `THR-1096` |
 | `6.637` | Unrest | — |

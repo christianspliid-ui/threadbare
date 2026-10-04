@@ -230,7 +230,9 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     aliases: ['company', 'companies', 'group', 'party', 'band', 'fellowship', 'cohesion'],
     activityKeywords: ['group_phase', 'group_formed', 'group_dissolved'],
     domains: ['groups'],
-    phaseMatch: /\bgroups?\b/i,
+    // `compan(y|ies)` so phase `2.34 | Companies` joins this row instead of the
+    // Unclassified list, which invited a duplicate row (THR-758, folded into THR-984).
+    phaseMatch: /\b(groups?|compan(y|ies))\b/i,
     note: 'Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops.',
   },
   {
