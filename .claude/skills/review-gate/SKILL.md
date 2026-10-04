@@ -1,7 +1,7 @@
 ---
 name: review-gate
 description: The automatic code-review gate (THR-1691). Run before arming auto-merge on any code PR — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
-last_validated_against: 2026-10-02
+last_validated_against: 2026-10-04
 ---
 
 # Review gate
@@ -25,7 +25,7 @@ Nobody reviews code before it merges here — Christian is chat-only and does no
    ```
    It stamps `.claude/review-receipts/<HEAD>.json` (gitignored) and prints the PR comment.
 7. **Publish and arm.** After `gh pr create`: `gh pr comment <N> --body-file "$SCRATCH/review-comment.md"`, then `gh pr merge --auto --merge`. The comment carries a `<!-- review-gate-receipt sha=… open=… -->` marker, so a later session in another worktree passes the hook from the comment alone.
-8. **Findings still open after round 2:** do **not** arm. Leave the PR open, post a ticket comment naming each open finding (`file:line` — summary), and take pull-work's park disposition (unassign, state stays In Dev). `keep-work-flowing-cc` surfaces the park.
+8. **Findings still open after round 2:** do **not** arm. Leave the PR open and unarmed, post a ticket comment naming each open finding (`file:line` — summary) and the head reviewed, and take pull-work's park disposition (unassign, state stays In Dev). **Do not write a `Hold:` line into the PR body** — a held PR is invisible to the duty that resumes it. The "fresh session" that picks it up is the pickup lane's Step 0.8 unstick duty (THR-1735): the first run whose liveness proof finds the branch idle merges `origin/main`, runs a **new review cycle** on the head (the two-round cap is per cycle, not per PR), fixes or rebuts what survives, writes the receipt and arms. `keep-work-flowing-cc` lists the park under § Health, never as a Christian ask.
 
 **What the hook accepts** (`scripts/review-gate.ts`, `decideReviewGate`): a docs-only diff; a `Review-gate exempt: <reason>` line alone on a line in a commit body of the range (audited by the weekly retro — for reverts and emergencies, not convenience); a receipt for the PR head with zero `open` findings; a receipt for an **ancestor** whose delta to head is docs-only, counting only files in the PR's own diff (closeout docs written after the review, or a `git merge origin/main` — main's code is not this PR's); a PR-comment marker for the head with `open=0`. Anything else is denied, including a named PR whose head is not in the repo even after a fetch. A gate that errors **allows with a loud warning** and logs to `.claude/review-receipts/gate-errors.log` — fail-soft, never silent. Commands are tokenised, and each line, `;`, `&&` or `|` segment is checked: the words `gh pr merge` inside a quoted commit message or PR body are not a merge, while a re-arm after a disarm on the same line is. A bare `gh pr merge` is judged against the PR's **remote** head, because that is what GitHub merges, not this tree's HEAD.
 

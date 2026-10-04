@@ -171,13 +171,18 @@
  * ## Two age tiers, because a conflict is an agent's job until it isn't
  *
  * A conflicted PR is session work, not a Christian decision (THR-608: technical
- * verdicts are the agent's). So the first tier reports rather than escalates:
+ * verdicts are the agent's). Neither tier escalates to Christian (THR-1735,
+ * 2026-10-04 — he is chat-only and cannot resolve a conflict, so the old
+ * `needsChristian: true` on the second tier was misrouted by construction and
+ * sat on his one surface for 32 h over PR #2180 with nobody able to act):
  *
  * - past `ARMED_DIRTY_ESCALATE_MINUTES` (one sweep interval + slack) →
  *   `needsSession: true`. Surfaced to the lane, not to Christian.
- * - past `ARMED_DIRTY_ABANDONED_HOURS` → `needsChristian: true`. At this point
- *   ~12 hourly sessions have each had a chance and none cleared it, so the
- *   stall is systemic rather than a task waiting for its turn.
+ * - past `ARMED_DIRTY_ABANDONED_HOURS` → verdict `abandoned`, still
+ *   `needsSession: true`, `needsChristian: false`. At this point many pickup
+ *   runs have each had a chance and none cleared it, so the stall is systemic —
+ *   the pickup lane's Step 0.8 unstick duty owns it and the summary says so.
+ *   Christian hears of it only when the duty's fix recurs (an impediment row).
  *
  * **Unarmed conflicts run the same two tiers on a slower clock** — see
  * `UNARMED_DIRTY_ESCALATE_HOURS` / `UNARMED_DIRTY_ABANDONED_HOURS`. Arming is a
@@ -757,7 +762,8 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
   };
 
   // 1. Conflicted past the abandoned threshold. Loudest case: sessions have had
-  //    their chance and the stall outlived them.
+  //    their chance and the stall outlived them. Still the lane's, never
+  //    Christian's (THR-1735) — the pickup lane's unstick duty owns it.
   if (abandoned.length > 0) {
     const oldest = abandoned[0];
     const hours = Math.floor(oldest.ageMinutes / 60);
@@ -765,10 +771,11 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
       verdict: "abandoned",
       summary:
         `A finished change has been stuck for ${hours} hours and cannot merge on its own: PR #${oldest.number} ` +
-        `("${oldest.title}") has a conflict that repeated automated attempts have not cleared. ` +
-        "Nothing is broken on the live site, but that work is not reaching it." +
+        `("${oldest.title}") has a conflict that no pickup run has cleared. The pickup lane's unstick duty ` +
+        "(pull-work Step 0.8) owns it: merge main in, resolve, re-review, push. Nothing is broken on the live " +
+        "site, but that work is not reaching it, and the age says the duty has not fired." +
         alsoRed(abandoned),
-      needsChristian: true,
+      needsChristian: false,
       needsSession: true,
       updateCandidate,
       prs: reports,
