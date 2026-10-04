@@ -10,7 +10,7 @@
  * `probabilityBoost` — the pre-nudge paid-RNG-modifier layer the Nudge Model
  * pivot rejects (THR-773/WS0). That producer is retired, so such a step now
  * renders the nudge stage with an empty hand: the moment is still framed, and
- * `Let fate decide` is the only move.
+ * `Stay silent, let fate answer` is the only move.
  *
  * Christian's finding, THR-974 verdict session (2026-08-15), on Swindler Found
  * step 2: *"this step 2 and the choices seem like legacy encounter design. am I
@@ -44,7 +44,7 @@ import type {
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 import {
-  NUDGE_COMMIT_LABEL,
+  NUDGE_COMMIT_LABEL_SILENT,
   NUDGE_EMPTY_HAND_LINE,
 } from '../../../../data/nudge-stage-content';
 
@@ -146,11 +146,12 @@ describe('fate-alone stage (THR-1121)', () => {
     expect(phase!.cards).toEqual([]);
   });
 
-  it('renders the empty-hand line and Let fate decide as the only move', () => {
+  it('renders the empty-hand line and the silent commit as the only move', () => {
     render(<NudgePhaseShell phase={buildFateAlonePhase()!} onCommit={() => {}} />);
 
     expect(screen.getByText(NUDGE_EMPTY_HAND_LINE)).toBeInTheDocument();
-    expect(screen.getByTestId('nudge-commit')).toHaveTextContent(NUDGE_COMMIT_LABEL);
+    // THR-1714 — nothing staged, so the button names silence, not a skip.
+    expect(screen.getByTestId('nudge-commit')).toHaveTextContent(NUDGE_COMMIT_LABEL_SILENT);
 
     // The retired pair, by name — the director's finding was about these words
     // being on screen, so their absence is the assertion.

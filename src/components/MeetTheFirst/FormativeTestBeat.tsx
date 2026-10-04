@@ -32,6 +32,7 @@ import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetin
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import type { SphereName } from '../../types/index';
 import { resolveFormativeTest } from '../../engine/meetingEncounter';
+import { selectFormativeFateLine } from '../../engine/meetingFateLine';
 import { selectSceneForDilemma } from '../../data/meeting-art-library';
 import {
   MEETING_FATE_REVEAL_CONTINUE,
@@ -159,6 +160,10 @@ export function FormativeTestBeat({
 
   const characterPosition = index % 2 === 0 ? 'left' : 'right';
 
+  // THR-1714 — the narrator says what the hand made the odds and what fate did
+  // with the lean, before the band's prose. Selected from the outcome alone.
+  const fateLine = revealed ? selectFormativeFateLine(revealed, candidate.name) : null;
+
   return (
     <div className="h-screen relative overflow-hidden" style={{ background: SCENE_BG }}>
       {index === -1 && (
@@ -239,6 +244,22 @@ export function FormativeTestBeat({
               {/* ── Watching: fate's answer ── */}
               {revealed && (
                 <div data-testid="formative-fate-reveal" style={{ marginTop: 24 }}>
+                  {fateLine && fateLine.text && (
+                    <p
+                      data-testid="formative-fate-line"
+                      data-fate-key={fateLine.key}
+                      style={{
+                        fontFamily: FONT_PROSE,
+                        fontStyle: 'italic',
+                        fontSize: '1rem',
+                        color: 'var(--veil-gold-text)',
+                        lineHeight: 1.6,
+                        marginBottom: 12,
+                      }}
+                    >
+                      {fateLine.text}
+                    </p>
+                  )}
                   <p
                     data-testid="formative-fate-prose"
                     data-band={revealed.band}

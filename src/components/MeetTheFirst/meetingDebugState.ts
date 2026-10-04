@@ -15,6 +15,7 @@
 
 import type { BondReception } from '../../data/meeting-nudge-constants';
 import type { StepOutcome } from '../../types/unifiedAction';
+import type { ForecastTier } from '../../types/resolution';
 
 /** Flat, JSON-safe snapshot of where the meeting flow currently is. */
 export interface MeetingDebugSnapshot {
@@ -39,6 +40,11 @@ export interface MeetingDebugSnapshot {
     netLean: 'a' | 'b' | 'none';
     shift: number;
     playedNudgeIds: string[];
+    /** THR-1714 — the forecast with no cards, and with the played hand. */
+    baseForecastTier?: ForecastTier;
+    handForecastTier?: ForecastTier;
+    /** THR-1714 — which fate line the reveal showed (`selectFormativeFateLine`). */
+    fateLineKey: string;
   }>;
   /** Resolved bond outcome, once the bond test has been committed. */
   bondOutcome?: {

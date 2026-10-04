@@ -32,6 +32,7 @@ import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
 import {
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
+  NUDGE_FORECAST_SHIFT_LINE,
 } from '../../../../data/nudge-stage-content';
 import type {
   EncounterStageForecastModel,
@@ -162,8 +163,10 @@ export function NudgeReadingMarks({
 
       {/* ── Forecast ─────────────────────────────────────────────
           The word in its ladder colour, recolouring live as the hand moves it.
-          The "was …" note sits beside the pill, not beneath it, so the row keeps
-          one height whether or not the forecast has moved. */}
+          The "your hand: …" note sits beside the pill, not beneath it, so the
+          row keeps one height whether or not the forecast has moved. THR-1714:
+          it names its cause in the present tense — "was Perilous" read as the
+          roll having already happened. */}
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
         <Tooltip id="ui.nudge_forecast">
           <ForecastPill tier={forecast.tier} word={forecast.word} />
@@ -179,7 +182,7 @@ export function NudgeReadingMarks({
               whiteSpace: 'nowrap',
             }}
           >
-            was {baseForecast.word}
+            {NUDGE_FORECAST_SHIFT_LINE.replace('{from}', baseForecast.word).replace('{to}', forecast.word)}
           </span>
         )}
       </span>

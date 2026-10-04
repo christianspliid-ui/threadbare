@@ -392,6 +392,9 @@ export type TraceCategory =
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
   | 'meeting.essence_spent'
+  // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
+  | 'meeting.test_resolved'
+  | 'meeting.bond_resolved'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -926,6 +929,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // The opening (THR-1605 S1)
   'meeting.location_picked',
   'meeting.essence_spent',
+  // Meet The First resolutions (THR-1714)
+  'meeting.test_resolved',
+  'meeting.bond_resolved',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -4952,6 +4958,15 @@ export interface MeetingTestResolvedTrace extends TraceBase {
   /** Erosion this band cost, before the floor clamp. 0 on non-scarring bands. */
   quintessenceErosion: number;
   essenceSpent: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**
@@ -4970,6 +4985,15 @@ export interface MeetingBondResolvedTrace extends TraceBase {
   playedNudgeIds: string[];
   /** Starting quintessence after scarring, post-floor. */
   startingQuintessence: number;
+  /** Forecast with no cards played (THR-1714). */
+  baseForecastTier: import('./resolution').ForecastTier;
+  /** Forecast with the played hand (THR-1714). */
+  handForecastTier: import('./resolution').ForecastTier;
+  /**
+   * Which fate line the player read (THR-1714) — `${leanState}.${fateAnswer}`,
+   * `.noforecast` suffixed when the outcome predates the forecast fields.
+   */
+  fateLineKey: string;
 }
 
 /**
