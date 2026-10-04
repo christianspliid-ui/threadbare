@@ -110,7 +110,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
-| `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `world-ref-opens-one-card` | Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended). | function: `SURFACE_BY_WORLD_REF`, `useRefRouter` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
@@ -2326,10 +2326,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 8 total — 1 write, 4 read, 3 unclassified
+- **Production hits:** 9 total — 1 write, 4 read, 4 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/components/Game/ChapterLedger.tsx`, `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/phaseAttention.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
@@ -2565,7 +2565,7 @@ exit
 
 ### `story-breath-anchor-paces-pause-mode-chapters` — 🔵 UNVERIFIED-OK
 
-- **Intent:** The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.
+- **Intent:** The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
 - **UL terms:** *Daily life*, *Chapter*
 - **Module:** `src/engine/attentionCadence.ts`
