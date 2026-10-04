@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 03:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,11 +13,11 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### A finished change stuck for 21 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
+### A finished change stuck for 22 hours: the fair draw ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180), [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 21 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 22 hours and cannot merge on its own: PR #2180 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
-**Nothing for you to do by hand.** The design lane has now scheduled it ([plan § D4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-01-thr-1687-cap-local-order.md)): it waits on the [THR-1722](https://linear.app/threadbare/issue/THR-1722/a-mortal-who-begins-a-new-catalogue-encounter-crashes-the-rest-of-its) bug fix and its veto window (closes ~02:45 Monday), then a builder clears the conflict and pushes.
+**Nothing for you to do by hand.** The design lane has now scheduled it ([plan § D4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-01-thr-1687-cap-local-order.md)): the bug it waited on ([THR-1722](https://linear.app/threadbare/issue/THR-1722/a-mortal-who-begins-a-new-catalogue-encounter-crashes-the-rest-of-its)) is now fixed, so it waits only on its veto window (closes ~02:45 Monday); then a builder clears the conflict and pushes.
 
 ### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
 
@@ -49,6 +49,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: the missing "X begins Y" news line is fixed** ([THR-1722](https://linear.app/threadbare/issue/THR-1722/a-mortal-who-begins-a-new-catalogue-encounter-crashes-the-rest-of-its)): a mortal starting one of the 86 new-catalogue encounters, including your slice encounters, is announced and recorded again. Merged via [#2207](https://github.com/christianspliid-ui/threadbare/pull/2207).
 - **2026-10-04: an apex monster's card now names the apex** ([THR-1698](https://linear.app/threadbare/issue/THR-1698/an-apex-monsters-card-line-reaches-prose-only-the-fight-header-and)), not just the fight header. Merged via [#2204](https://github.com/christianspliid-ui/threadbare/pull/2204).
 - **2026-10-04: a rival's strike now plays out as an encounter** ([THR-1703](https://linear.app/threadbare/issue/THR-1703/the-rival-strike-has-no-encounter-author-shadowrival-strike-so)): it is held where it cannot land, and both worst-case endings show and write the same harm. Merged via [#2203](https://github.com/christianspliid-ui/threadbare/pull/2203).
 - **2026-10-03: timed conditions now end on time** ([THR-1697](https://linear.app/threadbare/issue/THR-1697)): a timed condition never lands permanent by accident. Merged via [#2202](https://github.com/christianspliid-ui/threadbare/pull/2202).
@@ -58,7 +59,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-03: your own mortal now reads as yours, not a stranger** ([THR-1710](https://linear.app/threadbare/issue/THR-1710)): the Threads panel no longer fogs your avatar's own details. The eighth round-2 playtest bug fixed. Merged via [#2197](https://github.com/christianspliid-ui/threadbare/pull/2197).
 - **2026-10-03: the Divine Court now fits the screen, sits above the HUD, and stops the clock while open** ([THR-1709](https://linear.app/threadbare/issue/THR-1709)), the seventh round-2 playtest bug fixed. Merged via [#2196](https://github.com/christianspliid-ui/threadbare/pull/2196).
 - **2026-10-03: player text cleaned up** ([THR-1708](https://linear.app/threadbare/issue/THR-1708)): no doubled "the", spell names on the lines that report them, and a nudge only counts as yours when you played it. The sixth round-2 playtest bug fixed. Merged via [#2195](https://github.com/christianspliid-ui/threadbare/pull/2195).
-- **2026-10-03: developer text no longer reaches a player's build** ([THR-1707](https://linear.app/threadbare/issue/THR-1707)), the fifth round-2 playtest bug fixed. Merged via [#2193](https://github.com/christianspliid-ui/threadbare/pull/2193).
 
 ---
 
