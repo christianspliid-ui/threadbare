@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-04: The First now asks** ([THR-1715](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her)). Her story chapters wait for you and her chores stay out of the Ledger. Merged via [#2224](https://github.com/christianspliid-ui/threadbare/pull/2224) at 16:53 and live; the next cold playtest round judges it.
 - **2026-10-04: the "threads" filler lines are gone** ([THR-1725](https://linear.app/threadbare/issue/THR-1725/remove-the-threads-placeholder-lines-from-encounters-show-nothing)), the last of your four Unsafe Bridge jobs. Merged via [#2218](https://github.com/christianspliid-ui/threadbare/pull/2218) at 15:20 and live. The playthrough invitation waits on [the five-card hand fix](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls), buildable from Monday.
 - **2026-10-04: the fair-draw pull request is no longer an ask** ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)). The stuck-PR check stopped escalating it; it is held on purpose until its veto window closes (~02:45 Monday), then a builder clears the conflict. The ruin-visit fix ([#2199](https://github.com/christianspliid-ui/threadbare/pull/2199)) merged and is live.
 - **2026-10-04: spells now reach mortals as divine gifts and found tomes** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)). Merged via [#2220](https://github.com/christianspliid-ui/threadbare/pull/2220) at 14:39 and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: your encounter-screen layout pass is live** ([THR-1724](https://linear.app/threadbare/issue/THR-1724/encounter-screen-christians-2026-10-04-layout-pass-169-card-art-skill)), the first of the four. Merged via [#2215](https://github.com/christianspliid-ui/threadbare/pull/2215).
 - **2026-10-04: the playthrough is paused until your morning findings are built** ([THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with)). You played The Unsafe Bridge, and four jobs came out of it ([THR-1724](https://linear.app/threadbare/issue/THR-1724/encounter-screen-christians-2026-10-04-layout-pass-169-card-art-skill), [THR-1725](https://linear.app/threadbare/issue/THR-1725/remove-the-threads-placeholder-lines-from-encounters-show-nothing), [THR-1726](https://linear.app/threadbare/issue/THR-1726/the-unsafe-bridge-the-keepers-name-is-missing-from-the-scene-prose-the), [THR-1727](https://linear.app/threadbare/issue/THR-1727/encounter-stakes-line-one-formula-sentence-replaces-the-summary-and)). The invitation comes back once all four are live.
 - **2026-10-04: the seeded spell generator is live** ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and)). Merged 12:57; a builder has started the follow-on, [spells as gifts and found tomes](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4).
-- **2026-10-04: the word *Tradition* is now in the game glossary** ([THR-1701](https://linear.app/threadbare/issue/THR-1701)). Merged via [#2210](https://github.com/christianspliid-ui/threadbare/pull/2210).
 
 ---
 
