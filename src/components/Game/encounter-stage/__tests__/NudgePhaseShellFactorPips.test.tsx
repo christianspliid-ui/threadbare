@@ -192,21 +192,24 @@ describe('NudgePhaseShell — factor-line magnitude pips (THR-970)', () => {
     // THR-977 — the skill line moved from the delta-bearing arm to this one.
     // Capability is not an effect on the odds, so it states no contribution at
     // all rather than a zero one, and the pip row draws nothing.
-    expect(byId.get('skill:iron')).toBeDefined();
-    expect(byId.get('skill:iron')?.delta).toBeUndefined();
+    // THR-1724 — and then out of the factor list entirely: the capability is the
+    // title row's reach readout (`testPanel.skill`), which draws no pips at all.
+    expect(byId.get('skill:iron')).toBeUndefined();
+    expect(phase.testPanel.skill).toBeDefined();
     // Literal expected value, not the constant under test on both sides: the
     // carried artifact contributes 0.06 to the iron roll and says so in pips.
     expect(byId.get('equipment:item.rusted_key')?.delta).toBeCloseTo(0.06, 5);
   });
 
-  it('the skill line renders its sentence while drawing no pip row (THR-977)', () => {
+  it('the skill reading renders its sentence while drawing no pip row (THR-977, THR-1724)', () => {
     // The regression this ticket exists to prevent, stated directly: measured
     // 2026-08-02, `skill:stone` drew "Fated, 2 of 5" — the top odds tier — off
     // an ~0.85 capability, indistinguishable from the genuine contribution line
     // beside it. The sentence must survive; only the odds claim goes.
     renderShell();
 
-    expect(screen.getByTestId('nudge-factor-skill:iron')).toBeTruthy();
+    // THR-1724 — the sentence is the reach readout's accessible name now.
+    expect(screen.getByTestId('nudge-skill-chip')).toBeTruthy();
     expect(screen.queryByTestId('nudge-factor-pips-skill:iron')).toBeNull();
 
     // Falsification twin: the assertion above must be capable of failing, so
@@ -215,6 +218,6 @@ describe('NudgePhaseShell — factor-line magnitude pips (THR-970)', () => {
 
     // And the capability still reaches the player — through the word, which is
     // why dropping the pips loses nothing (`deriveSkillLine`'s own contract).
-    expect(screen.getByTestId('nudge-factor-skill:iron').textContent).toContain('Sera Vance');
+    expect(screen.getByTestId('nudge-skill-chip').getAttribute('aria-label')).toContain('Sera Vance');
   });
 });

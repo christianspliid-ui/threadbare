@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 
 import { SimulationControls } from '../SimulationControls';
 import { DoomBar } from '../DoomBar';
@@ -26,6 +26,9 @@ import type {
  * leaf. Pure props-down — all state remains owned by `GameView.tsx`; this
  * component holds none. Zero behavior change from the pre-extraction JSX.
  */
+/** THR-1724 — the CSS variable the top bar publishes its rendered height on. */
+export const TOPBAR_LIVE_HEIGHT_VAR = '--topbar-live-height';
+
 export interface GameViewTopBarProps {
   gameState: GameState;
 
@@ -146,9 +149,33 @@ export function GameViewTopBar({
   const showRivals = reveal?.rivals ?? true;
   const showNotables = reveal?.notables ?? true;
   const showOmens = reveal?.omens ?? true;
+
+  // THR-1724 — publish the bar's *rendered* height as `--topbar-live-height`.
+  // The encounter veil starts below it, so the time control — which names an
+  // encounter's auto-pause (Law 52, amended 2026-10-04) — stays in view while
+  // the encounter holds the clock. Measured, not `--topbar-height`: the bar
+  // wraps to two tiers and renders taller than its minimum. Fail-soft: without
+  // ResizeObserver the variable is unset and the veil covers the full screen.
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const root = document.documentElement;
+    const publish = () =>
+      root.style.setProperty(TOPBAR_LIVE_HEIGHT_VAR, `${Math.round(el.getBoundingClientRect().height)}px`);
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty(TOPBAR_LIVE_HEIGHT_VAR);
+    };
+  }, []);
   // ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══
   return (
       <div
+        ref={barRef}
+        data-testid="game-topbar"
         className="w-full flex items-center relative z-30 flex-shrink-0"
         style={{
           background: 'var(--bg-deep)',

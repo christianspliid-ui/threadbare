@@ -263,6 +263,21 @@ const VEIL_FOOTER_HEIGHT_PX = 94;
 const VEIL_FOOTER_CLEARANCE_PX = 24;
 
 /**
+ * THR-1724 — the attended column's top inset. Was `6vh`; with the card band at
+ * 16:9 a five-card hand takes two rows, and the viewport contract (Law 33) only
+ * holds if the chrome above the scene gives some height back.
+ */
+const VEIL_COLUMN_TOP_INSET = '3vh';
+
+/**
+ * THR-1724 — the scene prose's measure on the attended veil. The prose now
+ * shares its row with the cast column, so it may use the left column's width
+ * rather than the old 540px — fewer, longer lines, which is height the hand
+ * needs at 1920×1080.
+ */
+const SCENE_PROSE_MAX_WIDTH_PX = 760;
+
+/**
  * Law 44 (THR-1010) — the one duration reduced motion collapses everything to,
  * in seconds because the veil's inline transitions are authored in seconds.
  * Mirrors `--anim-fast: 150ms` in `index.css`; kept as a named constant so
@@ -329,6 +344,20 @@ const TYPE_LABEL_COLORS: Record<string, string> = {
 // "Moderate threat" line under it are gone (Christian, 2026-10-04). The tier is
 // not something the player acts on here, the pause is named by the time control
 // (Law 52, amended), and "threat" was a third difficulty vocabulary (Law 13).
+
+/**
+ * THR-1724 — every veil surface starts below the live top bar, so the time
+ * control (which names an encounter's auto-pause — Law 52, amended
+ * 2026-10-04) stays in view. `--topbar-live-height` is the bar's rendered
+ * height, published by `GameViewTopBar`; a host with no bar (tests, the meeting)
+ * leaves it unset and the veil covers the full screen, as before.
+ */
+const VEIL_ROOT_INSET = {
+  top: 'var(--topbar-live-height, 0px)',
+  right: 0,
+  bottom: 0,
+  left: 0,
+} as const;
 
 /**
  * THR-1724 — the scene's two columns: prose on the left, the cast and what is
@@ -633,7 +662,7 @@ export function EncounterVeil({
         aria-label={aftermath.title ?? 'Aftermath'}
         style={{
           position: 'fixed',
-          inset: 0,
+          ...VEIL_ROOT_INSET,
           background: VOID,
           zIndex: 50,
           overflow: 'hidden',
@@ -1497,7 +1526,7 @@ export function EncounterVeil({
         aria-label={model.header.title}
         style={{
           position: 'fixed',
-          inset: 0,
+          ...VEIL_ROOT_INSET,
           background: VOID,
           zIndex: 50,
           overflow: 'hidden',
@@ -1903,6 +1932,9 @@ export function EncounterVeil({
     );
   }
 
+  // THR-1724 — the nudge stage has no footer strip (see the footer below).
+  const showVeilFooter = !model.nudgePhase;
+
   // Derived values for lightly threaded timer.
   //
   // THR-1068: clamped at zero. The raw difference goes negative once the
@@ -1946,7 +1978,7 @@ export function EncounterVeil({
       aria-label={model.header.title}
       style={{
         position: 'fixed',
-        inset: 0,
+        ...VEIL_ROOT_INSET,
         background: VOID,
         zIndex: 50,
         overflow: 'hidden',
@@ -2067,13 +2099,18 @@ export function EncounterVeil({
           // unscrollable edge (THR-925). Engines without 'safe' drop the
           // declaration and fall back to flex-start, which scrolls correctly.
           justifyContent: 'safe center',
-          padding: '6vh 5vw 0 3vw',
+          padding: `${VEIL_COLUMN_TOP_INSET} 5vw 0 3vw`,
           // THR-1410 — the bottom reservation is px, not vh, because what it
           // has to clear is the footer strip, and the strip's height is what
           // the column must track. A `vh` bottom padding tracks the viewport
           // instead, which is how it drifted 8px short of the strip and left
           // the commit control unclickable at max scroll.
-          paddingBottom: VEIL_FOOTER_HEIGHT_PX + VEIL_FOOTER_CLEARANCE_PX,
+          //
+          // THR-1724 — the nudge stage draws no footer (see below), so it
+          // reserves only the clearance.
+          paddingBottom: showVeilFooter
+            ? VEIL_FOOTER_HEIGHT_PX + VEIL_FOOTER_CLEARANCE_PX
+            : VEIL_FOOTER_CLEARANCE_PX,
           background: hasArt
             ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
             : 'transparent',
@@ -2240,7 +2277,7 @@ export function EncounterVeil({
                   lineHeight: 1.85,
                   color: TEXT_WARM,
                   marginBottom: 16,
-                  maxWidth: 540,
+                  maxWidth: SCENE_PROSE_MAX_WIDTH_PX,
                 }}
               >
                 {isFirst && text.length > 0 ? (
@@ -2409,6 +2446,11 @@ export function EncounterVeil({
       </div>
 
       {/* ── Footer chrome ─────────────────────────────────── */}
+      {/* THR-1724 — with "Look away" gone the footer held only the pooled
+          essence, which the nudge hand already states as the paying pool
+          ("38 Mind essence left"). The nudge stage drops the strip and gives its
+          height to the hand; the legacy choice path keeps it. */}
+      {showVeilFooter && (
       <div
         data-testid="veil-footer"
         style={{
@@ -2460,6 +2502,7 @@ export function EncounterVeil({
               player is standing. */}
         </div>
       </div>
+      )}
     </div>,
     document.body,
   );

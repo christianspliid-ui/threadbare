@@ -193,10 +193,21 @@ describe('EncounterVeil', () => {
     expect(screen.getByText(/Let Vasara decide/)).toBeInTheDocument();
   });
 
-  it('calls onDisregard when Escape is pressed', () => {
+  it('falls back to onDisregard on Escape when the host wires no minimise', () => {
     render(<EncounterVeil {...defaultProps} />);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(defaultProps.onDisregard).toHaveBeenCalled();
+  });
+
+  // THR-1724 — Escape minimises the attended veil: the encounter stays pending
+  // behind its badge rather than being disregarded.
+  it('minimises rather than disregards on Escape when the host wires onMinimize', () => {
+    const onMinimize = vi.fn();
+    const onDisregard = vi.fn();
+    render(<EncounterVeil {...defaultProps} onDisregard={onDisregard} onMinimize={onMinimize} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onMinimize).toHaveBeenCalledTimes(1);
+    expect(onDisregard).not.toHaveBeenCalled();
   });
 
   /**
@@ -293,9 +304,20 @@ describe('EncounterVeil', () => {
     expect(screen.getByText('Gate Duty')).toBeInTheDocument();
   });
 
-  it('displays thread tier label', () => {
+  // THR-1724 — the top-right tier whisper, its "Paused" suffix and the
+  // threat line are gone: the pause is named by the time control (Law 52,
+  // amended) and "threat" was a third difficulty vocabulary (Law 13).
+  it('draws no thread-tier whisper, pause suffix or threat line', () => {
     render(<EncounterVeil {...defaultProps} />);
-    expect(screen.getByText(/Strongly Threaded/)).toBeInTheDocument();
+    expect(screen.queryByText(/Strongly Threaded/i)).toBeNull();
+    expect(screen.queryByText(/· Paused/)).toBeNull();
+    expect(screen.queryByTestId('veil-threat-whisper')).toBeNull();
+  });
+
+  // THR-1724 — "Look away" is gone; nothing in the attended veil disregards.
+  it('renders no Look away button', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: /look away/i })).toBeNull();
   });
 
   it('displays step indicator', () => {
@@ -342,9 +364,9 @@ describe('lightly threaded', () => {
     expect(screen.getByText(/auto-resolves shortly/)).toBeInTheDocument();
   });
 
-  it('shows Lightly Threaded label', () => {
+  it('shows no Lightly Threaded label (THR-1724)', () => {
     render(<EncounterVeil {...lightProps} />);
-    expect(screen.getByText(/Lightly Threaded/)).toBeInTheDocument();
+    expect(screen.queryByText(/Lightly Threaded/i)).toBeNull();
   });
 
   /**

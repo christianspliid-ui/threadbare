@@ -3340,12 +3340,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * up; that suppression clears itself once the notification resolves.
    */
   const handleEncounterMinimize = useCallback(() => {
-    if (tieredEncounterState?.notification?.id) {
-      minimisedEncounterNotificationIds.current.add(tieredEncounterState.notification.id);
+    const minimisedId = tieredEncounterState?.notification?.id;
+    if (minimisedId) {
+      minimisedEncounterNotificationIds.current.add(minimisedId);
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // The badge counts unviewed notifications (`isBadgeWorthy`), and a badge
+      // reopen marks one viewed — so a minimise un-views it, or the second
+      // set-down would leave the encounter pending with no way back in.
+      setGameState(prev => ({
+        ...prev,
+        encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+          n.id === minimisedId && n.viewed ? { ...n, viewed: false } : n,
+        ),
+      }));
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
-  }, [closeEncounterModalAndResume, gameState.tick, tieredEncounterState]);
+  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
 
   const handleEncounterAcknowledgeAftermath = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {

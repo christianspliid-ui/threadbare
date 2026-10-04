@@ -187,36 +187,45 @@ describe('THR-1478 — one header block above the prose', () => {
     const reachLabel = model.header.reachLabel;
     expect(reachLabel, 'header carries no reach label to duplicate').toBeTruthy();
     // The text chip rendered the label as a text node; the icon carries it as an
-    // accessible name. Counting text nodes is what separates the two.
+    // accessible name. Counting text nodes is what separates the two. THR-1724:
+    // the reach *readout* in the title row ("Stone · Skilled ●●●○○") names the
+    // reach as its own label, so it is excluded — it is the sheet's readout,
+    // not the retired chip.
+    const skillChip = screen.queryByTestId('nudge-skill-chip');
     const textChips = screen
       .queryAllByText(reachLabel!, { exact: true })
-      .filter((el) => el.tagName !== 'svg');
+      .filter((el) => el.tagName !== 'svg' && !(skillChip?.contains(el)));
     expect(textChips, 'the text reach chip is still beside the icon').toHaveLength(0);
   });
 
-  it('puts the marks above the prose, not in a second block below it', () => {
+  it('puts the marks in the title row, above the prose (THR-1724)', () => {
     renderVeil();
 
-    const header = screen.getByTestId('encounter-context-block');
-    const die = screen.getByTestId('nudge-forecast-die');
-    const unit = screen.getByTestId('nudge-test-unit');
+    const titleMarks = screen.getByTestId('veil-title-marks');
+    const pill = screen.getByTestId('nudge-forecast-pill');
+    const reach = screen.getByTestId('nudge-reach-chip');
 
-    // Containment: the marks are *inside* the one header block, so they cannot
-    // be a second strip that happens to sit above the prose.
-    expect(header.contains(die), 'the forecast die is outside the header block').toBe(true);
-    expect(header.contains(unit), 'the difficulty is outside the header block').toBe(true);
+    // Containment: the marks sit in the title row — title · reach · readout ·
+    // forecast — not in a strip of their own.
+    expect(titleMarks.contains(pill), 'the forecast pill is outside the title row').toBe(true);
+    expect(titleMarks.contains(reach), 'the reach icon is outside the title row').toBe(true);
+    expect(
+      screen.getByTestId('veil-title').compareDocumentPosition(titleMarks) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'the marks do not follow the title',
+    ).toBeTruthy();
 
-    // Ordering: the header precedes the hand. `DOCUMENT_POSITION_FOLLOWING`
-    // means the hand comes after the header in document order — the placement
-    // the director asked for, asserted as order rather than as presence.
+    // The difficulty mark is gone: the forecast already weighs it.
+    expect(screen.queryByTestId('nudge-test-unit'), 'the difficulty mark survived').toBeNull();
+
+    // Ordering: the marks precede the hand.
     const hand = screen.getByTestId('nudge-phase-shell');
     expect(
-      header.compareDocumentPosition(hand) & Node.DOCUMENT_POSITION_FOLLOWING,
-      'the hand does not follow the header',
+      titleMarks.compareDocumentPosition(hand) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'the hand does not follow the marks',
     ).toBeTruthy();
   });
 
-  it('spends no word on the objective, the forecast label, or the tier', () => {
+  it('spends no word on the objective, the forecast label, or the difficulty', () => {
     const model = renderVeil();
     const dialog = screen.getByRole('dialog').textContent ?? '';
 
@@ -228,18 +237,16 @@ describe('THR-1478 — one header block above the prose', () => {
     // *"remove the word forecast."*
     expect(dialog, 'the Forecast label survived').not.toMatch(/\bForecast\b/);
 
-    // The difficulty band word is gone from the surface but still reachable as
-    // the mark's accessible name — a move, not a deletion (Law 11).
+    // THR-1724 — the difficulty band word is not on the surface in any form.
     const band = model.nudgePhase!.testPanel.difficultyWord;
     expect(dialog, 'the difficulty word survived on the surface').not.toContain(band);
-    expect(screen.getByTestId('nudge-test-unit').getAttribute('aria-label')).toContain(band);
   });
 
   it('reads the same hand the cards toggle — one selection, two subtrees', () => {
     const model = renderVeil();
     const phase = model.nudgePhase!;
 
-    const baseTier = screen.getByTestId('nudge-forecast-die').getAttribute('data-forecast-tier');
+    const baseTier = screen.getByTestId('nudge-forecast-pill').getAttribute('data-forecast-tier');
     expect(baseTier).toBe(phase.baseForecast.tier);
 
     // Play the whole hand. Blocked cards refuse the toggle, so the selection is
@@ -254,19 +261,32 @@ describe('THR-1478 — one header block above the prose', () => {
     expect(selected.length, 'no card would toggle — the arm proves nothing').toBeGreaterThan(0);
 
     const expected = forecastWithNudges(phase, selected);
-    // Anti-vacuity: if the played hand cannot move the tier off its base, a die
+    // Anti-vacuity: if the played hand cannot move the tier off its base, a pill
     // wired to a *stale* second hand would pass this arm unchanged.
     expect(expected.tier, 'the hand cannot move the tier — arm is vacuous').not.toBe(
       phase.baseForecast.tier,
     );
 
-    const die = screen.getByTestId('nudge-forecast-die');
-    expect(die.getAttribute('data-forecast-tier')).toBe(expected.tier);
-    expect(die.getAttribute('aria-label')).toContain(expected.word);
+    const pill = screen.getByTestId('nudge-forecast-pill');
+    expect(pill.getAttribute('data-forecast-tier')).toBe(expected.tier);
+    // Law 31 — the word renders in the pill, never hue alone.
+    expect(pill.textContent).toBe(expected.word);
     // And the "was …" read appears, because the tier moved.
     expect(screen.getByTestId('nudge-forecast-moved').textContent).toContain(
       phase.baseForecast.word,
     );
+  });
+
+  it('shows the mortal\'s standing in the reach as the sheet does, naming them in its tooltip (THR-1724)', () => {
+    const model = renderVeil();
+    const skill = model.nudgePhase!.testPanel.skill;
+    expect(skill, 'the builder produced no skill readout').toBeTruthy();
+    const chip = screen.getByTestId('nudge-skill-chip');
+    expect(chip.getAttribute('aria-label')).toBe(skill!.sentence);
+    expect(chip.querySelector('[data-reach-tier]')?.getAttribute('data-reach-tier')).toBe(String(skill!.tier));
+    // The sentence left the factor list: it is the chip's tooltip now.
+    const factorTexts = screen.queryAllByTestId(/^nudge-factor-/).map((e) => e.textContent ?? '');
+    expect(factorTexts.some((t) => t.includes(skill!.sentence)), 'the skill line is still a factor line').toBe(false);
   });
 
   it('names the three marks at first contact (Law 12)', () => {
