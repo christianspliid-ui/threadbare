@@ -30,7 +30,7 @@ import {
   ITEM_GEN_SOFT_FITS, ITEM_GEN_SPHERES, ITEM_GEN_SPHERE_ADJ, ITEM_GEN_SPHERE_LOOK, ITEM_GEN_SPHERE_ROOTS,
 } from '../../data/item-generator-tables';
 import type { ItemGenFixedKind, ItemGenForm, ItemGenFormId, ItemGenMagnitudeKind, ItemGenMaterial, ItemGenNameGrammar } from '../../data/item-generator-tables';
-import { ITEM_GEN_CORES } from '../../data/item-generator-cores';
+import { ITEM_GEN_CORES, coreCanCarryTags } from '../../data/item-generator-cores';
 import type { ItemGenBuildCtx, ItemGenCore, ItemGenEntityUse, ItemGenProvenanceLine } from '../../data/item-generator-cores';
 import type {
   GeneratedItem, ItemGenConcept, ItemGenCulture, ItemGenEvent, ItemGenFaction, ItemGenHero, ItemGenHistory,
@@ -140,7 +140,7 @@ function reachLean(core: ItemGenCore, faction: ItemGenFaction | null): number {
 
 // ─── Generation ──────────────────────────────────────────────────────
 
-export type GenerateItemRefusal = 'no_eligible_core' | 'no_eligible_signature' | 'no_eligible_line';
+export type GenerateItemRefusal = 'no_eligible_core' | 'no_eligible_signature' | 'no_eligible_line' | 'missing_required_tags';
 
 /** Grow one item. `null` (with the reason on `lastRefusal`) when nothing eligible fits this world. */
 export function generateItem(req: ItemGenRequest): GeneratedItem | null {
@@ -159,9 +159,12 @@ export function tryGenerate(req: ItemGenRequest): GeneratedItem | GenerateItemRe
 
   // 1. Core — the authored idea.
   const coreW: Record<string, number> = {};
+  const required = req.requiredTags ?? [];
   for (const core of ITEM_GEN_CORES) {
     if (req.coreId && core.id !== req.coreId) continue;
     if (!coreEligible(core, req)) continue;
+    // THR-1626: a reward recipe's tags — a core that cannot carry them is not asked.
+    if (!coreCanCarryTags(core, required)) continue;
     const n = history.core[core.id] ?? 0;
     coreW[core.id] = core.weight * (1 + reachLean(core, makerFaction)) * Math.pow(ITEM_GEN_CORE_REPEAT_DECAY, n);
   }
@@ -268,7 +271,9 @@ export function tryGenerate(req: ItemGenRequest): GeneratedItem | GenerateItemRe
   if (uses.has('hero') && hero?.factionId) bump(world.factions[hero.factionId]?.spheres, 0.5);
   if ((core.trophy || uses.has('monster')) && monster) bump({ [monster.sphere]: core.trophy ? 8 : 2 }, 1);
   if (place) bump(place.spheres, 0.5);
-  const sphere = (R.draw('sphere', sw) ?? eligibleSpheres[0]) as SphereName;
+  // THR-1626: a required sphere the core allows is forced (same table, one candidate).
+  const requiredSphere = required.map(t => t.slice(1)).find(s => s in sw);
+  const sphere = (R.draw('sphere', requiredSphere ? { [requiredSphere]: 1 } : sw) ?? eligibleSpheres[0]) as SphereName;
 
   // 7. Reach — the core's reaches, leaned by the faction's reach weights and by what the thing is.
   let rw: Record<string, number> = nonEmpty(core.reaches)
@@ -276,7 +281,9 @@ export function tryGenerate(req: ItemGenRequest): GeneratedItem | GenerateItemRe
     : Object.fromEntries(ITEM_GEN_REACHES.map(rr => [rr, 0.5]));
   if (core.trophy && monster && nonEmpty(monster.reachWeights)) rw = addWeights({}, monster.reachWeights);
   for (const rr of Object.keys(rw)) rw[rr] *= (1 + (faction?.reachWeights[rr as ReachDomain] ?? 0)) * (ITEM_GEN_KIND_REACH_BIAS[form.kind]?.[rr as ReachDomain] ?? 1);
-  const drawnReach = (R.draw('reach', rw) ?? 'iron') as ReachDomain;
+  // THR-1626: likewise a required reach the core leans to (a signature may still reassign it).
+  const requiredReach = required.map(t => t.slice(1)).find(rr => (rw[rr] ?? 0) > 0);
+  const drawnReach = (R.draw('reach', requiredReach ? { [requiredReach]: 1 } : rw) ?? 'iron') as ReachDomain;
 
   // 8. Material — fits the form, leans to the sphere and the place's terrain.
   const matW: Record<string, number> = {};
@@ -330,6 +337,9 @@ export function tryGenerate(req: ItemGenRequest): GeneratedItem | GenerateItemRe
   // 11. Tags. Every generated item is born Storied (the UL ruling), so `#storied` always.
   const tags = new Set<string>([...form.tags, `#${sphere}`, `#${ctx.reach}`, ...core.family, ...(material.tags ?? []), '#storied']);
   if (cursed) tags.add('#cursed');
+  // THR-1626: steering is not a promise — a signature may reassign the reach. An item
+  // that misses a required tag is refused here, so a caller never receives one.
+  if (required.some(t => !tags.has(t))) return 'missing_required_tags';
 
   // 12. Names — every grammar rendered eagerly, then one chosen by core × band weights.
   //     A name already used in this world (or batch) is struck before the draw.

@@ -18,7 +18,7 @@ import {
   collectStatContributions, getActiveRuleOverride, getRangeModifiers, getRevealRanges, getBehaviorWeights,
   computeBehaviorWeightMultiplier, getActionGates, getSocialModifiers, computeSocialCooperationBias, isImmuneToAnyTag,
 } from '../effects/effectQueries';
-import { collectAttachmentEffects } from '../effects/effectWalker';
+import { attachmentStateKey, collectAttachmentEffects } from '../effects/effectWalker';
 import { buildPredicateContext } from '../effects/effectPredicates';
 import { checkAndFireActionTriggers } from '../effects/actionTrigger';
 import { tickEffects } from '../effectTick';
@@ -44,8 +44,12 @@ const noStates = (): Map<string, EffectRuntimeState> => new Map();
 
 export const READBACK_ITEM_ID = 'gen_readback_item';
 
-/** The three-mortal test world, with the item minted onto the bearer the real way. */
-export function readBackWorld(item: GeneratedItem): WorldGraph {
+/**
+ * The three-mortal test world with nothing minted yet — a bearer, an ally of the same
+ * faction and a rival of another, in a village held by a third. Exported (THR-1572) so the
+ * spell generator's read-back stands on the same ground.
+ */
+export function readBackBaseWorld(): WorldGraph {
   const g = new WorldGraph();
   g.addNode({ id: 'loc_here', type: 'location', name: 'loc_here', properties: { hexCol: 5, hexRow: 5, locationType: 'village', locationSubtype: 'village', controllingFactionId: 'fac_c' } });
   const profile = { mercy_ruthlessness: 0, asceticism_extravagance: 0, honesty_cunning: 0, tradition_novelty: 0, loyalty_ambition: 0, revelation_discretion: 0, preservation_transformation: 0, sacrifice_survival: 0, courage_prudence: 0 };
@@ -59,6 +63,12 @@ export function readBackWorld(item: GeneratedItem): WorldGraph {
   g.addNode({ id: 'fac_c', type: 'actor', name: 'Faction C', properties: { actorType: 'faction' } });
   g.addNode({ id: 'rival_charm', type: 'artifact', name: 'Rival charm', properties: { tier: 1, subcategory: 'relics_talismans', tags: ['#trinket'], effects: [{ type: 'passive', reach: 'iron', value: 0.03 }] } });
   g.addEdge({ id: 'possesses_rival_charm', source: 'rival', target: 'rival_charm', type: 'possesses', properties: { modifiers: {}, tags: [] } });
+  return g;
+}
+
+/** The three-mortal test world, with the item minted onto the bearer the real way. */
+export function readBackWorld(item: GeneratedItem): WorldGraph {
+  const g = readBackBaseWorld();
   const id = mintGeneratedItem(g, item, { id: READBACK_ITEM_ID, tick: 1, holderId: 'bearer', makerId: item.origin === 'masterwork' ? 'ally' : null });
   if (!id) throw new Error(`read-back world: could not mint ${item.name}`);
   return g;
@@ -76,12 +86,34 @@ export function readBack(item: GeneratedItem): ReadBackResult {
   const effects = (node?.properties.effects ?? []) as AttachmentEffect[];
 
   ok(effects.length === item.effects.length, `node carries ${effects.length} of ${item.effects.length} effects`);
-  const walked = collectAttachmentEffects(g, 'bearer').filter(w => w.attachmentId === READBACK_ITEM_ID);
-  ok(walked.length === effects.length, `walker read ${walked.length} of ${effects.length} effects`);
 
   const storied = g.getEdge(`e.has_trait.${READBACK_ITEM_ID}.${ARTIFACT_STORIED_TRAIT_ID}`);
   ok(!!storied, 'born without the Storied trait');
   ok(((storied?.properties as { level?: number } | undefined)?.level ?? 1) === storiedStartLevel(item), `Storied level ${(storied?.properties as { level?: number } | undefined)?.level} vs ${storiedStartLevel(item)}`);
+
+  const inner = readBackEffects(() => readBackWorld(item), READBACK_ITEM_ID);
+  return { ok: failures.length === 0 && inner.ok, checks: checks + inner.checks, failures: [...failures, ...inner.failures] };
+}
+
+/**
+ * Read every effect on one attachment back through the real engine readers, on a fresh
+ * world from `makeWorld` (the bearer is `'bearer'`). Exported for the spell generator
+ * (THR-1572), whose carried spells ride a shared definition node through `has_trait`.
+ */
+export function readBackEffects(makeWorld: () => WorldGraph, attachmentId: string): ReadBackResult {
+  const failures: string[] = [];
+  let checks = 0;
+  const ok = (cond: boolean, msg: string) => { checks++; if (!cond) failures.push(msg); };
+  const g = makeWorld();
+  const node = g.getNode(attachmentId);
+  const effects = (node?.properties.effects ?? []) as AttachmentEffect[];
+  ok(!!node, `attachment ${attachmentId} is not in the world`);
+  // The walker keys a shared spell by its bearing edge, everything else by its node.
+  const bearing = (['possesses', 'bonded_to', 'has_trait'] as const)
+    .flatMap(t => g.getOutgoingEdges('bearer', t)).find(e => e.target === attachmentId);
+  const walkKey = bearing && node ? attachmentStateKey(bearing, node) : attachmentId;
+  const walked = collectAttachmentEffects(g, 'bearer').filter(w => w.attachmentId === walkKey);
+  ok(walked.length === effects.length, `walker read ${walked.length} of ${effects.length} effects`);
 
   const ordinaryCtx = (reach: ReachDomain) => buildPredicateContext(g, 'bearer', reach);
 
@@ -121,7 +153,7 @@ export function readBack(item: GeneratedItem): ReadBackResult {
         break;
       }
       case 'stat_contribution': {
-        const got = collectStatContributions(node);
+        const got = collectStatContributions(node!);
         for (const [r, v] of Object.entries(e.contributions)) ok(near(got[r as ReachDomain] ?? 0, v ?? 0), `stat ${r}: engine ${got[r as ReachDomain]} vs ${v}`);
         break;
       }
@@ -157,10 +189,16 @@ export function readBack(item: GeneratedItem): ReadBackResult {
         break;
       }
       case 'aura': {
-        const pos = resolveAgentPosition(g, 'ally');
-        const auras = pos ? collectAuraEffectsNear(g, pos) : [];
-        const got = pos ? (resolveAuraModifiers(g, auras, 'ally', pos) as Partial<Record<ReachDomain, number>>)[e.reach as ReachDomain] ?? 0 : 0;
-        ok(got > 0 === e.value > 0 && Math.abs(got) > 0, `aura on the ally reads ${got}`);
+        // An `enemies` aura (THR-1572's dread) lands only on a hostile faction, so the
+        // read-back marks the rival's faction as one and reads the rival instead.
+        const enemies = e.target === 'enemies';
+        const ga = enemies ? makeWorld() : g;
+        if (enemies) ga.addEdge({ id: 'readback_rivalry', source: 'fac_a', target: 'fac_b', type: 'relates_to', properties: { isRival: true } });
+        const who = enemies ? 'rival' : 'ally';
+        const pos = resolveAgentPosition(ga, who);
+        const auras = pos ? collectAuraEffectsNear(ga, pos) : [];
+        const got = pos ? (resolveAuraModifiers(ga, auras, who, pos) as Partial<Record<ReachDomain, number>>)[e.reach as ReachDomain] ?? 0 : 0;
+        ok(got > 0 === e.value > 0 && Math.abs(got) > 0, `aura on the ${who} reads ${got}`);
         break;
       }
       case 'behavior_weight': ok(near(computeBehaviorWeightMultiplier(getBehaviorWeights(g, 'bearer'), e.reach), e.multiplier), 'behavior_weight not read'); break;
@@ -171,7 +209,7 @@ export function readBack(item: GeneratedItem): ReadBackResult {
       }
       case 'action_gate': ok(getActionGates(g, 'bearer').blocked.includes(e.reach), `action_gate ${e.reach} not read`); break;
       case 'axiological_drift': case 'resource_manipulate': case 'hex_effect': case 'cooldown': {
-        const g2 = readBackWorld(item);
+        const g2 = makeWorld();
         const before = structuredClone(g2.getNode('bearer')!.properties) as { axiologicalProfile: Record<string, number>; quintessence: number };
         const res = tickEffects(g2, 'bearer', 10, noStates());
         const after = g2.getNode('bearer')!.properties as { axiologicalProfile: Record<string, number>; quintessence: number };
@@ -198,7 +236,7 @@ export function readBack(item: GeneratedItem): ReadBackResult {
       case 'suppress': {
         const res = applySuppressions(g, noStates(), 10, ['bearer', 'ally', 'rival']);
         ok((res.states.get('rival_charm') as { suppressed?: boolean } | undefined)?.suppressed === true, "the rival's charm was not silenced");
-        ok((res.states.get(READBACK_ITEM_ID) as { suppressed?: boolean } | undefined)?.suppressed !== true, 'the stone silenced itself');
+        ok((res.states.get(attachmentId) as { suppressed?: boolean } | undefined)?.suppressed !== true, 'the stone silenced itself');
         break;
       }
       case 'consumable_charge': {

@@ -394,10 +394,12 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
   const LOSS_TEXT = Number(tokenValue(read(CSS), 'veil-loss-text-alpha'));
 
   it.each([
-    ['forecast doomed',        'veil-loss-rgb', 1],
-    ['forecast perilous',      'veil-loss-rgb', 0.85],
-    ['forecast favorable',     'veil-gain-rgb', 0.8],
-    ['forecast fated',         'veil-gain-rgb', 1],
+    // THR-1724 — the forecast ladder moved to its own quest-difficulty tokens.
+    ['forecast doomed',        'forecast-doomed-rgb', 1],
+    ['forecast perilous',      'forecast-perilous-rgb', 1],
+    ['forecast uncertain',     'forecast-uncertain-rgb', 1],
+    ['forecast favorable',     'forecast-favorable-rgb', 1],
+    ['forecast fated',         'forecast-fated-rgb', 1],
     ['factor for',             'veil-gain-rgb', 0.75],
     ['factor against',         'veil-loss-rgb', LOSS_TEXT],
     ['blocked-card reason',    'veil-loss-rgb', LOSS_TEXT],
@@ -408,6 +410,15 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
   ] as const)('%s clears AA on --veil-void', (_label, token, alpha) => {
     const ratio = polarityRatio(read(CSS), token, alpha);
     expect(ratio, `${_label} measured ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('routes the forecast word through the measured ladder tokens, so the table above is not vacuous (THR-1724)', () => {
+    const card = readCode(CARD_FACE);
+    for (const tier of ['doomed', 'perilous', 'uncertain', 'favorable', 'fated']) {
+      expect(card, `forecast ${tier} ink`).toMatch(
+        new RegExp(`${tier}:\\s*'rgb\\(var\\(--forecast-${tier}-rgb\\) / 1\\)'`),
+      );
+    }
   });
 
   it('routes every loss-red *text* site through the measured floor token', () => {

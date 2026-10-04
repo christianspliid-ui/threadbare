@@ -25,15 +25,13 @@
 
 import { useCallback, useState } from 'react';
 import { Tooltip } from '../../../shared/Tooltip';
-import { DifficultyScales, ForecastDie, ReachIcon } from '../../../icons';
+import { ReachIcon } from '../../../icons';
+import { ReachStanding } from '../../../shared/ReachStanding';
 import { OddsPips } from '../../../shared/OddsPips';
 import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
 import {
-  DIFFICULTY_BAND_COLOR_FALLBACK,
-  DIFFICULTY_BAND_COLORS,
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
-  TEST_UNIT_LABEL,
 } from '../../../../data/nudge-stage-content';
 import type {
   EncounterStageForecastModel,
@@ -69,18 +67,20 @@ const FACTOR_PIP_GAP = 6;
  */
 export const REACH_ICON_PX = 34;
 
-/**
- * Difficulty and forecast marks. Line art at 30 sits level with the reach's
- * filled tile at 34 rather than under it.
- */
-const MARK_PX = 30;
+const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
-/** Legend glyphs, drawn at a size that reads as chrome rather than as a control. */
-const LEGEND_MARK_PX = 14;
+/** Forecast tier → its `--forecast-*-rgb` channel token (THR-1724). */
+const FORECAST_PILL_CHANNELS: Record<string, string> = {
+  doomed: '--forecast-doomed-rgb',
+  perilous: '--forecast-perilous-rgb',
+  uncertain: '--forecast-uncertain-rgb',
+  favorable: '--forecast-favorable-rgb',
+  fated: '--forecast-fated-rgb',
+};
 
-function difficultyColor(band: string): string {
-  return DIFFICULTY_BAND_COLORS[band] ?? DIFFICULTY_BAND_COLOR_FALLBACK;
-}
+/** The pill's edge and wash — quieter than its word, which carries the reading. */
+const FORECAST_PILL_EDGE_ALPHA = 0.55;
+const FORECAST_PILL_WASH_ALPHA = 0.12;
 
 // ── Marks ──────────────────────────────────────────────────────────
 
@@ -95,11 +95,19 @@ export interface NudgeReadingMarksProps {
 }
 
 /**
- * Reach, difficulty, forecast — the three marks, inline.
+ * Reach, the mortal's standing in it, the forecast — the title row's marks.
  *
- * Every one of them is glyph-only. Law 11 is what makes that legal: each carries
- * an `aria-label` stating its reading in words, and Law 12's legend (below) names
- * the vocabulary at first contact so none of it has to be inferred.
+ * THR-1724 (Christian, 2026-10-04): the encounter's title row is its metadata
+ * row — title · reach icon · the sheet's reach readout · forecast pill.
+ *
+ * - **No difficulty mark.** The forecast already weighs difficulty against the
+ *   mortal; a separate scale beside it was a second reading of half the same
+ *   number. The raw difficulty stays in the designer view and the traces.
+ * - **The skill moved here.** "{actor} is {word} in {reach}." was a factor line;
+ *   it is now the character sheet's own readout (`ReachStanding`), with that
+ *   sentence as its tooltip, so the actor is still named (Law 1).
+ * - **The forecast is a word in a coloured pill** on the quest-difficulty ladder
+ *   (`--forecast-*-rgb`). The word always shows (Law 31): the hue repeats it.
  */
 export function NudgeReadingMarks({
   testPanel,
@@ -108,17 +116,12 @@ export function NudgeReadingMarks({
   forecastMoved,
   designerView,
 }: NudgeReadingMarksProps) {
-  const bandColor = difficultyColor(testPanel.difficultyWord);
-  const tierColor = FORECAST_TIER_COLORS[forecast.tier] ?? GOLD_DIM;
-
   return (
     <>
       {/* ── Reach ────────────────────────────────────────────────
-          THR-972 directive 2, unchanged: the shared icon set's `ReachIcon` draws
-          the reach's own heraldic charge in its sphere colour, with the name as
-          its accessible name and the `reach.*` tooltip chain behind it. Drawn
-          once now — the veil's text reach chip stands down where these marks
-          render, which is half of what the merge was for. */}
+          THR-972 directive 2, unchanged: the shared icon set's `ReachIcon` in
+          its sphere colour, the name as its accessible name, the `reach.*`
+          tooltip behind it. */}
       <Tooltip id={`reach.${testPanel.reach}`}>
         <span
           data-testid="nudge-reach-chip"
@@ -132,81 +135,39 @@ export function NudgeReadingMarks({
         </span>
       </Tooltip>
 
-      {/* ── Difficulty ───────────────────────────────────────────
-          The word is gone; the scales stay, and now tilt per band. The frame
-          survives too — *"the difficulty cant stand alone"* was a director
-          ruling about the reading, not about the word, and a lone mark floating
-          in a row of chips is exactly what it was against. */}
-      <Tooltip id="ui.nudge_difficulty">
-        <span
-          data-testid="nudge-test-unit"
-          data-difficulty-band={testPanel.difficultyWord}
-          role="img"
-          aria-label={`${TEST_UNIT_LABEL}: ${testPanel.difficultyWord}`}
-          title={`${TEST_UNIT_LABEL}: ${testPanel.difficultyWord}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '3px 7px',
-            borderRadius: 6,
-            border: `1px solid ${bandColor}`,
-            background: 'rgba(255, 255, 255, 0.02)',
-            color: bandColor,
-            flexShrink: 0,
-            transition: 'color 0.3s ease, border-color 0.3s ease',
-          }}
-        >
-          <DifficultyScales band={testPanel.difficultyWord} size={MARK_PX} />
-        </span>
-      </Tooltip>
+      {/* ── The mortal's standing in the reach (THR-1724) ──────── */}
+      {testPanel.skill && (
+        <Tooltip label={testPanel.skill.sentence}>
+          <span
+            data-testid="nudge-skill-chip"
+            aria-label={testPanel.skill.sentence}
+            style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, cursor: 'help' }}
+          >
+            <ReachStanding
+              reach={testPanel.reach}
+              tier={testPanel.skill.tier}
+              layout="inline"
+              nameTooltip={false}
+              nameColor="var(--veil-gold-text)"
+              wordColor={TEXT_WARM}
+            />
+          </span>
+        </Tooltip>
+      )}
       {designerView && (
         <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
-          d={testPanel.difficultyValue.toFixed(2)}
+          d={testPanel.difficultyValue.toFixed(2)} ({testPanel.difficultyWord})
         </span>
       )}
 
       {/* ── Forecast ─────────────────────────────────────────────
-          *"remove the word forecast … make the forecast score 'uncertain' into
-          an icon like a dice."* The die's pip count is the tier's rung on the
-          `doomed … fated` ladder and its colour is that ladder's colour, so the
-          reading survives both channels. The separate `OddsPips` row that used
-          to sit under the word is gone with it: two magnitude readings of one
-          number beside each other is the redundancy this ticket is about. The
-          cards keep their pips, where fine resolution is what a player compares. */}
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 7,
-          flexShrink: 0,
-        }}
-      >
+          The word in its ladder colour, recolouring live as the hand moves it.
+          The "was …" note sits beside the pill, not beneath it, so the row keeps
+          one height whether or not the forecast has moved. */}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
         <Tooltip id="ui.nudge_forecast">
-          <span
-            data-testid="nudge-forecast-die"
-            data-forecast-tier={forecast.tier}
-            role="img"
-            aria-label={`Fate's forecast: ${forecast.word}`}
-            title={`Fate's forecast: ${forecast.word}`}
-            style={{
-              display: 'inline-flex',
-              color: tierColor,
-              transition: 'color 0.3s ease',
-            }}
-          >
-            <ForecastDie tier={forecast.tier} size={MARK_PX} />
-          </span>
+          <ForecastPill tier={forecast.tier} word={forecast.word} />
         </Tooltip>
-        {/* The "was …" read stays a word: it is a *comparison*, and a second die
-            beside the first would read as two forecasts rather than as one that
-            moved. Law 13's ban is on magnitudes, not on the tier vocabulary.
-
-            **Beside the die, not beneath it.** Stacked, this line is wider than
-            the die it belongs to, so the first nudge grew the header row's
-            height and lifted the die out of alignment with the name and the
-            location — the whole block visibly jumped on the click that was
-            supposed to draw the eye to the die. Inline, the row keeps one
-            height whether or not the forecast has moved. */}
         {forecastMoved && (
           <span
             data-testid="nudge-forecast-moved"
@@ -229,6 +190,51 @@ export function NudgeReadingMarks({
         </span>
       )}
     </>
+  );
+}
+
+/**
+ * THR-1724 — the forecast word in a pill on the quest-difficulty ladder.
+ *
+ * Word ink is the tier's full colour (the Law 45 measurement); the edge and the
+ * wash are the same hue at the pill's quieter alphas. Exported for the legend,
+ * which draws the same mark at legend scale.
+ */
+export function ForecastPill({
+  tier,
+  word,
+  compact = false,
+}: {
+  tier: string;
+  word: string;
+  compact?: boolean;
+}) {
+  const ink = FORECAST_TIER_COLORS[tier] ?? GOLD_DIM;
+  const channel = FORECAST_PILL_CHANNELS[tier];
+  return (
+    <span
+      data-testid={compact ? undefined : 'nudge-forecast-pill'}
+      data-forecast-tier={tier}
+      role="img"
+      aria-label={`Fate's forecast: ${word}`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: compact ? '0 6px' : '3px 12px',
+        borderRadius: 999,
+        border: `1px solid ${channel ? `rgb(var(${channel}) / ${FORECAST_PILL_EDGE_ALPHA})` : GOLD_DIM}`,
+        background: channel ? `rgb(var(${channel}) / ${FORECAST_PILL_WASH_ALPHA})` : 'transparent',
+        color: ink,
+        fontFamily: FONT_DISPLAY,
+        fontSize: compact ? 'var(--text-2xs)' : 'var(--text-xs)',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        whiteSpace: 'nowrap',
+        transition: 'color 0.3s ease, border-color 0.3s ease, background 0.3s ease',
+      }}
+    >
+      {word}
+    </span>
   );
 }
 
@@ -394,7 +400,7 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
                 data-testid={`nudge-reading-legend-${entry.id}`}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
               >
-                <LegendMark id={entry.id} testPanel={testPanel} />
+                <LegendMark id={entry.id} />
                 {entry.label}
               </span>
             </Tooltip>
@@ -429,24 +435,11 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
  * symbols differ from the surface's is worse than no key at all. `balance` has
  * no single glyph, so it shows the polarity colours it is naming.
  */
-function LegendMark({
-  id,
-  testPanel,
-}: {
-  id: 'difficulty' | 'forecast' | 'balance';
-  testPanel: EncounterStageTestPanelModel;
-}) {
-  if (id === 'difficulty') {
-    return (
-      <span aria-hidden="true" style={{ color: difficultyColor(testPanel.difficultyWord) }}>
-        <DifficultyScales band={testPanel.difficultyWord} size={LEGEND_MARK_PX} />
-      </span>
-    );
-  }
+function LegendMark({ id }: { id: 'forecast' | 'balance' }) {
   if (id === 'forecast') {
     return (
-      <span aria-hidden="true" style={{ color: GOLD_DIM }}>
-        <ForecastDie tier="uncertain" size={LEGEND_MARK_PX} />
+      <span aria-hidden="true">
+        <ForecastPill tier="uncertain" word="uncertain" compact />
       </span>
     );
   }

@@ -6,6 +6,22 @@
 
 ---
 
+## Raise the Old Banner — descent becomes a want (THR-1658)
+
+Plan: `Docs/plans/2026-10-03-thr-1658-raise-the-old-banner.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `engine/descent.ts` (new — `getDescentCultureIds`, `historicalCultureOfRegion`, `ancestralRuinIds`, `isAtAncestralRuin`, `tookAncestralGround`) | read-only; called from the two passes below and from worldgen S1e | — | graph (`backstoryStrata`, `belongs_to` historical, `elder_ruin.originCultureId`, `owns.acquiredTick`) | — | `__DEBUG.getDescent()` |
+| `ambitionSelection.passesEligibility` descent gate + `buildAmbitionAgentSnapshot.descentCultureIds` | `phaseAmbitionProgress` → re-evaluation (25 ticks) | — | graph (`pursues`) | existing `ambition_assigned` event / `ambition_progress` trace | existing ambition accessors |
+| `graphConditions` `agent_at_ancestral_ruin`, `agent_took_ancestral_ground` | milestone pass (15 ticks) | ambition progress surfaces (existing) | graph | existing milestone / completion events | existing ambition accessors |
+| `ambitionTick` refill label (`oldBannerLabel`) + decider-only offer | re-evaluation | `IntentSection` (existing, renders `mintedByLabel`) | `pursues.mintedByLabel` | — | `getDescent()` (`holdsOldBanner`) |
+
+- [x] Engine module called from a live path: `descent.ts` ← `graphConditions` (milestone pass), `ambitionTick` (snapshot), `worldPast` S1e.
+- [x] UI renders the output: the existing intent line, *"Because of the old blood of …"*; no new component.
+- [x] No new trace type (read model only; plan § Tracing).
+- [x] Debug lever: `__DEBUG.getDescent(nameOrId)` (async, JSDoc in `debug-bridge.d.ts`).
+
 ## The seeded item generator — a masterwork is made with an idea (THR-1570)
 
 Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
@@ -25,7 +41,25 @@ Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
 - [x] UI renders the output: `ArtifactSheet` *Made by* / *What it does* / *The catch* (generated items only; Law 4).
 - [x] Traces registered in the THR-928 trio (`types/traces/item-generator-traces.ts`).
 - [x] Debug levers: `getGeneratedItems`, `previewGeneratedItem`, `mintGeneratedItem`; CLI `generate items`.
-- [ ] Found-origin minting point (reward draws) — THR-1626; live past for found things — THR-1637.
+- [x] Found-origin minting point (reward draws) — THR-1626, § below; live past for found things — THR-1637.
+
+## Found things in the reward draw — the item generator's second minting point (THR-1626)
+
+Plan: `Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `itemGenerator/rewardMinting.ts` (new — `tryGeneratedReward`) | inside `drawSeededReward` (step resolution's `step_reward_pool`; aftermath `reward_draw` and fight trophies share it) | aftermath reward line → `ArtifactSheet` | graph only | `reward.generated`; `item.generated` via the minter | `forceGeneratedRewards`, `getGeneratedItems` (`origin: 'found'`) |
+| `rewardPool.ts` `drawSeededReward` (edited — calls it after the pick, prize draws only; `SeededRewardDraw.generated`) | same | same | — | existing `content.query_*` unchanged | — |
+| `itemGenerator/generateItem.ts` (edited — `requiredTags`: core eligibility, reach/sphere steering, `missing_required_tags` refusal) | same | — | — | — | `previewGeneratedItem` |
+| `data/item-generator-cores.ts` (edited — `coreTagReach`, `signatureTags`, the `argued_book` core) | — | — | — | — | CLI `generate items --origin found` |
+| `engine/debugGeneratedRewardPin.ts` (new) | — | — | — | — | `forceGeneratedRewards` |
+
+- [x] Engine module called from a live path: `tryGeneratedReward` ← `drawSeededReward` ← `resolveUnifiedReward` / `reward_draw` aftermath / fight trophy.
+- [x] UI renders the output: the reward line names and links the instance (`rewardSentence`), the link opens `ArtifactSheet`, which already reads a generated item; a found thing has no *Made by* row (Law 4).
+- [x] Trace registered in the THR-928 trio (`types/traces/item-generator-traces.ts`, `types/trace.ts`).
+- [x] Debug lever: `forceGeneratedRewards` (`.d.ts` JSDoc).
+- [ ] Not touched: the legacy encounter-progress reward block in `orchestrator.ts` runs its own draw and stays authored (plan § Notes).
 
 ## Draw-by-trait completion — never dealt what you hold, a bearer-trait term, the trait catalogs seated (THR-1520)
 
@@ -1379,7 +1413,7 @@ Slot anchor positions in `runTick`: `pre-doom`, `post-doom`, `post-resolution`, 
 | 2a.52 | `phaseEffectShells` | Non-step-outcome flip_table triggers (attachment_gained, manual); step_outcome triggers fire inline in executeStepResult (THR-53) |
 | 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
-| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964). Its live caller is the nudge detection write in `nudgeDispatch.dispatchNudgeCommitments` (THR-1690) |
+| 2a.605 | `phaseDetectionPressure` | Regional detection pressure decay only (writes come from nudge dispatch). The crossing-trace + rival-seed block is the exported `recordDetectionCrossings` helper (THR-964). Its live caller is the nudge detection write in `nudgeDispatch.dispatchNudgeCommitments` (THR-1690). The planted `shadow.rival_strike` seed resolves through `ENCOUNTER_FAMILY_TAGS` → `#rival_strike` → `encounter.rival.hired_knives` (THR-1703) |
 | 2a.62 | `phaseAscendantHandFilter` | Encounter-scoped ascendant hand partition + `hand_filtered` traces |
 | 2a.55 | `phaseStrategicProjects` | Strategic project progression + control degradation |
 | 2a.85 | `phaseSlotCaps` + `phaseDisposalTimeout` | Attachment slot cap enforcement + disposal timeout |
@@ -3012,3 +3046,30 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 - **Card tint:** `CardFace` reads `model.sphereTint`. It is set by `actionCardModel` and by the nudge-card model in `NudgePhaseShell` (when `sphere && essenceCost > 0`). Tinted cards carry `data-sphere-tint`.
 - **Debug:** `__DEBUG.getDialogContexts()` returns `{ surfaces, open }`.
 - **StyleGuide:** `section-dialog-contexts`.
+
+## The seeded spell generator (THR-1572)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/spellGenerator/casterTradition.ts` (`casterTraditionOf`, `casterSeedIdentity`) | worldgen (`buildSpellLibrary`); `create × Power` | `AttachmentsTab` *Taught by* | `graph` (`knows_spell.tradition`) | `spell.library_built` | `getSpellHolders` (`tradition`) |
+| `engine/spellGenerator/generateSpell.ts` + `validateGeneratedSpell.ts` + `data/spell-generator-{cores,tables}.ts` + `data/spell-honest-vocabulary.ts` | via `buildSpellLibrary` | — | — | `spell.generated`, `spell.generate_fallback` | `previewGeneratedSpell`, CLI `generate spells` |
+| `engine/spellGenerator/spellLibrary.ts` (`buildSpellLibrary`, `getTraditionLibrary`, `measureSoulDrainShare`) | `worldSeed.ts` tail, immediately before `seedSpellKnowing` | `AttachmentsTab` | `graph` (definition nodes with `template`) | `spell.library_built` | `getSpellLibraries`, CLI `spells` |
+| `data/spell-templates.ts` `resolveSpellTemplate` | the nine former `getSpellTemplate` sites | step cast model, sheet | — | — | — |
+| `engine/seedAttachments.ts` `seedSpellKnowing(graph, library?)` | worldgen tail | `AttachmentsTab` | `graph` | `spell.seeded` (+ `byTradition`, `fromLibrary`) | `getSpellHolders` |
+| `engine/spellGenerator/notice.ts` (`placeSpellNotice`, `placeSeededCarriedNotices`) · `engine/spellCasting.ts` (`CastResult.notice`) · `engine/gameInit.ts` | every cast; `create × Power` (carried); game init (seeded carriers) | — (a hidden mark) | `hiddenMarks` | `spell.notice_placed` | CLI `eval state.hiddenMarks` |
+| `engine/spellGenerator/describeSpell.ts` · `engine/agentAttachments.ts` (`spellWords`) · `components/Game/tabs/AttachmentsTab.tsx` | sheet build | *Taught by*, *What it does*, *What it costs*, *What goes wrong* | — | — | `data-testid="spell-words-<id>"` |
+| `engine/spellGenerator/readBack.ts` (`readBackSpell`) · `engine/itemGenerator/readBack.ts` (`readBackBaseWorld`, `readBackEffects`, exported) | gate test, CLI review | — | — | — | CLI `generate spells` verdicts |
+
+**Wired and asserted:** `spellGenerator.gate.test.ts` (20 tests) — 3 seeds × 34 traditions, zero validator problems and zero read-back failures, every core fires, every library holds a step-usable spell, deterministic, words without numerals, leans never overridden, no Foundation sphere below tier 3, the dishonest control batch fails. `spellLibrary.test.ts` (9 tests) — tradition by role, the library minted with templates, seeding from it, the switch-off regression, learning from the library, a generated cast through `use × Power` on both bands, one notice per caster per spell.
+
+## Spells as divine gifts and found tomes (THR-1672)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/spellGrant.ts` `grantSpell` — the one writer of `knows_spell` | `seedSpellKnowing` (worldgen), `create × Power` (`learn_spell`), `applySpellStamp` (`?spell=`), `instantiateReward` (spell templates), `applyTeachSpell`, the `spell_grant` applier, `onItemAcquired` | `AttachmentsTab` (*Granted by* / *Learned from*) | `graph` (`knows_spell { source, grantedBy?, viaItemId? }`, `has_trait`) | `spell.granted` | `getSpellHolders().grants` |
+| `engine/spellGrant.ts` `pickDivineSpell` · `engine/ascendantExpression.ts` `teachSpellPreview` | `applyTeachSpell`; `useTargetActions` / `useAgentInteraction` (card line + lock, same thread/awareness gate as the cast) | ActionDrawer card (*Will teach …*; locked *They know everything you could teach* / *They do not yet hold your connection deeply enough*) | read-only | (in `spell.granted`) | `teachSpell` |
+| `engine/ascendantExpression.ts` `applyTeachSpell` | `unifiedActionResolution.ts` `teach_spell` op (Teach a Spell); `encounterAftermath.ts` `spell_grant` (Cache card *Leave A Word Behind*) | receipt event, chronicle line | `graph`, `doomClock`, `regionalDetectionPressure` | `spell.grant_skipped`, `spell.divine_teaching_priced` | `teachSpell` |
+| `engine/spellGrant.ts` `onItemAcquired` + `tomeTeaches` + `pickTomeSpell` | `instantiateReward` (possession branch), `mintGeneratedItem` (holder ≠ maker), `control:seize × Item` | sheet, reward line (*and learned …*) | `graph` (`knows_spell.viaItemId`, item `taughtHolderIds`) | `spell.granted`, `spell.tome_unread` | `giveTome` |
+| `engine/spellCasting.ts` divine echo · `engine/agentDetection.ts` `writeAgentDetection` | every cast of a god-taught transgression | — (mark label names the god) | `regionalDetectionPressure`, `hiddenMarks` | `spell.divine_echo` | CLI `eval state.hiddenMarks` |
+
+**Wired and asserted:** `spellGrant.test.ts` (18 tests: seam, divine pool, Teach a Spell both arms, dark price and its band crossing, cast echo, book predicate, reward/seize teaching, `spell_grant` reaction, drawer line/lock) and `spellGrant.pin.test.ts` (the three older writers' edges, snapshotted before the repoint).

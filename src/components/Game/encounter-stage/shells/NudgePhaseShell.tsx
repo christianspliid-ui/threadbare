@@ -17,7 +17,7 @@ import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { CostPips } from '../../../shared/OddsPips';
-import { CardFace, HAND_MAX_HEIGHT_PX } from '../../../shared/CardFace';
+import { CardFace, CARD_WIDTH_PX } from '../../../shared/CardFace';
 import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
@@ -26,9 +26,7 @@ import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
   NUDGE_EMPTY_HAND_LINE,
-  NUDGE_HAND_HEADING,
 } from '../../../../data/nudge-stage-content';
-import { NudgeMotiveIntro } from './NudgeMotiveIntro';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
 import {
   isNudgeDesignerViewEnabled,
@@ -61,8 +59,17 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 // The card's own glyph sizes moved to `shared/CardFace` with the zones that
 // used them (THR-1002); the legend is the shell's, not the card's.
 
-/** Legend glyphs under the hand heading. */
+/** Legend glyphs on the hand's chrome row. */
 const LEGEND_GLYPH_PX = 12;
+
+/**
+ * THR-1724 — the hand wraps into rows of at most this many cards (Law 33,
+ * amended 2026-10-04), replacing the sideways-scrolling single row.
+ */
+export const CARDS_PER_ROW = 4;
+
+/** Gap between cards, both axes. */
+const CARD_GAP_PX = 12;
 
 export interface NudgePhaseShellProps {
   phase: EncounterStageNudgePhaseModel;
@@ -77,23 +84,16 @@ export interface NudgePhaseShellProps {
   focalActorId?: string;
   /** Commit the selected hand and let the step resolve. */
   onCommit: (nudgeIds: string[], essenceCost: number) => void;
-  /** Open the motive explainer. Absent ⇒ the line renders as static text. */
-  onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
   /**
-   * Render the motive intro line inside this shell (THR-972).
-   *
-   * Defaults to true so a host that mounts the shell whole — the meeting beats —
-   * keeps the line without changing. `EncounterVeil` passes **false**, because it
-   * renders `NudgeMotiveIntro` itself, above its prose block, which is the
-   * placement the directive asked for and which this shell cannot reach from
-   * inside its own subtree.
+   * Open the motive explainer. Unread since THR-1727 retired the motive intro
+   * line it was attached to; kept so hosts that pass it still type-check (NFP #6).
    */
-  renderMotiveIntro?: boolean;
+  onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
   /**
    * Render the reading — reach, difficulty, forecast, factor lines — inside this
    * shell (THR-1478).
    *
-   * Same shape as {@link renderMotiveIntro}, for the same reason. Defaults to
+   * Defaults to
    * true so a host that mounts the shell whole (the meeting beats) keeps the
    * panel. `EncounterVeil` passes **false** and draws the marks inside its own
    * context strip above the prose, which is the merge the director asked for.
@@ -205,8 +205,6 @@ export function NudgePhaseShell({
   agentName,
   focalActorId,
   onCommit,
-  onOpenMotive,
-  renderMotiveIntro = true,
   renderTestHeader = true,
   hand: externalHand,
 }: NudgePhaseShellProps) {
@@ -229,20 +227,9 @@ export function NudgePhaseShell({
   return (
     <div data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
       {/* ── Motive ──────────────────────────────────────────────
-          THR-972 moved the motive out of this shell entirely. It now renders as
-          the scene's opening line *above* the veil's prose (`NudgeMotiveIntro`),
-          which is a different subtree — the chip+sentence strip that used to sit
-          here could only ever appear below the fiction it was framing.
-
-          `renderMotiveIntro` lets a host that has no prose block of its own (the
-          meeting beats, which mount this shell whole) keep the line inside the
-          shell rather than losing it. EncounterVeil passes false and mounts the
-          line itself. */}
-      {renderMotiveIntro && (
-        <div style={{ marginBottom: 18 }}>
-          <NudgeMotiveIntro phase={phase} onOpen={onOpenMotive} />
-        </div>
-      )}
+          THR-1727 retired the motive intro line (THR-972) everywhere. Why the
+          mortal is here is now the lead clause of the encounter's stakes line,
+          which the veil renders in its subtitle slot (`EncounterStakesLine`). */}
 
       {/* ── The reading (THR-1478) ──────────────────────────────
           One block, and on the veil's path it is not this one. `EncounterVeil`
@@ -303,11 +290,9 @@ export function NudgePhaseShell({
       {/* ── The hand ───────────────────────────────────────────── */}
       <div style={{ marginTop: 22 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-          <Tooltip id="ui.nudge_hand">
-            <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: TEXT_WARM, letterSpacing: '0.08em' }}>
-              {NUDGE_HAND_HEADING}
-            </span>
-          </Tooltip>
+          {/* THR-1724 — the "What you can do" heading is gone (Christian,
+              2026-10-04): playable cards light up on hover instead, which says
+              the same thing where the player's hand already is. */}
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}
           <Tooltip id="ui.nudge_essence">
@@ -361,23 +346,16 @@ export function NudgePhaseShell({
           <div
             data-testid="nudge-card-row"
             style={{
+              // THR-1724 — rows of at most CARDS_PER_ROW that wrap, replacing the
+              // one sideways-scrolling row (Law 33, amended 2026-10-04). The cap
+              // is a max-width, so a narrower column simply wraps sooner; the
+              // veil's content column, not this row, owns any overflow.
               display: 'flex',
-              // One line, scrolled sideways — a *row*, not a grid.
-              //
-              // Wrapping was tried first and measured worse: the stage column
-              // fits four cards, so a five-card hand wrapped to a second line
-              // that the height cap then clipped mid-card. Scrolling the axis the
-              // cards are laid out along keeps every card whole and legible, and
-              // still satisfies the viewport contract — what that contract forbids
-              // is the *page* scrolling, which this prevents by capping height.
-              flexWrap: 'nowrap',
-              // Cards match the tallest in the row, so quotes line up across it.
+              flexWrap: 'wrap',
+              // Cards in a row match the tallest, so quotes line up across it.
               alignItems: 'stretch',
-              gap: 12,
-              maxHeight: HAND_MAX_HEIGHT_PX,
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              paddingBottom: 6,
+              gap: CARD_GAP_PX,
+              maxWidth: CARDS_PER_ROW * CARD_WIDTH_PX + (CARDS_PER_ROW - 1) * CARD_GAP_PX,
             }}
           >
             {hand.cards.map((card) => (

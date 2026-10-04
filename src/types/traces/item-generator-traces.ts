@@ -37,3 +37,27 @@ export interface ItemGenerateFallbackTrace extends TraceBase {
   /** The validator's words on the final attempt. */
   lastProblems: string[];
 }
+
+/**
+ * A reward draw's share roll passed on an eligible pick, and what happened next
+ * (THR-1626, plan `Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md`
+ * § Tracing). Not emitted for an ineligible pick or a failed roll, to keep the ring quiet.
+ */
+export interface RewardGeneratedTrace extends TraceBase {
+  category: 'reward.generated';
+  /** The recipient. */
+  agentId: string;
+  /** Which draw route asked (`step_reward_pool`, `reward_draw`, `fight_trophy`). */
+  site: string;
+  /** The pool's authored pick. */
+  drawnTemplateId: string;
+  band: 2 | 3;
+  requiredTags: string[];
+  /** `found` cores that can carry `requiredTags` at the band. */
+  fitCores: number;
+  outcome: 'substituted' | 'too_few_cores' | 'no_fit' | 'generator_refused' | 'mint_failed';
+  /** Set when substituted. */
+  itemId: string | null;
+  /** Fit attempts used. */
+  attempts: number;
+}

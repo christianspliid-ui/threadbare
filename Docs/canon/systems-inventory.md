@@ -101,6 +101,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | Phase | Name | Tags |
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
+| `2b.1` | Stakes context | `THR-1727` |
 | `2.34` | Companies | `THR-74` |
 | `3b` | Notable Agendas | `THR-630` |
 | `6.625b` | Companion expiry | `THR-1096` |
@@ -137,6 +138,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2a.85` | Slot Cap Enforcement — deactivate overflow possessions, handle condition overflow | — | orchestrator |
 | `2a.9` | Divine Premonition | — | orchestrator |
 | `2b` | Agent Decision — unified encounter-driven decision pipeline | — | orchestrator |
+| `2b.1` | Stakes context | `THR-1727` | orchestrator |
 | `2.34` | Companies | `THR-74` | orchestrator |
 | `2.35` | Agent Movement | — | orchestrator |
 | `2.352` | Army Movement | `TB-073` | orchestrator |
@@ -227,7 +229,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `action` (3) | `actionCandidates.ts`, `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
-| `agent` (9) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-719`, `THR-822` |
+| `agent` (10) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentDetection.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-1672`, `THR-1690`, `THR-719`, `THR-822` |
 | `allegiance` (1) | `allegiance.ts` | `THR-1429`, `THR-1683` |
 | `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
@@ -271,12 +273,13 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
-| `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-689`, `THR-878` |
+| `debug` (8) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugGeneratedRewardPin.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-1626`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `decision` (2) | `decisionBoard.ts`, `decisionTier.ts` | `THR-1292`, `THR-1329`, `THR-1348`, `THR-1349` |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-1650`, `THR-452`, `THR-506` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
 | `derive` (1) | `deriveLocationActivities.ts` | — |
+| `descent` (1) | `descent.ts` | `THR-1658` |
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | `THR-577` |
 | `digest` (1) | `digestBuffer.ts` | — |
 | `disposition` (1) | `disposition.ts` | — |
@@ -289,10 +292,10 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
-| `effects` (18) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/castRelocation.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-1571`, `THR-719`, `THR-761` |
+| `effects` (18) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/castRelocation.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-1571`, `THR-1697`, `THR-719`, `THR-761` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
-| `encounters` (16) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963` |
+| `encounters` (17) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
 | `engagement` (1) | `engagementWindow.ts` | `THR-1582` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (5) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-611`, `THR-615`, `THR-618` |
@@ -324,7 +327,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
 | `intention` (1) | `intentionReading.ts` | `THR-1404`, `THR-1433` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
-| `itemgenerator` (9) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1637` |
+| `itemgenerator` (10) | `itemGenerator/describeItem.ts`, `itemGenerator/generateItem.ts`, `itemGenerator/mintGeneratedItem.ts`, `itemGenerator/readBack.ts`, `itemGenerator/reviewBatch.ts`, `itemGenerator/reviewWorld.ts`, `itemGenerator/rewardMinting.ts`, `itemGenerator/types.ts`, `itemGenerator/validateGeneratedItem.ts`, `itemGenerator/worldContext.ts` | `THR-1155`, `THR-1235`, `THR-1236`, `THR-1528`, `THR-1570`, `THR-1626`, `THR-1637` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
@@ -337,7 +340,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
-| `monsters` (9) | `monsters/huntReport.ts`, `monsters/hunts.ts`, `monsters/innatePower.ts`, `monsters/isMonster.ts`, `monsters/lairArrivalTrigger.ts`, `monsters/listMonsters.ts`, `monsters/liveMonster.ts`, `monsters/monsterCard.ts`, `monsters/monsterFelling.ts` | `M1`, `M3`, `M4`, `THR-1267`, `THR-1319`, `THR-1544`, `THR-1545`, `THR-1546`, `THR-1547`, `THR-1560`, `THR-1671` |
+| `monsters` (9) | `monsters/huntReport.ts`, `monsters/hunts.ts`, `monsters/innatePower.ts`, `monsters/isMonster.ts`, `monsters/lairArrivalTrigger.ts`, `monsters/listMonsters.ts`, `monsters/liveMonster.ts`, `monsters/monsterCard.ts`, `monsters/monsterFelling.ts` | `M1`, `M3`, `M4`, `THR-1267`, `THR-1319`, `THR-1544`, `THR-1545`, `THR-1546`, `THR-1547`, `THR-1560`, `THR-1671`, `THR-1682`, `THR-1698` |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
 | `naming` (2) | `naming/lairNames.ts`, `naming/workNames.ts` | `THR-1291`, `THR-1297`, `THR-1312` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
@@ -393,7 +396,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
-| `spell` (2) | `spellActivation.ts`, `spellCasting.ts` | `THR-1571` |
+| `spell` (3) | `spellActivation.ts`, `spellCasting.ts`, `spellGrant.ts` | `THR-1231`, `THR-1571`, `THR-1572`, `THR-1672` |
+| `spellgenerator` (10) | `spellGenerator/casterTradition.ts`, `spellGenerator/describeSpell.ts`, `spellGenerator/generateSpell.ts`, `spellGenerator/libraryRead.ts`, `spellGenerator/notice.ts`, `spellGenerator/readBack.ts`, `spellGenerator/spellLibrary.ts`, `spellGenerator/traditionCatalog.ts`, `spellGenerator/types.ts`, `spellGenerator/validateGeneratedSpell.ts` | `THR-1230`, `THR-1232`, `THR-1572`, `THR-1672` |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
@@ -431,4 +435,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 101 tick phases · 204 engine domains · 626 modules._
+_Counts: 28 registered subsystems (3 dormant) · 102 tick phases · 206 engine domains · 642 modules._

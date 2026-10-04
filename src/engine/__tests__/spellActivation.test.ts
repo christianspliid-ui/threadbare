@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { checkPrerequisites } from '../spellActivation';
+import { checkPrerequisites, payCosts } from '../spellActivation';
+import { decayConditions } from '../conditionDecay';
+import { CONDITION_DURATIONS } from '../../data/condition-trait-content';
 import type { SpellTemplate } from '../../types/effects';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -80,5 +82,23 @@ describe('checkPrerequisites culture trait gating', () => {
     const spell = makeSpell({});
     const result = checkPrerequisites(graph, 'agent_1', spell);
     expect(result.met).toBe(true);
+  });
+});
+
+// THR-1572 review — a condition_inflict price bears the condition's own term.
+describe('payCosts condition_inflict carries the condition term', () => {
+  it('an Exhausted price wears off through decayConditions; a row-less price stays indefinite', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'agent_1', type: 'actor', name: 'Test Agent', properties: {} });
+    payCosts(graph, 'agent_1', { type: 'condition_inflict', template: 'exhausted' }, 100);
+    payCosts(graph, 'agent_1', { type: 'condition_inflict', template: 'paranoia_whispers' }, 100);
+    const bearing = (target: string) => graph.getEdgesByType('has_trait')
+      .filter(e => e.source === 'agent_1' && e.target === target);
+    expect(bearing('trait.condition.exhausted')[0]?.properties.ticksRemaining)
+      .toBe(CONDITION_DURATIONS['trait.condition.exhausted']);
+    expect(bearing('trait.condition.paranoia_whispers')[0]?.properties.ticksRemaining).toBeUndefined();
+    for (let t = 1; t <= CONDITION_DURATIONS['trait.condition.exhausted']; t++) decayConditions(graph, 100 + t);
+    expect(bearing('trait.condition.exhausted')).toHaveLength(0);
+    expect(bearing('trait.condition.paranoia_whispers')).toHaveLength(1);
   });
 });

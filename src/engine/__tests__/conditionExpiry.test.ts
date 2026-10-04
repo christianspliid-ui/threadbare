@@ -18,7 +18,7 @@ import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { decayConditions } from '../conditionDecay';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
-import { CONDITION_WOUNDED_DURATION } from '../../data/condition-trait-content';
+import { CONDITION_WOUNDED_DURATION, CONDITION_INSPIRED_DURATION } from '../../data/condition-trait-content';
 import type { GameState } from '../../types/gameState';
 import type { EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
 
@@ -149,10 +149,24 @@ describe('THR-761 — aftermath conditions expire through decayConditions', () =
       expect(decayed.properties.durationTicks).toBe(8);
     });
 
-    it('leaves an indefinite condition (duration omitted) permanent', () => {
+    it('an omitted duration takes the condition\'s CONDITION_DURATIONS term and expires (THR-1697)', () => {
       const state = buildState();
       const { state: next } = applyEncounterAftermathReaction(
         state, makeAction(), applyConditionReaction('trait.condition.inspired'), START_TICK, runtime,
+      );
+
+      const [edge] = next.graph.getOutgoingEdges('actor-hero', 'has_trait')
+        .filter(e => e.target === 'trait.condition.inspired');
+      expect(edge.properties.ticksRemaining).toBe(CONDITION_INSPIRED_DURATION);
+
+      advance(next, CONDITION_INSPIRED_DURATION);
+      expect(conditionEdgeCount(next, 'trait.condition.inspired')).toBe(0);
+    });
+
+    it('leaves an explicitly indefinite condition (durationTicks: 0) permanent', () => {
+      const state = buildState();
+      const { state: next } = applyEncounterAftermathReaction(
+        state, makeAction(), applyConditionReaction('trait.condition.inspired', 0), START_TICK, runtime,
       );
 
       const [edge] = next.graph.getOutgoingEdges('actor-hero', 'has_trait')

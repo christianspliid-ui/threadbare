@@ -140,6 +140,13 @@ export interface ItemGenRequest {
   readonly coreId?: string;
   /** Restrict to one signature of that core (review / tests). */
   readonly signatureId?: string;
+  /**
+   * Tags the item should carry — a reward recipe's `tagFilters` (THR-1626). Cores that
+   * cannot carry them all are dropped from core choice, and a required reach or sphere
+   * the chosen core allows is forced. It steers; it does not promise: the caller checks
+   * the finished item's tags. Absent or empty → exactly today's draw.
+   */
+  readonly requiredTags?: readonly string[];
 }
 
 export type ItemGenRole = 'boon' | 'catch';

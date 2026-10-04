@@ -530,6 +530,23 @@ export interface DebugBridge {
     reaches: Record<string, { raw: number; share: number }>;
   } | null>;
   /**
+   * THR-1658: an agent's descent from a dead empire (worldgen's `backstoryStrata`
+   * `relation: 'descent'`) and whether it holds the Raise-the-Old-Banner drive.
+   * `ancestralRuinIds` are the elder ruins of its descent cultures (the
+   * *walk the old stones* milestone's targets); `onAncestralLand` is true when its
+   * current region was one of those empires' land. A read model, not a trace.
+   * Accepts `@hero`, an agent id, id prefix, or partial name. Returns null if not
+   * found. **Async — await it.**
+   */
+  getDescent: (nameOrId: string) => Promise<{
+    actorId: string;
+    descentCultureIds: string[];
+    descentCultureNames: string[];
+    ancestralRuinIds: string[];
+    onAncestralLand: boolean;
+    holdsOldBanner: boolean;
+  } | null>;
+  /**
    * Returns all attachments for an agent (possessions, conditions, powers, agreements).
    * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
    */
@@ -729,7 +746,8 @@ export interface DebugBridge {
 
   /**
    * THR-1570: every generated item in the world (`properties.origin === 'generated'`) —
-   * masterworks made with an idea, and debug mints. `coreId` / `signatureId` name the
+   * masterworks made with an idea, found things handed out as rewards (THR-1626,
+   * `origin: 'found'`, id `gen_found_…`), and debug mints. `coreId` / `signatureId` name the
    * authored idea it grew around; `band` is 2 Storied / 3 Mythic / 4 Legendary;
    * `rerolls` is 0 in a healthy world. Empty when the game is not loaded. Always `await` it.
    */
@@ -737,6 +755,17 @@ export interface DebugBridge {
     id: string; name: string; coreId: string; signatureId: string; band: 2 | 3 | 4;
     origin: 'masterwork' | 'found'; makerId: string | null; tick: number | null; rerolls: number;
   }>>;
+
+  /**
+   * THR-1626: force the reward draw's generated-item share roll to pass (`true`) or give
+   * it back to the coin (`false`). While on, every eligible Storied or Mythic reward pick
+   * (an authored `artifact` of tier 2 or 3, not a service, on a prize draw) is offered to
+   * the generator — but the two-core floor and the recipe's tags still apply, so a pick
+   * can keep its authored item (`reward.generated` traces say why). A substituted reward
+   * shows in {@link getGeneratedItems} with `origin: 'found'` and an id starting
+   * `gen_found_`. Returns the new state. Module state — survives until reload. Always `await` it.
+   */
+  forceGeneratedRewards: (on: boolean) => Promise<boolean>;
 
   /**
    * THR-1570: preview a generated item without minting — the review batch's `index`-th
@@ -1869,13 +1898,14 @@ export interface DebugBridge {
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */
   spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };
-  /** THR-775 — Stage the nudge golden exemplar (`The Darkhollow Vault`) on an agent at
+  /** THR-775 — Stage the nudge golden exemplar (`The Swollen Ford`) on an agent at
    *  the attended tier, so the nudge hand is actually in play.
    *
    *  The exemplar is a fixture deliberately absent from every pool, so this registers it
    *  into the lookup index first (index only — never `UNIFIED_ACTION_TEMPLATES`, so no
-   *  scoring pass can draw it afterwards). The sanctioned browser-verify path for the
-   *  nudge stage until WS5 converts shipped templates. */
+   *  scoring pass can draw it afterwards). A fixture-only route: the sanctioned
+   *  browser-verify path for a shipped encounter is the `?spawn=<templateId>` URL lever
+   *  (THR-883). Read the staged hand back with `getEncounterNudges(agentQuery, result.actionId)`. */
   spawnNudgeExemplar: (agentQuery: string) => Promise<DebugSpawnEncounterResult & { notificationId?: string }>;
   /** Prepare encounter context (support bundle, anchor location) without spawning. */
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
@@ -2062,9 +2092,16 @@ export interface DebugBridge {
    *  is that nudges exist ONLY in the attended encounter, so an authored hand on a
    *  background action is inert by design, not by bug.
    *
-   *  Agent matching: exact id, then id prefix, then case-insensitive partial name.
+   *  Agent matching (THR-893): the same resolver the spawners use — `@hero`, `@avatar`,
+   *  `@ascendant`, then exact id, id prefix, case-insensitive partial name.
+   *
+   *  Action choice (THR-893): pass `actionId` (e.g. the `actionId` a spawn returned) to
+   *  read exactly that action. Without it, reads the newest unresolved action whose
+   *  notification is open (the encounter on screen), else the newest unresolved, else the
+   *  newest of any state — never merely the first unresolved one.
+   *
    *  Read-only. `{ error }` when no live state / no matching actor / no action / no template. */
-  getEncounterNudges: (agentRef: string) => Promise<
+  getEncounterNudges: (agentRef: string, actionId?: string) => Promise<
     | { error: string }
     | {
       actionId: string;
@@ -2233,7 +2270,57 @@ export interface DebugBridge {
     readonly wielded: readonly string[];
     readonly known: readonly string[];
     readonly source: string;
+    /** THR-1572 — the tradition on a library-seeded or library-learned `knows_spell` edge. */
+    readonly tradition?: string;
+    /** THR-1672 — every `knows_spell` edge with its provenance: `source` (`'divine'`,
+     *  `'tome'`, …), the teaching god's id (`grantedBy`) or the book's id (`viaItemId`). */
+    readonly grants: ReadonlyArray<{ readonly spellId: string; readonly source: string; readonly grantedBy?: string; readonly viaItemId?: string }>;
   }>;
+  /** THR-1672 — the god teaches a mortal a spell, gates bypassed (debug). Picks as the
+   *  Teach a Spell card would — the god's spheres, then the mortal's tradition — unless
+   *  `spellId` names one (`hollow_crown` or `spell_hollow_crown`). A dark spell charges
+   *  the god doom and detection, as the card does. **Async** — `await` it. */
+  teachSpell: (agentQuery?: string, spellId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly spellId?: string; readonly spellName?: string; readonly dark: boolean; readonly wielded: boolean }
+    | { readonly ok: false; readonly reason: string }
+  >;
+  /** THR-1672 — hand a mortal a reward book through `instantiateReward` so the teaching
+   *  hook runs for real (default `reward_tomes_scrolls_veilscript_fragment`).
+   *  `taughtSpellName` is set when the book taught them. **Async** — `await` it. */
+  giveTome: (agentQuery?: string, templateId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly itemId: string; readonly itemName: string; readonly taughtSpellName?: string }
+    | { readonly ok: false; readonly reason: string }
+  >;
+  /** THR-1572 — every tradition library this world built, each spell with its holder
+   *  count (`has_trait` bearers). Spell ids are template ids (`spell_gen_holy_1_0`), the
+   *  form `?spell=` accepts. Empty before the world exists. **Async** — `await` it. */
+  getSpellLibraries: () => Promise<ReadonlyArray<{
+    readonly traditionId: string;
+    readonly name: string;
+    readonly spells: ReadonlyArray<{
+      readonly id: string;
+      readonly name: string;
+      readonly tier: number;
+      readonly agency: string;
+      readonly arena: string;
+      readonly priceLayer: string;
+      readonly coreId: string;
+      readonly holders: number;
+    }>;
+  }>>;
+  /** THR-1572 — generate one spell without minting it: `tradition` is `magic.holy` or
+   *  `holy`, `tier` 1–4; `slot`/`agency`/`arena` default to that tier's planned library
+   *  slot, `seed` to the live world's. Returns the template, provenance, the sheet's words
+   *  and the validator's problems (`[]` = honest). **Async** — `await` it. */
+  previewGeneratedSpell: (opts: { tradition: string; tier: number; slot?: number; seed?: number; agency?: string; arena?: string }) => Promise<
+    | { readonly error: string }
+    | {
+      readonly spell: { readonly id: string; readonly name: string; readonly tier: number; readonly agency?: string; readonly arena?: string };
+      readonly provenance: { readonly traditionId: string; readonly coreId: string; readonly priceLayer: string; readonly seedKey: string };
+      readonly words: { readonly does: string; readonly costs: string; readonly wrong: string };
+      readonly problems: readonly string[];
+    }
+  >;
   /** THR-1571 — run one cast through `resolveCast` (the only cast path). `spell` is a
    *  template id (`spell_veilwalk`, or `veilwalk`); `band` is one of the six step
    *  outcomes and defaults to `success` — the band *is* the roll, no die is thrown.
@@ -2272,6 +2359,30 @@ export interface DebugBridge {
       readonly stepOutcomes: readonly string[];
       readonly recorded: Readonly<Record<number, import('./types/unifiedAction').StepCastRecord>>;
       readonly pending: import('./types/unifiedAction').StepCastRecord | null;
+    }
+  >;
+  /** THR-1727 — the encounter's stakes line as built (`line`) and as the veil renders it
+   *  (`rendered`, null when no stakes line is mounted). No argument: the encounter behind
+   *  the newest open notification. With `actionId`: that action, and its `resultLine` once
+   *  resolved (archived actions read the Chapter Record). `hasStakes` is false for a
+   *  template that authors no `stakes` (the veil then shows its description).
+   *  **Async** — `await` it. */
+  getEncounterStakes: (actionId?: string) => Promise<
+    | null
+    | {
+      readonly actionId?: string;
+      readonly templateId: string | null;
+      readonly line: string | null;
+      readonly leadSource?: 'choice' | 'mission' | 'chance' | 'divine' | 'none' | null;
+      readonly fallback?: string | null;
+      readonly stamped?: boolean;
+      readonly stakesContext?: import('./types/encounterStakes').StakesContext | null;
+      readonly resultLine?: string | null;
+      readonly armKey?: string | null;
+      readonly rendered: string | null;
+      readonly hasStakes: boolean;
+      readonly archived?: boolean;
+      readonly reason?: string;
     }
   >;
   getOutcomePinVerdict: () => Promise<
@@ -2378,7 +2489,9 @@ export interface DebugBridge {
    *  `huntedBy[]` (THR-1560, plan doc 6): the mortals with an active hunt
    *  (`cell.destroy.monster`, `work: 'hunt'`) or tracking (`cell.observe.monster`,
    *  `work: 'track'`) project on the monster, each with the door that admits them today —
-   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does. */
+   *  `blood_drawn`, `grievance`, `threat_radius`, or `motive` when only the social gate does.
+   *  `apex` (THR-1698): the apex card id (`golem.colossus` / `behemoth.ancient`) when the
+   *  monster grew into one as its lair went legendary (THR-1682); absent otherwise. */
   listMonsters: () => Promise<readonly import('./engine/monsters/listMonsters').ListedMonster[]>;
 
   /** The lair card the hex sidebar renders for one lair (plan doc 4, F1 THR-1550 + F4

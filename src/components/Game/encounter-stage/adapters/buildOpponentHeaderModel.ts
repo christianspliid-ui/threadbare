@@ -31,14 +31,13 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../../types/unifiedAction';
-import type { MonsterFamilyId } from '../../../../types/monster';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { fightRoleOf, resolveFightOpponent } from '../../../../engine/fights/fightStepInputs';
 import { readOpponentCard } from '../../../../engine/fights/opponentCard';
 import { isMonster } from '../../../../engine/monsters/isMonster';
 import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
 import { FIGHT_MORTAL_CLOCK } from '../../../../data/fight-constants';
-import { MONSTER_FAMILIES } from '../../../../data/monster-families';
+import { MONSTER_FAMILIES, monsterCardLine } from '../../../../data/monster-families';
 import {
   DREAD_PHRASES,
   FIGHT_STEP_LABELS,
@@ -167,11 +166,14 @@ export function fightStepLabel(
   return FIGHT_STEP_LABELS[position] ?? FIGHT_STEP_LABEL_OVERFLOW;
 }
 
-/** The family line (monsters) or the mortal line. Exported for the lair card (THR-1552). */
+/**
+ * The family line (monsters) or the mortal line. Exported for the lair card (THR-1552).
+ * THR-1698 — an apex monster (THR-1682) reads its apex line, through the same
+ * `monsterCardLine` the prose uses, so the card and the scene name the same creature.
+ */
 export function familyLineFor(bag: Record<string, unknown> | undefined, monster: boolean): string {
   if (!monster) return MORTAL_OPPONENT_LINE;
-  const family = typeof bag?.family === 'string' ? MONSTER_FAMILIES[bag.family as MonsterFamilyId] : undefined;
-  return capitalize(family?.cardLine ?? MONSTER_FAMILIES.beast.cardLine);
+  return capitalize(monsterCardLine(bag) ?? MONSTER_FAMILIES.beast.cardLine);
 }
 
 /**

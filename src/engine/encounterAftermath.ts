@@ -129,7 +129,9 @@ import {
   GREAT_WORK_ESTABLISHED_SIGNIFICANCE,
 } from '../data/game-config';
 import { resolveLocationToHex } from './encounterAwareness';
-import { getAscendantPrimarySphere } from './ascendantExpression';
+import { getAscendantPrimarySphere, applyTeachSpell, type TeachSpellSink } from './ascendantExpression';
+import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
+import type { DetectionCrossingRecorder } from './agentDetection';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
 import type { WorldGraph } from './graph';
 import {
@@ -1071,6 +1073,12 @@ export function applyEncounterAftermathReaction(
   reaction: EncounterAftermathReaction,
   tick: number,
   runtime: SimulationRuntime,
+  /**
+   * THR-1672 — the detection crossing recorder for a `spell_grant`'s dark-teaching price.
+   * Handed in by callers outside the module cycle (`agentDetection.ts`); this module
+   * cannot import it. Omitted, the price still writes pressure but plants no strike.
+   */
+  options: { readonly recordCrossings?: DetectionCrossingRecorder } = {},
 ): { state: GameState; mutationSummary: AftermathMutationSummary } {
   if (!runtime) {
     throw new Error('[encounterAftermath] runtime is required — programming error, not a data error');
@@ -1088,6 +1096,9 @@ export function applyEncounterAftermathReaction(
   let nextUnlockedActionIds: readonly string[] | undefined = undefined;
   // THR-551: ControlEffects spawned by `sphere_influence_amplify` (rift) effects.
   const nextControlEffects: ControlEffect[] = [];
+  // THR-1672: the god's teaching price (doom, detection, a rival strike) lands here,
+  // created on the first `spell_grant` and merged into the next state below.
+  let teachSink: TeachSpellSink | undefined;
 
   let mutationSummary: AftermathMutationSummary = { touchedWorld: false, touchedStructure: false, woundApplied: false };
 
@@ -2812,6 +2823,73 @@ export function applyEncounterAftermathReaction(
           effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `attachment_grant[${i}]: ${agInstance.category} '${agInstance.displayName}' → ${agRecipientId}`,
         } as unknown as TraceEntry);
+        break;
+      }
+
+      case 'spell_grant': {
+        // THR-1672 — the god teaches (acquisition channel 1). A nudge card fired by the
+        // god is the god teaching, so this is `applyTeachSpell` — the same seam, pool and
+        // dark-teaching price as the Teach a Spell card — without the card's thread gate:
+        // the card was already played on this mortal's scene.
+        const sgTargetId = target.kind === 'agent' ? target.id : actorAgentId;
+        const sgAscendantId = state.ascendantId;
+        if (!sgTargetId || !sgAscendantId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spell_grant', effectDetail: { selector: effect.selector },
+            success: false, failReason: sgTargetId ? 'no_ascendant' : 'no_actor_id',
+            summary: `spell_grant[${i}] skipped: ${sgTargetId ? 'no god to teach' : 'no one to teach'}`,
+          });
+          break;
+        }
+        teachSink ??= {
+          graph: state.graph,
+          regionalDetectionPressure: state.regionalDetectionPressure,
+          doomClock: state.doomClock,
+          pendingEncounterSeeds: state.pendingEncounterSeeds,
+          seed: state.seed,
+        };
+        const sgTaught = applyTeachSpell(teachSink, sgAscendantId, sgTargetId, tick, {
+          requireThread: false,
+          selector: effect.selector,
+          ...(options.recordCrossings ? { recordCrossings: options.recordCrossings } : {}),
+          ...(effect.maxTier !== undefined ? { maxTier: effect.maxTier } : {}),
+        });
+        if (!sgTaught.success || !sgTaught.spellName) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'spell_grant', effectDetail: { selector: effect.selector, targetId: sgTargetId },
+            success: false, failReason: sgTaught.failSoft ?? 'grant_refused',
+            effectiveTargetId: sgTargetId,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `spell_grant[${i}] skipped: ${sgTaught.failSoft ?? 'grant_refused'}`,
+          });
+          break;
+        }
+        mutationSummary.touchedStructure = true;
+        const sgName = state.graph.getNode(sgTargetId)?.name ?? sgTargetId;
+        const sgEvent: TickEvent = {
+          id: `spell_grant_${sgTargetId}_${sgTaught.spellId}_t${tick}`,
+          tick,
+          type: 'narrative',
+          message: `${sgName} now knows ${sgTaught.spellName}. They will not say where they learned it.`,
+          significance: TEACH_SPELL_RECEIPT_SIGNIFICANCE,
+          actorId: sgTargetId,
+        };
+        nextTickEvents = [...nextTickEvents, sgEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, sgEvent);
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'spell_grant',
+          effectDetail: { selector: effect.selector, targetId: sgTargetId, spellId: sgTaught.spellId, dark: sgTaught.dark, wielded: sgTaught.wielded },
+          success: true,
+          effectiveTargetId: sgTargetId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+          summary: `spell_grant[${i}]: ${sgName} learns ${sgTaught.spellName}${sgTaught.dark ? ' (dark — the god pays)' : ''}`,
+        });
         break;
       }
 
@@ -5097,6 +5175,13 @@ export function applyEncounterAftermathReaction(
     controlEffects: nextControlEffects.length > 0
       ? [...(state.controlEffects ?? []), ...nextControlEffects]
       : state.controlEffects,
+    ...(teachSink
+      ? {
+        doomClock: teachSink.doomClock ?? state.doomClock,
+        regionalDetectionPressure: teachSink.regionalDetectionPressure,
+        pendingEncounterSeeds: [...(teachSink.pendingEncounterSeeds ?? []), ...nextSeeds],
+      }
+      : {}),
   };
 
   return { state: nextState, mutationSummary };

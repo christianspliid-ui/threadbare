@@ -90,6 +90,8 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 | [rulebook.md](rulebook.md) | Rulebook (synthesis) | live | 2026-08-19 |
 | [process.md](process.md) | Process (meta-canon) | live | 2026-08-28 |
 | [design-governance.md](design-governance.md) | Design governance (authoritative, THR-760) | live | 2026-08-06 |
+| [session-protocol.md](session-protocol.md) | Session protocol — session types, Rule 0, session start, lanes (authoritative, THR-1718) | live | 2026-10-04 |
+| [definition-of-done.md](definition-of-done.md) | Definition of Done (authoritative, THR-1718) | live | 2026-10-04 |
 | [verification-gates.md](verification-gates.md) | Verification gates + browser-verify (authoritative, THR-1336) | live | 2026-08-28 |
 | [cosmology.md](cosmology.md) | Cosmology | live | 2026-08-28 |
 | [encounters.md](encounters.md) | Encounters | live | 2026-05-05 |

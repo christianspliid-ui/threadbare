@@ -305,23 +305,24 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
     }
   });
 
-  it('falls back to unsigned contract factors when a step authors none', () => {
+  it('falls back to the contract factors when a step authors none — minus the placeholder', () => {
     // The un-migrated path every pre-nudge template still takes: no authored
     // lines, so whatever the contract yields renders `neutral` rather than
     // claiming a sign the encounter never stated.
     //
-    // Scoped to the authored slice: THR-892's derived lines carry a real
-    // polarity by construction (they are signed numbers), and asserting
-    // `neutral` across the whole panel would forbid the derivation this ticket
-    // exists to add.
+    // THR-1724 — the contract builder's stock "The threads are shifting." is
+    // filler, not an authored account of the odds, so it no longer reaches the
+    // panel: a fixture whose contract carries only that line yields no authored
+    // factor at all. Any authored line that does survive is still neutral.
     const phase = buildPhase()!;
     expect(phase.testPanel.purposeLine).toBeUndefined();
     const authored = phase.testPanel.factors.filter((f) => f.id.startsWith('authored:'));
-    expect(authored.length, 'contract fallback yielded no factors').toBeGreaterThan(0);
     for (const factor of authored) {
+      expect(factor.text).not.toBe('The threads are shifting.');
       expect(factor.polarity).toBe('neutral');
       expect(factor.delta).toBeUndefined();
     }
+    expect(phase.testPanel.factors.map((f) => f.text)).not.toContain('The threads are shifting.');
   });
 });
 
@@ -626,22 +627,20 @@ const factorIds = (phase: NonNullable<ReturnType<typeof buildNudgePhaseModel>>) 
   phase.testPanel.factors.map((f) => f.id);
 
 describe('buildNudgePhaseModel — derived factor lines (THR-892)', () => {
-  it('always derives the agent skill line, naming the actor in the sentence', () => {
+  it('always derives the agent skill reading, naming the actor in its sentence (THR-1724)', () => {
     const phase = phaseWith(buildGraph());
-    const skill = phase.testPanel.factors.find((f) => f.id === 'skill:iron');
+    // THR-1724 — the skill line left the factor list for the title row's reach
+    // readout. It carries the sheet's tier and the sentence as its tooltip.
+    expect(phase.testPanel.factors.find((f) => f.id === 'skill:iron')).toBeUndefined();
+    const skill = phase.testPanel.skill;
     expect(skill).toBeDefined();
     // Canon rule 1: the source is IN the sentence, never a label beside it.
-    expect(skill!.text).toContain('Sera Vance');
-    expect(skill!.text).not.toContain(':');
-    expect(skill!.polarity).toBe('for');
-    // THR-977: the line carries NO delta and so draws no pips. Capability is not
-    // an effect on the odds, and the pip row speaks only the odds vocabulary
-    // (THR-972). The magnitude reaches the player through the sentence's word.
-    expect(skill!.delta).toBeUndefined();
-    // The line itself survives — this pins the absence of the pips, not the
-    // absence of the factor. The counter-arm that not every delta was nuked is
-    // the equipment test below, which still pins a literal 0.06.
-    expect(skill!.text.length).toBeGreaterThan(0);
+    expect(skill!.sentence).toContain('Sera Vance');
+    expect(skill!.sentence).not.toContain(':');
+    // The sheet's 0–4 scale, the same `getCapabilityTier` the sheet reads.
+    expect(skill!.tier).toBeGreaterThanOrEqual(0);
+    expect(skill!.tier).toBeLessThanOrEqual(4);
+    expect(Number.isInteger(skill!.tier)).toBe(true);
   });
 
   it('derives an equipment line from a carried artifact, and drops it when the artifact is gone', () => {
@@ -774,10 +773,14 @@ describe('buildNudgePhaseModel — derived factor lines (THR-892)', () => {
       .toBeCloseTo(0.1, 5);
   });
 
-  it('renders skill alone when nothing in the world tilts the step', () => {
-    // The honest floor: no equipment, no terrain, no carryover. One line, not zero.
-    const ids = factorIds(phaseWith(buildGraph()));
-    expect(ids).toContain('skill:iron');
+  it('renders no tilt lines when nothing in the world tilts the step', () => {
+    // The honest floor: no equipment, no terrain, no carryover. THR-1724 moved
+    // the skill reading out of the list, so the list may now be empty — the
+    // capability still reaches the player through the title-row readout.
+    const phase = phaseWith(buildGraph());
+    const ids = factorIds(phase);
+    expect(ids).not.toContain('skill:iron');
+    expect(phase.testPanel.skill).toBeDefined();
     expect(ids.filter((id) => id.startsWith('equipment:'))).toEqual([]);
     expect(ids.filter((id) => id.startsWith('carryover:'))).toEqual([]);
   });

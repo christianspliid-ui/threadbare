@@ -26,6 +26,7 @@ export { downloadTextFile } from './downloadTextFile';
 export { DetailBreadcrumb } from './DetailBreadcrumb';
 export { DetailModal } from './DetailModal';
 export { DomainCard } from './DomainCard';
+export { ReachStanding, reachStandingWord, REACH_DISPLAY_NAMES } from './ReachStanding';
 export { Dropdown } from './Dropdown';
 export { EntityLink } from './EntityLink';
 export { HoverCard } from './HoverCard';

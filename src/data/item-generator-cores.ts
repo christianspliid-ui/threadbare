@@ -32,7 +32,9 @@ import { EFFECT_PER_ITEM_CAP } from './effect-constants';
 import type {
   ItemGenBand, ItemGenFormId, ItemGenMagnitudeKind, ItemGenFixedKind, ItemGenNameGrammar, ItemGenOrigin,
 } from './item-generator-tables';
-import { ITEM_GEN_BREAK_CHANCE_BY_BAND, ITEM_GEN_OATHS, ITEM_GEN_VIRTUES, ITEM_GEN_REACHES } from './item-generator-tables';
+import {
+  ITEM_GEN_BREAK_CHANCE_BY_BAND, ITEM_GEN_FORMS, ITEM_GEN_MATERIALS, ITEM_GEN_OATHS, ITEM_GEN_VIRTUES, ITEM_GEN_REACHES, ITEM_GEN_SPHERES,
+} from './item-generator-tables';
 import type {
   ItemGenEvent, ItemGenEventKind, ItemGenFaction, ItemGenHero, ItemGenMonster, ItemGenPart,
 } from '../engine/itemGenerator/types';
@@ -117,6 +119,14 @@ export interface ItemGenCore {
   readonly materials?: Readonly<Record<string, number>>;
   readonly materialsByEvent?: Partial<Record<ItemGenEventKind, Readonly<Record<string, number>>>>;
   readonly formsByEvent?: Partial<Record<ItemGenEventKind, Partial<Record<ItemGenFormId, number>>>>;
+  /**
+   * Tags a signature may add that the core's own fields do not say (THR-1626): a reach a
+   * signature reassigns (`c.reach = 'gold'`), and `#cursed` for a signature that stamps a
+   * curse. Read only by {@link coreTagReach}; the gate test proves every generated item's
+   * tags fall inside the reach, so a missing entry fails there rather than silently
+   * shutting the core out of a reward recipe.
+   */
+  readonly signatureTags?: readonly string[];
   readonly signatures: readonly ItemGenSignature[];
 }
 
@@ -196,6 +206,7 @@ export const ITEM_GEN_CORES: readonly ItemGenCore[] = [
     factions: { mercenary_company: 3, adventuring_guild: 1, underking_court: 1 },
     heroes: { bram_oskell: 3, tamsin_weir: 1, hesta_ryle: 1 }, events: { kel_siege: 2, greywater_stand: 1, salt_riots: 1 },
     family: ['#combat'],
+    signatureTags: ['#cursed'],
     looks: ['its edge nicked in a dozen places and never once dull', 'with a grip that is always warm', 'wrapped at the hilt in cord gone black and stiff'],
     provenance: [
       { made: true, tone: 'ominous', uses: ['maker'], text: '{maker} made it to a plain pattern. Something got into it afterwards.' },
@@ -281,6 +292,7 @@ export const ITEM_GEN_CORES: readonly ItemGenCore[] = [
     factions: { underking_court: 4, thieves_guild: 1 },
     heroes: { corvin_hale: 3, ivo_tallow: 1 },
     family: ['#relic', '#curse'],
+    signatureTags: ['#cursed'],
     looks: ['warm when it wants something', 'too heavy for its size', 'with a tiny pair of scales worked into it'],
     provenance: [
       { made: true, tone: 'ominous', uses: ['maker'], text: '{maker} made it to settle a debt. It has been settling debts ever since, on its own terms.' },
@@ -826,6 +838,47 @@ export const ITEM_GEN_CORES: readonly ItemGenCore[] = [
       },
     ],
   },
+  // THR-1626: the knowledge family's second found idea — so a scholar's Storied reward is
+  // not always the book that should not be read (plan § Content pillar).
+  {
+    id: 'argued_book', label: 'the book someone argued with', bands: [2, 3], weight: 1, origins: ['found'],
+    forms: { book: 3, ledger: 1, almanac: 2 }, reaches: { eye: 3, veil: 2 },
+    spheres: { mind: 3, time: 2, order: 1, chaos: 1 },
+    factions: { lorekeepers_covenant: 3, arcane_circle: 1 },
+    family: ['#knowledge'],
+    signatureTags: ['#veil'],
+    looks: ['its margins black with small, angry writing', 'with whole paragraphs crossed out and written again in another hand', 'with loose notes folded between the pages'],
+    provenance: [
+      { tone: 'practical', uses: ['hero'], text: 'The margins are full of {hero.possessive} notes. {hero.They} disagreed with nearly every page.' },
+      { tone: 'ominous', uses: ['hero'], text: '{hero} wrote in it to the end. The last note stops halfway through a word.' },
+      { tone: 'mystical', uses: ['culture'], text: 'A {culture.adj} reader filled the margins with arguments. Some of them turned out to be right.' },
+      { tone: 'practical', uses: ['place'], text: 'It sat in a reading room at {place} for years, and everyone who read it wrote in it.' },
+      { tone: 'reverent', uses: ['faction'], text: '{faction.The} keep the clean copy. This is the one they argued over.' },
+    ],
+    names: { definite: ['Annotated', 'Quarrelled', 'Marked'], xofy: ['Second Opinions', 'the Margins'], role: ['Scholar', 'Reader'] },
+    grammar: { person: 3, definite: 3, xofy: 2, role: 1 },
+    signatures: [
+      {
+        id: 'argues_back', label: 'helps its reader think things through alone, and makes them argue with everyone',
+        build(c) {
+          c.reach = 'eye';
+          const out = [boon(fx.cond('alone', 'eye', c.mag('conditional'))), boon(fx.stat({ eye: c.mag('stat') }))];
+          if (c.band >= 3) out.push(boon(fx.passive('eye', c.mag('passive', 1))));
+          out.push(bane(fx.social('any', -0.1)));
+          return out;
+        },
+      },
+      {
+        id: 'second_opinion', label: 'saves a near miss with a note in the margin, and pulls its reader towards the dead reader\'s view',
+        build(c) {
+          c.reach = 'veil';
+          const out = [boon(fx.shaper(c.fixed('shaperMargin'), 'veil')), boon(fx.stat({ veil: c.mag('stat', 1) }))];
+          out.push(bane(fx.vice('veil', c.mag('drift'))));
+          return out;
+        },
+      },
+    ],
+  },
   {
     id: 'beast_trophy', label: 'a trophy taken from a monster', bands: [2, 3], weight: 1.1, origins: ['found'],
     forms: { knife: 2, cloak: 2, charm: 3, bow: 1, spear: 1 }, reaches: {},
@@ -994,3 +1047,52 @@ function oathFor(faction: ItemGenFaction | null): { boon: ReachDomain; forbid: R
 }
 
 export const ITEM_GEN_CORE_BY_ID: ReadonlyMap<string, ItemGenCore> = new Map(ITEM_GEN_CORES.map(c => [c.id, c]));
+
+// ─── What a core can carry (THR-1626) ──────────────────────────────────
+
+const TAG_REACH_MEMO = new Map<string, ReadonlySet<string>>();
+
+/**
+ * Every tag a core *can* put on an item — the static reach the reward draw asks before it
+ * asks the generator for a recipe's tags (plan `2026-10-02-thr-1626` § Systems design).
+ *
+ * Its family; the tags of every form in `forms` and `formsByEvent` (and `charm`, the
+ * generator's own fallback form); the tags of every material that can be made into one
+ * of those forms; `#<reach>` for its `reaches` (all eight when it names none or is a
+ * trophy, since the reach then comes from the monster, the event or the form);
+ * `#<sphere>` for its `spheres` (all twelve when it names none, or is a trophy or
+ * monster core); `#storied`; and the {@link ItemGenCore.signatureTags} its signatures add.
+ *
+ * It may over-promise — the reward draw's fit check is the guard there — but it must
+ * never under-promise: the gate test asserts every generated item's tags fall inside it.
+ * Memoised per core id; the cores are static data.
+ */
+export function coreTagReach(core: ItemGenCore): ReadonlySet<string> {
+  const memo = TAG_REACH_MEMO.get(core.id);
+  if (memo) return memo;
+  const out = new Set<string>(['#storied', ...core.family, ...(core.signatureTags ?? [])]);
+  const formIds = new Set<ItemGenFormId>(['charm', ...Object.keys(core.forms) as ItemGenFormId[]]);
+  for (const byEvent of Object.values(core.formsByEvent ?? {})) for (const f of Object.keys(byEvent ?? {})) formIds.add(f as ItemGenFormId);
+  for (const formId of formIds) {
+    const form = ITEM_GEN_FORMS[formId];
+    if (!form) continue;
+    for (const t of form.tags) out.add(t);
+    for (const m of Object.values(ITEM_GEN_MATERIALS)) {
+      const fits = m.monsterSphere ? (m.fitsForms ?? []).includes(formId) : m.fits.some(f => form.fits.includes(f));
+      if (fits) for (const t of m.tags ?? []) out.add(t);
+    }
+  }
+  const reaches = core.trophy || Object.keys(core.reaches).length === 0 ? ITEM_GEN_REACHES : Object.keys(core.reaches);
+  for (const r of reaches) out.add(`#${r}`);
+  const spheres = core.trophy || core.monsterSpheres || Object.keys(core.spheres).length === 0 ? ITEM_GEN_SPHERES : Object.keys(core.spheres);
+  for (const s of spheres) out.add(`#${s}`);
+  TAG_REACH_MEMO.set(core.id, out);
+  return out;
+}
+
+/** Can this core carry every one of `tags`? (An empty list: always.) */
+export function coreCanCarryTags(core: ItemGenCore, tags: readonly string[]): boolean {
+  if (tags.length === 0) return true;
+  const reach = coreTagReach(core);
+  return tags.every(t => reach.has(t));
+}

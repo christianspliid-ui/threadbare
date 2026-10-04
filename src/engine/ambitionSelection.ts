@@ -45,6 +45,14 @@ export interface AmbitionAgentSnapshot {
    * vice, which is what a `Record` defaulted to `{}` would have done.
    */
   readonly axiologicalProfile?: AxiologicalProfile;
+  /**
+   * The dead empires this agent descends from (THR-1658) — `getDescentCultureIds`.
+   *
+   * Optional, and read only by templates that set `requiresDescent`. A snapshot built
+   * without it fails that gate (fail-closed), so a caller that does not know descent
+   * never hands a descent drive to someone who has none.
+   */
+  readonly descentCultureIds?: readonly string[];
 }
 
 // ─── Selection Options ──────────────────────────────────────────
@@ -83,6 +91,9 @@ export function passesEligibility(
   for (const trait of template.blockingTraits) {
     if (agent.traits.includes(trait)) return false;
   }
+
+  // Descent gate (THR-1658): only the blood of a dead empire may take this up.
+  if (template.requiresDescent && !(agent.descentCultureIds?.length)) return false;
 
   return true;
 }

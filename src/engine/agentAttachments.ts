@@ -17,6 +17,9 @@ import type {
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
 import { isSpellSuppressedFor } from './effects/effectSuppression';
+import type { SpellTemplate } from '../types/effects';
+import { describeSpell } from './spellGenerator/describeSpell';
+import { traditionEntry } from './spellGenerator/traditionCatalog';
 
 /**
  * Pull an attachment's on-use behavior out of its `effects[]`.
@@ -72,6 +75,18 @@ export interface AttachmentFullEntry extends AttachmentSummary {
    * gave. Absent on everything that is not a Power. The sheet says the word.
    */
   powerClass?: 'spell' | 'bestowal' | 'innate';
+  /**
+   * THR-1572 — a generated spell's words: who teaches it, what it does, what it costs,
+   * what goes wrong. Derived from the template on its definition node at read time, so
+   * they never go stale (Law 56). Absent on an authored spell.
+   */
+  spellWords?: { taughtBy: string; does: string; costs: string; wrong: string };
+  /**
+   * THR-1672 — the book that taught this spell ("Learned from <item>"), read off the
+   * bearer's `knows_spell` edge (`viaItemId`). A god-taught spell fills `grantedBy`
+   * instead, from the same edge's `grantedBy`, so the existing "Granted by" line renders.
+   */
+  learnedFrom?: string;
   /** A power whose bearer is under a seal: it is theirs, and it will not answer. */
   sealed?: boolean;
   /** How a condition came to be worn — somebody's doing, and which kind of doing. */
@@ -92,6 +107,23 @@ export interface KnownSpellEntry {
   readonly name: string;
   /** The sphere shelf it came from — the tradition, in the UL's word. */
   readonly tradition: string;
+  /** THR-1672 — the god who taught it, by name. */
+  readonly grantedBy?: string;
+  /** THR-1672 — the book that taught it, by name. */
+  readonly learnedFrom?: string;
+}
+
+/**
+ * THR-1672 — who or what taught a spell, read off the bearer's `knows_spell` edge: the
+ * god's name (`grantedBy`) or the book's name (`viaItemId`). Names, never ids (Law 13);
+ * an id that no longer resolves says nothing rather than something wrong.
+ */
+function spellProvenanceNames(graph: WorldGraph, agentId: string, spellNodeId: string): { grantedBy?: string; learnedFrom?: string } {
+  const edge = graph.getOutgoingEdges(agentId, 'knows_spell').find(e => e.target === spellNodeId);
+  const props = (edge?.properties ?? {}) as Record<string, unknown>;
+  const god = typeof props.grantedBy === 'string' ? graph.getNode(props.grantedBy)?.name : undefined;
+  const book = typeof props.viaItemId === 'string' ? graph.getNode(props.viaItemId)?.name : undefined;
+  return { ...(god ? { grantedBy: god } : {}), ...(book ? { learnedFrom: book } : {}) };
 }
 
 /**
@@ -312,6 +344,8 @@ export function getAgentAttachments(
         source: edge.properties.source as string | undefined,
         slotTag: 'spell',
         powerClass: 'spell',
+        ...(generatedSpellWords(traitProps) ? { spellWords: generatedSpellWords(traitProps)! } : {}),
+        ...spellProvenanceNames(graph, agentId, node.id),
         // Read off the bearer, never off the shared definition node — the same reason
         // `isSpellSuppressedFor` exists (a spell node is shared by every wielder).
         sealed: spellsSealed,
@@ -423,6 +457,7 @@ export function getAgentAttachments(
       id: node.id,
       name: node.name,
       tradition: (node.properties.sphereAffinity as string | undefined) ?? 'unaligned',
+      ...spellProvenanceNames(graph, agentId, node.id),
     });
   }
   knownSpells.sort((a, b) => a.name.localeCompare(b.name));
@@ -435,4 +470,22 @@ export function getAgentAttachments(
     agreements: sortAttachments(agreements),
     knownSpells,
   };
+}
+
+/**
+ * THR-1572 — the four sheet lines for a generated spell, read off its definition node:
+ * the tradition's plain name, and `describeSpell` over the template the engine casts.
+ * Null for an authored spell or a node with no template (fail-soft).
+ */
+function generatedSpellWords(props: Record<string, unknown>): { taughtBy: string; does: string; costs: string; wrong: string } | null {
+  if (props.origin !== 'generated') return null;
+  const template = props.template as SpellTemplate | undefined;
+  const prov = props.generated as { traditionId?: string; catchIndexes?: number[] } | undefined;
+  if (!template || !prov?.traditionId) return null;
+  try {
+    const words = describeSpell(template, prov.catchIndexes ?? []);
+    return { taughtBy: traditionEntry(prov.traditionId)?.name ?? prov.traditionId, ...words };
+  } catch {
+    return null;
+  }
 }

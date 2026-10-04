@@ -22,8 +22,8 @@ import type { EssencePool } from '../types/influence';
 import { REACH_DOMAINS } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
 import { ARCHETYPE_NAMES } from '../types/agent';
-import { getSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../data/spell-templates';
-import { SLOT_CAPS } from '../data/attachment-slot-constants';
+import { resolveSpellTemplate, spellDefinitionNode, spellDefinitionNodeId } from '../data/spell-templates';
+import { grantSpell } from './spellGrant';
 import { REACH_SHARE_FULL_RAW } from '../data/reach-share-constants';
 
 export interface DebugSpawnEncounterOptions {
@@ -127,7 +127,12 @@ const DEBUG_SPAWN_THREAD_TIER = 5;
 const DEBUG_SPAWN_ATTENTION_MODE = 'pause' as const;
 const DEBUG_SPAWN_THREAD_AWARENESS = 'faith' as const;
 
-function findAgent(state: GameState, agentQuery: string) {
+/**
+ * Resolves a debug agent query: `@avatar`, `@hero`, `@ascendant`, then exact id,
+ * id prefix, or case-insensitive partial name. Exported so every bridge method
+ * that takes an agent ref resolves it the same way the spawners do (THR-893).
+ */
+export function findAgent(state: GameState, agentQuery: string) {
   const actors = state.graph.getNodesByType('actor');
   const query = agentQuery.trim().toLowerCase();
 
@@ -155,6 +160,36 @@ function findAgent(state: GameState, agentQuery: string) {
     || node.id.startsWith(agentQuery)
     || node.name.toLowerCase().includes(agentQuery.toLowerCase()),
   );
+}
+
+/**
+ * Picks the unified action a debug reader should describe for one actor (THR-893).
+ *
+ * An actor can hold several actions at once, and a spawned encounter is appended
+ * after whatever the simulation was already running — so "the first unresolved
+ * action" can be a different encounter from the one on screen. Order:
+ *   1. the explicit `actionId`, when given (no fallback — a miss is an error);
+ *   2. the newest unresolved action whose notification has been opened (viewed,
+ *      not resolved) — the encounter the player is looking at;
+ *   3. the newest unresolved action;
+ *   4. the newest action of any state.
+ */
+export function selectDebugReaderAction(
+  actions: readonly UnifiedAction[],
+  notifications: readonly EncounterNotification[],
+  actorId: string,
+  actionId?: string,
+): UnifiedAction | undefined {
+  if (actionId) return actions.find(a => a.actionId === actionId && a.actorId === actorId);
+  const own = actions.filter(a => a.actorId === actorId);
+  const unresolved = own.filter(a => !a.resolved);
+  const openIds = new Set(
+    notifications
+      .filter(n => n.agentId === actorId && n.viewed && !n.resolved && n.actionId)
+      .map(n => n.actionId as string),
+  );
+  const opened = unresolved.filter(a => openIds.has(a.actionId));
+  return opened[opened.length - 1] ?? unresolved[unresolved.length - 1] ?? own[own.length - 1];
 }
 
 function resolveTemplate(templateQuery: string): UnifiedActionTemplate | undefined {
@@ -722,35 +757,17 @@ export function applySpellStamp(state: GameState, agentQuery: string, spellQuery
   const agent = findAgent(state, agentQuery);
   if (!agent) return { success: false, message: `No agent matches '${agentQuery}'` };
   const templateId = spellQuery.startsWith('spell_') ? spellQuery : `spell_${spellQuery}`;
-  const spell = getSpellTemplate(templateId);
+  const spell = resolveSpellTemplate(state.graph, templateId);
   if (!spell) return { success: false, message: `No spell template '${templateId}'` };
   const graph = state.graph;
   const nodeId = spellDefinitionNodeId(spell.id);
   if (!graph.getNode(nodeId)) graph.addNode(spellDefinitionNode(spell));
 
-  const knowsId = `knows_spell_${agent.id}_${nodeId}`;
-  if (!graph.getOutgoingEdges(agent.id, 'knows_spell').some(e => e.target === nodeId)) {
-    graph.addEdge({
-      id: knowsId, source: agent.id, target: nodeId, type: 'knows_spell',
-      properties: { learnedTick: state.tick, sphereAffinity: spell.sphereAffinity, source: 'debug' },
-    });
-  }
-  const wielded = graph.getOutgoingEdges(agent.id, 'has_trait')
-    .filter(e => graph.getNode(e.target)?.properties.subcategory === 'spell');
-  if (!wielded.some(e => e.target === nodeId)) {
-    const cap = SLOT_CAPS.spell ?? 3;
-    if (wielded.length >= cap) {
-      const lowest = [...wielded].sort((a, b) => a.target.localeCompare(b.target))[0];
-      graph.removeEdge(lowest.id);
-    }
-    graph.addEdge({
-      id: `has_trait_${agent.id}_${nodeId}`, source: agent.id, target: nodeId, type: 'has_trait',
-      properties: {
-        level: 1, acquiredTick: state.tick, ticksRemaining: null, source: 'debug',
-        visibility: 'discoverable', modifiers: {},
-      },
-    });
-  }
+  // THR-1672: through the one grant seam — known, then wielded, evicting the lowest
+  // carried spell when the slots are full. Edges unchanged (spellGrant.pin.test.ts).
+  grantSpell(graph, agent.id, spell.id, {
+    source: 'debug', tick: state.tick, sphereAffinity: spell.sphereAffinity, evictWhenFull: true, wieldIfKnown: true,
+  });
 
   const caps = { ...((agent.properties.domainCapabilities as Record<string, number> | undefined) ?? {}) };
   const raised: string[] = [];

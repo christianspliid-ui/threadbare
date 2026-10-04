@@ -170,10 +170,11 @@ import { PREMONITION_EXPIRY_TICKS } from '../../data/premonition-constants';
 import { mulberry32 } from '../../lib/prng';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
-import { spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
+import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
+import { sphereWord } from '../shared/formatEssence';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
 import { DivineReceiptModal } from './DivineReceiptModal';
@@ -202,6 +203,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
+import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
 import {
   selectEntityNoticeBadges, buildRevealedNotices,
@@ -1529,6 +1531,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         threadTier: tieredEncounterState.threadTier,
         graph: gameState.graph,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+        payingSphere: archetype.sphereAlignment.primary,
         doomIdentityMatrix: gameState.doomIdentityMatrix,
         gameState,
         tick: gameState.tick,
@@ -1552,6 +1556,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isGateDutyEncounterStage,
     unifiedTemplateForStage,
     tieredEncounterState,
+    archetype.sphereAlignment.primary,
   ]);
 
   // ── Unified model for EncounterVeil: reuses existing adapters when available,
@@ -1571,6 +1576,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       graph: gameState.graph,
       threadTier: tieredEncounterState.threadTier,
       essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      // THR-1720 — price choices against the pool handleEncounterIntervene charges.
+      payingSphere: archetype.sphereAlignment.primary,
       tick: gameState.tick,
       gameState,
       // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
@@ -1580,7 +1587,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ? gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
         : undefined) ?? tieredEncounterState.activeActionSnapshot ?? undefined,
     });
-  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick]);
+  }, [tieredEncounterState, isGateDutyEncounterStage, unifiedTemplateForStage, encounterStageModel, gameState, gameState.graph, gameState.essencePool, gameState.tick, archetype.sphereAlignment.primary]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
@@ -1632,8 +1639,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // notifications become badges on the agent's thread row instead of toasts in
   // the global queue.
   const encounterBadges = useMemo(
-    () => selectEncounterBadges(gameState.encounterNotifications),
-    [gameState.encounterNotifications],
+    // THR-1727 — the badge names its encounter by the stakes / result line too.
+    () => selectEncounterBadges(
+      gameState.encounterNotifications,
+      (notif) => stakesLineForNotification(gameState, notif),
+    ),
+    // The line reads the action and the archive; both change only with the tick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState.encounterNotifications, gameState.tick],
+  );
+
+  // THR-1727 — each agent row's story line: the live encounter's stakes line,
+  // else the last chapter's result line.
+  const encounterStakesLines = useMemo(
+    () => selectEncounterStakesLines(
+      gameState,
+      threadedNodes.filter(n => n.category === 'agent').map(n => n.id),
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [threadedNodes, gameState.unifiedActions, gameState.chapterArchive, gameState.tick],
   );
 
   // THR-665: the same treatment for thread tugs — the shaping-tier "about to
@@ -3250,6 +3274,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
   const suppressedEncounterNotificationId = useRef<string | null>(null);
+  /**
+   * THR-1724 — notifications the player minimised. The auto-open scan skips
+   * them for as long as they stay pending; only the badge reopens them. A set,
+   * not the single suppression ref above, because two encounters can be set
+   * down in a row and the first must not pop back when the second is.
+   */
+  const minimisedEncounterNotificationIds = useRef<Set<string>>(new Set());
 
   // `openedAsInterrupt` no longer forces a resume (THR-1608): the central
   // auto-pause restores the clock to its state before the encounter opened.
@@ -3315,6 +3346,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           ),
         };
       });
+    }
+    closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
+  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+
+  /**
+   * THR-1724 — set the encounter down without deciding it. Nothing on the action
+   * or the notification changes: the step stays pending, the badge stays
+   * standing (Law 40), and the badge reopens it. The notification id is held in
+   * the auto-open suppression so the scan does not throw the veil straight back
+   * up; that suppression clears itself once the notification resolves.
+   */
+  const handleEncounterMinimize = useCallback(() => {
+    const minimisedId = tieredEncounterState?.notification?.id;
+    if (minimisedId) {
+      minimisedEncounterNotificationIds.current.add(minimisedId);
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // The badge counts unviewed notifications (`isBadgeWorthy`), and a badge
+      // reopen marks one viewed — so a minimise un-views it, or the second
+      // set-down would leave the encounter pending with no way back in.
+      setGameState(prev => ({
+        ...prev,
+        encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+          n.id === minimisedId && n.viewed ? { ...n, viewed: false } : n,
+        ),
+      }));
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
   }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
@@ -3686,8 +3742,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [applyAftermathReactionForAgent]);
 
   /** Intervention handler — player chose an intervention for the current encounter step */
-  const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {
-    if (!tieredEncounterState) return;
+  const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number): boolean => {
+    if (!tieredEncounterState) return false;
     const {
       notification,
       agentId,
@@ -3702,20 +3758,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       notification.choices,
       choiceId,
     );
-    if (!choice) return;
+    if (!choice) return false;
+
+    // THR-1720 — pre-roll rejection, as `handleCommitNudges` does for a hand:
+    // a choice the paying pool cannot cover changes nothing and says so. This
+    // used to floor the pool at zero and apply the choice anyway, so a choice
+    // costing 5 could be bought with 1.
+    const payingSphere = archetype.sphereAlignment.primary;
+    if (!spendAuthoredChoiceEssence(gameState.essencePool, essenceSpent, payingSphere).ok) {
+      handlePushToast({
+        id: `choice-reject-${notification.id}-${gameState.tick}`,
+        message: `Not enough ${sphereWord(payingSphere)} essence — the moment passes untouched.`,
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+        sphere: payingSphere,
+      });
+      return false;
+    }
 
     setGameState(prev => {
-      const newPool = { ...prev.essencePool };
-      if (essenceSpent > 0) {
-        newPool[archetype.sphereAlignment.primary] = Math.max(
-          0,
-          newPool[archetype.sphereAlignment.primary] - essenceSpent,
-        );
-      }
+      // Re-charged against `prev`: the pool can move between the check above
+      // and this update, and the rule is the same all-or-nothing one.
+      const spend = spendAuthoredChoiceEssence(prev.essencePool, essenceSpent, payingSphere);
+      if (!spend.ok) return prev;
 
       return {
         ...prev,
-        essencePool: newPool,
+        essencePool: spend.pool,
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           const matchesActiveAction =
             (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
@@ -3773,7 +3843,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       interventionType: choice.interventionType,
       probabilityBoost: choice.probabilityBoost,
     });
-  }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
+    return true;
+  }, [
+    tieredEncounterState,
+    setGameState,
+    archetype.sphereAlignment.primary,
+    gameState.essencePool,
+    gameState.tick,
+    handlePushToast,
+  ]);
 
   /**
    * THR-775 — commit the player's nudge hand for the current step.
@@ -3911,7 +3989,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
     if (!tieredEncounterState) return;
-    handleEncounterIntervene(choiceId, essenceSpent);
+    // THR-1720 — a rejected spend leaves the stage open, like a rejected hand.
+    if (!handleEncounterIntervene(choiceId, essenceSpent)) return;
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
@@ -3971,12 +4050,53 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         suppressedEncounterNotificationId.current = null;
       }
     }
+    // THR-1724 — a minimised encounter waits for its badge. Ids that are no
+    // longer pending are pruned so the set cannot grow without bound.
+    const minimised = minimisedEncounterNotificationIds.current;
+    if (minimised.size > 0) {
+      const pending = new Set(notifications.filter(n => !n.resolved).map(n => n.id));
+      for (const id of minimised) if (!pending.has(id)) minimised.delete(id);
+    }
     runEncounterAutoOpenScan(
-      notifications,
+      minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications,
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
   }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
+
+  // THR-1724 (review gate) — a minimised step the world resolved without the
+  // player (the engine does not hold steps; THR-1730) must not leave a badge
+  // that opens nothing. Once its step can no longer be opened — the same three
+  // checks `handleOpenEncounterFromNotification` makes — the notification is
+  // resolved, which retires the badge and prunes the minimised set. Pause-tier
+  // records carry no `autoResolveTick`, so nothing else would ever retire it.
+  useEffect(() => {
+    const minimised = minimisedEncounterNotificationIds.current;
+    if (minimised.size === 0) return;
+    const notifications = gameState.encounterNotifications ?? [];
+    const spent = new Set<string>();
+    for (const notif of notifications) {
+      if (!minimised.has(notif.id) || notif.resolved || notif.kind === 'aftermath') continue;
+      const { encounter, activeAction } = selectEncounterRuntimeForNotification(
+        notif,
+        gameState.encounterProgress,
+        gameState.unifiedActions,
+        gameState.tick,
+      );
+      const stillOpenable = Boolean(encounter)
+        && (notif.stepIndex === undefined || notif.stepIndex === encounter!.currentStepIndex)
+        && !isStepNotificationSupersededByAftermath(notif, activeAction, notifications);
+      if (!stillOpenable) spent.add(notif.id);
+    }
+    if (spent.size === 0) return;
+    for (const id of spent) minimised.delete(id);
+    setGameState(prev => ({
+      ...prev,
+      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+        spent.has(n.id) ? { ...n, resolved: true } : n,
+      ),
+    }));
+  }, [gameState.encounterNotifications, gameState.encounterProgress, gameState.unifiedActions, gameState.tick, setGameState]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
@@ -4816,6 +4936,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         // to — that is what the button now toggles — and label it as held.
         running={interruptAutoPause.heldRunning ?? running}
         clockHeld={interruptAutoPause.heldRunning !== null}
+        // THR-1724 — Law 52 (amended): the time control names the encounter
+        // holding the clock, since the veil no longer says "Paused" itself.
+        clockHeldBy={interruptAutoPause.heldRunning !== null && tieredEncounterState && encounterVeilModel
+          ? encounterVeilModel.header.title
+          : undefined}
+        encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
         speed={speed}
         handleToggleRunning={handleToggleRunningRespectingHold}
         doTick={doTick}
@@ -5338,6 +5464,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
                   appointmentBadges={appointmentBadges}
+                  encounterStakesLines={encounterStakesLines}
                   encounterBadges={encounterBadges}
                   onOpenEncounterBadge={handleOpenEncounterBadge}
                   tugBadges={tugBadges}
@@ -5689,6 +5816,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onBoost={handleEncounterBoost}
             onPeek={handleEncounterPeek}
             onDisregard={handleEncounterDisregard}
+            onMinimize={handleEncounterMinimize}
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             aftermathReactionTakenId={aftermathReactionTakenId}

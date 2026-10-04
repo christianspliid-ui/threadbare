@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-10-03
+last_validated_against: 2026-10-04
 validated_doctrine: prose@2
 ---
 
@@ -223,6 +223,10 @@ constraints the story must live inside. A brief whose fiction was written first 
 mechanics fitted afterwards is rejected on sight (the ruling's words: *"clearly written
 first, and then you are trying to mash it into a game"*).
 
+To judge what the corpus needs, read the latest encounter coverage map when one exists. The run
+behind it is THR-1723, and its rules are in [`content-judgments`](../content-judgments/SKILL.md).
+Its empty theme × Reach × Sphere cells are input to the category pick, not a quota.
+
 **Then** roll the premise — the hook feeds story candidates written inside the fixed
 design. Write 2–3 candidates from the rolled hooks and have review agents rank them
 against the design and the register rules before drafting:
@@ -310,6 +314,11 @@ Agent writes: `<slug>-draft.md`
 
 Dispatch sub-agent with `agents/editorial-prompt.md`, model `opus`.
 Agent writes: `<slug>-editorial.md` AND `<slug>-revised.md`
+
+> **Optional Jev pre-screen (advisory, never a gate).** Before dispatching, you may run the
+> narrator-mode and echo screens from [`content-judgments`](../content-judgments/SKILL.md) over
+> the draft's prose and hand the editorial agent the flagged lines as a worklist. Skip silently
+> when `TYPESAFE_API_KEY` is unset; the editorial pass runs the same either way.
 
 **Check verdict in agent output:**
 - `PASS` or `PASS WITH REVISIONS` → the agent produced both files. Proceed to Step 3.

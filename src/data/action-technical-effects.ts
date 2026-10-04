@@ -206,6 +206,8 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "Beat verb: appends a sphere-flavored `AttachmentEffect` (drawn from the ascendant's primary sphere) to the target artifact's `effects` array. The effect is then read by the standard effect resolver into the holder's modifiers. No-op if the target is not an artifact or the ascendant has no sphere.",
   'action.bestow':
     "Beat verb: mints a 'Divine Gift' artifact bound to the threaded agent via a `possesses` edge, carrying a passive reach bonus (BESTOW_REACH_BONUS in the ascendant's primary reach) and a per-tick quintessence regen (BESTOW_QUINTESSENCE_REGEN). Gated on thread awareness ≥ BESTOW_MIN_AWARENESS; no-op otherwise.",
+  'action.teach_spell':
+    "Beat verb (THR-1672): teaches the threaded agent one spell through the grant seam (`grantSpell`, `knows_spell { source: 'divine', grantedBy }`; carried while a slot is free). The pick is the god's primary sphere, then secondary, then the mortal's own tradition library, tier ≤ DIVINE_TEACH_MAX_TIER. Teaching a transgression costs DIVINE_TEACH_DARK_DOOM doom and DIVINE_TEACH_DARK_DETECTION detection in the mortal's region; each later cast of it adds DIVINE_TAUGHT_CAST_DETECTION. Gated on thread awareness ≥ BESTOW_MIN_AWARENESS; no-op otherwise.",
   'action.consecrate':
     "Sustained: on success spawns a `ControlEffect` that hallows the site, projecting a per-tick thread aura at a per-tick Spirit essence cost. Persists (ticked by phaseControlEffects) until essence lapses or it is deliberately broken.",
   'action.consecrate-relic':

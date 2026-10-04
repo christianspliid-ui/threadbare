@@ -94,3 +94,19 @@ export function spendNudgeEssence(
 
   return { ok: true, pool: next, spent };
 }
+
+/**
+ * THR-1720 — charge an authored encounter choice against the one pool that
+ * pays for it (the god's primary sphere, the pool the veil's cost row names).
+ *
+ * The same all-or-nothing rule as a nudge hand: a choice the pool cannot cover
+ * is rejected before the roll with the pool untouched. The handler used to
+ * floor the pool at zero instead, so a 5-essence choice could be bought for 1.
+ */
+export function spendAuthoredChoiceEssence(
+  pool: EssencePool,
+  cost: number,
+  payingSphere: SphereName,
+): NudgeSpendResult {
+  return spendNudgeEssence(pool, [{ sphere: payingSphere, cost }], payingSphere);
+}

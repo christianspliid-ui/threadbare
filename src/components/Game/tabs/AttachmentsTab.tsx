@@ -244,11 +244,36 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               {entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`}
             </p>
           )}
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            {entry.mechanicalSummary}
-            {entry.lossCondition ? ` \u00B7 ${entry.lossCondition}` : ''}
-            {entry.tags.length > 0 ? ` \u00B7 ${entry.tags.join(', ')}` : ''}
-          </p>
+          {/* THR-1672 — a book-taught spell names its book, read off the bearer's edge. */}
+          {entry.learnedFrom && (
+            <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }} data-testid={`attachment-learned-from-${entry.id}`}>
+              {`Learned from ${entry.learnedFrom}`}
+            </p>
+          )}
+          {/* THR-1572 \u2014 a generated spell speaks in words (Laws 4, 13): who taught it,
+              what it does, what it costs, what goes wrong. Each line only when it has
+              content; the words are derived from the template the engine casts. */}
+          {entry.spellWords ? (
+            <dl className="text-xs space-y-0.5" data-testid={`spell-words-${entry.id}`}>
+              {([
+                ['Taught by', entry.spellWords.taughtBy],
+                ['What it does', entry.spellWords.does],
+                ['What it costs', entry.spellWords.costs],
+                ['What goes wrong', entry.spellWords.wrong],
+              ] as const).filter(([, text]) => text).map(([label, text]) => (
+                <div key={label}>
+                  <dt className="inline font-semibold" style={{ color: 'var(--text-tertiary)' }}>{label}: </dt>
+                  <dd className="inline" style={{ color: 'var(--text-secondary)' }}>{text}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {entry.mechanicalSummary}
+              {entry.lossCondition ? ` \u00B7 ${entry.lossCondition}` : ''}
+              {entry.tags.length > 0 ? ` \u00B7 ${entry.tags.join(', ')}` : ''}
+            </p>
+          )}
           {isMuted && entry.inactiveReason && (
             <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
               Inactive: {entry.inactiveReason}
@@ -351,6 +376,12 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
               <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
                 {spell.tradition}
               </span>
+              {/* THR-1672 — who or what taught it, in the same words as a carried spell. */}
+              {(spell.grantedBy || spell.learnedFrom) && (
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }} data-testid={`known-spell-provenance-${spell.id}`}>
+                  {spell.grantedBy ? `Granted by ${spell.grantedBy}` : `Learned from ${spell.learnedFrom}`}
+                </span>
+              )}
             </div>
           ))}
         </section>

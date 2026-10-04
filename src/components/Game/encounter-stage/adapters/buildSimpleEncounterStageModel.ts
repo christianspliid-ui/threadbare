@@ -14,6 +14,7 @@ import type { EncounterNotification } from '../../../../types/encounterVisibilit
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
+import type { SphereName } from '../../../../types/index';
 import type { EncounterResolutionSnapshot } from '../../../../types/encounter';
 import type { ThreadTier } from '../types';
 import type {
@@ -52,6 +53,13 @@ export interface BuildSimpleEncounterStageModelArgs {
   /** GameState for intelligence consumption (THR-113). When omitted, `{intel:*}`
    * placeholders silently strip. */
   gameState?: GameState;
+  /**
+   * THR-1720 — the sphere `handleEncounterIntervene` bills a choice to. When
+   * given, a choice is priced against that one pool (read from `gameState`),
+   * so the row the veil dims and the spend the handler rejects agree. Absent,
+   * the summed `essence` is used as before.
+   */
+  payingSphere?: SphereName;
   /** Effective rarity tier after Focus buff was applied (THR-416). */
   effectiveRarityTier?: RarityTier;
   /**
@@ -312,12 +320,19 @@ export function buildSimpleEncounterStageModel(
   }));
 
   // ── Choices ──
+  // THR-1720 — priced against the pool the handler charges, not all twelve
+  // summed; otherwise a choice reads affordable and the commit is refused.
+  const payingSphere = args.payingSphere;
+  const payingEssence = payingSphere
+    ? (args.gameState?.essencePool?.[payingSphere] ?? 0)
+    : essence;
   const choices: EncounterStageChoiceModel[] = notification.choices.map(c => ({
     id: c.id,
     label: c.text,
     intent: c.text,
     essenceCost: c.essenceCost,
-    affordable: c.essenceCost <= essence,
+    affordable: payingEssence + 1e-9 >= c.essenceCost,
+    ...(payingSphere ? { payingSphere } : {}),
     costLabel: c.essenceCost > 0 ? formatEssenceLabel(c.essenceCost) : undefined,
     interventionType: c.interventionType,
     // THR-1048 — banded here, not at the surface. This adapter is the live

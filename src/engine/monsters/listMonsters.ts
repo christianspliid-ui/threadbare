@@ -11,13 +11,16 @@
  * `threat_radius`, or `motive` when the social gate did). It reads the projects the
  * caller passes; without them every list is empty.
  *
+ * `apex` (THR-1698) is the apex card the monster grew into (THR-1682), absent otherwise;
+ * extra to the pinned shape.
+ *
  * `cardMissing` is the M1 kill criterion made visible: a monster node with no
  * `monsterState` means the mint path is incomplete. It is extra to the pinned shape.
  */
 
 import type { WorldGraph } from '../graph';
 import type { FightRatingWord, FightTemper } from '../../types/fight';
-import type { MonsterFamilyId, MonsterState } from '../../types/monster';
+import type { MonsterApexId, MonsterFamilyId, MonsterState } from '../../types/monster';
 import { isMonster } from './isMonster';
 import { readTemper } from '../fights/opponentCard';
 import { huntReason, type HuntReason } from './hunts';
@@ -50,6 +53,8 @@ export interface ListedMonster {
   readonly lairId: string;
   readonly lairTier: 'major' | 'legendary' | 'cleared';
   readonly family: MonsterFamilyId;
+  /** The apex the monster grew into when its lair went legendary (THR-1682), else absent (THR-1698). */
+  readonly apex?: MonsterApexId;
   readonly dread: FightRatingWord;
   readonly might: FightRatingWord;
   readonly clockSize: number;
@@ -107,6 +112,7 @@ export function listMonsters(graph: WorldGraph, projects: readonly HuntProjectVi
       lairId,
       lairTier: lairTierOf(graph, lairId),
       family: card?.family ?? 'beast',
+      ...(card?.apex ? { apex: card.apex } : {}),
       dread: card?.dread ?? 'fair',
       might: card?.might ?? 'fair',
       clockSize: card?.clockSize ?? 0,

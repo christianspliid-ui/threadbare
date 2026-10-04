@@ -631,7 +631,10 @@ export type EncounterAftermathReactionEffect =
     readonly kind: 'apply_condition';
     /** ID of an existing trait/condition node in the graph. */
     readonly conditionTraitId: string;
-    /** How long the condition lasts in ticks. 0 = indefinite (no auto-expiry). */
+    /**
+     * How long the condition lasts in ticks. 0 = indefinite (no auto-expiry).
+     * Omitted → the condition's `CONDITION_DURATIONS` term, else indefinite (THR-1697).
+     */
     readonly durationTicks?: number;
     /** Intensity 0-1. Stored on the has_trait edge. */
     readonly intensity?: number;
@@ -784,6 +787,26 @@ export type EncounterAftermathReactionEffect =
      * template's own duration stands.
      */
     readonly durationOverride?: number | null;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * THR-1672 — the god teaches a mortal a spell (acquisition channel 1, the nudge
+     * card's "leave something behind" grant). A card fired by the god is the god
+     * teaching, so the grant is always `source: 'divine'` with `grantedBy` the player
+     * ascendant, written through the one grant seam (`grantSpell`). Teaching a
+     * transgression costs the god doom and detection, exactly as the Teach a Spell card.
+     *
+     * No pick (the mortal already knows all the god could teach) skips the grant with a
+     * `spell.grant_skipped` trace; the card's other effects still apply.
+     */
+    readonly kind: 'spell_grant';
+    /** Who is taught. Defaults to the encounter's actor. Accepts scene sentinels. */
+    readonly targetAgentId?: string;
+    /** `'god'`: the god's spheres, then the mortal's tradition. `'tradition'`: the tradition only. */
+    readonly selector: 'god' | 'tradition';
+    /** Highest tier taught; defaults to `DIVINE_TEACH_MAX_TIER`. */
+    readonly maxTier?: number;
     readonly when?: EffectPredicate;
   }
   // ─── World-shaping effects (THR-115) ──────────────────────────────────────
@@ -2709,6 +2732,15 @@ export interface UnifiedActionTemplate {
   readonly description?: string;
 
   /**
+   * THR-1727 — the parts of the encounter's **stakes line** (`[lead], [actor] must
+   * [goal] — or [risk].`) and its **result line**. Where present, the stakes line
+   * replaces `description` on the encounter veil; `description` stays as the
+   * fallback for a template without stakes and for every other reader.
+   * Builder: `src/engine/encounters/stakesLine.ts`.
+   */
+  readonly stakes?: import('./encounterStakes').EncounterStakes;
+
+  /**
    * Technical game-mechanical statement of what this action does (THR-604).
    * 1–3 sentences, wiki-facing register — names the state that changes (node
    * property, edge, condition, resource, visibility), the direction/nature of the
@@ -3171,6 +3203,13 @@ export interface UnifiedAction {
   readonly spawnedFromSeedId?: string;
   /** Seed label that spawned this action, for causation edge properties (THR-143). */
   readonly spawnedFromSeedLabel?: string;
+  /**
+   * THR-1727 — why the mortal is here, frozen by `stampStakesContext` on the tick
+   * path once the encounter action exists, so the stakes line and the result line
+   * share one lead. Absent on an action that has not been stamped yet (or an old
+   * save); readers rebuild it from the live receipt then (fail-open).
+   */
+  readonly stakesContext?: import('./encounterStakes').StakesContext;
 }
 
 /**

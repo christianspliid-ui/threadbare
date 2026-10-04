@@ -46,6 +46,7 @@ import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { emitTrace } from './traceBuffer';
+import { rememberedStakesLine } from './encounters/stakesLine';
 import type { ChapterArchivedTrace } from '../types/trace';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────
@@ -190,7 +191,12 @@ export function buildChapterRecord(
       steps.push(buildStepRecord(template, action, index, ctx, runtime));
     }
 
-    return { ...base, openingProse, steps };
+    // THR-1727 — the ledger, the thread row and the badge name the chapter by this
+    // line. Built from the stamped stakes context, so it shares the opening line's lead.
+    const rawStakesLine = rememberedStakesLine(action, template, graph, actorName);
+    const stakesLine = rawStakesLine ? enrichProse(rawStakesLine, ctx) : undefined;
+
+    return { ...base, ...(stakesLine ? { stakesLine } : {}), openingProse, steps };
   } catch {
     // Fail-soft: a malformed template/context must not block resolution or lose the chapter.
     return { ...base, openingProse: FADED_STEP_PROSE, steps: [] };

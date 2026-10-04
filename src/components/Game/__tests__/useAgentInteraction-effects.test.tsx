@@ -20,7 +20,10 @@ vi.mock('../hooks/useInterventionAudio', () => ({
 }));
 
 // Mock unified-action-templates
-vi.mock('../../../data/unified-action-templates', () => ({
+vi.mock('../../../data/unified-action-templates', async (importOriginal) => ({
+  // THR-1672: the hook imports the Teach a Spell preview, whose module reads the
+  // catalogue at load, so the real exports stay and only these two are replaced.
+  ...(await importOriginal<typeof import('../../../data/unified-action-templates')>()),
   getUnifiedTemplateById: vi.fn(),
   // THR-501: the agent hand now draws from AGENT_INTERVENTION_TEMPLATES via
   // getTargetActionSlots (mocked below to return []), so the contents are irrelevant here.

@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-10-03
+last_validated_against: 2026-10-04
 validated_doctrine: prose@2
 ---
 
@@ -533,7 +533,7 @@ For each encounter file you write or rewrite:
 4. **For each template, settle the game design first, then write the fields directly in narrator mode** (the scene-first workflow is retired — Doctrine v2 / the 2026-08-24 game-design-first ruling): what is tested, what the outcomes cost, what the world remembers — then state the situation plainly into the template fields. Writing a scene and extracting fields from it is how in-situ prose got in.
 4b. **Compose the hand** — walk steps 3–3b–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): author the 0–2 specials, declare the `deal` fill (count, tags, exclude), write the band fragments and the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
-6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass
+6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass. *Optional, advisory:* the narrator-mode and who-acts screens in [`content-judgments`](../content-judgments/SKILL.md) can order which fields you read hardest. They never replace the checklist, and skip silently with no `TYPESAFE_API_KEY`.
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
 8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
 

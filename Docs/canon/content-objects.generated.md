@@ -8,7 +8,7 @@ generator: npm run generate-content-objects
 
 > **GENERATED — do not hand-edit.** Rendered by `npm run generate-content-objects` from the registry (`src/data/content-objects.ts`) and a static census of the catalogs it names. The hand page — what the kinds mean and how to add one — is [`content-objects.md`](content-objects.md).
 
-13 kinds · 1281 claimed entries across 41 catalogs.
+13 kinds · 1285 claimed entries across 41 catalogs.
 
 ## Drift
 
@@ -25,8 +25,8 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 
 | Kind | Game word | Entries | Catalogs (claimed/total) | Instantiates as | Opens | Gate | Owning system | Badge |
 |---|---|---|---|---|---|---|---|
-| `encounter_template` | Encounter | 556 | `UNIFIED_ACTION_TEMPLATES` (556/743)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (80/80) | `encounter_template` | card only | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
-| `action_template` | Action | 187 | `UNIFIED_ACTION_TEMPLATES` (187/743)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/80)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
+| `encounter_template` | Encounter | 557 | `UNIFIED_ACTION_TEMPLATES` (557/745)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (81/81) | `encounter_template` | card only | `npm run check:encounter` | Encounters & Dilemmas | 🟢 LIVE |
+| `action_template` | Action | 188 | `UNIFIED_ACTION_TEMPLATES` (188/745)<br>`LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` (0/81)<br>`THREAD_CREATION_TEMPLATES` (6/6)<br>`THREAD_MANAGEMENT_TEMPLATES` (2/2)<br>`AGENT_INTERVENTION_TEMPLATES` (44/44) | `action_template` | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
 | `undertaking_template` | Undertaking | 119 | `MERCHANT_STRATEGIC_TEMPLATES` (6/6)<br>`BUILDER_STRATEGIC_TEMPLATES` (9/9)<br>`SCHOLAR_STRATEGIC_TEMPLATES` (7/7)<br>`ZEALOT_STRATEGIC_TEMPLATES` (6/6)<br>`COURT_STRATEGIC_TEMPLATES` (15/15)<br>`WARLORD_STRATEGIC_TEMPLATES` (9/9)<br>`WANDERER_STRATEGIC_TEMPLATES` (4/4)<br>`FACTORY_STRATEGIC_TEMPLATES` (0/0)<br>`UNDERTAKING_CELL_TEMPLATES` (63/63) | `undertaking` | card → codex | `npm run check:undertaking` | Ambitions & Undertakings | 🟢 LIVE |
 | `item_template` | Item | 134 | `REWARD_POSSESSIONS` (111/111)<br>`TREASURE_MAPS` (5/5)<br>`STARTER_POSSESSIONS` (8/8)<br>`ANOMALY_SIGNATURE_ARTIFACTS` (10/10) | `item` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
 | `legendary_template` | Legendary artifact | 3 | `ARTIFACT_TEMPLATES` (3/3) | `legendary_artifact` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
@@ -35,9 +35,9 @@ No drift: every catalog id is claimed by a kind, and every kind's prefixes claim
 | `trait_template` | Trait | 59 | `CORE_TRAIT_DEFINITIONS` (10/10)<br>`PERSONALITY_TRAIT_DEFINITIONS` (16/16)<br>`MASTERY_TRAIT_DEFINITIONS` (7/7)<br>`REPUTATION_TRAIT_DEFINITIONS` (17/17)<br>`ECONOMIC_TRAIT_DEFINITIONS` (5/8)<br>`TEMPER_TRAIT_DEFINITIONS` (4/4) | `trait` | card only | `npm run check:attachment` | Personality & Emergent Traits | 🟢 LIVE |
 | `agreement_template` | Agreement | 7 | `AGREEMENT_REWARD_TEMPLATES` (7/7) | `agreement` | card → codex | `npm run check:attachment` | Secrets & Favors | 🟢 LIVE |
 | `companion_template` | Companion | 9 | `COMPANION_TEMPLATES` (9/9) | `companion` | card → codex | `npm run check:attachment` | Attachments, Items & Possessions | 🟢 LIVE |
-| `ambition_template` | Ambition | 20 | `AMBITION_TEMPLATES` (10/10)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
+| `ambition_template` | Ambition | 21 | `AMBITION_TEMPLATES` (11/11)<br>`GRIEVANCE_AMBITION_TEMPLATES` (3/3)<br>`EVENT_MINTED_AMBITION_TEMPLATES` (7/7) | `ambition` | card → codex | — | Ambitions & Undertakings | 🟢 LIVE |
 | `omen_template` | Omen | 44 | `OMEN_TEMPLATES` (44/44) | _(nothing)_ | card only | — | Omens & Atmospheric Pressure | 🟢 LIVE |
-| `nudge_card` | Card | 37 | `NUDGE_CARD_LIBRARY` (37/37) | _(nothing)_ | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
+| `nudge_card` | Card | 38 | `NUDGE_CARD_LIBRARY` (38/38) | _(nothing)_ | card → codex | — | Encounters & Dilemmas | 🟢 LIVE |
 
 ## Tag axes
 

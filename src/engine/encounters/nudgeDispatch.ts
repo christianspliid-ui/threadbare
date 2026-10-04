@@ -55,7 +55,7 @@ import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { applyRawDetectionDelta } from './detectionPressure';
 import { recordDetectionCrossings } from '../orchestrator/phaseDetectionPressure';
 import { driftTowardPole } from './branchDecision';
-import { resolveRegionId } from '../graphConditions';
+import { resolveAgentRegionId } from '../agentDetection';
 import { UNDERTOW_DRIFT_MAGNITUDE } from '../../data/nudge-constants';
 import { accelerateDoomClock, decelerateDoomClock } from '../doomClock';
 import { emitTrace } from '../traceBuffer';
@@ -248,7 +248,7 @@ export function dispatchNudgeCommitments(
       effects: grants,
     };
     try {
-      const applied = applyEncounterAftermathReaction(nextState, action, reaction, tick, runtime);
+      const applied = applyEncounterAftermathReaction(nextState, action, reaction, tick, runtime, { recordCrossings: recordDetectionCrossings });
       nextState = applied.state;
       mutationSummary = applied.mutationSummary;
     } catch (error) {
@@ -291,6 +291,7 @@ export function dispatchNudgeCommitments(
           result.toPressure,
           action?.actorId,
           seedsBefore,
+          nextState.graph,
         )
         : seedsBefore;
       nextState = {
@@ -411,11 +412,10 @@ export function dispatchNudgeCommitments(
  * nothing writes — so every live write pooled under the fallback region, and once
  * crossings became live a mortal could tip the whole world's pooled pressure and
  * draw a strike for attention someone else gathered.
+ *
+ * THR-1672: the walk itself moved to `agentDetection.resolveAgentRegionId`, so the god's
+ * teaching price resolves the region exactly as this channel does.
  */
 function resolveActorRegionId(state: GameState, action: UnifiedAction | undefined): string | undefined {
-  const actorId = action?.actorId;
-  if (!actorId) return undefined;
-  const locatedAt = state.graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
-  if (!locatedAt) return undefined;
-  return resolveRegionId(state.graph, locatedAt);
+  return resolveAgentRegionId(state.graph, action?.actorId);
 }

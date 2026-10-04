@@ -1,14 +1,9 @@
 import type { ReachDomain } from '../../types/traits';
 import { DOMAIN_WORD_SCALES } from '../../data/domain-words';
 import { getDomainProse } from '../../data/domain-prose';
-import { MAGNITUDE_DOTS_TOTAL } from '../../data/item-stat-bands';
-import { StepDots } from './StepDots';
-import { Tooltip } from './Tooltip';
+import { REACH_DISPLAY_NAMES, ReachStanding } from './ReachStanding';
 
-const DOMAIN_NAMES: Record<ReachDomain, string> = {
-  iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
-  heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
-};
+const DOMAIN_NAMES = REACH_DISPLAY_NAMES;
 
 interface DomainCardProps {
   reach: ReachDomain;
@@ -60,46 +55,9 @@ export function DomainCard({ reach, tier, agentName, gender, revealed }: DomainC
 
       {/* Text block */}
       <div className="flex-1 flex flex-col justify-center" style={{ padding: '8px 12px' }}>
-        <div className="flex items-baseline gap-1">
-          <Tooltip id={`reach.${reach}`}>
-            <span
-              className="text-xs font-semibold underline decoration-dotted cursor-help"
-              style={{
-                color: revealed ? 'var(--accent-gold)' : 'var(--text-tertiary)',
-                fontVariant: 'small-caps',
-                letterSpacing: '0.1em',
-              }}
-            >
-              {DOMAIN_NAMES[reach]}
-            </span>
-          </Tooltip>
-          <span
-            className="text-xs"
-            style={{
-              color: 'var(--text-tertiary)',
-              fontVariant: 'small-caps',
-              letterSpacing: '0.05em',
-            }}
-          >
-            &middot; {tierWord}
-          </span>
-        </div>
-        {/* Magnitude dots — a level, not progress. Tier 0–4 → 1–5 filled.
-            Reveal-gated: unrevealed domains show no dots (same as the ??? word). */}
-        {revealed && (
-          <div
-            className="mt-1"
-            role="img"
-            aria-label={`${DOMAIN_NAMES[reach]} magnitude ${clampedTier + 1} of ${MAGNITUDE_DOTS_TOTAL}`}
-          >
-            <StepDots
-              variant="magnitude"
-              totalSteps={MAGNITUDE_DOTS_TOTAL}
-              currentStepIndex={clampedTier + 1}
-              size={6}
-            />
-          </div>
-        )}
+        {/* THR-1724 — name, rank word and magnitude dots are the shared
+            `ReachStanding` primitive, so the encounter title row reads the same. */}
+        <ReachStanding reach={reach} tier={clampedTier} revealed={revealed} layout="stacked" />
         <p
           className="text-xs mt-0.5"
           style={{

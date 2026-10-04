@@ -369,6 +369,13 @@ export function resolveActorSphere(graph: WorldGraph, agentId: string): SphereNa
  * invariant is what lets `{cast:<key>}` always resolve for a key the template
  * declares, so authored prose never has to guard a reference to its own cast.
  * Capped at {@link CAST_CONTEXT_MAX_MEMBERS}. Returns undefined for an empty bundle.
+ *
+ * THR-1726 — the cap admits by priority, not by bundle position. A slice template
+ * composes inherited setting defaults *ahead of* its own subject (`[...wayside,
+ * ...rural, BRIDGE_KEEPER_SPEC]`), and two classes of defaults are exactly six
+ * keys, so a positional cap cut the one person the prose names and
+ * `{cast:bridge_keeper}` stripped to "The keeper, , takes two coppers". Admission
+ * order is {@link castAdmissionRank}; the map still comes out in bundle order.
  */
 export function resolveSceneCastContext(
   graph: WorldGraph,
@@ -377,25 +384,52 @@ export function resolveSceneCastContext(
 ): Record<string, SceneCastMember> | undefined {
   if (!supportBundle || supportBundle.length === 0) return undefined;
 
+  const eligible = supportBundle
+    .map((spec, index) => ({ spec, index, binding: bindings?.find(b => b.key === spec.key) }))
+    .filter(entry => entry.spec.delivery !== 'blocked-primitive');
+  const admitted = new Set(
+    [...eligible]
+      .sort((a, b) =>
+        castAdmissionRank(a.spec, a.binding) - castAdmissionRank(b.spec, b.binding) || a.index - b.index)
+      .slice(0, CAST_CONTEXT_MAX_MEMBERS)
+      .map(entry => entry.index),
+  );
+
   const cast: Record<string, SceneCastMember> = {};
-  for (const spec of supportBundle) {
-    if (Object.keys(cast).length >= CAST_CONTEXT_MAX_MEMBERS) break;
-    if (spec.delivery === 'blocked-primitive') continue;
+  for (const { spec, index, binding } of eligible) {
+    if (!admitted.has(index)) continue;
 
     const authoredName = spec.kind === 'actor' ? spec.spawnName : spec.fallbackName;
     const role = spec.kind === 'actor' ? spec.supportRole : spec.sublocationTypeId;
 
-    const binding = bindings?.find(b => b.key === spec.key);
+    // `||`, not `??`: a bound node with an empty name is no name (Law 43).
     const boundName = binding ? graph.getNode(binding.nodeId)?.name : undefined;
 
     cast[spec.key] = {
-      name: boundName ?? authoredName ?? spec.key,
+      name: boundName || authoredName || spec.key,
       role,
       reused: binding?.reused ?? false,
     };
   }
 
   return Object.keys(cast).length > 0 ? cast : undefined;
+}
+
+/**
+ * THR-1726 — who the cast cap keeps first (lower ranks first, ties in bundle order):
+ * a scene's own bound member (0), then any bound member (1), then the scene's own
+ * unbound spec (2), then unbound setting defaults (3). "Scene's own" is any delivery
+ * other than `pre-seeded` — every inherited setting default is `pre-seeded`
+ * (`default-support-bundles.ts`), and a template's subject is the spec it authored
+ * to materialize.
+ */
+function castAdmissionRank(
+  spec: EncounterSupportBundle[number],
+  binding: EncounterSupportBinding | undefined,
+): number {
+  const sceneOwn = spec.delivery !== 'pre-seeded';
+  if (binding) return sceneOwn ? 0 : 1;
+  return sceneOwn ? 2 : 3;
 }
 
 /**

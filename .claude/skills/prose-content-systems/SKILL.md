@@ -15,7 +15,7 @@ description: >
   prose", "movement content", "content table", "write prose", "foreshadowing
   clause", "motive receipt".
 model: opus
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-04
 validated_doctrine: prose@2
 ---
 
@@ -52,6 +52,8 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 3. **Is every fact stated, in narrator mode?** *(Amended 2026-08-25 — this question used to demand "a moment, not a label," and its exemplar was camera work ("Their eyes met."): it taught the in-situ mode Doctrine v2 retired, three lines above the paragraph retiring the workflow that produced it.)* A plainly stated fact is not a defect. "A rival noticed" fails for naming nobody and no consequence, not for being unliterary — "A Thornweave scout saw it happen and has left for the guild quarter" is the standard: named, direct, consequential.
 4. **Would the player sometimes prefer this outcome over success?** (For failure/complication content specifically.) The best complications make the player think "oh no — oh, that's actually interesting." If the failure content is just punishment, it's not cool failure.
 5. **Does this serve the three-beat loop?** Content surfaces during portfolio scan (Beat 1), curated moments (Beat 2), or aftermath (Beat 3). Which beat does this content serve? Is it pulling its weight in that beat?
+
+**Batch screens (optional, advisory).** On a batch, the who-acts screen (does each choice give the action to the god, not the mortal) and the narrator-mode screen in [`content-judgments`](../content-judgments/SKILL.md) can order which entries you read first. They do not answer the five questions for you, and they skip silently with no `TYPESAFE_API_KEY`.
 
 **Settle the design first, then write the fields directly in narrator mode.** *(The scene-first workflow was retired 2026-08-25 — Doctrine v2 and the game-design-first ruling; writing a scene and extracting fields from it is how in-situ prose got in.)* Decide what is tested, what outcomes cost, and what the world remembers; then state the situation plainly into the template fields — a GM's account of events, never an inhabited scene.
 
