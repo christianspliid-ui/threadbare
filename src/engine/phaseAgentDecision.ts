@@ -1340,6 +1340,7 @@ export function phaseAgentDecision(
           //    where legacy declined to, and a board that chooses an undertaking
           //    leaves `decision.selected` in place *deliberately*: the strategic
           //    execution path below fails soft onto it.
+          { const g: any = globalThis; if (g.__STACKS) { const k = 'BOARD | strategicOnBoard=' + (scoredStrategic.length > 0) + ' winner=' + (boardWinner?.family ?? 'none'); g.__STACKS[k] = (g.__STACKS[k] ?? 0) + 1; } }
           if (UNIFIED_DECISION_BOARD_MODE === 'live') {
             if (!boardWinner) {
               decisionFamily = 'idle';
@@ -2317,7 +2318,8 @@ export function phaseAgentDecision(
           // If no reachable content location → agent stays idle (fail-soft)
         }
       }
-    } catch {
+    } catch (err) {
+      { const g: any = globalThis; if (g.__STACKS) { const k = 'CATCH | ' + String((err as Error)?.message ?? err) + ' @ ' + String((err as Error)?.stack ?? '').split('\n')[1]?.trim(); g.__STACKS[k] = (g.__STACKS[k] ?? 0) + 1; } }
       // Fail-soft: per-agent error → skip this agent, continue loop
       continue;
     }

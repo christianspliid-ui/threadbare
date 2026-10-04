@@ -1,0 +1,127 @@
+{
+ "order": "template_hash",
+ "constantSeen": "template_hash",
+ "ticks": 200,
+ "seeds": {
+  "99": {
+   "totalDecisions": 785,
+   "decisionCounts": {
+    "start_local": 673,
+    "queue_movement": 74,
+    "strategic_project": 28,
+    "strategic_instant": 10
+   },
+   "idleReasons": {},
+   "actionsAttempted": 1120,
+   "actionsCompleted": 725,
+   "stepsAttempted": 2350,
+   "stepsSucceeded": 1539,
+   "deciderTicks": 4315,
+   "busyDeciderTicks": 3984,
+   "busyShare": 0.923,
+   "aliveStart": 643,
+   "aliveEnd": 960,
+   "actionLenMedian": 23,
+   "actionLenMean": 22.69,
+   "actionsEnded": 1012,
+   "startLocalByStepCount": {
+    "2": 496,
+    "3": 177,
+    "?": 0
+   },
+   "matchCount": {
+    "other|sameTickMatch": 672,
+    "townrep|noDecisionEver": 3,
+    "other|noDecisionEver": 43,
+    "other|stale:start_local:otherTpl": 157,
+    "townrep|stale:start_local:otherTpl": 179,
+    "other|stale:strategic_project:otherTpl": 19,
+    "other|stale:queue_movement:sameTpl": 15,
+    "townrep|stale:queue_movement:otherTpl": 19,
+    "other|stale:queue_movement:otherTpl": 14,
+    "townrep|stale:strategic_project:otherTpl": 15,
+    "townrep|stale:strategic_instant:otherTpl": 2,
+    "townrep|stale:queue_movement:sameTpl": 1,
+    "other|stale:strategic_instant:otherTpl": 1
+   },
+   "samples": [
+    {
+     "tick": 3,
+     "ld": {
+      "tick": 1,
+      "t": "encounter.assess_holdings",
+      "d": "start_local"
+     },
+     "a": {
+      "actionId": "ua_22",
+      "actorId": "ind_8",
+      "templateId": "reputation.veil.the_silent_chamber",
+      "targetId": "loc_5",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 3,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 2,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    },
+    {
+     "tick": 3,
+     "ld": {
+      "tick": 1,
+      "t": "encounter.decipher_old_markings",
+      "d": "start_local"
+     },
+     "a": {
+      "actionId": "ua_23",
+      "actorId": "ind_12",
+      "templateId": "reputation.heart.pilgrims_offering",
+      "targetId": "loc_33",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 3,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 2,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    },
+    {
+     "tick": 3,
+     "ld": {
+      "tick": 1,
+      "t": "encounter.study_surroundings",
+      "d": "start_local"
+     },
+     "a": {
+      "actionId": "ua_24",
+      "actorId": "ind_16",
+      "templateId": "encounter.town.toll_gate_writ",
+      "targetId": "loc_27",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 3,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 2,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    }
+   ]
+  }
+ },
+ "stacks": {
+  "BOARD | strategicOnBoard=true winner=encounter": 962,
+  "other | at phaseAgentDecision (planner-ab.mjs:236419:20) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245409:70 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245409:28)": 793,
+  "townrep | at phaseAgentDecision (planner-ab.mjs:236419:20) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245409:70 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245409:28)": 219,
+  "CATCH | Cannot read properties of undefined (reading 'name') @ at phaseAgentDecision (file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:236566:60)": 339,
+  "BOARD | strategicOnBoard=true winner=strategic_action": 38,
+  "BOARD | strategicOnBoard=false winner=encounter": 125,
+  "other | at evaluateEncounterSeeds (planner-ab.mjs:241312:29) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245386:62 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245386:17)": 130,
+  "townrep | at evaluateEncounterSeeds (planner-ab.mjs:241312:29) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245386:62 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245386:17)": 1
+ }
+}

@@ -276,7 +276,7 @@ export type CapFillLocalOrder = 'walk' | 'template_hash';
  * The plan says a failed guard rail ships `'walk'` plus a separate decision.
  * TODO(THR-1687): flip to `'template_hash'` once the design lane has read the shift above.
  */
-export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'walk';
+export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = ((globalThis as any).__CAP_LOCAL_ORDER ?? 'walk') as CapFillLocalOrder;
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */

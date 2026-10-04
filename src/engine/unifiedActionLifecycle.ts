@@ -92,6 +92,7 @@ export interface CreateUnifiedActionParams {
  * scaled by the target's attachment tier when the step opts in (THR-1100).
  */
 export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedAction {
+  { const g: any = globalThis; if (g.__STACKS) { const k = (new Error().stack ?? '').split('\n').slice(2, 6).map(l => l.trim().replace(/\(.*[\\/]/, '(')).join(' < '); const fam = /encounter\.town|reputation\./.test(params.templateId) ? 'townrep' : 'other'; g.__STACKS[fam + ' | ' + k] = (g.__STACKS[fam + ' | ' + k] ?? 0) + 1; } }
   const {
     actorId, templateId, targetId, scale, source, tick, template, rng,
     essencePaid, supportBindings, clearanceGateIds, effectiveRarityTier,

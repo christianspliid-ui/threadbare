@@ -1,0 +1,126 @@
+{
+ "order": "walk",
+ "constantSeen": "walk",
+ "ticks": 200,
+ "seeds": {
+  "42": {
+   "totalDecisions": 863,
+   "decisionCounts": {
+    "queue_movement": 66,
+    "start_local": 753,
+    "strategic_project": 32,
+    "strategic_instant": 3,
+    "strategic_control": 9
+   },
+   "idleReasons": {},
+   "actionsAttempted": 977,
+   "actionsCompleted": 576,
+   "stepsAttempted": 2090,
+   "stepsSucceeded": 1337,
+   "deciderTicks": 4044,
+   "busyDeciderTicks": 3808,
+   "busyShare": 0.942,
+   "aliveStart": 509,
+   "aliveEnd": 653,
+   "actionLenMedian": 22,
+   "actionLenMean": 22.78,
+   "actionsEnded": 882,
+   "startLocalByStepCount": {
+    "1": 0,
+    "2": 518,
+    "3": 235,
+    "?": 0
+   },
+   "matchCount": {
+    "other|sameTickMatch": 752,
+    "other|noDecisionEver": 20,
+    "other|stale:queue_movement:sameTpl": 15,
+    "other|stale:start_local:otherTpl": 160,
+    "townrep|stale:queue_movement:sameTpl": 1,
+    "other|stale:queue_movement:otherTpl": 20,
+    "townrep|stale:queue_movement:otherTpl": 2,
+    "other|stale:strategic_project:otherTpl": 10,
+    "townrep|stale:start_local:otherTpl": 11,
+    "other|stale:strategic_control:otherTpl": 1,
+    "other|stale:strategic_instant:otherTpl": 1
+   },
+   "samples": [
+    {
+     "tick": 17,
+     "ld": {
+      "tick": 11,
+      "t": "reputation.stone.the_jury_of_the_ruined",
+      "d": "queue_movement"
+     },
+     "a": {
+      "actionId": "ua_103",
+      "actorId": "ind_10",
+      "templateId": "reputation.stone.the_jury_of_the_ruined",
+      "targetId": "loc_18",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 17,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 2,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    },
+    {
+     "tick": 73,
+     "ld": {
+      "tick": 51,
+      "t": "eye.reckoning.verdict_that_burns",
+      "d": "queue_movement"
+     },
+     "a": {
+      "actionId": "ua_378",
+      "actorId": "ind_8",
+      "templateId": "reputation.veil.the_veiled_consultation",
+      "targetId": "loc_5",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 73,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 3,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    },
+    {
+     "tick": 109,
+     "ld": {
+      "tick": 100,
+      "t": "encounter.listen_for_rumors",
+      "d": "start_local"
+     },
+     "a": {
+      "actionId": "ua_555",
+      "actorId": "ind_11",
+      "templateId": "encounter.town.drowned_mans_testimony",
+      "targetId": "loc_4",
+      "scale": "local",
+      "source": "agent",
+      "startTick": 109,
+      "currentStep": 0,
+      "stepProgress": 0,
+      "stepDuration": 2,
+      "resolved": false,
+      "effectiveTier": "invisible"
+     }
+    }
+   ]
+  }
+ },
+ "stacks": {
+  "BOARD | strategicOnBoard=true winner=encounter": 908,
+  "other | at phaseAgentDecision (planner-ab.mjs:236419:20) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245409:70 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245409:28)": 873,
+  "CATCH | Cannot read properties of undefined (reading 'name') @ at phaseAgentDecision (file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:236566:60)": 134,
+  "BOARD | strategicOnBoard=false winner=encounter": 116,
+  "BOARD | strategicOnBoard=true winner=strategic_action": 44,
+  "townrep | at phaseAgentDecision (planner-ab.mjs:236419:20) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245409:70 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245409:28)": 14,
+  "other | at evaluateEncounterSeeds (planner-ab.mjs:241312:29) < at file:///C:/Users/chris/Dev/Projects/wt-dl-1004a/.cache/dl/planner-ab.mjs:245386:62 < at runInlinePhase (planner-ab.mjs:245116:17) < at runTick (planner-ab.mjs:245386:17)": 107
+ }
+}
