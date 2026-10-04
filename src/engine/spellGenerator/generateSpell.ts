@@ -218,7 +218,7 @@ export function generateSpell(req: SpellGenRequest): GeneratedSpell | null {
       const kind = draw<'exhaust' | 'exhausted' | 'drain'>('strain.kind', P.castStrainKindWeights) ?? 'exhaust';
       if (kind === 'exhaust') costs.push({ type: 'tick_exhaust', ticks: ctx.t(P.castStrainExhaustTicks) });
       else if (kind === 'exhausted') costs.push({ type: 'condition_inflict', template: 'exhausted' });
-      else costs.push({ type: 'reach_drain', reach: roll('strain.drain_reach') < 0.5 ? 'veil' : reach, amount: r2(ctx.m('strain.drain') * P.castStrainDrainShare) });
+      else costs.push({ type: 'reach_drain', reach: roll('strain.drain_reach') < P.castStrainDrainVeilChance ? 'veil' : reach, amount: r2(ctx.m('strain.drain') * P.castStrainDrainShare) });
       const m = mc();
       backlash = { trigger: 'failure', probability: r2(P.castStrainBacklashBase + P.castStrainBacklashSpread * roll('backlash.p')), severity: 'minor', effect: m.effect, narrativeTemplate: m.narrative };
     } else if (priceLayer === 'gamble') {

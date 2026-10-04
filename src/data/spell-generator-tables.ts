@@ -127,6 +127,8 @@ export const SPELL_GEN_PRICE = {
   castStrainExhaustTicks: [6, 6, 12, 24] as ByTier<number>,
   /** Strain: a `reach_drain` amount, as a share of the tier magnitude. */
   castStrainDrainShare: 0.5,
+  /** Strain: chance a `reach_drain` strains Veil rather than the spell's own Reach. */
+  castStrainDrainVeilChance: 0.5,
   /** Strain: backlash on failure, chance = base + spread × roll. */
   castStrainBacklashBase: 0.25,
   castStrainBacklashSpread: 0.1,
