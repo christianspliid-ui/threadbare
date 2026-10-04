@@ -5638,6 +5638,34 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1657. `readers/past.ts` on medium worlds: seed 42 mints 2 `seek_revenge` + 2 `chase_the_wonder` (2 wonders skipped `no_free_slot`), seed 99 mints 2 + 1 (3 skipped `no_free_slot`); decider headcount at t0 is 20 / 23 with the pass on and off alike. Headless seed-42 medium CLI: both revenge drives are still `active` at tick 60 with heat cooled 1.0 → 0.82 by the milestone pass, and one heir (`agent_garrison_culture_1`) runs `cell.destroy.monster` and `cell.destroy.power` undertakings sourced from `ambition_seek_revenge`. The heavy test `worldPast-generatedWorld.test.ts` proves on a generated world that each revenge heir is kin of the dead commander both ways, a member of the losing Realm, and holds a grievance naming the winning Realm's living leader, and that no ambient or dead actor holds a past ambition.",
     },
   },
+  // -- Descent becomes a want: Raise the Old Banner (THR-1658) -------------
+  // What this row makes impossible: worldgen writing descent on a quarter of the
+  // mortals on a dead empire's land while nothing at play time ever read it as a want.
+  {
+    id: 'descent-gates-old-banner-drive',
+    producerSystem: WORLDGEN,
+    consumerSystem: AMBITIONS,
+    intent:
+      "A deciding mortal descended from a dead empire (`backstoryStrata` `relation: 'descent'`) may take up Raise the Old Banner when a slot frees at re-evaluation — never at t0, never as a spotlight pull — and finishes it by standing on an elder ruin of that empire and taking ground on its old land since the drive began. No culprit, no heat; the edge's `mintedByLabel` names the blood.",
+    ulTerms: ['Location', 'Place'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['backstoryStrata', 'requiresDescent', 'descentCultureIds', 'agent_at_ancestral_ruin', 'agent_took_ancestral_ground', 'historicalCultureOfRegion'],
+      module: 'src/engine/descent.ts',
+    },
+    writeSites: ['src/engine/worldPast.ts'],
+    readSites: [
+      'src/engine/descent.ts',
+      'src/engine/ambitionSelection.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/graphConditions.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        "THR-1658. `readers/old-banner.ts`, medium, 300 ticks, before (main dca9681d) / after: the t0 pursuit digest, decider count (20 / 23 / 22) and past mints (4 / 3 / 4) are identical on seeds 42 / 99 / 7 — the gate fails closed on every t0 snapshot. Seed 7: heir `ind_3` takes the drive at t75 (`mintedByLabel` 'the old blood of the Seed Overgrowth', no grievance) and meets `old_stones`; no non-heir or non-decider ever holds it. Seeds 42 / 99: the one freed heir is eligible and ranks first but the slot is refilled before the 75-tick refill pass. The heavy test `descent-generatedWorld.test.ts` proves on a generated world that writer and reader agree on every descended mortal's old land and that a freed deciding heir takes the drive with the label.",
+    },
+  },
   // -- The opening: the meeting's bond is what makes a First (THR-1605 S1) ---
   // Audit-on-touch row for the plan `2026-09-27-thr-1605-the-opening.md`. The
   // meeting writes one `thread` edge at court position `the_first`; that edge is

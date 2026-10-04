@@ -2678,6 +2678,26 @@ window.__DEBUG.validateTraitRefs()
 
 ---
 
+## Capability: Descent hooks — "the old blood" (THR-1658)
+
+**What you can now author:** an ambition only a descendant of a dead empire may take up, and milestones that read that descent. Worldgen gives about a quarter of the mortals on a dead empire’s old land a `backstoryStrata` entry `{ cultureId, relation: 'descent' }` (THR-1631); these hooks are its play-time readers.
+
+| Hook | Holds when |
+| -- | -- |
+| `requiresDescent: true` on an `AmbitionTemplate` | Eligibility gate: the mortal has at least one descent culture. **Fail-closed** — a selection snapshot built without `descentCultureIds` (every worldgen, birth and binder snapshot) refuses it, so a gated drive never arrives at t0 or at birth; it arrives through the ordinary re-evaluation refill, and the refill offers it **only to a mortal who already decides** (it must never be the want that spotlight-pulls someone into the deciding tier). |
+| `{ type: 'agent_at_ancestral_ruin' }` | The agent stands within `OLD_BANNER_RUIN_REACH_HEXES` (default 0 = same hex) of an `elder_ruin` whose `originCultureId` is one of its descent cultures. Instantaneous; a milestone latches once met. |
+| `{ type: 'agent_took_ancestral_ground' }` | The agent holds, on an `owns` edge with `acquiredTick >= windowStartTick`, a Location or Place whose region’s historical culture is one of its descent cultures. **Window-bound** — ground held before the ambition began does not count, and no window reads `false`. |
+
+Both conditions fail soft to `false` on missing descent, an unresolvable position or region, or (for the ruin walk) a graph view that cannot enumerate nodes. "The old land" is one predicate everywhere: `historicalCultureOfRegion` in `src/engine/descent.ts`, which the worldgen writer itself imports.
+
+**Provenance.** A descent-gated drive taken up at re-evaluation carries `mintedByLabel` = `OLD_BANNER_LABEL_STEM` + the empire worded as the chronicle words it (`empireWords`, `worldPastWords.ts`), so the sheet’s intent line reads *"Because of the old blood of the Ash-Crowned"*. No culprit, no heat: an ancient fall is not a grievance (rulebook § 10.7, *An old fall is not a wrong*).
+
+**Shipped author:** `ambition_raise_the_old_banner` (`src/data/ambition-templates.ts`).
+
+**Check it:** `await window.__DEBUG.getDescent('<name>')` → `{ descentCultureIds, descentCultureNames, ancestralRuinIds, onAncestralLand, holdsOldBanner }`.
+
+---
+
 ## Capability: Residence hooks — "where they're from" and "how long they've stayed" (THR-822)
 
 **What you can now author:** an ambition milestone or abandonment trigger that reads a mortal's *residence* — the position they originated at, and how long they have held their current one. Two `GraphCondition`s, alongside the trait/reach/bond vocabulary above:

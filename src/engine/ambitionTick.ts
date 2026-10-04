@@ -62,6 +62,7 @@ import {
 } from './ambitionShape';
 import { recomputeCalling } from './calling';
 import { getDescentCultureIds } from './descent';
+import { isAutonomousDecisionActor } from './decisionTier';
 import { empireWords } from './worldPastWords';
 import { OLD_BANNER_LABEL_STEM } from '../data/descent-constants';
 
@@ -1054,8 +1055,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
       }
 
       if (currentActiveCount < MAX_ACTIVE_AMBITIONS) {
+        // THR-1658 D4: a descent drive goes only to a mortal who already decides — it
+        // must never be the want that spotlight-pulls someone into the deciding tier.
+        // Filtered before selection, so no other template's draw moves.
+        const liveActor = graph.getNode(actor.id);
+        const isDecider = !!liveActor && isAutonomousDecisionActor(liveActor);
         const availableTemplates = AMBITION_TEMPLATES.filter(
-          t => !existingTemplateIds.has(t.id),
+          t => !existingTemplateIds.has(t.id) && (!t.requiresDescent || isDecider),
         );
 
         if (availableTemplates.length > 0) {
