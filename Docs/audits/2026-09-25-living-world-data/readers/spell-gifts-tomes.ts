@@ -10,6 +10,9 @@
 //    tomes, whether the holder / maker is a caster and how many spells they know.
 // B. Spell holding: casters, knows_spell / wielded counts, how many mortals have a free spell slot.
 // C. The ascendant node's sphere-bearing properties (what a god's teaching could key on).
+// D. (THR-1672 re-run) Tick-0 divine pool coverage — the share of individuals a god could
+//    teach something — and the kill-criteria reads: most spells known by one mortal, and
+//    the share of individuals who know a spell from a book.
 import * as fs from 'fs';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
@@ -20,6 +23,7 @@ import { resetReputationTraitInit } from '../../../../src/engine/phaseReputation
 import { isCaster } from '../../../../src/engine/casterIdentity';
 import { SLOT_CAPS } from '../../../../src/data/attachment-slot-constants';
 import type { GameState } from '../../../../src/types/gameState';
+import { pickDivineSpell } from '../../../../src/engine/spellGrant';
 
 const seeds = (process.argv[2] ?? '42,99,7').split(',').map(Number);
 const TICKS = Number(process.argv[3] ?? 150);
@@ -36,6 +40,11 @@ for (const seed of seeds) {
   let { state } = initializeGameState(
     generateArchetypes(4, seed)[0], 'C', createBalancedCosmology(), seed, pr.cols, pr.rows,
   ) as { state: GameState };
+  // D. tick-0 divine pool coverage (before any tick runs).
+  const g0 = state.graph;
+  const ascId = state.ascendantId;
+  const ind0 = g0.getNodesByType('actor').filter(n => n.properties.actorType === 'individual');
+  const teachable0 = ind0.filter(a => pickDivineSpell(g0, ascId, a.id, Number(state.seed ?? seed)) !== null).length;
   for (let i = 0; i < TICKS; i++) state = runTick(state, [], rt);
   const g = state.graph;
 
@@ -88,6 +97,14 @@ for (const seed of seeds) {
       casterRoles: casters.reduce((m, a) => { inc(m, String(a.properties.npcRole ?? '?')); return m; }, {} as Record<string, number>),
     },
     ascendant: asc ? { id: asc.id, type: asc.type, props: ascSphereProps } : null,
+    thr1672: {
+      divinePoolCoverageTick0: ind0.length > 0 ? Number((teachable0 / ind0.length).toFixed(3)) : 0,
+      maxKnownByOneMortal: Math.max(0, ...actors.map(a => spellsKnown(a.id))),
+      tomeTaughtKnowerShare: actors.length > 0
+        ? Number((actors.filter(a => g.getOutgoingEdges(a.id, 'knows_spell').some(e => e.properties.source === 'tome')).length / actors.length).toFixed(3))
+        : 0,
+      nonCasterTomeKnowers: actors.filter(a => !isCaster(g, a.id) && g.getOutgoingEdges(a.id, 'knows_spell').some(e => e.properties.source === 'tome')).length,
+    },
   };
   console.log(seed, JSON.stringify(out[String(seed)]));
 }

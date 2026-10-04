@@ -1512,6 +1512,34 @@ Three things follow with no authoring:
 
 ---
 
+### Capability 34: The Stakes Line — One Sentence Says What the Encounter Is About (THR-1727)
+
+**What it does:** a template's optional `stakes` block authors the parts of one formula sentence the veil opens with, in the subtitle slot under the title:
+
+> *Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack.*
+
+The lead ("Passing through Sacred Grove,") comes from why the mortal is there — the motive classification, frozen when the encounter starts — and is never authored. You author `goal` (after "must") and `risk` (after "— or": the **worst ending the encounter can reach**, not a choice inside the scene). When the encounter ends, the same parts become the **result line**, chosen by outcome band: `won` for the winning bands ("Vara crossed the rotten toll bridge."), `lost` for plain failure, `lostBadly` for critical failure. Write `lost` and `lostBadly` from the template's own authored failure endings so the ledger never tells a different story from the screen. A fork whose arms end differently authors `arms: { <variantKey>: { won, lost, lostBadly } }` for every arm but the one the top-level endings describe. The result line feeds the Chapter Ledger, the encounter badge and the agent's thread row.
+
+```ts
+stakes: {
+  goal: 'cross the rotten toll bridge',
+  risk: 'go into the river with the pack',
+  won: 'crossed the rotten toll bridge',
+  lost: 'turned back to the long ford and lost the day',
+  lostBadly: 'went into the river with the pack',
+},
+```
+
+**Rules (the validator enforces them):** lowercase bare verb phrases, no final period, no `{tokens}`, never "traveler", "god", "you" or "your", ≤ 60 characters each (`STAKES_GOAL_MAX_CHARS` / `STAKES_RISK_MAX_CHARS`). `lostBadly` is required when the template authors a distinct `critical_failure` ending. Raw entries in `encounter-content.ts` and `faction-encounter-content.ts` carry `stakes` through their converters.
+
+**Why you want it:** without it the veil shows `template.description`, a hand-written summary with no shared shape, and the ledger names the chapter by its title alone.
+
+**How to tell whether yours landed.** `npx vitest run src/data/encounters/__tests__/encounterStakes.validator.test.ts` fails a malformed block and lists templates still without one. In the browser, `await window.__DEBUG.getEncounterStakes()` returns the built line, the rendered line and `hasStakes`.
+
+**Where to find the implementation:** `src/engine/encounters/stakesLine.ts` (builders and the tick-path stamp); tables in `src/data/nudge-stage-content.ts` (`STAKES_LEAD_VARIANTS`, `STAKES_RESULT_FORMS`). Plan: `Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.
@@ -4897,6 +4925,16 @@ A spell is a `SpellTemplate` in `src/data/spell-templates.ts`. Four optional fie
 
 Knobs: `src/data/spell-casting-constants.ts`. Seeding: every caster starts knowing one spell (`seedSpellKnowing`; `SEEDED_CASTER_ROLES`, `SEEDED_SPELL_COVERAGE`). Inspect: `__DEBUG.getSpellHolders()`, `await __DEBUG.castSpell({ caster, spell, band })`; traces `spell.seeded`, `spell.cast_resolved`, `spell.backlash`, `effect.teleported`.
 
+### Generated spells — the two vocabularies (THR-1572)
+
+The world writes most of its spells (`src/engine/spellGenerator/`). Content authors extend it by adding a **core** to `src/data/spell-generator-cores.ts` (an arena, an agency, a tier window, the themes and spheres it fits, two flavour lines, a builder) or a **tradition row** to `src/data/spell-generator-tables.ts` (themes, word banks, notice families). What a core may emit is fixed by two vocabularies, and the gate (`spellGenerator.gate.test.ts`) reads every one back through the engine:
+
+- **Carried (fate-woven):** a shape `live` or `narrow` in `ITEM_HONEST_VOCABULARY` **and** stateless on a shared node (`isCarriedEffectStateless`: passive, conditional, test_shaper, social_modifier, aura, reveal, action_trigger, behavior_weight, range_modifier, axiological_drift, per-tick resource_manipulate). Never `self_remove` — on a shared spell it deletes the spell for every bearer.
+- **Cast (deliberate): a cast must write.** Only `live` rows of `SPELL_CAST_HONEST_VOCABULARY` (`src/data/spell-honest-vocabulary.ts`): inflict_condition, fight_clock, teleport/forced_move, modify_rules on a live key, alter_terrain warded/shrouded, dispel. `duration`, `aura`, `conditional`, `suppress` and the other modifier-only arms are refused until THR-1683's per-cast channel; encounter-arena casts target the caster until its ally/enemy filter.
+- **Notice:** a transgression spell carries its tradition's `noticeFamilies`; every cast places one `forbidden_contact` hidden mark on the caster (`placeSpellNotice`). A family must match a live template or the validator refuses it.
+
+Review a batch with `npm run cli` → `generate spells 30 --seed 42`; a live world's libraries with `spells`; one spell with `await __DEBUG.previewGeneratedSpell({ tradition: 'holy', tier: 2 })`.
+
 ### The step cast (THR-1670, power runtime S2)
 
 A mortal who **wields** a deliberate spell casts it in a scene on their own — the author writes no cast into a template. The spell fits a step when its `arena` does: `encounter` on a non-fight step whose `reach` equals the spell's `castReach`; `fight` on a `fightRole: 'clash'` exchange. The mortal casts when the step's odds **before any god card** fall below their threshold (`CAST_THRESHOLD_BASE` ± `CAST_THRESHOLD_COURAGE_SHIFT` × courage, clamped `CAST_THRESHOLD_MIN`/`MAX`), which sits below the odds mortals choose to take on — so a cast is a sign a scene has turned. The step shows it as a factor line ("X is casting *Spell*", `CAST_STEP_BONUS_BY_TIER[tier]`), and **the step's own band decides the spell** through `resolveCast`.
@@ -4908,6 +4946,18 @@ What this means for authors:
 - **Chips come from writes only.** A cast whose effects are modifier-only (an `aura`, a `conditional`) writes nothing and draws no chip — its effect in the scene is the odds line. A price that inflicts a condition (`condition_inflict`) does draw one (read back as `fromPrice`).
 
 Inspect: `await __DEBUG.getStepCast(actionId?)` (`recorded` per step, `pending` for the current one); trace `spell.cast_decided`. Review: `?spell=<templateId>` stamps the hero with the spell beside `?testavatar` / `?spawn=`.
+
+### Taught spells — a god or a book (THR-1672)
+
+A spell can now be **given**, through two channels, both written by the one grant seam (`grantSpell`, `src/engine/spellGrant.ts`) and recorded on the mortal's `knows_spell` edge.
+
+What this means for authors:
+
+- **`spell_grant` is the aftermath kind for "the god left a working with them".** `{ kind: 'spell_grant', targetAgentId: '$actor', selector: 'god' | 'tradition', maxTier? }` teaches the mortal one spell: `'god'` from the player's own spheres, then the mortal's tradition; `'tradition'` from the tradition only. It is a persistent effect (`PERSISTENT_EFFECT_KINDS`). No pick (they already know everything) skips with a trace; the card's other effects still land. Teaching a transgression costs the god doom and detection, exactly as the Teach a Spell card. Shipped user: the Cache member `card.cache.variation.spirit` (*Leave A Word Behind*).
+- **A book teaches by what it is, not by a list.** To author a book that teaches, give a `tomes_scrolls` item the tag `#arcane` (teaches up to tier 2, prefers the reader's tradition, then spells of the book's Reach tag) or `#ancient` (up to tier 3, prefers elder Foundation-sphere magic). `#map` excludes it — the treasure maps carry `#ancient`. A generated *forbidden book* teaches wherever it is minted into someone's hands. A book teaches each holder once (`taughtHolderIds`), and a maker never learns from the book they made.
+- **Knowing a spell does not make a mortal a caster.** A farmer handed the Veilscript Fragment carries its working and can cast it in a step, but cannot study for more.
+
+Inspect: `__DEBUG.getSpellHolders()[i].grants` (per-edge `source` / `grantedBy` / `viaItemId`); traces `spell.granted`, `spell.tome_unread`, `spell.divine_teaching_priced`, `spell.divine_echo`. Review: `await __DEBUG.giveTome('@hero')`, `await __DEBUG.teachSpell('@hero')`.
 
 ### Innate powers (THR-1671, power runtime S3)
 

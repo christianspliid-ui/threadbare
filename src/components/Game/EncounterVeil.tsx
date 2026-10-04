@@ -31,7 +31,7 @@ import {
   subscribeNudgeDesignerView,
 } from './encounter-stage/designerView';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
-import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
+import { EncounterStakesLine } from './encounter-stage/shells/EncounterStakesLine';
 import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeStageHeader';
 import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
@@ -2211,8 +2211,25 @@ export function EncounterVeil({
           </div>
         )}
 
-        {/* Encounter description subtitle */}
-        {model.header.subtitle && (
+        {/* THR-1727 — the stakes line: one formula sentence naming what this
+            encounter is about and what it risks. It replaced both the template's
+            hand-written summary and the THR-972 motive intro line; the summary
+            below is the fallback for a template that authors no stakes. Fixed
+            across the steps of a multi-step encounter (Law 37). */}
+        {model.header.stakesLine ? (
+          <EncounterStakesLine
+            line={model.header.stakesLine}
+            onSelectAgent={onSelectAgent}
+            onSelectLocation={onSelectEntity ? (id) => onSelectEntity(id, 'location') : undefined}
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              color: TEXT_WHISPER,
+              marginBottom: 20,
+            }}
+          />
+        ) : model.header.subtitle && (
           <div
             style={{
               fontFamily: FONT_PROSE,
@@ -2255,14 +2272,6 @@ export function EncounterVeil({
             <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} onSelectEntity={onSelectEntity} />
           ) : (
           <>
-          {/* THR-972 — the motive as the scene's opening line. Above the prose
-              by directive: as a chip below it, the answer to "why is this mortal
-              here" arrived after the scene it was supposed to frame. Renders
-              nothing when the phase carries no motive. */}
-          {model.nudgePhase && (
-            <NudgeMotiveIntro phase={model.nudgePhase} onOpen={onOpenMotive} />
-          )}
-
           {model.narrative.paragraphs.map((para, pIdx) => {
             const text = para.segments.map((s) => s.text).join('');
             // Drop cap on first paragraph
@@ -2404,9 +2413,6 @@ export function EncounterVeil({
               focalActorId={model.header.focalActorId}
               onCommit={onCommitNudges ?? (() => {})}
               onOpenMotive={onOpenMotive}
-              // THR-972 — the motive intro renders above the prose block, which
-              // is a different subtree; the shell must not draw it a second time.
-              renderMotiveIntro={false}
               // THR-1478 — same reasoning, one directive later: the reading is
               // in the context strip above the prose, so the shell is the hand
               // and the commit alone. The hand state is owned up here because

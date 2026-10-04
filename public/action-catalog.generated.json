@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 179,
+    "total": 180,
     "byCategory": {
-      "action": 66,
+      "action": 67,
       "artifact": 5,
       "company": 4,
       "divine": 20,
@@ -19,20 +19,20 @@
       "heart": 29,
       "eye": 29,
       "stone": 10,
-      "star": 33,
+      "star": 34,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 176,
+      "unlockable-generic": 177,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 113,
+      "template-ops": 114,
       "control-spec": 19,
       "engine-bridge": 43,
       "aftermath-only": 4
     },
-    "beatGranted": 30,
+    "beatGranted": 31,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -1936,6 +1936,38 @@
       "bucketDeclared": false,
       "description": "Reads the signs and portents available in the sky, the bones, or the entrails to glimpse the likely fate of a target. A successful reading reveals the direction of events and the forces shaping them. A failed reading provides a dangerously false sense of certainty.",
       "technicalEffect": "A read action: on success, sets `divined` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "action.teach_spell",
+      "name": "Teach a Spell",
+      "spellName": "A Working Given",
+      "category": "action",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "individual"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Put a working of your own into their hands. Dark magic taught is dark magic answered for.",
+      "technicalEffect": "Beat verb (THR-1672): teaches the threaded agent one spell through the grant seam (`grantSpell`, `knows_spell { source: 'divine', grantedBy }`; carried while a slot is free). The pick is the god's primary sphere, then secondary, then the mortal's own tradition library, tier ≤ DIVINE_TEACH_MAX_TIER. Teaching a transgression costs DIVINE_TEACH_DARK_DOOM doom and DIVINE_TEACH_DARK_DETECTION detection in the mortal's region; each later cast of it adds DIVINE_TAUGHT_CAST_DETECTION. Gated on thread awareness ≥ BESTOW_MIN_AWARENESS; no-op otherwise.",
       "effectSource": "template-ops"
     },
     {

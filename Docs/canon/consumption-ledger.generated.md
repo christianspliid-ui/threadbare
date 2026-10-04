@@ -24,15 +24,15 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 43 | 44 | 87 |
+| ✅ acted-on | 44 | 45 | 89 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **45** | **45** | **90** |
+| **Total** | **46** | **46** | **92** |
 
 ## Aftermath effect kinds
 
-Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 45 members.
+Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 46 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -52,6 +52,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 | `assign_ambition` | ✅ acted-on | an ambition assignment on the actor | `src/engine/ambitionLifecycle.ts` → `evaluateAmbitionProgress` (acts) |
 | `condition_attachment` | ✅ acted-on | a `has_trait` edge whose `durationTicks` is set from the attachment | `src/engine/conditionDecay.ts` → `decayConditions` (acts) |
 | `attachment_grant` | ✅ acted-on | an attachment node owned by the bearer, carrying `effects[]` | `src/engine/effectAura.ts` → `effects` (acts) |
+| `spell_grant` | ✅ acted-on | a `knows_spell` edge (`source: 'divine'`, `grantedBy`) and, while a slot is free, a `has_trait` edge to the shared spell definition node; dark teaching also writes doom and regional detection | `src/engine/spellCasting.ts` → `knowsSpellEdge` (acts)<br/>`src/engine/effects/effectWalker.ts` → `collectAttachmentEffects` (acts) |
 | `spawn_artifact` | ✅ acted-on | an artifact node plus an `owns` edge to the bearer | `src/engine/effectAura.ts` → `effects` (acts) |
 | `emit_omen` | ✅ acted-on | an omen appended to `state.emittedOmens` | `src/engine/phaseAgentDecision.ts` → `emittedOmens` (acts) |
 | `plant_compulsion` | ✅ acted-on | a compulsion in `state.plantedCompulsions` | `src/engine/plantedCompulsion.ts` → `derivePlantedCompulsionEncounterBias` (acts) |
@@ -93,7 +94,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 
 ## GraphOp ops
 
-Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 45 members.
+Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 46 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -114,6 +115,7 @@ Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 
 | `anoint_successor` | ✅ acted-on | a `will_succeed` edge to the anointed heir | `src/engine/phaseFactionSuccession.ts` → `will_succeed` (acts) |
 | `imbue_item` | ✅ acted-on | a sphere-flavoured power appended to an artifact's `effects[]` | `src/engine/effectAura.ts` → `effects` (acts) |
 | `bestow_power` | ✅ acted-on | a divine-gift artifact granted to a threaded agent | `src/engine/effectAura.ts` → `effects` (acts) |
+| `teach_spell` | ✅ acted-on | a `knows_spell` edge (`source: 'divine'`, `grantedBy`) and, while a slot is free, a `has_trait` edge to the spell's definition node; dark teaching also writes doom and regional detection | `src/engine/spellCasting.ts` → `knowsSpellEdge` (acts)<br/>`src/engine/effects/effectWalker.ts` → `collectAttachmentEffects` (acts) |
 | `grant_companion` | ✅ acted-on | a companion minted and attached to the target | `src/engine/companions.ts` → `getCompanions` (acts) |
 | `anoint_faction` | ✅ acted-on | the chosen-faction flag and its domain-keyed power | `src/engine/chosenFactionPowers.ts` → `phaseChosenFactionPowers` (acts) |
 | `consecrate_source` | ✅ acted-on | a typed essence source on the host, plus a `controls` edge | `src/engine/essenceSources.ts` → `sanctity` (acts) |

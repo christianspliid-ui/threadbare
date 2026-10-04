@@ -228,6 +228,8 @@ Three authored axes carry a spell's design: **agency** (fate-woven or deliberate
 
 **Carried versus cast (THR-1571).** A **fate-woven** spell is *carried*: it works on its own while wielded and is never cast. Its effects ride the shared definition node and reach every wielder through the effect walker, with its runtime state kept per bearer; it pays with what it carries (a standing weakness, a chance to turn on the bearer when they fail badly). A **deliberate** spell is *cast*. **The step's roll decides a cast** — the band an encounter step or an undertaking's last checkpoint already landed on, never a second die: a landed band (critical success, success, success at cost) applies the spell; any other fizzles, and the price is paid either way. Code anchor: `SpellTemplate.agency`, and `resolveCast` (`src/engine/spellCasting.ts`), the one path to a cast. Casters start the world knowing one spell of their tradition (seeded knowing, `source: 'seeded'`).
 
+**Five ways to know a spell (THR-1672).** A mortal comes to know a spell five ways: seeded, studied, taught by a god, read from a book, or as anatomy (innate). The `knows_spell` edge records which (`source`: `seeded`, `learn_spell`, `divine` with `grantedBy`, `tome` with `viaItemId`); every channel writes through the one grant seam, `grantSpell` (`src/engine/spellGrant.ts`). Knowing a spell does not make a mortal a caster.
+
 ---
 
 ### Bestowal
@@ -239,6 +241,8 @@ Three authored axes carry a spell's design: **agency** (fate-woven or deliberate
 A **god-given** `[[Power]]`. This is the player-facing rename of the existing `bestowed_power` attachment kind: **the code identifier stays**, and this entry is the mapping between them. Prose and UI say *bestowal*; the union member is still `'bestowed_power'`, so a rename ticket is not implied by this vocabulary landing.
 
 **Do not confuse a bestowal with the `bestowed` `[[Trait Category]]`.** They share the god-grants-it-and-can-revoke-it fiction but sit on different layers: a bestowed *trait* is a name the world recognizes, inert on its bearer; a bestowal is a power carrying `[[Effect]]`s of its own.
+
+**A god-taught spell is a `[[Spell]]`, not a Bestowal (THR-1672).** Bestow Power and Teach a Spell are different cards: Bestow gives a power of the god's own making; Teach a Spell gives a working the world already knows, recorded on the mortal's `knows_spell` edge with `source: 'divine'`.
 
 ---
 

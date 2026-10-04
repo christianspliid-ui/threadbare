@@ -48,6 +48,15 @@ import {
   CURSE_MARK_REVEAL_FAMILIES,
 } from '../data/ascendant-expression-constants';
 import { emitTrace } from './traceBuffer';
+import { accelerateDoomClock } from './doomClock';
+import { writeAgentDetection, type DetectionCrossingRecorder } from './agentDetection';
+import { grantSpell, isDarkSpell, pickDivineSpell, pickTraditionSpell } from './spellGrant';
+import {
+  SPELL_GRANT_ENABLED_DIVINE,
+  DIVINE_TEACH_MAX_TIER,
+  DIVINE_TEACH_DARK_DOOM,
+  DIVINE_TEACH_DARK_DETECTION,
+} from '../data/spell-grant-constants';
 
 /**
  * Thread `awareness` tiers in ascending order (the thread-edge field
@@ -337,6 +346,172 @@ function emitBestowNoOp(
     agentId,
     failSoft: reason,
   } as never);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THR-1672: Teach a Spell — acquisition channel 1, the divine grant
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** The state a teaching reads and writes: the graph, and the god's two prices. */
+export type TeachSpellSink = Pick<GameState, 'graph' | 'regionalDetectionPressure'>
+  & Partial<Pick<GameState, 'doomClock' | 'seed' | 'pendingEncounterSeeds'>>;
+
+export interface TeachSpellOptions {
+  /** Debug lever: skip the switch and the thread/awareness gates (the `applySpellStamp` pattern). */
+  readonly bypassGates?: boolean;
+  /**
+   * Whether the thread/awareness gate applies (default true). The `spell_grant` nudge
+   * path passes false: the card was already played on this mortal's own scene.
+   */
+  readonly requireThread?: boolean;
+  /** Teach this spell rather than picking one (debug). */
+  readonly spellId?: string;
+  /** `'god'` (default): the god's spheres, then the mortal's tradition. `'tradition'`: the tradition only. */
+  readonly selector?: 'god' | 'tradition';
+  readonly maxTier?: number;
+  /** The detection crossing recorder (traces + the rival strike); see `agentDetection.ts`. */
+  readonly recordCrossings?: DetectionCrossingRecorder;
+}
+
+export interface TeachSpellResult {
+  readonly success: boolean;
+  readonly spellId?: string;
+  readonly spellName?: string;
+  /** A transgression — the god paid doom and detection for it. */
+  readonly dark?: boolean;
+  /** Carried at once (false when the slots were full: known, not carried). */
+  readonly wielded?: boolean;
+  readonly failSoft?:
+    | 'disabled'
+    | 'missing_agent'
+    | 'not_agent'
+    | 'no_thread'
+    | 'insufficient_awareness'
+    | 'empty_pool'
+    | 'grant_refused';
+}
+
+/**
+ * A god teaches a threaded mortal a spell (THR-1672, Lane decisions 2–4).
+ *
+ * Gated exactly as Bestow Power is: a `thread` edge from the god with awareness at
+ * least `BESTOW_MIN_AWARENESS`. The spell comes from `pickDivineSpell` (the god's own
+ * spheres, then the mortal's tradition; never elder magic) and is written through the
+ * one grant seam with `source: 'divine'` and `grantedBy`, so the sheet can say who.
+ *
+ * Teaching a transgression costs the god (Lane decision 4): doom
+ * (`DIVINE_TEACH_DARK_DOOM`) and detection in the mortal's region
+ * (`DIVINE_TEACH_DARK_DETECTION`), written in place on `sink`. Gentler magic costs
+ * only the card's essence. Never throws.
+ */
+export function applyTeachSpell(
+  sink: TeachSpellSink,
+  ascendantId: string,
+  agentId: string,
+  tick: number,
+  opts: TeachSpellOptions = {},
+): TeachSpellResult {
+  const skip = (failSoft: NonNullable<TeachSpellResult['failSoft']>, reason: 'empty_pool' | 'already_known' | 'disabled' | 'gate'): TeachSpellResult => {
+    traceTeach({
+      category: 'spell.grant_skipped', tick, agentId, source: 'divine', reason,
+      summary: `teach a spell no-op: ${failSoft} (agent ${agentId})`,
+    });
+    return { success: false, failSoft };
+  };
+  try {
+    const graph = sink.graph;
+    if (!opts.bypassGates && !SPELL_GRANT_ENABLED_DIVINE) return skip('disabled', 'disabled');
+    const agent = graph.getNode(agentId);
+    if (!agent) return skip('missing_agent', 'gate');
+    if (agent.type !== 'actor') return skip('not_agent', 'gate');
+    if (!opts.bypassGates && opts.requireThread !== false) {
+      const threadEdge = graph.getOutgoingEdges(ascendantId, 'thread').find((e) => e.target === agentId);
+      if (!threadEdge) return skip('no_thread', 'gate');
+      if (awarenessRank(threadEdge.properties.awareness as string | undefined) < awarenessRank(BESTOW_MIN_AWARENESS)) {
+        return skip('insufficient_awareness', 'gate');
+      }
+    }
+
+    const worldSeed = Number(sink.seed ?? 0);
+    const maxTier = opts.maxTier ?? DIVINE_TEACH_MAX_TIER;
+    const pick = opts.spellId
+      ? { spellId: opts.spellId, dark: isDarkSpell(graph, opts.spellId) }
+      : opts.selector === 'tradition'
+        ? pickTraditionSpell(graph, agentId, worldSeed, maxTier)
+        : pickDivineSpell(graph, ascendantId, agentId, worldSeed, maxTier);
+    if (!pick) return skip('empty_pool', 'empty_pool');
+
+    const granted = grantSpell(graph, agentId, pick.spellId, { source: 'divine', tick, grantedBy: ascendantId });
+    if (!granted.granted || !granted.spellId) {
+      return skip('grant_refused', granted.refused === 'already_known' ? 'already_known' : 'gate');
+    }
+    const dark = isDarkSpell(graph, granted.spellId);
+    if (dark) priceDarkTeaching(sink, ascendantId, agentId, granted.spellId, tick, opts.recordCrossings);
+    return { success: true, spellId: granted.spellId, spellName: granted.spellName, dark, wielded: granted.wielded };
+  } catch {
+    return { success: false, failSoft: 'grant_refused' };
+  }
+}
+
+/** Words for a teaching card that cannot teach this mortal (Law 13: a reason, never a number). */
+export const TEACH_SPELL_NOT_THREADED_REASON = 'They do not yet hold your connection deeply enough';
+export const TEACH_SPELL_DISABLED_REASON = 'You cannot teach a spell now';
+
+/**
+ * What the Teach a Spell card would do on this target now, for its drawer line
+ * (THR-1672 § UI): the spell it would teach, or why it cannot — the same gates
+ * `applyTeachSpell` applies, so the card is never castable for a no-op that still
+ * charges its essence. `null` when there is nothing left to teach; `undefined` when
+ * the target is not a mortal (the card does not apply, so no gate).
+ */
+export function teachSpellPreview(
+  graph: WorldGraph,
+  ascendantId: string,
+  targetId: string,
+  worldSeed: number,
+): { spellName: string; dark: boolean } | { lockedReason: string } | null | undefined {
+  try {
+    if (graph.getNode(targetId)?.type !== 'actor') return undefined;
+    if (!SPELL_GRANT_ENABLED_DIVINE) return { lockedReason: TEACH_SPELL_DISABLED_REASON };
+    const threadEdge = graph.getOutgoingEdges(ascendantId, 'thread').find((e) => e.target === targetId);
+    if (!threadEdge || awarenessRank(threadEdge.properties.awareness as string | undefined) < awarenessRank(BESTOW_MIN_AWARENESS)) {
+      return { lockedReason: TEACH_SPELL_NOT_THREADED_REASON };
+    }
+    const pick = pickDivineSpell(graph, ascendantId, targetId, worldSeed);
+    return pick ? { spellName: pick.spellName, dark: pick.dark } : null;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The god pays for teaching dark magic: doom, and being seen where the mortal stands. */
+function priceDarkTeaching(
+  sink: TeachSpellSink,
+  ascendantId: string,
+  agentId: string,
+  spellId: string,
+  tick: number,
+  recordCrossings?: DetectionCrossingRecorder,
+): void {
+  let doomDelta = 0;
+  if (sink.doomClock) {
+    sink.doomClock = accelerateDoomClock(sink.doomClock, DIVINE_TEACH_DARK_DOOM);
+    doomDelta = DIVINE_TEACH_DARK_DOOM;
+  }
+  const write = writeAgentDetection(sink, agentId, DIVINE_TEACH_DARK_DETECTION, tick, recordCrossings);
+  traceTeach({
+    category: 'spell.divine_teaching_priced', tick, agentId, ascendantId, spellId,
+    doomDelta, regionId: write?.regionId ?? '', detectionDelta: write ? DIVINE_TEACH_DARK_DETECTION : 0,
+    summary: `teaching ${spellId} was dark magic: the god pays ${doomDelta > 0 ? 'doom and ' : ''}being seen in ${write?.regionId ?? 'nowhere'}`,
+  });
+}
+
+function traceTeach(entry: Record<string, unknown>): void {
+  try {
+    emitTrace(entry as never);
+  } catch {
+    /* NFP #4 */
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

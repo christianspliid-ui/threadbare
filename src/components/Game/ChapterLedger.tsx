@@ -28,6 +28,8 @@ import {
   CHAPTER_LEDGER_PAGE_SIZE,
 } from '../../engine/chapterArchive';
 import { outcomePhrase } from '../../engine/aftermathWords';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { stakesLineForAction } from '../../engine/encounters/stakesLine';
 
 interface ChapterLedgerProps {
   gameState: GameState;
@@ -48,9 +50,22 @@ interface LedgerRow {
   actorId: string;
   actorName: string;
   templateName: string;
+  /** THR-1727 — the chapter's stakes line (opening while live, result once resolved). */
+  stakesLine?: string;
   statusLabel: string;
   sortTick: number;
   threaded: boolean;
+}
+
+/** THR-1727 — a live encounter's opening stakes line, or undefined when it has none. */
+function liveStakesLine(gameState: GameState, action: UnifiedAction): string | undefined {
+  try {
+    const template = getUnifiedTemplateById(action.templateId);
+    if (!template) return undefined;
+    return stakesLineForAction(action, template, gameState.graph)?.text;
+  } catch {
+    return undefined;
+  }
 }
 
 function isThreaded(gameState: GameState, actorId: string): boolean {
@@ -125,6 +140,7 @@ export function ChapterLedger({
         actorId: r.actorId,
         actorName: r.actorName,
         templateName: r.templateName,
+        stakesLine: r.stakesLine,
         statusLabel: resolvedStatusLabel(r.outcome),
         sortTick: r.resolvedTick,
         threaded: r.threaded,
@@ -142,6 +158,7 @@ export function ChapterLedger({
         actorId: a.actorId,
         actorName: gameState.graph.getNode(a.actorId)?.name ?? 'a mortal',
         templateName: getChapterTemplateName(a.templateId),
+        stakesLine: liveStakesLine(gameState, a as UnifiedAction),
         statusLabel: `active · step ${a.currentStep + 1}`,
         sortTick: gameState.tick,
         threaded: isThreaded(gameState, a.actorId),
@@ -234,6 +251,14 @@ export function ChapterLedger({
             {row.threaded && <span style={{ color: 'var(--accent-gold, #d4af37)' }}>✦ </span>}
             {row.templateName}
           </span>
+          {row.stakesLine && (
+            <span
+              data-testid="chapter-ledger-stakes-line"
+              style={{ fontSize: 'var(--text-xs)', fontStyle: 'italic', color: 'var(--text-primary)' }}
+            >
+              {row.stakesLine}
+            </span>
+          )}
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             {row.actorName} · {row.statusLabel}
           </span>

@@ -62,11 +62,14 @@ function statBandFor(band: number): number {
   return band >= 4 ? ITEM_STAT_BAND_LEGENDARY : band >= 2 ? ITEM_STAT_BAND_NOTABLE : ITEM_STAT_BAND_MINOR;
 }
 
-/** Validate one generated item. `[]` means it only promises what the engine does. */
-export function validateGeneratedItem(item: Pick<GeneratedItem, 'effects' | 'catchIndexes' | 'catchNotes' | 'tags' | 'lossCondition' | 'name' | 'look' | 'provenance' | 'band'>): string[] {
+/**
+ * The per-effect honesty checks — every carried effect a generator emits must pass these
+ * (THR-1570; exported for the spell generator's carried effects by THR-1572, which reuses
+ * them rather than forking them). `statBand` caps a `stat_contribution`; a caller that
+ * never emits one may omit it.
+ */
+export function effectHonestyProblems(eff: readonly AttachmentEffect[], statBand = 0): string[] {
   const problems: string[] = [];
-  const eff: readonly AttachmentEffect[] = item.effects;
-  if (eff.length === 0) problems.push('no effects');
   if (eff.length > MAX_EFFECTS_PER_ATTACHMENT) problems.push(`too many effects (${eff.length})`);
   if (eff.filter(e => e.type === 'action_trigger').length > ACTION_TRIGGER_MAX_PER_ATTACHMENT) problems.push('too many action_triggers');
   const conditionIds = new Set(knownConditions().map(c => c.id));
@@ -87,7 +90,7 @@ export function validateGeneratedItem(item: Pick<GeneratedItem, 'effects' | 'cat
       else if (own && !(e.condition === 'in_combat' && e.reach === 'heart')) problems.push(`conditional ${e.condition} on ${e.reach} almost never fires`);
     }
     if (e.type === 'stat_contribution') {
-      const cap = statBandFor(item.band);
+      const cap = statBandFor(statBand);
       for (const [r, v] of Object.entries(e.contributions ?? {})) if (Math.abs(v ?? 0) > cap) problems.push(`stat ${r} ${v} over band ${cap}`);
     }
     if (e.type === 'modify_rules' && !ITEM_HONEST_RULE_KEYS.has(e.rule as RuleOverrideKey)) problems.push(`rule ${e.rule} has no live reader`);
@@ -101,6 +104,14 @@ export function validateGeneratedItem(item: Pick<GeneratedItem, 'effects' | 'cat
     if (e.type === 'prevent_loss' && e.channel !== 'quintessence') problems.push('prevent_loss on a channel with no reader');
   }
   for (const [r, v] of Object.entries(perReach)) if (v > EFFECT_MODIFIER_CAP) problems.push(`${r} roll total ${round(v)} over cap ${EFFECT_MODIFIER_CAP}`);
+  return problems;
+}
+
+/** Validate one generated item. `[]` means it only promises what the engine does. */
+export function validateGeneratedItem(item: Pick<GeneratedItem, 'effects' | 'catchIndexes' | 'catchNotes' | 'tags' | 'lossCondition' | 'name' | 'look' | 'provenance' | 'band'>): string[] {
+  const eff: readonly AttachmentEffect[] = item.effects;
+  const problems: string[] = eff.length === 0 ? ['no effects'] : [];
+  problems.push(...effectHonestyProblems(eff, item.band));
 
   for (const t of item.tags) {
     const def = SEATED.get(t);

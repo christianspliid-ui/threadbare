@@ -65,6 +65,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Enshrines a relic that keeps a holy place hallowed on its own — until the relic is destroyed.',
   'action.bestow':
     'Leaves a portion of your strength in a faithful mortal, quickening them in your art.',
+  'action.teach_spell':
+    'Puts a working of your own into a faithful mortal’s hands. Dark magic taught is dark magic answered for.',
   'action.anoint':
     'Marks a whole faction as chosen, lifting every hand that serves under it while your regard holds.',
 

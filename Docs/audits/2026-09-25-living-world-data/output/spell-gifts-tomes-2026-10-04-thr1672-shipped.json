@@ -1,0 +1,346 @@
+{
+  "7": {
+    "individuals": 821,
+    "generatedItems": {
+      "byOrigin": {
+        "found": 65
+      },
+      "bySub": {
+        "tomes_scrolls": 31,
+        "relics_talismans": 15,
+        "mounts_beasts": 2,
+        "vestments": 4,
+        "arms": 7,
+        "tools_instruments": 6
+      },
+      "tomes": 31,
+      "tomeSample": [
+        {
+          "id": "gen_found_ind_0_3_reward_tomes_scrolls_chronicle_of_the_falling",
+          "name": "Ledger of the Margins",
+          "holder": "ind_0",
+          "holderIsCaster": true,
+          "holderKnows": 1
+        },
+        {
+          "id": "gen_found_agent_mc_cmdr_1_16_starter_burned_codex",
+          "name": "Ledger of the Long Winter",
+          "holderIsCaster": null,
+          "holderKnows": null
+        },
+        {
+          "id": "gen_found_born_lc_133_32_reward_tools_instruments_alchemists_crucible",
+          "name": "Book of the Long Winter",
+          "holderIsCaster": null,
+          "holderKnows": null
+        },
+        {
+          "id": "gen_found_ind_6_44_reward_tomes_scrolls_veilscript_fragment",
+          "name": "Guudoerudgiut's Book",
+          "holder": "ind_6",
+          "holderIsCaster": true,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_ind_3_54_starter_burned_codex",
+          "name": "The Smaller Almanac",
+          "holder": "ind_3",
+          "holderIsCaster": true,
+          "holderKnows": 4
+        },
+        {
+          "id": "gen_found_agent_mc_cmdr_1_57_reward_tomes_scrolls_veilscript_fragment",
+          "name": "The Last Almanac",
+          "holder": "agent_mc_cmdr_1",
+          "holderIsCaster": false,
+          "holderKnows": 3
+        }
+      ]
+    },
+    "spells": {
+      "casters": 127,
+      "knowers": 136,
+      "nonCasterKnowers": 13,
+      "fullSlots": 4,
+      "wieldHist": {
+        "1": 125,
+        "2": 7,
+        "3": 4
+      },
+      "knowsSources": {
+        "seeded": 123,
+        "tome": 30,
+        "learn_spell": 1
+      },
+      "casterRoles": {
+        "?": 5,
+        "healer": 33,
+        "priest": 33,
+        "scholar": 11,
+        "oracle": 4,
+        "enchanter": 5,
+        "chaplain": 3,
+        "alchemist": 3,
+        "warmage": 3,
+        "herald": 4,
+        "acolyte": 11,
+        "monk": 12
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.time_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "time",
+          "secondary": "energy"
+        },
+        "domainAffinities": {
+          "heart": 2,
+          "star": 4
+        },
+        "reachTierSnapshot": {
+          "star": 1,
+          "heart": 1
+        }
+      }
+    },
+    "thr1672": {
+      "divinePoolCoverageTick0": 1,
+      "maxKnownByOneMortal": 5,
+      "tomeTaughtKnowerShare": 0.019,
+      "nonCasterTomeKnowers": 13
+    }
+  },
+  "42": {
+    "individuals": 611,
+    "generatedItems": {
+      "byOrigin": {
+        "found": 55,
+        "masterwork": 1
+      },
+      "bySub": {
+        "relics_talismans": 12,
+        "tomes_scrolls": 26,
+        "arms": 7,
+        "tools_instruments": 4,
+        "mounts_beasts": 2,
+        "vestments": 5
+      },
+      "tomes": 26,
+      "tomeSample": [
+        {
+          "id": "gen_found_ind_10_7_reward_tomes_scrolls_veilscript_fragment",
+          "name": "Ledger of Old Names",
+          "holder": "ind_10",
+          "holderIsCaster": true,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_agent_mc_cmdr_0_11_reward_tomes_scrolls_chronicle_of_the_falling",
+          "name": "Book of the Long Winter",
+          "holder": "agent_mc_cmdr_0",
+          "holderIsCaster": false,
+          "holderKnows": 1
+        },
+        {
+          "id": "gen_found_ind_2_18_reward_relics_talismans_hourglass_of_the_unraveling",
+          "name": "Holle's Almanac",
+          "holder": "ind_2",
+          "holderIsCaster": false,
+          "holderKnows": 0
+        },
+        {
+          "id": "gen_found_ind_13_19_reward_tomes_scrolls_veilscript_fragment",
+          "name": "Almanac of the Margins",
+          "holderIsCaster": null,
+          "holderKnows": null
+        },
+        {
+          "id": "gen_found_ind_11_21_reward_tomes_scrolls_the_silent_testament",
+          "name": "The Grey Book",
+          "holder": "ind_11",
+          "holderIsCaster": false,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_ind_13_29_reward_tools_instruments_alchemists_crucible",
+          "name": "The Quarrelled Book",
+          "holderIsCaster": null,
+          "holderKnows": null
+        }
+      ]
+    },
+    "spells": {
+      "casters": 105,
+      "knowers": 116,
+      "nonCasterKnowers": 12,
+      "fullSlots": 2,
+      "wieldHist": {
+        "1": 108,
+        "2": 6,
+        "3": 2
+      },
+      "knowsSources": {
+        "tome": 22,
+        "seeded": 104
+      },
+      "casterRoles": {
+        "?": 1,
+        "healer": 21,
+        "priest": 31,
+        "scholar": 11,
+        "warmage": 7,
+        "enchanter": 7,
+        "alchemist": 6,
+        "oracle": 1,
+        "herald": 4,
+        "chaplain": 4,
+        "monk": 6,
+        "acolyte": 6
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.chaos_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "chaos",
+          "secondary": "energy"
+        },
+        "domainAffinities": {
+          "stone": 5,
+          "iron": 2,
+          "gold": 5
+        },
+        "reachTierSnapshot": {
+          "gold": 1,
+          "stone": 1,
+          "iron": 1
+        }
+      }
+    },
+    "thr1672": {
+      "divinePoolCoverageTick0": 1,
+      "maxKnownByOneMortal": 3,
+      "tomeTaughtKnowerShare": 0.021,
+      "nonCasterTomeKnowers": 12
+    }
+  },
+  "99": {
+    "individuals": 792,
+    "generatedItems": {
+      "byOrigin": {
+        "found": 38,
+        "masterwork": 1
+      },
+      "bySub": {
+        "relics_talismans": 8,
+        "tomes_scrolls": 22,
+        "mounts_beasts": 1,
+        "tools_instruments": 5,
+        "arms": 3
+      },
+      "tomes": 22,
+      "tomeSample": [
+        {
+          "id": "gen_found_ind_6_6_reward_tomes_scrolls_the_silent_testament",
+          "name": "The Last Almanac",
+          "holderIsCaster": null,
+          "holderKnows": null
+        },
+        {
+          "id": "gen_found_ind_3_7_starter_burned_codex",
+          "name": "The Marked Book",
+          "holder": "ind_3",
+          "holderIsCaster": true,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_ind_8_10_reward_tomes_scrolls_veilscript_fragment",
+          "name": "Ledger of Old Names",
+          "holder": "ind_8",
+          "holderIsCaster": false,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_agent_garrison_culture_1_13_reward_tools_instruments_alchemists_crucible",
+          "name": "The Marked Almanac",
+          "holder": "agent_garrison_culture_1",
+          "holderIsCaster": false,
+          "holderKnows": 1
+        },
+        {
+          "id": "gen_found_agent_mc_cmdr_1_35_reward_tools_instruments_alchemists_crucible",
+          "name": "Book of the Long Winter",
+          "holder": "agent_mc_cmdr_1",
+          "holderIsCaster": false,
+          "holderKnows": 2
+        },
+        {
+          "id": "gen_found_ind_6_41_reward_tomes_scrolls_veilscript_fragment",
+          "name": "Reader's Ledger",
+          "holderIsCaster": null,
+          "holderKnows": null
+        }
+      ]
+    },
+    "spells": {
+      "casters": 125,
+      "knowers": 132,
+      "nonCasterKnowers": 10,
+      "fullSlots": 1,
+      "wieldHist": {
+        "1": 126,
+        "2": 5,
+        "3": 1
+      },
+      "knowsSources": {
+        "tome": 18,
+        "seeded": 122
+      },
+      "casterRoles": {
+        "?": 1,
+        "healer": 25,
+        "priest": 46,
+        "warmage": 6,
+        "alchemist": 6,
+        "scholar": 8,
+        "enchanter": 3,
+        "herald": 7,
+        "acolyte": 11,
+        "monk": 10,
+        "chaplain": 2
+      }
+    },
+    "ascendant": {
+      "id": "asc.archetype.energy_0",
+      "type": "actor",
+      "props": {
+        "sphereAlignment": {
+          "primary": "energy",
+          "secondary": "light"
+        },
+        "domainAffinities": {
+          "iron": 3,
+          "gold": 4,
+          "heart": 3
+        },
+        "reachTierSnapshot": {
+          "gold": 1,
+          "heart": 1,
+          "iron": 1
+        }
+      }
+    },
+    "thr1672": {
+      "divinePoolCoverageTick0": 1,
+      "maxKnownByOneMortal": 4,
+      "tomeTaughtKnowerShare": 0.014,
+      "nonCasterTomeKnowers": 10
+    }
+  },
+  "ticks": 150,
+  "map": "medium",
+  "scenario": "default"
+}

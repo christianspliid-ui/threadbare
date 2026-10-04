@@ -2851,6 +2851,65 @@ if (import.meta.env.DEV) {
      * **Async** (`await` it) — the bridge has no static imports, so the pin module
      * is pulled in on call. An unawaited call logs a Promise, not the verdict.
      */
+    /**
+     * THR-1727 — the encounter's stakes line, as built and as rendered.
+     *
+     * With no argument: the encounter behind the newest open encounter
+     * notification (what the veil shows). With an `actionId`: that action, live
+     * or archived, and its result line once resolved. `rendered` is the veil's
+     * DOM text (null when the veil is not showing a stakes line), so a check can
+     * compare what was built with what is on screen.
+     */
+    getEncounterStakes: async (actionId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const sl = await import('./engine/encounters/stakesLine');
+      const rendered = typeof document !== 'undefined'
+        ? document.querySelector('[data-testid="encounter-stakes-line"]')?.textContent ?? null
+        : null;
+
+      let id = actionId;
+      if (!id) {
+        const open = [...(state.encounterNotifications ?? [])]
+          .filter(n => !n.resolved && n.actionId)
+          .sort((x, y) => y.createdTick - x.createdTick)[0];
+        id = open?.actionId;
+      }
+      if (!id) return { templateId: null, line: null, rendered, hasStakes: false, reason: 'no open encounter' };
+
+      const action = state.unifiedActions.find(a => a.actionId === id);
+      if (!action) {
+        const record = state.chapterArchive?.find(r => r.actionId === id);
+        if (!record) return { templateId: null, line: null, rendered, hasStakes: false, reason: `no action ${id}` };
+        return {
+          actionId: id,
+          templateId: record.templateId,
+          line: null,
+          resultLine: record.stakesLine ?? null,
+          rendered,
+          hasStakes: Boolean(record.stakesLine),
+          archived: true,
+        };
+      }
+      const template = getUnifiedTemplateById(action.templateId);
+      const built = template ? sl.stakesLineForAction(action, template, state.graph) : null;
+      return {
+        actionId: id,
+        templateId: action.templateId,
+        line: built?.text ?? null,
+        leadSource: built?.leadSource ?? null,
+        fallback: built ? built.fallback : 'no_stakes_description_used',
+        stamped: Boolean(action.stakesContext),
+        stakesContext: action.stakesContext ?? null,
+        resultLine: template && action.resolved ? sl.rememberedStakesLine(action, template, state.graph) : null,
+        armKey: template ? sl.resolveStakesArmKey(template, action.choiceHistory) ?? null : null,
+        rendered,
+        hasStakes: Boolean(template?.stakes),
+        archived: false,
+      };
+    },
+
     getOutcomePinVerdict: async () => {
       const { getOutcomePinVerdict, getOutcomePin } = await import('./engine/debugOutcomePin');
       const verdict = getOutcomePinVerdict();
@@ -2870,7 +2929,8 @@ if (import.meta.env.DEV) {
         const sub = g.getNode(id)?.properties.subcategory;
         return sub === 'spell' || sub === 'innate_power';
       };
-      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string }> = [];
+      type GrantEdge = { spellId: string; source: string; grantedBy?: string; viaItemId?: string };
+      const out: Array<{ actorId: string; name: string; wielded: string[]; known: string[]; source: string; tradition?: string; grants: GrantEdge[] }> = [];
       for (const actor of g.getNodesByType('actor')) {
         const wieldedEdges = g.getOutgoingEdges(actor.id, 'has_trait').filter(e => isSpell(e.target));
         const knownEdges = g.getOutgoingEdges(actor.id, 'knows_spell');
@@ -2881,9 +2941,73 @@ if (import.meta.env.DEV) {
           wielded: wieldedEdges.map(e => e.target),
           known: knownEdges.map(e => e.target),
           source: String(wieldedEdges[0]?.properties.source ?? knownEdges[0]?.properties.source ?? ''),
+          // THR-1572 — the tradition recorded on a library-seeded or library-learned edge.
+          ...(knownEdges.find(e => typeof e.properties.tradition === 'string')
+            ? { tradition: String(knownEdges.find(e => typeof e.properties.tradition === 'string')!.properties.tradition) }
+            : {}),
+          // THR-1672 — where each known spell came from, per edge.
+          grants: knownEdges.map(e => ({
+            spellId: e.target,
+            source: String(e.properties.source ?? ''),
+            ...(typeof e.properties.grantedBy === 'string' ? { grantedBy: e.properties.grantedBy } : {}),
+            ...(typeof e.properties.viaItemId === 'string' ? { viaItemId: e.properties.viaItemId } : {}),
+          })),
         });
       }
       return out.sort((a, b) => a.actorId.localeCompare(b.actorId));
+    },
+
+    // ── The seeded spell generator (THR-1572) ───────────────────────────
+    /** Every tradition library in this world, with each spell's holders. */
+    getSpellLibraries: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { traditionCatalog } = await import('./engine/spellGenerator/traditionCatalog');
+      const { getTraditionLibrary, spellProvenance } = await import('./engine/spellGenerator/spellLibrary');
+      const { spellDefinitionNodeId } = await import('./data/spell-templates');
+      const g = state.graph;
+      const holders = new Map<string, number>();
+      for (const actor of g.getNodesByType('actor')) {
+        for (const e of g.getOutgoingEdges(actor.id, 'has_trait')) holders.set(e.target, (holders.get(e.target) ?? 0) + 1);
+      }
+      return traditionCatalog()
+        .map(t => ({
+          traditionId: t.id,
+          name: t.name,
+          spells: getTraditionLibrary(g, t.id).map(s => ({
+            id: s.id,
+            name: s.name,
+            tier: s.tier,
+            agency: s.agency ?? 'fate_woven',
+            arena: s.arena ?? 'encounter',
+            priceLayer: spellProvenance(g, s.id)?.priceLayer ?? 'free',
+            coreId: spellProvenance(g, s.id)?.coreId ?? '',
+            holders: holders.get(spellDefinitionNodeId(s.id)) ?? 0,
+          })),
+        }))
+        .filter(l => l.spells.length > 0);
+    },
+    /** Generate one spell without minting it — the spell, its words and its validator problems. */
+    previewGeneratedSpell: async (opts: { tradition: string; tier: number; slot?: number; seed?: number; agency?: string; arena?: string }) => {
+      const state = _gameStateProvider?.();
+      const { generateSpell } = await import('./engine/spellGenerator/generateSpell');
+      const { validateGeneratedSpell } = await import('./engine/spellGenerator/validateGeneratedSpell');
+      const { describeSpell } = await import('./engine/spellGenerator/describeSpell');
+      const { planLibrarySlots } = await import('./engine/spellGenerator/spellLibrary');
+      const traditionId = opts.tradition.startsWith('magic.') ? opts.tradition : `magic.${opts.tradition}`;
+      const worldSeed = opts.seed ?? Number(state?.seed ?? 42);
+      const tier = Math.max(1, Math.min(4, Math.round(opts.tier))) as 1 | 2 | 3 | 4;
+      const planned = planLibrarySlots(traditionId, worldSeed).find(s => s.tier === tier && (opts.slot === undefined || s.slot === opts.slot));
+      const agency = (opts.agency ?? planned?.agency ?? (tier >= 4 ? 'deliberate' : 'fate_woven')) as 'deliberate' | 'fate_woven';
+      const arena = (opts.arena ?? planned?.arena ?? 'encounter') as 'encounter';
+      const spell = generateSpell({ worldSeed, traditionId, tier, slot: opts.slot ?? planned?.slot ?? 0, agency, arena });
+      if (!spell) return { error: `no core fits ${traditionId} tier ${tier} ${agency} ${arena}` };
+      return {
+        spell: spell.template,
+        provenance: spell.provenance,
+        words: describeSpell(spell.template, spell.provenance.catchIndexes),
+        problems: validateGeneratedSpell(spell.template, spell.provenance),
+      };
     },
     /**
      * Run one cast through `resolveCast` directly — the engine lever for review. The
@@ -2894,9 +3018,9 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
       const { resolveCast, resolveCastTarget } = await import('./engine/spellCasting');
-      const { getSpellTemplate } = await import('./data/spell-templates');
+      const { resolveSpellTemplate } = await import('./data/spell-templates');
       const { STEP_OUTCOMES } = await import('./types/unifiedAction');
-      const spell = getSpellTemplate(opts.spell) ?? getSpellTemplate(`spell_${opts.spell}`);
+      const spell = resolveSpellTemplate(state.graph, opts.spell) ?? resolveSpellTemplate(state.graph, `spell_${opts.spell}`);
       if (!spell) return { error: `no spell template: ${opts.spell}` };
       if (!state.graph.getNode(opts.caster)) return { error: `no caster: ${opts.caster}` };
       const band = (STEP_OUTCOMES as readonly string[]).includes(opts.band ?? '') ? opts.band as typeof STEP_OUTCOMES[number] : 'success';
@@ -3595,6 +3719,46 @@ if (import.meta.env.DEV) {
         touchWorld(runtime);
       }
       return { ok: true as const, id, name: result.item.name, coreId: result.item.coreId, signatureId: result.item.signatureId, band: result.item.band, holderId: agent.id };
+    },
+
+    // THR-1672: the god teaches a mortal a spell — the divine path with the gates bypassed
+    // (the `applySpellStamp` pattern). Picks as the card would, unless `spellId` names one.
+    teachSpell: async (agentQuery = '@hero', spellId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { ok: false as const, reason: 'no_game' };
+      const agent = await resolveAgentNode(agentQuery);
+      if (!agent) return { ok: false as const, reason: 'agent_not_found' };
+      const { applyTeachSpell } = await import('./engine/ascendantExpression');
+      const taught = applyTeachSpell(state, state.ascendantId, agent.id, state.tick, {
+        bypassGates: true,
+        ...(spellId ? { spellId: spellId.startsWith('spell_') ? spellId : `spell_${spellId}` } : {}),
+      });
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchStructure } = await import('./engine/simulationRuntime');
+        touchStructure(runtime);
+      }
+      return taught.success
+        ? { ok: true as const, agentId: agent.id, spellId: taught.spellId, spellName: taught.spellName, dark: !!taught.dark, wielded: !!taught.wielded }
+        : { ok: false as const, reason: taught.failSoft ?? 'refused' };
+    },
+
+    // THR-1672: hand a mortal a reward book through `instantiateReward`, so the teaching
+    // hook runs for real (`reward_tomes_scrolls_veilscript_fragment` teaches).
+    giveTome: async (agentQuery = '@hero', templateId = 'reward_tomes_scrolls_veilscript_fragment') => {
+      const state = _gameStateProvider?.();
+      if (!state) return { ok: false as const, reason: 'no_game' };
+      const agent = await resolveAgentNode(agentQuery);
+      if (!agent) return { ok: false as const, reason: 'agent_not_found' };
+      const { instantiateReward } = await import('./engine/rewardPool');
+      const result = instantiateReward(state.graph, templateId, agent.id, state.tick);
+      if (!result) return { ok: false as const, reason: 'template_or_agent_missing' };
+      const runtime = _runtimeProvider?.();
+      if (runtime) {
+        const { touchStructure } = await import('./engine/simulationRuntime');
+        touchStructure(runtime);
+      }
+      return { ok: true as const, agentId: agent.id, itemId: result.instanceId, itemName: result.displayName, ...(result.taughtSpellName ? { taughtSpellName: result.taughtSpellName } : {}) };
     },
 
     // THR-1142: travel-intent readout — where an encounter ending sent this agent.

@@ -19,6 +19,8 @@ import type { AuthoredChoiceCard, BranchAwareAftermathConfig, UnifiedActionTempl
 type FactionEntry = {
   id: string;
   name: string;
+  /** THR-1727 — the stakes line's parts; passed through by `toUnifiedTemplate`. */
+  stakes?: import('../types/encounterStakes').EncounterStakes;
   locationTypes: readonly string[];
   sublocationTypes?: string[];
   reachPrimary: string;
@@ -1374,6 +1376,8 @@ function toUnifiedTemplate(template: FactionEntry): UnifiedActionTemplate {
     },
     authoredChoices,
     aftermathConfig: buildAftermathConfig(template.id, template.name),
+    // THR-1727: the allowlist drops what it does not name — stakes must be named.
+    ...(template.stakes ? { stakes: template.stakes } : {}),
   };
 }
 

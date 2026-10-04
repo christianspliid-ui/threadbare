@@ -28,6 +28,7 @@
  */
 
 import type { SphereName } from '../types/index';
+import { CACHE_WORD_LEFT_BEHIND_ESSENCE, CACHE_WORD_LEFT_BEHIND_FORECAST } from './spell-grant-constants';
 import { SPHERE_NAMES } from '../types/index';
 import type { HungerId } from '../types/hunger';
 import type {
@@ -470,6 +471,14 @@ const VARIATION_MEMBERS: readonly NudgeCardMember[] = [
     typeId: 'insurance',
     unlock: { kind: 'milestone', unlockActionId: 'divine.rekindle_thread' },
   },
+  // THR-1672 — the Cache family's spell grant: what the god leaves behind is a working.
+  // Earned with Teach a Spell, the card it is the in-scene sibling of. The id keeps the
+  // plan's name; it is not sphere-signed (common pool, like the other variations).
+  {
+    id: 'card.cache.variation.spirit',
+    typeId: 'cache',
+    unlock: { kind: 'milestone', unlockActionId: 'action.teach_spell' },
+  },
   {
     id: 'card.mercy.variation.witnessed',
     typeId: 'mercy',
@@ -679,6 +688,9 @@ const CARD_CONTENT: Readonly<Record<string, NudgeCardContent>> = {
   },
   'card.mercy.variation.witnessed': {
     title: 'Send A Witness',
+  },
+  'card.cache.variation.spirit': {
+    title: 'Leave A Word Behind',
   },
 
   // Attunement members — each reads as *practice* in its sphere, not as a
@@ -1124,6 +1136,15 @@ export const PLAY_PROFILES: Readonly<Record<string, NudgeCardPlayProfile>> = {
     contextTags: ['craft', 'journey', 'labor'],
     effectLine: 'Someone put something by, long ago, and they find it.',
   },
+  // THR-1672 — the Cache family's spell grant. It changes who they are, not this roll.
+  'card.cache.variation.spirit': {
+    essenceCost: CACHE_WORD_LEFT_BEHIND_ESSENCE,
+    forecastDelta: CACHE_WORD_LEFT_BEHIND_FORECAST,
+    grants: [{ kind: 'spell_grant', targetAgentId: '$actor', selector: 'god' }],
+    // `arcane` is not a DealContextTag; `lore` is the nearest (recorded, THR-1672).
+    contextTags: ['lore', 'journey'],
+    effectLine: 'Something you know, they now know. They will not say where they learned it.',
+  },
   'card.insurance.hunger.preserve': {
     essenceCost: 2,
     forecastDelta: 0,
@@ -1445,6 +1466,12 @@ export const BAND_FRAGMENTS: Readonly<Record<string, Partial<Record<StepOutcome,
     success_at_cost: 'The store was there and was not left as it was found.',
     near_miss: 'What had been set aside was set aside for a different problem.',
     failure: 'The place had been emptied long before {they} reached it.',
+  },
+  'card.cache.variation.spirit': {
+    success: 'A working {they} never studied was in {their} hands when it was needed.',
+    success_at_cost: 'The word came to {them}, and it did not come gently.',
+    near_miss: 'Something was left for {them}. It was not what this moment wanted.',
+    failure: 'What was left behind waited in {them}, unused.',
   },
   'card.insurance.hunger.preserve': {
     success: 'Whatever else went, {they} did not.',

@@ -15,6 +15,8 @@
  *      its own seeded stream, and applies it the same way;
  *   5. raises `'spell_cast'` on the caster's own carried triggers;
  *   6. queues the soul price as a `spell_price` quintessence event (FB3's split);
+ *   6b. (THR-1572) a generated transgression spell is noticed: a `forbidden_contact`
+ *      hidden mark on the caster, once per caster per spell, landed or fizzled;
  *   7. traces `spell.cast_resolved` (and `spell.backlash` when it bit).
  *
  * The band is the roll that already happened — a step's, or an undertaking's final
@@ -56,6 +58,10 @@ import { CAST_LANDED_BANDS, CAST_ENEMY_FILTER_ADMITS_STRANGERS } from '../data/s
 import { isAlly, actorFactionId } from './allegiance';
 import { areFactionsHostile } from './factionNetwork';
 import { applyCastChannel, splitCastEffects, type CastChannelResult } from './castChannel';
+import { placeSpellNotice, spellNoticeMarkId, spellProvenance } from './spellGenerator/notice';
+import { knowsSpellEdge } from './spellGrant';
+import { writeAgentDetection, type DetectionCrossingRecorder } from './agentDetection';
+import { DIVINE_TAUGHT_CAST_DETECTION } from '../data/spell-grant-constants';
 
 // ═══════════════════════════════════════════════════════════════════
 // Request / result
@@ -76,6 +82,12 @@ export interface CastRequest {
   readonly siteRef: string;
   /** THR-1683 — mortals the target filter turned away while choosing `targetId` (traced). */
   readonly filterRejected?: number;
+  /**
+   * THR-1672 — the detection crossing recorder for a god-taught transgression's echo.
+   * Handed in by callers outside the module cycle (`agentDetection.ts`); omitted, the
+   * echo still writes pressure but plants no strike.
+   */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 /** One graph write a cast produced — the only thing a chip may be built from (Law 56). */
@@ -113,6 +125,12 @@ export interface CastResult {
   readonly soulPrice?: number;
   readonly writes: readonly CastWrite[];
   readonly refused?: CastRefusal;
+  /**
+   * THR-1572 — a transgression's notice: the caster's mark for this spell, and whether
+   * this cast placed it (a second cast of the same spell places none). Absent for a spell
+   * that carries no notice.
+   */
+  readonly notice?: { readonly markId: string; readonly placed: boolean };
 }
 
 const REFUSED = (refused: CastRefusal): CastResult => ({ landed: false, applied: [], paid: [], writes: [], refused });
@@ -353,6 +371,18 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     } satisfies QuintessenceEvent);
   }
 
+  // 6b. A transgression is noticed (THR-1572, Lane decision 5) — on every cast, landed or not.
+  // THR-1672 — a god-taught transgression echoes back to the god: the mark names the
+  // teaching, and every cast adds detection where the caster stands (Lane decision 4).
+  let notice: CastResult['notice'];
+  if (spellProvenance(graph, spell.id)?.notice) {
+    const taughtByRaw = knowsSpellEdge(graph, casterId, spell.id)?.properties.grantedBy;
+    const taughtBy = typeof taughtByRaw === 'string' ? taughtByRaw : undefined;
+    const placed = placeSpellNotice(state, casterId, spell, tick, 'cast', undefined, taughtBy);
+    notice = { markId: spellNoticeMarkId(casterId, spell.id), placed: placed !== null };
+    if (taughtBy) divineEcho(state, taughtBy, casterId, spell, tick, landed, req.recordCrossings);
+  }
+
   const result: CastResult = {
     landed,
     applied,
@@ -360,9 +390,33 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     paid: activation.paidCosts,
     ...(soulPrice > 0 ? { soulPrice } : {}),
     writes,
+    ...(notice ? { notice } : {}),
   };
   traceResolved(req, result, triggersFired, channelResult);
   return result;
+}
+
+/** THR-1672 — each cast of a god-taught transgression adds detection in the caster's region. */
+function divineEcho(
+  state: GameState,
+  ascendantId: string,
+  casterId: string,
+  spell: SpellTemplate,
+  tick: number,
+  landed: boolean,
+  recordCrossings?: DetectionCrossingRecorder,
+): void {
+  const write = writeAgentDetection(state, casterId, DIVINE_TAUGHT_CAST_DETECTION, tick, recordCrossings);
+  if (!write) return;
+  try {
+    emitTrace({
+      category: 'spell.divine_echo', tick, agentId: casterId, ascendantId, casterId, spellId: spell.id,
+      regionId: write.regionId, detectionDelta: DIVINE_TAUGHT_CAST_DETECTION, landed,
+      summary: `${spell.name} was cast by one a god taught it to — the teaching echoes in ${write.regionId}`,
+    });
+  } catch {
+    /* NFP #4 */
+  }
 }
 
 function refuse(req: CastRequest, refused: CastRefusal): CastResult {

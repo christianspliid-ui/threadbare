@@ -3046,3 +3046,30 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 - **Card tint:** `CardFace` reads `model.sphereTint`. It is set by `actionCardModel` and by the nudge-card model in `NudgePhaseShell` (when `sphere && essenceCost > 0`). Tinted cards carry `data-sphere-tint`.
 - **Debug:** `__DEBUG.getDialogContexts()` returns `{ surfaces, open }`.
 - **StyleGuide:** `section-dialog-contexts`.
+
+## The seeded spell generator (THR-1572)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/spellGenerator/casterTradition.ts` (`casterTraditionOf`, `casterSeedIdentity`) | worldgen (`buildSpellLibrary`); `create × Power` | `AttachmentsTab` *Taught by* | `graph` (`knows_spell.tradition`) | `spell.library_built` | `getSpellHolders` (`tradition`) |
+| `engine/spellGenerator/generateSpell.ts` + `validateGeneratedSpell.ts` + `data/spell-generator-{cores,tables}.ts` + `data/spell-honest-vocabulary.ts` | via `buildSpellLibrary` | — | — | `spell.generated`, `spell.generate_fallback` | `previewGeneratedSpell`, CLI `generate spells` |
+| `engine/spellGenerator/spellLibrary.ts` (`buildSpellLibrary`, `getTraditionLibrary`, `measureSoulDrainShare`) | `worldSeed.ts` tail, immediately before `seedSpellKnowing` | `AttachmentsTab` | `graph` (definition nodes with `template`) | `spell.library_built` | `getSpellLibraries`, CLI `spells` |
+| `data/spell-templates.ts` `resolveSpellTemplate` | the nine former `getSpellTemplate` sites | step cast model, sheet | — | — | — |
+| `engine/seedAttachments.ts` `seedSpellKnowing(graph, library?)` | worldgen tail | `AttachmentsTab` | `graph` | `spell.seeded` (+ `byTradition`, `fromLibrary`) | `getSpellHolders` |
+| `engine/spellGenerator/notice.ts` (`placeSpellNotice`, `placeSeededCarriedNotices`) · `engine/spellCasting.ts` (`CastResult.notice`) · `engine/gameInit.ts` | every cast; `create × Power` (carried); game init (seeded carriers) | — (a hidden mark) | `hiddenMarks` | `spell.notice_placed` | CLI `eval state.hiddenMarks` |
+| `engine/spellGenerator/describeSpell.ts` · `engine/agentAttachments.ts` (`spellWords`) · `components/Game/tabs/AttachmentsTab.tsx` | sheet build | *Taught by*, *What it does*, *What it costs*, *What goes wrong* | — | — | `data-testid="spell-words-<id>"` |
+| `engine/spellGenerator/readBack.ts` (`readBackSpell`) · `engine/itemGenerator/readBack.ts` (`readBackBaseWorld`, `readBackEffects`, exported) | gate test, CLI review | — | — | — | CLI `generate spells` verdicts |
+
+**Wired and asserted:** `spellGenerator.gate.test.ts` (20 tests) — 3 seeds × 34 traditions, zero validator problems and zero read-back failures, every core fires, every library holds a step-usable spell, deterministic, words without numerals, leans never overridden, no Foundation sphere below tier 3, the dishonest control batch fails. `spellLibrary.test.ts` (9 tests) — tradition by role, the library minted with templates, seeding from it, the switch-off regression, learning from the library, a generated cast through `use × Power` on both bands, one notice per caster per spell.
+
+## Spells as divine gifts and found tomes (THR-1672)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/spellGrant.ts` `grantSpell` — the one writer of `knows_spell` | `seedSpellKnowing` (worldgen), `create × Power` (`learn_spell`), `applySpellStamp` (`?spell=`), `instantiateReward` (spell templates), `applyTeachSpell`, the `spell_grant` applier, `onItemAcquired` | `AttachmentsTab` (*Granted by* / *Learned from*) | `graph` (`knows_spell { source, grantedBy?, viaItemId? }`, `has_trait`) | `spell.granted` | `getSpellHolders().grants` |
+| `engine/spellGrant.ts` `pickDivineSpell` · `engine/ascendantExpression.ts` `teachSpellPreview` | `applyTeachSpell`; `useTargetActions` / `useAgentInteraction` (card line + lock, same thread/awareness gate as the cast) | ActionDrawer card (*Will teach …*; locked *They know everything you could teach* / *They do not yet hold your connection deeply enough*) | read-only | (in `spell.granted`) | `teachSpell` |
+| `engine/ascendantExpression.ts` `applyTeachSpell` | `unifiedActionResolution.ts` `teach_spell` op (Teach a Spell); `encounterAftermath.ts` `spell_grant` (Cache card *Leave A Word Behind*) | receipt event, chronicle line | `graph`, `doomClock`, `regionalDetectionPressure` | `spell.grant_skipped`, `spell.divine_teaching_priced` | `teachSpell` |
+| `engine/spellGrant.ts` `onItemAcquired` + `tomeTeaches` + `pickTomeSpell` | `instantiateReward` (possession branch), `mintGeneratedItem` (holder ≠ maker), `control:seize × Item` | sheet, reward line (*and learned …*) | `graph` (`knows_spell.viaItemId`, item `taughtHolderIds`) | `spell.granted`, `spell.tome_unread` | `giveTome` |
+| `engine/spellCasting.ts` divine echo · `engine/agentDetection.ts` `writeAgentDetection` | every cast of a god-taught transgression | — (mark label names the god) | `regionalDetectionPressure`, `hiddenMarks` | `spell.divine_echo` | CLI `eval state.hiddenMarks` |
+
+**Wired and asserted:** `spellGrant.test.ts` (18 tests: seam, divine pool, Teach a Spell both arms, dark price and its band crossing, cast echo, book predicate, reward/seize teaching, `spell_grant` reaction, drawer line/lock) and `spellGrant.pin.test.ts` (the three older writers' edges, snapshotted before the repoint).

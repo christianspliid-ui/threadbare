@@ -320,6 +320,7 @@ const CONTRACT_BLOCKS: readonly CompositionBlock[] = [
  */
 const PERSISTENT_KINDS_SHOWN: ReadonlySet<string> = new Set([
   'spawn_artifact',
+  'spell_grant',
   'apply_condition',
   'condition_attachment',
   'assign_ambition',

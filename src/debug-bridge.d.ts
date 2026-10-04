@@ -2270,7 +2270,57 @@ export interface DebugBridge {
     readonly wielded: readonly string[];
     readonly known: readonly string[];
     readonly source: string;
+    /** THR-1572 — the tradition on a library-seeded or library-learned `knows_spell` edge. */
+    readonly tradition?: string;
+    /** THR-1672 — every `knows_spell` edge with its provenance: `source` (`'divine'`,
+     *  `'tome'`, …), the teaching god's id (`grantedBy`) or the book's id (`viaItemId`). */
+    readonly grants: ReadonlyArray<{ readonly spellId: string; readonly source: string; readonly grantedBy?: string; readonly viaItemId?: string }>;
   }>;
+  /** THR-1672 — the god teaches a mortal a spell, gates bypassed (debug). Picks as the
+   *  Teach a Spell card would — the god's spheres, then the mortal's tradition — unless
+   *  `spellId` names one (`hollow_crown` or `spell_hollow_crown`). A dark spell charges
+   *  the god doom and detection, as the card does. **Async** — `await` it. */
+  teachSpell: (agentQuery?: string, spellId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly spellId?: string; readonly spellName?: string; readonly dark: boolean; readonly wielded: boolean }
+    | { readonly ok: false; readonly reason: string }
+  >;
+  /** THR-1672 — hand a mortal a reward book through `instantiateReward` so the teaching
+   *  hook runs for real (default `reward_tomes_scrolls_veilscript_fragment`).
+   *  `taughtSpellName` is set when the book taught them. **Async** — `await` it. */
+  giveTome: (agentQuery?: string, templateId?: string) => Promise<
+    | { readonly ok: true; readonly agentId: string; readonly itemId: string; readonly itemName: string; readonly taughtSpellName?: string }
+    | { readonly ok: false; readonly reason: string }
+  >;
+  /** THR-1572 — every tradition library this world built, each spell with its holder
+   *  count (`has_trait` bearers). Spell ids are template ids (`spell_gen_holy_1_0`), the
+   *  form `?spell=` accepts. Empty before the world exists. **Async** — `await` it. */
+  getSpellLibraries: () => Promise<ReadonlyArray<{
+    readonly traditionId: string;
+    readonly name: string;
+    readonly spells: ReadonlyArray<{
+      readonly id: string;
+      readonly name: string;
+      readonly tier: number;
+      readonly agency: string;
+      readonly arena: string;
+      readonly priceLayer: string;
+      readonly coreId: string;
+      readonly holders: number;
+    }>;
+  }>>;
+  /** THR-1572 — generate one spell without minting it: `tradition` is `magic.holy` or
+   *  `holy`, `tier` 1–4; `slot`/`agency`/`arena` default to that tier's planned library
+   *  slot, `seed` to the live world's. Returns the template, provenance, the sheet's words
+   *  and the validator's problems (`[]` = honest). **Async** — `await` it. */
+  previewGeneratedSpell: (opts: { tradition: string; tier: number; slot?: number; seed?: number; agency?: string; arena?: string }) => Promise<
+    | { readonly error: string }
+    | {
+      readonly spell: { readonly id: string; readonly name: string; readonly tier: number; readonly agency?: string; readonly arena?: string };
+      readonly provenance: { readonly traditionId: string; readonly coreId: string; readonly priceLayer: string; readonly seedKey: string };
+      readonly words: { readonly does: string; readonly costs: string; readonly wrong: string };
+      readonly problems: readonly string[];
+    }
+  >;
   /** THR-1571 — run one cast through `resolveCast` (the only cast path). `spell` is a
    *  template id (`spell_veilwalk`, or `veilwalk`); `band` is one of the six step
    *  outcomes and defaults to `success` — the band *is* the roll, no die is thrown.
@@ -2309,6 +2359,30 @@ export interface DebugBridge {
       readonly stepOutcomes: readonly string[];
       readonly recorded: Readonly<Record<number, import('./types/unifiedAction').StepCastRecord>>;
       readonly pending: import('./types/unifiedAction').StepCastRecord | null;
+    }
+  >;
+  /** THR-1727 — the encounter's stakes line as built (`line`) and as the veil renders it
+   *  (`rendered`, null when no stakes line is mounted). No argument: the encounter behind
+   *  the newest open notification. With `actionId`: that action, and its `resultLine` once
+   *  resolved (archived actions read the Chapter Record). `hasStakes` is false for a
+   *  template that authors no `stakes` (the veil then shows its description).
+   *  **Async** — `await` it. */
+  getEncounterStakes: (actionId?: string) => Promise<
+    | null
+    | {
+      readonly actionId?: string;
+      readonly templateId: string | null;
+      readonly line: string | null;
+      readonly leadSource?: 'choice' | 'mission' | 'chance' | 'divine' | 'none' | null;
+      readonly fallback?: string | null;
+      readonly stamped?: boolean;
+      readonly stakesContext?: import('./types/encounterStakes').StakesContext | null;
+      readonly resultLine?: string | null;
+      readonly armKey?: string | null;
+      readonly rendered: string | null;
+      readonly hasStakes: boolean;
+      readonly archived?: boolean;
+      readonly reason?: string;
     }
   >;
   getOutcomePinVerdict: () => Promise<
