@@ -248,7 +248,7 @@ export function dispatchNudgeCommitments(
       effects: grants,
     };
     try {
-      const applied = applyEncounterAftermathReaction(nextState, action, reaction, tick, runtime);
+      const applied = applyEncounterAftermathReaction(nextState, action, reaction, tick, runtime, { recordCrossings: recordDetectionCrossings });
       nextState = applied.state;
       mutationSummary = applied.mutationSummary;
     } catch (error) {

@@ -6,7 +6,10 @@
  * one grant seam, `grantSpell` (`src/engine/spellGrant.ts`).
  */
 
-/** Master switch for channel 1: `false` hides Teach a Spell and skips `spell_grant`. */
+/**
+ * Master switch for channel 1: `false` locks the Teach a Spell card on every target (no
+ * essence is charged for a no-op) and skips `spell_grant`.
+ */
 export const SPELL_GRANT_ENABLED_DIVINE = true;
 
 /** Master switch for channel 4: `false` makes `onItemAcquired` a no-op. */

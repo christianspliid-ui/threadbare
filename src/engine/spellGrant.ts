@@ -30,6 +30,7 @@ import { resolveSpellTemplate, spellDefinitionNodeId } from '../data/spell-templ
 import { SLOT_CAPS } from '../data/attachment-slot-constants';
 import {
   DIVINE_TEACH_MAX_TIER,
+  SPELL_GRANT_ENABLED_DIVINE,
   SPELL_GRANT_ENABLED_TOMES,
   TOME_ANCIENT_MIN_GENERATED_BAND,
   TOME_ANCIENT_TAG,
@@ -242,12 +243,18 @@ function pickPreferred(graph: WorldGraph, tiers: readonly (readonly SpellTemplat
   return spell ? { spellId: spell.id, spellName: spell.name, tier: spell.tier, dark: isDarkSpell(graph, spell.id) } : null;
 }
 
-/** The tradition this mortal was taught by: off their edge, else derived (THR-1572). */
-function traditionOfActor(graph: WorldGraph, actorId: string, worldSeed: number): string | undefined {
+/**
+ * The tradition this mortal was taught by: off their edge, else derived (THR-1572). The
+ * derivation is keyed on the world seed, so without one (a possession writer with no
+ * state in hand) only the edge is trusted — a guessed seed would name a different
+ * tradition than seeding and study assign the same mortal.
+ */
+function traditionOfActor(graph: WorldGraph, actorId: string, worldSeed: number | undefined): string | undefined {
   const edge = graph.getOutgoingEdges(actorId, 'knows_spell')
     .filter(e => typeof e.properties.tradition === 'string')
     .sort((a, b) => a.id.localeCompare(b.id))[0];
   if (edge) return String(edge.properties.tradition);
+  if (worldSeed === undefined) return undefined;
   try {
     return casterTraditionOf(graph, actorId, worldSeed);
   } catch {
@@ -255,7 +262,7 @@ function traditionOfActor(graph: WorldGraph, actorId: string, worldSeed: number)
   }
 }
 
-function traditionShelf(graph: WorldGraph, actorId: string, worldSeed: number, candidates: readonly SpellTemplate[]): SpellTemplate[] {
+function traditionShelf(graph: WorldGraph, actorId: string, worldSeed: number | undefined, candidates: readonly SpellTemplate[]): SpellTemplate[] {
   const tradition = traditionOfActor(graph, actorId, worldSeed);
   if (!tradition) return [];
   const ids = new Set(getTraditionLibrary(graph, tradition).map(s => s.id));
@@ -306,6 +313,7 @@ export function spellTeachingPreview(
   worldSeed: number,
 ): { spellName: string; dark: boolean } | null | undefined {
   if (graph.getNode(targetId)?.type !== 'actor') return undefined;
+  if (!SPELL_GRANT_ENABLED_DIVINE) return null;
   const pick = pickDivineSpell(graph, ascendantId, targetId, worldSeed);
   return pick ? { spellName: pick.spellName, dark: pick.dark } : null;
 }
@@ -352,7 +360,7 @@ export function tomeTeaches(node: Pick<GraphNode, 'properties'> | undefined): To
  * (Foundation-sphere) magic; arcane books prefer the reader's own tradition, then spells
  * of the book's Reach. Tier ≤ min(the book's tier, `TOME_MAX_TIER[kind]`).
  */
-export function pickTomeSpell(graph: WorldGraph, item: GraphNode, readerId: string, worldSeed: number, tick: number): SpellPick | null {
+export function pickTomeSpell(graph: WorldGraph, item: GraphNode, readerId: string, worldSeed: number | undefined, tick: number): SpellPick | null {
   try {
     const kind = tomeTeaches(item);
     if (!kind) return null;
@@ -360,7 +368,7 @@ export function pickTomeSpell(graph: WorldGraph, item: GraphNode, readerId: stri
     const candidates = candidateSpells(graph, readerId, Math.min(itemTier, TOME_MAX_TIER[kind]));
     if (candidates.length === 0) return null;
     const generated = item.properties.generated as { seedKey?: string } | undefined;
-    const key = `tome:${worldSeed}:${generated?.seedKey ?? item.name}:${casterSeedIdentity(graph, readerId)}:${tick}`;
+    const key = `tome:${worldSeed ?? 'unseeded'}:${generated?.seedKey ?? item.name}:${casterSeedIdentity(graph, readerId)}:${tick}`;
     if (kind === 'ancient') {
       const foundation = new Set<string>(FOUNDATION_SPHERE_NAMES);
       return pickPreferred(graph, [candidates.filter(c => foundation.has(c.sphereAffinity)), candidates], key);
@@ -394,7 +402,8 @@ export function onItemAcquired(
   itemId: string,
   tick: number,
   via: ItemAcquiredVia,
-  worldSeed = 0,
+  /** Omit when unknown: the reader's tradition is then read off their edge only. */
+  worldSeed?: number,
 ): ItemAcquiredTeaching | null {
   try {
     if (!SPELL_GRANT_ENABLED_TOMES) return null;

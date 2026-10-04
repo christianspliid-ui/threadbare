@@ -72,6 +72,7 @@ import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
 import { applyImbueItem, applyBestowPower, applyTeachSpell, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
 import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
+import { recordDetectionCrossings } from './orchestrator/phaseDetectionPressure';
 import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
@@ -670,6 +671,7 @@ function resolveStepCastOnBand(
     tick,
     site: 'step',
     siteRef: `${action.actionId}:${action.currentStep}`,
+    recordCrossings: recordDetectionCrossings,
   });
   return {
     ...record,
@@ -1294,7 +1296,7 @@ function applyStepOutcomeEffects(
 
   try {
     const { state: next, mutationSummary } = applyEncounterAftermathReaction(
-      state, action, reaction, tick, runtime,
+      state, action, reaction, tick, runtime, { recordCrossings: recordDetectionCrossings },
     );
     Object.assign(state, next);
     // Same invalidation contract phaseAutonomousAftermath honours: the effect
@@ -1991,7 +1993,7 @@ export function executeStepResult(
         const agentRef = op.nodeId ? op.nodeId : action.targetId;
         const resolvedAgentId = agentRef === '$target' ? action.targetId : agentRef;
         try {
-          const taught = applyTeachSpell(state, action.actorId, resolvedAgentId, tick);
+          const taught = applyTeachSpell(state, action.actorId, resolvedAgentId, tick, { recordCrossings: recordDetectionCrossings });
           if (taught.success && taught.spellName) {
             const agentName = state.graph.getNode(resolvedAgentId)?.name ?? resolvedAgentId;
             const event: TickEvent = {

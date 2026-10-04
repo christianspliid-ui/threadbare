@@ -27,6 +27,7 @@ import {
   grantSpell, isDarkSpell, onItemAcquired, pickDivineSpell, pickTomeSpell, spellTeachingPreview, tomeTeaches,
 } from '../spellGrant';
 import { applyTeachSpell } from '../ascendantExpression';
+import { recordDetectionCrossings } from '../orchestrator/phaseDetectionPressure';
 import { instantiateReward } from '../rewardPool';
 import { buildSpellLibrary } from '../spellGenerator/spellLibrary';
 import { resolveCast } from '../spellCasting';
@@ -163,6 +164,15 @@ describe('Teach a Spell (applyTeachSpell)', () => {
     expect(applyTeachSpell(gentle.state, 'asc', 'priest', 20, { spellId: 'spell_veilwalk' })).toMatchObject({ success: true, dark: false });
     expect(gentle.state.doomClock.tickModifier).toBe(before);
     expect(pressureIn(gentle.state, 'region_a')).toBe(0);
+  });
+
+  it('dark teaching that crosses a detection band traces the crossing, as a nudge write does', () => {
+    const { state, graph } = world({ library: true });
+    const darkId = darkSpellId(graph)!;
+    state.regionalDetectionPressure = [{ regionId: 'region_a', pressure: 0.9, lastUpdatedTick: 0 }] as never;
+    applyTeachSpell(state, 'asc', 'priest', 20, { spellId: darkId, recordCrossings: recordDetectionCrossings });
+    expect(pressureIn(state, 'region_a')).toBe(1);
+    expect(getTraces().some(t => t.category === 'detection_threshold_crossed' && (t as { regionId?: string }).regionId === 'region_a')).toBe(true);
   });
 
   it('a cast of a god-taught transgression echoes: detection rises and the mark names the god', () => {

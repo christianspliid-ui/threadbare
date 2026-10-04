@@ -162,7 +162,7 @@ export function mintGeneratedItem(graph: WorldGraph, item: GeneratedItem, opts: 
     // THR-1672 — a forbidden book teaches whoever comes to hold it. A masterwork's
     // maker does not learn from the book they wrote; the next holder does.
     if (opts.holderId && opts.holderId !== opts.makerId) {
-      onItemAcquired(graph, opts.holderId, opts.id, opts.tick, 'minted', opts.worldSeed ?? 0);
+      onItemAcquired(graph, opts.holderId, opts.id, opts.tick, 'minted', opts.worldSeed);
     }
     return opts.id;
   } catch {

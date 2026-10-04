@@ -131,6 +131,7 @@ import {
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAscendantPrimarySphere, applyTeachSpell, type TeachSpellSink } from './ascendantExpression';
 import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
+import type { DetectionCrossingRecorder } from './agentDetection';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
 import type { WorldGraph } from './graph';
 import {
@@ -1072,6 +1073,12 @@ export function applyEncounterAftermathReaction(
   reaction: EncounterAftermathReaction,
   tick: number,
   runtime: SimulationRuntime,
+  /**
+   * THR-1672 — the detection crossing recorder for a `spell_grant`'s dark-teaching price.
+   * Handed in by callers outside the module cycle (`agentDetection.ts`); this module
+   * cannot import it. Omitted, the price still writes pressure but plants no strike.
+   */
+  options: { readonly recordCrossings?: DetectionCrossingRecorder } = {},
 ): { state: GameState; mutationSummary: AftermathMutationSummary } {
   if (!runtime) {
     throw new Error('[encounterAftermath] runtime is required — programming error, not a data error');
@@ -1089,7 +1096,7 @@ export function applyEncounterAftermathReaction(
   let nextUnlockedActionIds: readonly string[] | undefined = undefined;
   // THR-551: ControlEffects spawned by `sphere_influence_amplify` (rift) effects.
   const nextControlEffects: ControlEffect[] = [];
-  // THR-1672: the god's teaching price (doom, detection) lands here,
+  // THR-1672: the god's teaching price (doom, detection, a rival strike) lands here,
   // created on the first `spell_grant` and merged into the next state below.
   let teachSink: TeachSpellSink | undefined;
 
@@ -2840,11 +2847,13 @@ export function applyEncounterAftermathReaction(
           graph: state.graph,
           regionalDetectionPressure: state.regionalDetectionPressure,
           doomClock: state.doomClock,
+          pendingEncounterSeeds: state.pendingEncounterSeeds,
           seed: state.seed,
         };
         const sgTaught = applyTeachSpell(teachSink, sgAscendantId, sgTargetId, tick, {
           requireThread: false,
           selector: effect.selector,
+          ...(options.recordCrossings ? { recordCrossings: options.recordCrossings } : {}),
           ...(effect.maxTier !== undefined ? { maxTier: effect.maxTier } : {}),
         });
         if (!sgTaught.success || !sgTaught.spellName) {
@@ -5169,6 +5178,7 @@ export function applyEncounterAftermathReaction(
       ? {
         doomClock: teachSink.doomClock ?? state.doomClock,
         regionalDetectionPressure: teachSink.regionalDetectionPressure,
+        pendingEncounterSeeds: [...(teachSink.pendingEncounterSeeds ?? []), ...nextSeeds],
       }
       : {}),
   };

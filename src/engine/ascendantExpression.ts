@@ -49,7 +49,7 @@ import {
 } from '../data/ascendant-expression-constants';
 import { emitTrace } from './traceBuffer';
 import { accelerateDoomClock } from './doomClock';
-import { writeAgentDetection } from './agentDetection';
+import { writeAgentDetection, type DetectionCrossingRecorder } from './agentDetection';
 import { grantSpell, isDarkSpell, pickDivineSpell, pickTraditionSpell } from './spellGrant';
 import {
   SPELL_GRANT_ENABLED_DIVINE,
@@ -354,7 +354,7 @@ function emitBestowNoOp(
 
 /** The state a teaching reads and writes: the graph, and the god's two prices. */
 export type TeachSpellSink = Pick<GameState, 'graph' | 'regionalDetectionPressure'>
-  & Partial<Pick<GameState, 'doomClock' | 'seed'>>;
+  & Partial<Pick<GameState, 'doomClock' | 'seed' | 'pendingEncounterSeeds'>>;
 
 export interface TeachSpellOptions {
   /** Debug lever: skip the switch and the thread/awareness gates (the `applySpellStamp` pattern). */
@@ -369,6 +369,8 @@ export interface TeachSpellOptions {
   /** `'god'` (default): the god's spheres, then the mortal's tradition. `'tradition'`: the tradition only. */
   readonly selector?: 'god' | 'tradition';
   readonly maxTier?: number;
+  /** The detection crossing recorder (traces + the rival strike); see `agentDetection.ts`. */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 export interface TeachSpellResult {
@@ -444,7 +446,7 @@ export function applyTeachSpell(
       return skip('grant_refused', granted.refused === 'already_known' ? 'already_known' : 'gate');
     }
     const dark = isDarkSpell(graph, granted.spellId);
-    if (dark) priceDarkTeaching(sink, ascendantId, agentId, granted.spellId, tick);
+    if (dark) priceDarkTeaching(sink, ascendantId, agentId, granted.spellId, tick, opts.recordCrossings);
     return { success: true, spellId: granted.spellId, spellName: granted.spellName, dark, wielded: granted.wielded };
   } catch {
     return { success: false, failSoft: 'grant_refused' };
@@ -452,13 +454,20 @@ export function applyTeachSpell(
 }
 
 /** The god pays for teaching dark magic: doom, and being seen where the mortal stands. */
-function priceDarkTeaching(sink: TeachSpellSink, ascendantId: string, agentId: string, spellId: string, tick: number): void {
+function priceDarkTeaching(
+  sink: TeachSpellSink,
+  ascendantId: string,
+  agentId: string,
+  spellId: string,
+  tick: number,
+  recordCrossings?: DetectionCrossingRecorder,
+): void {
   let doomDelta = 0;
   if (sink.doomClock) {
     sink.doomClock = accelerateDoomClock(sink.doomClock, DIVINE_TEACH_DARK_DOOM);
     doomDelta = DIVINE_TEACH_DARK_DOOM;
   }
-  const write = writeAgentDetection(sink, agentId, DIVINE_TEACH_DARK_DETECTION, tick);
+  const write = writeAgentDetection(sink, agentId, DIVINE_TEACH_DARK_DETECTION, tick, recordCrossings);
   traceTeach({
     category: 'spell.divine_teaching_priced', tick, agentId, ascendantId, spellId,
     doomDelta, regionId: write?.regionId ?? '', detectionDelta: write ? DIVINE_TEACH_DARK_DETECTION : 0,
