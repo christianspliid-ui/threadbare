@@ -49,7 +49,12 @@ export type EncounterAftermathChangeKind =
   | 'archetype_drift_register'
   | string;
 
-export type EncounterForecastFactors = readonly [string, string?, string?];
+/**
+ * Zero to three authored factor lines (the bound lives in the contract schema).
+ * Empty is legal (THR-1725): a beat with nothing authored carries no line,
+ * never a stock placeholder.
+ */
+export type EncounterForecastFactors = readonly string[];
 
 export interface EncounterAmbientState {
   readonly time_of_day?: string;

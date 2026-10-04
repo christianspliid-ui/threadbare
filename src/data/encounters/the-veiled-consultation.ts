@@ -467,11 +467,10 @@ const REFUSED_AFTERMATH = {
 
 
 const ENCOUNTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
-const DEFAULT_FORECAST_FACTORS = ['The threads are shifting.'] as const;
+// THR-1725 — a beat with no authored factor lines carries none, never filler.
+const DEFAULT_FORECAST_FACTORS = [] as const;
 const DEFAULT_STATE_DESCRIPTOR = 'no descriptor';
 const DEFAULT_TILTS_TOWARD = 'uncertain';
-const DEFAULT_FALL_FORWARD = 'the threads tighten';
-const DEFAULT_AGENT_REACTION = 'the moment shifts';
 
 const EFFECTIVE_INTERVENTION_TO_COST: Record<EncounterChoiceIntervention, EncounterChoiceCost> = {
   supportive: 'small_breath',
@@ -553,10 +552,10 @@ function buildFallbackEncounterChoice(template: UnifiedActionTemplate, stepIndex
     reach,
     cost: 'small_breath' as const,
     god_verb: `choice-${stepIndex + 1}`,
-    agent_reaction: step && 'successAfterimage' in step ? (step.successAfterimage ?? DEFAULT_AGENT_REACTION) : DEFAULT_AGENT_REACTION,
+    agent_reaction: (step && 'successAfterimage' in step ? step.successAfterimage : undefined) || template.narrativeTemplates.success,
     tilts_toward: DEFAULT_TILTS_TOWARD,
     moral_axis_pole: poles[0],
-    fail_forward: step && 'failureAfterimage' in step ? (step.failureAfterimage ?? DEFAULT_FALL_FORWARD) : DEFAULT_FALL_FORWARD,
+    fail_forward: (step && 'failureAfterimage' in step ? step.failureAfterimage : undefined) || template.narrativeTemplates.failure,
   };
 }
 
@@ -577,10 +576,10 @@ function buildLiteEncounterContract(template: UnifiedActionTemplate): EncounterC
         reach,
         cost: toEncounterChoiceCost(choice),
         god_verb: choice.label,
-        agent_reaction: choice.intent ?? DEFAULT_AGENT_REACTION,
+        agent_reaction: choice.intent || choice.label,
         tilts_toward: choice.targetLabel ?? DEFAULT_TILTS_TOWARD,
         moral_axis_pole: toEncounterArchetypePole(reach, choice),
-        fail_forward: choice.likelyBurden ?? DEFAULT_FALL_FORWARD,
+        fail_forward: choice.likelyBurden || template.narrativeTemplates.failure,
       };
     });
 

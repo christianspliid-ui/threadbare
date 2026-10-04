@@ -55,7 +55,9 @@ const choiceSchema = z.object({
 const beatSchema = z.object({
   title: z.string().min(1),
   invokes: z.string().min(1).optional(),
+  // THR-1725 — empty is legal: no authored factor line means no line shown.
   forecast_factors: z.union([
+    z.tuple([]),
     z.tuple([FORECAST_FACTOR_SCHEMA]),
     z.tuple([FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA]),
     z.tuple([FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA, FORECAST_FACTOR_SCHEMA]),
