@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-04 07:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-04 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -13,9 +13,9 @@ You stopped after four feedback batches on Saturday 12 September, saying *"more 
 
 The one question: **are the encounters, played together, good enough now?** If yes, the next stage opens: encounters that reach into factions, war, the economy and divine actions.
 
-### A finished change stuck for 27 hours: the seeded spell generator ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and))
+### A finished change stuck for 28 hours: the seeded spell generator ([#2178](https://github.com/christianspliid-ui/threadbare/pull/2178), [THR-1572](https://linear.app/threadbare/issue/THR-1572/design-the-seeded-spell-generator-plan-doc-from-the-powers-and))
 
-The armed-PR check escalated it: *"A finished change has been stuck for 27 hours and cannot merge on its own: PR #2178 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
+The armed-PR check escalated it: *"A finished change has been stuck for 28 hours and cannot merge on its own: PR #2178 … has a conflict that repeated automated attempts have not cleared. Nothing is broken on the live site, but that work is not reaching it."*
 
 **Nothing for you to do by hand.** Clearing the conflict is a builder's job; the code is safe on the pull request. The spell-gifts design ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)) waits on it. The fair-draw PR [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) is stuck the same way but on purpose: it waits on its veto window (~02:45 Monday), then a builder clears it.
 
