@@ -6,6 +6,7 @@ import type { WheelSlot } from '../../../engine/wheel';
 import { getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
+import { teachSpellPreview } from '../../../engine/ascendantExpression';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
@@ -55,6 +56,14 @@ export function useTargetActions({
       // THR-998: lets each slot carry the difficulty that actually reaches the roll,
       // so the focused card's line tracks the odds instead of the authored price.
       ascendantCastCapabilities: castCapabilityByReach(gameState.graph, gameState.ascendantId),
+      // THR-1700: a non-stacking sustained verb the god already holds here locks
+      // "Already held" instead of offering a cast that would establish nothing.
+      heldControlEffects: gameState.controlEffects,
+      controlOwnerId: gameState.ascendantId,
+      // A cast still resolving counts as held — its effect is on the way.
+      pendingActions: gameState.unifiedActions,
+      // THR-1672: a teaching card names the spell it would teach, or locks when there is none.
+      spellTeachingPreview: teachSpellPreview(gameState.graph, gameState.ascendantId, target.nodeId, Number(gameState.seed ?? 0)),
     });
   }, [
     target,
@@ -65,5 +74,8 @@ export function useTargetActions({
     gameState.graph,
     gameState.ascendantId,
     gameState.unlockedActionIds,
+    gameState.controlEffects,
+    gameState.unifiedActions,
+    gameState.seed,
   ]);
 }

@@ -169,6 +169,7 @@ import {
 } from './faction-action-constants';
 import { SCHISM_ESSENCE_COST } from './game-config';
 import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONSECRATE_RELIC_UPFRONT, BESTOW_COST, ANOINT_COST, SANCTIFY_PERTICK, SANCTIFY_DEVOTION_PER_TICK, HEARTH_BLESSING_PERTICK } from './ascendant-expression-constants';
+import { TEACH_SPELL_ESSENCE_COST } from './spell-grant-constants';
 // THR-553: content-only reach signatures (Gold/Shadow/Star/Eye/Heart-stub),
 // authored on shipped primitives; reach-gated via each template's `requiresReach`.
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from './reach-signature-content';
@@ -261,6 +262,7 @@ import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
+import { HIRED_KNIVES_TEMPLATE } from './encounters/hired-knives';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -2600,6 +2602,50 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'reaches into a faithful soul to leave a portion of divine strength behind',
       success: 'the gift takes — the mortal carries your power now, quicker in your art and quietly replenished',
       failure: 'the gift will not settle; this soul does not yet hold your connection deeply enough',
+    },
+  },
+  // ─── THR-1672: Teach a Spell — acquisition channel 1, the divine grant ─────────
+  // Built beside Bestow Power and following it (same reach, gate and resolution
+  // site). On success a `teach_spell` GraphOp is intercepted in
+  // unifiedActionResolution.ts and dispatched to applyTeachSpell, which picks a spell
+  // from the god's own spheres (never elder magic) and writes it through the one grant
+  // seam. Teaching a transgression costs the god doom and detection. A Spell, not a
+  // Bestowal: Bestow Power is unchanged (Lane decision 3).
+  {
+    id: 'action.teach_spell',
+    name: 'Teach a Spell',
+    spellName: 'A Working Given',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description:
+      'Put a working of your own into their hands. Dark magic taught is dark magic answered for.',
+    reach: 'star',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'teach_spell',
+        nodeId: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: TEACH_SPELL_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    // `actor` + `individual`, not Bestow's `['agent']`: no target context carries the node
+    // type `agent`, so the node-type gate never admits that card on a mortal (THR-1734).
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'leans close to a faithful soul and leaves a working behind',
+      success: 'the working takes — they know it now, and will not remember learning it',
+      failure: 'the working will not settle; this soul does not yet hold your connection deeply enough',
     },
   },
   // ─── THR-513: Anoint — early expression card (unlockable-generic) ─────────────
@@ -5782,6 +5828,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
+  HIRED_KNIVES_TEMPLATE,
 ];
 
 /**
@@ -5939,6 +5986,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
+  HIRED_KNIVES_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

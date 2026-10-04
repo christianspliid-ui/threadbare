@@ -72,6 +72,16 @@ describe('ActionDrawer — the hand', () => {
     expect(screen.getByTestId('action-drawer')).toBeTruthy();
   });
 
+  it('names its target beside Cast (THR-1705)', () => {
+    renderDrawer({ targetName: 'Thessa' });
+    expect(screen.getByTestId('action-drawer-target').textContent).toBe('Casting on Thessa');
+  });
+
+  it('omits the target line when there is no name, rather than "Casting on " (THR-1705)', () => {
+    renderDrawer({ targetName: '' });
+    expect(screen.queryByTestId('action-drawer-target')).toBeNull();
+  });
+
   it('renders nothing when closed', () => {
     const { container } = render(
       <ActionDrawer
@@ -135,16 +145,26 @@ describe('ActionDrawer — arm, then fire (Law 48)', () => {
     const hint = screen.getByTestId('action-cast-hint');
     expect(hint.style.visibility).toBe('hidden');
     expect(hint.getAttribute('aria-hidden')).toBe('true');
-    fireEvent.click(screen.getByTestId('action-card-dream'));
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.getByTestId('action-cast-hint').style.visibility).toBe('visible');
   });
 
-  it('disarms when the armed card is clicked again', () => {
+  it('keeps the card armed when it is clicked again (THR-1711)', () => {
+    // The setup screens teach "click again to choose"; a second click that
+    // disarmed read as the card refusing to select. Escape is the disarm.
     renderDrawer();
     fireEvent.click(screen.getByTestId('action-card-dream'));
     fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-card-dream').getAttribute('aria-pressed')).toBe('true');
+    expect((screen.getByTestId('action-cast-button') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('re-arms onto a different card when one is clicked', () => {
+    renderDrawer();
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    fireEvent.click(screen.getByTestId('action-card-scry'));
     expect(screen.getByTestId('action-card-dream').getAttribute('aria-pressed')).toBe('false');
-    expect((screen.getByTestId('action-cast-button') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByTestId('action-card-scry').getAttribute('aria-pressed')).toBe('true');
   });
 
   it('drops the arm when the armed card leaves the hand', () => {

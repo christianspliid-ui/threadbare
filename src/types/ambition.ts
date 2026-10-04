@@ -101,6 +101,29 @@ export type GraphCondition =
   | { type: 'agent_in_origin_region' }
   | { type: 'agent_not_in_origin_region' }
   /**
+   * *Walk the old stones* (THR-1658). The agent stands within
+   * `OLD_BANNER_RUIN_REACH_HEXES` of an elder ruin of one of the dead empires it
+   * descends from (`descent.ts`). Instantaneous; a milestone latches once met.
+   * Fails soft to `false` with no descent, no resolvable hex, or no such ruin.
+   */
+  | { type: 'agent_at_ancestral_ruin' }
+  /**
+   * *Take ground on the old land* (THR-1658). The agent holds, on an `owns` edge whose
+   * `acquiredTick >= windowStartTick`, a Location or Place whose region's historical
+   * culture is one of its descent cultures. The window is load-bearing — some heirs
+   * already own old ground at t0 — so no window in the context reads `false`.
+   */
+  | { type: 'agent_took_ancestral_ground' }
+  /**
+   * *Rooted off the old land* (THR-1658) — the descent drive's abandonment. The agent
+   * has held one position for `minTicks` (windowed, as `agent_settled_since`) and that
+   * position's region was none of its dead empires' land. Region-aware where
+   * `agent_away_from_origin` is location-exact: moving to the next town, a ruin or a
+   * Place on the old land is not leaving it. `false` with no descent, no clock, or an
+   * unresolvable region.
+   */
+  | { type: 'agent_rooted_off_ancestral_land'; minTicks: number }
+  /**
    * Region-literal conditions. **Unusable by authored content** — see the block above:
    * region ids are generated per world, so a literal written into a template can never
    * match one. `contentInvariants` pins that no template authors either.
@@ -158,6 +181,13 @@ export interface AmbitionTemplate {
   readonly reachFloors: Partial<Record<ReachDomain, number>>;
   readonly requiredTraits: readonly string[];
   readonly blockingTraits: readonly string[];
+  /**
+   * Only a mortal who descends from a dead empire may take this up (THR-1658).
+   * Read by `passesEligibility` against `AmbitionAgentSnapshot.descentCultureIds`.
+   * Absent ⇒ no gate. A snapshot without the field fails the gate (fail-closed), so a
+   * caller that does not know descent never hands the drive to someone without it.
+   */
+  readonly requiresDescent?: true;
 
   // Filter 2 — Should I?
   readonly sphereAffinities: readonly SphereName[];

@@ -8,7 +8,7 @@ A finding needs **all three**: a `file:line` in the diff, the check it breaks, a
 
 1. **Reader with no writer / writer with no reader.** A new property, edge, GameState field or event that is read but never produced (or produced but never consumed) in production code. Grep the writer. Authority: `Docs/canon/interface-map.md`; precedent: the singular `domainCapability` has no writer.
 2. **Unwired module.** A new engine module not called from the orchestrator/phase, a modal not rendered in `GameView`, a GameState field the UI never reads. Authority: `Docs/plans/wiring-checklist.md`.
-3. **Tests that assert a dead contract.** A test that stays green because it constructs the state production never builds (hand-built fixture shape no writer emits). Authority: CLAUDE.md § Definition of Done → "Update the interface map".
+3. **Tests that assert a dead contract.** A test that stays green because it constructs the state production never builds (hand-built fixture shape no writer emits). Authority: Docs/canon/definition-of-done.md (relocated from CLAUDE.md § Definition of Done, THR-1718) → "Update the interface map".
 
 ## B. Graph shape — load-bearing decisions
 
@@ -35,8 +35,8 @@ A finding needs **all three**: a `file:line` in the diff, the check it breaks, a
 
 ## E. Process artifacts in the diff
 
-18. **Close keyword misuse** — `Fixes/Closes/Resolves THR-XX` not alone on its own line, or naming an issue the diff does not close. Authority: CLAUDE.md § Definition of Done (THR-738).
-19. **Orphan deferral** — a new `// TODO` / `// DEFERRED` without `(THR-XX)`. Authority: CLAUDE.md § Definition of Done → Log deferrals.
+18. **Close keyword misuse** — `Fixes/Closes/Resolves THR-XX` not alone on its own line, or naming an issue the diff does not close. Authority: Docs/canon/definition-of-done.md (relocated from CLAUDE.md § Definition of Done, THR-1718) (THR-738).
+19. **Orphan deferral** — a new `// TODO` / `// DEFERRED` without `(THR-XX)`. Authority: Docs/canon/definition-of-done.md (relocated from CLAUDE.md § Definition of Done, THR-1718) → Log deferrals.
 
 ## Severity
 

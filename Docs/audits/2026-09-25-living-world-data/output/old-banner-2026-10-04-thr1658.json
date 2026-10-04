@@ -1,0 +1,248 @@
+{
+  "reader": "readers/old-banner.ts",
+  "ticket": "THR-1658",
+  "map": "medium",
+  "ticks": 300,
+  "note": "before = origin/main dca9681d (reader run unchanged; no banner template there); after = branch claude/thr-1658-old-banner. The two runs shared the machine, so msPerTick is indicative only.",
+  "before": {
+    "7": {
+      "t0": {
+        "deciders": 22,
+        "heirs": 6,
+        "pastMints": 4,
+        "pursuits": 36,
+        "pursuitDigest": "83173394",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 360.5,
+        "heirsWithFreeSlotAtReeval": 2,
+        "heirsOnAncestralRuinHexEver": 4,
+        "takenUp": 0,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {},
+        "milestones": {},
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": []
+      }
+    },
+    "42": {
+      "t0": {
+        "deciders": 20,
+        "heirs": 3,
+        "pastMints": 4,
+        "pursuits": 32,
+        "pursuitDigest": "112026f8",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 262.3,
+        "heirsWithFreeSlotAtReeval": 1,
+        "heirsOnAncestralRuinHexEver": 1,
+        "takenUp": 0,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {},
+        "milestones": {},
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": []
+      }
+    },
+    "99": {
+      "t0": {
+        "deciders": 23,
+        "heirs": 3,
+        "pastMints": 3,
+        "pursuits": 37,
+        "pursuitDigest": "7ab452e0",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 324.1,
+        "heirsWithFreeSlotAtReeval": 1,
+        "heirsOnAncestralRuinHexEver": 1,
+        "takenUp": 0,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {},
+        "milestones": {},
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": []
+      }
+    }
+  },
+  "after": {
+    "7": {
+      "t0": {
+        "deciders": 22,
+        "heirs": 6,
+        "pastMints": 4,
+        "pursuits": 36,
+        "pursuitDigest": "83173394",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 351.3,
+        "heirsWithFreeSlotAtReeval": 2,
+        "heirsOnAncestralRuinHexEver": 4,
+        "takenUp": 1,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {
+          "active": 1
+        },
+        "milestones": {
+          "old_stones": 1
+        },
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": [
+          {
+            "actorId": "ind_3",
+            "tick": 75,
+            "label": "the old blood of the Seed Overgrowth",
+            "heir": true,
+            "decider": true
+          }
+        ],
+        "notTaken": [
+          {
+            "tick": 25,
+            "heir": "ind_3",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 8
+          },
+          {
+            "tick": 50,
+            "heir": "ind_3",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 8
+          },
+          {
+            "tick": 275,
+            "heir": "ind_2",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 8
+          }
+        ]
+      }
+    },
+    "42": {
+      "t0": {
+        "deciders": 20,
+        "heirs": 3,
+        "pastMints": 4,
+        "pursuits": 32,
+        "pursuitDigest": "112026f8",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 295.8,
+        "heirsWithFreeSlotAtReeval": 1,
+        "heirsOnAncestralRuinHexEver": 1,
+        "takenUp": 0,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {},
+        "milestones": {},
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": [],
+        "notTaken": [
+          {
+            "tick": 25,
+            "heir": "ind_4",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 9
+          },
+          {
+            "tick": 50,
+            "heir": "ind_4",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 9
+          },
+          {
+            "tick": 175,
+            "heir": "ind_4",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 9
+          },
+          {
+            "tick": 200,
+            "heir": "ind_4",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 9
+          }
+        ]
+      }
+    },
+    "99": {
+      "t0": {
+        "deciders": 23,
+        "heirs": 3,
+        "pastMints": 3,
+        "pursuits": 37,
+        "pursuitDigest": "7ab452e0",
+        "bannerHolders": 0
+      },
+      "run": {
+        "ticks": 300,
+        "msPerTick": 459.8,
+        "heirsWithFreeSlotAtReeval": 1,
+        "heirsOnAncestralRuinHexEver": 1,
+        "takenUp": 0,
+        "takenUpByNonHeir": 0,
+        "takenUpByNonDecider": 0,
+        "status": {},
+        "milestones": {},
+        "claimsSinceAssigned": {
+          "oldLand": 0,
+          "elsewhere": 0
+        },
+        "sample": [],
+        "notTaken": [
+          {
+            "tick": 25,
+            "heir": "agent_garrison_culture_0",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 7
+          },
+          {
+            "tick": 50,
+            "heir": "agent_garrison_culture_0",
+            "eligible": true,
+            "rank": 1,
+            "poolLeft": 7
+          }
+        ]
+      }
+    }
+  }
+}

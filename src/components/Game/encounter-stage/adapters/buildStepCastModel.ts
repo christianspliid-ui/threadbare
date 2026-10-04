@@ -25,7 +25,7 @@ import type {
 import type { EncounterStageStepCastModel } from '../types';
 import type { FightChipWorld } from './buildFightChanges';
 import { fillFightChipSlots } from './buildFightChanges';
-import { getSpellTemplate, spellDefinitionNodeId } from '../../../../data/spell-templates';
+import { getSpellTemplate, resolveSpellTemplate, spellDefinitionNodeId } from '../../../../data/spell-templates';
 import {
   CAST_CHANGE_ID_PREFIX,
   CAST_CHIP_COPY,
@@ -35,7 +35,7 @@ import {
 /** The spell's display name: its definition node's, else its template's, else its id. */
 function spellNameOf(graph: Pick<WorldGraph, 'getNode'>, spellId: string): string {
   return graph.getNode(spellDefinitionNodeId(spellId))?.name
-    ?? getSpellTemplate(spellId)?.name
+    ?? resolveSpellTemplate(graph, spellId)?.name
     ?? spellId;
 }
 
@@ -66,6 +66,7 @@ function chipKindOf(write: StepCastWrite): CastChipKind {
     case 'lifted': return 'lifted';
     case 'silenced': return 'silenced';
     case 'condition':
+      if (write.channel === 'cast_condition') return write.harmful ? 'cast_condition_cost' : 'cast_condition';
       if (write.fromBacklash) return 'backlash_condition';
       if (write.fromPrice) return 'price_condition';
       return 'landed_condition';

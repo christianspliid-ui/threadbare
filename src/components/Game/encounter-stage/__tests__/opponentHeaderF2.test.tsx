@@ -430,7 +430,7 @@ describe('the threat whisper stands down on fight steps (Law 10)', () => {
     expect(context.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('full veil off a fight step keeps its threat word and draws no opponent header', () => {
+  it('full veil off a fight step draws no opponent header — and, since THR-1724, no threat word either', () => {
     const state = stateOf(world());
     const plain = { ...FIGHT_LAIR_CONFRONT, steps: [{ ...(FIGHT_LAIR_CONFRONT.steps[0] as object), fightRole: undefined }] } as unknown as UnifiedActionTemplate;
     const model = buildUnifiedEncounterStageModel({
@@ -443,7 +443,11 @@ describe('the threat whisper stands down on fight steps (Law 10)', () => {
     expect(model.header.threatLabel).toBeTruthy();
     expect(model.opponentHeader).toBeUndefined();
     render(<EncounterVeil {...veilProps} model={model} threadTier="strong" />);
-    expect(screen.getByTestId('veil-threat-whisper').textContent).toMatch(/threat$/);
+    // THR-1724 — the attended veil's "<band> threat" whisper is gone: a third
+    // difficulty vocabulary (Law 13). The model still carries the label for the
+    // watched tier, which renders it on its own surface.
+    expect(screen.queryByTestId('veil-threat-whisper')).toBeNull();
+    expect(screen.queryByTestId('opponent-header')).toBeNull();
   });
 
   it('watched view (built through the tier routing): no threat word, the opponent name and clock word instead', () => {

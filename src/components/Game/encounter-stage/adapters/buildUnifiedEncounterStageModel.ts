@@ -11,6 +11,7 @@
 
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
+import type { SphereName } from '../../../../types/index';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
@@ -27,6 +28,7 @@ import { supportRoleWord } from '../../../../engine/supportRoleWords';
 import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
+import { stakesContextFor, stakesLineForAction } from '../../../../engine/encounters/stakesLine';
 import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
@@ -98,6 +100,12 @@ export interface BuildUnifiedEncounterStageModelArgs {
    * no realm chip never pays for the map.
    */
   realmProjection?: RealmProjectionThunk;
+  /**
+   * THR-1720 — the sphere `handleEncounterIntervene` bills an authored choice
+   * to. Wins over the identity's primary so the row the veil dims and the
+   * spend the handler rejects price the same pool.
+   */
+  payingSphere?: SphereName;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -227,9 +235,33 @@ function buildHeader(
     }
   }
 
+  // THR-1727 — the stakes line replaces the hand-written summary wherever the
+  // template authors stakes. Read from the context the tick path froze; an action
+  // not yet stamped reads the live receipt (fail-open). A throw falls back to the
+  // summary rather than losing the slot (NFP #4).
+  let stakesLine: EncounterStageModel['header']['stakesLine'];
+  try {
+    const actorName = actorNode?.name ?? agentName;
+    const line = stakesLineForAction(activeAction, template, graph, actorName);
+    if (line) {
+      const stakesCtx = stakesContextFor(activeAction, graph);
+      const showsLocation = line.leadSource === 'chance' && stakesCtx.locationName;
+      stakesLine = {
+        text: enrichProse(line.text, ctx),
+        actorId: activeAction.actorId,
+        actorName,
+        ...(showsLocation ? { locationId: stakesCtx.locationId, locationName: stakesCtx.locationName } : {}),
+        leadSource: line.leadSource,
+        fallback: line.fallback,
+      };
+    }
+  } catch {
+    stakesLine = undefined;
+  }
+
   return {
     title: template.name,
-    subtitle: enrichProse(rawSubtitle, ctx),
+    ...(stakesLine ? { stakesLine } : { subtitle: enrichProse(rawSubtitle, ctx) }),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
     // THR-1551 (fight on screen F2) — a fight step states how hard it is once, in
     // the opponent header's card sentence; a threat word beside it would be a
@@ -397,6 +429,16 @@ function buildChoices(
   const authoredForStep = template.authoredChoices?.[activeAction.currentStep];
 
   if (authoredForStep && authoredForStep.length > 0) {
+    // THR-1706 — an authored choice is billed to the god's primary sphere
+    // (`handleEncounterIntervene`), so it is priced against that pool and the
+    // row names it. Pricing it against all twelve pools summed let a choice
+    // read affordable and then floor the one pool it actually drew on.
+    // THR-1720 — the caller's paying sphere wins: it is the one the handler
+    // charges, and an identity-less run (archetype selection) has no identity.
+    const payingSphere = args.payingSphere ?? args.gameState?.ascendantIdentity?.sphereAlignment?.primary;
+    const payingEssence = payingSphere
+      ? (args.gameState?.essencePool?.[payingSphere] ?? 0)
+      : essence;
     // Use authored choice cards with full prose bodies
     //
     // THR-1411 — the stance rides along. `AuthoredChoiceCard.interventionType`
@@ -416,7 +458,8 @@ function buildChoices(
       intent: enrichProse(card.intent, ctx),
       targetLabel: card.targetLabel,
       essenceCost: card.essenceCost,
-      affordable: essence + 1e-9 >= card.essenceCost,
+      affordable: payingEssence + 1e-9 >= card.essenceCost,
+      ...(payingSphere ? { payingSphere } : {}),
       costLabel: card.essenceCost > 0 ? formatEssenceLabel(card.essenceCost) : undefined,
       likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
       interventionType: card.interventionType,

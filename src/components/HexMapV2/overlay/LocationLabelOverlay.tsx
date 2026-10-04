@@ -32,7 +32,7 @@ import {
   MAX_RING_LOCATIONS,
 } from '../../../data/agent-visual-content';
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
-import { removeOverlaps, type ScreenLabel, type ScreenBBox } from './labelCollision';
+import { removeOverlaps, applyCachedVisibility, type ScreenLabel, type ScreenBBox } from './labelCollision';
 import { getActivePalette, buildLandHalo } from '../palette/activePalette';
 import { MAP_OVERLAY_Z } from './mapOverlayZ';
 
@@ -192,6 +192,9 @@ function projectLocationLabel(
       screenLabels.push({
         id: loc.id,
         tier: importanceToTier(loc.importance),
+        // The box is sized from what actually renders, hung below the icon (THR-1711).
+        fontSize: LOCATION_LABEL_FONT_SIZES[loc.importance],
+        anchorY: 'top',
         text: loc.name,
         screenX: sx,
         screenY: sy,
@@ -222,6 +225,8 @@ export function LocationLabelOverlay({
 }: LocationLabelOverlayProps) {
   const [projected, setProjected] = useState<ProjectedLocationLabel[]>([]);
   const lastCollisionTime = useRef<number>(0);
+  /** The last collision verdict, reapplied on the frames between recomputes (THR-1711). */
+  const lastVisibleById = useRef<Map<string, boolean>>(new Map());
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
@@ -292,11 +297,16 @@ export function LocationLabelOverlay({
         }
       }
 
-      let resolvedLabels: ScreenLabel[] = screenLabels;
+      let resolvedLabels: ScreenLabel[];
 
       if (shouldRecomputeCollision) {
         resolvedLabels = removeOverlaps(screenLabels, prePlacedBBoxesRef?.current ?? []);
+        lastVisibleById.current = new Map(resolvedLabels.map(l => [l.id, l.visible]));
         lastCollisionTime.current = now;
+      } else {
+        // THR-1711: between recomputes, keep the last verdict instead of rendering
+        // the raw all-visible list — that is what flickered clusters into piles.
+        resolvedLabels = applyCachedVisibility(screenLabels, lastVisibleById.current);
       }
 
       const next: ProjectedLocationLabel[] = resolvedLabels.map(sl => {

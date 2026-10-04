@@ -56,7 +56,12 @@ import {
 } from '../data/agent-behavior-constants';
 import type { UnifiedAction } from '../types/unifiedAction';
 
-export type EngagementZone = 'refused' | 'below' | 'in' | 'above';
+/**
+ * Where a forecast sat against the mortal's window. `'certain'` is never produced by
+ * `computeEngagementFit`: the decision board stamps it on a survey of a held lead
+ * (THR-1686), an instant cell with no dice for the window to judge.
+ */
+export type EngagementZone = 'refused' | 'below' | 'in' | 'above' | 'certain';
 
 export interface EngagementFit {
   /** Multiplier on the candidate's score, 0 when refused. */

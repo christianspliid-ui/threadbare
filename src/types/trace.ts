@@ -31,7 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
-import type { ItemGeneratedTrace, ItemGenerateFallbackTrace } from './traces/item-generator-traces';
+import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -158,6 +158,17 @@ export type TraceCategory =
   | 'effect.teleported'
   // The step cast (THR-1670)
   | 'spell.cast_decided'
+  // The seeded spell generator (THR-1572)
+  | 'spell.library_built'
+  | 'spell.generated'
+  | 'spell.generate_fallback'
+  | 'spell.notice_placed'
+  // Spells as divine gifts and found tomes (THR-1672)
+  | 'spell.granted'
+  | 'spell.grant_skipped'
+  | 'spell.tome_unread'
+  | 'spell.divine_teaching_priced'
+  | 'spell.divine_echo'
   // Innate powers (THR-1671)
   | 'power.innate_stamped'
   // Undertaking checkpoints (THR-1292)
@@ -379,6 +390,7 @@ export type TraceCategory =
   | 'beat.delivery_skipped'
   // The opening — the meeting comes to the player (THR-1605 S1)
   | 'meeting.location_picked'
+  | 'meeting.essence_spent'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -398,6 +410,8 @@ export type TraceCategory =
   | 'ascendant.signature.unique_location'
   // Encounter chapter archive (THR-603)
   | 'encounter.chapter_archived'
+  // Encounter stakes line (THR-1727)
+  | 'encounter.stakes_line'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
   // Mortal economy — trade cargo manifests (THR-616)
@@ -579,7 +593,9 @@ export type TraceCategory =
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
-  | 'item.generate_fallback';
+  | 'item.generate_fallback'
+  // Found things in the reward draw (THR-1626).
+  | 'reward.generated';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -657,6 +673,15 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'spell.backlash',
   'effect.teleported',
   'spell.cast_decided',
+  'spell.library_built',
+  'spell.generated',
+  'spell.generate_fallback',
+  'spell.notice_placed',
+  'spell.granted',
+  'spell.grant_skipped',
+  'spell.tome_unread',
+  'spell.divine_teaching_priced',
+  'spell.divine_echo',
   'power.innate_stamped',
   'undertaking_checkpoint',
   'undertaking_fork',
@@ -870,6 +895,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
+  // Found things in the reward draw (THR-1626)
+  'reward.generated',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -896,6 +923,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.delivery_skipped',
   // The opening (THR-1605 S1)
   'meeting.location_picked',
+  'meeting.essence_spent',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -928,6 +956,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.signature.unique_location',
   // Encounter chapter archive (THR-603)
   'encounter.chapter_archived',
+  // Encounter stakes line (THR-1727)
+  'encounter.stakes_line',
   // Player action progression — god-side capability growth (THR-613)
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
@@ -1803,6 +1833,8 @@ export interface TargetActionFilterTrace extends TraceBase {
   filteredByRange: number;
   /** Templates hidden by the reach gate (THR-503). Optional — older traces omit it. */
   filteredByReach?: number;
+  /** Cards locked "Already held" by the held lock (THR-1700). Optional — older traces omit it. */
+  lockedByHeld?: number;
   slotsGenerated: number;
 }
 
@@ -1986,7 +2018,7 @@ export interface ScoringTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this candidate (already in `finalScore`). */
     forecastFit?: number;
     /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** Phase 4: Push benefit estimate (Q spend for better odds) */
     pushBenefit?: number;
     /** Phase 4: Resist benefit estimate (downgrade protection) */
@@ -2764,6 +2796,110 @@ export interface SpellSeededTrace extends TraceBase {
   seeded: number;
   bySpell: Record<string, number>;
   fallbackCantrip: number;
+  /** THR-1572 — casters per tradition among those seeded from a library. */
+  byTradition?: Record<string, number>;
+  /** THR-1572 — casters seeded from their tradition's generated library. */
+  fromLibrary?: number;
+}
+
+/** Trace: the world's spell libraries were built at worldgen (THR-1572, one aggregate per world). */
+export interface SpellLibraryBuiltTrace extends TraceBase {
+  category: 'spell.library_built';
+  /** Traditions in use (one library each). */
+  traditions: number;
+  spells: number;
+  /** Casters per tradition. */
+  byTradition: Record<string, number>;
+  /** Slots the validator could not fill. */
+  emptySlots: number;
+  /** Seeded carriers' summed per-tick soul drain, as a share of their summed passive regeneration. */
+  soulDrainShare: number;
+}
+
+/** Trace: one spell was generated into a tradition's library (THR-1572). */
+export interface SpellGeneratedTrace extends TraceBase {
+  category: 'spell.generated';
+  spellId: string;
+  name: string;
+  traditionId: string;
+  coreId: string;
+  tier: number;
+  agency: 'fate_woven' | 'deliberate';
+  arena: string;
+  priceLayer: string;
+  sphere: string;
+  seedKey: string;
+  rerolls: number;
+}
+
+/** Trace: a library slot was left empty (THR-1572). */
+export interface SpellGenerateFallbackTrace extends TraceBase {
+  category: 'spell.generate_fallback';
+  traditionId: string;
+  tier: number;
+  slot: number;
+  seedKey: string;
+  reason: 'no_eligible_core' | 'validator_exhausted' | 'threw';
+  lastProblems: string[];
+}
+
+/** Trace: a transgression spell was noticed — a hidden mark placed on its caster (THR-1572). */
+export interface SpellNoticePlacedTrace extends TraceBase {
+  category: 'spell.notice_placed';
+  casterId: string;
+  spellId: string;
+  markId: string;
+  severity: number;
+  site: 'cast' | 'carried';
+}
+
+/** Where a known spell came from — the `source` on its `knows_spell` edge (THR-1672). */
+export type SpellGrantSourceTrace = 'seeded' | 'learn_spell' | 'debug' | 'divine' | 'tome';
+
+/** Trace: a mortal came to know a spell, through the one grant seam (THR-1672, every channel). */
+export interface SpellGrantedTrace extends TraceBase {
+  category: 'spell.granted';
+  spellId: string;
+  source: SpellGrantSourceTrace;
+  /** False when the slots were full: known, not carried. */
+  wielded: boolean;
+  grantedBy?: string;
+  viaItemId?: string;
+}
+
+/** Trace: a teaching or a `spell_grant` found nothing to teach (THR-1672). */
+export interface SpellGrantSkippedTrace extends TraceBase {
+  category: 'spell.grant_skipped';
+  source: SpellGrantSourceTrace;
+  reason: 'empty_pool' | 'already_known' | 'disabled' | 'gate';
+}
+
+/** Trace: a teaching book found nothing for this reader (THR-1672). The book is still a book. */
+export interface SpellTomeUnreadTrace extends TraceBase {
+  category: 'spell.tome_unread';
+  itemId: string;
+  kind: 'arcane' | 'ancient';
+}
+
+/** Trace: the god paid for teaching dark magic — doom and detection (THR-1672). */
+export interface SpellDivineTeachingPricedTrace extends TraceBase {
+  category: 'spell.divine_teaching_priced';
+  ascendantId: string;
+  spellId: string;
+  doomDelta: number;
+  regionId: string;
+  detectionDelta: number;
+}
+
+/** Trace: a god-taught transgression was cast, and the cast echoed back to the god (THR-1672). */
+export interface SpellDivineEchoTrace extends TraceBase {
+  category: 'spell.divine_echo';
+  ascendantId: string;
+  casterId: string;
+  spellId: string;
+  regionId: string;
+  detectionDelta: number;
+  landed: boolean;
 }
 
 /** Trace: one cast resolved through `resolveCast` (THR-1571). A refusal writes nothing. */
@@ -2783,6 +2919,29 @@ export interface SpellCastResolvedTrace extends TraceBase {
   refused?: string;
   /** Carried triggers the cast's `'spell_cast'` raise fired on the caster. */
   triggersFired: number;
+  /**
+   * THR-1683 — the cast's graph writes (the chips' source). `channel: 'cast_condition'`
+   * marks the bearing the cast channel wrote for the spell's modifier-only effects.
+   */
+  writes?: Array<{
+    kind: string;
+    actorId: string;
+    ref: string;
+    channel?: 'cast_condition';
+    harmful?: boolean;
+    fromBacklash?: boolean;
+    fromPrice?: boolean;
+  }>;
+  /** THR-1683 — the cast channel: what rode it, what could not (stateful), and why not, if not. */
+  channel?: {
+    applied: boolean;
+    carried: string[];
+    skipped: string[];
+    durationTicks?: number;
+    reason?: string;
+  };
+  /** THR-1683 — mortals the spell's target filter (`ally`/`enemy`) turned away. */
+  filterRejected?: number;
 }
 
 /** Trace: a cast's backlash fired (THR-1571). */
@@ -3045,7 +3204,7 @@ export interface EngagementDecisionTrace extends TraceBase {
     /** Mean demanded proficiency after the scale offset; NaN when unknown. */
     difficulty: number;
     fit: number;
-    zone: 'refused' | 'below' | 'in' | 'above';
+    zone: 'refused' | 'below' | 'in' | 'above' | 'certain';
     exempt?: 'too_easy';
   }>;
   chosenId: string | null;
@@ -3086,11 +3245,13 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     /** THR-1582 — the forecast window's multiplier on this entry (already in `score`). */
     forecastFit?: number;
     /** THR-1582 — where the entry's forecast sat against the mortal's window. */
-    forecastZone?: 'refused' | 'below' | 'in' | 'above';
+    forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
     /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
     leadPull?: number;
+    /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
+    appointmentDiscount?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -3259,6 +3420,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     | 'faction_reputation_gain'
     // THR-1664 — the visit's band sets the actor's own lead; emitted unlaundered.
     | 'sharpen_clue'
+    | 'spell_grant'
     // THR-1206 — added here rather than cast at the call site, which is the
     // direction of travel this union's own note describes. Its arm emits four
     // traces (no-actor, no-counterparty, refused write, applied) and all four go
@@ -3693,6 +3855,13 @@ export interface AppointmentRegimeTrace extends TraceBase {
   leaveMargin: number;
   /** True when this tick queued the journey to the place. */
   journeyQueued?: boolean;
+  /**
+   * THR-1686 — set when the waiting hold kept the mortal at the place: where it would
+   * have gone (`heldFrom`, a location id) and which mover was refused (`heldBy`). Fires
+   * on every hold, not on change, so a mortal that stayed behind can be explained.
+   */
+  heldFrom?: string;
+  heldBy?: 'idle_drift' | 'forced_travel' | 'company';
 }
 
 /** Trace: present in the window; the kept sequel fired at the place. */
@@ -4336,6 +4505,15 @@ export type TraceEntry =
   | SpellCastResolvedTrace
   | SpellBacklashTrace
   | SpellCastDecidedTrace
+  | SpellLibraryBuiltTrace
+  | SpellGeneratedTrace
+  | SpellGenerateFallbackTrace
+  | SpellNoticePlacedTrace
+  | SpellGrantedTrace
+  | SpellGrantSkippedTrace
+  | SpellTomeUnreadTrace
+  | SpellDivineTeachingPricedTrace
+  | SpellDivineEchoTrace
   | PowerInnateStampedTrace
   | EffectTeleportedTrace
   | ConditionInflictedTrace
@@ -4512,6 +4690,7 @@ export type TraceEntry =
   | MonsterMintedTrace
   | ItemGeneratedTrace
   | ItemGenerateFallbackTrace
+  | RewardGeneratedTrace
   | MonsterHardenedTrace
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
@@ -4548,12 +4727,14 @@ export type TraceEntry =
   | BeatSeededTrace
   | BeatDeliveryTrace
   | MeetingLocationPickedTrace
+  | MeetingEssenceSpentTrace
   | DoomWakeTrace
   | DoomExpiryHeldTrace
   | RivalGraceHoldTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
+  | EncounterStakesLineTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
   // Mortal economy — trade cargo manifests (THR-616)
@@ -4891,6 +5072,26 @@ export interface ChapterArchivedTrace extends TraceBase {
   archiveSize: number;
 }
 
+/**
+ * Trace: an encounter action's stakes context was frozen on the tick path, and the
+ * stakes line it yields (THR-1727). Emitted once per action. `fallback` names why
+ * the line is not the full formula, when it is not.
+ */
+export interface EncounterStakesLineTrace extends TraceBase {
+  category: 'encounter.stakes_line';
+  actionId: string;
+  templateId: string;
+  leadSource: 'choice' | 'mission' | 'chance' | 'divine' | 'none';
+  fallback:
+    | 'no_stakes_description_used'
+    | 'no_mission_name'
+    | 'no_location'
+    | 'over_length_lead_dropped'
+    | null;
+  /** The opening line as stamped (unenriched), for inspection. */
+  line: string;
+}
+
 /** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */
 export interface BeatScheduledTrace extends TraceBase {
   category: 'ascendant.beat.scheduled';
@@ -4959,6 +5160,22 @@ export interface MeetingLocationPickedTrace extends TraceBase {
   /** Picked for its current culture. */
   cultured: boolean;
   fallback: boolean;
+}
+
+/**
+ * Trace: a Meet-The-First test hand was paid for (THR-1706). Before this the
+ * meeting's cards previewed a spend and never charged it. One per test the
+ * player commits with priced cards; `ok: false` means the pool could not cover
+ * the hand at commit time and nothing was charged.
+ */
+export interface MeetingEssenceSpentTrace extends TraceBase {
+  category: 'meeting.essence_spent';
+  /** Formative test index, or the bond test's step index. */
+  testIndex: number;
+  /** The sphere billed first — the god's primary. */
+  primarySphere: string;
+  spent: number;
+  ok: boolean;
 }
 
 /**

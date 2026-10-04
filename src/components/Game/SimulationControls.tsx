@@ -17,6 +17,19 @@ interface SimulationControlsProps {
   onStep: () => void;
   onSpeedChange: (speed: number) => void;
   compact?: boolean;
+  /**
+   * True while an interrupt holds the clock (THR-1711). `running` is then the
+   * state the clock returns to on close, not the frozen live clock, so the button
+   * shows what a press will do; the status line says the world is held.
+   */
+  held?: boolean;
+  /**
+   * THR-1724 — what is holding the clock, by name (an encounter's title). The
+   * status line then reads "paused · The Unsafe Bridge": Law 52, as amended
+   * 2026-10-04, names an encounter's auto-pause here rather than on the
+   * encounter surface itself. Absent ⇒ the generic held wording.
+   */
+  heldBy?: string;
 }
 
 export const SPEED_STEPS = [1, 2, 3, 5, 10, 20];
@@ -27,7 +40,7 @@ const SEASON_ICONS: Record<string, string> = {
 
 export function SimulationControls({
   season, year, running, speed,
-  onToggle, onStep, onSpeedChange, compact,
+  onToggle, onStep, onSpeedChange, compact, held = false, heldBy,
 }: SimulationControlsProps) {
   function speedDown() {
     const idx = SPEED_STEPS.indexOf(speed);
@@ -42,7 +55,9 @@ export function SimulationControls({
   }
 
   if (compact) {
-    const statusText = running ? `running ×${speed}` : 'paused';
+    const statusText = held
+      ? (heldBy ? `paused · ${heldBy}` : running ? 'held · runs on after' : 'held · stays paused')
+      : running ? `running ×${speed}` : 'paused';
     return (
       <div className="topbar-tier">
         <span className="topbar-section-label">Time</span>

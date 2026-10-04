@@ -41,7 +41,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Gold primary visions ───
   {
     id: 'vision.gold.explorer',
-    prose: 'A woman standing at the prow of a ship, manifest in hand, eyes fixed on a coast no trader has reached. Her ledger is now a catalog of wonders — and every wonder has a price she intends to be the first to name.',
+    prose: 'A figure standing at the prow of a ship, manifest in hand, eyes fixed on a coast no trader has reached. Their ledger is now a catalog of wonders — and every wonder has a price they intend to be the first to name.',
     portraitAssetPath: '/assets/meeting/visions/gold-explorer.jpg',
     sceneAssetPath: '/assets/meeting/scenes/ship-horizon.jpg',
     portraitPlaceholder: 'linear-gradient(135deg, #2a2a1a, #1a2a2a)',
@@ -53,7 +53,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.gold.powerbroker',
-    prose: 'A spider at the center of a web of debts and favors, where every thread leads back to her counting house. Kings borrow from her. Wars end when she calls in her ledgers. She has never held a sword — she has never needed to.',
+    prose: 'A spider at the center of a web of debts and favors, where every thread leads back to one counting house. Kings borrow there. Wars end when the ledgers are called in. They have never held a sword — they have never needed to.',
     portraitAssetPath: '/assets/meeting/visions/gold-powerbroker.jpg',
     sceneAssetPath: '/assets/meeting/scenes/throne-room-shadows.jpg',
     portraitPlaceholder: 'linear-gradient(135deg, #2a1a0a, #1a0a1a)',
@@ -65,7 +65,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.gold.benefactor',
-    prose: 'A weathered traveler distributing bread from a cart, her ledger listing not profits but names of the hungry. She learned that the greatest profit is a full belly and a grateful name — and that this kind of wealth compounds in ways gold never could.',
+    prose: 'A weathered traveler distributing bread from a cart, their ledger listing not profits but names of the hungry. They learned that the greatest profit is a full belly and a grateful name — and that this kind of wealth compounds in ways gold never could.',
     portraitAssetPath: '/assets/meeting/visions/gold-benefactor.jpg',
     sceneAssetPath: '/assets/meeting/scenes/market-square-dawn.jpg',
     portraitPlaceholder: 'linear-gradient(135deg, #2a2a0a, #1a2a1a)',

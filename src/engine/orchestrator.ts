@@ -180,6 +180,8 @@ import {
   emitChapterArchivedTrace,
   isEncounterAction,
 } from './chapterArchive';
+import { stampStakesContexts } from './encounters/stakesLine';
+import { getUnifiedTemplateById as getStakesTemplateById } from '../data/unified-action-templates';
 import type { ChapterRecord } from '../types/chapterRecord';
 import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
@@ -3243,6 +3245,20 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const decisionEvents = decisionResult.eventDelta;
   phaseEventCounts['agent_decision'] = decisionEvents;
   agentsProcessed += decisionEvents;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2b.1: Stakes context (THR-1727) — freeze why each new encounter's mortal
+  // is here, on the tick path, so the stakes line and the result line share one
+  // lead whatever the motive receipt says later. Runs after agent decision, which
+  // creates most encounter actions; an action created later in the tick is
+  // stamped on the next one (readers fall back to a live read until then).
+  {
+    const r = runInlinePhase('stakes_context', s, () =>
+      stampStakesContexts(s, (templateId) =>
+        isEncounterAction(templateId) ? getStakesTemplateById(templateId) : undefined));
+    s = r.next;
+    phaseEventCounts['stakes_context'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phases 2.32 (Initiative Progress) and 2.33 (Mentorship Lifecycle) were deleted with

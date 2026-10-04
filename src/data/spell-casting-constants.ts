@@ -72,12 +72,32 @@ export const SEEDED_SPELL_COVERAGE = 1.0;
  */
 export const CARRIED_EFFECT_ALLOWED_TYPES: readonly AttachmentEffect['type'][] = [
   'passive', 'conditional', 'test_shaper', 'social_modifier', 'aura', 'reveal', 'action_trigger',
+  // THR-1572 — four more primitives the generator's cores and prices need, each verified
+  // stateless at build: the readers (`effectQueries.getBehaviorWeights`,
+  // `getRangeModifiers`) are pure walks over node effects, and `effectTick.tickEffects`
+  // writes `axiological_drift` and a `per_tick` `resource_manipulate` straight onto the
+  // bearer's own node with no runtime state. A shared node therefore acts per bearer.
+  'behavior_weight', 'range_modifier', 'axiological_drift', 'resource_manipulate',
 ];
 
-/** True when a carried effect is one of the allowed primitives and holds no per-bearer state. */
+/**
+ * True when a carried effect is one of the allowed primitives and holds no per-bearer state.
+ *
+ * Two shapes of an allowed type are still refused:
+ * - a charged `action_trigger` (`maxFires`) — one counter for the whole world;
+ * - an `action_trigger` whose payload is `self_remove` (THR-1572): that payload deletes the
+ *   attachment node and every edge into it (`actionTriggerPayloads.ts`), so on a shared spell
+ *   one bearer's bad roll would strip the spell from every bearer in the world;
+ * - a `resource_manipulate` that is not a `per_tick` drain or restore of the bearer's own
+ *   quintessence or essence — `one_shot` keeps a fired-once state, and a `fight_clock` tick
+ *   belongs to a monster's own body, not a carried working.
+ */
 export function isCarriedEffectStateless(effect: AttachmentEffect): boolean {
   if (!CARRIED_EFFECT_ALLOWED_TYPES.includes(effect.type)) return false;
-  if (effect.type === 'action_trigger') return effect.maxFires === undefined;
+  if (effect.type === 'action_trigger') return effect.maxFires === undefined && effect.payload.kind !== 'self_remove';
+  if (effect.type === 'resource_manipulate') {
+    return effect.mode === 'per_tick' && effect.target === 'self' && effect.resource !== 'fight_clock';
+  }
   return true;
 }
 
@@ -123,3 +143,28 @@ export function castThresholdFor(courage: number): number {
  * reads would be a dead constant. Build it if a later slice goes over.
  */
 export const POWER_UPKEEP_TICK_COST_BUDGET_PCT = 5;
+
+// ─── The per-cast channel and the target filter (THR-1683) ─────────
+
+/**
+ * How long a landed spell's modifier-only effects (aura, conditional, …) hold on the
+ * caster as a cast condition, by spell tier, when no `duration` effect names its own
+ * ticks. Before THR-1683 these effects were traced and wrote nothing, so a landed
+ * Hollow Crown changed only the one step's odds.
+ */
+export const CAST_CHANNEL_DEFAULT_TICKS_BY_TIER: Readonly<Record<number, number>> = { 1: 4, 2: 6, 3: 8, 4: 12 };
+
+/** The channel duration for a tier outside the table (fail-soft: the nearest authored tier's). */
+export function castChannelTicksForTier(tier: number): number {
+  const exact = CAST_CHANNEL_DEFAULT_TICKS_BY_TIER[tier];
+  if (exact !== undefined) return exact;
+  return tier < 1 ? CAST_CHANNEL_DEFAULT_TICKS_BY_TIER[1] : CAST_CHANNEL_DEFAULT_TICKS_BY_TIER[4];
+}
+
+/**
+ * Whether an `enemy`-filtered spell may be aimed at a stranger (neither ally nor
+ * someone the caster holds a motive against). True: requiring a motive would starve
+ * casts in a scene, where the mortal across the table is usually a stranger. The
+ * filter's job is to keep a curse off a friend, not to demand a grudge.
+ */
+export const CAST_ENEMY_FILTER_ADMITS_STRANGERS = true;

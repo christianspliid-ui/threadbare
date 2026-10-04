@@ -81,7 +81,7 @@ import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
-import { getGroupOf, getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
+import { getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
 import { setCommander } from '../engine/groups/groupCommand';
 import { applyCohesionDelta } from '../engine/groups/groupCohesion';
 import { writeGrudge } from '../engine/grievance/grudgeEdge';
@@ -103,18 +103,23 @@ import { holdsMotive } from '../engine/undertakingMotive';
 import { instantiateReward } from '../engine/rewardPool';
 import { raiseConditionLanded } from '../engine/effects/conditionProxyEvents';
 import { isSpellSuppressedFor } from '../engine/effects/effectSuppression';
-import { getSpellTemplate } from './spell-templates';
-import { SLOT_CAPS } from './attachment-slot-constants';
+import { resolveSpellTemplate } from './spell-templates';
+import { casterTraditionOf } from '../engine/spellGenerator/casterTradition';
+import { placeSpellNotice } from '../engine/spellGenerator/notice';
+import { grantSpell, onItemAcquired } from '../engine/spellGrant';
+import type { DetectionCrossingRecorder } from '../engine/agentDetection';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
 import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES, CONDITION_SUBCATEGORIES } from './world-objects';
 import { getFactionLeaderId } from '../engine/factionNetwork';
+import { isAlly, actorFactionId } from '../engine/allegiance';
 import { REWARD_POSSESSIONS } from './reward-attachment-catalog';
 import { ANOMALY_SIGNATURE_ARTIFACTS } from './anomaly-reward-catalog';
 import { isMonster } from '../engine/monsters/isMonster';
 import { isLiveMonster, huntReason, monsterLairId, liveHuntFavourAt } from '../engine/monsters/hunts';
+import { congregationOfSite, isPilgrimDestination } from '../engine/pilgrimWays';
 import {
   ROUTE_IDENTITY_SUBTYPE,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
@@ -145,6 +150,8 @@ import {
   ARMY_SCOUT_INTELLIGENCE_TYPE,
   UNDERTAKING_DEFAULT_FACTION_SEED,
   UNDERTAKING_DEFAULT_TIER,
+  PILGRIM_WAY_SITE_SUBTYPES,
+  PILGRIM_WAY_EDGE_ORIGIN,
   OBSERVE_CLUE_PRECISION_BY_BAND,
   OBSERVE_CLUE_MAGNITUDE,
   OBSERVE_AREA_FAMILIARITY_CAP,
@@ -157,7 +164,6 @@ import {
   // The dormant kinds I (THR-1429)
   MOTIVE_GATE_KINDS,
   LEARN_SPELL_UNALIGNED_SHELF_OPEN,
-  CONDITION_ALLY_STANDING_MIN,
   CONDITION_TIER_CAP_BY_BAND,
   CONDITION_TIER_CAP_DEFAULT,
   CURSE_DURATION_TICKS_BY_BAND,
@@ -232,6 +238,12 @@ export interface ObjectVerbContext {
    * plain-success row everywhere, never a second resolution.
    */
   readonly outcome?: string;
+  /**
+   * THR-1672 — the detection crossing recorder, for a god-taught transgression cast by
+   * `use × Power`. This module cannot import it (a module cycle, `agentDetection.ts`), so
+   * the resolver that builds the context hands it in.
+   */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 export type ObjectVerbSemantic = (ctx: ObjectVerbContext) => GraphOpResult;
@@ -576,14 +588,6 @@ function rosterSize(graph: WorldGraph, groupId: string): number {
   return graph.getIncomingEdges(groupId, 'member_of').length;
 }
 
-/** The first faction the actor is a member of, if any. */
-function actorFactionId(graph: WorldGraph, actorId: string): string | null {
-  for (const e of graph.getOutgoingEdges(actorId, 'member_of')) {
-    const n = graph.getNode(e.target);
-    if (n?.type === 'actor' && n.properties.actorType === 'faction') return n.id;
-  }
-  return null;
-}
 
 /**
  * `observe × anything`: intelligence about the object, keyed on the actor.
@@ -952,6 +956,14 @@ function emitKindTrace(entry: PowerLearnedTrace | ConditionInflictedTrace): void
 export { isCaster };
 
 /** The `spell`-class definition nodes in the world, sorted by id (NFP #3 — no draw anywhere here). */
+/** THR-1572 — the tradition recorded on a caster's tradition-sourced `knows_spell` edge, if any. */
+function knownTraditionOf(graph: WorldGraph, actorId: string): string | undefined {
+  const edges = graph.getOutgoingEdges(actorId, 'knows_spell')
+    .filter(e => typeof (e.properties as { tradition?: unknown } | undefined)?.tradition === 'string')
+    .sort((a, b) => a.id.localeCompare(b.id));
+  return edges[0] ? String((edges[0].properties as { tradition: string }).tradition) : undefined;
+}
+
 function spellDefinitions(graph: WorldGraph): GraphNode[] {
   return graph.getNodesByType('trait')
     .filter(n => n.properties.subcategory === 'spell')
@@ -974,28 +986,9 @@ function spellsOfActor(graph: WorldGraph, actorId: string): { known: Set<string>
   return { known, wielded };
 }
 
-/**
- * Whether two mortals are allies — the blessing half of the sign.
- *
- * Three readings in order, the first that answers wins: the same faction, the same
- * company, or standing at or above `CONDITION_ALLY_STANDING_MIN`. Self is handled by
- * the caller, because blessing oneself needs no test at all.
- */
-function isAlly(graph: WorldGraph, actorId: string, targetId: string): boolean {
-  const actorFaction = actorFactionId(graph, actorId);
-  if (actorFaction && actorFaction === actorFactionId(graph, targetId)) return true;
-
-  // Compare ids, not node objects — `getGroupOf` returns a fresh handle per call.
-  const actorGroup = getGroupOf(graph, actorId)?.id;
-  if (actorGroup && actorGroup === getGroupOf(graph, targetId)?.id) return true;
-
-  for (const e of graph.getOutgoingEdges(actorId, 'reputation_with')) {
-    if (e.target !== targetId) continue;
-    const score = num(e.properties, 'score');
-    if (score !== null && score >= CONDITION_ALLY_STANDING_MIN) return true;
-  }
-  return false;
-}
+// `isAlly` — the blessing half of the sign — lives in `src/engine/allegiance.ts` since
+// THR-1683, so the cast resolver's target filter reads the same allegiance without an
+// import cycle back through this file.
 
 /** The first motive the actor holds against the target, or null. The curse half of the sign. */
 function motiveAgainst(graph: WorldGraph, actorId: string, targetId: string): MotiveKind | null {
@@ -1399,6 +1392,62 @@ const ROUTE: UndertakingObjectType = {
     },
     observe,
   },
+};
+
+// ─── Pilgrim ways (THR-1660) ────────────────────────────────────────
+//
+// A class of the Route kind (`world-objects.ts` already lists `pilgrim_way:
+// ['sacred_route']`), the way MONSTER is a class of Mortal. One verb: a faith-spreading
+// mortal consecrates a town to the congregation that keeps the faith on its ground, and
+// from then on the encounter cache pools the pilgrimage there. The way belongs to the
+// congregation, not to whoever made it (D2), and nothing unmakes it (D5).
+
+/** Why a site cannot take a pilgrim way, or `null` when it can (D3). Board hook and completion re-check. */
+export function pilgrimWaySiteEligibility(graph: WorldGraph, actorId: string, handle: UndertakingObjectHandle): string | null {
+  if (isAgentGone(graph.getNode(actorId))) return 'consecrator_gone';
+  const site = nodeOf(graph, handle);
+  const subtype = site?.properties.locationSubtype;
+  if (!site || !isLocationNode(site) || typeof subtype !== 'string' || !PILGRIM_WAY_SITE_SUBTYPES.includes(subtype)) {
+    return 'site_gone';
+  }
+  if (!congregationOfSite(graph, site.id)) return 'no_congregation_here';
+  // The reader is a boolean: a second way to the same town adds nothing to its pool.
+  if (isPilgrimDestination(graph, site.id)) return 'already_a_pilgrim_destination';
+  return null;
+}
+
+function consecratePilgrimWay(ctx: ObjectVerbContext): GraphOpResult {
+  // The site chosen at proposal; never substituted — the world moved during the work,
+  // so it is asked again before anything is written.
+  const siteId = ctx.targetNodeId ?? nodeIdOf(ctx.handle);
+  if (!siteId) return fail('consecrate_pilgrim_way', 'site_gone');
+  const site: UndertakingObjectHandle = { kind: 'node', nodeId: siteId };
+  const refusal = pilgrimWaySiteEligibility(ctx.graph, ctx.actorId, site);
+  if (refusal) return fail('consecrate_pilgrim_way', refusal);
+  const congregationId = congregationOfSite(ctx.graph, siteId);
+  if (!congregationId) return fail('consecrate_pilgrim_way', 'no_congregation_here');
+  // Never by hand: the one writer validates the schema and refuses a duplicate.
+  return createRelationEdge(ctx.graph, congregationId, siteId, 'sacred_route', ctx.tick, {
+    origin: PILGRIM_WAY_EDGE_ORIGIN,
+    ...(ctx.projectId ? { projectId: ctx.projectId } : {}),
+  });
+}
+
+const PILGRIM_WAY: UndertakingObjectType = {
+  id: 'pilgrim_way',
+  displayName: 'Pilgrim way',
+  classOf: 'route',
+  shape: { edgeType: 'sacred_route' },
+  // Edge objects are held by the edge's own source — the congregation.
+  ownedVia: [],
+  // One tier: a way is consecrated or it is not.
+  tierOf: () => 1,
+  lexicon: 'route',
+  // Required, unreachable: there is no destroy verb (D5).
+  harmOnDestroy: 'network_severed',
+  reasonWords: 'Only where its people keep a congregation, and no pilgrim way runs yet',
+  eligibility: { create: pilgrimWaySiteEligibility },
+  verbs: { create: consecratePilgrimWay },
 };
 
 // ─── The ownership of people-things (THR-1438) ──────────────────────
@@ -2198,6 +2247,8 @@ const ITEM: UndertakingObjectType = {
         type: 'possesses',
         properties: { active: true, acquiredTick: ctx.tick, via: 'seized' },
       });
+      // THR-1672 — a seized book teaches its new holder, once.
+      onItemAcquired(ctx.graph, ctx.actorId, nodeId, ctx.tick, 'seized', Number(ctx.state?.seed ?? 0));
       return { success: true, op: 'seize_item', createdId: nodeId };
     },
     // Destroying an item is the removal funnel: the bearer edges, then the node.
@@ -2266,12 +2317,24 @@ const POWER: UndertakingObjectType = {
       // The tradition shelf: the actor's aligned spheres first. An unaligned mortal —
       // measured as ~99% of them — studies from the open shelf rather than from
       // nothing, which is what keeps the cell from being dead on arrival.
+      // THR-1572 — the caster's own tradition library comes first, lowest tier first. A
+      // caster's tradition is read off their seeded `knows_spell` edge, else derived.
+      // Generated spells of *other* traditions never reach the sphere or open shelf: a
+      // priest does not stumble into a necromancer's book.
+      const casterTradition = knownTraditionOf(ctx.graph, ctx.actorId)
+        ?? casterTraditionOf(ctx.graph, ctx.actorId, Number(ctx.state.seed ?? 0));
+      const generatedOf = (n: GraphNode) => (n.properties.generated as { traditionId?: string } | undefined)?.traditionId;
+      const librarySpells = definitions
+        .filter(n => n.properties.origin === 'generated' && generatedOf(n) === casterTradition)
+        .sort((a, b) => Number(a.properties.tier ?? 0) - Number(b.properties.tier ?? 0) || a.id.localeCompare(b.id));
+      const authored = definitions.filter(n => n.properties.origin !== 'generated');
       const aligned = alignedSpheres(ctx.graph, ctx.actorId);
-      const shelf = aligned.length > 0
-        ? definitions.filter(n => aligned.includes(String(n.properties.sphereAffinity)))
-        : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? definitions : []);
+      const sphereShelf = aligned.length > 0
+        ? authored.filter(n => aligned.includes(String(n.properties.sphereAffinity)))
+        : (LEARN_SPELL_UNALIGNED_SHELF_OPEN ? authored : []);
+      const shelf = [...librarySpells, ...sphereShelf];
 
-      const { known, wielded } = spellsOfActor(ctx.graph, ctx.actorId);
+      const { known } = spellsOfActor(ctx.graph, ctx.actorId);
       const pick = shelf.find(n => !known.has(n.id));
       if (!pick) {
         // Told apart on purpose: a shelf that had nothing on it and a shelf whose every
@@ -2282,34 +2345,21 @@ const POWER: UndertakingObjectType = {
       const spellTemplateId = str(pick.properties, 'spellTemplateId') ?? pick.id;
       const tradition = str(pick.properties, 'sphereAffinity') ?? 'unaligned';
 
-      // Known — always, and first. The biography is the thing this cell exists to write.
-      const knowsEdgeId = `knows_spell_${ctx.actorId}_${pick.id}`;
-      ctx.graph.addEdge({
-        id: knowsEdgeId,
-        source: ctx.actorId,
-        target: pick.id,
-        type: 'knows_spell',
-        properties: { learnedTick: ctx.tick, sphereAffinity: tradition, source: op },
+      // Known — always, and first; wielded only while a slot is free. THR-1672: both
+      // edges are written by the one grant seam, unchanged (spellGrant.pin.test.ts).
+      const granted = grantSpell(ctx.graph, ctx.actorId, spellTemplateId, {
+        source: op,
+        tick: ctx.tick,
+        sphereAffinity: tradition,
+        ...(generatedOf(pick) ? { tradition: generatedOf(pick) } : {}),
       });
+      if (!granted.granted || !granted.knowsEdgeId) return traceRefusal('already_known', spellTemplateId, tradition);
+      const knowsEdgeId = granted.knowsEdgeId;
+      const freeSlot = granted.newlyWielded;
 
-      // Wielded — only if a slot is free. The cap is the attachment system's own
-      // (`SLOT_CAPS.spell`); this cell adds no cap logic of its own.
-      const freeSlot = wielded.size < (SLOT_CAPS.spell ?? 0);
-      if (freeSlot) {
-        ctx.graph.addEdge({
-          id: `has_trait_${ctx.actorId}_${pick.id}`,
-          source: ctx.actorId,
-          target: pick.id,
-          type: 'has_trait',
-          properties: {
-            level: 1,
-            acquiredTick: ctx.tick,
-            ticksRemaining: null,
-            source: op,
-            visibility: 'discoverable',
-            modifiers: {},
-          },
-        });
+      // THR-1572 — a carried transgression is noticed the first time it is carried.
+      if (freeSlot && pick.properties.agency === 'fate_woven') {
+        placeSpellNotice(ctx.state, ctx.actorId, { id: spellTemplateId, name: pick.name }, ctx.tick, 'carried', ctx.graph);
       }
 
       emitKindTrace({
@@ -2401,7 +2451,7 @@ const POWER: UndertakingObjectType = {
       }
 
       const spellId = str(node.properties, 'spellTemplateId') ?? str(node.properties, 'spellId') ?? node.id;
-      const spell = getSpellTemplate(spellId);
+      const spell = resolveSpellTemplate(ctx.graph, spellId);
       if (!spell) return fail('activate_spell', `no_spell_template:${spellId}`);
       // Exhaustion's reader (THR-1428 R4): `tick_exhaust` has always stamped a
       // deadline nobody checked. A caster still spent is refused here, which is what
@@ -2426,16 +2476,18 @@ const POWER: UndertakingObjectType = {
       const band = (STEP_OUTCOMES as readonly string[]).includes(ctx.outcome ?? '')
         ? ctx.outcome as StepOutcome
         : 'success';
-      const { targetId, targetHex } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
+      const { targetId, targetHex, filterRejected } = resolveCastTarget(ctx.graph, ctx.actorId, spell, ctx.targetNodeId);
       const result = resolveCast(ctx.state, {
         casterId: ctx.actorId,
         spell,
         band,
         ...(targetId ? { targetId } : {}),
         ...(targetHex ? { targetHex } : {}),
+        ...(filterRejected ? { filterRejected } : {}),
         tick: ctx.tick,
         site: 'undertaking',
         siteRef: ctx.projectId ?? `use:${ctx.actorId}:${ctx.tick}`,
+        ...(ctx.recordCrossings ? { recordCrossings: ctx.recordCrossings } : {}),
       });
       if (result.refused) return fail('activate_spell', result.refused);
       if ((result.soulPrice ?? 0) > 0) {
@@ -2729,7 +2781,7 @@ const STANDING: UndertakingObjectType = {
 // ─── Registry ───────────────────────────────────────────────────────
 
 export const UNDERTAKING_OBJECT_TYPES: readonly UndertakingObjectType[] = [
-  AREA, LOCATION, PLACE, ROUTE,
+  AREA, LOCATION, PLACE, ROUTE, PILGRIM_WAY,
   MORTAL, MONSTER,
   FACTION, COMPANY, ARMY, NETWORK, COMPANION,
   ITEM, POWER, CONDITION, AGREEMENT, STANDING,

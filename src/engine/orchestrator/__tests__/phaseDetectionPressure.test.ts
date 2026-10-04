@@ -1,9 +1,22 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../../traceBuffer';
 import type { GameState, RegionDetectionState } from '../../../types/gameState';
 import type { PendingEncounterSeed } from '../../../types/unifiedAction';
 import { phaseDetectionPressure, recordDetectionCrossings } from '../phaseDetectionPressure';
+import { encounterFamilyHasContent } from '../../encounterSeeding';
+
+// THR-1690: the strike is gated on the family having an encounter to resolve to.
+// THR-1703 authored one, so the real gate is open; the mock exists only so the
+// closed path (a family with nothing behind it) stays pinned by its own test.
+const contentGate = vi.hoisted(() => ({ closed: false }));
+vi.mock('../../encounterSeeding', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../encounterSeeding')>();
+  return {
+    ...actual,
+    encounterFamilyHasContent: (family: string) => !contentGate.closed && actual.encounterFamilyHasContent(family),
+  };
+});
 
 const REGION = 'region.alpha';
 
@@ -58,7 +71,14 @@ describe('phaseDetectionPressure', () => {
 });
 
 // THR-964: the crossing-and-seed block, extracted from the retired choice-commit loop.
-// LEAKED until THR-1690: these pin the helper alone; no production writer calls it yet.
+// These pin the helper alone; its live caller (the nudge detection write, THR-1690)
+// is pinned end to end in encounters/__tests__/nudgeDetectionEscalation.test.ts.
+function skipReason(): unknown {
+  const t = getTraces().find((x) => x.category === 'detection_threshold_crossed'
+    && (x as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
+  return (t as { seedSkipped?: unknown } | undefined)?.seedSkipped;
+}
+
 describe('recordDetectionCrossings', () => {
   beforeEach(() => {
     clearTraces();
@@ -107,5 +127,28 @@ describe('recordDetectionCrossings', () => {
   it('does not plant a duplicate seed for a region that already has one pending', () => {
     const result = recordDetectionCrossings(20, REGION, 0.9, 1, 'agt', [existingSeed()]);
     expect(result).toHaveLength(1);
+    expect(skipReason()).toBe('already_pending');
+  });
+
+  it('traces the crossing but plants nothing with no target', () => {
+    const result = recordDetectionCrossings(20, REGION, 0.9, 1, undefined, []);
+    expect(result).toHaveLength(0);
+    expect(skipReason()).toBe('no_target');
+  });
+
+  it('the rival-strike family has an encounter to resolve to (THR-1703)', () => {
+    expect(encounterFamilyHasContent('shadow.rival_strike')).toBe(true);
+  });
+
+  it('holds the strike back when the family has no encounter', () => {
+    contentGate.closed = true;
+    try {
+      const result = recordDetectionCrossings(20, REGION, 0.9, 1, 'agt', []);
+      expect(result).toHaveLength(0);
+      expect(crossedBands()).toEqual(['encounter']);
+      expect(skipReason()).toBe('no_content');
+    } finally {
+      contentGate.closed = false;
+    }
   });
 });

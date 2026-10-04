@@ -87,7 +87,11 @@ vi.mock('../../data/encounter-content', async () => {
   };
 });
 
-vi.mock('../../data/unified-action-templates', () => ({
+vi.mock('../../data/unified-action-templates', async (importOriginal) => ({
+  // THR-1672: the crossing recorder unifiedActionResolution now imports reaches
+  // modules that read the catalogue at load, so the real exports stay and only the
+  // lookup this test stages is replaced.
+  ...(await importOriginal<typeof import('../../data/unified-action-templates')>()),
   getUnifiedTemplateById: (id: string) => id === 'encounter.market_haggle'
     ? {
         id,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ScryOverlay } from '../ScryOverlay';
+import { ScryOverlay, SCRY_PANEL_MAX_HEIGHT } from '../ScryOverlay';
 import { ScryProvider } from '../contexts/ScryContext';
 import { createScryState, initializeCourt, assignAgentToPosition } from '../../../engine/scry';
 import type { RetinueAgent } from '../../../engine/retinue';
@@ -108,6 +108,21 @@ describe('ScryOverlay', () => {
     renderWithContext();
     const closeBtn = screen.getByLabelText('Close Divine Court');
     expect(closeBtn).toBeInTheDocument();
+  });
+
+  it('portals to <body>, outside any mount wrapper, with the ✕ outside the scroll area (THR-1709)', () => {
+    const { container } = renderWithContext();
+    const overlay = screen.getByTestId('scry-overlay');
+    // Not inside the render container — no ancestor stacking context can trap it.
+    expect(container.contains(overlay)).toBe(false);
+    expect(overlay.parentElement).toBe(document.body);
+    // The outer layer never scrolls; only the court body does.
+    expect(overlay.className).toContain('overflow-hidden');
+    const body = screen.getByTestId('scry-overlay-body');
+    expect(body.className).toContain('overflow-y-auto');
+    expect((body.parentElement as HTMLElement).style.maxHeight).toBe(SCRY_PANEL_MAX_HEIGHT);
+    // The close button is in the header, never inside the scrolling body.
+    expect(body.contains(screen.getByLabelText('Close Divine Court'))).toBe(false);
   });
 
   it('calls onClose when close button clicked', () => {

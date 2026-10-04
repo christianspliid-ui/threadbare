@@ -29,7 +29,7 @@ import type { GameState } from '../types/gameState';
 import type { SpellTemplate } from '../types/effects';
 import type { ReachDomain } from '../types/traits';
 import type { StepCastDeclinedReason, StepCastRecord } from '../types/unifiedAction';
-import { getSpellTemplate, spellAgencyOf } from '../data/spell-templates';
+import { resolveSpellTemplate, spellAgencyOf } from '../data/spell-templates';
 import { castStepBonusForTier, castThresholdFor } from '../data/spell-casting-constants';
 import { COOLDOWN_MINIMUM_TICKS } from '../data/effect-constants';
 import { castCooldownKey, canPayCosts, checkPrerequisites } from './spellActivation';
@@ -62,7 +62,7 @@ export function wieldedDeliberateSpells(state: Pick<GameState, 'graph'>, casterI
     const node = state.graph.getNode(edge.target);
     if (node?.properties.subcategory !== 'spell') continue;
     const templateId = node.properties.spellTemplateId;
-    const spell = typeof templateId === 'string' ? getSpellTemplate(templateId) : undefined;
+    const spell = typeof templateId === 'string' ? resolveSpellTemplate(state.graph, templateId) : undefined;
     if (spell && spellAgencyOf(spell) === 'deliberate') out.push(spell);
   }
   return out.sort((a, b) => a.id.localeCompare(b.id));
@@ -153,9 +153,10 @@ export function stepCastRecordFor(
     };
   }
   const p = preCardProbability();
-  const targetId = resolveCastTarget(state.graph, casterId, found.spell, site.targetNodeId).targetId;
+  const { targetId, filterRejected } = resolveCastTarget(state.graph, casterId, found.spell, site.targetNodeId);
   const base = {
-    casterId, spellId: found.spell.id, ...(targetId ? { targetId } : {}), threshold, preCardProbability: p,
+    casterId, spellId: found.spell.id, ...(targetId ? { targetId } : {}),
+    ...(filterRejected ? { filterRejected } : {}), threshold, preCardProbability: p,
   };
   if (!(p < threshold)) return { decision: 'declined', ...base, declinedReason: 'odds_good' };
   return { decision: 'cast', ...base, bonus: castStepBonusForTier(found.spell.tier) };

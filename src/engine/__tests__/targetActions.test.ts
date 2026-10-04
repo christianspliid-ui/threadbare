@@ -3,6 +3,8 @@ import { getTargetActionSlots, TARGET_ACTION_CONSTANTS, templateIdFromSlotId } f
 import type { TargetContext } from '../../types/targetContext';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EssencePool } from '../../types/influence';
+import type { ControlEffect } from '../../types/controlEffect';
+import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -835,5 +837,134 @@ describe('getTargetActionSlots — node-property gate (filter 3b)', () => {
     });
     expect(passSlots).toHaveLength(1);
     expect(failSlots).toHaveLength(0);
+  });
+});
+
+// ─── THR-1700: held lock ─────────────────────────────────────────────────────
+
+describe('getTargetActionSlots — held lock (filter 10, THR-1700)', () => {
+  const OWNER = 'asc.player';
+  const TAVERN = 'loc.tavern';
+
+  function heldEffect(overrides: Partial<ControlEffect> = {}): ControlEffect {
+    return {
+      effectId: 'ctrl_1',
+      templateId: 'sub.sanctify_tavern',
+      ownerId: OWNER,
+      targetHexCol: 0,
+      targetHexRow: 0,
+      targetNodeId: TAVERN,
+      establishedTick: 1,
+      ritualEssenceInvested: 15,
+      perTickCost: { life: 1 },
+      perTickMutations: [],
+      perTickGraphOps: [],
+      active: true,
+      ticksActive: 3,
+      narrativeTemplates: { established: '', active: '', lapsed: '' },
+      ...overrides,
+    };
+  }
+
+  const sustained = (id: string) => makeTemplate({
+    id,
+    name: id,
+    targetCategories: ['location'],
+    durationMode: 'sustained',
+    essenceCost: 2,
+    sphereAffinity: 'life',
+    starter: true,
+  });
+
+  function slotsFor(templateId: string, effects: readonly ControlEffect[], owner: string | null = OWNER) {
+    return getTargetActionSlots({
+      target: locationTarget({ nodeId: TAVERN, subtype: 'tavern' }),
+      templates: [sustained(templateId)],
+      pool: BASE_POOL,
+      primarySphere: 'life',
+      accessibleSpheres: ['life'],
+      heldControlEffects: effects,
+      controlOwnerId: owner ?? undefined,
+    });
+  }
+
+  it('locks a held non-stacking verb on its own target as "Already held"', () => {
+    const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect()]);
+    expect(slot.available).toBe(false);
+    expect(slot.lockedReason).toBe(TARGET_ACTION_CONSTANTS.ALREADY_HELD_REASON);
+  });
+
+  it('"Already held" wins over a short pool — it is the true reason', () => {
+    const slots = getTargetActionSlots({
+      target: locationTarget({ nodeId: TAVERN }),
+      templates: [sustained('sub.sanctify_tavern')],
+      pool: EMPTY_POOL,
+      primarySphere: 'life',
+      accessibleSpheres: ['life'],
+      heldControlEffects: [heldEffect()],
+      controlOwnerId: OWNER,
+    });
+    expect(slots[0].lockedReason).toBe('Already held');
+  });
+
+  it('stays castable once the held effect has lapsed', () => {
+    const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect({ active: false })]);
+    expect(slot.available).toBe(true);
+    expect(slot.lockedReason).toBeNull();
+  });
+
+  it('stays castable when the effect is held on a different target', () => {
+    const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect({ targetNodeId: 'loc.other' })]);
+    expect(slot.available).toBe(true);
+  });
+
+  it('stays castable when someone else holds it', () => {
+    const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect({ ownerId: 'asc.rival' })]);
+    expect(slot.available).toBe(true);
+  });
+
+  it('leaves stacking verbs (consecrate) castable on purpose', () => {
+    const [slot] = slotsFor('sub.sanctify', [heldEffect({ templateId: 'sub.sanctify' })]);
+    expect(slot.available).toBe(true);
+  });
+
+  it('emits a target_action_filter trace counting the held lock', () => {
+    enableTracing();
+    clearTraces();
+    slotsFor('sub.sanctify_tavern', [heldEffect()]);
+    const traces = getTraces().filter(t => t.category === 'target_action_filter');
+    disableTracing();
+    expect(traces).toHaveLength(1);
+    expect((traces[0] as { lockedByHeld?: number }).lockedByHeld).toBe(1);
+  });
+
+  function pendingSlot(cast: { actorId: string; templateId: string; targetId: string; resolved: boolean }) {
+    return getTargetActionSlots({
+      target: locationTarget({ nodeId: TAVERN, subtype: 'tavern' }),
+      templates: [sustained('sub.sanctify_tavern')],
+      pool: BASE_POOL,
+      primarySphere: 'life',
+      accessibleSpheres: ['life'],
+      heldControlEffects: [],
+      controlOwnerId: OWNER,
+      pendingActions: [cast],
+    })[0];
+  }
+
+  it('locks while the viewer\'s own cast on this target is still resolving', () => {
+    const slot = pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: false });
+    expect(slot.available).toBe(false);
+    expect(slot.lockedReason).toBe('Already held');
+  });
+
+  it('ignores a resolved cast, another owner\'s cast, and a cast on another target', () => {
+    expect(pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: true }).available).toBe(true);
+    expect(pendingSlot({ actorId: 'asc.rival', templateId: 'sub.sanctify_tavern', targetId: TAVERN, resolved: false }).available).toBe(true);
+    expect(pendingSlot({ actorId: OWNER, templateId: 'sub.sanctify_tavern', targetId: 'loc.other', resolved: false }).available).toBe(true);
+  });
+
+  it('fails open when no owner is supplied', () => {
+    const [slot] = slotsFor('sub.sanctify_tavern', [heldEffect()], null);
+    expect(slot.available).toBe(true);
   });
 });

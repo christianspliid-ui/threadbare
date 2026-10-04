@@ -1512,6 +1512,34 @@ Three things follow with no authoring:
 
 ---
 
+### Capability 34: The Stakes Line — One Sentence Says What the Encounter Is About (THR-1727)
+
+**What it does:** a template's optional `stakes` block authors the parts of one formula sentence the veil opens with, in the subtitle slot under the title:
+
+> *Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack.*
+
+The lead ("Passing through Sacred Grove,") comes from why the mortal is there — the motive classification, frozen when the encounter starts — and is never authored. You author `goal` (after "must") and `risk` (after "— or": the **worst ending the encounter can reach**, not a choice inside the scene). When the encounter ends, the same parts become the **result line**, chosen by outcome band: `won` for the winning bands ("Vara crossed the rotten toll bridge."), `lost` for plain failure, `lostBadly` for critical failure. Write `lost` and `lostBadly` from the template's own authored failure endings so the ledger never tells a different story from the screen. A fork whose arms end differently authors `arms: { <variantKey>: { won, lost, lostBadly } }` for every arm but the one the top-level endings describe. The result line feeds the Chapter Ledger, the encounter badge and the agent's thread row.
+
+```ts
+stakes: {
+  goal: 'cross the rotten toll bridge',
+  risk: 'go into the river with the pack',
+  won: 'crossed the rotten toll bridge',
+  lost: 'turned back to the long ford and lost the day',
+  lostBadly: 'went into the river with the pack',
+},
+```
+
+**Rules (the validator enforces them):** lowercase bare verb phrases, no final period, no `{tokens}`, never "traveler", "god", "you" or "your", ≤ 60 characters each (`STAKES_GOAL_MAX_CHARS` / `STAKES_RISK_MAX_CHARS`). `lostBadly` is required when the template authors a distinct `critical_failure` ending. Raw entries in `encounter-content.ts` and `faction-encounter-content.ts` carry `stakes` through their converters.
+
+**Why you want it:** without it the veil shows `template.description`, a hand-written summary with no shared shape, and the ledger names the chapter by its title alone.
+
+**How to tell whether yours landed.** `npx vitest run src/data/encounters/__tests__/encounterStakes.validator.test.ts` fails a malformed block and lists templates still without one. In the browser, `await window.__DEBUG.getEncounterStakes()` returns the built line, the rendered line and `hasStakes`.
+
+**Where to find the implementation:** `src/engine/encounters/stakesLine.ts` (builders and the tick-path stamp); tables in `src/data/nudge-stage-content.ts` (`STAKES_LEAD_VARIANTS`, `STAKES_RESULT_FORMS`). Plan: `Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.
@@ -1835,7 +1863,7 @@ The executor (a) resolves `templateId` from `condition-trait-content`, (b) looks
 
 **Key constants:** `CONDITION_WOUNDED_DURATION = 24` (2 game days), `WOUND_INCAPACITATION_CHECK_DIFFICULTY = 0.4`, `CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT = 1`.
 
-**Durations expire on `ticksRemaining`, not `durationTicks` (THR-761, fixed 2026-07-26).** `decayConditions` (`src/engine/conditionDecay.ts`) is the only tick-driven expiry path and it counts down the `has_trait` edge property **`ticksRemaining`**. Both `apply_condition` and `condition_attachment` now write it alongside `durationTicks`; before this they wrote only `durationTicks`, which has no production reader, so every authored duration was decorative and the condition was permanent. As a content author you do not need to do anything — author `durationTicks` (or let `CONDITION_DURATIONS` supply the default) and expiry follows. If you add a **new** site that mints a `has_trait` edge meant to expire, write `ticksRemaining`: the two fields are kept distinct on purpose (`ticksRemaining` = live counter, `durationTicks` = authored total kept as provenance and as the duration-UI denominator), and a duration of `0` means indefinite, expressed by omitting `ticksRemaining` entirely.
+**Durations expire on `ticksRemaining`, not `durationTicks` (THR-761, fixed 2026-07-26).** `decayConditions` (`src/engine/conditionDecay.ts`) is the only tick-driven expiry path and it counts down the `has_trait` edge property **`ticksRemaining`**. Both `apply_condition` and `condition_attachment` now write it alongside `durationTicks`; before this they wrote only `durationTicks`, which has no production reader, so every authored duration was decorative and the condition was permanent. As a content author you do not need to do anything — author `durationTicks` (or let `CONDITION_DURATIONS` supply the default) and expiry follows. **Since THR-1697 (2026-10-03) that default is real on `apply_condition` too:** an omitted `durationTicks` resolves through `resolveConditionDurationTicks` to the condition's `CONDITION_DURATIONS` term before indefinite (before, it went straight to `0`, and Wolves at the Fold watched a village forever while the chip said a week). Author `durationTicks: 0` when a timed condition should be permanent on purpose; `conditionTermFallback.test.ts` fails any template whose timed `apply_condition` resolves to permanent. If you add a **new** site that mints a `has_trait` edge meant to expire, write `ticksRemaining`: the two fields are kept distinct on purpose (`ticksRemaining` = live counter, `durationTicks` = authored total kept as provenance and as the duration-UI denominator), and a duration of `0` means indefinite, expressed by omitting `ticksRemaining` entirely.
 
 **A condition can sit on a *place*, not only a person (THR-1143, 2026-08-16).** Add `targetLocationId` to any of the three condition effects and the `has_trait` edge lands on a location node — a pass closed for the season, a town under a plague scare, a square under watch. This is a **widening, not a new effect kind**: same edge, same `ticksRemaining` counter, same single `decayConditions` expiry path, so nothing you know about authoring a condition changes except who carries it. `$target` binds the field when the action targeted a location. Sublocations keep `targetSublocationId` — `targetLocationId` will not bind a node with a `parentLocationId`, so a tavern inside a keep never resolves to both.
 
@@ -2678,6 +2706,27 @@ window.__DEBUG.validateTraitRefs()
 
 ---
 
+## Capability: Descent hooks — "the old blood" (THR-1658)
+
+**What you can now author:** an ambition only a descendant of a dead empire may take up, and milestones that read that descent. Worldgen gives about a quarter of the mortals on a dead empire’s old land a `backstoryStrata` entry `{ cultureId, relation: 'descent' }` (THR-1631); these hooks are its play-time readers.
+
+| Hook | Holds when |
+| -- | -- |
+| `requiresDescent: true` on an `AmbitionTemplate` | Eligibility gate: the mortal has at least one descent culture. **Fail-closed** — a selection snapshot built without `descentCultureIds` (every worldgen, birth and binder snapshot) refuses it, so a gated drive never arrives at t0 or at birth; it arrives through the ordinary re-evaluation refill, and the refill offers it **only to a mortal who already decides** (it must never be the want that spotlight-pulls someone into the deciding tier). |
+| `{ type: 'agent_at_ancestral_ruin' }` | The agent stands within `OLD_BANNER_RUIN_REACH_HEXES` (default 0 = same hex) of an `elder_ruin` whose `originCultureId` is one of its descent cultures. Instantaneous; a milestone latches once met. |
+| `{ type: 'agent_took_ancestral_ground' }` | Since `windowStartTick` the agent has taken a Location or Place whose region’s historical culture is one of its descent cultures, by any of three ways: a holding (`owns`, `acquiredTick`), a claim (`controls`, `establishedTick` — the claim-a-Location cell writes a stance, not a holding) or a founding (incoming `constructed_by`, `tick`). **Window-bound** — ground held before the ambition began does not count, and no window reads `false`. |
+| `{ type: 'agent_rooted_off_ancestral_land', minTicks }` | Durational, with the same window rule as `agent_settled_since`: the agent has held one position for `minTicks` **and** that position’s region was none of its dead empires’ land. Region-aware where `agent_away_from_origin` is location-exact — settling at the next town, a Place or a ruin on the old land is not leaving it. The descent drive’s abandonment trigger. |
+
+Both conditions fail soft to `false` on missing descent, an unresolvable position or region, or (for the ruin walk) a graph view that cannot enumerate nodes. "The old land" is one predicate everywhere: `historicalCultureOfRegion` in `src/engine/descent.ts`, which the worldgen writer itself imports.
+
+**Provenance.** A descent-gated drive taken up at re-evaluation carries `mintedByLabel` = `OLD_BANNER_LABEL_STEM` + the empire worded as the chronicle words it (`empireWords`, `worldPastWords.ts`), so the sheet’s intent line reads *"Because of the old blood of the Ash-Crowned"*. No culprit, no heat: an ancient fall is not a grievance (rulebook § 10.7, *An old fall is not a wrong*).
+
+**Shipped author:** `ambition_raise_the_old_banner` (`src/data/ambition-templates.ts`).
+
+**Check it:** `await window.__DEBUG.getDescent('<name>')` → `{ descentCultureIds, descentCultureNames, ancestralRuinIds, onAncestralLand, holdsOldBanner }`.
+
+---
+
 ## Capability: Residence hooks — "where they're from" and "how long they've stayed" (THR-822)
 
 **What you can now author:** an ambition milestone or abandonment trigger that reads a mortal's *residence* — the position they originated at, and how long they have held their current one. Two `GraphCondition`s, alongside the trait/reach/bond vocabulary above:
@@ -2821,7 +2870,14 @@ with the card.**
 `detectionDelta` is signed. Positive is The Heavy Hand (help that is *seen* — rivals notice);
 negative is The Veil (the same help, unwitnessed). It lands on the acting mortal's region and
 clamps to `[0, 1]`, and the trace reports what was *actually* applied after clamping, not what
-you asked for. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
+you asked for. A raising write that crosses a band (notice 0.5 · turn 0.8 · encounter 1.0)
+emits `detection_threshold_crossed`, and reaching *encounter* plants one `shadow.rival_strike`
+seed on the acting mortal — at most one pending per region (THR-1690, via
+`recordDetectionCrossings`). The region is the one whose `contains` edge holds the mortal's
+Location; a mortal in no region writes the `unknown` bucket, which never escalates. **The
+strike is held back until an encounter answers the family** (`encounterFamilyHasContent`;
+none is authored yet — THR-1703), and the crossing trace says so (`seedSkipped: 'no_content'`).
+Authoring that encounter is what turns the lever on. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
 
 Channels **sum across the committed hand** before they are charged, which is what lets a
 player pair The Veil against The Heavy Hand and net off. A net-zero channel is not charged.
@@ -4251,6 +4307,34 @@ cells in the bounded table `UNDERTAKING_CELL_APPOINTMENTS` (`src/data/undertakin
   (its first profile) and `ambition_conquer_territory`. The object scan reads a per-type cap,
   `STRATEGIC_TARGET_SCAN_CAPS[objectTypeId] ?? .object` (`monster: HUNT_TARGET_SCAN_CAP` = 128 — at least the 120 living monsters an epic map holds at 300 ticks).
 
+**The pilgrim way — a class of Route whose create writes a pool-changing edge (THR-1660).** The
+second class of a kind, and the first undertaking cell whose product is an **edge another system
+reads to change an encounter pool**:
+
+- **`pilgrim_way`** (`classOf: 'route'`, `shape: { edgeType: 'sacred_route' }`) has one verb,
+  `create`. It writes `sacred_route` **from the congregation of the site's own culture** to the
+  site — never from the mortal — through `createRelationEdge` (schema-checked, duplicate-refused),
+  stamped `origin: 'undertaking'` and the `projectId`. The encounter cache's
+  `sacredRouteDestinationTemplates` pools `encounter.pilgrimage_trial` at any `sacred_route`
+  destination, and the cell arm's pool invalidation (`poolInvalidatedLocationIds` ← the cell's
+  `targetNodeId`) makes it live the same tick — **no new firing mechanism**. The pattern for any
+  future cell: if your edge already has a reader, aim the create at the reader's site and the
+  existing invalidation does the rest.
+- **A create hook that reads the ground.** `pilgrimWaySiteEligibility` is the THR-1617 create-site
+  hook: `consecrator_gone` / `site_gone` / `no_congregation_here` /
+  `already_a_pilgrim_destination`, refused on the board as `ineligible:<reason>:<site>` and
+  re-checked by the verb at completion. `congregationOfSite(graph, siteId)`
+  (`src/engine/pilgrimWays.ts`) answers *whose faith is this ground* — the strongest current-layer
+  culture link, then that culture's living Temple congregation, lowest id.
+- **`UNDERTAKING_CELL_REACH`** (`src/data/undertaking-cells.ts`) — a bounded per-cell reach lean
+  read at synthesis, for a cell whose verb's generic lean misreads the work (a consecration is
+  Star/Heart, not `create`'s Stone/Gold). Growth on completion reads it.
+- **Readers you can key on:** `selectPilgrimWays(graph)` (every way, both ends standing, by edge
+  id, with `origin` and `projectId`) and `isPilgrimDestination(graph, siteId)`. The Location and
+  Faction sheet lines and `__DEBUG.getPilgrimWays()` read the first.
+- **Prose:** `{object}` reads *the way to Brindle* for this type (`objectDisplayName`), so the
+  deed is *Consecrated the way to Brindle* even though the made thing is an edge.
+
 **The ruin visit (THR-1664, seeded things stay alive S3).** The second appointment row, and the
 first that gates on the site and on the actor's own state rather than planting on every completion:
 
@@ -4284,6 +4368,28 @@ first that gates on the site and on the actor's own state rather than planting o
   whose `critical_failure` ends it early. `missed: true` makes the lead cold whatever the outcome.
   It backs Law 56 chips (`CHIP_BACKING_EFFECT_KINDS`) and satisfies the `knowledge` consequence
   family. Emits `ruins.clue_sharpened` with `via: 'visit' | 'missed_visit'`.
+
+**The lead survey and the kept visit (THR-1686).** Three rules, none with an authoring field.
+They change how a mortal *chooses*, so authored content needs nothing new:
+
+- **A held lead's survey is not judged by the forecast window.** On the decision board, a candidate
+  that is `executionMode: 'instant'` **and** carries `leadPull` takes advance probability 1 and
+  fit 1, and its entry reads `forecastZone: 'certain'`. A survey has no dice. Every other instant
+  cell still faces the window (kill switch `CLUE_LEAD_SURVEY_SKIPS_WINDOW`).
+- **A mortal `waiting` at an appointment's place stays.** A candidate off its own hex that would
+  outlast the due tick is dropped (`rerankForAppointmentRegime`), the trip there and back priced at
+  `APPOINTMENT_HEX_TICKS_PER_HEX` a hex plus its own ticks (`waitingTripOverruns`). Company travel asks the same
+  question per member (`holdsWaitingMemberAtPlace`, called from `groups/groupMovement.ts`), so a
+  company goes on without a member that is waiting for a meeting; so do idle drift and the
+  forced-travel fallback in `phaseAgentDecision`. Kill switch:
+  `APPOINTMENT_WAITING_HOLD_ENABLED`.
+- **`leaning`'s overrun discount reaches the board.** It rides on the candidate as
+  `appointmentDiscount` and is multiplied into the encounter entry's score (kill switch
+  `APPOINTMENT_DISCOUNT_ON_BOARD`). Before this it scaled `finalScore`, which the live board never
+  reads.
+
+Inspect: `decision_board_comparison.boardTop[]` (`forecastZone`, `appointmentDiscount`); `appointment_regime` with `heldFrom` / `heldBy` for every hold;
+`readers/lead-survey-arms.ts` for the census.
 
 Inspect: `__DEBUG.listMonsters()` → each row's `huntedBy[]` (hunter, `work`, `reason`); CLI
 `hunts` (founded, tracked, planted / kept / missed with reasons, travel ticks, out-of-scan
@@ -4780,6 +4886,8 @@ Plan: `Docs/plans/2026-09-26-thr-1570-seeded-item-generator.md`.
 
 Inspect: `__DEBUG.getGeneratedItems()`, `previewGeneratedItem({ seed, band, origin })`, `mintGeneratedItem({ holder: '@hero', band, origin })`; traces `item.generated` (carries the `seedKey` that reproduces the item), `item.generate_fallback`.
 
+**The second minting point — found things in the reward draw (THR-1626).** Plan: `Docs/plans/2026-10-02-thr-1626-found-items-in-reward-draws.md`. A reward recipe you author keeps deciding the band and the theme; after the pool picks an authored `artifact` of tier 2 or 3 (never a service, a Legendary, a companion or a harmful draw), `tryGeneratedReward` may stand a generated `found` thing in for it at `GENERATED_REWARD_SHARE_BY_BAND` (0.5 Storied / 0.5 Mythic). **Your recipe's `tagFilters` are honoured:** the generator is asked for them (`ItemGenRequest.requiredTags` — cores that cannot carry the tags drop out, a required reach or sphere is forced, and an item that misses one is refused), and only a thing carrying every tag substitutes. A filter fewer than `ITEM_GEN_REWARD_MIN_FIT_CORES` (2) found cores can carry keeps the authored item, so one idea never becomes the face of a whole family. **When you add a found core**, check `coreTagReach(core)` covers what it makes — a signature that reassigns the reach or stamps a curse declares that in `signatureTags`, and `rewardMinting.test.ts` fails if any generated item carries a tag outside its core's reach. Inspect: `__DEBUG.forceGeneratedRewards(true)` (the share roll always passes; floor and fit still apply), `getGeneratedItems()` rows with `origin: 'found'` (ids `gen_found_…`); trace `reward.generated` names the authored pick, the outcome (`substituted` / `too_few_cores` / `no_fit` / `generator_refused` / `mint_failed`) and the fit-core count. `SeededRewardDraw.generated` carries the item; `drawnTemplateId` stays the authored pick.
+
 ## Capability 36: The world's past — read it, never re-derive it (THR-1631)
 
 A new world starts with a thin past on the graph, written once at worldgen by `worldPast.seedWorldPast` on its own PRNG stream: one **elder war** between the two dead empires that left the most battlefields (`eventType: 'past_elder_war'`, `occurred_at` each of their battlefield ruins, `pastName` such as "the Breaking"), two or three **wars in living memory** between neighbouring Realms (`eventType: 'past_war'`; each Realm's `participated_in` edge carries `role: 'winner' | 'loser'`; `occurred_at` the burned town when one lay in range), a **founding age** on every settlement and plain ruin (`foundedYearsAgo`), and up to ten **dead** (`pastRole: 'founder' | 'fallen_commander' | 'wonder_finder'`, `pastOrigin: 'worldgen'`) in exactly the run-time `retain` death shape. About a quarter of the mortals on a dead empire's old land carry **descent** (`backstoryStrata: [{ cultureId, relation: 'descent' }]`, type `WorldPastDescentStratum`), which clue scoring already reads. Past events carry a negative `tick` (`-yearsAgo × 360`), so anything that sorts by tick puts them before t0.
@@ -4807,11 +4915,25 @@ A spell is a `SpellTemplate` in `src/data/spell-templates.ts`. Four optional fie
 
 **How a cast resolves** (`resolveCast`, `src/engine/spellCasting.ts` — the only path): the band that already landed decides. `critical_success`, `success`, `success_at_cost` land (`CAST_LANDED_BANDS`); anything else fizzles; the price is paid on every band. Backlash is read against the band by the price layer — `backlash.trigger`: `'failure'` = strain (bites on near miss / failure / critical failure), `'critical_failure'` = transgression (disaster only), `'always'` = gamble (every band but critical success). A `reach_drain` cost now leaves the caster **Strained** (`condition.strained.<reach>`, duration scaled by the drain) — author the amount as a reach share, as before.
 
-**Live effect primitives a cast can use:** `teleport` (lands on a place-tier Location: `target_hex` / `random` within range / `home` / `nearest_ally`), `forced_move` (`away` / `toward` / `random`, `hexes`), `dispel` (lifts the target's bearing — never deletes the definition; `target: 'attachment'` silences a possession for `DISPEL_ITEM_SUPPRESS_TICKS`), `inflict_condition`, `resource_manipulate 'fight_clock'`, `alter_terrain`, `modify_rules`, `spawn`. **Not yet:** `transfer`, `compel` (execute nothing), and the modifier families (`duration`, `aura`, `conditional`, `stacking`, `decay`) have no per-cast channel — on a *cast* spell they are traced and apply nothing. Don't author a cast whose whole point is one of them.
+**Live effect primitives a cast can use:** `teleport` (lands on a place-tier Location: `target_hex` / `random` within range / `home` / `nearest_ally`), `forced_move` (`away` / `toward` / `random`, `hexes`), `dispel` (lifts the target's bearing — never deletes the definition; `target: 'attachment'` silences a possession for `DISPEL_ITEM_SUPPRESS_TICKS`), `inflict_condition`, `resource_manipulate 'fight_clock'`, `alter_terrain`, `modify_rules`, `spawn`. **Not yet:** `transfer`, `compel` (execute nothing).
+
+**The cast channel — a cast spell's lasting effects (THR-1683).** On a landed band, every effect `executeEffect` would only trace (`MODIFIER_ONLY_EFFECT_TYPES`, plus non-clock `resource_manipulate`) rides one shared condition per spell, `trait.condition.cast.<spellId>`, which the caster bears for a while (`castChannel.ts`). So `aura`, `conditional`, `passive`, `test_shaper`, `social_modifier`, `reveal` and `action_trigger` (without `maxFires`) on a *cast* spell now hold: Hollow Crown's `aura` thins the Gold of every enemy within its radius until the bearing expires. A `duration` effect rides as a `passive` of the same reach and value, and its `ticks` set how long the bearing lasts; with no `duration`, `CAST_CHANNEL_DEFAULT_TICKS_BY_TIER[tier]` does. Re-casting refreshes the one bearing, it never stacks. **Still nothing:** `stacking`, `decay`, `cooldown`, charges — stateful families cannot share one definition, so they are skipped and named in the `spell.cast_resolved` trace (`channel.skipped`). Don't author a cast whose whole point is one of those. The chip reads "*Spell* holds around *caster* for a while." When what rides lands on the bearer as a net loss (Last Breath's iron −0.10 — `passive`/`conditional` values summing below zero; an `aura` acts on others and never counts), the cast condition is tagged `#negative`, so a condition ward can refuse it, and the chip is a loss: "*Spell* leaves *caster* weaker for a while."
+
+**Targets honour the filter (THR-1683).** An `agent`-targeted spell's `targeting.filter` is applied on the named target and the fallback alike: `ally` takes only an ally (`isAlly`, `src/engine/allegiance.ts` — same faction, same company, or standing ≥ `CONDITION_ALLY_STANDING_MIN`); `enemy` takes anyone who is not, strangers included while `CAST_ENEMY_FILTER_ADMITS_STRANGERS` holds. With no one eligible beside the caster the cast refuses `no_target` before any price, and a step cast declines.
 
 **New trigger moment:** `action_trigger` `on: 'spell_cast'` fires on the caster after every cast, landed or fizzled — use it for "the working takes something from you" riders on items and powers.
 
 Knobs: `src/data/spell-casting-constants.ts`. Seeding: every caster starts knowing one spell (`seedSpellKnowing`; `SEEDED_CASTER_ROLES`, `SEEDED_SPELL_COVERAGE`). Inspect: `__DEBUG.getSpellHolders()`, `await __DEBUG.castSpell({ caster, spell, band })`; traces `spell.seeded`, `spell.cast_resolved`, `spell.backlash`, `effect.teleported`.
+
+### Generated spells — the two vocabularies (THR-1572)
+
+The world writes most of its spells (`src/engine/spellGenerator/`). Content authors extend it by adding a **core** to `src/data/spell-generator-cores.ts` (an arena, an agency, a tier window, the themes and spheres it fits, two flavour lines, a builder) or a **tradition row** to `src/data/spell-generator-tables.ts` (themes, word banks, notice families). What a core may emit is fixed by two vocabularies, and the gate (`spellGenerator.gate.test.ts`) reads every one back through the engine:
+
+- **Carried (fate-woven):** a shape `live` or `narrow` in `ITEM_HONEST_VOCABULARY` **and** stateless on a shared node (`isCarriedEffectStateless`: passive, conditional, test_shaper, social_modifier, aura, reveal, action_trigger, behavior_weight, range_modifier, axiological_drift, per-tick resource_manipulate). Never `self_remove` — on a shared spell it deletes the spell for every bearer.
+- **Cast (deliberate): a cast must write.** Only `live` rows of `SPELL_CAST_HONEST_VOCABULARY` (`src/data/spell-honest-vocabulary.ts`): inflict_condition, fight_clock, teleport/forced_move, modify_rules on a live key, alter_terrain warded/shrouded, dispel. `duration`, `aura`, `conditional`, `suppress` and the other modifier-only arms are refused until THR-1683's per-cast channel; encounter-arena casts target the caster until its ally/enemy filter.
+- **Notice:** a transgression spell carries its tradition's `noticeFamilies`; every cast places one `forbidden_contact` hidden mark on the caster (`placeSpellNotice`). A family must match a live template or the validator refuses it.
+
+Review a batch with `npm run cli` → `generate spells 30 --seed 42`; a live world's libraries with `spells`; one spell with `await __DEBUG.previewGeneratedSpell({ tradition: 'holy', tier: 2 })`.
 
 ### The step cast (THR-1670, power runtime S2)
 
@@ -4824,6 +4946,18 @@ What this means for authors:
 - **Chips come from writes only.** A cast whose effects are modifier-only (an `aura`, a `conditional`) writes nothing and draws no chip — its effect in the scene is the odds line. A price that inflicts a condition (`condition_inflict`) does draw one (read back as `fromPrice`).
 
 Inspect: `await __DEBUG.getStepCast(actionId?)` (`recorded` per step, `pending` for the current one); trace `spell.cast_decided`. Review: `?spell=<templateId>` stamps the hero with the spell beside `?testavatar` / `?spawn=`.
+
+### Taught spells — a god or a book (THR-1672)
+
+A spell can now be **given**, through two channels, both written by the one grant seam (`grantSpell`, `src/engine/spellGrant.ts`) and recorded on the mortal's `knows_spell` edge.
+
+What this means for authors:
+
+- **`spell_grant` is the aftermath kind for "the god left a working with them".** `{ kind: 'spell_grant', targetAgentId: '$actor', selector: 'god' | 'tradition', maxTier? }` teaches the mortal one spell: `'god'` from the player's own spheres, then the mortal's tradition; `'tradition'` from the tradition only. It is a persistent effect (`PERSISTENT_EFFECT_KINDS`). No pick (they already know everything) skips with a trace; the card's other effects still land. Teaching a transgression costs the god doom and detection, exactly as the Teach a Spell card. Shipped user: the Cache member `card.cache.variation.spirit` (*Leave A Word Behind*).
+- **A book teaches by what it is, not by a list.** To author a book that teaches, give a `tomes_scrolls` item the tag `#arcane` (teaches up to tier 2, prefers the reader's tradition, then spells of the book's Reach tag) or `#ancient` (up to tier 3, prefers elder Foundation-sphere magic). `#map` excludes it — the treasure maps carry `#ancient`. A generated *forbidden book* teaches wherever it is minted into someone's hands. A book teaches each holder once (`taughtHolderIds`), and a maker never learns from the book they made.
+- **Knowing a spell does not make a mortal a caster.** A farmer handed the Veilscript Fragment carries its working and can cast it in a step, but cannot study for more.
+
+Inspect: `__DEBUG.getSpellHolders()[i].grants` (per-edge `source` / `grantedBy` / `viaItemId`); traces `spell.granted`, `spell.tome_unread`, `spell.divine_teaching_priced`, `spell.divine_echo`. Review: `await __DEBUG.giveTome('@hero')`, `await __DEBUG.teachSpell('@hero')`.
 
 ### Innate powers (THR-1671, power runtime S3)
 

@@ -73,6 +73,27 @@ export const ITEM_GEN_PROVENANCE_REPEAT_DECAY = 0.1;
 /** Ticks in an in-game day, for the plain-words renderer ("24 ticks is two in-game days", effect-constants). */
 export const ITEM_GEN_TICKS_PER_DAY = 12;
 
+// ─── Found things in the reward draw (THR-1626, plan § Constants table) ───
+
+/** Master switch for the reward-draw minting point; `false` restores today's draws exactly. */
+export const ITEM_GEN_REWARD_ENABLED = true;
+/**
+ * The ruling (design lane, 2026-09-26): the share of eligible reward picks a generated
+ * `found` thing stands in for, by the picked template's tier. Mundane stays authored
+ * (THR-1236: generate Storied and up); Legendary stays authored until a generated
+ * Legendary has its own trait-graph design.
+ */
+export const GENERATED_REWARD_SHARE_BY_BAND: Readonly<Record<1 | 2 | 3 | 4, number>> = { 1: 0, 2: 0.5, 3: 0.5, 4: 0 };
+/**
+ * A recipe's tags must be carriable by at least this many `found` cores at the band, or
+ * the authored item stands (Lane decision — never one idea on repeat).
+ */
+export const ITEM_GEN_REWARD_MIN_FIT_CORES = 2;
+/** Generation attempts (`:f<k>`) to find an item carrying the recipe's tags before the authored item stands. */
+export const ITEM_GEN_REWARD_FIT_ATTEMPTS = 4;
+/** Id prefix for generated rewards — inside the registered `gen_` prefix. */
+export const ITEM_GEN_REWARD_ID_PREFIX = 'gen_found_';
+
 /**
  * Magnitude envelopes by band — the prototype's `MAG`, calibrated against the hand
  * catalog's own ranges and inside `item-stat-bands.ts`. Band 1 rows are reached only by

@@ -84,8 +84,14 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
   }, [onDismiss]);
 
   return (
+    // THR-1711 (5): `absolute`, not `fixed`. GameView mounts the stack inside the
+    // map area (a `relative` box), so it anchors to the map's own corner rather
+    // than the viewport's, where it sat on top of the Chronicle sidebar. Top-right,
+    // not bottom-right: the action drawer rises from the map's bottom edge, and a
+    // bottom-anchored toast covered its Cast bar.
     <div
-      className="fixed right-4 bottom-4 z-50 flex flex-col gap-2 pointer-events-none"
+      data-testid="toast-stack"
+      className="absolute right-4 top-4 z-50 flex flex-col gap-2 pointer-events-none"
       style={{ maxWidth: '320px' }}
       aria-live="polite"
       aria-label="Notifications"

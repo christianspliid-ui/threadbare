@@ -115,7 +115,54 @@ export const ENCOUNTER_FAMILY_TAGS: Readonly<Record<string, ContentTag>> = {
   'liminal.quest': '#threshold_errand',
   'broker.quest': '#broker_errand',
   'crafting.quest': '#craft_commission',
+  // THR-1703 — the one row added after the migration: two live planters (regional
+  // detection pressure and the Infiltrator's Approach) already name this family, and
+  // the encounter that answers it is compiled as `encounter.rival.*`, so the prefix
+  // alone could never resolve.
+  'shadow.rival_strike': '#rival_strike',
 };
+
+/**
+ * Whether a seed naming `family` can resolve to an encounter at all (THR-1690):
+ * an `ENCOUNTER_FAMILY_TAGS` row whose tag a registered template wears, or a
+ * registered template id under the
+ * `${family}.` prefix `matchFamilyTemplate` draws from. A planter that would
+ * otherwise mint a seed doomed to the withered path asks this first, because the
+ * withered sentence prints the family id to the player.
+ */
+export function encounterFamilyHasContent(family: string): boolean {
+  // An alias row is a promise, not content: it answers only while a registered
+  // template wears the tag it names (THR-1703).
+  const tag = ENCOUNTER_FAMILY_TAGS[family];
+  if (tag) return UNIFIED_ACTION_TEMPLATES.some((template) => template.tags?.includes(tag));
+  const prefix = `${family}.`;
+  return UNIFIED_ACTION_TEMPLATES.some((template) => template.id.startsWith(prefix));
+}
+
+/**
+ * Whether `family` has an encounter that could land on `targetAgentId` where they
+ * stand right now (THR-1703 review): {@link encounterFamilyHasContent}'s candidates,
+ * narrowed by the filters a family seed is judged by when it fires — individual-
+ * performable, and a `locationSubtypes` gate (if any) that accepts the target's
+ * Location-tier subtype. A planter whose seed fires on the next pass asks this
+ * instead, because a seed that finds nothing eligible withers into a sentence that
+ * prints the family id.
+ */
+export function encounterFamilyAnswersAt(
+  graph: WorldGraph,
+  family: string,
+  targetAgentId: string,
+): boolean {
+  const tag = ENCOUNTER_FAMILY_TAGS[family];
+  const prefix = `${family}.`;
+  const subtype = seedTargetSubtype(graph, targetAgentId);
+  return UNIFIED_ACTION_TEMPLATES.some((template) => {
+    const member = tag ? template.tags?.includes(tag) : template.id.startsWith(prefix);
+    if (!member || !template.actorAffinities?.includes('individual')) return false;
+    if (!template.locationSubtypes || template.locationSubtypes.length === 0) return true;
+    return subtype !== undefined && template.locationSubtypes.includes(subtype);
+  });
+}
 
 /**
  * The query a seed resolves by, or `undefined` when it has none.

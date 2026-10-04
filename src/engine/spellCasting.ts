@@ -15,6 +15,8 @@
  *      its own seeded stream, and applies it the same way;
  *   5. raises `'spell_cast'` on the caster's own carried triggers;
  *   6. queues the soul price as a `spell_price` quintessence event (FB3's split);
+ *   6b. (THR-1572) a generated transgression spell is noticed: a `forbidden_contact`
+ *      hidden mark on the caster, once per caster per spell, landed or fizzled;
  *   7. traces `spell.cast_resolved` (and `spell.backlash` when it bit).
  *
  * The band is the roll that already happened — a step's, or an undertaking's final
@@ -52,7 +54,14 @@ import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { SPELL_SOUL_PRICE_QUINTESSENCE_SCALE } from '../data/strategic-action-constants';
 import { strainConditionId } from '../data/strain-conditions';
-import { CAST_LANDED_BANDS } from '../data/spell-casting-constants';
+import { CAST_LANDED_BANDS, CAST_ENEMY_FILTER_ADMITS_STRANGERS } from '../data/spell-casting-constants';
+import { isAlly, actorFactionId } from './allegiance';
+import { areFactionsHostile } from './factionNetwork';
+import { applyCastChannel, splitCastEffects, type CastChannelResult } from './castChannel';
+import { placeSpellNotice, spellNoticeMarkId, spellProvenance } from './spellGenerator/notice';
+import { knowsSpellEdge } from './spellGrant';
+import { writeAgentDetection, type DetectionCrossingRecorder } from './agentDetection';
+import { DIVINE_TAUGHT_CAST_DETECTION } from '../data/spell-grant-constants';
 
 // ═══════════════════════════════════════════════════════════════════
 // Request / result
@@ -71,6 +80,14 @@ export interface CastRequest {
   readonly site: 'step' | 'undertaking';
   /** `actionId:stepIndex`, or the project id — seeds the cast's consequence streams. */
   readonly siteRef: string;
+  /** THR-1683 — mortals the target filter turned away while choosing `targetId` (traced). */
+  readonly filterRejected?: number;
+  /**
+   * THR-1672 — the detection crossing recorder for a god-taught transgression's echo.
+   * Handed in by callers outside the module cycle (`agentDetection.ts`); omitted, the
+   * echo still writes pressure but plants no strike.
+   */
+  readonly recordCrossings?: DetectionCrossingRecorder;
 }
 
 /** One graph write a cast produced — the only thing a chip may be built from (Law 56). */
@@ -86,6 +103,13 @@ export interface CastWrite {
    * `condition_inflict` cost), read back off the graph after payment.
    */
   readonly fromPrice?: boolean;
+  /**
+   * THR-1683 — `'cast_condition'` when the write is the cast channel: the spell's
+   * modifier-only effects, held on the caster as a timed condition.
+   */
+  readonly channel?: 'cast_condition';
+  /** THR-1683 — a cast-channel bearing that leaves the caster worse off (its chip is a loss). */
+  readonly harmful?: boolean;
 }
 
 export type CastRefusal = 'prerequisite' | 'cooldown' | 'cost' | 'sealed' | 'no_target' | 'error';
@@ -101,6 +125,12 @@ export interface CastResult {
   readonly soulPrice?: number;
   readonly writes: readonly CastWrite[];
   readonly refused?: CastRefusal;
+  /**
+   * THR-1572 — a transgression's notice: the caster's mark for this spell, and whether
+   * this cast placed it (a second cast of the same spell places none). Absent for a spell
+   * that carries no notice.
+   */
+  readonly notice?: { readonly markId: string; readonly placed: boolean };
 }
 
 const REFUSED = (refused: CastRefusal): CastResult => ({ landed: false, applied: [], paid: [], writes: [], refused });
@@ -131,9 +161,9 @@ export function castStream(state: Pick<GameState, 'seed'>, purpose: string, site
  * - `self` → the caster.
  * - `agent` → the named node when it is a mortal within `range` hexes; else the
  *   nearest other mortal at the caster's own location, by id. Range 0 means the same
- *   hex. The ally/enemy filter is not re-checked here: the cell that proposed the work
- *   already chose its target, and the fallback only ever picks someone standing beside
- *   the caster.
+ *   hex. Both paths honour `targeting.filter` (THR-1683): before it, Hollow Crown
+ *   (`enemy`) was aimed at the caster's own bonded ally because the ally stood
+ *   nearest. `filterRejected` counts the mortals the filter turned away.
  * - `hex` / `location` → the named node's hex, else the caster's own hex.
  */
 export function resolveCastTarget(
@@ -141,29 +171,61 @@ export function resolveCastTarget(
   casterId: string,
   spell: SpellTemplate,
   targetNodeId: string | undefined,
-): { targetId?: string; targetHex?: { col: number; row: number } } {
+): { targetId?: string; targetHex?: { col: number; row: number }; filterRejected?: number } {
   const t = spell.targeting;
   if (t.type === 'self' || t.type === 'attachment') return { targetId: casterId };
 
   const casterPos = agentPosition(graph, casterId);
   if (t.type === 'agent') {
+    let rejected = 0;
+    const withRejected = <T extends object>(r: T): T & { filterRejected?: number } =>
+      (rejected > 0 ? { ...r, filterRejected: rejected } : r);
     const named = targetNodeId ? graph.getNode(targetNodeId) : undefined;
     if (named && named.type === 'actor' && named.id !== casterId) {
       const pos = agentPosition(graph, named.id);
-      if (!casterPos || !pos || hexDistance(casterPos.hex, pos.hex) <= t.range) return { targetId: named.id };
+      if (!casterPos || !pos || hexDistance(casterPos.hex, pos.hex) <= t.range) {
+        if (passesTargetFilter(graph, casterId, named.id, t.filter)) return { targetId: named.id };
+        rejected++;
+      }
     }
-    if (!casterPos) return {};
+    if (!casterPos) return withRejected({});
     const beside = graph.getIncomingEdges(casterPos.locationId, 'located_at')
       .map(e => e.source)
-      .filter(id => id !== casterId && graph.getNode(id)?.type === 'actor')
+      .filter(id => id !== casterId && id !== named?.id && graph.getNode(id)?.type === 'actor')
       .sort();
-    return beside[0] ? { targetId: beside[0] } : {};
+    for (const id of beside) {
+      if (passesTargetFilter(graph, casterId, id, t.filter)) return withRejected({ targetId: id });
+      rejected++;
+    }
+    return withRejected({});
   }
 
   // hex / location
   const hex = (targetNodeId ? (locationHex(graph, targetNodeId) ?? agentPosition(graph, targetNodeId)?.hex) : null)
     ?? casterPos?.hex;
   return hex ? { targetHex: hex, ...(targetNodeId ? { targetId: targetNodeId } : {}) } : {};
+}
+
+/**
+ * Whether a mortal may be the target of a spell with this filter (THR-1683).
+ *
+ * `ally` reads `isAlly` — the same allegiance `create × Condition` signs a blessing
+ * with. `enemy` is anyone who is *not* an ally; a stranger qualifies while
+ * `CAST_ENEMY_FILTER_ADMITS_STRANGERS` holds, else only a mortal of a hostile faction
+ * does. `any` or no filter admits everyone.
+ */
+export function passesTargetFilter(
+  graph: WorldGraph,
+  casterId: string,
+  targetId: string,
+  filter: 'ally' | 'enemy' | 'any' | undefined,
+): boolean {
+  if (!filter || filter === 'any') return true;
+  const ally = isAlly(graph, casterId, targetId);
+  if (filter === 'ally') return ally;
+  if (ally) return false;
+  if (CAST_ENEMY_FILTER_ADMITS_STRANGERS) return true;
+  return areFactionsHostile(graph, actorFactionId(graph, casterId) ?? undefined, actorFactionId(graph, targetId) ?? undefined);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -237,8 +299,12 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
 
   // 3. The spell lands.
   const applied: AttachmentEffect[] = [];
+  let channelResult: CastChannelResult | undefined;
   if (landed) {
-    for (const effect of activation.appliedEffects) {
+    // THR-1683: the effects `executeEffect` would trace and drop ride the cast
+    // channel instead — one timed condition on the caster — so they hold state.
+    const { executed, channel } = splitCastEffects(activation.appliedEffects);
+    for (const effect of executed) {
       const exec = executeEffect(effect, {
         casterId,
         ...(req.targetId ? { targetId: req.targetId } : {}),
@@ -250,6 +316,20 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
       applyExecutionResult(state, exec, tick);
       collectWrites(state, exec, writes, false);
       applied.push(effect);
+    }
+    if (channel.length > 0) {
+      // `applied` keeps its pre-THR-1683 meaning — every effect the landed band ran —
+      // so the channel's effects count whether or not a bearing was written.
+      applied.push(...channel);
+      channelResult = applyCastChannel(state, casterId, spell, channel, tick, req.siteRef);
+      const conditionId = channelResult.applied ? channelResult.conditionId : undefined;
+      // Read back off the graph, never off intent (Law 56).
+      if (conditionId && graph.getOutgoingEdges(casterId, 'has_trait').some(e => e.target === conditionId)) {
+        writes.push({
+          kind: 'condition', actorId: casterId, ref: conditionId, channel: 'cast_condition',
+          ...(channelResult.harmful ? { harmful: true } : {}),
+        });
+      }
     }
   }
 
@@ -291,6 +371,18 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     } satisfies QuintessenceEvent);
   }
 
+  // 6b. A transgression is noticed (THR-1572, Lane decision 5) — on every cast, landed or not.
+  // THR-1672 — a god-taught transgression echoes back to the god: the mark names the
+  // teaching, and every cast adds detection where the caster stands (Lane decision 4).
+  let notice: CastResult['notice'];
+  if (spellProvenance(graph, spell.id)?.notice) {
+    const taughtByRaw = knowsSpellEdge(graph, casterId, spell.id)?.properties.grantedBy;
+    const taughtBy = typeof taughtByRaw === 'string' ? taughtByRaw : undefined;
+    const placed = placeSpellNotice(state, casterId, spell, tick, 'cast', undefined, taughtBy);
+    notice = { markId: spellNoticeMarkId(casterId, spell.id), placed: placed !== null };
+    if (taughtBy) divineEcho(state, taughtBy, casterId, spell, tick, landed, req.recordCrossings);
+  }
+
   const result: CastResult = {
     landed,
     applied,
@@ -298,9 +390,33 @@ function resolveCastInner(state: GameState, req: CastRequest): CastResult {
     paid: activation.paidCosts,
     ...(soulPrice > 0 ? { soulPrice } : {}),
     writes,
+    ...(notice ? { notice } : {}),
   };
-  traceResolved(req, result, triggersFired);
+  traceResolved(req, result, triggersFired, channelResult);
   return result;
+}
+
+/** THR-1672 — each cast of a god-taught transgression adds detection in the caster's region. */
+function divineEcho(
+  state: GameState,
+  ascendantId: string,
+  casterId: string,
+  spell: SpellTemplate,
+  tick: number,
+  landed: boolean,
+  recordCrossings?: DetectionCrossingRecorder,
+): void {
+  const write = writeAgentDetection(state, casterId, DIVINE_TAUGHT_CAST_DETECTION, tick, recordCrossings);
+  if (!write) return;
+  try {
+    emitTrace({
+      category: 'spell.divine_echo', tick, agentId: casterId, ascendantId, casterId, spellId: spell.id,
+      regionId: write.regionId, detectionDelta: DIVINE_TAUGHT_CAST_DETECTION, landed,
+      summary: `${spell.name} was cast by one a god taught it to — the teaching echoes in ${write.regionId}`,
+    });
+  } catch {
+    /* NFP #4 */
+  }
 }
 
 function refuse(req: CastRequest, refused: CastRefusal): CastResult {
@@ -389,8 +505,19 @@ function raiseSpellCast(state: GameState, casterId: string, tick: number, rng: (
   return res.firedCount;
 }
 
-function traceResolved(req: CastRequest, result: CastResult, triggersFired = 0): void {
+function traceResolved(req: CastRequest, result: CastResult, triggersFired = 0, channel?: CastChannelResult): void {
   try {
+    const channelTrace = channel && (channel.applied || channel.reason || channel.skipped.length > 0)
+      ? {
+        channel: {
+          applied: channel.applied,
+          carried: [...channel.carried],
+          skipped: [...channel.skipped],
+          ...(channel.durationTicks !== undefined ? { durationTicks: channel.durationTicks } : {}),
+          ...(channel.reason ? { reason: channel.reason } : {}),
+        },
+      }
+      : {};
     emitTrace({
       category: 'spell.cast_resolved',
       tick: req.tick,
@@ -406,6 +533,16 @@ function traceResolved(req: CastRequest, result: CastResult, triggersFired = 0):
       ...(result.soulPrice !== undefined ? { soulPrice: result.soulPrice } : {}),
       ...(result.refused ? { refused: result.refused } : {}),
       triggersFired,
+      // THR-1683 — the cast's graph writes, each marked with the channel it came by.
+      writes: result.writes.map(w => ({
+        kind: w.kind, actorId: w.actorId, ref: w.ref,
+        ...(w.channel ? { channel: w.channel } : {}),
+        ...(w.harmful ? { harmful: true } : {}),
+        ...(w.fromBacklash ? { fromBacklash: true } : {}),
+        ...(w.fromPrice ? { fromPrice: true } : {}),
+      })),
+      ...channelTrace,
+      ...(req.filterRejected ? { filterRejected: req.filterRejected } : {}),
       summary: result.refused
         ? `${req.casterId} could not cast ${req.spell.name}: ${result.refused}`
         : `${req.casterId} casts ${req.spell.name} on ${req.band} — ${result.landed ? 'it lands' : 'it fizzles'}${result.backlash ? ', and it bites back' : ''}`,

@@ -3,7 +3,7 @@
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless one-off card with no sphere 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword=""
   data-nudge-state="playable"
@@ -16,7 +16,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -53,9 +53,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 4px;"
@@ -106,7 +110,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -204,9 +208,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 4px;"
@@ -248,7 +256,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected card 1`] = `
 <button
   aria-pressed="true"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="selected"
@@ -262,7 +270,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -360,9 +368,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-gold);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-gold);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 4px;"
@@ -398,7 +410,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cost channels 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="playable"
@@ -412,7 +424,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -510,9 +522,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 2px;"
@@ -588,7 +604,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance with a tooltipped concept 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="playable"
@@ -602,7 +618,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -700,9 +716,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <span
       aria-label="From your repertoire — Darkness signature"
@@ -759,7 +779,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance without a concept 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="playable"
@@ -773,7 +793,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -871,9 +891,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <span
       aria-label="From your repertoire"
@@ -916,7 +940,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer view line 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="playable"
@@ -930,7 +954,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -1028,9 +1052,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 4px;"
@@ -1074,7 +1102,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
 exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary card 1`] = `
 <button
   aria-pressed="false"
-  class="focus-ring"
+  class="focus-ring card-face--playable"
   data-nudge-blocked=""
   data-nudge-keyword="Boost"
   data-nudge-state="playable"
@@ -1088,7 +1116,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
     data-entity-visual-tier="art"
     data-testid="nudge-card-art-nudge.steady_hand"
     role="img"
-    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: auto; height: 78px; border-width: 0px 0px 1px;"
+    style="position: relative; overflow: hidden; border-radius: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(88, 60, 120, 0.44) 0%, rgba(10, 10, 15, 0.95) 74%); width: 100%; aspect-ratio: 16 / 9; height: 118px; border-width: 0px 0px 1px;"
   >
     <img
       alt="Steady The Hand"
@@ -1186,9 +1214,13 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
       </span>
     </div>
     <span
-      style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      style="display: flex; align-items: baseline; gap: 6px;"
     >
-      Steady The Hand
+      <span
+        style="font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: var(--text-sm); line-height: 1.25; color: var(--veil-text-bright);"
+      >
+        Steady The Hand
+      </span>
     </span>
     <div
       style="display: flex; flex-direction: column; gap: 4px;"

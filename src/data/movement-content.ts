@@ -302,6 +302,27 @@ export const APPOINTMENT_PULL_WEIGHT = 1.0;
 /** Multiplier on a leaning-regime candidate whose tick cost exceeds the slack. */
 export const APPOINTMENT_OVERRUN_DISCOUNT = 0.25;
 
+/**
+ * THR-1686 (seeded things stay alive, re-plan after S3, part 3) — the `leaning`
+ * discount reaches the live decision board. Before this, `APPOINTMENT_OVERRUN_DISCOUNT`
+ * scaled `finalScore` only, which the board never reads, so it did nothing. With this
+ * on, the regime also stamps `appointmentDiscount` on the candidate and
+ * `scoreUnifiedBoard` multiplies it into the entry's score beside the arrival
+ * commitment. `false` restores the board exactly.
+ */
+export const APPOINTMENT_DISCOUNT_ON_BOARD = true;
+
+/**
+ * THR-1686 (re-plan after S3, part 2) — a mortal `waiting` at an appointment's place
+ * is held there: a candidate off its own hex that would outlast the time left to the
+ * due tick is dropped, by the same `overruns` test `departing` uses. Local work and a
+ * far trip it can be back from stay open. Before this, nothing filtered a waiting
+ * mortal, and the board sent it on five-hop trips with four ticks of slack — 9 of 19
+ * missed appointments across ten seeds stood at the place and then left. `false`
+ * restores today.
+ */
+export const APPOINTMENT_WAITING_HOLD_ENABLED = true;
+
 /** Base slack at which the mortal departs (half a day). */
 export const APPOINTMENT_LEAVE_MARGIN_TICKS = 6;
 

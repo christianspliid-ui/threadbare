@@ -20,6 +20,7 @@ import type { EncounterSupportBinding } from '../../../types/encounter';
 import { isDefaultSupportSpec } from '../../../data/default-support-bundles';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
+import type { GameState } from '../../../types/gameState';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../encounterNotificationRuntime';
 
@@ -192,10 +193,21 @@ describe('EncounterVeil', () => {
     expect(screen.getByText(/Let Vasara decide/)).toBeInTheDocument();
   });
 
-  it('calls onDisregard when Escape is pressed', () => {
+  it('falls back to onDisregard on Escape when the host wires no minimise', () => {
     render(<EncounterVeil {...defaultProps} />);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(defaultProps.onDisregard).toHaveBeenCalled();
+  });
+
+  // THR-1724 — Escape minimises the attended veil: the encounter stays pending
+  // behind its badge rather than being disregarded.
+  it('minimises rather than disregards on Escape when the host wires onMinimize', () => {
+    const onMinimize = vi.fn();
+    const onDisregard = vi.fn();
+    render(<EncounterVeil {...defaultProps} onDisregard={onDisregard} onMinimize={onMinimize} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onMinimize).toHaveBeenCalledTimes(1);
+    expect(onDisregard).not.toHaveBeenCalled();
   });
 
   /**
@@ -215,6 +227,44 @@ describe('EncounterVeil', () => {
     expect(onIntervene).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByText(/Let the grain through/));
+    expect(commit).toBeEnabled();
+    fireEvent.click(commit);
+    expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
+  });
+
+  /**
+   * THR-1720 — `affordable` used to be computed and never read, so a choice the
+   * paying pool could not cover was committable. It now dims with its reason
+   * (still readable and selectable), and the commit refuses while it is chosen.
+   */
+  it('dims an unaffordable choice with its reason and refuses to commit it', () => {
+    const onIntervene = vi.fn();
+    const model: EncounterStageModel = {
+      ...mockModel,
+      choices: mockModel.choices.map((c) =>
+        c.id === 'choice-coerce' ? { ...c, affordable: false, payingSphere: 'life' } : c,
+      ),
+    };
+    render(<EncounterVeil {...defaultProps} model={model} onIntervene={onIntervene} />);
+
+    const rows = screen.getAllByTestId('veil-choice');
+    const coerce = rows.find((r) => r.textContent?.includes('Hold the shipment'))!;
+    const support = rows.find((r) => r.textContent?.includes('Let the grain through'))!;
+    expect(coerce).toHaveAttribute('data-choice-affordable', 'false');
+    expect(Number(coerce.style.opacity)).toBeLessThan(1);
+    expect(within(coerce).getByTestId('choice-unaffordable-reason')).toHaveTextContent('Not enough Life essence');
+    // Affordable rows are untouched.
+    expect(support.style.opacity).toBe('1');
+    expect(within(support).queryByTestId('choice-unaffordable-reason')).toBeNull();
+
+    const commit = screen.getByTestId('stage-commit');
+    fireEvent.click(coerce);
+    expect(commit).toBeDisabled();
+    fireEvent.click(commit);
+    expect(onIntervene).not.toHaveBeenCalled();
+
+    // Switching to a choice the pool covers re-enables the commit.
+    fireEvent.click(support);
     expect(commit).toBeEnabled();
     fireEvent.click(commit);
     expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
@@ -254,9 +304,20 @@ describe('EncounterVeil', () => {
     expect(screen.getByText('Gate Duty')).toBeInTheDocument();
   });
 
-  it('displays thread tier label', () => {
+  // THR-1724 — the top-right tier whisper, its "Paused" suffix and the
+  // threat line are gone: the pause is named by the time control (Law 52,
+  // amended) and "threat" was a third difficulty vocabulary (Law 13).
+  it('draws no thread-tier whisper, pause suffix or threat line', () => {
     render(<EncounterVeil {...defaultProps} />);
-    expect(screen.getByText(/Strongly Threaded/)).toBeInTheDocument();
+    expect(screen.queryByText(/Strongly Threaded/i)).toBeNull();
+    expect(screen.queryByText(/· Paused/)).toBeNull();
+    expect(screen.queryByTestId('veil-threat-whisper')).toBeNull();
+  });
+
+  // THR-1724 — "Look away" is gone; nothing in the attended veil disregards.
+  it('renders no Look away button', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByRole('button', { name: /look away/i })).toBeNull();
   });
 
   it('displays step indicator', () => {
@@ -303,9 +364,9 @@ describe('lightly threaded', () => {
     expect(screen.getByText(/auto-resolves shortly/)).toBeInTheDocument();
   });
 
-  it('shows Lightly Threaded label', () => {
+  it('shows no Lightly Threaded label (THR-1724)', () => {
     render(<EncounterVeil {...lightProps} />);
-    expect(screen.getByText(/Lightly Threaded/)).toBeInTheDocument();
+    expect(screen.queryByText(/Lightly Threaded/i)).toBeNull();
   });
 
   /**
@@ -2131,7 +2192,10 @@ describe('EncounterVeil — fallout preview (THR-1041)', () => {
 describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
   afterEach(() => resetNudgeDesignerView());
 
-  function buildAdapterModel(threadTier: 'strong' | 'watched'): EncounterStageModel {
+  function buildAdapterModel(
+    threadTier: 'strong' | 'watched',
+    overrides: Partial<Parameters<typeof buildSimpleEncounterStageModel>[0]> = {},
+  ): EncounterStageModel {
     const graph = new WorldGraph();
     graph.addNode({ id: 'agent-1', name: 'Vasara the Unbowed', type: 'actor', properties: {} });
 
@@ -2194,8 +2258,32 @@ describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
       threadTier,
       essence: 10,
       tick: 12,
+      ...overrides,
     });
   }
+
+  /**
+   * THR-1720 — the adapter prices a choice against the pool the commit handler
+   * charges. Against the twelve pools summed, a choice the handler will refuse
+   * read affordable, so the veil offered a commit the game then rejected.
+   */
+  it('prices a choice against the paying sphere, not the summed pool', () => {
+    const base = buildAdapterModel('strong');
+    const notification = {
+      ...({} as EncounterNotification),
+      id: 'notif-1', agentId: 'agent-1', agentName: 'Vasara', courtPosition: 'the_first',
+      encounterId: 'test.encounter', encounterName: 'Test Encounter', prose: 'A test encounter unfolds.',
+      createdTick: 10, autoResolveTick: null, viewed: false, resolved: false,
+      choices: [{ id: 'c-dear', text: 'Hold the gate', essenceCost: 5, interventionType: 'supportive', probabilityBoost: 0 }],
+    } as EncounterNotification;
+    const gameState = { essencePool: { life: 1, force: 40 } } as unknown as GameState;
+    const priced = buildAdapterModel('strong', { notification, essence: 41, gameState, payingSphere: 'life' });
+    expect(priced.choices[0]).toMatchObject({ affordable: false, payingSphere: 'life' });
+    // Without a paying sphere the old summed reading is kept (41 covers 5).
+    const summed = buildAdapterModel('strong', { notification, essence: 41 });
+    expect(summed.choices[0].affordable).toBe(true);
+    expect(base.choices).toEqual([]);
+  });
 
   it('the adapter still produces the readout — the model is not what changed', () => {
     expect(buildAdapterModel('strong').resolutionReadout).toBeDefined();

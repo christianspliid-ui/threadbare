@@ -761,7 +761,7 @@ export interface InflictConditionEffect {
   readonly conditionTraitId: string;
   /** `'self'` = the bearer; `'counterpart'` = the event's other agent (a fight opponent). */
   readonly target: 'self' | 'counterpart';
-  /** Defaults to the applier's `CONDITION_DEFAULT_DURATION_TICKS` (0 = indefinite). */
+  /** Defaults to the condition's `CONDITION_DURATIONS` term, else indefinite (`resolveConditionDurationTicks`, THR-1697). */
   readonly durationTicks?: number;
   /** Defaults to the applier's `CONDITION_DEFAULT_INTENSITY`. */
   readonly intensity?: number;

@@ -854,6 +854,8 @@ export function rewardSentence(args: {
   readonly rewardName: string;
   readonly rewardId?: string;
   readonly gained: boolean;
+  /** THR-1672 — a book that taught its new holder a spell on the way in. */
+  readonly learnedSpellName?: string;
 }): DerivedChange {
   const noun: EncounterAftermathConceptRef = {
     text: args.rewardName,
@@ -863,7 +865,7 @@ export function rewardSentence(args: {
   };
   return {
     detail: args.gained
-      ? `${args.actorName} gained ${args.rewardName}.`
+      ? `${args.actorName} gained ${args.rewardName}${args.learnedSpellName ? `, and learned ${args.learnedSpellName}` : ''}.`
       : `${args.actorName} came away marked by ${args.rewardName}.`,
     concepts: [noun],
     stateNoun: noun,

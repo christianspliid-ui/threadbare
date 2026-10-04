@@ -17,6 +17,7 @@ import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
 import { buildCastReceipt } from './castReceipt';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
+import { teachSpellPreview } from '../../../engine/ascendantExpression';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { castCapabilityByReach } from '../../../engine/playerCastReadout';
@@ -28,6 +29,8 @@ import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import { createHoldReader } from '../../../engine/holdStanding';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
+import type { KnowledgeLevel } from '../../../types/familiarity';
+import { TIER_NAMES, AVATAR_TIER_LABEL } from '../../../data/influence-content';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
 import {
@@ -68,6 +71,40 @@ interface UseAgentInteractionParams {
    * gating" left a stranger's sheet at `stranger`.
    */
   omniscienceMode?: boolean;
+}
+
+/**
+ * The knowledge level an agent's card and sheet are built at.
+ *
+ * Familiarity is how the god comes to know a stranger — but the god's own
+ * avatar is not a stranger. It has no familiarity record, so before THR-1710
+ * its sheet resolved at `stranger` and told the player "You haven't observed
+ * <avatar>'s capabilities" about their own mortal shape. The avatar (any node
+ * with an `avatar_of` edge to the ascendant) is always read at `transparent`,
+ * as is every mortal under debug omniscience (THR-1412).
+ */
+export function resolveCardKnowledgeLevel(
+  gameState: Pick<GameState, 'graph' | 'ascendantId' | 'familiarityMap'>,
+  agentId: string,
+  omniscienceMode: boolean,
+): KnowledgeLevel {
+  if (omniscienceMode) return 'transparent';
+  if (gameState.ascendantId && isAvatarOf(gameState.graph, agentId, gameState.ascendantId)) return 'transparent';
+  return getKnowledgeLevel(getFamiliarity(gameState.familiarityMap, agentId));
+}
+
+/** True when `agentId` is one of the ascendant's avatars (its mortal shape). */
+export function isAvatarOf(graph: GameState['graph'], agentId: string, ascendantId: string): boolean {
+  return graph.getOutgoingEdges(agentId, 'avatar_of').some(e => e.target === ascendantId);
+}
+
+/**
+ * The tier badge for a mortal with no thread edge. Tier 0 ("Unaware") for any
+ * stranger — but the avatar has no thread edge either, and it is the player's
+ * own shape, so it wears its own label (THR-1710).
+ */
+export function unthreadedAgentTierName(nodeId: string, avatarNodeId: string | null | undefined): string {
+  return avatarNodeId && nodeId === avatarNodeId ? AVATAR_TIER_LABEL : TIER_NAMES[0];
 }
 
 export function useAgentInteraction({
@@ -171,11 +208,17 @@ export function useAgentInteraction({
           // THR-998 — see useTargetActions: the focused card's line must track the
           // odds, and intervention cards reach the same ActionDrawer face.
           ascendantCastCapabilities: castCapabilityByReach(gameState.graph, gameState.ascendantId),
+          // THR-1700 — see useTargetActions: a held non-stacking verb locks.
+          heldControlEffects: gameState.controlEffects,
+          controlOwnerId: gameState.ascendantId,
+          pendingActions: gameState.unifiedActions,
+          // THR-1672 — see useTargetActions: a teaching card names its spell.
+          spellTeachingPreview: teachSpellPreview(gameState.graph, gameState.ascendantId, selectedAgentId, Number(gameState.seed ?? 0)),
         })
       : [];
 
     return targetSlots.length > 0 ? targetSlots : null;
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, retinueAgents, archetype, worldVersion]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, gameState.unlockedActionIds, gameState.controlEffects, gameState.unifiedActions, gameState.seed, retinueAgents, archetype, worldVersion]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;
@@ -195,10 +238,9 @@ export function useAgentInteraction({
 
   const agentInfoCard = useMemo(() => {
     if (!selectedAgentId) return null;
-    const familiarity = getFamiliarity(gameState.familiarityMap, selectedAgentId);
     // Omniscience lifts the card to the top level instead of the familiarity
     // the player earned — that is the whole point of the debug flag (THR-1412).
-    const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
+    const knowledgeLevel = resolveCardKnowledgeLevel(gameState, selectedAgentId, omniscienceMode);
     // A held town is a faction position (THR-1448): the standing is read through the
     // runtime's one political map, lazily — a mortal with no stance never touches it.
     const hold = createHoldReader(
@@ -243,8 +285,7 @@ export function useAgentInteraction({
 
   const agentFullProfile = useMemo(() => {
     if (!profileModalAgentId) return undefined;
-    const familiarity = getFamiliarity(gameState.familiarityMap, profileModalAgentId);
-    const knowledgeLevel = omniscienceMode ? 'transparent' : getKnowledgeLevel(familiarity);
+    const knowledgeLevel = resolveCardKnowledgeLevel(gameState, profileModalAgentId, omniscienceMode);
     return getAgentFullProfile(gameState.graph, profileModalAgentId, gameState.ascendantId, knowledgeLevel);
   }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, worldVersion, omniscienceMode]);
 

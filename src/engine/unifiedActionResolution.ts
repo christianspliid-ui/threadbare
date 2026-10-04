@@ -70,7 +70,9 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower, applyTeachSpell, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
+import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
+import { recordDetectionCrossings } from './orchestrator/phaseDetectionPressure';
 import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
@@ -141,7 +143,7 @@ import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { computeStandingModifierTotal } from './resolutionModifiers';
 import { stepCastRecordFor, traceStepCastDecided } from './stepCast';
 import { resolveCast } from './spellCasting';
-import { getSpellTemplate } from '../data/spell-templates';
+import { resolveSpellTemplate } from '../data/spell-templates';
 import { processFactionEncounterReputation } from './factionReputation';
 import { processReputationTally } from './phaseReputationTraits';
 import {
@@ -169,7 +171,7 @@ import { mintCompanion } from './companions';
 import { buildPredicateContext, collectTestShapers } from './effectResolver';
 import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
 import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './effectShellRuntime';
-import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
+import { getEffectiveUnifiedActionChoiceMemory, NUDGE_COMMIT_INTERVENTION_TYPE } from './encounterChoiceMemory';
 // THR-773 (Nudge Model WS0): named forecast modifiers + pure band riders.
 import {
   collectHeldTraitIds,
@@ -658,16 +660,18 @@ function resolveStepCastOnBand(
   tick: number,
 ): StepCastRecord | undefined {
   if (!record || record.decision !== 'cast' || !record.spellId) return record;
-  const spell = getSpellTemplate(record.spellId);
+  const spell = resolveSpellTemplate(state.graph, record.spellId);
   if (!spell) return { ...record, band, landed: false, refused: 'no_spell_template' };
   const result = resolveCast(state, {
     casterId: record.casterId,
     spell,
     band,
     ...(record.targetId ? { targetId: record.targetId } : {}),
+    ...(record.filterRejected ? { filterRejected: record.filterRejected } : {}),
     tick,
     site: 'step',
     siteRef: `${action.actionId}:${action.currentStep}`,
+    recordCrossings: recordDetectionCrossings,
   });
   return {
     ...record,
@@ -1071,11 +1075,40 @@ function resolveTemplateAftermathVariant(
   return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
-function buildEncounterAftermathOverview(
+/**
+ * The name a player-facing line gives an action (THR-1708): the spell name the
+ * cards and the Codex show when the template has one, else its plain name. A
+ * cast of Piercing Gaze reported as "completed Observe" names a card the player
+ * never saw.
+ */
+export function playerFacingTemplateName(template: Pick<UnifiedActionTemplate, 'name' | 'spellName'>): string {
+  return template.spellName ?? template.name;
+}
+
+/**
+ * Did the god actually play into this encounter (THR-1708)? True when a nudge
+ * hand was committed on any step (recorded in `choiceHistory` by
+ * `recordUnifiedActionNudgeMemory`), essence was spent on any recorded choice,
+ * a hand leaned a mortal-decided branch (`handCommitted`), or a hand is live on
+ * the current step. A mortal-decided branch with no hand (`agent_decided`, zero
+ * essence) is not the god's touch — that is the mortal
+ * choosing, and the overview must not credit it to "your nudge".
+ */
+export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' | 'activeNudges'>): boolean {
+  if ((action.activeNudges?.length ?? 0) > 0) return true;
+  return (action.choiceHistory ?? []).some(entry =>
+    entry.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE
+      || entry.essenceSpent > 0
+      || entry.handCommitted === true,
+  );
+}
+
+export function buildEncounterAftermathOverview(
   actorName: string,
   templateName: string,
   outcome: UnifiedAction['outcome'],
   changes: readonly EncounterAftermathChange[],
+  godTouched: boolean,
 ): string {
   const rewardCount = changes.filter(change => change.kind === 'item').length;
   const traitCount = changes.filter(change => change.kind === 'trait').length;
@@ -1094,7 +1127,11 @@ function buildEncounterAftermathOverview(
   if (!highlightPhrase) {
     return `${actorName} ${outcomeText} ${templateName}. The scene moved on quietly, but the world still bent a little around it.`;
   }
-  return `${actorName} ${outcomeText} ${templateName}. Your nudge left ${highlightPhrase} behind in the world.`;
+  // THR-1708 — "Your nudge" only when the god played into it. An encounter the
+  // mortal resolved alone credits the mortal, or the Ledger lies about whose
+  // doing it was.
+  const author = godTouched ? 'Your nudge' : `${actorName}'s choices`;
+  return `${actorName} ${outcomeText} ${templateName}. ${author} left ${highlightPhrase} behind in the world.`;
 }
 
 function buildEncounterAftermathReactions(
@@ -1259,7 +1296,7 @@ function applyStepOutcomeEffects(
 
   try {
     const { state: next, mutationSummary } = applyEncounterAftermathReaction(
-      state, action, reaction, tick, runtime,
+      state, action, reaction, tick, runtime, { recordCrossings: recordDetectionCrossings },
     );
     Object.assign(state, next);
     // Same invalidation contract phaseAutonomousAftermath honours: the effect
@@ -1533,6 +1570,8 @@ interface ResolvedUnifiedReward {
   readonly displayName: string;
   /** Instantiated reward node id — the entity the prize chip pictures and links. */
   readonly instanceId: string;
+  /** THR-1672 — the spell a teaching book taught its holder on the way in. */
+  readonly taughtSpellName?: string;
 }
 
 function resolveUnifiedReward(
@@ -1631,7 +1670,11 @@ function resolveUnifiedReward(
     });
   }
 
-  return { displayName: instantiation.displayName, instanceId: instantiation.instanceId };
+  return {
+    displayName: instantiation.displayName,
+    instanceId: instantiation.instanceId,
+    ...(instantiation.taughtSpellName ? { taughtSpellName: instantiation.taughtSpellName } : {}),
+  };
 }
 
 /**
@@ -1799,6 +1842,9 @@ export function executeStepResult(
     const anointSuccessorOps: GraphOp[] = [];
     const imbueItemOps: GraphOp[] = [];
     const bestowPowerOps: GraphOp[] = [];
+    // THR-1672: `teach_spell` routes here beside Bestow — it writes the god's two prices
+    // (doom, detection) and a receipt, and the graph executor has no GameState for either.
+    const teachSpellOps: GraphOp[] = [];
     // THR-1096: companions are minted through the engine module (name generation,
     // single-bearer invariant, trace) rather than by the generic node executor,
     // which has no way to do any of those.
@@ -1827,6 +1873,7 @@ export function executeStepResult(
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
+      else if (op.op === 'teach_spell') teachSpellOps.push(op);
       else if (op.op === 'grant_companion') grantCompanionOps.push(op);
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else if (op.op === 'plant_trap') plantTrapOps.push(op);
@@ -1935,6 +1982,34 @@ export function executeStepResult(
           applyBestowPower(state.graph, action.actorId, resolvedAgentId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (teachSpellOps.length > 0) {
+      // THR-1672 — Teach a Spell. Same gates and site as Bestow; the receipt names the
+      // spell, read back off the grant (never off intent — Law 56).
+      for (const op of teachSpellOps) {
+        const agentRef = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedAgentId = agentRef === '$target' ? action.targetId : agentRef;
+        try {
+          const taught = applyTeachSpell(state, action.actorId, resolvedAgentId, tick, { recordCrossings: recordDetectionCrossings });
+          if (taught.success && taught.spellName) {
+            const agentName = state.graph.getNode(resolvedAgentId)?.name ?? resolvedAgentId;
+            const event: TickEvent = {
+              id: `teach_spell_${resolvedAgentId}_${taught.spellId}_t${tick}`,
+              tick,
+              type: 'ripple_consequence',
+              message: `${agentName} wakes knowing ${taught.spellName}, and does not remember learning it.`,
+              significance: TEACH_SPELL_RECEIPT_SIGNIFICANCE,
+              actorId: resolvedAgentId,
+            };
+            state.recentEvents = [...(state.recentEvents ?? []), event];
+            state.tickEvents = [...(state.tickEvents ?? []), event];
+            if (runtime) touchStructure(runtime);
+          }
+        } catch {
+          // Fail-soft per NFP #4: never crash the tick.
         }
       }
     }
@@ -2488,7 +2563,7 @@ export function executeStepResult(
   // writes a chip may name, and the cast line and backlash line in words.
   if (stepCastRecord) {
     if (stepCastRecord.decision === 'cast' && stepCastRecord.spellId && !stepCastRecord.refused) {
-      const spell = getSpellTemplate(stepCastRecord.spellId);
+      const spell = resolveSpellTemplate(state.graph, stepCastRecord.spellId);
       const prose = freezeCastLine(
         state,
         stepCastRecord.landed ? spell?.castProse?.landed : spell?.castProse?.fizzled,
@@ -2790,6 +2865,7 @@ export function executeStepResult(
       rewardName: resolvedReward.displayName,
       rewardId: resolvedReward.instanceId,
       gained: isStepSuccess(outcome),
+      ...(resolvedReward.taughtSpellName ? { learnedSpellName: resolvedReward.taughtSpellName } : {}),
     });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
@@ -2930,7 +3006,7 @@ export function executeStepResult(
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${currentActorName} ${outcomeMsg} ${template.name}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
+      message: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
       significance,
       actorId: action.actorId,
     });
@@ -3033,7 +3109,7 @@ function executeFightNoRollEnd(
     id: `ua_${action.actionId}_resolved`,
     tick,
     type: 'agent_action_resolved',
-    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${template.name}.`,
+    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${playerFacingTemplateName(template)}.`,
     significance: isActionSuccess(finalAction.outcome) ? 0.6 : 0.4,
     actorId: action.actorId,
   });
@@ -3269,9 +3345,10 @@ function withResolvedAftermathSummary(
       outcome: finalAction.outcome,
       overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
         currentActorName,
-        template.name,
+        playerFacingTemplateName(template),
         finalAction.outcome,
         changes,
+        godTouchedEncounter(finalAction),
       ),
       changes: aftermathVariant
         ? [...changes, ...aftermathVariant.changes]

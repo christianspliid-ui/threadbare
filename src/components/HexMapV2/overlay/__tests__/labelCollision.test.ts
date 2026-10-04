@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { removeOverlaps, estimateBBox } from '../labelCollision';
+import { removeOverlaps, estimateBBox, applyCachedVisibility } from '../labelCollision';
 import type { ScreenLabel } from '../labelCollision';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -108,5 +108,53 @@ describe('removeOverlaps', () => {
     const result = removeOverlaps(labels);
     expect(result).toHaveLength(1);
     expect(result[0].visible).toBe(true);
+  });
+});
+
+// ─── THR-1711: labels flickered into piles ───────────────────────────────────
+
+describe('THR-1711 — the collision verdict holds between recomputes', () => {
+  it('reapplies the last verdict to freshly projected positions', () => {
+    const resolved = removeOverlaps([
+      makeLabel('Ashford', 'area', 100, 100),
+      makeLabel('Ashmoor', 'area', 104, 102),
+    ]);
+    const cache = new Map(resolved.map(l => [l.id, l.visible]));
+    expect([...cache.values()].filter(Boolean)).toHaveLength(1);
+
+    // Next frame: the camera panned 3px; collision is not recomputed.
+    const panned = [makeLabel('Ashford', 'area', 103, 100), makeLabel('Ashmoor', 'area', 107, 102)];
+    const held = applyCachedVisibility(panned, cache);
+    // FALSIFICATION: the raw projection is all-visible — that was the pile.
+    expect(panned.every(l => l.visible)).toBe(true);
+    expect(held.filter(l => l.visible)).toHaveLength(1);
+    expect(held.map(l => l.screenX)).toEqual([103, 107]);
+  });
+
+  it('keeps a label the last run never saw hidden until the next run places it', () => {
+    const held = applyCachedVisibility([makeLabel('Newcomer', 'area', 10, 10)], new Map());
+    expect(held[0].visible).toBe(false);
+  });
+});
+
+describe('THR-1711 — the box matches the label as rendered', () => {
+  it('sizes the box from the label\'s own font size, not the tier estimate', () => {
+    const tierSized = estimateBBox(makeLabel('Kingsreach', 'realm', 0, 0));
+    const capital16 = estimateBBox({ ...makeLabel('Kingsreach', 'realm', 0, 0), fontSize: 16 });
+    // realm's tier estimate is 20 px; a 16 px capital is narrower.
+    expect(capital16.right - capital16.left).toBeLessThan(tierSized.right - tierSized.left);
+
+    const town13 = estimateBBox({ ...makeLabel('Kingsreach', 'area', 0, 0), fontSize: 13 });
+    const area12 = estimateBBox(makeLabel('Kingsreach', 'area', 0, 0));
+    expect(town13.right - town13.left).toBeGreaterThan(area12.right - area12.left);
+  });
+
+  it('a top-anchored label\'s box extends downward from its anchor', () => {
+    const centered = estimateBBox({ ...makeLabel('Fen', 'area', 0, 100), fontSize: 13 });
+    const top = estimateBBox({ ...makeLabel('Fen', 'area', 0, 100), fontSize: 13, anchorY: 'top' });
+    expect(top.bottom - top.top).toBeCloseTo(centered.bottom - centered.top);
+    expect(top.top).toBeGreaterThan(centered.top);
+    // The anchor sits within the padding band at the box's top edge.
+    expect(top.top).toBeLessThanOrEqual(100);
   });
 });

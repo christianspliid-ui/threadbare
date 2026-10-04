@@ -28,6 +28,7 @@
  */
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { CONDITION_UNDER_WATCH_DURATION } from '../condition-trait-content';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 /**
@@ -277,6 +278,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             conditionTraitId: 'trait.condition.location.under_watch',
             targetLocationId: '$here',
             intensity: 0.6,
+            // THR-1697: the watch keeps the village for a week, not forever.
+            durationTicks: CONDITION_UNDER_WATCH_DURATION,
           },
           {
             kind: 'reputation_with',

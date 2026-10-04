@@ -47,6 +47,8 @@ import type {
 } from '../../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
+import { getCapabilityTier } from '../../../../data/domain-words';
+import { DEFAULT_FORECAST_FACTORS } from '../../../../data/encounter-contract-builder';
 import {
   composeDealtStep,
   isDealtNudgeId,
@@ -91,7 +93,6 @@ import {
 import {
   classifyMotive,
   readMotiveReceipt,
-  type MotiveSource,
 } from '../../../../engine/encounters/motiveClassifier';
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';
@@ -105,8 +106,6 @@ import {
   FORECAST_TIER_WORDS,
   MOTIVE_CHIP_LABELS,
   MOTIVE_FALLBACK_SENTENCES,
-  MOTIVE_INTRO_VARIANTS,
-  MOTIVE_MISSION_FALLBACK,
   NUDGE_BLOCKED_REASONS,
   NUDGE_FREE_COST_LABEL,
   NUDGE_RIDER_LABELS,
@@ -118,22 +117,9 @@ import type {
   EncounterStageForecastModel,
   EncounterStageNudgeCardModel,
   EncounterStageNudgePhaseModel,
+  EncounterStageSkillModel,
   EncounterStageWithheldNudgeModel,
 } from '../types';
-
-/**
- * Stand-in when the acting node has no resolvable name, so a motive intro line
- * substitutes a noun rather than leaking `{actor}` onto the stage (NFP #4).
- */
-const MOTIVE_ACTOR_FALLBACK = 'The mortal';
-
-/** Contribution kinds that read as assigned work — the errand `{mission}` names. */
-const MOTIVE_MISSION_KINDS: ReadonlySet<string> = new Set([
-  'ambition',
-  'chain',
-  'reputation',
-  'bond',
-]);
 
 /**
  * Codes the player stage withholds entirely. `essence_unavailable` is
@@ -352,6 +338,8 @@ function forecastModelFrom(tier: ForecastTier, probability: number): EncounterSt
  * template with no decodable contract, or a step past the end of the beat list,
  * contributes no lines rather than throwing.
  */
+const PLACEHOLDER_FACTOR_LINES: ReadonlySet<string> = new Set(DEFAULT_FORECAST_FACTORS);
+
 function authoredFactorLines(
   template: UnifiedActionTemplate,
   stepIndex: number,
@@ -362,8 +350,12 @@ function authoredFactorLines(
     const beat = contract.encounter.beats[stepIndex];
     // `EncounterForecastFactors` is a tuple with optional tail entries, so the
     // holes are dropped before the pool is sliced.
+    // THR-1724 — the contract builder's stock "The threads are shifting." is a
+    // placeholder, not an authored account of the odds; a step with nothing
+    // authored shows no factor line at all rather than filler.
     const pool = (beat?.forecast_factors ?? []).filter(
-      (line): line is string => typeof line === 'string' && line.length > 0,
+      (line): line is string => typeof line === 'string' && line.length > 0
+        && !PLACEHOLDER_FACTOR_LINES.has(line),
     );
     return computeForecast(
       { forecastFactors: pool },
@@ -372,87 +364,6 @@ function authoredFactorLines(
   } catch {
     return [];
   }
-}
-
-/**
- * The named errand behind a `mission`-classified motive, for `{mission}`.
- *
- * Reads the heaviest mission-kind contribution's provenance node and returns its
- * name. Fail-soft at every hop (NFP #4): no receipt, no mission contribution, no
- * node id, or a node the graph has since culled all yield `undefined`, and the
- * caller substitutes {@link MOTIVE_MISSION_FALLBACK} rather than leaking a raw
- * placeholder onto the stage.
- */
-function missionNameFor(
-  graph: WorldGraph,
-  receipt: ReturnType<typeof readMotiveReceipt>,
-): string | undefined {
-  const contributions = receipt?.contributions;
-  if (!contributions || contributions.length === 0) return undefined;
-
-  let best: { weight: number; nodeId: string } | undefined;
-  for (const c of contributions) {
-    if (!MOTIVE_MISSION_KINDS.has(c.kind)) continue;
-    const nodeId = c.provenance?.nodeId;
-    if (!nodeId) continue;
-    if (!best || c.weight > best.weight) best = { weight: c.weight, nodeId };
-  }
-  if (!best) return undefined;
-
-  const name = graph.getNode(best.nodeId)?.name;
-  return name && name.length > 0 ? name : undefined;
-}
-
-/**
- * FNV-1a, 32-bit. Deterministic; same input → same output, every session.
- *
- * **Not `hashEntityId` (djb2), and the difference is load-bearing.** djb2's
- * multiplier is 33, and 33 ≡ 0 (mod 3) — so every positional term above the last
- * character vanishes modulo 3, and any two seeds differing only in an earlier
- * character land on the *same* index. The intro pools are exactly 3 variants
- * long, so djb2 pinned every encounter to one line: 24 distinct action ids
- * selected one variant, which the variant-spread test caught. The same trap waits
- * at any pool length divisible by 3 or 11. FNV-1a's 16777619 multiplier is
- * coprime to both and mixes into the low bits, so a small modulo stays uniform.
- *
- * djb2 remains correct where it is used today — `gradientIndexForId` takes it
- * modulo a gradient count with no such factor.
- */
-function hashSeed(seed: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
-
-/**
- * Pick and fill this encounter's motive intro line.
- *
- * **Deterministic by construction (NFP #3).** The variant index is a hash of the
- * action id and step index, so the same encounter opens with the same line in
- * every session and on every re-render. No rng draw is taken here; taking one
- * would make the opening line of a scene differ between the forecast the player
- * read and the stage they are looking at.
- *
- * Substitution is total: every placeholder resolves to a real string, so the
- * Done-when's "no raw `{actor}` leaks" holds even when the graph knows neither
- * the actor's name nor the errand's.
- */
-function motiveIntroLine(args: {
-  source: MotiveSource;
-  actorName?: string;
-  missionName?: string;
-  seed: string;
-}): string {
-  const variants = MOTIVE_INTRO_VARIANTS[args.source];
-  const template = variants[hashSeed(args.seed) % variants.length];
-  const values: Record<string, string> = {
-    actor: args.actorName && args.actorName.length > 0 ? args.actorName : MOTIVE_ACTOR_FALLBACK,
-    mission: args.missionName ?? MOTIVE_MISSION_FALLBACK,
-  };
-  return template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
 }
 
 /**
@@ -853,6 +764,10 @@ export function buildNudgePhaseModel(
   //
   // Appended after the authored/trait lines so the encounter's own account leads
   // and the world's contribution follows.
+  // THR-1724 — the skill line ("Vara is skilled in Stone.") leaves the list:
+  // its content is the title row's reach readout now, and its sentence rides
+  // along as that chip's tooltip so the actor is still named.
+  let skill: EncounterStageSkillModel | undefined;
   for (const line of deriveStepFactorLines({
     actorName: graph.getNode(actorId)?.name,
     reach: stepReach,
@@ -860,6 +775,13 @@ export function buildNudgePhaseModel(
     contributions: standing.contributions,
     carryover,
   })) {
+    if (line.kind === 'skill') {
+      skill = {
+        tier: getCapabilityTier(Number.isFinite(capability) ? capability : 0),
+        sentence: line.text,
+      };
+      continue;
+    }
     factors.push({
       id: line.id,
       text: line.text,
@@ -932,28 +854,25 @@ export function buildNudgePhaseModel(
       source,
       chipLabel: MOTIVE_CHIP_LABELS[source],
       sentence: MOTIVE_FALLBACK_SENTENCES[source],
-      // THR-972 — the line that introduces the scene, fully substituted here so
-      // the shell never has to know about placeholders.
-      introLine: motiveIntroLine({
-        source,
-        actorName: graph.getNode(actorId)?.name,
-        missionName: missionNameFor(graph, receipt),
-        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
-      }),
     };
   } catch {
     motive = {
       source: 'chance',
       chipLabel: MOTIVE_CHIP_LABELS.chance,
       sentence: MOTIVE_FALLBACK_SENTENCES.chance,
-      introLine: motiveIntroLine({
-        source: 'chance',
-        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
-      }),
     };
   }
 
   const committedIds = [...(activeAction.activeNudges ?? [])];
+
+  // THR-1706 — who pays. A sphere-less card bills the god's primary first
+  // (`spendNudgeEssence`), and the commit path reads `budgetSphere` off this
+  // model, so the name on the card and the pool that is charged cannot drift.
+  const budgetSphere = identity?.sphereAlignment?.primary;
+  const pricedCards = cards.map((card) => {
+    const payingSphere = card.sphere ?? budgetSphere;
+    return payingSphere ? { ...card, payingSphere } : card;
+  });
 
   return {
     actionId: activeAction.actionId,
@@ -967,12 +886,13 @@ export function buildNudgePhaseModel(
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
       factors,
+      ...(skill ? { skill } : {}),
     },
     baseForecast,
     forecastInput,
     ...(forecastScale ? { forecastScale } : {}),
     traitModifierTotal,
-    cards,
+    cards: pricedCards,
     withheld,
     committedIds,
     availableEssence: availableEssenceFor(undefined),
@@ -985,5 +905,8 @@ export function buildNudgePhaseModel(
     // Reading the authored step here would show a dealt card's price on its face
     // and then charge nothing for it.
     committedCost: totalNudgeCost(composedStep, committedIds, accessibleSpheres),
+    ...(budgetSphere
+      ? { budgetSphere, budgetSphereEssence: availableEssenceFor(budgetSphere) }
+      : {}),
   };
 }

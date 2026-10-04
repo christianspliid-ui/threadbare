@@ -123,6 +123,8 @@ const EXTREME_BANDS: readonly UnifiedActionOutcome[] = [
  */
 const PERSISTENT_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'spawn_artifact',
+  // THR-1672 — a taught spell is a `knows_spell` edge: the mortal keeps it.
+  'spell_grant',
   'apply_condition',
   'condition_attachment',
   'assign_ambition',

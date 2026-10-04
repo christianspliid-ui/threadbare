@@ -850,17 +850,18 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'A cast resolves through one resolver: the band decides whether its effects land, the landed effects and any backlash reach the graph through the live applier, and its soul price reaches quintessence.',
     ulTerms: ['Spell', 'Strained'],
     mechanism: { kind: 'function', symbols: ['resolveCast', 'activateSpell', 'applyExecutionResult'], module: 'src/engine/spellCasting.ts' },
-    writeSites: ['src/engine/spellCasting.ts', 'src/engine/spellActivation.ts'],
+    writeSites: ['src/engine/spellCasting.ts', 'src/engine/spellActivation.ts', 'src/engine/castChannel.ts', 'src/engine/agentDetection.ts'],
     readSites: [
       'src/data/undertaking-objects.ts',
       'src/engine/effects/effectEventDispatch.ts',
+      'src/engine/effectAura.ts',
       'src/engine/phaseQuintessence.ts',
       'src/engine/unifiedActionResolution.ts',
       'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
     ],
     verifiedLive: {
-      date: '2026-09-29',
-      evidence: 'THR-1670 S2 adds the second call site: a step cast. decideStepCast (unifiedActionResolution.ts) records the mortal\'s decision on UnifiedAction.stepCasts; the roll carries it as one named `spell` contribution; executeStepResult then calls resolveCast with the step\'s own band (site: step), and the chips read CastResult.writes back off the record (buildStepCastModel.ts). stepCast.thr1670.test.ts: a success band lands Hollow Crown and writes its price condition; a failure fizzles it and still pays. Live in the browser on the ?spell= review link (pre-card 0.35 → cast → landed → one chip). THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.',
+      date: '2026-10-03',
+      evidence: 'THR-1572 extends the result with CastResult.notice: a generated transgression spell places one forbidden_contact mark on its caster on every cast (landed or fizzled), once per caster per spell — the new consumer is state.hiddenMarks (see spell-notice-reveals-through-hidden-marks). Generated spells reach both call sites through resolveSpellTemplate. THR-1683: a landed cast now holds. Before, the modifier-only effects of a spell (aura, conditional, duration, stacking, non-clock resource_manipulate) went to modifierOnlyResult and wrote nothing, so a landed Hollow Crown changed only the odds of one step; and resolveCastTarget ignored targeting.filter, aiming Hollow Crown (enemy) at an ally of the caster. After: splitCastEffects routes MODIFIER_ONLY_EFFECT_TYPES to applyCastChannel (castChannel.ts), which bears the shared condition trait.condition.cast.<spellId> on the caster through applyConditionToActor for the duration ticks or CAST_CHANNEL_DEFAULT_TICKS_BY_TIER; effectAura.ts reads its aura off has_trait with no new reader, and decayConditions ends it. The write is read back off the graph as CastWrite { channel: cast_condition } and traced on spell.cast_resolved. castChannel.test.ts: an enemy one hex away reads -0.08 Gold while the bearing holds and 0 after it expires; a fizzle writes nothing; with the bonded ally and a stranger beside the caster the target is the stranger; with only the ally the step declines no_target. Live-read caveat: a 150-tick seed-42 medium run resolves zero casts (none on main either; primed with Hollow Crown on 104 casters, 68 step decisions all declined: 51 no_fitting_spell, 15 sealed), so no in-play cast has yet exercised the channel. THR-1670 S2 adds the second call site: a step cast. decideStepCast (unifiedActionResolution.ts) records the mortal\'s decision on UnifiedAction.stepCasts; the roll carries it as one named `spell` contribution; executeStepResult then calls resolveCast with the step\'s own band (site: step), and the chips read CastResult.writes back off the record (buildStepCastModel.ts). stepCast.thr1670.test.ts: a success band lands Hollow Crown and writes its price condition; a failure fizzles it and still pays. Live in the browser on the ?spell= review link (pre-card 0.35 → cast → landed → one chip). THR-1571 S1. Before: activateSpell had one live caller (use × Power) that read the outcome and soul price and dropped appliedEffects and backlashEffect, behind a coin seeded mulberry32(tick * 104729 + actorId.length) — so a cast applied nothing, and two casters with same-length ids shared a stream. After: resolveCast is the only path; the band (ctx.outcome, the undertaking checkpoint band) replaces the coin; CAST_LANDED_BANDS applies effects through executeEffect → applyExecutionResult; backlash is read against the band by BACKLASH_ELIGIBLE_BANDS_BY_TRIGGER on its own seeded stream (hash of backlash:seed:siteRef:caster); the reach_drain payment lands condition.strained.<reach> through applyConditionToActor instead of writing the dead singular domainCapability; cooldowns are per caster in GameState.castCooldowns; the soul price is queued as a spell_price quintessence event (FB3). Both arms in spellCasting.test.ts: a success-band Veilwalk moves the caster within range 3, lands Strained Veil and writes no domainCapability; a failure-band one leaves located_at unchanged and still pays. Two casters of one spell hold independent cooldowns. Live-read in play: use × Power is reachable through one ambition profile (ambition-templates.ts); in a 30-tick seed-42 medium run no cast fired, because every seeded caster was dealt the fate-woven fallback (see seeded-spell-holders) — the step cast (THR-1670) and the generator (THR-1572) are what put deliberate spells in hands.',
     },
   },
   {
@@ -870,15 +871,77 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'Every caster starts the world knowing and wielding a spell of their tradition, and the spells they carry are read by the systems that act on spells.',
     ulTerms: ['Spell'],
     mechanism: { kind: 'function', symbols: ['seedSpellKnowing', 'collectAttachmentEffects'], module: 'src/engine/seedAttachments.ts' },
-    writeSites: ['src/engine/seedAttachments.ts', 'src/engine/worldSeed.ts'],
+    writeSites: ['src/engine/seedAttachments.ts', 'src/engine/worldSeed.ts', 'src/engine/spellGenerator/spellLibrary.ts'],
     readSites: [
       'src/data/undertaking-objects.ts',
       'src/engine/effects/effectWalker.ts',
       'src/engine/effects/effectSuppression.ts',
     ],
     verifiedLive: {
-      date: '2026-09-29',
-      evidence: 'THR-1571 S1. Before: the only writer of knows_spell was create × Power, which needs a caster in the deciding tier (one of 104 on seed 42), so no mortal in the world held a spell (census: knowsSpell 0, wieldSpell 0). After: seedSpellKnowing runs at the tail of seedWorld (after the living world, the first point every mortal exists) and writes knows_spell + has_trait with source seeded for every isCaster actor under SEEDED_CASTER_ROLES × SEEDED_SPELL_COVERAGE; sorted picks, no draws. Measured, CLI tick 0: seed 42 medium 109/109 casters seeded, 0 with more than one spell; seed 99 medium 127/127. All of them via the fallback (the lowest-tier template by id, Height Anchor), because no caster carries a sphere alignment — the generator (THR-1572) is what fills tradition shelves. Carried (fate-woven) spells ride the effect walker through the shared definition node, with their runtime state keyed per bearer (attachmentStateKey). Read-back: spellCasting.test.ts › The Wayfinding reveal and passive reach the wielder; a seal on one bearer silences only theirs.',
+      date: '2026-10-03',
+      evidence: 'THR-1572 extends the producer with the library path: buildSpellLibrary (worldSeed tail, immediately before seedSpellKnowing) derives each caster\'s tradition (casterTraditionOf: role themes × faction reach lean, hashed on the world seed and the caster\'s name), builds one library per tradition in use and mints the generated spells as shared definition nodes; seedSpellKnowing then seeds each caster from their tradition library\'s lowest tier by a hashed pick, recording `tradition` on the knows_spell edge. Measured, CLI tick 0: seed 42 medium 109/109 casters from a tradition library (0 via the cantrip), 198 spells across 33 traditions, 0 empty slots, 55 distinct seeded spells, top holder share 0.046 (bar SPELL_GEN_MAX_HOLDER_SHARE 0.2; before: one spell held by 100%); seed 99 medium 127/127, 180 spells across 30 traditions, 51 distinct, top share 0.071. Only step-arena spells are seeded, so no caster starts with map magic alone. Read-back: spellLibrary.test.ts › seeds every caster from their tradition library; the switch-off regression (no library → THR-1571\'s seeding byte for byte). THR-1571 S1. Before: the only writer of knows_spell was create × Power, which needs a caster in the deciding tier (one of 104 on seed 42), so no mortal in the world held a spell (census: knowsSpell 0, wieldSpell 0). After: seedSpellKnowing runs at the tail of seedWorld (after the living world, the first point every mortal exists) and writes knows_spell + has_trait with source seeded for every isCaster actor under SEEDED_CASTER_ROLES × SEEDED_SPELL_COVERAGE; sorted picks, no draws. Measured, CLI tick 0: seed 42 medium 109/109 casters seeded, 0 with more than one spell; seed 99 medium 127/127. All of them via the fallback (the lowest-tier template by id, Height Anchor), because no caster carries a sphere alignment — the generator (THR-1572) is what fills tradition shelves. Carried (fate-woven) spells ride the effect walker through the shared definition node, with their runtime state keyed per bearer (attachmentStateKey). Read-back: spellCasting.test.ts › The Wayfinding reveal and passive reach the wielder; a seal on one bearer silences only theirs.',
+    },
+  },
+  {
+    id: 'generated-spell-honest-vocabulary',
+    producerSystem: AMBITIONS,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A spell the world makes promises only what the engine does. A generated spell\'s carried effects pass the item generator\'s per-effect checks and the shared-node rule; its cast effects are live rows of the cast vocabulary (a cast must write); the library mints only spells the validator passed.',
+    ulTerms: ['Spell'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['validateGeneratedSpell', 'SPELL_CAST_HONEST_VOCABULARY'],
+      module: 'src/engine/spellGenerator/validateGeneratedSpell.ts',
+    },
+    writeSites: [
+      'src/engine/spellGenerator/validateGeneratedSpell.ts',
+      'src/data/spell-honest-vocabulary.ts',
+    ],
+    readSites: [
+      'src/engine/spellGenerator/spellLibrary.ts',
+      'src/engine/spellGenerator/readBack.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. spellGenerator.gate.test.ts: for seeds 7, 42, 99 × all 34 traditions (612 spells), zero validator problems and zero read-back failures — carried spells are borne through has_trait and read back by the item read-back\'s readers (readBackEffects); deliberate spells are cast through resolveCast on success and failure from identical worlds, each write present after the landed cast and absent after the fizzle. Every one of the 24 surviving cores fires. The dishonest control batch fails: a cast duration, a doom_rate_multiplier, an enemy-filtered encounter cast, a notice no template answers, a stateful carried primitive, a carried self_remove (it deletes the shared definition node for every bearer), a holy tradition paying transgression.',
+    },
+  },
+  {
+    id: 'spell-template-resolves-from-graph',
+    producerSystem: WORLDGEN,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A generated spell\'s template lives on its definition node, and every site that needs a spell\'s template reads it through one resolver — authored first, then the node. No module-level registry outlives the world that minted it.',
+    ulTerms: ['Spell'],
+    mechanism: { kind: 'function', symbols: ['resolveSpellTemplate', 'spellDefinitionNode'], module: 'src/data/spell-templates.ts' },
+    writeSites: ['src/data/spell-templates.ts', 'src/engine/spellGenerator/spellLibrary.ts'],
+    readSites: [
+      'src/data/undertaking-objects.ts',
+      'src/engine/resolutionModifiers.ts',
+      'src/engine/stepCast.ts',
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/debugEncounterTools.ts',
+      'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. The nine former getSpellTemplate production sites read resolveSpellTemplate(graph, id); authored ids resolve exactly as before. Live read: spellLibrary.test.ts › a generated deliberate spell casts through use × Power — success lands its condition, failure writes nothing (both arms); stepCast.wieldedDeliberateSpells offers generated spells to the step cast, and ?spell=<generated id> stamps one on @hero through applySpellStamp.',
+    },
+  },
+  {
+    id: 'spell-notice-reveals-through-hidden-marks',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A dark art is noticed: casting a generated transgression spell (or first carrying a fate-woven one) places one forbidden_contact hidden mark on the caster, revealed later by the encounter families the tradition names.',
+    ulTerms: ['Spell'],
+    mechanism: { kind: 'state-field', symbols: ['placeSpellNotice', 'hiddenMarks'], module: 'src/engine/spellGenerator/notice.ts' },
+    writeSites: ['src/engine/spellGenerator/notice.ts', 'src/engine/spellCasting.ts', 'src/engine/gameInit.ts', 'src/data/undertaking-objects.ts'],
+    readSites: ['src/engine/hiddenMarks.ts', 'src/engine/encounterScoring.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1572. resolveCast returns CastResult.notice and places the mark through placeSpellNotice (state.hiddenMarks, the carrier the a-concealed-sale contract already names); one mark per caster per spell. Read-back: every transgression spell in the gate grid places exactly one mark and a second cast places none (readBack.ts); spellLibrary.test.ts › notice. The validator refuses a notice family that matches no template (familyMatchesTemplate over UNIFIED_ACTION_TEMPLATES), so evaluateMarkReveals can always reveal it. There is no general hidden-mark contract row; this one is scoped to spell notice.',
     },
   },
   {
@@ -1160,12 +1223,21 @@ export const CONTRACTS: readonly Contract[] = [
     // the template's type and tags and the by-type scan had been offering every mortal's
     // prize back to the pool. `assembleRewardPoolDetailed` is the same assembly with the
     // dedup bookkeeping (`excludedIds`, `bearerAdmitted`) the traces and levers read.
+    // THR-1626: the draw path gained a second producer for the possession it hands over.
+    // After the pool's pick, on a prize draw only, `drawSeededReward` asks
+    // `tryGeneratedReward` (itemGenerator/rewardMinting.ts) whether a generated `found`
+    // thing stands in for an eligible Storied or Mythic artifact; on a substitution the
+    // possession is minted by `mintGeneratedItem` instead of cloned by `instantiateReward`.
+    // The entry points and every unsubstituted draw's write path are unchanged.
     mechanism: {
       kind: 'function',
       symbols: ['assembleRewardPool', 'assembleRewardPoolDetailed', 'heldTemplateIdsOf', 'instantiateReward', 'instantiateAgreementReward'],
       module: 'src/engine/rewardPool.ts',
     },
-    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts'],
+    // THR-1672: a teaching book teaches its new holder on the way in (`onItemAcquired`,
+    // after the `possesses` write), and a spell-definition template routes to `grantSpell`
+    // instead of being cloned; the reward line reads `taughtSpellName` back.
+    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts'],
     readSites: [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
@@ -2345,7 +2417,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/encounters/nudgeDispatch.ts',
     },
     writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
-    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts'],
+    // THR-1672: `spell_grant` dispatches to the grant seam (`applyTeachSpell` → `grantSpell`).
+    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts', 'src/engine/ascendantExpression.ts', 'src/engine/spellGrant.ts'],
     // Card grants ride the existing `EncounterAftermathReactionEffect` vocabulary and
     // are applied by the existing applier, so `emit_omen` / `remove_condition` /
     // `spawn_artifact` / `hidden_mark` / `favor_creation` needed no new path at all.
@@ -3921,9 +3994,11 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/appointments.ts',
     },
     writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/strategicActionLifecycle.ts'],
+    // THR-1686: company travel asks the waiting hold per member (`holdsWaitingMemberAtPlace`).
     readSites: [
       'src/engine/encounterScoring.ts',
       'src/engine/phaseAgentDecision.ts',
+      'src/engine/groups/groupMovement.ts',
       'src/engine/__tests__/appointments.test.ts',
       'src/engine/__tests__/undertakingAppointmentPayoff.test.ts',
     ],
@@ -3931,6 +4006,28 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-22',
       evidence:
         'THR-1524 — the census HIT. Shipped by THR-1479 with unit and evaluator tests (appointments.test.ts, encounterSeeding-appointment.test.ts) and one authored user (the Crossroads bargain); THR-1518 proved the mechanics on a seeded world through `check:encounter-live` (present → kept at tick 136, the Full Moon Collection spawning at the place; a twin world absent → missed at tick 149, the promise broken) and then MEASURED the reachability row UNREACHED on every seed — the Crossroads fired once in 1000 ticks and the mortal refused. Two content defects on the parent, both fixed in vertical-slice.ts: (1) `settings: [wayside]` alone is camp | oasis | wilderness, 8 of 974 locations on seed 42 / medium and 5.5% of mortal-ticks (urban 50%, rural 37%, ruin 2.3%, sampled every 10 ticks over 200) — none of the four wayside-only slice encounters fired in 200 ticks; the Crossroads now registers at rural + ruin + wayside with an opening per class. (2) `motivations: [tradition_novelty]` named the fork axis, and `computeDesireScore` sums the SIGNED profile value, so the board handed the scene to Archivists (positive pole, who refuse) and floored Heretics (negative pole, the planting arm) at MINIMUM_DESIRE — 34 of 65 profiled mortals lean novelty and none ever met him; selection moved to the Eye axis (`revelation_discretion`, the scene\'s own reach) and the fork stays on tradition. `npm run check:content-model-census -- --ticks 200 --seed 42 --map medium` now prints `Reachability: HIT` — parents fired 3, 2 planted, 0 kept, 0 missed; seed 99 / 200 ticks: 11 firings, 7 planted, one kept (the Full Moon Collection fired from the kept arm, `spawnedFromSeedId` set); seed 7 / 200 ticks: see the THR-1524 status fragment. Pinned by vertical-slice.test.ts (THR-1524 block): a slice fork whose planting arm is the negative pole may not name that axis in `motivations` — restoring the old axis fails it (falsified 2026-09-22) — and the Crossroads registers past wayside. Not a gate that reads the code: the census counts the seed off `pendingEncounterSeeds` per tick.',
+    },
+  },
+  // -- Appointments -> the decision board (THR-1686, seeded things stay alive, re-plan after S3)
+  // What this row makes impossible: a named discount (`APPOINTMENT_OVERRUN_DISCOUNT`) that
+  // scaled `finalScore` only, which the live board never reads — a promise that did nothing.
+  {
+    id: 'appointment-discount-reaches-board',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal leaning toward an appointment discounts every encounter that would outlast the slack, and the discount reaches the unified decision board, where the choice is made: the regime stamps `appointmentDiscount` on the candidate and `scoreUnifiedBoard` multiplies it into the entry score beside the arrival commitment. `APPOINTMENT_DISCOUNT_ON_BOARD = false` restores the board exactly.',
+    ulTerms: ['Appointment', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['appointmentDiscount', 'rerankForAppointmentRegime', 'APPOINTMENT_DISCOUNT_ON_BOARD'],
+      module: 'src/engine/appointments.ts',
+    },
+    writeSites: ['src/engine/appointments.ts', 'src/engine/phaseAgentDecision.ts'],
+    readSites: ['src/engine/decisionBoard.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence: 'THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on 3 decisions on seed 99 and on seeds 1, 2, 3 and 7 (1 · 1 · 3 · 3), and on seeds 42 · 99 · 4 · 8 arms p12 (part 3 off) vs all (on) kept 6 vs 7 visits — the discount does not lower kept visits (the plan’s keep condition).',
     },
   },
   {
@@ -4196,6 +4293,38 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-07',
       evidence:
         'THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.',
+    },
+  },
+  {
+    id: 'a-mortal-is-taught-a-spell-by-a-god-or-a-book',
+    producerSystem: 'Ascendant Beats & Progression',
+    consumerSystem: 'Attachments, Items & Possessions',
+    intent:
+      'A god can teach a mortal a spell, and some books teach whoever comes to hold them (THR-1231 acquisition channels 1 and 4). Every channel writes through one seam, grantSpell, which records where the spell came from on the knows_spell edge (source divine + grantedBy, or tome + viaItemId); the sheet reads that edge to say who or what taught it, and the cast resolver reads it to make a god-taught transgression echo back to the god.',
+    ulTerms: ['Spell', 'Bestowal'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['knows_spell', 'grantSpell', 'applyTeachSpell', 'onItemAcquired', 'spell_grant'],
+      module: 'src/engine/spellGrant.ts',
+    },
+    writeSites: [
+      'src/engine/spellGrant.ts',
+      'src/engine/ascendantExpression.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/rewardPool.ts',
+      'src/engine/itemGenerator/mintGeneratedItem.ts',
+      'src/data/undertaking-objects.ts',
+    ],
+    readSites: [
+      'src/engine/agentAttachments.ts',
+      'src/engine/spellCasting.ts',
+      'src/engine/targetActions.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        'THR-1672. spellGrant.test.ts: Teach a Spell on a threaded priest writes knows_spell { source: divine, grantedBy }; with no thread it no-ops (no_thread). Teaching a library transgression raises the doom clock tickModifier by DIVINE_TEACH_DARK_DOOM and the mortal’s region pressure by DIVINE_TEACH_DARK_DETECTION; teaching an authored spell moves neither. A cast of the god-taught transgression adds DIVINE_TAUGHT_CAST_DETECTION and its forbidden_contact mark reads "… was cast — <god>’s teaching". instantiateReward of reward_tomes_scrolls_veilscript_fragment teaches a farmer (source tome, viaItemId = the clone), once; the sheet entry carries learnedFrom "Veilscript Fragment"; a seized book teaches its new holder. A spell_grant nudge reaction teaches the scene actor from the god. The three pre-existing writers (seedSpellKnowing, create × Power, applySpellStamp) write byte-identical edges through grantSpell (spellGrant.pin.test.ts snapshots, written before the repoint).',
     },
   },
   {
@@ -4469,6 +4598,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/itemGenerator/mintGeneratedItem.ts',
       'src/engine/strategicGraphOps.ts',
       'src/engine/itemGenerator/readBack.ts',
+      // THR-1626: the reward draw's minting point mints only a validator-passed item too.
+      'src/engine/itemGenerator/rewardMinting.ts',
     ],
     verifiedLive: {
       date: '2026-09-27',
@@ -5372,12 +5503,55 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['sacred_route', 'sacredRouteDestinationTemplates'],
       module: 'src/engine/encounterCache.ts',
     },
+    // THR-1660 extends the producer set: the `create × pilgrim_way` undertaking writes the
+    // same edge mid-game (its own row, `consecrated-pilgrim-way-pools-pilgrimage`). The
+    // reader and this row's proof are unchanged.
     writeSites: ['src/engine/worldSeed.ts'],
     readSites: ['src/engine/encounterCache.ts'],
     verifiedLive: {
       date: '2026-09-28',
       evidence:
         "THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-\"today\" setting).",
+    },
+  },
+  {
+    id: 'consecrated-pilgrim-way-pools-pilgrimage',
+    producerSystem: AMBITIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick.",
+    ulTerms: ['Route', 'Congregation', 'Undertaking', 'Encounter'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sacred_route', 'consecratePilgrimWay', 'createRelationEdge', 'sacredRouteDestinationTemplates'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/strategicGraphOps.ts'],
+    readSites: ['src/engine/encounterCache.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence:
+        "THR-1660. `src/engine/__tests__/pilgrimWay.test.ts` takes the board's own `cell.create.pilgrim_way` candidate for a non-member zealot, completes it through `executeStrategicAction`, and asserts one `sacred_route` congregation → town with `origin: 'undertaking'` and the `projectId`, the town in `poolInvalidatedLocationIds`, and `encounter.pilgrimage_trial` pooled there by a full `EncounterCacheManager` build (absent before). Refusals `already_a_pilgrim_destination` / `no_congregation_here` are asserted on the board and at completion.",
+    },
+  },
+  {
+    id: 'pilgrim-way-reaches-location-and-faction-sheets',
+    producerSystem: WORLDGEN,
+    consumerSystem: NARRATIVE,
+    intent:
+      "Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link.",
+    ulTerms: ['Route', 'Congregation', 'Location'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sacred_route', 'selectPilgrimWays', 'PilgrimWayLine'],
+      module: 'src/engine/pilgrimWays.ts',
+    },
+    writeSites: ['src/engine/worldSeed.ts', 'src/data/undertaking-objects.ts'],
+    readSites: ['src/components/Game/LocationProfileModal.tsx', 'src/components/Game/FactionSheet.tsx', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-03',
+      evidence:
+        "THR-1660. `src/components/Game/__tests__/PilgrimWayLine.test.tsx` renders both sheets over a graph with a seeded and a consecrated way and asserts the lines' words, links and the absence of any line on a town no way reaches; browser-verified on the seeded medium world via `window.__DEBUG.getPilgrimWays()` and the opened sheets.",
     },
   },
   {
@@ -5456,7 +5630,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: RUINS,
     consumerSystem: AMBITIONS,
     intent:
-      "A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it.",
+      "A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`).",
     ulTerms: ['Undertaking', 'Location'],
     mechanism: {
       kind: 'edge-prop',
@@ -5560,6 +5734,34 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-29',
       evidence:
         "THR-1657. `readers/past.ts` on medium worlds: seed 42 mints 2 `seek_revenge` + 2 `chase_the_wonder` (2 wonders skipped `no_free_slot`), seed 99 mints 2 + 1 (3 skipped `no_free_slot`); decider headcount at t0 is 20 / 23 with the pass on and off alike. Headless seed-42 medium CLI: both revenge drives are still `active` at tick 60 with heat cooled 1.0 → 0.82 by the milestone pass, and one heir (`agent_garrison_culture_1`) runs `cell.destroy.monster` and `cell.destroy.power` undertakings sourced from `ambition_seek_revenge`. The heavy test `worldPast-generatedWorld.test.ts` proves on a generated world that each revenge heir is kin of the dead commander both ways, a member of the losing Realm, and holds a grievance naming the winning Realm's living leader, and that no ambient or dead actor holds a past ambition.",
+    },
+  },
+  // -- Descent becomes a want: Raise the Old Banner (THR-1658) -------------
+  // What this row makes impossible: worldgen writing descent on a quarter of the
+  // mortals on a dead empire's land while nothing at play time ever read it as a want.
+  {
+    id: 'descent-gates-old-banner-drive',
+    producerSystem: WORLDGEN,
+    consumerSystem: AMBITIONS,
+    intent:
+      "A deciding mortal descended from a dead empire (`backstoryStrata` `relation: 'descent'`) may take up Raise the Old Banner when a slot frees at re-evaluation — never at t0, never as a spotlight pull — and finishes it by standing on an elder ruin of that empire and taking ground on its old land since the drive began. No culprit, no heat; the edge's `mintedByLabel` names the blood.",
+    ulTerms: ['Location', 'Place'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['backstoryStrata', 'requiresDescent', 'descentCultureIds', 'agent_at_ancestral_ruin', 'agent_took_ancestral_ground', 'agent_rooted_off_ancestral_land', 'historicalCultureOfRegion'],
+      module: 'src/engine/descent.ts',
+    },
+    writeSites: ['src/engine/worldPast.ts'],
+    readSites: [
+      'src/engine/descent.ts',
+      'src/engine/ambitionSelection.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/graphConditions.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        "THR-1658. `readers/old-banner.ts`, medium, 300 ticks, before (main dca9681d) / after: the t0 pursuit digest, decider count (20 / 23 / 22) and past mints (4 / 3 / 4) are identical on seeds 42 / 99 / 7 — the gate fails closed on every t0 snapshot. Seed 7: heir `ind_3` takes the drive at t75 (`mintedByLabel` 'the old blood of the Seed Overgrowth', no grievance) and meets `old_stones`; no non-heir or non-decider ever holds it. Seeds 42 / 99: the one freed heir is eligible and ranks first but the slot is refilled before the 75-tick refill pass. The heavy test `descent-generatedWorld.test.ts` proves on a generated world that writer and reader agree on every descended mortal's old land and that a freed deciding heir takes the drive with the label.",
     },
   },
   // -- The opening: the meeting's bond is what makes a First (THR-1605 S1) ---
@@ -5755,6 +5957,39 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-09-28',
       evidence:
         'THR-1641. Before: 9 of the table\'s tags (plus `#loss`, `#fear`) had 0 drawable bearers; `npm run census:location-traits` read FLAT for blood-soaked (seed 42) and welcoming + blood-soaked (seed 99). After the rekey: every table tag has ≥ `LOCATION_TRAIT_TAG_MIN_BEARERS` (5) drawable bearers (lowest `#thieves_errand` 5, `#steal` 9); census reads MOVES for blood-soaked on seed 42 (`#duel` 14.4% at marked places vs 4.9% unmarked) and welcoming on seed 99 (`#heart` 32.8% vs 21.6%). Unit: `locationTraitBonus.test.ts` bearer-floor test.',
+    },
+  },
+  // ── Encounter stakes line (THR-1727) ──────────────────────────────────────
+  {
+    id: 'encounter-stakes-line-reaches-veil-ledger-badge-row',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere.',
+    ulTerms: ['Encounter', 'UnifiedActionTemplate'],
+    // The template carries the authored parts (`stakes`); the tick path freezes why
+    // the mortal is here (`stakesContext`) so the opening line and the result line
+    // share one lead. Retires the THR-972 motive intro line read.
+    mechanism: {
+      kind: 'function',
+      symbols: ['stampStakesContext', 'buildStakesLine', 'buildResultLine', 'stakesLineForAction', 'rememberedStakesLine'],
+      module: 'src/engine/encounters/stakesLine.ts',
+    },
+    writeSites: [
+      'src/data/encounters/vertical-slice.ts',
+      'src/engine/orchestrator.ts',
+      'src/engine/chapterArchive.ts',
+    ],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+      'src/components/Game/ChapterLedger.tsx',
+      'src/components/Game/encounterStakesRows.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-04',
+      evidence:
+        'THR-1727. Browser, `?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge`: `__DEBUG.getEncounterStakes()` → hasStakes true, built line === rendered DOM line ("Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack."), no `nudge-motive-intro`. With `&outcome=failure` (pin verdict band_rendered) the Chapter Ledger row and the thread row read "Vara turned back to the long ford and lost the day."; with `&outcome=critical_failure` "Vara went into the river with the pack." — each matching the band prose on screen. CLI seed 42 medium, tick 30: 105 of 105 unified actions carry a stamped `stakesContext`, none live unstamped.',
     },
   },
 ];

@@ -66,6 +66,7 @@ import { CardKeywordChip } from './CardKeywordChip';
 import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
+import { sphereWord } from './formatEssence';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
 // These name the same tokens `EncounterVeil.tsx` and `NudgePhaseShell.tsx` use;
@@ -89,13 +90,18 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
  * `--veil-void` — below the 4.5:1 floor. Full loss red is 7.14:1 and makes the
  * ladder symmetric: perilous 0.85 → doomed 1.0 mirrors favorable 0.8 → fated 1.0,
  * so severity reads as intensity rather than as a different red.
+ *
+ * THR-1724 (Christian, 2026-10-04): the ladder is now the quest-difficulty
+ * colours — doomed red, perilous orange, uncertain yellow, favorable green,
+ * fated grey — one hue per rung on the `--forecast-*-rgb` tokens, so the
+ * header pill and the card odds word read one table.
  */
 export const FORECAST_TIER_COLORS: Record<string, string> = {
-  doomed: 'rgb(var(--veil-loss-rgb) / 1)',
-  perilous: 'rgb(var(--veil-loss-rgb) / 0.85)',
-  uncertain: 'rgb(var(--veil-gold-rgb) / 0.85)',
-  favorable: 'rgb(var(--veil-gain-rgb) / 0.8)',
-  fated: 'rgb(var(--veil-gain-rgb) / 1)',
+  doomed: 'rgb(var(--forecast-doomed-rgb) / 1)',
+  perilous: 'rgb(var(--forecast-perilous-rgb) / 1)',
+  uncertain: 'rgb(var(--forecast-uncertain-rgb) / 1)',
+  favorable: 'rgb(var(--forecast-favorable-rgb) / 1)',
+  fated: 'rgb(var(--forecast-fated-rgb) / 1)',
 };
 
 // ── Card-row layout (THR-890) ──────────────────────────────────────
@@ -104,8 +110,13 @@ export const FORECAST_TIER_COLORS: Record<string, string> = {
 
 /** Card width. Four fit the encounter stage's column at 1920×1080 without wrap. */
 export const CARD_WIDTH_PX = 210;
-/** Picture band height — "small generic image", not a hero illustration. */
-export const CARD_PICTURE_BAND_PX = 78;
+/**
+ * Picture band height at the card's width, at the hero 16:9 ratio (Law 5,
+ * amended 2026-10-04 by THR-1724). Still a small generic image, not a scene
+ * hero — it is simply no longer cropped to a third of its height. Derived, so
+ * re-proportioning the card is one number (NFP #1).
+ */
+export const CARD_PICTURE_BAND_PX = Math.round((CARD_WIDTH_PX * 9) / 16);
 /**
  * How a dimmed card recedes (THR-1587). A filter, not `opacity`: opacity made the
  * whole face see-through, so a dimmed card in the backdrop-less ActionDrawer let
@@ -248,6 +259,13 @@ export interface CardFaceModel {
   readonly sphereTint?: SphereName;
   /** Effective essence price, after any discount. */
   readonly cost: number;
+  /**
+   * THR-1706 — the sphere whose pool pays {@link cost}, named in words after
+   * the price. A card the god's primary sphere pays for (a sphere-less or
+   * reach-only card) otherwise gave no sign that, say, Life would be billed for
+   * a Gold path. Ignored on a free card. Absent ⇒ the price alone, as before.
+   */
+  readonly costSphere?: SphereName;
   /** Emphasise the price, as an unaffordable card does. */
   readonly costEmphasised?: boolean;
   /** Zone 4. */
@@ -321,6 +339,9 @@ function cardTint(selected: boolean): string {
   return selected ? 'rgb(var(--veil-gold-rgb) / 0.12)' : 'rgba(255, 255, 255, 0.02)';
 }
 
+/** Hit box of the codex info mark beside a card's name (THR-1711). */
+const CARD_CODEX_MARK_HIT_PX = 20;
+
 /** The resting edge every untinted card wears. */
 const RESTING_BORDER = 'rgb(var(--veil-gold-rgb) / 0.18)';
 
@@ -348,7 +369,7 @@ export function CardFace({
   return (
     <button
       type="button"
-      className="focus-ring"
+      className={model.disabled || dimmed ? 'focus-ring' : 'focus-ring card-face--playable'}
       data-testid={`${p}-${id}`}
       aria-pressed={model.selected}
       disabled={model.disabled}
@@ -396,8 +417,10 @@ export function CardFace({
         descriptor={model.picture}
         aria-label={model.name}
         style={{
+          // THR-1724 — the hero 16:9 band (Law 5). The source art is 1376×768,
+          // which the old 78px band cropped by about a third.
           height: CARD_PICTURE_BAND_PX,
-          aspectRatio: 'auto',
+          aspectRatio: '16 / 9',
           borderRadius: 0,
           borderWidth: '0 0 1px 0',
         }}
@@ -501,54 +524,76 @@ export function CardFace({
                 data-testid={`${p}-cost-${id}`}
               />
             </MaybeTooltip>
+            {model.costSphere && model.cost > 0 && (
+              <span
+                data-testid={`${p}-cost-sphere-${id}`}
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'var(--text-xs)',
+                  color: sphereBrightToken(model.costSphere),
+                  letterSpacing: '0.04em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {sphereWord(model.costSphere)}
+              </span>
+            )}
           </span>
         </div>
 
         {/* ── Title ───────────────────────────────────────────── */}
-        {model.onOpenName ? (
-          // Law 21: a named concept reaches its page. Rendered as a span with
-          // button semantics rather than a nested <button>, which is invalid
-          // inside the card's own button element.
+        {/* THR-1711 (2): the name is part of the card, so clicking it selects the
+            card like every other part of it. The codex page (Law 21) is reached
+            from a small info mark beside the name instead — before this, the
+            whole title was the codex link and swallowed the select click.
+            A span with button semantics rather than a nested <button>, which is
+            invalid inside the card's own button element. */}
+        <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
           <span
-            role="link"
-            tabIndex={0}
-            data-testid={`${p}-name-link-${id}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              model.onOpenName?.();
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-sm)',
+              lineHeight: 1.25,
+              color: model.selected ? GOLD : 'var(--veil-text-bright)',
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+          >
+            {model.name}
+          </span>
+          {model.onOpenName && (
+            <span
+              role="link"
+              tabIndex={0}
+              aria-label={`Open ${model.name} in the codex`}
+              title="Open in the codex"
+              data-testid={`${p}-name-link-${id}`}
+              onClick={(e) => {
                 e.stopPropagation();
                 model.onOpenName?.();
-              }
-            }}
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
-              lineHeight: 1.25,
-              color: model.selected ? GOLD : 'var(--veil-text-bright)',
-              textDecoration: 'underline',
-              textDecorationColor: 'rgb(var(--veil-gold-rgb) / 0.35)',
-              textUnderlineOffset: 2,
-              cursor: 'pointer',
-            }}
-          >
-            {model.name}
-          </span>
-        ) : (
-          <span
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-sm)',
-              lineHeight: 1.25,
-              color: model.selected ? GOLD : 'var(--veil-text-bright)',
-            }}
-          >
-            {model.name}
-          </span>
-        )}
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  model.onOpenName?.();
+                }
+              }}
+              className="hover:brightness-125 transition-[filter]"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                minWidth: CARD_CODEX_MARK_HIT_PX,
+                minHeight: CARD_CODEX_MARK_HIT_PX,
+                fontSize: 'var(--text-xs)',
+                color: 'rgb(var(--veil-gold-rgb) / 0.75)',
+                cursor: 'pointer',
+              }}
+            >
+              <span aria-hidden="true">ⓘ</span>
+            </span>
+          )}
+        </span>
 
         {/* ── Alternate costs — a card paid for outside the pool says so ── */}
         {model.costChannels && model.costChannels.length > 0 && (

@@ -32,6 +32,20 @@ A god's standing in a Sphere is read two independent ways, and they are not inte
 
 ---
 
+### Tradition
+
+**Aliases:** Magic Tradition, school of magic, `magic-tradition` (catalog category)
+**Also see:** `[[Spell]]`, `[[Sphere]]`, `[[Power]]`
+**Status:** canonical (seated by delegation 2026-10-04, THR-1701)
+
+The **school of magic a caster belongs to**. A tradition decides which spells its casters can learn and how that magic is paid for: a priest of the Dawn and a marsh hedge-witch carry different spells because they were taught by different traditions, and those spells are priced the way each tradition prices its magic. A `[[Spell]]` is always learned *from* a tradition; the tradition is what the sheet names when it says who taught a spell.
+
+A tradition is **not a Sphere**. Each tradition draws on one or more Spheres (`primarySpheres`, `sphereWeights`), and a spell's Sphere follows from its tradition — never the other way round. Two casters aligned with the same Sphere can belong to different traditions.
+
+**Code anchor.** The 34 catalog entries with `category: 'magic-tradition'` in `src/data/world-model.json` (ids such as `magic.fire`, `magic.holy`), read through `src/engine/taxonomy.ts`. A tradition is a **catalog id, not a graph node**: it is never minted into the world graph, and no edge points at it — where a caster's tradition is recorded, it is a property on their `knows_spell` edge (the per-bearer pattern), as the seeded spell generator does ([THR-1572](https://linear.app/threadbare/issue/THR-1572), plan `Docs/plans/2026-09-30-thr-1572-seeded-spell-generator.md`). Until that generator lands, the sheet's known-spell row still fills its `tradition` field from the spell node's `sphereAffinity` (`agentAttachments.ts`) — a Sphere standing in for the tradition, which is exactly the conflation this entry rules out.
+
+---
+
 ### Foundation
 
 **Aliases:** Foundation Sphere

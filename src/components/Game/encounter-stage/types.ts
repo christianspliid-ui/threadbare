@@ -38,9 +38,30 @@ export type EncounterCastRole =
 
 export type EncounterSignalVisibility = 'known' | 'hidden' | 'revealed';
 
+/**
+ * THR-1727 — the encounter's stakes line, as the veil renders it: the text plus
+ * the two names in it that link (the acting mortal, the place the lead names).
+ */
+export interface EncounterStageStakesLineModel {
+  /** Enriched line: `[lead], [actor] must [goal] — or [risk].` */
+  text: string;
+  actorId: string;
+  actorName: string;
+  locationId?: string;
+  locationName?: string;
+  leadSource: import('../../../engine/encounters/motiveClassifier').MotiveSource | 'none';
+  fallback: import('../../../engine/encounters/stakesLine').StakesFallbackReason;
+}
+
 export interface EncounterStageHeaderModel {
   title: string;
+  /**
+   * The template's hand-written summary. THR-1727: rendered only when the
+   * template authors no `stakes` — `stakesLine` takes the slot otherwise.
+   */
   subtitle?: string;
+  /** THR-1727 — the stakes line, present when the template authors `stakes`. */
+  stakesLine?: EncounterStageStakesLineModel;
   locationLabel: string;
   urgencyLabel?: string;
   /**
@@ -191,6 +212,11 @@ export interface EncounterStageChoiceModel {
   essenceCost: number;
   affordable: boolean;
   costLabel?: string;
+  /**
+   * THR-1706 — the sphere this choice's essence is taken from, named on its
+   * cost line. Absent ⇒ no sphere identity; the line shows the price alone.
+   */
+  payingSphere?: SphereName;
   likelyBurden?: string;
   /**
    * Intervention type — supportive, coercive, or withdrawn. Drives choice glow
@@ -648,6 +674,14 @@ export interface EncounterStageNudgeCardModel {
   /** Prices charged outside the essence pool. Empty ⇒ essence is the whole price. */
   costChannels?: EncounterStageCostChannelModel[];
   sphere?: SphereName;
+  /**
+   * THR-1706 — the sphere whose pool this card's essence is taken from. A
+   * sphere-gated card pays from `sphere`; a sphere-less one from the phase's
+   * `budgetSphere`. The cost row names it, so a Gold card that bills Life says
+   * so before it is played. Absent ⇒ unknown payer (no identity); the row
+   * shows the price alone.
+   */
+  payingSphere?: SphereName;
   /** WS4 image-library tag. Absent ⇒ the fallback chain ends at EntityVisual. */
   imageTag?: string;
   state: NudgeCardState;
@@ -709,22 +743,12 @@ export interface EncounterStageMotiveModel {
   chipLabel: string;
   /** One authored sentence naming why this mortal is here. */
   sentence: string;
-  /**
-   * THR-972 — the motive as a line that *introduces* the scene, printed above the
-   * opening prose rather than below it.
-   *
-   * Already substituted: `{actor}` and `{mission}` are resolved by the adapter, so
-   * the shell renders this verbatim and a raw placeholder can never reach the
-   * stage. Variant choice is a stable hash of the action id and step index
-   * (`MOTIVE_INTRO_VARIANTS`), so re-opening an encounter never re-rolls its
-   * opening line.
-   *
-   * Optional because a caller may build a motive without one — the meeting beats
-   * carry no motive at all, and an absent intro renders nothing rather than a
-   * blank line. {@link sentence} is retained alongside it for the motive
-   * explainer modal, which still quotes the un-substituted fallback.
+  /*
+   * THR-972's `introLine` lived here until THR-1727 folded "why is this mortal
+   * here" into the lead clause of the encounter's stakes line
+   * (`header.stakesLine`). The chip label and sentence remain for the motive
+   * explainer.
    */
-  introLine?: string;
 }
 
 /**
@@ -792,6 +816,21 @@ export interface EncounterStageTestPanelModel {
   /** Raw 0–1 difficulty — designer view only. */
   difficultyValue: number;
   factors: EncounterStageFactorLineModel[];
+  /**
+   * THR-1724 — the acting mortal's standing in this step's reach, shown in the
+   * title row as the character sheet's readout ("STONE · Skilled ●●●○○").
+   * It replaced the "{actor} is {word} in {reach}." factor line; `sentence` is
+   * that line's text, kept as the chip's tooltip so the actor is still named.
+   * Absent when the producer has no actor capability (the meeting's tests).
+   */
+  skill?: EncounterStageSkillModel;
+}
+
+export interface EncounterStageSkillModel {
+  /** 0-indexed tier (0–4) on `DOMAIN_WORD_SCALES`, the sheet's own scale. */
+  tier: number;
+  /** "Vara is skilled in Stone." */
+  sentence: string;
 }
 
 export interface EncounterStageForecastModel {
@@ -836,6 +875,17 @@ export interface EncounterStageNudgePhaseModel {
   availableEssence: number;
   /** Total essence the committed hand costs. */
   committedCost: number;
+  /**
+   * THR-1706 — the sphere a sphere-less card bills first: the god's primary.
+   * The commit path spends with it, each card's `payingSphere` names it, and
+   * the hand's "essence left" line counts down *its* pool rather than the
+   * grand total, so the line, the card and the bar all tell one story.
+   * Absent on a run with no sphere identity — the line falls back to the pooled
+   * total and the commit to the archetype's primary, exactly as before.
+   */
+  budgetSphere?: SphereName;
+  /** THR-1706 — `budgetSphere`'s own pool right now. Present iff `budgetSphere` is. */
+  budgetSphereEssence?: number;
 }
 
 export interface EncounterStageModel {

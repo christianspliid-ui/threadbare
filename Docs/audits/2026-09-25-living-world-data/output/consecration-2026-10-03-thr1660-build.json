@@ -1,0 +1,2961 @@
+{
+  "7": {
+    "t0": {
+      "tick": 0,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 26,
+        "pass": 15,
+        "noCulture": 8,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 3
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 1,
+        "min": 5,
+        "median": 5,
+        "max": 5,
+        "holdersWithZero": 0,
+        "distribution": [
+          5
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 3,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Masked Dream of the Frost-Wood Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_7",
+            "targetName": "The Bone Coast",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shade Wooded Ridges Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_31",
+            "targetName": "Pall-veil",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Keepers of the War Downs Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_16",
+            "targetName": "High Stonebridge",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 7,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Masked Dream of the Frost-Wood Congregation of the Spheres",
+            "veneratedSphere": "spirit",
+            "seatId": "loc_7",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "town": 3
+            },
+            "settlementPresenceWithoutRoute": 3,
+            "candidateDestinations": [
+              {
+                "id": "loc_13",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_95",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_35",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 19
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Shade Wooded Ridges Congregation of the Spheres",
+            "veneratedSphere": "darkness",
+            "seatId": "loc_31",
+            "seatSubtype": "capital",
+            "presenceLocations": 4,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "town": 2
+            },
+            "settlementPresenceWithoutRoute": 2,
+            "candidateDestinations": [
+              {
+                "id": "loc_9",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_11",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 20
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Keepers of the War Downs Congregation of the Spheres",
+            "veneratedSphere": "force",
+            "seatId": "loc_16",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 1,
+              "city": 1
+            },
+            "settlementPresenceWithoutRoute": 2,
+            "candidateDestinations": [
+              {
+                "id": "loc_15",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_0",
+                "subtype": "city"
+              }
+            ],
+            "livingMembers": 22
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 1,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "hamlet": 1
+        },
+        "holders": [
+          {
+            "id": "ind_10",
+            "name": "Rhoen",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_1"
+            ],
+            "locationId": "loc_44",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 12,
+        "bySubtype": {
+          "temple": 4,
+          "shrine": 8
+        },
+        "holdersAtHolyPlace": 0
+      }
+    },
+    "E_poolAtT0": {
+      "locations": 15,
+      "byClass": {
+        "shrine_temple": 12,
+        "capital": 3,
+        "other": 0
+      },
+      "onRoutedDestination": 3
+    },
+    "tEnd": {
+      "tick": 300,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 18,
+        "pass": 9,
+        "noCulture": 6,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 3
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 29,
+        "min": 3,
+        "median": 3,
+        "max": 6,
+        "holdersWithZero": 0,
+        "distribution": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5,
+          6
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 3,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Masked Dream of the Frost-Wood Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_7",
+            "targetName": "The Bone Coast",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shade Wooded Ridges Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_31",
+            "targetName": "Pall-veil",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Keepers of the War Downs Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_16",
+            "targetName": "High Stonebridge",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 4,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Masked Dream of the Frost-Wood Congregation of the Spheres",
+            "veneratedSphere": "spirit",
+            "seatId": "loc_7",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "town": 2,
+              "hamlet": 1
+            },
+            "settlementPresenceWithoutRoute": 2,
+            "candidateDestinations": [
+              {
+                "id": "loc_13",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_35",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 10
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Shade Wooded Ridges Congregation of the Spheres",
+            "veneratedSphere": "darkness",
+            "seatId": "loc_31",
+            "seatSubtype": "capital",
+            "presenceLocations": 4,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "hamlet": 1,
+              "town": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_11",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 7
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Keepers of the War Downs Congregation of the Spheres",
+            "veneratedSphere": "force",
+            "seatId": "loc_16",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 1,
+              "hamlet": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_15",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 11
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 29,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "city": 5,
+          "camp": 6,
+          "hamlet": 14,
+          "town": 2,
+          "shrine": 1,
+          "capital": 1
+        },
+        "holders": [
+          {
+            "id": "born_lc_273",
+            "name": "Nareth",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_1",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_281",
+            "name": "Orrin",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_1",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_288",
+            "name": "Grigor",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_82",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_289",
+            "name": "Ryanneet",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_74",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_296",
+            "name": "Morvyn",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_25",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_299",
+            "name": "Gretin",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_87",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_307",
+            "name": "Orenraotor",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_36",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_309",
+            "name": "Thugiguden",
+            "cultureId": "culture_2",
+            "cultureName": "Keepers of the War Downs",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_15",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_318",
+            "name": "Erebos",
+            "cultureId": "culture_0",
+            "cultureName": "The Masked Dream of the Frost-Wood",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_10",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_322",
+            "name": "Aethel",
+            "cultureId": "culture_0",
+            "cultureName": "The Masked Dream of the Frost-Wood",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_10",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_325",
+            "name": "Effra",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_90",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_330",
+            "name": "Yrittanen",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_36",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_352",
+            "name": "Thorne",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_8",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_354",
+            "name": "Kira",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_71",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_367",
+            "name": "Selene",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_36",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_370",
+            "name": "Dellis",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_49",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_371",
+            "name": "Umbra",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_11",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_379",
+            "name": "Jorik",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_54",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_381",
+            "name": "Morvyn",
+            "cultureId": "culture_0",
+            "cultureName": "The Masked Dream of the Frost-Wood",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_7",
+            "locationSubtype": "capital",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_385",
+            "name": "Marek",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_6",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_387",
+            "name": "Dellis",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_65",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_391",
+            "name": "Shade",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_94",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_392",
+            "name": "Aroral",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_78",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_402",
+            "name": "Nieve",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_2",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_404",
+            "name": "Corvus",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_74",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_408",
+            "name": "Umbra",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_87",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_409",
+            "name": "Xen",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_21",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_424",
+            "name": "Shade",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_9",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "ind_10",
+            "name": "Rhoen",
+            "cultureId": "culture_1",
+            "cultureName": "The Shade Wooded Ridges",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_4",
+            "locationSubtype": "city",
+            "onPlace": true,
+            "atHolyPlace": false
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 12,
+        "bySubtype": {
+          "temple": 4,
+          "shrine": 8
+        },
+        "holdersAtHolyPlace": 1
+      }
+    },
+    "C_holdersEverUnion": 29,
+    "D_undertakings": {
+      "field": "state.strategicState.projects (new projectId) + state.strategicState.history (deduped)",
+      "projectsStartedTotal": 71,
+      "projectsByFaithHolders": {
+        "cell.create.item": {
+          "started": 4,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        },
+        "cell.create.companion": {
+          "started": 3,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        },
+        "cell.create.route": {
+          "started": 1,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        }
+      },
+      "projectsWithFaithAmbition": {},
+      "historyWithFaithAmbition": {},
+      "historyByFaithHolders": {
+        "cell.create.item": {
+          "completed": 1
+        },
+        "cell.create.companion": {
+          "completed": 1
+        },
+        "cell.create.route": {
+          "completed": 1
+        },
+        "cell.observe.location": {
+          "completed": 1
+        },
+        "cell.observe.place": {
+          "completed": 1
+        },
+        "cell.observe.route": {
+          "completed": 1
+        }
+      }
+    },
+    "E_pilgrimage": {
+      "actionsStarted": 1,
+      "onRoutedDestination": 0,
+      "byClass": {
+        "shrine_temple": {
+          "offeredRuns": 1,
+          "resolved": 1
+        }
+      },
+      "outcomes": {
+        "success_at_cost": 1
+      },
+      "poolSamples": [
+        {
+          "tick": 25,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 50,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 75,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 100,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 125,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 150,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 175,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 200,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 225,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 250,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 275,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 300,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        }
+      ]
+    },
+    "J_consecration": {
+      "sacredRoutesByOriginAtEnd": {
+        "worldgen": 3
+      },
+      "projectsStarted": 0,
+      "startedByHolder": {},
+      "historyOutcomes": {},
+      "boardRefusals": {},
+      "pilgrimagesAtConsecratedSites": 0,
+      "pilgrimagesAtConsecratedSitesResolved": 0
+    },
+    "G_steadyMsPerTick": 661.3
+  },
+  "42": {
+    "t0": {
+      "tick": 0,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 21,
+        "pass": 12,
+        "noCulture": 6,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 3
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 1,
+        "min": 6,
+        "median": 6,
+        "max": 6,
+        "holdersWithZero": 0,
+        "distribution": [
+          6
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 3,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Witness Skyfield Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_4",
+            "targetName": "Wraithwood",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_9",
+            "targetName": "Great Silverhold",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Stone-Set Hollow of the Pass Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_1",
+            "targetName": "The Shattered Sanctum",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 5,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Witness Skyfield Congregation of the Spheres",
+            "veneratedSphere": "spirit",
+            "seatId": "loc_4",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 3,
+              "shrine": 1
+            },
+            "settlementPresenceWithoutRoute": 3,
+            "candidateDestinations": [
+              {
+                "id": "loc_17",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_32",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_5",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 30
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "veneratedSphere": "light",
+            "seatId": "loc_9",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "town": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_10",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 16
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Stone-Set Hollow of the Pass Congregation of the Spheres",
+            "veneratedSphere": "entropy",
+            "seatId": "loc_1",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "temple": 1,
+              "city": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_7",
+                "subtype": "city"
+              }
+            ],
+            "livingMembers": 16
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 1,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "shrine": 1
+        },
+        "holders": [
+          {
+            "id": "ind_7",
+            "name": "Selene",
+            "cultureId": "culture_1",
+            "cultureName": "Shadow-Kept Dawn",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_1"
+            ],
+            "locationId": "loc_70",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 8,
+        "bySubtype": {
+          "temple": 5,
+          "shrine": 3
+        },
+        "holdersAtHolyPlace": 1
+      }
+    },
+    "E_poolAtT0": {
+      "locations": 11,
+      "byClass": {
+        "shrine_temple": 8,
+        "capital": 3,
+        "other": 0
+      },
+      "onRoutedDestination": 3
+    },
+    "tEnd": {
+      "tick": 300,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 13,
+        "pass": 5,
+        "noCulture": 4,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 4
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 20,
+        "min": 3,
+        "median": 4,
+        "max": 5,
+        "holdersWithZero": 0,
+        "distribution": [
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 5,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Witness Skyfield Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_4",
+            "targetName": "Wraithwood",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_9",
+            "targetName": "Great Silverhold",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Stone-Set Hollow of the Pass Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_1",
+            "targetName": "The Shattered Sanctum",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_10",
+            "targetName": "Shadow-shade",
+            "targetSubtype": "hamlet",
+            "targetIsCapital": false,
+            "origin": "undertaking",
+            "establishedTick": 96,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_19",
+            "targetName": "Horseford",
+            "targetSubtype": "town",
+            "targetIsCapital": false,
+            "origin": "undertaking",
+            "establishedTick": 121,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 2,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Witness Skyfield Congregation of the Spheres",
+            "veneratedSphere": "spirit",
+            "seatId": "loc_4",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "hamlet": 2,
+              "shrine": 1,
+              "town": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_32",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 19
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Shadow-Kept Dawn Congregation of the Spheres",
+            "veneratedSphere": "light",
+            "seatId": "loc_9",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "hamlet": 1
+            },
+            "settlementPresenceWithoutRoute": 0,
+            "candidateDestinations": [],
+            "livingMembers": 4
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Stone-Set Hollow of the Pass Congregation of the Spheres",
+            "veneratedSphere": "entropy",
+            "seatId": "loc_1",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "temple": 1,
+              "city": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_7",
+                "subtype": "city"
+              }
+            ],
+            "livingMembers": 4
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 20,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "shrine": 2,
+          "city": 1,
+          "camp": 5,
+          "hamlet": 9,
+          "town": 3
+        },
+        "holders": [
+          {
+            "id": "born_lc_104",
+            "name": "Umbra",
+            "cultureId": "culture_1",
+            "cultureName": "Shadow-Kept Dawn",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_70",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_105",
+            "name": "Isolde",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_11",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_16",
+            "name": "Penn",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_49",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_23",
+            "name": "Kael",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_23",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_27",
+            "name": "Tam",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_29",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_33",
+            "name": "Corran",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_49",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_38",
+            "name": "Orin",
+            "cultureId": "culture_0",
+            "cultureName": "The Witness Skyfield",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_26",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_4",
+            "name": "Shoshoshaseth",
+            "cultureId": "culture_2",
+            "cultureName": "The Stone-Set Hollow of the Pass",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_2",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_47",
+            "name": "Hadren",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_18",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_49",
+            "name": "Corry",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_22",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_58",
+            "name": "Sella",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_3",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_72",
+            "name": "Caelen",
+            "cultureId": "culture_0",
+            "cultureName": "The Witness Skyfield",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_51",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_78",
+            "name": "Tovin",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_29",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_81",
+            "name": "Ashward",
+            "cultureId": "culture_2",
+            "cultureName": "The Stone-Set Hollow of the Pass",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_13",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_82",
+            "name": "Adara",
+            "cultureId": "culture_0",
+            "cultureName": "The Witness Skyfield",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_68",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_83",
+            "name": "Fen",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_47",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_89",
+            "name": "Varn",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_30",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_95",
+            "name": "Jessen",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_20",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_98",
+            "name": "Geralt",
+            "cultureId": "culture_2",
+            "cultureName": "The Stone-Set Hollow of the Pass",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_46",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_99",
+            "name": "Brenna",
+            "cultureId": "culture_2",
+            "cultureName": "The Stone-Set Hollow of the Pass",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_13",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 8,
+        "bySubtype": {
+          "temple": 5,
+          "shrine": 3
+        },
+        "holdersAtHolyPlace": 2
+      }
+    },
+    "C_holdersEverUnion": 21,
+    "D_undertakings": {
+      "field": "state.strategicState.projects (new projectId) + state.strategicState.history (deduped)",
+      "projectsStartedTotal": 47,
+      "projectsByFaithHolders": {
+        "cell.create.pilgrim_way": {
+          "started": 3,
+          "byFaithHolder": 3,
+          "faithAmbition": 3
+        }
+      },
+      "projectsWithFaithAmbition": {
+        "cell.create.pilgrim_way": {
+          "started": 3,
+          "byFaithHolder": 3,
+          "faithAmbition": 3
+        }
+      },
+      "historyWithFaithAmbition": {
+        "cell.create.pilgrim_way": {
+          "completed": 3
+        }
+      },
+      "historyByFaithHolders": {
+        "cell.create.pilgrim_way": {
+          "completed": 3
+        }
+      }
+    },
+    "E_pilgrimage": {
+      "actionsStarted": 1,
+      "onRoutedDestination": 0,
+      "byClass": {
+        "shrine_temple": {
+          "offeredRuns": 1,
+          "resolved": 1
+        }
+      },
+      "outcomes": {
+        "failure": 1
+      },
+      "poolSamples": [
+        {
+          "tick": 25,
+          "sample": {
+            "locations": 11,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 50,
+          "sample": {
+            "locations": 11,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 75,
+          "sample": {
+            "locations": 11,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 100,
+          "sample": {
+            "locations": 12,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 125,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 150,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 175,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 200,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 225,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 250,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 275,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 300,
+          "sample": {
+            "locations": 13,
+            "byClass": {
+              "shrine_temple": 8,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        }
+      ]
+    },
+    "J_consecration": {
+      "sacredRoutesByOriginAtEnd": {
+        "worldgen": 3,
+        "undertaking": 2
+      },
+      "projectsStarted": 3,
+      "startedByHolder": {
+        "ind_7": 3
+      },
+      "historyOutcomes": {
+        "completed": 3
+      },
+      "boardRefusals": {
+        "ineligible:already_a_pilgrim_destination": 3,
+        "project_already_active": 2,
+        "recent_duplicate:loc_10": 1,
+        "ineligible:consecrator_gone": 7
+      },
+      "pilgrimagesAtConsecratedSites": 0,
+      "pilgrimagesAtConsecratedSitesResolved": 0
+    },
+    "G_steadyMsPerTick": 414.6
+  },
+  "99": {
+    "t0": {
+      "tick": 0,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 26,
+        "pass": 15,
+        "noCulture": 8,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 3
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 2,
+        "min": 6,
+        "median": 7,
+        "max": 7,
+        "holdersWithZero": 0,
+        "distribution": [
+          6,
+          7
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 3,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Shadow-Kept Anvil of the Sunlit Woods Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_8",
+            "targetName": "Clay-shade",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Children of the Open Riverlands Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_16",
+            "targetName": "Dawnborough",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Witness Iron Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_27",
+            "targetName": "East Dawnwick",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 8,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Shadow-Kept Anvil of the Sunlit Woods Congregation of the Spheres",
+            "veneratedSphere": "matter",
+            "seatId": "loc_8",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 1,
+              "temple": 1
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_89",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 22
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Children of the Open Riverlands Congregation of the Spheres",
+            "veneratedSphere": "matter",
+            "seatId": "loc_16",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 3,
+              "city": 1
+            },
+            "settlementPresenceWithoutRoute": 4,
+            "candidateDestinations": [
+              {
+                "id": "loc_5",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_92",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_6",
+                "subtype": "city"
+              },
+              {
+                "id": "loc_2",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 32
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Witness Iron Congregation of the Spheres",
+            "veneratedSphere": "force",
+            "seatId": "loc_27",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "town": 3
+            },
+            "settlementPresenceWithoutRoute": 3,
+            "candidateDestinations": [
+              {
+                "id": "loc_23",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_37",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_91",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 21
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 2,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "capital": 1,
+          "glowcap_hollow": 1
+        },
+        "holders": [
+          {
+            "id": "ind_16",
+            "name": "Kaatuakia",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_2"
+            ],
+            "locationId": "loc_27",
+            "locationSubtype": "capital",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "ind_9",
+            "name": "Aurin",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_2"
+            ],
+            "locationId": "loc_128",
+            "locationSubtype": "glowcap_hollow",
+            "onPlace": false,
+            "atHolyPlace": false
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 12,
+        "bySubtype": {
+          "shrine": 10,
+          "temple": 2
+        },
+        "holdersAtHolyPlace": 0
+      }
+    },
+    "E_poolAtT0": {
+      "locations": 15,
+      "byClass": {
+        "shrine_temple": 12,
+        "capital": 3,
+        "other": 0
+      },
+      "onRoutedDestination": 3
+    },
+    "tEnd": {
+      "tick": 300,
+      "H_congregationCultureSettlementsWithoutRoute": {
+        "townCityCapital": 14,
+        "pass": 6,
+        "noCulture": 3,
+        "cultureWithoutCongregation": 0,
+        "alreadyRouted": 5
+      },
+      "I_holderNearestEightPassing": {
+        "cap": 8,
+        "holders": 36,
+        "min": 3,
+        "median": 4,
+        "max": 5,
+        "holdersWithZero": 0,
+        "distribution": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      "A_sacredRoutes": {
+        "count": 5,
+        "routes": [
+          {
+            "sourceId": "faction_def_temple_of_spheres_0",
+            "sourceName": "The Shadow-Kept Anvil of the Sunlit Woods Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_8",
+            "targetName": "Clay-shade",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Children of the Open Riverlands Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_16",
+            "targetName": "Dawnborough",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Witness Iron Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_27",
+            "targetName": "East Dawnwick",
+            "targetSubtype": "capital",
+            "targetIsCapital": true,
+            "origin": "worldgen",
+            "establishedTick": 0,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_1",
+            "sourceName": "The Children of the Open Riverlands Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_6",
+            "targetName": "Crystalspire",
+            "targetSubtype": "city",
+            "targetIsCapital": false,
+            "origin": "undertaking",
+            "establishedTick": 108,
+            "routeType": null
+          },
+          {
+            "sourceId": "faction_def_temple_of_spheres_2",
+            "sourceName": "The Witness Iron Congregation of the Spheres",
+            "sourceNodeType": "actor",
+            "actorType": "faction",
+            "factionType": "religious",
+            "factionClass": null,
+            "factionDefId": "temple_of_spheres",
+            "targetId": "loc_37",
+            "targetName": "Murkford",
+            "targetSubtype": "town",
+            "targetIsCapital": false,
+            "origin": "undertaking",
+            "establishedTick": 275,
+            "routeType": null
+          }
+        ]
+      },
+      "B_congregations": {
+        "count": 3,
+        "totalCandidateDestinations": 3,
+        "congregations": [
+          {
+            "id": "faction_def_temple_of_spheres_0",
+            "name": "The Shadow-Kept Anvil of the Sunlit Woods Congregation of the Spheres",
+            "veneratedSphere": "matter",
+            "seatId": "loc_8",
+            "seatSubtype": "capital",
+            "presenceLocations": 3,
+            "presenceBySubtype": {
+              "capital": 1,
+              "hamlet": 1,
+              "temple": 1
+            },
+            "settlementPresenceWithoutRoute": 0,
+            "candidateDestinations": [],
+            "livingMembers": 14
+          },
+          {
+            "id": "faction_def_temple_of_spheres_1",
+            "name": "The Children of the Open Riverlands Congregation of the Spheres",
+            "veneratedSphere": "matter",
+            "seatId": "loc_16",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "town": 2,
+              "hamlet": 1,
+              "city": 1
+            },
+            "settlementPresenceWithoutRoute": 2,
+            "candidateDestinations": [
+              {
+                "id": "loc_5",
+                "subtype": "town"
+              },
+              {
+                "id": "loc_2",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 20
+          },
+          {
+            "id": "faction_def_temple_of_spheres_2",
+            "name": "The Witness Iron Congregation of the Spheres",
+            "veneratedSphere": "force",
+            "seatId": "loc_27",
+            "seatSubtype": "capital",
+            "presenceLocations": 5,
+            "presenceBySubtype": {
+              "capital": 1,
+              "shrine": 1,
+              "hamlet": 1,
+              "town": 2
+            },
+            "settlementPresenceWithoutRoute": 1,
+            "candidateDestinations": [
+              {
+                "id": "loc_91",
+                "subtype": "town"
+              }
+            ],
+            "livingMembers": 9
+          }
+        ]
+      },
+      "C_faithHolders": {
+        "aliveCount": 36,
+        "congregationMembers": 0,
+        "byLocationSubtype": {
+          "city": 5,
+          "wilderness_waypoint": 1,
+          "hamlet": 19,
+          "town": 4,
+          "shrine": 4,
+          "camp": 3
+        },
+        "holders": [
+          {
+            "id": "agent_mc_cmdr_1",
+            "name": "The Scarlet Company Commander",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_6",
+            "locationSubtype": "city",
+            "onPlace": true,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_107",
+            "name": "Obd'Rur",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc.transient.27.18",
+            "locationSubtype": "wilderness_waypoint",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_115",
+            "name": "Muneab",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_6",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_117",
+            "name": "Ashara",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_17",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_122",
+            "name": "Noctis",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_0",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_128",
+            "name": "Ndinda",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_2",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_132",
+            "name": "Noctis",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_59",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_133",
+            "name": "Solenne",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_53",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_144",
+            "name": "Noctis",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_58",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_147",
+            "name": "Grigor",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_66",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_157",
+            "name": "Bira'Dr",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_86",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_158",
+            "name": "Cinder",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_45",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_159",
+            "name": "Quarren",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_19",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_161",
+            "name": "Liora",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_6",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_162",
+            "name": "Serapha",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_50",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_167",
+            "name": "Jorik",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_4",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_168",
+            "name": "Rill",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_17",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_171",
+            "name": "Buindibea",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_5",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_185",
+            "name": "Sialue",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_41",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_190",
+            "name": "Edro'Dub",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_89",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_197",
+            "name": "Umbra",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_20",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_202",
+            "name": "Ixin",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_3",
+            "locationSubtype": "city",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_224",
+            "name": "Nesrin",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_54",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_236",
+            "name": "Dragi'Drodor",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_20",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_238",
+            "name": "Odda",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_66",
+            "locationSubtype": "camp",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_239",
+            "name": "Elior",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_37",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_240",
+            "name": "Shade",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_28",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_243",
+            "name": "Beadnunid",
+            "cultureId": "culture_1",
+            "cultureName": "Children of the Open Riverlands",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_2",
+            "locationSubtype": "town",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_246",
+            "name": "Nieve",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_35",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_247",
+            "name": "Edri'Dregen",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_40",
+            "locationSubtype": "shrine",
+            "onPlace": false,
+            "atHolyPlace": true
+          },
+          {
+            "id": "born_lc_254",
+            "name": "Argile",
+            "cultureId": "culture_0",
+            "cultureName": "The Shadow-Kept Anvil of the Sunlit Woods",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_58",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_256",
+            "name": "Jorik",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_21",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_258",
+            "name": "Casp",
+            "cultureId": null,
+            "cultureName": null,
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_17",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "born_lc_261",
+            "name": "Beacon",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [],
+            "locationId": "loc_14",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          },
+          {
+            "id": "ind_16",
+            "name": "Kaatuakia",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_2"
+            ],
+            "locationId": "loc_12",
+            "locationSubtype": "hamlet",
+            "onPlace": true,
+            "atHolyPlace": false
+          },
+          {
+            "id": "ind_9",
+            "name": "Aurin",
+            "cultureId": "culture_2",
+            "cultureName": "Witness Iron",
+            "congregationMemberOf": [],
+            "otherFactions": [
+              "realm.culture_2",
+              "group_loc.transient.28.14_8_ind_1"
+            ],
+            "locationId": "loc_48",
+            "locationSubtype": "hamlet",
+            "onPlace": false,
+            "atHolyPlace": false
+          }
+        ]
+      },
+      "F_holyPlaces": {
+        "count": 12,
+        "bySubtype": {
+          "shrine": 10,
+          "temple": 2
+        },
+        "holdersAtHolyPlace": 4
+      }
+    },
+    "C_holdersEverUnion": 37,
+    "D_undertakings": {
+      "field": "state.strategicState.projects (new projectId) + state.strategicState.history (deduped)",
+      "projectsStartedTotal": 85,
+      "projectsByFaithHolders": {
+        "cell.change_raise.standing": {
+          "started": 11,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        },
+        "cell.create.item": {
+          "started": 8,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        },
+        "cell.create.pilgrim_way": {
+          "started": 3,
+          "byFaithHolder": 3,
+          "faithAmbition": 3
+        },
+        "cell.create.route": {
+          "started": 3,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        },
+        "cell.create.location": {
+          "started": 4,
+          "byFaithHolder": 1,
+          "faithAmbition": 0
+        }
+      },
+      "projectsWithFaithAmbition": {
+        "cell.create.pilgrim_way": {
+          "started": 3,
+          "byFaithHolder": 3,
+          "faithAmbition": 3
+        }
+      },
+      "historyWithFaithAmbition": {
+        "cell.create.pilgrim_way": {
+          "completed": 2
+        }
+      },
+      "historyByFaithHolders": {
+        "cell.observe.place": {
+          "completed": 4
+        },
+        "cell.observe.faction": {
+          "completed": 2
+        },
+        "cell.observe.location": {
+          "completed": 5
+        },
+        "cell.observe.area": {
+          "completed": 4
+        },
+        "cell.change_raise.standing": {
+          "completed": 1
+        },
+        "cell.create.pilgrim_way": {
+          "completed": 2
+        },
+        "cell.create.route": {
+          "completed": 1
+        },
+        "cell.create.item": {
+          "completed": 1
+        },
+        "cell.create.location": {
+          "completed": 1
+        }
+      }
+    },
+    "E_pilgrimage": {
+      "actionsStarted": 0,
+      "onRoutedDestination": 0,
+      "byClass": {},
+      "outcomes": {},
+      "poolSamples": [
+        {
+          "tick": 25,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 50,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 75,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 100,
+          "sample": {
+            "locations": 15,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 0
+            },
+            "onRoutedDestination": 3
+          }
+        },
+        {
+          "tick": 125,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 150,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 175,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 200,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 225,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 250,
+          "sample": {
+            "locations": 16,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 1
+            },
+            "onRoutedDestination": 4
+          }
+        },
+        {
+          "tick": 275,
+          "sample": {
+            "locations": 17,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        },
+        {
+          "tick": 300,
+          "sample": {
+            "locations": 17,
+            "byClass": {
+              "shrine_temple": 12,
+              "capital": 3,
+              "other": 2
+            },
+            "onRoutedDestination": 5
+          }
+        }
+      ]
+    },
+    "J_consecration": {
+      "sacredRoutesByOriginAtEnd": {
+        "worldgen": 3,
+        "undertaking": 2
+      },
+      "projectsStarted": 3,
+      "startedByHolder": {
+        "ind_16": 3
+      },
+      "historyOutcomes": {
+        "completed": 2
+      },
+      "boardRefusals": {
+        "ineligible:already_a_pilgrim_destination": 42,
+        "project_already_active": 7,
+        "recent_duplicate:loc_6": 3,
+        "recent_duplicate:loc_37": 2
+      },
+      "pilgrimagesAtConsecratedSites": 0,
+      "pilgrimagesAtConsecratedSitesResolved": 0
+    },
+    "G_steadyMsPerTick": 468.3
+  },
+  "undertakingModel": "cells",
+  "ticks": 300,
+  "map": "medium",
+  "scenario": "default"
+}

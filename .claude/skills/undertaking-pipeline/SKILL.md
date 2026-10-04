@@ -2,7 +2,7 @@
 name: undertaking-pipeline
 description: The undertaking factory line (THR-1300) — brief keyed on the kind × CRUD grid → draft → bounded critic loop → machine gate (`check:undertaking`) → live proof → compiler → batch report, for contract-complete undertaking templates, one or a batch of six. Triggers on "undertaking pipeline", "draft undertaking", "author undertaking", "undertaking batch", "run the undertaking line", or "/undertaking-pipeline".
 model: opus
-last_validated_against: 2026-09-12
+last_validated_against: 2026-10-04
 ---
 
 > **Step 0, always:** `Docs/canon/undertakings.md` — the current spec, the kind registry, the gate, the levers, the words. Then `Docs/canon/rulebook-quick-reference.md`. Load `Docs/canon/prose.md` before drafting a single line of prose: undertaking prose is held to the encounter standard (Prose Doctrine v2, narrator mode).
@@ -44,6 +44,8 @@ Every stage of the line has shipped; the pilot (slice 5) is the first batch thro
 5. **Prose claiming state the work does not write** — a completion sentence naming a consequence outside the kind's write-set lexicon.
 6. **Second person, numerals, exclamation marks, evasive vagueness** in `activityProse` / `completionProse` — the encounter standard, no exceptions for "strategic" text.
 7. **A template registered in two of three places** — pack, kind row, ambition profile; the compiler registers all three or the template is unreachable by luck.
+
+Triggers 5 and 6 are partly semantic. The write-set lexicon matches words, not claims. In the critic loop you may run the claim-vs-write-set and narrator-mode screens in [`content-judgments`](../content-judgments/SKILL.md) over `activityProse` and `completionProse`, then hand the flagged sentences to the systems and editorial critics. Advisory only: it never replaces a trigger and skips silently with no `TYPESAFE_API_KEY`.
 
 ## Rulings carried over
 
