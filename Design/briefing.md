@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 12:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 13:53 local (11:53 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,7 +31,7 @@ Nothing new shipped in the last hour.
 
 ## Health
 
-- **One finished pull request has a merge conflict: [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~2 hours, untouched since 10:57 your time).** GitHub won't start its checks until the conflict clears. Clearing it is the builder's unstick duty, not yours; the builder ran at 12:51 and should pick it up.
-- **The heavy simulation tests are still red on the latest main (~5 hours)** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions)). A builder owes the follow-up.
-- **The worktree reaper has 6 worktrees waiting for a decision** (475 worktrees, 314 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (103 ms per tick, 4% below its weekly median of 107). The live site is current with main (`e2f765fc`), scheduled tasks are on time, and the reaper last ran at 12:40.
+- **One finished pull request has a merge conflict: [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~3 hours, untouched since 10:57 your time).** GitHub won't start its checks until the conflict clears. Clearing it is the builder's unstick duty, not yours. The builder has run twice since then (last at 13:51) and still hasn't cleared it, so it is now overdue.
+- **The heavy simulation tests are still red on the latest main (~6 hours)** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions)). A builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (477 worktrees, 318 local branches on disk; this lane's own leftover worktrees are a large share of them). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (100 ms per tick, 6% below its weekly median of 106). The live site is current with main (`e2f765fc`), scheduled tasks are on time, and the reaper last ran at 13:40.
