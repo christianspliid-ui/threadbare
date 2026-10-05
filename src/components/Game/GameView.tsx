@@ -394,11 +394,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (interruptHoldRef.current?.toggleIfHeld()) return;
     handleToggleRunning();
   }, [handleToggleRunning]);
-  // THR-1716: the Space hotkey tags itself so `clock.first_run` says who started time.
+  // THR-1716: a press that will start time tags its source for `clock.first_run`;
+  // a press that pauses clears the tag, so a stale one never names a later start.
+  const tagClockToggle = useCallback((source: 'hotkey' | 'play_control') => {
+    const held = interruptHoldRef.current?.heldRunning ?? null;
+    const willRun = held !== null ? !held : !running;
+    noteClockRunSource(willRun ? source : null);
+  }, [running, noteClockRunSource]);
   const handleHotkeyToggleRunning = useCallback(() => {
-    noteClockRunSource('hotkey');
+    tagClockToggle('hotkey');
     handleToggleRunningRespectingHold();
-  }, [noteClockRunSource, handleToggleRunningRespectingHold]);
+  }, [tagClockToggle, handleToggleRunningRespectingHold]);
+  const handlePlayControlToggle = useCallback(() => {
+    tagClockToggle('play_control');
+    handleToggleRunningRespectingHold();
+  }, [tagClockToggle, handleToggleRunningRespectingHold]);
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -4980,7 +4990,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
         firstRunPrompt={firstRunPrompt}
         speed={speed}
-        handleToggleRunning={handleToggleRunningRespectingHold}
+        handleToggleRunning={handlePlayControlToggle}
         doTick={doTick}
         setSpeed={setSpeed}
         attentionPool={attentionPool}
