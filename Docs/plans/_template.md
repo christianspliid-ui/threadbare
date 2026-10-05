@@ -95,6 +95,20 @@ UI: N/A — <reason> **OR** delete this line and fill the subsections below.
 
 <What the player sees. Reference specific components or views.>
 
+### Player-facing text
+
+*Required whenever the UI pillar is not N/A (THR-1743; intent-judge dimension 12 scores it). List every new or changed surface the player reads. For each one, quote the **exact** words: labels, chip text, stakes and result lines, tooltips, toasts, chronicle lines. For generated text, give one representative **rendered** sample with real names filled in, not the template. "Show the odds" is not text. Then check [`Docs/ops/player-complaint-classes.md`](../ops/player-complaint-classes.md): for every class (`PC-n`) this surface touches, say in the player's words how they will understand it. Each class's last column says what is owed.*
+
+| Surface | Exact text the player reads | Complaint class touched | How the player understands it |
+|---|---|---|---|
+| `<Component / screen>` | "<quoted text>" | `<PC-n or none>` | <tooltip text, legend, first-use line — quoted> |
+
+### Playtest signal
+
+*What the next cold playtest round should observe if this works. Write it as a predicate a tester's log can confirm or refute (THR-688 rule A), not a count. Example: "a tester who spends essence can say what it bought".*
+
+<predicate>
+
 ### Event notifications
 
 <Alerts, toasts, or chronicle entries emitted by this feature.>

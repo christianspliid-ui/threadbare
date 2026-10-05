@@ -1,7 +1,7 @@
 ---
 name: cold-playtest
 description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door. Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest".
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-05
 invocation: /cold-playtest [--dry-run] [--lane]
 audience: claude-code
 ---
@@ -125,6 +125,16 @@ bash scripts/ops-publish.sh -m "docs(ops): cold playtest round N" Docs/ops/cold-
 ```
 
 Delete the local copies after a successful publish. Neither file belongs on `main`. `keep-work-flowing-cc` folds the newest `cold-playtest-round-*` report's `## Needs Christian` into the briefing (step 2.6 sibling fold).
+
+### 8b. Update the complaint list (skipped in dry run)
+
+[`Docs/ops/player-complaint-classes.md`](../../../Docs/ops/player-complaint-classes.md) is the list of live player-complaint classes (`PC-n`). The intent judge scores every UI plan against it (dimension 12, THR-1743), so this is how a round's lessons reach plans that have not been written yet. Update it **after** step 6 has given every earlier finding its status, and in the same run as the publish, following the file's § Lifecycle:
+
+- File a new class for each verified finding this round that no open class describes.
+- Add the new ticket links to the Evidence cell of each class this round hit again, and mark it recurring.
+- Retire a class only when every ticket in its Evidence cell is fixed-confirmed and testers reached those surfaces cleanly. Not-exercised never retires a class.
+
+The list lives on `main`, not `ops`, because two skills cite it. Land the edit as a docs-only PR (`docs/complaint-classes-round-N`), arm it with `gh pr merge --auto --merge`, and move on. A round that changes no class still says so in its report: `Complaint classes: unchanged`.
 
 ### 9. Prune
 
