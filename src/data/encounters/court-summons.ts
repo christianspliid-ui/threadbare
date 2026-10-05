@@ -428,8 +428,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step court summons: read a crowded hall, then answer the crown\'s question. The first '
-    + 'realm-scoped encounter, binding $realm for the standing it moves.',
+  description:
+    'The crown has summoned someone to a crowded hall to answer a question. How they read the '
+    + 'hall, and how they answer, decides where they stand with the realm.',
   locationSubtypes: expandSettings(['urban', 'stronghold']),
   consequenceDraw: ['possession', 'movement'],
 };

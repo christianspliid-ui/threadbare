@@ -471,9 +471,8 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
   },
 
   description:
-    'A regional-scale patronage-versus-extraction encounter: a threaded merchant-prince holds a whole ' +
-    'region\'s grain in a famine year and can feed it or bleed it, and a god can press the granaries open ' +
-    'or stay its hand and let the market corner the region. Reach: gold (Patron ↔ Extractor).',
+    'In a famine year a merchant-prince holds a whole region\'s grain and can feed it or bleed it. '
+    + 'A god can press the granaries open, or stay its hand and let the market corner the region.',
 });
 
 export default GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE;

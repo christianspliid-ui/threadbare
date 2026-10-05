@@ -517,6 +517,6 @@
         }
       }
     },
-    "description": "A master two-step Eye job for a town: weigh the town's charter of liberties against the count's rival copy (hands, inks, seals), then name which of the count's steward's clerks forged it. Naming the forger earns the town's regard and the knowledge of who wrote the false copy, and plants an appointment to read the findings at the inquest in the town hall on court day in three days (kept, the inquest-heard sequel; missed, the inquest-defaulted sequel). Failing costs the town's regard."
+    "description": "A count has produced a rival copy of the town's charter of liberties, and one of his steward's clerks forged it. The findings are due before the inquest in the town hall on court day."
   }
 }

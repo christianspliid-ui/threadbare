@@ -812,7 +812,7 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
   },
 
   description:
-    'A two-step flooded river crossing: read the water, then cross on the rope. The ' +
-    'nudge-model golden exemplar, authored end-to-end against the locked THR-883 card format ' +
-    'and the THR-1045 Composition Contract.',
+    // Player prose (THR-1739). The exemplar's design notes live in this file's header.
+    'The ford is in flood and the rope across it is the only way over. The water has to be '
+    + 'read before anyone trusts the rope.',
 };

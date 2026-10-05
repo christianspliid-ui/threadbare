@@ -631,8 +631,8 @@ export const LETTERS_OF_INTRODUCTION_TEMPLATE: UnifiedActionTemplate = withEncou
   },
 
   description:
-    'An agent needs a powerful patron\'s backing. The path runs through an introduction secured either through institutional process ' +
-    'or a social bridge with an unresolved favor. Success grants Letters of Introduction, which auto-activate Patron\'s Backing.',
+    'Someone needs a powerful patron\'s backing, and the way in is an introduction, either through '
+    + 'the proper channels or through a friend who is still owed a favour.',
 });
 
 export const LETTERS_OF_INTRODUCTION_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(LETTERS_OF_INTRODUCTION_TEMPLATE);

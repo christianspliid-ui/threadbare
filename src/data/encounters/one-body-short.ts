@@ -714,6 +714,6 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
   },
 
   description:
-    'A single-step reading: a fight already over, a ground that has to be accounted for, and a count that ' +
-    'comes out one short.',
+    'A fight is over and the ground has to be accounted for. The count of the dead comes out one '
+    + 'short.',
 });

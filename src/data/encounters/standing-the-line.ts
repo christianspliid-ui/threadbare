@@ -1278,7 +1278,6 @@ export const STANDING_THE_LINE_TEMPLATE: UnifiedActionTemplate = compileOpeningE
   },
 
   description:
-    'A pilgrim who cannot walk sits where the road goes narrow, and four riders are coming who do not have ' +
-    'to stop. The mortal decides — hold the road, or break the riders before they arrive — and the god argues ' +
-    'both sides.',
+    'A pilgrim who cannot walk sits where the road narrows, and four riders are coming who have '
+    + 'no reason to stop. Someone has to hold the road, or break the riders before they arrive.',
 });

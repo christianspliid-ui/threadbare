@@ -780,6 +780,7 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
   },
 
   description:
-    'A two-step Puzzle-Investigation: a remnant hanging over a broken stone that resists being read, two ' +
-    'readings already hardened into factions, and a true report that has to land in a room that has voted.',
+    'A remnant hangs over a broken stone that will not be read easily, and two readings of it '
+    + 'have already hardened into factions. A true report still has to be carried into a room that '
+    + 'has already voted.',
 });

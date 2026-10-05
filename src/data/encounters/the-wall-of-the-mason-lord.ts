@@ -460,9 +460,8 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
   description:
-    'A regional-scale permanence-versus-mercy encounter: a threaded mason-lord can raise a great wall that ' +
-    'saves one region by dooming the lands beyond it, and a god can press the resolve to hold or let the ' +
-    'doubt break it. Reach: stone (Keeper ↔ Destroyer).',
+    'A mason-lord can raise a great wall that saves one region by dooming the lands beyond it. A '
+    + 'god can press the resolve to hold, or let the doubt break it.',
 });
 
 export default WALL_OF_THE_MASON_LORD_TEMPLATE;

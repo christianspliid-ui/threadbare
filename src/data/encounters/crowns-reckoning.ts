@@ -458,9 +458,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       + 'rank_delta writes the derived rank cache the plan forbids (THR-1211). Standing is what the '
       + 'crown\'s reckoning actually moves, and it is wired both ways.',
   },
-  description: 'A two-step reckoning: get the men of the town the actor keeps out of the fields and onto its '
-    + 'wall for the crown\'s marshal, then answer for the granary. The second town-keeper encounter — '
-    + 'the Realm asking its keeper what it would not ask a stranger.',
+  description:
+    'The crown\'s marshal wants the town\'s men off the fields and on its wall, and then wants an '
+    + 'answer for the granary. The realm is asking its own keeper what it would never ask a '
+    + 'stranger.',
   locationSubtypes: expandSettings(['urban', 'stronghold']),
   // The hand the id draws is [membership, omen]; the ONE recorded swap above holds
   // this template to [standing, omen], and `check:encounter` recomputes exactly that.

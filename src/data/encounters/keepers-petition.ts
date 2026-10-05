@@ -454,9 +454,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step petition: hear two households quarrel over the crown\'s levy on the town the actor '
-    + 'keeps, then apportion the due so the reeve carries a settled figure to the court. The first '
-    + 'town-keeper encounter — gated on the hold, never on the rank.',
+  description:
+    'Two households are quarrelling over the crown\'s levy on the town their keeper holds. The due '
+    + 'has to be shared out so the reeve can carry a settled figure to court.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['condition', 'omen'],
 };

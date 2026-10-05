@@ -1475,12 +1475,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step Eye test for an expert at a town gate: read a travelling family\'s writ of passage '
-    + 'and find it a good forgery, then decide its cost. The mortal either names it false and hunts the '
-    + 'seal-cutter who made it (a bigger standing gain and a summons), or vouches for the family and '
-    + 'answers for the writ under the town\'s charter (a favour owed and the maker\'s name secondhand). '
-    + 'A win leaves the maker\'s name known and the mortal on the road; a loss costs standing in the '
-    + 'town.',
+  description:
+    'A traveling family\'s writ of passage is a good forgery. At the town gate, someone has to '
+    + 'name it false and hunt the seal-cutter who made it, or vouch for the family and answer for '
+    + 'the writ.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['knowledge', 'movement'],
 };

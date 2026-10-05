@@ -609,6 +609,6 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
   },
 
   description:
-    'A single-step recovery: a freezing relic in the open, everyone before them frostbitten, and a rival ' +
-    'claimant waiting to try again.',
+    'A freezing relic lies out in the open. Everyone who has tried to lift it is frostbitten, and '
+    + 'a rival claimant is waiting to try again.',
 });

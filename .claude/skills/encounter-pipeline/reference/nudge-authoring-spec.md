@@ -931,6 +931,7 @@ Absent declaration ⇒ **baseline**. Canon: `Docs/canon/prose.md` § the registe
 | `name`, `effectLine`, factor lines, purpose lines, `stakes` parts | **interactive-plain** |
 | Openings, spine, band base text | **narrator mode** (Doctrine v2 below) |
 | Final-step band prose, the fate-reveal line | narrator mode; peak lyricism retired for encounter surfaces (2026-08-25) |
+| `description` (Codex entry, story beat, actions block) | **narrator mode** — one or two sentences of situation and stake. Player prose, never a design summary: no step count, band, Reach/persona label, "the mortal", sequel, `#tag` or payoff verb. `check:encounter` fails designer voice (THR-1739; format card § Description) |
 
 **The hard plainness rule.** Interactive text is always plain — no metaphor, no ambiguity
 about what the click does. A label's job is to be unmistakable. The `fiction` flavor

@@ -608,11 +608,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A one-step Veil test for an expert in a town or village: a magistrate sends for the best dream '
-    + 'reader in the district to ask a drowned man who he left his estate to, while his only kin claims '
-    + 'all of it and calls the rite a trick. The fee is drawn by query from the #relic item family; a '
-    + 'true reading also gives the reader a new ambition, and a wrong one costs their standing in the '
-    + 'settlement and leaves them searching for the missing will for a while.',
+  description:
+    'A magistrate has sent for a dream reader to ask a drowned man who he left his estate to. His '
+    + 'only kin claims all of it and calls the rite a trick.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['thread', 'drive'],
 };

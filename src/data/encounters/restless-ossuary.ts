@@ -654,13 +654,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A three-step master Veil job in a town: the charnel house under the cathedral is full, the dead '
-    + 'in it will not lie still, and every guild wants its own bones kept. The mortal reads which dead '
-    + 'are restless and why, says the rite of laying from dusk to dawn, and rules at first light which '
-    + 'bones go to new ground, against the weavers\' warden. The night of the laying leaves the town an '
-    + 'omen, good or bad. A ruling that holds pays a #relic possession lifted from under the weavers\' '
-    + 'first dead and raises the mortal\'s standing with the town; a failed one leaves the town '
-    + 'thinking less of the master it sent for by name.',
+  description:
+    'The charnel house under the cathedral is full, the dead in it will not lie still, and every '
+    + 'guild wants its own bones kept. Someone has to say the rite of laying from dusk to dawn and '
+    + 'rule at first light which bones go to new ground, against the weavers\' warden.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['standing', 'omen'],
 };

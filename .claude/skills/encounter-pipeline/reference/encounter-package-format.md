@@ -62,10 +62,23 @@ npm run compile:encounter -- <path> --force     # overwrite an existing compile
       "lost": "turned back to the long ford and lost the day",
       "lostBadly": "went into the river with the pack"
     },
-    "description": "…"                         // designer voice for the Codex; NEVER shown on the veil
+    "description": "…"                         // PLAYER prose — see § Description below (THR-1739)
   }
 }
 ```
+
+## Description (player prose, THR-1739)
+
+`description` is **player-facing summary prose**. The Codex entry, the story-beat modal and the actions block print it as written. Write one or two sentences in narrator mode (the spec's § Prose doctrine v2): the situation and what is at stake, in plain game register.
+
+- Never name a step count ("two-step"), a band ("a master Heart job", "a test for a journeyman"), a Reach or persona label ("(Gold)", "(a Vanguard)", "Reach: star"), "the mortal" / "the agent", a sequel, a content-query tag (`#relic`, "drawn by query"), a binding sentinel (`$realm`), or the reward mechanic ("plants", "earns", "wins the trust").
+- The mortal is `{actor}` or unnamed ("someone", "a stranger", "the traveler").
+- Design notes (step plan, payoffs, sequels) go in the package's `doc` block, never here.
+
+`check:encounter` fails a designer-voice description in its register block (`content-eval/descriptionVoice.ts`, markers pinned by `descriptionVoice.test.ts`).
+
+- wrong: *"A two-step master Heart job in a town: … The mortal holds the crowd back … wins the trust of the crowd's speaker … plants a town-watch errand."*
+- right: *"Bread has doubled overnight and a crowd is forcing the abbey granary gate. Someone has to hold the crowd back and then rule, before the abbey and the crowd, how much seed grain leaves the granary."*
 
 ## Stakes (required, THR-1727 / THR-1728)
 

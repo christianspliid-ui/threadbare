@@ -536,11 +536,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step shadow job in a town counting house: get into the ledger room unseen between the '
-    + 'night clerk\'s walks, then copy one sealed page by lamplight and close the press without a '
-    + 'trace. A clean copy is paid in kind and the paying house\'s factor sends for the mortal again (a '
-    + 'placeless seeded sequel by the #steal family); a cracked seal found at dawn leaves the town '
-    + 'Under Watch and the purse unpaid.',
+  description:
+    'One sealed page in a town counting house has to be copied by lamplight, between the night '
+    + 'clerk\'s walks, without leaving a trace. A cracked seal found at dawn puts the whole town on '
+    + 'watch.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['possession', 'place'],
 };

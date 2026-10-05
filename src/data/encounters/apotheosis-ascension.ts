@@ -782,7 +782,7 @@ export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeni
     },
 
     description:
-      'The capstone covenant of divine influence: a mortal worn thin by devotion can be raised into a ' +
-      'partial aspect of the god — a permanent apex beyond the five Influence tiers.',
+      'A mortal worn thin by long devotion can be raised into a living part of the god. Once it is '
+      + 'done, it cannot be undone.',
   }),
 );

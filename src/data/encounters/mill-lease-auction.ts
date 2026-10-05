@@ -536,13 +536,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'An expert two-step Gold job for a market town: price the abbey\'s water-mill lease by reading '
-    + 'the abbey\'s books against the old miller\'s tallies, then bid for the millers\' fellowship '
-    + 'against a richer grain merchant under the abbey\'s letting rule. A won bid earns the town\'s '
-    + 'regard and the knowledge of where the mill\'s missing grain went, and plants an appointment to '
-    + 'seal the lease at the mill on quarter day in three days (kept, the lease-sealed sequel, where '
-    + 'the fellowship pays the fee; missed, the lease-forfeit sequel). A lost bid costs the town\'s '
-    + 'regard.',
+  description:
+    'The abbey is letting its water-mill lease, and the millers\' fellowship is bidding against a '
+    + 'richer grain merchant. The abbey\'s books and the old miller\'s tallies do not agree about '
+    + 'where the grain went.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['knowledge', 'story_seed'],
 };

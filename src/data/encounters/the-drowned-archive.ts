@@ -1042,7 +1042,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
   },
 
   description:
-    'A three-step delve: the record vault is flooding, a page has surfaced saying the ' +
-    'founding families never owned the ground, and the thing that has been keeping the rest will ' +
-    'only give it up for a true answer, spoken the way the record spells it.',
+    'A record vault is flooding, and a page has surfaced saying the founding families never owned '
+    + 'the ground. Whatever keeps the rest of the records will give them up only for a true answer, '
+    + 'spoken the way the record spells it.',
 });

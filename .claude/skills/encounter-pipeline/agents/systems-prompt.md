@@ -132,6 +132,7 @@ This makes the final file self-contained so the implementation agent only needs 
 ## What You Must NOT Do
 
 - Do not rewrite prose or assess literary quality
+- Do not write your systems summary (step plan, bands, payoffs, sequels) into the packet's `description` — that field is player prose for the Codex and story beat (format card § Description, THR-1739). Systems notes belong in this audit file and the package `doc` block.
 - Do not invent primitives to make the encounter work — flag gaps honestly
 - Do not flatten missing capabilities into generic bonuses
 - Do not approve support bundles you can't verify

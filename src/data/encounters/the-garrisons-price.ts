@@ -928,6 +928,6 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
   },
 
   description:
-    'A two-step negotiation: a free company sitting on the only road, an honest price named for passage, and ' +
-    'the work of getting clear of the figure once it is settled.',
+    'A free company sits on the only road and names an honest price for passage. Paying it is the '
+    + 'easy part; getting clear of the company afterwards is not.',
 });

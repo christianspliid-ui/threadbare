@@ -424,12 +424,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step Shadow heist for an expert in a town or village: a cooper asks the mortal to take his '
-    + 'father\'s pawned iron box back out of a pawnbroker\'s strongroom before the buyer\'s hired thief '
-    + 'fetches it. The first step gets past a starved guard dog and down a cellar stair; the second is '
-    + 'a race to carry the box out ahead of the rival. Winning pays a #stealth item drawn from the box '
-    + 'and plants a sequel in which the buyer sends for the thief; losing leaves the pawnbroker naming '
-    + 'the mortal to the town and gives them a short urge to prove themselves on another lock.',
+  description:
+    'A cooper wants his father\'s pawned iron box out of a pawnbroker\'s strongroom before the '
+    + 'buyer\'s hired thief fetches it. Between here and the box are a starved guard dog, a cellar '
+    + 'stair and a race to the door.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['story_seed', 'drive'],
 };
