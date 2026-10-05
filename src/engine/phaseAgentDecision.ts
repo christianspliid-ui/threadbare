@@ -79,6 +79,7 @@ import {
   rerankForAppointmentRegime,
   waitingTripOverruns,
   departingTripOverruns,
+  departingWorkTicks,
   appointmentTicksPerHex,
   holdsWaitingMemberAtPlace,
   APPOINTMENT_REGIME_MEMO_PROP,
@@ -1088,7 +1089,9 @@ export function phaseAgentDecision(
         const overruns = (c: ScoredCandidate): boolean => {
           const entryHex = resolveLocationToHex(graph, c.entry.locationId);
           const onward = entryHex ? hexDistance(entryHex, slack.placeHex) : Infinity;
-          return departingTripOverruns(c.entry.totalTickCost, c.hexDistanceToEntry, onward, ticksPerHex, budget);
+          // THR-1737 — departing prices the work at its longest roll; leaning keeps the minimum.
+          const workTicks = regime === 'departing' ? departingWorkTicks(c.entry) : c.entry.totalTickCost;
+          return departingTripOverruns(workTicks, c.hexDistanceToEntry, onward, ticksPerHex, budget);
         };
         // THR-1686 — waiting prices the trip there and back at the hex-priced rate.
         const waitingOverruns = (c: ScoredCandidate): boolean =>

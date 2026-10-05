@@ -43,7 +43,7 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { ReputationReactionEffect } from '../types/traits';
 import {
-  computeRewardEstimateUnified, computeTotalTickCostUnified,
+  computeRewardEstimateUnified, computeTotalTickCostUnified, computeTotalTickCostMaxUnified,
   RARITY_TO_THREAT, CRUD_TO_ENCOUNTER_TYPE,
 } from './encounterCache';
 import { isActionStepBranch } from '../types/unifiedAction';
@@ -334,6 +334,7 @@ export function generateSocialCandidates(
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
+        totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
         stepDifficulties,
@@ -371,6 +372,7 @@ export function generateSocialCandidates(
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
+        totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
         stepDifficulties,
@@ -407,6 +409,7 @@ export function generateSocialCandidates(
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
+        totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
         stepDifficulties,
@@ -443,6 +446,7 @@ export function generateSocialCandidates(
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
+        totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
         stepDifficulties,
@@ -479,6 +483,7 @@ export function generateSocialCandidates(
         isQuestEncounter: tmpl.steps.some(s => 'branchOnStep' in s),
         socialOffer: true, // THR-1614: claims a SOCIAL_OFFER_CAP_RESERVE slot at the cap
         totalTickCost: computeTotalTickCostUnified(tmpl),
+        totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
         successRewardEstimate: computeRewardEstimateUnified(tmpl),
         stepCount: tmpl.steps.length,
         stepDifficulties,
