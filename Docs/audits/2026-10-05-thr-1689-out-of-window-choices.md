@@ -108,7 +108,7 @@ The ticket quotes the KPI floor as 0.50. In code `KPI_IN_WINDOW_MIN` is **0.60**
 
 ## Recommendation — design request for the design lane
 
-Filed as its own ticket (linked from THR-1689's closing comment). No tuning was done here. Three decisions, in the order the evidence ranks them:
+Filed as **THR-1740** (`Todo`, plan-doc Done-when, for the design lane). No tuning was done here. Three decisions, in the order the evidence ranks them:
 
 1. **Do branching quests face the window like other work?** The exemption was written to keep quests *reachable*. In the window it makes them *preferred*: a near-certain quest is never discounted, so it wins on value. Recommended: keep quests reachable but let the too-easy discount apply (or a milder floor for quests, if narrative threads need a pull). The probe says +5.4 points of share, experts trying harder work, and band success levelling. **Gate before shipping:** the branching-fire KPI for threaded agents, measured in the attended world (`readers/attended.ts`).
 2. **Which window does the KPI judge, and is the target still 0.60?** The board asks each mortal to stay inside its own shifted window. The gauge judges a fixed one. Decide which is the contract, and restate the floor against it. This is a gauge decision, not tuning.
