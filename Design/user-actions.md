@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-05 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-05 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-05: a set-down encounter now waits for you** ([THR-1730](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should)). Unstuck after last hour's cancelled checks; merged via [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) at 23:30 and live.
 - **2026-10-05: the intent judge now checks what the player will read** ([THR-1743](https://linear.app/threadbare/issue/THR-1743/intent-judge-checks-what-the-player-will-read-ui-plans-must-quote)), your filing from this evening. Merged via [#2245](https://github.com/christianspliid-ui/threadbare/pull/2245).
 - **2026-10-05: encounter summaries now read as player prose, not authoring prompts** ([THR-1739](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice)), your Granary Riot finding. Its conflict was cleared by the builder; merged via [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) at 15:53.
 - **2026-10-05: the commit button stays on screen when a five-card hand wraps** ([THR-1732](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls)). Merged via [#2242](https://github.com/christianspliid-ui/threadbare/pull/2242) at 15:18.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-05: every encounter now has a stakes line, and the veil never shows the designer's description** ([THR-1728](https://linear.app/threadbare/issue/THR-1728/author-stakes-for-every-encounter-template-and-make-the-stakes-line)). Merged via [#2234](https://github.com/christianspliid-ui/threadbare/pull/2234) at 07:59; the raw `{cast:drover}` text fix ([THR-1738](https://linear.app/threadbare/issue/THR-1738/the-encounter-test-panel-shows-castdrover-literally-carryover-factor)) followed via [#2236](https://github.com/christianspliid-ui/threadbare/pull/2236) at 08:35.
 - **2026-10-05: master-level everyday work is in town** ([THR-1688](https://linear.app/threadbare/issue/THR-1688/content-above-novice-s7b-master-everyday-encounters-1-per-reach-once)): eight master encounters, one per Reach. Merged via [#2232](https://github.com/christianspliid-ui/threadbare/pull/2232) at 06:40 and live.
 - **2026-10-05: a mortal about to leave town no longer starts local encounters that break its promise** ([THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the)). Merged via [#2231](https://github.com/christianspliid-ui/threadbare/pull/2231) at 04:37 and live.
-- **2026-10-05: the fair draw for experts is live** ([THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Its veto window closed at 02:45 with no veto; merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and deployed.
 
 ---
 

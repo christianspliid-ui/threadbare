@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 22:56 local (20:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 23:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,14 @@ Say "veto readable hovers", "veto found it", "veto fair fights" or "veto warm pl
 
 ## Queue
 
-**4 jobs ready** (healthy), **2 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens at ~02:41 Tuesday (readable hovers). That pause is by design, not a stall.
+**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens at ~02:41 Tuesday (readable hovers). That pause is by design, not a stall.
 
-- **New since last hour, being built:** [naming "Dominion" in the glossary and fixing the two cards and one mandate that already use the word differently](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere), the first piece of tonight's power-progression ruling. A builder picked it up at 22:30. The other four Dominion pieces wait for design docs (the design lane writes them) or for this one.
-- **Correction to last hour:** [a set-down encounter now waits for you](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should) is *not* about to land. Its checks on [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) were cancelled rather than run, so it will not merge on its own. See Health.
+- **Landed since last hour:** [a set-down encounter now waits for you](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should) merged via [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) at 23:30 and is live.
+- **Being built:** [naming "Dominion" in the glossary](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere), the first piece of tonight's power-progression ruling. Its pull request [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) is open but now clashes with newer main (see Health). The other four Dominion pieces wait for design docs (the design lane writes them) or for this one.
 
 ## Health
 
-- **Two pull requests are stuck with cancelled checks**: [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) (set-down encounter waits for you) and [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) (the written record of your Dominion ruling). Their required checks were cancelled, not failed, so nothing is wrong with the work. They need their checks re-run; the builder's unstick duty owes it, not you.
-- **The heavy simulation tests are still red on main**, about 13 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (480 worktrees, 317 local branches on disk). Noted for visibility.
-- Everything else is green. The live site serves the newest game build (`2fe01185`; later commits were notes only), scheduled tasks are on time. Simulation speed is normal (105 ms per tick, 1% under the weekly median of 106).
+- **Two pull requests are stuck**: [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) (Dominion in the glossary) has a merge conflict, 75 min old; [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) (the written record of your Dominion ruling) still has a cancelled docs check, ~2 h. Nothing is wrong with the work; the builder's unstick duty owes both, not you.
+- **The heavy simulation tests are still red on main**, about 14 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
+- **The worktree reaper has 6 worktrees waiting for a decision** (481 worktrees, 317 local branches on disk). Noted for visibility.
+- Everything else is green. The live site serves the newest commit on main (`df6bcd84`), scheduled tasks are on time. Simulation speed is normal (109 ms per tick, 2% over the weekly median of 106).
