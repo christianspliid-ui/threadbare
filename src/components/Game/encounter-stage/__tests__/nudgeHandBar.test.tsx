@@ -31,6 +31,7 @@ import {
   CARDS_PER_ROW,
   HAND_BAR_FADE_PX,
   HAND_BAR_PAD_Y_PX,
+  HAND_BAR_SKIRT_PX,
   NudgePhaseShell,
 } from '../shells/NudgePhaseShell';
 
@@ -164,6 +165,8 @@ describe('hand bar (THR-1732)', () => {
     expect(bar.style.bottom).toBe('0px');
     expect(bar.style.paddingTop).toBe(`${HAND_BAR_FADE_PX}px`);
     expect(bar.style.paddingBottom).toBe(`${HAND_BAR_PAD_Y_PX}px`);
+    // The skirt covers the column's bottom padding the stuck bar rides above.
+    expect(bar.style.boxShadow).toContain(`${HAND_BAR_SKIRT_PX}px`);
   });
 
   /** No `ResizeObserver` in jsdom ⇒ the documented fail-soft: "false". */

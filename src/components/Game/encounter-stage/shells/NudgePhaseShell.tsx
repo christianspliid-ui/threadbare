@@ -88,6 +88,15 @@ export const HAND_BAR_PAD_Y_PX = 12;
  */
 export const HAND_BAR_FADE_PX = 28;
 
+/**
+ * THR-1732 — a void skirt painted below the bar (a solid box-shadow offset
+ * downward). Sticky resolves against the column's padding box, so the stuck bar
+ * rides `VEIL_FOOTER_CLEARANCE_PX` (24) above the column edge, and without the
+ * skirt the card scrolling beneath shows through that strip. Must be at least
+ * the scrolling column's bottom padding; the scroll container clips the rest.
+ */
+export const HAND_BAR_SKIRT_PX = 32;
+
 /** The veil's void colour — the solid base the bar's fade resolves to. */
 const VOID = 'var(--veil-void)';
 
@@ -432,6 +441,7 @@ export function NudgePhaseShell({
           paddingTop: HAND_BAR_FADE_PX,
           paddingBottom: HAND_BAR_PAD_Y_PX,
           background: `linear-gradient(to bottom, transparent 0px, ${VOID} ${HAND_BAR_FADE_PX}px)`,
+          boxShadow: `0 ${HAND_BAR_SKIRT_PX}px 0 0 ${VOID}`,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
