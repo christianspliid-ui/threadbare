@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 11:57 local (09:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 12:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,11 +27,11 @@ Say "veto found it", "veto readable hovers", "veto hand bar" or "veto set-down w
 
 - [Encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) is finished as [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) and queued to merge, but still has a conflict with main (see Health).
 
-Shipped since the last brief: [a mortal with a promise no longer starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) ([#2235](https://github.com/christianspliid-ui/threadbare/pull/2235), merged 11:08 after its conflict was cleared, and live).
+Nothing new shipped in the last hour.
 
 ## Health
 
-- **One finished pull request has a merge conflict: [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~2 hours).** GitHub won't start its checks until the conflict clears. Clearing it is the builder's unstick duty, not yours.
-- **The heavy simulation tests are still red on the latest main** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions)). A builder owes the follow-up.
-- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 314 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (103 ms per tick, 4% below its weekly median of 108). The live site is current with main (`e2f765fc`), scheduled tasks are on time, and the reaper last ran at 11:43.
+- **One finished pull request has a merge conflict: [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~2 hours, untouched since 10:57 your time).** GitHub won't start its checks until the conflict clears. Clearing it is the builder's unstick duty, not yours; the builder ran at 12:51 and should pick it up.
+- **The heavy simulation tests are still red on the latest main (~5 hours)** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions)). A builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (475 worktrees, 314 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (103 ms per tick, 4% below its weekly median of 107). The live site is current with main (`e2f765fc`), scheduled tasks are on time, and the reaper last ran at 12:40.
