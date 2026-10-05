@@ -259,10 +259,19 @@ import { TOLL_GATE_WRIT_TEMPLATE } from './encounters/toll-gate-writ';
 import { BOUNDARY_SURVEY_SEQUELS } from './encounters/boundary-survey-sequels';
 import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
 import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
+import { CHARTER_INQUEST_SEQUELS } from './encounters/charter-inquest-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
 import { HIRED_KNIVES_TEMPLATE } from './encounters/hired-knives';
+import { FORGED_CHARTER_INQUEST_TEMPLATE } from './encounters/forged-charter-inquest';
+import { RESTLESS_OSSUARY_TEMPLATE } from './encounters/restless-ossuary';
+import { DUCAL_NATIVITY_TEMPLATE } from './encounters/ducal-nativity';
+import { JUDICIAL_DUEL_TEMPLATE } from './encounters/judicial-duel';
+import { COINERS_MINT_TEMPLATE } from './encounters/coiners-mint';
+import { CATHEDRAL_VAULT_TEMPLATE } from './encounters/cathedral-vault';
+import { GRANARY_RIOT_TEMPLATE } from './encounters/granary-riot';
+import { CATHEDRAL_LOAN_TEMPLATE } from './encounters/cathedral-loan';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5854,10 +5863,20 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...BOUNDARY_SURVEY_SEQUELS,
   // THR-1680 — the mill lease appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
   ...MILL_LEASE_SEQUELS,
+  // THR-1688 — the forged charter appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...CHARTER_INQUEST_SEQUELS,
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
   HIRED_KNIVES_TEMPLATE,
+  FORGED_CHARTER_INQUEST_TEMPLATE,
+  RESTLESS_OSSUARY_TEMPLATE,
+  DUCAL_NATIVITY_TEMPLATE,
+  JUDICIAL_DUEL_TEMPLATE,
+  COINERS_MINT_TEMPLATE,
+  CATHEDRAL_VAULT_TEMPLATE,
+  GRANARY_RIOT_TEMPLATE,
+  CATHEDRAL_LOAN_TEMPLATE,
 ];
 
 /**
@@ -6016,6 +6035,14 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
   HIRED_KNIVES_TEMPLATE,
+  FORGED_CHARTER_INQUEST_TEMPLATE,
+  RESTLESS_OSSUARY_TEMPLATE,
+  DUCAL_NATIVITY_TEMPLATE,
+  JUDICIAL_DUEL_TEMPLATE,
+  COINERS_MINT_TEMPLATE,
+  CATHEDRAL_VAULT_TEMPLATE,
+  GRANARY_RIOT_TEMPLATE,
+  CATHEDRAL_LOAN_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

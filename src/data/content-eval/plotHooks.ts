@@ -190,7 +190,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['justice', 'protection'],
     reaches: ['heart', 'gold'],
     source: 'Hook #204 — vertical-slice.ts (The Swindled Family)',
-    usedBy: ['encounter.slice.swindled_family'],
+    usedBy: ['encounter.slice.swindled_family', 'encounter.town.judicial_duel'],
   },
   {
     id: 'hook.unsafe_crossing',
@@ -231,7 +231,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'bargain'],
     reaches: ['heart', 'eye'],
     source: 'THR-1479 — the appointment primitive (A Bargain at the Crossroads → The Full Moon Collection / The Stranger Finds Them)',
-    usedBy: [],
+    usedBy: ['encounter.town.forged_charter_inquest'],
   },
   {
     id: 'hook.desperate_escort',
@@ -303,7 +303,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['justice', 'conflict'],
     reaches: ['heart', 'iron'],
     source: 'vault: Archetypes/Adventure & Quest — Civil Unrest',
-    usedBy: [],
+    usedBy: ['encounter.town.granary_riot', 'encounter.town.ducal_nativity'],
   },
   {
     id: 'hook.sacred_crime',
@@ -327,7 +327,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['discovery', 'faith'],
     reaches: ['veil', 'shadow'],
     source: 'vault: Archetypes/Adventure & Quest — The Haunted Relic Recovery',
-    usedBy: [],
+    usedBy: ['encounter.town.restless_ossuary'],
   },
   {
     id: 'hook.mad_artificer',
@@ -351,7 +351,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'discovery'],
     reaches: ['shadow', 'iron'],
     source: 'vault: Archetypes/Adventure & Quest — The Enemy Stronghold Raid',
-    usedBy: ['encounter.town.ledger_by_lamplight'],
+    usedBy: ['encounter.town.ledger_by_lamplight', 'encounter.town.coiners_mint'],
   },
   {
     id: 'hook.compassionate_liberation',
@@ -587,7 +587,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'transformation'],
     reaches: ['star', 'stone'],
     source: 'vault: Archetypes/Ordeal — Pilgrimage/Journey',
-    usedBy: [],
+    usedBy: ['encounter.town.cathedral_vault'],
   },
   {
     id: 'hook.negotiation_under_pressure',
@@ -659,7 +659,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['power', 'bargain'],
     reaches: ['gold', 'eye'],
     source: 'vault: Archetypes/Ordeal — The Political Labyrinth',
-    usedBy: [],
+    usedBy: ['encounter.town.cathedral_loan'],
   },
   {
     id: 'hook.haunt_resolution',

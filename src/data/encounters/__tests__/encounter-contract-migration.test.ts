@@ -106,6 +106,14 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.mill_lease_auction',
   'encounter.town.inheritance_wake',
   'encounter.town.flood_dyke_mending',
+  'encounter.town.forged_charter_inquest',
+  'encounter.town.cathedral_loan',
+  'encounter.town.granary_riot',
+  'encounter.town.judicial_duel',
+  'encounter.town.coiners_mint',
+  'encounter.town.ducal_nativity',
+  'encounter.town.cathedral_vault',
+  'encounter.town.restless_ossuary',
   // THR-1703 — nudge-native, seed-only rival strike.
   'encounter.rival.hired_knives',
 ];
