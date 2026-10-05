@@ -646,16 +646,23 @@ describe('capWithDiversity', () => {
     }
   });
 
-  it('under the walk, the templates registered last on a crowded hex never get a local slot', () => {
-    // The mechanism the hash removes, pinned so a reader can see it.
+  it('under the walk, the templates registered last on a crowded hex rarely get a slot', () => {
+    // The mechanism the hash removes, pinned so a reader can see it. A walk that starts
+    // outside the mortal's block enters it at its head, so the local slots go to the
+    // first-registered templates; only the rare start that lands inside the block's tail
+    // reaches the last ones. Counted over several agents, because one agent's starts
+    // cluster wherever its hash puts them (agent-1 never starts in the tail at all).
     const graph = hexGraph();
-    const offered = new Set<string>();
-    for (let tick = 1; tick <= 200; tick++) {
-      for (const e of capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30 }, 'home')) {
-        offered.add(e.templateId);
+    const quarter = (templateId: string): number => Math.floor(Number(templateId.slice('home-'.length)) / 23);
+    const offers = [0, 0, 0, 0];
+    for (const agent of ['agent-1', 'agent-2', 'agent-x', 'a1']) {
+      for (let tick = 1; tick <= 200; tick++) {
+        for (const e of capWithDiversity(crowdedHome(), agent, graph, tick, { ...FAIR, localSlots: 30 }, 'home')) {
+          if (e.templateId.startsWith('home-')) offers[quarter(e.templateId)]++;
+        }
       }
     }
-    expect(offered.has('home-89')).toBe(false);
+    expect(offers[3] * 4, `offers by registration quarter: ${offers.join(' · ')}`).toBeLessThan(offers[0]);
   });
 
   it('offers every own-hex template at least once across 200 ticks, the last-registered included', () => {
