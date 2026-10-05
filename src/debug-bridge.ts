@@ -143,6 +143,8 @@ if (import.meta.env.DEV) {
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
   let _interruptStateProvider: (() => DebugInterruptState) | null = null;
+  // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
+  let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
   let _refRouterOpen:
     | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
     | null = null;
@@ -1137,6 +1139,7 @@ if (import.meta.env.DEV) {
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
     _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
+    _registerOpeningUiProvider: (fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }) => { _openingUiProvider = fn; },
 
     // ── The ref router (THR-1490) ───────────────────────────────────────────
     /**
@@ -2870,6 +2873,9 @@ if (import.meta.env.DEV) {
           ? ASCENDANT_SPINE[beats.spineCursor].beatId
           : null,
         spineGateBlockedBy: spineGateBlockedBy(state),
+        // THR-1716: the opening beat offered at arrival; the clock has run this session.
+        arrivalBeatOffered: _openingUiProvider?.().arrivalBeatOffered ?? false,
+        clockEverRan: _openingUiProvider?.().clockEverRan ?? false,
       };
     },
 

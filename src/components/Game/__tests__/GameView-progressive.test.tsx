@@ -104,8 +104,10 @@ describe('GameView Progressive Disclosure (AgentInfoCard + AgentProfileModal)', 
 
   it('verifies right sidebar does not show agent profile modal initially', () => {
     render(<GameView {...props} />);
-    // AgentProfileModal should not be in the DOM initially
-    const profileModal = screen.queryByRole('dialog');
-    expect(profileModal).toBeNull();
+    // AgentProfileModal should not be in the DOM initially. Since THR-1716 the
+    // opening beat ("Reach Down") is open at arrival — the only dialog allowed.
+    const dialogs = screen.queryAllByRole('dialog')
+      .filter(d => !(d.getAttribute('aria-label') ?? '').startsWith('Ascendant beat:'));
+    expect(dialogs).toHaveLength(0);
   });
 });

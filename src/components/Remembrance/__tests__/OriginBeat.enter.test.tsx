@@ -23,13 +23,9 @@ const fragment = {
 describe('OriginBeat name field (THR-1604)', () => {
   it('submits on Enter once an origin is chosen', () => {
     const onSelect = vi.fn();
-    const { container } = render(<OriginBeat fragments={[fragment]} onSelect={onSelect} />);
-    // The first click focuses the fragment (its art fills the screen); a click on
-    // that art chooses it.
+    render(<OriginBeat fragments={[fragment]} onSelect={onSelect} />);
+    // One click chooses the fragment (THR-1716).
     fireEvent.click(screen.getByTestId('origin-origin.test'));
-    const art = container.querySelector('div.absolute.inset-0.cursor-pointer');
-    expect(art).not.toBeNull();
-    fireEvent.click(art!);
     const input = screen.getByTestId('mortal-name-input');
     fireEvent.change(input, { target: { value: 'Maren' } });
     fireEvent.keyDown(input, { key: 'Enter' });

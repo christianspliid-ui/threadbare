@@ -200,7 +200,7 @@ import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { bondFirstFromMeeting } from './meetingBond';
 import { useNotifications } from './hooks/useNotifications';
-import { useInterruptAutoPause, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
+import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
@@ -319,6 +319,11 @@ interface GameViewProps {
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
 const OPENING_SPINE_BEAT_ID = ASCENDANT_SPINE[0].beatId;
+/**
+ * THR-1716 — how long the world must sit still with no interrupt open before the
+ * first-run Play prompt shows. Stops it flashing under the arrival beat.
+ */
+export const FIRST_RUN_PROMPT_DELAY_MS = 1500;
 
 function formatJourneyPhaseLabel(
   phase: ThreadEdgeProperties['storyPhase'] | undefined,
@@ -376,7 +381,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
-    runtime,
+    runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
 
   // THR-1711 (6): the interrupt auto-pause is declared far below (it reads the
@@ -389,6 +394,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (interruptHoldRef.current?.toggleIfHeld()) return;
     handleToggleRunning();
   }, [handleToggleRunning]);
+  // THR-1716: a press that will start time tags its source for `clock.first_run`;
+  // a press that pauses clears the tag, so a stale one never names a later start.
+  const tagClockToggle = useCallback((source: 'hotkey' | 'play_control') => {
+    const held = interruptHoldRef.current?.heldRunning ?? null;
+    const willRun = held !== null ? !held : !running;
+    noteClockRunSource(willRun ? source : null);
+  }, [running, noteClockRunSource]);
+  const handleHotkeyToggleRunning = useCallback(() => {
+    tagClockToggle('hotkey');
+    handleToggleRunningRespectingHold();
+  }, [tagClockToggle, handleToggleRunningRespectingHold]);
+  const handlePlayControlToggle = useCallback(() => {
+    tagClockToggle('play_control');
+    handleToggleRunningRespectingHold();
+  }, [tagClockToggle, handleToggleRunningRespectingHold]);
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -516,7 +536,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, []);
 
   // ── Ascendant beat: whether the player has "entered" the pending beat (THR-517) ──
-  const [beatEntered, setBeatEntered] = useState(false);
+  // THR-1716 U1: the opening beat offered at arrival enters itself — no offer
+  // banner frame first. Later beats still start un-entered.
+  const [beatEntered, setBeatEntered] = useState(arrivalBeatOffered);
 
   // ── Doom clock and mandate detail modals ──
   const [doomDetailOpen, setDoomDetailOpen] = useState(false);
@@ -1800,7 +1822,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useTopBarHotkeys({
     running,
     speed,
-    onToggle: handleToggleRunningRespectingHold,
+    onToggle: handleHotkeyToggleRunning,
     onSpeedChange: setSpeed,
     onStep: doTick,
     onMoveClick: handleAvatarMoveClick,
@@ -4266,6 +4288,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-1704: the bond mutates the graph in place and the clock comes back paused,
     // so it must touch the runtime itself or the Threads panel stays "No Threads".
     const agentId = bondFirstFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick, runtime);
+    // THR-1716 U2: "Let them walk." starts time — once, while the clock has never
+    // run. It goes through the held state (the THR-1711 path), so the world runs
+    // when the last interrupt closes. After the first run, resume-to-prior holds.
+    if (releaseClockOnBond(clockEverRan, interruptHoldRef.current)) {
+      noteClockRunSource('bond_release');
+    }
     setMeetingState(null);
 
     // Update familiarity map for the new agent
@@ -4288,7 +4316,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ],
       };
     });
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary, runtime]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary, runtime, clockEverRan, noteClockRunSource]);
 
   const handleMeetingClose = useCallback(() => {
     // The central interrupt auto-pause resumes the sim (if it auto-paused)
@@ -4592,6 +4620,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     interruptHoldRef.current = interruptAutoPause;
   }, [interruptAutoPause]);
 
+  // ── First-run Play prompt (THR-1716 U3) ──
+  // While the clock has never run and nothing holds it, the Play control asks for
+  // it — after `FIRST_RUN_PROMPT_DELAY_MS`, so it never flashes under the arrival beat.
+  const firstRunCandidate = !clockEverRan && !running && interruptAutoPause.heldRunning === null;
+  const [firstRunPromptDue, setFirstRunPromptDue] = useState(false);
+  useEffect(() => {
+    if (!firstRunCandidate) {
+      setFirstRunPromptDue(false);
+      return;
+    }
+    const timer = setTimeout(() => setFirstRunPromptDue(true), FIRST_RUN_PROMPT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [firstRunCandidate]);
+  const firstRunPrompt = firstRunCandidate && firstRunPromptDue;
+
   // ── Moment queue consumer (THR-1299 slice 3) ──
   // Pops the oldest unacknowledged interrupt-tier record into the slot when nothing
   // else is up. Deliberately NOT gated on `interruptsSuppressed`: `suppressBeats`
@@ -4719,7 +4762,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerOpenModalsProvider(getDebugOpenModals);
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
     window.__DEBUG._registerInterruptStateProvider?.(getDebugInterruptState);
-  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState]);
+    window.__DEBUG._registerOpeningUiProvider?.(() => ({ arrivalBeatOffered, clockEverRan }));
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, arrivalBeatOffered, clockEverRan]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -4944,8 +4988,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           ? encounterVeilModel.header.title
           : undefined}
         encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
+        firstRunPrompt={firstRunPrompt}
         speed={speed}
-        handleToggleRunning={handleToggleRunningRespectingHold}
+        handleToggleRunning={handlePlayControlToggle}
         doTick={doTick}
         setSpeed={setSpeed}
         attentionPool={attentionPool}
