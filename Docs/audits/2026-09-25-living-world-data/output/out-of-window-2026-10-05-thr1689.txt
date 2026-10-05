@@ -1,0 +1,315 @@
+# THR-1689 — out-of-window free choices. main @ f7690e39. Medium map, 120 ticks, gameplay-report world (random archetype + balanced cosmology).
+# Built: node Docs/audits/2026-09-25-living-world-data/readers/out-of-window.build.mjs
+
+########## ARM 1 — shipped, traced (whole board + full scored list): node .cache/out-of-window.mjs 42,99,7 120
+
+=== seed 42 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.4610 over 629 free-choice commits; reader recorded 629 (290 in window)
+  idle rate 0.0014 over 694 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 103
+  band novice     n= 222 success 0.586 meanDiff 0.101
+  band journeyman n= 194 success 0.665 meanDiff 0.192
+  band expert     n=  98 success 0.551 meanDiff 0.218
+  band master     n=  73 success 0.740 meanDiff 0.177
+  band unknown    n=  23 success 0.565 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 694; joined to a board: 100.0%
+out-of-window free choices: 339 of 629
+
+=== seed 99 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.4327 over 587 free-choice commits; reader recorded 587 (254 in window)
+  idle rate 0.0000 over 691 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 104
+  band novice     n= 184 success 0.592 meanDiff 0.091
+  band journeyman n= 184 success 0.641 meanDiff 0.214
+  band expert     n= 104 success 0.644 meanDiff 0.228
+  band master     n=  68 success 0.691 meanDiff 0.192
+  band unknown    n=  23 success 0.696 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 691; joined to a board: 100.0%
+out-of-window free choices: 333 of 587
+
+=== seed 7 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.4619 over 656 free-choice commits; reader recorded 656 (303 in window)
+  idle rate 0.0000 over 749 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 128
+  band novice     n= 210 success 0.676 meanDiff 0.098
+  band journeyman n= 204 success 0.637 meanDiff 0.206
+  band expert     n= 131 success 0.664 meanDiff 0.200
+  band master     n=  65 success 0.785 meanDiff 0.175
+  band unknown    n=  27 success 0.815 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 749; joined to a board: 100.0%
+out-of-window free choices: 353 of 656
+
+=== pooled seeds 42,99,7 ===
+free choices 1872, in window 847 (45.2%), out 1025; joined 1025
+
+-- A. by decider band × side of the static window --
+band        free  in-win  below  above  | above: 0.65-0.75  >=0.75 | below: 0.30-0.50  <0.30
+novice       661   50.4%  19.5%  30.1%  |              118      81 |              129      0
+journeyman   626   52.6%  12.6%  34.8%  |              152      66 |               79      0
+expert       362   37.3%  12.4%  50.3%  |               79     103 |               45      0
+master       223   22.4%  10.8%  66.8%  |               46     103 |               24      0
+
+-- B. distance outside the static window (out-of-window only) --
+  (0.00, 0.02]    173  16.9%
+  (0.02, 0.05]    296  28.9%
+  (0.05, 0.10]    176  17.2%
+  (0.10, 0.20]     54  5.3%
+  (0.20, 1.00]    326  31.8%
+  median distance above: 0.080; below: 0.035
+
+-- C. inside the mortal's OWN (shifted) window, though outside the static one the KPI judges --
+  224 of 1025 joined out-of-window choices (21.9%); of those with a setback shift > 0: 174
+  setback shift on out-of-window choices: 0 → 651, 0.05 → 247, 0.10 → 83, 0.15 → 44
+
+-- D. was an in-window option on the board? (out-of-window, joined) --
+band        oow   any-in-win-enc  any-in-win-undertaking  none
+novice       328           64.3%                    0.6%  35.1%
+journeyman   297           76.4%                    8.8%  14.8%
+expert       227           66.5%                    7.0%  26.4%
+master       173           72.3%                    3.5%  24.3%
+
+  when an in-window encounter WAS on the board (714): median rank of the best one 2, median winner÷it score 2.51
+  what the winner beat it on (median ratio, winner ÷ in-window): value/tick 2.00, desire 1.53, window fit 1.00, arrival/appointment 1.00
+  biggest single term in the winner's favour: value/tick 397, desire 292, arrival/appointment 25
+
+-- E. how the out-of-window winner got there --
+  arrival commitment on the winner (a journey's goal, chosen earlier): 45 (4.4%); appointment discount: 0
+  winner zone: {"below":277,"above(≥0.75)":353,"above":395}
+
+-- F. kind of work (encounterType) of out-of-window choices, top 12 --
+  unknown        oow  460 (above 410, below 50, ≥0.75 338) — out-of-window rate within kind 76.4%
+  explore        oow  180 (above 124, below 56, ≥0.75 4) — out-of-window rate within kind 43.4%
+  trade          oow   87 (above 59, below 28, ≥0.75 3) — out-of-window rate within kind 43.7%
+  assist         oow   84 (above 58, below 26, ≥0.75 5) — out-of-window rate within kind 44.9%
+  lead           oow   45 (above 25, below 20, ≥0.75 0) — out-of-window rate within kind 48.4%
+  create         oow   44 (above 20, below 24, ≥0.75 1) — out-of-window rate within kind 33.6%
+  steal          oow   42 (above 16, below 26, ≥0.75 1) — out-of-window rate within kind 51.2%
+  duel           oow   35 (above 14, below 21, ≥0.75 0) — out-of-window rate within kind 59.3%
+  hire           oow   21 (above 7, below 14, ≥0.75 0) — out-of-window rate within kind 60.0%
+  build          oow   17 (above 9, below 8, ≥0.75 1) — out-of-window rate within kind 37.8%
+  acquire        oow   10 (above 6, below 4, ≥0.75 0) — out-of-window rate within kind 41.7%
+  near-sure encounters (forecast ≥ 0.75, where the fit has bottomed out): 353 of 1025 out-of-window (34.4%)
+  undertaking wins by zone (NOT in the share — the ledger stamps encounters only): {"certain":36,"in":56,"above":12,"below":5}
+
+-- G. content band chosen ← decider band (all free choices) --
+decider          novice journeyman     expert     master    unknown
+novice            93.3%       6.7%       0.0%       0.0%       0.0%
+journeyman        62.6%      35.8%       1.6%       0.0%       0.0%
+expert            63.3%      24.6%      12.2%       0.0%       0.0%
+master            69.5%      18.4%      12.1%       0.0%       0.0%
+
+-- H. forecast calibration (resolved free choices): mean forecast vs realised success --
+  novice     0.30-0.50  n= 123 mean F 0.456 success 0.415
+  novice     0.50-0.65  n= 304 mean F 0.572 success 0.586
+  novice     0.65-0.75  n= 112 mean F 0.687 success 0.723
+  novice     >=0.75     n=  77 mean F 0.914 success 0.922
+  journeyman 0.30-0.50  n=  75 mean F 0.459 success 0.507
+  journeyman 0.50-0.65  n= 313 mean F 0.575 success 0.588
+  journeyman 0.65-0.75  n= 137 mean F 0.690 success 0.745
+  journeyman >=0.75     n=  57 mean F 0.933 success 0.930
+  expert     0.30-0.50  n=  44 mean F 0.456 success 0.318
+  expert     0.50-0.65  n= 126 mean F 0.585 success 0.492
+  expert     0.65-0.75  n=  74 mean F 0.691 success 0.595
+  expert     >=0.75     n=  89 mean F 0.950 success 0.989
+  master     0.30-0.50  n=  24 mean F 0.444 success 0.625
+  master     0.50-0.65  n=  46 mean F 0.585 success 0.543
+  master     0.65-0.75  n=  45 mean F 0.684 success 0.622
+  master     >=0.75     n=  91 mean F 0.950 success 0.923
+
+-- I. the out-of-window winner's own window fit (board zone uses the SHIFTED window) --
+  {"fit 0.5-1":406,"fit 1":225,"exempt(quest)":319,"fit 0.1-0.5":41,"fit 0.1 (floor)":34}
+  winner board zone: {"below":252,"in":225,"above":548}
+  near-sure (F>=0.75) out-of-window winners by template, top 15 of 64:
+      26  reputation.eye.the_oracle_consulted  [unknown] quest-exempt 26, mean fit 1.00
+      21  reputation.star.the_star_pilgrim  [unknown] quest-exempt 21, mean fit 1.00
+      18  eye.reckoning.verdict_that_burns  [unknown] quest-exempt 18, mean fit 1.00
+      17  reputation.stone.the_jury_of_the_ruined  [unknown] quest-exempt 17, mean fit 1.00
+      16  star.turning.comet_omen  [unknown] quest-exempt 16, mean fit 1.00
+      16  stone.permanence.mason_lord_wall  [unknown] quest-exempt 16, mean fit 1.00
+      15  reputation.heart.pilgrims_offering  [unknown] quest-exempt 15, mean fit 1.00
+      14  encounter.town.fair_bout  [unknown] quest-exempt 14, mean fit 1.00
+      13  veil.truth.page_beneath_saint  [unknown] quest-exempt 13, mean fit 1.00
+      13  gold.famine.merchant_granaries  [unknown] quest-exempt 13, mean fit 1.00
+      13  reputation.eye.the_blinded_oracle  [unknown] quest-exempt 13, mean fit 1.00
+      12  reputation.veil.the_silent_chamber  [unknown] quest-exempt 12, mean fit 1.00
+      12  reputation.gold.the_merchants_favor  [unknown] quest-exempt 12, mean fit 1.00
+      11  reputation.iron.the_executioners_commission  [unknown] quest-exempt 11, mean fit 1.00
+       9  reputation.veil.the_veiled_consultation  [unknown] quest-exempt 9, mean fit 1.00
+
+-- J. no in-window encounter on the board: absent, or cut by the board's top-5 encounter slice? --
+  311 out-of-window choices had no in-window encounter on the board; scored list seen for 311
+  an in-window encounter WAS in the scorer's full list (cut at the top-5): 214 (68.8%); best one's scorer rank median 7, p25 5
+  genuinely absent from the scored list: 97; scored-list size median 38
+    novice     none-on-board  117  cut   70  absent   47
+    journeyman none-on-board   70  cut   56  absent   14
+    expert     none-on-board   76  cut   57  absent   19
+    master     none-on-board   48  cut   31  absent   17
+  (Section I's "exempt(quest)" reads the trace flag, set for any quest above the window whatever the arm — in the no-quest probe those quests WERE discounted.)
+
+########## ARM 2 — shipped, UNTRACED (behaviour-neutrality check: ledger must equal arm 1): node .cache/out-of-window.mjs 42,99,7 120 --no-trace
+
+=== seed 42 — 120 ticks, UNTRACED arm ===
+ledger: inWindowShare 0.4610 over 629 free-choice commits; reader recorded 629 (290 in window)
+  idle rate 0.0014 over 694 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 103; stamps 629 of which compelled (not free choice) 0
+  band novice     n= 222 success 0.586 meanDiff 0.101
+  band journeyman n= 194 success 0.665 meanDiff 0.192
+  band expert     n=  98 success 0.551 meanDiff 0.218
+  band master     n=  73 success 0.740 meanDiff 0.177
+  band unknown    n=  23 success 0.565 meanDiff 0.000
+
+=== seed 99 — 120 ticks, UNTRACED arm ===
+ledger: inWindowShare 0.4327 over 587 free-choice commits; reader recorded 587 (254 in window)
+  idle rate 0.0000 over 691 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 104; stamps 587 of which compelled (not free choice) 0
+  band novice     n= 184 success 0.592 meanDiff 0.091
+  band journeyman n= 184 success 0.641 meanDiff 0.214
+  band expert     n= 104 success 0.644 meanDiff 0.228
+  band master     n=  68 success 0.691 meanDiff 0.192
+  band unknown    n=  23 success 0.696 meanDiff 0.000
+
+=== seed 7 — 120 ticks, UNTRACED arm ===
+ledger: inWindowShare 0.4619 over 656 free-choice commits; reader recorded 656 (303 in window)
+  idle rate 0.0000 over 749 board decisions; retry-after-failure 0.000; failure-streak p95 4; quest commits 128; stamps 656 of which compelled (not free choice) 0
+  band novice     n= 210 success 0.676 meanDiff 0.098
+  band journeyman n= 204 success 0.637 meanDiff 0.206
+  band expert     n= 131 success 0.664 meanDiff 0.200
+  band master     n=  65 success 0.785 meanDiff 0.175
+  band unknown    n=  27 success 0.815 meanDiff 0.000
+
+########## ARM 3 — PROBE, never shipped: branching quests lose the window's too-easy exemption: node .cache/out-of-window-noquest.mjs 42,99,7 120
+
+=== seed 42 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.5237 over 634 free-choice commits; reader recorded 634 (332 in window)
+  idle rate 0.0000 over 721 board decisions; retry-after-failure 0.000; failure-streak p95 5; quest commits 8
+  band novice     n= 244 success 0.561 meanDiff 0.117
+  band journeyman n= 215 success 0.516 meanDiff 0.209
+  band expert     n=  85 success 0.541 meanDiff 0.298
+  band master     n=  59 success 0.576 meanDiff 0.213
+  band unknown    n=  16 success 0.688 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 721; joined to a board: 100.0%
+out-of-window free choices: 302 of 634
+
+=== seed 99 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.4985 over 664 free-choice commits; reader recorded 664 (331 in window)
+  idle rate 0.0000 over 770 board decisions; retry-after-failure 0.000; failure-streak p95 5; quest commits 20
+  band novice     n= 206 success 0.529 meanDiff 0.108
+  band journeyman n= 216 success 0.593 meanDiff 0.259
+  band expert     n= 119 success 0.613 meanDiff 0.279
+  band master     n=  54 success 0.759 meanDiff 0.182
+  band unknown    n=  26 success 0.577 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 770; joined to a board: 100.0%
+out-of-window free choices: 333 of 664
+
+=== seed 7 — 120 ticks, traced (whole board) ===
+ledger: inWindowShare 0.4972 over 720 free-choice commits; reader recorded 720 (358 in window)
+  idle rate 0.0000 over 832 board decisions; retry-after-failure 0.000; failure-streak p95 5; quest commits 26
+  band novice     n= 255 success 0.596 meanDiff 0.127
+  band journeyman n= 217 success 0.594 meanDiff 0.217
+  band expert     n= 131 success 0.618 meanDiff 0.276
+  band master     n=  57 success 0.596 meanDiff 0.276
+  band unknown    n=  18 success 0.500 meanDiff 0.000
+traces dropped by the ring: 0; boards seen: 832; joined to a board: 100.0%
+out-of-window free choices: 362 of 720
+
+=== pooled seeds 42,99,7 ===
+free choices 2018, in window 1021 (50.6%), out 997; joined 997
+
+-- A. by decider band × side of the static window --
+band        free  in-win  below  above  | above: 0.65-0.75  >=0.75 | below: 0.30-0.50  <0.30
+novice       761   49.4%  29.4%  21.2%  |              139      22 |              224      0
+journeyman   712   57.0%  13.9%  29.1%  |              172      35 |               99      0
+expert       354   49.7%  16.7%  33.6%  |               92      27 |               59      0
+master       191   33.0%  12.6%  54.5%  |               59      45 |               24      0
+
+-- B. distance outside the static window (out-of-window only) --
+  (0.00, 0.02]    227  22.8%
+  (0.02, 0.05]    322  32.3%
+  (0.05, 0.10]    257  25.8%
+  (0.10, 0.20]     93  9.3%
+  (0.20, 1.00]     98  9.8%
+  median distance above: 0.048; below: 0.039
+
+-- C. inside the mortal's OWN (shifted) window, though outside the static one the KPI judges --
+  298 of 997 joined out-of-window choices (29.9%); of those with a setback shift > 0: 232
+  setback shift on out-of-window choices: 0 → 566, 0.05 → 238, 0.10 → 117, 0.15 → 76
+
+-- D. was an in-window option on the board? (out-of-window, joined) --
+band        oow   any-in-win-enc  any-in-win-undertaking  none
+novice       385           73.5%                    1.8%  24.7%
+journeyman   306           83.0%                    4.9%  12.1%
+expert       178           79.2%                    3.4%  17.4%
+master       128           67.2%                    7.0%  25.8%
+
+  when an in-window encounter WAS on the board (764): median rank of the best one 2, median winner÷it score 2.69
+  what the winner beat it on (median ratio, winner ÷ in-window): value/tick 2.44, desire 1.63, window fit 0.85, arrival/appointment 1.00
+  biggest single term in the winner's favour: value/tick 453, desire 299, arrival/appointment 12
+
+-- E. how the out-of-window winner got there --
+  arrival commitment on the winner (a journey's goal, chosen earlier): 27 (2.7%); appointment discount: 0
+  winner zone: {"below":406,"above":462,"above(≥0.75)":129}
+
+-- F. kind of work (encounterType) of out-of-window choices, top 12 --
+  explore        oow  246 (above 154, below 92, ≥0.75 24) — out-of-window rate within kind 50.1%
+  unknown        oow  217 (above 147, below 70, ≥0.75 65) — out-of-window rate within kind 51.8%
+  assist         oow  111 (above 77, below 34, ≥0.75 15) — out-of-window rate within kind 50.0%
+  trade          oow  102 (above 60, below 42, ≥0.75 9) — out-of-window rate within kind 44.2%
+  create         oow   75 (above 36, below 39, ≥0.75 7) — out-of-window rate within kind 45.2%
+  steal          oow   67 (above 22, below 45, ≥0.75 0) — out-of-window rate within kind 54.0%
+  lead           oow   65 (above 36, below 29, ≥0.75 2) — out-of-window rate within kind 50.4%
+  build          oow   38 (above 26, below 12, ≥0.75 2) — out-of-window rate within kind 44.7%
+  duel           oow   36 (above 15, below 21, ≥0.75 3) — out-of-window rate within kind 52.2%
+  hire           oow   23 (above 10, below 13, ≥0.75 2) — out-of-window rate within kind 50.0%
+  acquire        oow   17 (above 8, below 9, ≥0.75 0) — out-of-window rate within kind 47.2%
+  near-sure encounters (forecast ≥ 0.75, where the fit has bottomed out): 129 of 997 out-of-window (12.9%)
+  undertaking wins by zone (NOT in the share — the ledger stamps encounters only): {"certain":14,"in":88,"above":39,"below":19}
+
+-- G. content band chosen ← decider band (all free choices) --
+decider          novice journeyman     expert     master    unknown
+novice            89.1%      10.9%       0.0%       0.0%       0.0%
+journeyman        57.2%      41.2%       1.7%       0.0%       0.0%
+expert            53.1%      25.4%      21.5%       0.0%       0.0%
+master            63.4%      25.1%      11.5%       0.0%       0.0%
+
+-- H. forecast calibration (resolved free choices): mean forecast vs realised success --
+  novice     0.30-0.50  n= 210 mean F 0.449 success 0.424
+  novice     0.50-0.65  n= 343 mean F 0.574 success 0.601
+  novice     0.65-0.75  n= 138 mean F 0.690 success 0.659
+  novice     >=0.75     n=  14 mean F 0.822 success 0.857
+  journeyman 0.30-0.50  n=  91 mean F 0.454 success 0.374
+  journeyman 0.50-0.65  n= 381 mean F 0.579 success 0.546
+  journeyman 0.65-0.75  n= 158 mean F 0.691 success 0.703
+  journeyman >=0.75     n=  18 mean F 0.874 success 0.833
+  expert     0.30-0.50  n=  58 mean F 0.449 success 0.431
+  expert     0.50-0.65  n= 171 mean F 0.585 success 0.561
+  expert     0.65-0.75  n=  86 mean F 0.693 success 0.709
+  expert     >=0.75     n=  20 mean F 0.904 success 0.900
+  master     0.30-0.50  n=  23 mean F 0.448 success 0.391
+  master     0.50-0.65  n=  63 mean F 0.584 success 0.524
+  master     0.65-0.75  n=  57 mean F 0.686 success 0.754
+  master     >=0.75     n=  27 mean F 0.909 success 0.889
+
+-- I. the out-of-window winner's own window fit (board zone uses the SHIFTED window) --
+  {"fit 0.5-1":502,"fit 1":300,"fit 0.1-0.5":85,"fit 0.1 (floor)":97,"exempt(quest)":13}
+  winner board zone: {"below":372,"in":298,"above":327}
+  near-sure (F>=0.75) out-of-window winners by template, top 15 of 74:
+       7  social.investigate_reputation  [unknown] quest-exempt 0, mean fit 0.10
+       6  encounter.decipher_old_markings  [explore] quest-exempt 0, mean fit 0.10
+       6  encounter.local_gossip  [explore] quest-exempt 0, mean fit 0.70
+       4  encounter.rest_and_recover  [assist] quest-exempt 0, mean fit 1.00
+       4  encounter.commune_with_stars  [create] quest-exempt 0, mean fit 0.10
+       3  ts.join  [unknown] quest-exempt 0, mean fit 0.10
+       3  encounter.offer_small_prayer  [assist] quest-exempt 0, mean fit 0.70
+       3  cg.join  [unknown] quest-exempt 0, mean fit 0.10
+       3  encounter.forage_provisions  [explore] quest-exempt 0, mean fit 0.70
+       3  encounter.barter_with_travelers  [trade] quest-exempt 0, mean fit 0.10
+       3  uk.join  [unknown] quest-exempt 0, mean fit 0.10
+       3  encounter.town.cunning_fair  [unknown] quest-exempt 0, mean fit 0.40
+       3  ac.social.library_browse  [unknown] quest-exempt 0, mean fit 0.10
+       3  encounter.scout_the_perimeter  [explore] quest-exempt 0, mean fit 0.10
+       3  ac.social.lecture_hall  [unknown] quest-exempt 0, mean fit 0.10
+
+-- J. no in-window encounter on the board: absent, or cut by the board's top-5 encounter slice? --
+  233 out-of-window choices had no in-window encounter on the board; scored list seen for 233
+  an in-window encounter WAS in the scorer's full list (cut at the top-5): 101 (43.3%); best one's scorer rank median 8, p25 5
+  genuinely absent from the scored list: 132; scored-list size median 37
+    novice     none-on-board  102  cut   47  absent   55
+    journeyman none-on-board   52  cut   31  absent   21
+    expert     none-on-board   37  cut    9  absent   28
+    master     none-on-board   42  cut   14  absent   28
+  (Section I's "exempt(quest)" reads the trace flag, set for any quest above the window whatever the arm — in the no-quest probe those quests WERE discounted.)

@@ -33,12 +33,35 @@ export interface InterruptAutoPauseHandle {
    */
   pauseIfHeld: () => boolean;
   /**
+   * A run requested while an interrupt holds the clock (THR-1716) — the mirror
+   * of `pauseIfHeld`. Sets the saved state to running, so the clock runs when
+   * the last interrupt closes. Its one caller is the bond's "Let them walk." on
+   * a world whose clock has never run. Returns `true` when handled; `false`
+   * (no interrupt open) means the caller starts `running` directly.
+   */
+  runIfHeld: () => boolean;
+  /**
    * The state the clock returns to when the open interrupt(s) close, as React
    * state so the time controls can show it (THR-1711 review). `null` while no
    * interrupt holds the clock. Without it the control is drawn from the forced
    * `running=false` and shows Play while a press would actually pause.
    */
   heldRunning: boolean | null;
+}
+
+/**
+ * The bond's "Let them walk." (THR-1716 U2): on a world whose clock has never
+ * run, set the held state to running so time starts when the meeting (and any
+ * interrupt stacked on it) closes. Once the clock has run, it does nothing and
+ * resume-to-prior returns the clock to how the player left it. Returns `true`
+ * when it released the clock.
+ */
+export function releaseClockOnBond(
+  clockEverRan: boolean,
+  hold: Pick<InterruptAutoPauseHandle, 'runIfHeld'> | null | undefined,
+): boolean {
+  if (clockEverRan) return false;
+  return hold?.runIfHeld() ?? false;
 }
 
 /**
@@ -103,6 +126,12 @@ export function useInterruptAutoPause({
       if (priorRunning.current === null) return false;
       priorRunning.current = false;
       setHeldRunning(false);
+      return true;
+    },
+    runIfHeld: () => {
+      if (priorRunning.current === null) return false;
+      priorRunning.current = true;
+      setHeldRunning(true);
       return true;
     },
   }), []);

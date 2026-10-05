@@ -1,6 +1,12 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { RemembranceFragment } from '../../types/remembrance';
 import { FragmentCard } from './FragmentCard';
+import {
+  useRemembranceChoice,
+  handleChoiceRowKeyDown,
+  ChooseAgainButton,
+  ORIGIN_NAMING_REVEAL_MS,
+} from './remembranceChoice';
 
 interface OriginBeatProps {
   fragments: RemembranceFragment[];
@@ -8,12 +14,18 @@ interface OriginBeatProps {
 }
 
 export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
-  const [focusedId, setFocusedId] = useState<string | null>(null);
-  const [selectedFragment, setSelectedFragment] = useState<RemembranceFragment | null>(null);
   const [mortalName, setMortalName] = useState('');
-  const [showNaming, setShowNaming] = useState(false);
   const [textVisible, setTextVisible] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
+  // THR-1716 U4: one click chooses; the naming step appears after
+  // ORIGIN_NAMING_REVEAL_MS. Until Continue, "Choose again" (or Escape) returns
+  // to the row and a different origin can be chosen; a typed name is kept.
+  const { chosen: selectedFragment, holdEnded: showNaming, choose, chooseAgain } =
+    useRemembranceChoice<RemembranceFragment>({
+      holdMs: ORIGIN_NAMING_REVEAL_MS,
+      onHoldEnd: () => {},
+      lockOnHoldEnd: false,
+    });
 
   useEffect(() => {
     const t1 = setTimeout(() => setTextVisible(true), 200);
@@ -21,68 +33,39 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
-  const focusedIndex = useMemo(() => {
-    if (!focusedId) return -1;
-    return fragments.findIndex(f => f.id === focusedId);
-  }, [focusedId, fragments]);
-
-  const focusedFragment = useMemo(() => {
-    if (focusedIndex < 0) return null;
-    return fragments[focusedIndex];
-  }, [focusedIndex, fragments]);
-
-  const activeFragment = selectedFragment ?? focusedFragment;
-
-  const handleFragmentClick = useCallback((fragment: RemembranceFragment) => {
-    if (selectedFragment) return;
-
-    if (focusedId === fragment.id) {
-      setSelectedFragment(fragment);
-      setTimeout(() => setShowNaming(true), 600);
-    } else {
-      setFocusedId(fragment.id);
-    }
-  }, [focusedId, selectedFragment]);
-
-  const handleNav = useCallback((direction: -1 | 1) => {
-    if (selectedFragment || focusedIndex < 0) return;
-    const next = (focusedIndex + direction + fragments.length) % fragments.length;
-    setFocusedId(fragments[next].id);
-  }, [selectedFragment, focusedIndex, fragments]);
-
   const handleContinue = useCallback(() => {
     if (!selectedFragment) return;
     const name = mortalName.trim() || 'The Unnamed';
     onSelect(selectedFragment, name);
   }, [selectedFragment, mortalName, onSelect]);
 
-  const isBrowsing = focusedId !== null && !selectedFragment;
-
   return (
     <div className="h-screen relative overflow-hidden"
          style={{ background: '#0a0a0f' }}>
 
       {/* Prompt */}
-      <p className="absolute left-0 right-0 text-center transition-all duration-1000"
+      <p className="absolute left-0 right-0 text-center"
          style={{
            top: '5vh',
            fontFamily: 'var(--font-prose)',
            fontStyle: 'italic',
            fontSize: '1.5rem',
-           color: focusedId ? 'rgba(160,140,180,0.5)' : 'rgba(155,196,169,0.58)',
+           color: 'rgba(155,196,169,0.58)',
            textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
            letterSpacing: '0.06em',
-           opacity: textVisible && !showNaming ? 1 : 0,
+           opacity: textVisible && !selectedFragment ? 1 : 0,
            transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
+           transition: 'opacity 1s ease, transform 1s ease',
            zIndex: 20,
            pointerEvents: 'none',
          }}>
-        {focusedId ? 'Click again to choose. Or reach for another.' : 'You remember...'}
+        You remember...
       </p>
 
       {/* ── REST STATE: cards in a row ── */}
-      {!focusedId && !selectedFragment && (
+      {!selectedFragment && (
         <div className="absolute inset-0 flex items-center justify-center gap-8 px-[6vw]"
+             onKeyDown={handleChoiceRowKeyDown}
              style={{
                opacity: cardsVisible ? 1 : 0,
                transform: cardsVisible ? 'translateY(0)' : 'translateY(20px)',
@@ -94,7 +77,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
               prose={fragment.prose}
               imageAssetPath={fragment.imageAssetPath}
               selected={false}
-              onClick={() => handleFragmentClick(fragment)}
+              onClick={() => choose(fragment)}
               accentColor="#8cb89a"
               testId={`origin-${fragment.id}`}
             />
@@ -102,32 +85,32 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
         </div>
       )}
 
-      {/* ── FOCUSED STATE: full-bleed art ── */}
-      {activeFragment && (
+      {/* ── CHOSEN STATE: full-bleed art ── */}
+      {selectedFragment && (
         <>
           <div
-            className="absolute inset-0 transition-all duration-1000 cursor-pointer"
+            className="absolute inset-0"
+            data-testid={`origin-chosen-${selectedFragment.id}`}
             style={{
-              backgroundImage: `url(${activeFragment.imageAssetPath})`,
+              backgroundImage: `url(${selectedFragment.imageAssetPath})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              opacity: selectedFragment ? 0.5 : 0.8,
+              opacity: showNaming ? 0.5 : 0.8,
+              transition: 'opacity 1s ease',
               maskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
               WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
-            }}
-            onClick={() => {
-              if (focusedFragment && !selectedFragment) handleFragmentClick(focusedFragment);
             }}
           />
 
           {/* Bottom reading zone */}
           <div
-            className="absolute bottom-0 left-0 right-0 flex flex-col items-center transition-all duration-700"
+            className="absolute bottom-0 left-0 right-0 flex flex-col items-center"
             style={{
               padding: '0 8vw 5vh',
               background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.8) 30%, rgba(10,10,15,0.4) 60%, transparent 100%)',
               zIndex: 10,
               opacity: showNaming ? 0 : 1,
+              transition: 'opacity 0.7s ease',
               pointerEvents: showNaming ? 'none' : 'auto',
             }}
           >
@@ -142,49 +125,22 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
               textAlign: 'center',
               marginBottom: '16px',
             }}>
-              {activeFragment.prose}
+              {selectedFragment.prose}
             </p>
-            {!selectedFragment && (
-              <p style={{
-                fontFamily: 'var(--font-prose)',
-                fontStyle: 'italic',
-                fontSize: '1.1rem',
-                color: 'rgba(160,140,130,0.38)',
-                textShadow: '0 1px 6px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3)',
-                letterSpacing: '0.06em',
-              }}>
-                Click the image to choose
-              </p>
-            )}
           </div>
-        </>
-      )}
-
-      {/* Navigation arrows */}
-      {isBrowsing && (
-        <>
-          <button type="button" onClick={() => handleNav(-1)} className="absolute cursor-pointer"
-            style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
-            aria-label="Previous fragment">&#x2039;</button>
-          <button type="button" onClick={() => handleNav(1)} className="absolute cursor-pointer"
-            style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
-            aria-label="Next fragment">&#x203a;</button>
         </>
       )}
 
       {/* Mortal naming — over the dimmed art */}
       <div
-        className="absolute bottom-0 left-0 right-0 flex flex-col items-center text-center transition-all duration-700"
+        className="absolute bottom-0 left-0 right-0 flex flex-col items-center text-center"
         style={{
           padding: '0 8vw 6vh',
           background: 'linear-gradient(to top, rgba(10,10,15,0.97) 0%, rgba(10,10,15,0.85) 40%, rgba(10,10,15,0.5) 70%, transparent 100%)',
           zIndex: 15,
           opacity: showNaming ? 1 : 0,
           transform: showNaming ? 'translateY(0)' : 'translateY(16px)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
           pointerEvents: showNaming ? 'auto' : 'none',
         }}
       >
@@ -228,8 +184,9 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
           onClick={handleContinue}
           disabled={!selectedFragment}
           data-testid="origin-continue"
-          className="transition-all duration-300 cursor-pointer"
+          className="remembrance-choice cursor-pointer"
           style={{
+            transition: 'color 0.3s ease',
             background: 'transparent',
             border: 'none',
             padding: '8px 0',
@@ -243,6 +200,8 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
         >
           Continue
         </button>
+        {/* THR-1716: a different origin can still be chosen until Continue. */}
+        <ChooseAgainButton onClick={chooseAgain} color="rgba(155,196,169,0.4)" />
       </div>
     </div>
   );

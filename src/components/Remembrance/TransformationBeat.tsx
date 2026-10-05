@@ -1,7 +1,14 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { HungerDefinition, RemembranceFragment } from '../../types/remembrance';
 import { selectHungerProse } from '../../engine/remembrance';
 import { getSphereColor } from '../../data/sphereIcons';
+import {
+  useRemembranceChoice,
+  handleChoiceRowKeyDown,
+  ChooseAgainButton,
+  CHOICE_ATTR,
+  TRANSFORMATION_COURT_REVEAL_MS,
+} from './remembranceChoice';
 
 interface TransformationBeatProps {
   hungers: HungerDefinition[];
@@ -13,8 +20,6 @@ type TransformationStep = 'hunger' | 'court' | 'sphere-reveal';
 
 export function TransformationBeat({ hungers, driveFragment, onSelect }: TransformationBeatProps) {
   const [step, setStep] = useState<TransformationStep>('hunger');
-  const [focusedHungerId, setFocusedHungerId] = useState<string | null>(null);
-  const [selectedHunger, setSelectedHunger] = useState<HungerDefinition | null>(null);
   const [selectedCourt, setSelectedCourt] = useState<string | null>(null);
   const [revealing, setRevealing] = useState(false);
   const [hoveredHunger, setHoveredHunger] = useState<string | null>(null);
@@ -29,34 +34,33 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [step]);
 
-  const focusedHungerIndex = useMemo(() => {
-    if (!focusedHungerId) return -1;
-    return hungers.findIndex(h => h.id === focusedHungerId);
-  }, [focusedHungerId, hungers]);
-
-  const focusedHunger = useMemo(() => {
-    if (focusedHungerIndex < 0) return null;
-    return hungers[focusedHungerIndex];
-  }, [focusedHungerIndex, hungers]);
+  // THR-1716 U4: one click chooses a hunger; the court step appears after
+  // TRANSFORMATION_COURT_REVEAL_MS. Until the court's Continue, "Choose again"
+  // (or Escape) returns to the hunger row.
+  const {
+    chosen: selectedHunger,
+    choose: chooseHunger,
+    chooseAgain: chooseHungerAgain,
+  } = useRemembranceChoice<HungerDefinition>({
+    holdMs: TRANSFORMATION_COURT_REVEAL_MS,
+    onHoldEnd: () => setStep('court'),
+    lockOnHoldEnd: false,
+    undoable: step !== 'sphere-reveal',
+  });
 
   const handleHungerClick = useCallback((hunger: HungerDefinition) => {
-    if (selectedHunger) return;
+    const def = hunger.courtOptions.find(c => c.isDefault) ?? hunger.courtOptions[0];
+    setSelectedCourt(def?.courtType ?? null);
+    chooseHunger(hunger);
+  }, [chooseHunger]);
 
-    if (focusedHungerId === hunger.id) {
-      // Second click = confirm
-      setSelectedHunger(hunger);
-      setSelectedCourt(hunger.courtOptions.find(c => c.isDefault)!.courtType);
-      setTimeout(() => setStep('court'), 700);
-    } else {
-      setFocusedHungerId(hunger.id);
-    }
-  }, [focusedHungerId, selectedHunger]);
-
-  const handleHungerNav = useCallback((direction: -1 | 1) => {
-    if (selectedHunger || focusedHungerIndex < 0) return;
-    const next = (focusedHungerIndex + direction + hungers.length) % hungers.length;
-    setFocusedHungerId(hungers[next].id);
-  }, [selectedHunger, focusedHungerIndex, hungers]);
+  // An undo (the button or Escape, which clears the choice inside the hook)
+  // puts the screen back on the hunger row.
+  useEffect(() => {
+    if (selectedHunger !== null || step === 'sphere-reveal') return;
+    if (step !== 'hunger') setStep('hunger');
+    setSelectedCourt(null);
+  }, [selectedHunger, step]);
 
   const handleCourtConfirm = useCallback(() => {
     setStep('sphere-reveal');
@@ -72,7 +76,6 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
     ? getSphereColor(selectedHunger.sphereAlignment.primary)
     : '#c9b8f0';
 
-  const isBrowsingHunger = step === 'hunger' && focusedHungerId !== null && !selectedHunger;
 
   const courtOptions = selectedHunger?.courtOptions ?? [];
   const selectedCourtIndex = courtOptions.findIndex(c => c.courtType === selectedCourt);
@@ -102,18 +105,16 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                fontFamily: 'var(--font-prose)',
                fontStyle: 'italic',
                fontSize: '1.5rem',
-               color: focusedHungerId ? 'rgba(160,140,180,0.35)' : 'rgba(196,180,155,0.45)',
+               color: 'rgba(196,180,155,0.45)',
                letterSpacing: '0.06em',
-               opacity: textVisible ? 1 : 0,
+               opacity: textVisible && !selectedHunger ? 1 : 0,
                transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
                zIndex: 20,
                pointerEvents: 'none',
              }}>
-            {focusedHungerId
-              ? 'Click again to choose. Or reach for another.'
-              : 'And then the power found you. Or you found it.'}
+            And then the power found you. Or you found it.
           </p>
-          {!focusedHungerId && (
+          {!selectedHunger && (
             <p className="absolute left-0 right-0 text-center transition-all duration-1000"
                style={{
                  top: 'calc(5vh + 2.2rem)',
@@ -131,8 +132,9 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
           )}
 
           {/* Browse mode — all cards in a row */}
-          {!focusedHungerId && (
+          {!selectedHunger && (
             <div className="absolute inset-0 flex items-center justify-center gap-8 px-[6vw]"
+                 onKeyDown={handleChoiceRowKeyDown}
                  style={{
                    opacity: contentVisible ? 1 : 0,
                    transform: contentVisible ? 'translateY(0)' : 'translateY(20px)',
@@ -148,14 +150,18 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                     onClick={() => handleHungerClick(hunger)}
                     onMouseEnter={() => setHoveredHunger(hunger.id)}
                     onMouseLeave={() => setHoveredHunger(null)}
+                    onFocus={() => setHoveredHunger(hunger.id)}
+                    onBlur={() => setHoveredHunger(null)}
                     data-testid={`hunger-${hunger.id}`}
-                    className="flex-1 text-left cursor-pointer relative transition-all duration-500"
+                    {...{ [CHOICE_ATTR]: '' }}
+                    className="remembrance-choice flex-1 text-left cursor-pointer relative"
                     style={{
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
                       opacity: isHovered ? 1 : 0.5,
                       filter: isHovered ? 'brightness(1.1)' : 'brightness(0.7)',
+                      transition: 'opacity 0.5s ease, filter 0.5s ease',
                     }}
                   >
                     <div
@@ -187,21 +193,21 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
             </div>
           )}
 
-          {/* Focused mode — full-bleed art */}
-          {focusedHunger && !selectedHunger && (
+          {/* Chosen — full-bleed art while the court step comes in */}
+          {selectedHunger && (
             <>
               <div
-                className="absolute inset-0 transition-all duration-1000 cursor-pointer"
+                className="absolute inset-0"
+                data-testid="hunger-focused"
                 style={{
-                  backgroundImage: `url(${focusedHunger.imageAssetPath})`,
+                  backgroundImage: `url(${selectedHunger.imageAssetPath})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   opacity: 0.8,
+                  transition: 'opacity 1s ease',
                   maskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
                   WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at 50% 40%, black 25%, transparent 80%)',
                 }}
-                onClick={() => handleHungerClick(focusedHunger)}
-                data-testid="hunger-focused"
               />
 
               {/* Bottom reading zone */}
@@ -223,34 +229,10 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                   textAlign: 'center',
                   marginBottom: '16px',
                 }}>
-                  {selectHungerProse(focusedHunger, driveFragment)}
+                  {selectHungerProse(selectedHunger, driveFragment)}
                 </p>
-                <p style={{
-                  fontFamily: 'var(--font-prose)',
-                  fontStyle: 'italic',
-                  fontSize: '1.1rem',
-                  color: 'rgba(160,140,130,0.25)',
-                  letterSpacing: '0.06em',
-                }}>
-                  Click the image to choose
-                </p>
+                <ChooseAgainButton onClick={chooseHungerAgain} />
               </div>
-            </>
-          )}
-
-          {/* Navigation arrows for hunger browsing */}
-          {isBrowsingHunger && (
-            <>
-              <button type="button" onClick={() => handleHungerNav(-1)} className="absolute cursor-pointer"
-                style={{ left: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
-                aria-label="Previous hunger">&#x2039;</button>
-              <button type="button" onClick={() => handleHungerNav(1)} className="absolute cursor-pointer"
-                style={{ right: '2vw', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '2rem 1.5rem', zIndex: 20, color: 'rgba(160,140,180,0.3)', fontSize: '9rem', fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif', lineHeight: 1, transition: 'color 0.3s ease' }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.7)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(160,140,180,0.3)'; }}
-                aria-label="Next hunger">&#x203a;</button>
             </>
           )}
         </>
@@ -325,7 +307,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
               type="button"
               onClick={handleCourtConfirm}
               data-testid="court-confirm"
-              className="cursor-pointer transition-all duration-500"
+              className="remembrance-choice cursor-pointer"
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -334,10 +316,13 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                 fontSize: '1.1rem',
                 color: 'rgba(180,164,138,0.5)',
                 letterSpacing: '0.08em',
+                transition: 'color 0.5s ease',
               }}
             >
               Continue
             </button>
+            {/* THR-1716: a different hunger can still be chosen until Continue. */}
+            <ChooseAgainButton onClick={chooseHungerAgain} color="rgba(180,164,138,0.4)" />
           </div>
 
           {/* Navigation arrows */}

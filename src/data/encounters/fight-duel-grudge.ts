@@ -87,8 +87,10 @@ export const FIGHT_DUEL_GRUDGE: UnifiedActionTemplate = {
   steps: STEPS,
   narrativeTemplates: {
     initiation: '{name} sees {target} across the square near {location}, and the old wound opens.',
-    success: '{name} walked away from the fight with {target} the winner.',
-    failure: '{name} walked away from the fight with {target} beaten.',
+    // THR-1741: read from the actor's side, like RESULT_LINES and the stakes —
+    // success is {name} winning. These two lines were swapped until then.
+    success: '{name} walked away from the fight the winner, and {target} did not.',
+    failure: '{name} walked away from the fight beaten, and {target} saw it done.',
   },
   aftermathConfig: {
     branchOnStep: fightResultIndex(STEPS),

@@ -10988,7 +10988,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'The bone has to go back before the swelling closes over it. {actor} has two people to hold him, a strip of boiled linen, and the length of time he can stand it.',
         successAtCostAfterimage: 'The arm went back. He will not use the hand the same way again.',
         criticalSuccessAfterimage: 'One pull, clean, and he was asleep before the splint was tied.',
-        criticalFailureAfterimage: 'The arm came back out of true under the linen, and by morning it had set that way.',
+        // THR-1741: a critical failure here is the death the step-1 crit, the
+        // aftermath `critical_failure` overview and the stakes `lostBadly` all tell.
+        // The crooked arm is the plain `failure` ending (stakes `lost`).
+        criticalFailureAfterimage: 'They set the arm while he went grey. The wound that killed him was under his belt.',
         nudges: [
           {
             // Shared generic pool — the `strength` family.
@@ -11013,7 +11016,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'A large help. He stops fighting the hands holding him.',
             bandProse: {
               failure: 'He felt none of it and the arm still would not seat.',
-              critical_failure: 'He was somewhere else for the setting, and came back to an arm bent where no arm bends.',
+              critical_failure: 'He was somewhere else for the setting, and he did not come back from it.',
             },
           },
           {

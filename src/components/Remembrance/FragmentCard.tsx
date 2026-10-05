@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { CHOICE_ATTR } from './remembranceChoice';
 
 interface FragmentCardProps {
   prose: string;
@@ -28,14 +29,19 @@ export function FragmentCard({
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
       data-testid={testId}
-      className="text-left cursor-pointer flex-1 min-w-0 relative transition-all duration-500"
+      {...{ [CHOICE_ATTR]: '' }}
+      className="remembrance-choice text-left cursor-pointer flex-1 min-w-0 relative"
       style={{
         background: 'transparent',
         border: 'none',
         padding: 0,
         opacity: selected ? 1 : hovered ? 0.9 : 0.55,
         filter: selected ? 'brightness(1.15)' : hovered ? 'brightness(1.05)' : 'brightness(0.75)',
+        // THR-1716: narrowed from `transition-all` (Law 41).
+        transition: 'opacity 0.5s ease, filter 0.5s ease',
       }}
     >
       {/* Image with dissolved edges — no borders, no corners */}
