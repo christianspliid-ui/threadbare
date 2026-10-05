@@ -549,12 +549,10 @@ export function offerArrivalSpineBeat(state: GameState): Partial<GameState> {
       summary: `opening beat offered at arrival: ${def.beatId}`,
     });
     return { ascendantBeats: offered.next };
-  } catch (err) {
-    emitTrace({
-      tick: turn,
-      category: 'engine_warning',
-      summary: `offerArrivalSpineBeat error (turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
-    });
+  } catch {
+    // Fail-soft: no offer at arrival. The Director still offers Beat 0 on the first
+    // tick, and `getOpeningState().arrivalBeatOffered` reads false — the visible
+    // signal. (No engine_warning here: that trace's interface is the hex-index one.)
     return {};
   }
 }

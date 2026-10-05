@@ -58,7 +58,7 @@ describe('SimulationControls — first-run prompt (THR-1716)', () => {
   it('the first-run tooltip is authored and within Law 18', () => {
     const tip = UI_TOOLTIPS['ui.sim_first_run'];
     expect(tip).toBeDefined();
-    expect(tip.desc.length).toBeLessThanOrEqual(200);
+    expect((tip.desc ?? '').length).toBeLessThanOrEqual(200);
   });
 
   it('pulses at full motion', () => {

@@ -183,13 +183,12 @@ export function useSimulation({
     setClockEverRan(true);
     const source = firstRunSourceRef.current ?? 'play_control';
     firstRunSourceRef.current = null;
-    const entry: Omit<ClockFirstRunTrace, 'id' | 'timestamp'> = {
+    emitTrace({
       tick: gameStateRef.current.tick,
       category: 'clock.first_run',
       source,
       summary: `clock ran for the first time (${source})`,
-    };
-    emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }, [running, clockEverRan]);
 
   // ── Auto-play ──

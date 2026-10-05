@@ -45,6 +45,16 @@ const FIRST_RUN_PULSE = 'pulseGlow 2.4s ease-in-out infinite';
 /** THR-1716 — the ring drawn without motion (Law 44). */
 const FIRST_RUN_STATIC_RING = '0 0 0 2px var(--accent-gold, #d4a040)';
 
+/** THR-1716 — the ring wrapper's style; `--sphere-color` tints the `pulseGlow` keyframes. */
+function firstRunRingStyle(reducedMotion: boolean): React.CSSProperties & { '--sphere-color': string } {
+  return {
+    display: 'inline-flex',
+    borderRadius: 'var(--radius-sm, 4px)',
+    '--sphere-color': 'var(--accent-gold, #d4a040)',
+    ...(reducedMotion ? { boxShadow: FIRST_RUN_STATIC_RING } : { animation: FIRST_RUN_PULSE }),
+  };
+}
+
 export const SPEED_STEPS = [1, 2, 3, 5, 10, 20];
 
 const SEASON_ICONS: Record<string, string> = {
@@ -96,14 +106,7 @@ export function SimulationControls({
               <span
                 data-testid="first-run-prompt"
                 data-motion={reducedMotion ? 'static' : 'pulse'}
-                style={{
-                  display: 'inline-flex',
-                  borderRadius: 'var(--radius-sm, 4px)',
-                  '--sphere-color': 'var(--accent-gold, #d4a040)',
-                  ...(reducedMotion
-                    ? { boxShadow: FIRST_RUN_STATIC_RING }
-                    : { animation: FIRST_RUN_PULSE }),
-                } as React.CSSProperties}
+                style={firstRunRingStyle(reducedMotion)}
               >
                 {playButton}
               </span>
