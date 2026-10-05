@@ -30,14 +30,15 @@ import { getLocationNodes, isPlaceNode, resolveToParentLocation } from '../sublo
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { isAgentGone } from '../groups/groupQueries';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
-import { readPlantedAppointment, isAppointmentFavour, readRegimeMemo } from '../appointments';
+import { readPlantedAppointment, isAppointmentFavour, readRegimeMemo, agentAppointmentSeeds, resolveAppointmentContext } from '../appointments';
+import { resolveAxiologicalProfile } from '../encounterScoring';
 import { getAgentDetail } from '../agentDetail';
 import { initMovementState } from '../movementExecution';
 import { SLICE_TEMPLATE_IDS } from '../../data/encounters/vertical-slice';
 import { APPOINTMENT_WINDOW_TICKS, APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS } from '../../data/movement-content';
 import type { GameState } from '../../types/gameState';
 import type { TraceEntry } from '../../types/trace';
-import type { EncounterAftermathReaction, UnifiedAction } from '../../types/unifiedAction';
+import type { EncounterAftermathReaction, PendingEncounterSeed, UnifiedAction } from '../../types/unifiedAction';
 
 const SEED = 42;
 const WARMUP_TICKS = 8;
@@ -73,11 +74,17 @@ function standsAt(s: GameState, actorId: string): string | undefined {
   return isPlaceNode(node) ? (resolveToParentLocation(s.graph, node)?.id ?? undefined) : node.id;
 }
 
-/** A spotlight mortal standing somewhere, and a Location a real journey away from them. */
+/**
+ * A spotlight mortal standing somewhere, holding no promise of its own yet, and a Location
+ * a real journey away from them. The arms test one appointment's regime curve; a mortal
+ * already bound to an organic meeting (THR-1687's fair draw reaches the town encounters
+ * that plant them) spends the window walking to that one, and the plant reads `lost`.
+ */
 function pickMortalAndPlace(s: GameState): { actorId: string; fromId: string; placeId: string; travel: number } {
   for (const m of s.graph.getNodesByType('actor')) {
     if (!isAutonomousDecisionActor(m) || isAgentGone(m)) continue;
     if (m.id === s.ascendantId) continue;
+    if (agentAppointmentSeeds(s, m.id).length > 0) continue;
     const fromId = standsAt(s, m.id);
     if (!fromId) continue;
     for (const loc of getLocationNodes(s.graph)) {
@@ -114,6 +121,20 @@ function plantAppointment(s: GameState, runtime: SimulationRuntime, actorId: str
   return applyEncounterAftermathReaction(s, action, reaction, s.tick, runtime).state;
 }
 
+/**
+ * The appointment seed this test's plant added. Not "the mortal's first appointment
+ * seed": a live world plants its own (THR-1687's fair draw brings town encounters that
+ * do — seed 42's picked mortal already held one at loc_17 when the plant landed), and
+ * binding to that one tracks the wrong promise. So: the seed that was not there before.
+ */
+function plantedSeed(before: GameState, after: GameState, actorId: string): PendingEncounterSeed | undefined {
+  const had = new Set((before.pendingEncounterSeeds ?? []).map(x => x.seedId));
+  return after.pendingEncounterSeeds!.find(x => !had.has(x.seedId) && x.targetAgentId === actorId && readPlantedAppointment(x));
+}
+
+/** A trace about this seed — another mortal's (or this mortal's other) appointment is not the plant's. */
+const ofSeed = (seedId: string) => (t: TraceEntry) => (t as TraceEntry & { seedId?: string }).seedId === seedId;
+
 /** Drive one tick and harvest the appointment traces before the ring evicts them. */
 /** Give a mortal the `death_prevented` ward (THR-1241), so a live world cannot take them mid-arm. */
 function wardAgainstDeath(state: GameState, actorId: string): GameState {
@@ -148,8 +169,9 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       let { state, runtime } = world();
       const { actorId, placeId, travel } = pickMortalAndPlace(state);
       const delay = Math.ceil(travel) + SLACK_BEYOND_TRAVEL;
+      const beforePlant = state;
       state = plantAppointment(state, runtime, actorId, placeId, delay);
-      const seed = state.pendingEncounterSeeds!.find(x => x.targetAgentId === actorId && readPlantedAppointment(x));
+      const seed = plantedSeed(beforePlant, state, actorId);
       expect(seed, 'the plant did not land on the live mortal').toBeDefined();
       const appointment = readPlantedAppointment(seed!)!;
       expect(appointment.locationId).toBe(placeId);
@@ -162,14 +184,15 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       while (state.tick < appointment.dueTick) {
         state = tickAndHarvest(state, runtime, sink);
       }
-      // Scoped to the planted mortal. Since THR-1525 the live world plants appointments
-      // of its own — the Crossroads now reaches the novelty-leaners who accept it — so
-      // another mortal's regime in the sink is the system working, not a leak.
+      // Scoped to the plant's seed. Since THR-1525 the live world plants appointments
+      // of its own — the Crossroads now reaches the novelty-leaners who accept it, and
+      // since THR-1687 the planted mortal may hold one too — so any other seed's regime
+      // in the sink is the system working, not a leak.
       const allRegimes = sink.filter(t => t.category === 'appointment_regime') as Array<TraceEntry & { agentId: string; regime: string; journeyQueued?: boolean }>;
-      const regimes = allRegimes.filter(r => r.agentId === actorId);
+      const regimes = allRegimes.filter(ofSeed(seed!.seedId));
       expect(regimes.length, 'no appointment_regime trace for the planted mortal — the decision phase never resolved the context').toBeGreaterThan(0);
       if (allRegimes.length > regimes.length) {
-        console.info(`[THR-1479] organic appointments alongside the plant: ${new Set(allRegimes.filter(r => r.agentId !== actorId).map(r => r.agentId)).size} other mortal(s)`);
+        console.info(`[THR-1479] organic appointments alongside the plant: ${new Set(allRegimes.filter(r => !ofSeed(seed!.seedId)(r)).map(r => (r as TraceEntry & { seedId: string }).seedId)).size} other seed(s)`);
       }
       // The curve ran: at least one non-far regime before due.
       expect(regimes.some(r => r.regime !== 'far'), `regimes seen: ${regimes.map(r => r.regime).join(',')}`).toBe(true);
@@ -182,7 +205,7 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       for (let i = 0; i <= APPOINTMENT_WINDOW_TICKS && !kept; i++) {
         rebindLocatedAt(state.graph, actorId, placeId);
         state = tickAndHarvest(state, runtime, sink);
-        kept = sink.find(t => t.category === 'appointment_kept');
+        kept = sink.find(t => t.category === 'appointment_kept' && ofSeed(seed!.seedId)(t));
       }
       expect(kept, 'present through the whole window and the kept arm never fired').toBeDefined();
       expect((kept as TraceEntry & { locationId: string }).locationId).toBe(placeId);
@@ -190,7 +213,7 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       expect(state.graph.getNodesByType('event').some(n => n.properties.eventType === 'appointment_kept' && n.properties.agentId === actorId)).toBe(true);
       const fired = state.unifiedActions.find(a => a.actorId === actorId && a.templateId === SLICE_TEMPLATE_IDS.fullMoon);
       expect(fired, 'The Full Moon Collection did not spawn on the mortal').toBeDefined();
-      expect(sink.some(t => t.category === 'appointment_missed')).toBe(false);
+      expect(sink.some(t => t.category === 'appointment_missed' && ofSeed(seed!.seedId)(t))).toBe(false);
     } finally {
       clearTraces();
       disableTracing();
@@ -209,8 +232,9 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       // rather than pin the world to one recorded trajectory.
       state = wardAgainstDeath(state, actorId);
       const delay = Math.ceil(travel) + SLACK_BEYOND_TRAVEL;
+      const beforePlant = state;
       state = plantAppointment(state, runtime, actorId, placeId, delay);
-      const seed = state.pendingEncounterSeeds!.find(x => x.targetAgentId === actorId && readPlantedAppointment(x))!;
+      const seed = plantedSeed(beforePlant, state, actorId)!;
       const appointment = readPlantedAppointment(seed)!;
       const favourId = appointment.favourEdgeId!;
       clearTraces();
@@ -222,10 +246,10 @@ describe('THR-1479 — an appointment on a generated small world', () => {
         if (standsAt(state, actorId) === placeId) rebindLocatedAt(state.graph, actorId, fromId);
         state = tickAndHarvest(state, runtime, sink);
       }
-      const missed = sink.find(t => t.category === 'appointment_missed') as (TraceEntry & { reason: string }) | undefined;
+      const missed = sink.find(t => t.category === 'appointment_missed' && ofSeed(seed.seedId)(t)) as (TraceEntry & { reason: string }) | undefined;
       expect(missed, 'absent through the window and the missed arm never fired').toBeDefined();
       expect(['absent', 'unreachable', 'chose_to_miss']).toContain(missed!.reason);
-      expect(sink.some(t => t.category === 'appointment_kept')).toBe(false);
+      expect(sink.some(t => t.category === 'appointment_kept' && ofSeed(seed.seedId)(t))).toBe(false);
 
       // The promise is broken, and the sheet reads it as such.
       const favour = state.graph.getEdge(favourId)!;
@@ -272,19 +296,32 @@ describe('THR-1479 — an appointment on a generated small world', () => {
  * re-routed to the promise — the THR-1479 behaviour, kept. Marked is left to run.
  */
 describe('THR-1669 — a journey the board chose while departing is not turned back', () => {
+  /**
+   * Both arms test one promise's outvote rule, so the mortal holds only the plant. The
+   * live world can hand them a second, organic appointment mid-drive (THR-1687's fair
+   * draw reaches the town encounters that plant them); the decision phase then steers by
+   * whichever is due first, and the plant's `departing` memo goes stale under it.
+   */
+  function onlyThePlant(state: GameState, actorId: string, seedId: string): GameState {
+    const seeds = state.pendingEncounterSeeds ?? [];
+    const kept = seeds.filter(x => x.seedId === seedId || x.targetAgentId !== actorId || !readPlantedAppointment(x));
+    return kept.length === seeds.length ? state : { ...state, pendingEncounterSeeds: kept };
+  }
+
   function driveToDeparting(): { state: GameState; runtime: SimulationRuntime; actorId: string; placeId: string; seedId: string; dueTick: number } {
     let { state, runtime } = world();
     const { actorId, placeId, travel } = pickMortalAndPlace(state);
     state = wardAgainstDeath(state, actorId);
+    const beforePlant = state;
     state = plantAppointment(state, runtime, actorId, placeId, Math.ceil(travel) + SLACK_BEYOND_TRAVEL);
-    const seed = state.pendingEncounterSeeds!.find(x => x.targetAgentId === actorId && readPlantedAppointment(x))!;
+    const seed = plantedSeed(beforePlant, state, actorId)!;
     const dueTick = readPlantedAppointment(seed)!.dueTick;
     clearTraces();
     const sink: TraceEntry[] = [];
     while (state.tick < dueTick) {
-      state = tickAndHarvest(state, runtime, sink);
+      state = tickAndHarvest(onlyThePlant(state, actorId, seed.seedId), runtime, sink);
       if (sink.some(t => t.category === 'appointment_regime'
-        && (t as TraceEntry & { agentId: string }).agentId === actorId
+        && ofSeed(seed.seedId)(t)
         && (t as TraceEntry & { regime: string }).regime === 'departing')) break;
     }
     return { state, runtime, actorId, placeId, seedId: seed.seedId, dueTick };
@@ -320,6 +357,34 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
   }
 
   /**
+   * The regime the decision phase would resolve now, read fresh rather than off the memo.
+   * The memo is only rewritten where the phase traces, and a moving mortal whose promise
+   * slides to `lost` reaches no trace — so the memo keeps saying `departing` (THR-1687:
+   * once the fair draw shifted the world's pacing the arm landed on exactly that tick).
+   */
+  function departingSlack(s: GameState, actorId: string, seedId: string): number | null {
+    const ctx = resolveAppointmentContext(s, actorId, s.tick, resolveAxiologicalProfile(s.graph, actorId, s.tick, s.worldSoul?.fundament));
+    return ctx && ctx.seed.seedId === seedId && ctx.regime === 'departing' ? ctx.slack.slack : null;
+  }
+  /** One tick spent walking away must leave the promise makeable, or the arm measures `lost`, not the outvote. */
+  const SEND_AWAY_MIN_SLACK = 2;
+
+  /**
+   * The mortal sets its chore down. These arms test the outvote mark on the moving-agent
+   * path, which a busy mortal never reaches; since THR-1687 a departing mortal is often
+   * mid-encounter through its whole window (the departing filter prices onward travel at
+   * a tick a hex, so local work that does not fit still passes — TODO(THR-1736)). Same
+   * kind of surgery as `sendAway`: the arm sets up the moment, the engine judges it.
+   */
+  function setChoreDown(s: GameState, actorId: string): GameState {
+    return {
+      ...s,
+      unifiedActions: s.unifiedActions.filter(a => a.actorId !== actorId || a.resolved),
+      encounterProgress: s.encounterProgress.filter(e => e.actorId !== actorId || e.status !== 'active'),
+    };
+  }
+
+  /**
    * The live world is not a fixture: the mortal may be mid-action, or slide back to
    * `leaning` as its standing shifts. So the arm is attempted on each tick where the
    * mortal is free and departing going in, and only a tick that was *still* departing
@@ -331,16 +396,20 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
     try {
       let { state, runtime, actorId, placeId, seedId, dueTick } = driveToDeparting();
       while (state.tick < dueTick) {
-        if (!isDeparting(state, actorId, seedId) || !isFree(state, actorId)) {
-          state = runTick(state, [], runtime);
+        const slackNow = departingSlack(state, actorId, seedId);
+        if (isDeparting(state, actorId, seedId) && slackNow !== null && slackNow >= SEND_AWAY_MIN_SLACK && !isFree(state, actorId)) {
+          state = setChoreDown(state, actorId);
+        }
+        if (!isDeparting(state, actorId, seedId) || slackNow === null || slackNow < SEND_AWAY_MIN_SLACK || !isFree(state, actorId)) {
+          state = runTick(onlyThePlant(state, actorId, seedId), [], runtime);
           clearTraces();
           continue;
         }
         const before = state.tick;
         const awayId = sendAway(state, actorId, placeId, mark === 'marked' ? seedId : undefined);
-        state = runTick(state, [], runtime);
+        state = runTick(onlyThePlant(state, actorId, seedId), [], runtime);
         clearTraces();
-        if (!isDeparting(state, actorId, seedId)) continue;
+        if (!isDeparting(state, actorId, seedId) || departingSlack(state, actorId, seedId) === null) continue;
         const ms = state.graph.getNode(actorId)?.properties.movementState as { destinationId?: string; targetEncounterId?: string } | undefined;
         // The id carries the tick the phase ran on, which is past `before`.
         const rerouteId = `appointment_reroute_${actorId}_`;
