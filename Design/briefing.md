@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 03:55 local (01:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 04:55 local (02:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,15 @@ Say "veto readable hovers", "veto arrival", "veto hand bar" or "veto set-down wa
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built.** All four ready jobs wait on the veto windows above (the first opens ~08:45 Monday).
+**5 jobs ready** (healthy), **1 being built.** Four of the five wait on the veto windows above (the first opens ~08:45 Monday).
 
-- **The fair draw for experts is live.** [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and the live site serves it.
-- Its follow-up, [THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the) (a mortal about to leave town still starts local encounters that break its promise), was picked up by the builder at 03:29.
-- [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready (last touched 02:31). Most likely a pickup run that backed off for the veto window; the next pickup run after ~08:45 sorts it out.
+- **A mortal about to leave town no longer starts local encounters that break its promise.** [THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the) merged via [#2231](https://github.com/christianspliid-ui/threadbare/pull/2231) at 04:37 and the live site serves it.
+- The builder picked up [the master-level everyday encounters](https://linear.app/threadbare/issue/THR-1688/content-above-novice-s7b-master-everyday-encounters-1-per-reach-once) at 04:51.
+- New on the shelf, not held by any veto: [measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure).
+- [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready (last touched 04:30). Most likely a pickup run that backed off for the veto window; the next pickup run after ~08:45 sorts it out.
 
 ## Health
 
-- **The heavy simulation tests are red on main**, now ~10 h. A builder owes a fix, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (474 worktrees, 315 local branches on disk; reaper ran 03:44). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (96 ms per tick, 18% below its weekly median of 116). The live site is current, automated checks run normally, no pull requests are waiting to merge, and all 11 scheduled tasks are on time.
+- **The heavy simulation tests are green on main again** (the run on the 04:37 merge passed). Nothing owed.
+- **The worktree reaper has 6 worktrees waiting for a decision** (476 worktrees, 316 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (96 ms per tick, 16% below its weekly median of 115). The live site is current, automated checks run normally, no pull requests are waiting to merge, and all 11 scheduled tasks are on time.
