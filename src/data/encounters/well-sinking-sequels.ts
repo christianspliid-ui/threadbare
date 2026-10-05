@@ -33,6 +33,12 @@ const GONE_FOUL_DIFFICULTY = 0.4;
 
 export const WELL_FIRST_WATER: UnifiedActionTemplate = {
   id: WELL_FIRST_WATER_ID,
+  stakes: {
+    goal: 'draw clear water and collect the rest of the fee',
+    risk: 'draw cloudy water and lose part of the fee',
+    won: 'drew clear water and collected the rest of the fee',
+    lost: 'drew cloudy water and lost part of the fee',
+  },
   // Seed-only: the well sinking's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The First Water',
@@ -94,6 +100,12 @@ export const WELL_FIRST_WATER: UnifiedActionTemplate = {
 
 export const WELL_GONE_FOUL: UnifiedActionTemplate = {
   id: WELL_GONE_FOUL_ID,
+  stakes: {
+    goal: 'talk the reeve into paying for the foul well',
+    risk: 'lose the rest of the fee and the town\'s good word',
+    won: 'talked the reeve into paying part of the fee',
+    lost: 'lost the rest of the fee and the town\'s good word',
+  },
   // Seed-only: the well sinking's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Well Gone Foul',

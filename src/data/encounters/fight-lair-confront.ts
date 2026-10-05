@@ -62,6 +62,12 @@ function resultVariant(result: FightResult): AftermathVariant {
 
 export const FIGHT_LAIR_CONFRONT: UnifiedActionTemplate = {
   id: FIGHT_LAIR_CONFRONT_ID,
+  stakes: {
+    goal: 'face the beast in its den',
+    risk: 'be struck down at the mouth of the den',
+    won: 'overcame the beast in its den',
+    lost: 'came out of the den beaten',
+  },
   name: 'The Beast in Its Den',
   description: '{name} goes into the den to face {target}.',
   rarityTier: 3,

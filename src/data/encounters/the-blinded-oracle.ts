@@ -520,6 +520,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_BLINDED_ORACLE_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.eye.the_blinded_oracle',
+  stakes: {
+    goal: 'receive the blind seer\'s long-kept prophecy',
+    risk: 'come away with only half of what she meant',
+    won: 'received the blind seer\'s prophecy whole',
+    lost: 'took in only part of the seer\'s prophecy',
+    arms: {
+      ask_how_she_lost_her_sight: {
+        won: 'heard from the seer how she lost her sight',
+        lost: 'heard only part of how the seer lost her sight',
+      },
+    },
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Blinded Oracle',

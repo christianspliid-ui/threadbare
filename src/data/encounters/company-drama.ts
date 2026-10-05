@@ -362,6 +362,13 @@ const GATE_STEP: ActionStep = {
 
 export const COMPANY_GATE_HELD: UnifiedActionTemplate = {
   id: COMPANY_DRAMA_TEMPLATE_IDS.gateHeld,
+  stakes: {
+    goal: 'hold the arch until the company is through',
+    risk: 'lose more than one of their own at the arch',
+    won: 'held the arch until the company was through',
+    lost: 'lost the arch early and the company scattered',
+    lostBadly: 'lost the arch in the first rush, and more than one',
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Gate Held',
@@ -775,6 +782,13 @@ const DISPUTE_STEP: ActionStep = {
 
 export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
   id: COMPANY_DRAMA_TEMPLATE_IDS.twoRoadsNamed,
+  stakes: {
+    goal: 'settle on one road before the light goes',
+    risk: 'see the company split down two roads',
+    won: 'put the whole company on one road',
+    lost: 'camped short of the fork with no road named',
+    lostBadly: 'saw the company split down two roads',
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'Two Roads Named',
@@ -1236,6 +1250,13 @@ const THIRD_WATCH_STEP: ActionStep = {
 
 export const COMPANY_THIRD_WATCH: UnifiedActionTemplate = {
   id: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+  stakes: {
+    goal: 'say plainly what the pair are to the company',
+    risk: 'let the pair be heard as a secret pact',
+    won: 'said it plainly and rewrote the watch list',
+    lost: 'let the watch list stand unchanged again',
+    lostBadly: 'let the pair be heard as a secret pact',
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Third Watch',
@@ -1725,6 +1746,13 @@ const QUIET_OFFER_STEP: ActionStep = {
 
 export const COMPANY_QUIET_OFFER: UnifiedActionTemplate = {
   id: COMPANY_DRAMA_TEMPLATE_IDS.quietOffer,
+  stakes: {
+    goal: 'turn down the buyer asking about the company',
+    risk: 'sell where the company goes next for coin',
+    won: 'turned down the buyer and kept the company\'s word',
+    lost: 'left the buyer\'s offer standing, unanswered',
+    lostBadly: 'sold where the company goes next for coin',
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Quiet Offer',

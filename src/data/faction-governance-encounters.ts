@@ -24,6 +24,12 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 
 export const FACTION_DISSENT_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.dissent_surfaces',
+  stakes: {
+    goal: 'voice the grievance to the faction',
+    risk: 'swallow the grievance and let it set harder',
+    won: 'voiced the grievance to the faction',
+    lost: 'swallowed the grievance and let it set harder',
+  },
   name: 'Dissent Surfaces',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -83,6 +89,12 @@ export const FACTION_DISSENT_SURFACES_TEMPLATE: UnifiedActionTemplate = {
 
 export const FACTION_LEADER_CROSSROADS_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.leader_at_a_crossroads',
+  stakes: {
+    goal: 'make the call the faction is waiting on',
+    risk: 'pick the course the faction least needs',
+    won: 'made the call the faction was waiting on',
+    lost: 'made the call, but not the one that was pressed on them',
+  },
   name: 'Leader at a Crossroads',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -142,6 +154,12 @@ export const FACTION_LEADER_CROSSROADS_TEMPLATE: UnifiedActionTemplate = {
 
 export const FACTION_DOCTRINE_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.doctrine_surfaces',
+  stakes: {
+    goal: 'win the faction back to the lost doctrine',
+    risk: 'see the doctrine called heresy and buried',
+    won: 'won the faction back to the lost doctrine',
+    lost: 'saw the doctrine buried again',
+  },
   name: 'Doctrine Surfaces',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -201,6 +219,12 @@ export const FACTION_DOCTRINE_SURFACES_TEMPLATE: UnifiedActionTemplate = {
 
 export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.doubter_chooses',
+  stakes: {
+    goal: 'speak their doubt to the faction openly',
+    risk: 'carry the doubt alone as a private grief',
+    won: 'spoke their doubt to the faction openly',
+    lost: 'held their silence and let the doubt harden',
+  },
   name: 'The Doubter Chooses',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -273,6 +297,12 @@ export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
 
 export const FACTION_INHERITANCE_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.inheritance',
+  stakes: {
+    goal: 'take up the fallen leader\'s mantle',
+    risk: 'refuse the seat and leave the faction to another',
+    won: 'took up the fallen leader\'s mantle',
+    lost: 'refused the seat and left the faction to another',
+  },
   name: 'The Mantle Settles',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -422,6 +452,12 @@ export const FACTION_INHERITANCE_TEMPLATE: UnifiedActionTemplate = {
 
 export const FACTION_CALLING_NAMED_TEMPLATE: UnifiedActionTemplate = {
   id: 'faction.encounter.calling_named',
+  stakes: {
+    goal: 'commit the faction to its newly named calling',
+    risk: 'let the calling cool for another season',
+    won: 'committed the faction to its newly named calling',
+    lost: 'named the calling, then let the faction walk it back',
+  },
   name: 'The Calling Is Named',
   rarityTier: 2,
   intrinsicTier: 'story_beat',

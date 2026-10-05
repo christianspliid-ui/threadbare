@@ -211,6 +211,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.ruin_delve',
+    stakes: {
+      goal: 'push through to the heart of the ruin',
+      risk: 'be driven out of the ruin by a collapse',
+      won: 'pushed through to the heart of the ruin',
+      lost: 'was driven out of the ruin by a collapse',
+    },
     tags: ['#guild_errand'],
     name: 'Delve into Ruins',
     locationTypes: ['town', 'city', 'capital'],
@@ -260,6 +266,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.monster_hunt',
+    stakes: {
+      goal: 'hunt down and kill the guild\'s beast',
+      risk: 'fall back before the beast\'s fangs',
+      won: 'hunted down and killed the beast',
+      lost: 'fell back before the beast\'s fangs',
+    },
     tags: ['#guild_errand'],
     name: 'Hunt the Beast',
     locationTypes: ['town', 'city', 'capital'],
@@ -309,6 +321,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.wilderness_survey',
+    stakes: {
+      goal: 'bring the cartographer a full survey',
+      risk: 'hand in notes too thin to use',
+      won: 'brought the cartographer a full survey',
+      lost: 'handed the cartographer notes too thin to use',
+    },
     tags: ['#guild_errand'],
     name: 'Survey the Wilds',
     locationTypes: ['town', 'city', 'capital'],
@@ -358,6 +376,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.escort_caravan',
+    stakes: {
+      goal: 'guard the merchant caravan through the pass',
+      risk: 'lose crates to the bandits at the pass',
+      won: 'drove the bandits off and kept the caravan whole',
+      lost: 'lost several crates to the bandits at the pass',
+    },
     tags: ['#guild_errand'],
     name: 'Guard the Caravan',
     locationTypes: ['town', 'city', 'capital'],
@@ -407,6 +431,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.quest.recover_artifact',
+    stakes: {
+      goal: 'recover the patron\'s lost heirloom',
+      risk: 'retreat from its guardian empty-handed',
+      won: 'felled the guardian and recovered the heirloom',
+      lost: 'retreated from the guardian empty-handed',
+    },
     tags: ['#guild_errand'],
     name: 'Recover Lost Artifact',
     locationTypes: ['town', 'city', 'capital'],
@@ -469,6 +499,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.senior.deep_expedition',
+    stakes: {
+      goal: 'lead the expedition to the bottom of the deep',
+      risk: 'come back with spoiled rations and empty hands',
+      won: 'led the expedition to a great find at the bottom',
+      lost: 'found only empty galleries and spoiled rations',
+    },
     name: 'Lead Deep Expedition',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -527,6 +563,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.senior.bounty_hunt',
+    stakes: {
+      goal: 'run the fugitive to ground',
+      risk: 'let the fugitive slip away again',
+      won: 'ran the fugitive to ground and took the bounty',
+      lost: 'let the fugitive slip away, the bounty unpaid',
+    },
     name: 'Track Dangerous Quarry',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -575,6 +617,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.senior.map_uncharted',
+    stakes: {
+      goal: 'walk and map the whole uncharted circuit',
+      risk: 'hand in a survey full of gaps',
+      won: 'walked and mapped the whole uncharted circuit',
+      lost: 'handed in a survey full of gaps for partial credit',
+    },
     name: 'Map Uncharted Territory',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -625,6 +673,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.elite.dragon_lair',
+    stakes: {
+      goal: 'breach the dragon\'s lair and make the beast yield',
+      risk: 'flee the dragon\'s fury with only their life',
+      won: 'breached the lair and made the dragon yield',
+      lost: 'fled the dragon\'s fury with only their life',
+    },
     name: 'Breach the Dragon\'s Lair',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -683,6 +737,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
 
   {
     id: 'ag.elite.lost_city',
+    stakes: {
+      goal: 'recover the lost city\'s treasures',
+      risk: 'be driven from the inner sanctum by its guardians',
+      won: 'recovered the lost city\'s treasures',
+      lost: 'was driven from the inner sanctum by its guardians',
+    },
     name: 'Expedition to Lost City',
     locationTypes: ['town', 'city', 'capital'],
     steps: [
@@ -748,6 +808,12 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
  */
 const _FACTION_JOIN_RAW: FactionEntry = {
   id: 'ag.join',
+  stakes: {
+    goal: 'sign the Adventurers Guild register',
+    risk: 'have the clerk withdraw the charter',
+    won: 'signed the register as a guild journeyman',
+    lost: 'saw a veteran object and the clerk withdraw the charter',
+  },
   name: 'Petition the Adventurers Guild',
   locationTypes: ['town', 'city', 'capital'],
   sublocationTypes: ['sublocation-type.guild-hall'],
@@ -788,6 +854,12 @@ const _FACTION_JOIN_RAW: FactionEntry = {
  */
 const _FACTION_PROMOTION_RAW: FactionEntry = {
   id: 'ag.promotion',
+  stakes: {
+    goal: 'pass the guild masters\' promotion trial',
+    risk: 'be sent off by the masters to prove themselves',
+    won: 'passed the trial and rose a rank in the guild',
+    lost: 'was sent off by the masters to prove themselves',
+  },
   name: 'Guild Promotion Trial',
   locationTypes: ['town', 'city', 'capital'],
   sublocationTypes: ['sublocation-type.guild-hall'],
@@ -836,6 +908,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 1. Sparring Match — iron/flesh, cooperative training
   {
     id: 'ag.social.sparring',
+    stakes: {
+      goal: 'win the sparring bout in the guild yard',
+      risk: 'end the bout exhausted with no winner',
+      won: 'won the sparring bout cleanly',
+      lost: 'ended the bout exhausted with no winner',
+    },
     name: 'Guild Sparring Match',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'iron',
@@ -887,6 +965,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 2. Tavern Tales — heart/eye, sharing stories
   {
     id: 'ag.social.tavern_tales',
+    stakes: {
+      goal: 'pick a real lead out of the tavern tales',
+      risk: 'go home with nothing but tall tales',
+      won: 'picked a real lead out of the tavern tales',
+      lost: 'went home with nothing but tall tales',
+    },
     name: 'Share Tavern Tales',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'heart',
@@ -930,6 +1014,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 3. Mentor Session — eye/heart, knowledge transfer
   {
     id: 'ag.social.mentor',
+    stakes: {
+      goal: 'teach a struggling guildmate the technique',
+      risk: 'end the lesson with both sides frustrated',
+      won: 'taught the guildmate and gained a student',
+      lost: 'ended the lesson with both sides frustrated',
+    },
     name: 'Guild Mentorship',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'eye',
@@ -981,6 +1071,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 4. Bounty Planning — shadow/iron, tactical coordination
   {
     id: 'ag.social.bounty_plan',
+    stakes: {
+      goal: 'work out a bounty plan with a guildmate',
+      risk: 'watch the plan dissolve into argument',
+      won: 'worked out a bounty plan with a guildmate',
+      lost: 'watched the plan dissolve into argument',
+    },
     name: 'Plan a Guild Bounty',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'shadow',
@@ -1017,6 +1113,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 5. Share Maps — eye/gold, information exchange
   {
     id: 'ag.social.share_maps',
+    stakes: {
+      goal: 'trade maps fairly with a guildmate',
+      risk: 'leave the guildmate feeling shortchanged',
+      won: 'traded maps fairly and left better informed',
+      lost: 'left the guildmate feeling shortchanged',
+    },
     name: 'Exchange Guild Intelligence',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'eye',
@@ -1060,6 +1162,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   // 6. Guild Rivalry — iron/heart, competitive tension
   {
     id: 'ag.social.rivalry',
+    stakes: {
+      goal: 'win the guild rival\'s public challenge',
+      risk: 'lose standing in the guild along with the rival',
+      won: 'won the challenge and the rival\'s grudging respect',
+      lost: 'let the rivalry fester and lost standing in the guild',
+    },
     name: 'Guild Rivalry',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'iron',

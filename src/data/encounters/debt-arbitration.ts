@@ -99,6 +99,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.debt_arbitration',
+  stakes: {
+    goal: 'come away paid from the failing banking house',
+    risk: 'lose the arbitration and the whole bill, in public',
+    won: 'proved their bill first and were paid from the deed',
+    lost: 'lost the deed to the noble and the bill with it',
+    lostBadly: 'lost on every point, read aloud in the hall',
+    arms: {
+      negative: {
+        won: 'left with a full third in good coin',
+        lost: 'left with the master\'s note instead of coin',
+        lostBadly: 'was seen taking a dead house\'s note for coin',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Debt Arbitration',

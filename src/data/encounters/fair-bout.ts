@@ -103,6 +103,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.fair_bout',
+  stakes: {
+    goal: 'stand down the champion\'s corner at the ring',
+    risk: 'be beaten in the first exchange and jeered out',
+    won: 'beat the ring champion and took the purse',
+    lost: 'was put down, and the purse stayed with the champion',
+    lostBadly: 'was put down in the first exchange and jeered out',
+    arms: {
+      negative: {
+        won: 'walked out through the jeers without turning',
+        lost: 'turned on the corner and were pulled apart',
+        lostBadly: 'was named a coward and lost the scuffle besides',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'Called to the Ring',

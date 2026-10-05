@@ -1,0 +1,123 @@
+# THR-1688 — cap-band neutrality re-read on main f905e996 (FILTER_ONLY=1 readers/cap-band.ts <seed> 120 10)
+JSON {"seed42":{"boards":1675,"localDistinctTemplates":{"p10":74,"p50":117,"p90":121,"max":123},"walk":{"expert<-expert":"2.7% (11/409)","expert<-journeyman":"9.0% (71/792)","expert<-master":"22.1% (58/262)","expert<-novice":"6.5% (1213/18546)","journeyman<-expert":"15.6% (163/1042)","journeyman<-journeyman":"23.2% (524/2257)","journeyman<-master":"17.1% (180/1051)","journeyman<-novice":"24.5% (13178/53859)","novice<-expert":"45.4% (829/1826)","novice<-journeyman":"50.5% (1833/3632)","novice<-master":"53.5% (701/1310)","novice<-novice":"48.8% (44415/91008)"},"hash":{"expert<-expert":"17.8% (73/409)","expert<-journeyman":"22.9% (181/792)","expert<-master":"32.4% (85/262)","expert<-novice":"27.1% (5030/18546)","journeyman<-expert":"33.2% (346/1042)","journeyman<-journeyman":"33.8% (763/2257)","journeyman<-master":"26.5% (279/1051)","journeyman<-novice":"31.4% (16933/53859)","novice<-expert":"40.5% (739/1826)","novice<-journeyman":"41.3% (1500/3632)","novice<-master":"41.9% (549/1310)","novice<-novice":"40.4% (36776/91008)"},"filterOnly":{"expert<-expert":"60.6% (248/409)","expert<-journeyman":"77.9% (617/792)","expert<-master":"80.5% (211/262)","expert<-novice":"78.0% (14473/18546)","journeyman<-expert":"82.2% (857/1042)","journeyman<-journeyman":"76.7% (1730/2257)","journeyman<-master":"64.3% (676/1051)","journeyman<-novice":"65.9% (35506/53859)","novice<-expert":"86.8% (1585/1826)","novice<-journeyman":"87.5% (3178/3632)","novice<-master":"86.1% (1128/1310)","novice<-novice":"73.1% (66503/91008)"},"pipelineMsPerBoard":{"walk":1.262,"hash":1.337},"registrationQuartile":{"walk":["59.2% (56169/94866)","19.1% (1928/10111)","0.8% (56/6795)","7.8% (5023/64222)"],"hash":["40.4% (38353/94866)","17.7% (1789/10111)","8.1% (547/6795)","35.1% (22565/64222)"]}}}
+JSON {"seed99":{"boards":1409,"localDistinctTemplates":{"p10":77,"p50":97,"p90":117,"max":142},"walk":{"expert<-expert":"2.2% (8/366)","expert<-journeyman":"2.9% (18/622)","expert<-master":"11.5% (43/373)","expert<-novice":"3.7% (483/12963)","journeyman<-expert":"18.3% (207/1129)","journeyman<-journeyman":"18.2% (456/2507)","journeyman<-master":"18.6% (257/1379)","journeyman<-novice":"23.6% (9996/42359)","novice<-expert":"51.8% (1063/2054)","novice<-journeyman":"54.0% (2150/3981)","novice<-master":"56.0% (1139/2033)","novice<-novice":"51.7% (35797/69291)"},"hash":{"expert<-expert":"22.7% (83/366)","expert<-journeyman":"26.5% (165/622)","expert<-master":"31.1% (116/373)","expert<-novice":"31.2% (4038/12963)","journeyman<-expert":"29.8% (336/1129)","journeyman<-journeyman":"35.4% (887/2507)","journeyman<-master":"31.2% (430/1379)","journeyman<-novice":"33.6% (14219/42359)","novice<-expert":"42.6% (874/2054)","novice<-journeyman":"39.6% (1575/3981)","novice<-master":"41.8% (849/2033)","novice<-novice":"40.6% (28164/69291)"},"filterOnly":{"expert<-expert":"75.4% (276/366)","expert<-journeyman":"81.7% (508/622)","expert<-master":"89.5% (334/373)","expert<-novice":"90.6% (11749/12963)","journeyman<-expert":"71.3% (805/1129)","journeyman<-journeyman":"81.3% (2037/2507)","journeyman<-master":"77.4% (1068/1379)","journeyman<-novice":"66.5% (28188/42359)","novice<-expert":"81.3% (1670/2054)","novice<-journeyman":"87.9% (3501/3981)","novice<-master":"87.8% (1784/2033)","novice<-novice":"73.7% (51042/69291)"},"pipelineMsPerBoard":{"walk":1.462,"hash":1.557},"registrationQuartile":{"walk":["61.9% (46225/74683)","17.4% (1445/8323)","1.3% (43/3238)","7.4% (3904/52813)"],"hash":["40.9% (30549/74683)","22.7% (1886/8323)","14.9% (483/3238)","35.6% (18818/52813)"]}}}
+JSON {"seed7":{"boards":1861,"localDistinctTemplates":{"p10":71,"p50":87,"p90":117,"max":145},"walk":{"expert<-expert":"5.2% (24/464)","expert<-journeyman":"5.9% (43/729)","expert<-master":"9.0% (29/321)","expert<-novice":"4.3% (643/15101)","journeyman<-expert":"18.0% (273/1518)","journeyman<-journeyman":"16.6% (408/2459)","journeyman<-master":"18.7% (234/1252)","journeyman<-novice":"21.3% (11578/54473)","novice<-expert":"50.8% (1305/2568)","novice<-journeyman":"50.5% (2123/4207)","novice<-master":"40.6% (674/1661)","novice<-novice":"57.2% (49157/85931)"},"hash":{"expert<-expert":"28.4% (132/464)","expert<-journeyman":"27.4% (200/729)","expert<-master":"29.3% (94/321)","expert<-novice":"31.7% (4792/15101)","journeyman<-expert":"32.9% (499/1518)","journeyman<-journeyman":"30.8% (758/2459)","journeyman<-master":"30.4% (380/1252)","journeyman<-novice":"36.0% (19607/54473)","novice<-expert":"39.3% (1010/2568)","novice<-journeyman":"37.2% (1563/4207)","novice<-master":"37.8% (628/1661)","novice<-novice":"42.9% (36898/85931)"},"filterOnly":{"expert<-expert":"81.9% (380/464)","expert<-journeyman":"80.4% (586/729)","expert<-master":"89.7% (288/321)","expert<-novice":"88.9% (13424/15101)","journeyman<-expert":"79.4% (1206/1518)","journeyman<-journeyman":"80.1% (1970/2459)","journeyman<-master":"80.9% (1013/1252)","journeyman<-novice":"60.5% (32934/54473)","novice<-expert":"88.2% (2266/2568)","novice<-journeyman":"90.7% (3816/4207)","novice<-master":"92.2% (1532/1661)","novice<-novice":"61.3% (52686/85931)"},"pipelineMsPerBoard":{"walk":1.462,"hash":1.561},"registrationQuartile":{"walk":["62.3% (61188/98174)","13.1% (1306/9933)","0.9% (39/4522)","6.8% (3958/58055)"],"hash":["43.2% (42411/98174)","23.8% (2360/9933)","11.3% (509/4522)","36.7% (21281/58055)"]}}}
+
+## gameplay-report --seeds 42,99,7 — before the batch
+  [1mSeed 42  tick 120[0m
+    total_success:63.3%  clean:33.3%  at_cost:21.7%  failure:36.7%
+       novice      n=  222  success: 58.6%  mean_attempted_difficulty:0.10
+       journeyman  n=  194  success: 66.5%  mean_attempted_difficulty:0.19
+       expert      n=   98  success: 55.1%  mean_attempted_difficulty:0.22
+       master      n=   73  success: 74.0%  mean_attempted_difficulty:0.18
+       unknown     n=   23  success: 56.5%  mean_attempted_difficulty:0.00
+      in_window:46.1% (of 629)  idle_rate:0.1% (of 694)
+  [1mSeed 99  tick 120[0m
+    total_success:62.5%  clean:33.5%  at_cost:24.0%  failure:37.5%
+       novice      n=  184  success: 59.2%  mean_attempted_difficulty:0.09
+       journeyman  n=  184  success: 64.1%  mean_attempted_difficulty:0.21
+       expert      n=  104  success: 64.4%  mean_attempted_difficulty:0.23
+       master      n=   68  success: 69.1%  mean_attempted_difficulty:0.19
+       unknown     n=   23  success: 69.6%  mean_attempted_difficulty:0.00
+      in_window:43.3% (of 587)  idle_rate:0.0% (of 691)
+  [1mSeed 7  tick 120[0m
+    total_success:73.5%  clean:40.3%  at_cost:22.7%  failure:26.5%
+       novice      n=  210  success: 67.6%  mean_attempted_difficulty:0.10
+       journeyman  n=  204  success: 63.7%  mean_attempted_difficulty:0.21
+       expert      n=  131  success: 66.4%  mean_attempted_difficulty:0.20
+       master      n=   65  success: 78.5%  mean_attempted_difficulty:0.18
+       unknown     n=   27  success: 81.5%  mean_attempted_difficulty:0.00
+      in_window:46.2% (of 656)  idle_rate:0.0% (of 749)
+
+## gameplay-report --seeds 42,99,7 — after the batch (branch thr-1688-master-everyday)
+  Seed 42  tick 120
+    total_success:67.6%  clean:33.5%  at_cost:20.0%  failure:32.4%
+       novice      n=  210  success: 54.8%  mean_attempted_difficulty:0.10
+       journeyman  n=  183  success: 62.8%  mean_attempted_difficulty:0.20
+       expert      n=  109  success: 70.6%  mean_attempted_difficulty:0.25
+       master      n=   71  success: 69.0%  mean_attempted_difficulty:0.22
+       unknown     n=   19  success: 73.7%  mean_attempted_difficulty:0.00
+      in_window:47.1% (of 605)  idle_rate:0.3% (of 678)
+  Seed 99  tick 120
+    total_success:65.4%  clean:36.6%  at_cost:17.8%  failure:30.8%
+       novice      n=  162  success: 60.5%  mean_attempted_difficulty:0.09
+       journeyman  n=  179  success: 57.0%  mean_attempted_difficulty:0.20
+       expert      n=  117  success: 71.8%  mean_attempted_difficulty:0.22
+       master      n=   76  success: 75.0%  mean_attempted_difficulty:0.25
+       unknown     n=   34  success: 67.6%  mean_attempted_difficulty:0.00
+      in_window:44.5% (of 582)  idle_rate:0.0% (of 702)
+  Seed 7  tick 120
+    total_success:66.4%  clean:39.3%  at_cost:21.6%  failure:33.6%
+       novice      n=  207  success: 70.0%  mean_attempted_difficulty:0.11
+       journeyman  n=  179  success: 69.8%  mean_attempted_difficulty:0.20
+       expert      n=  113  success: 74.3%  mean_attempted_difficulty:0.20
+       master      n=   77  success: 71.4%  mean_attempted_difficulty:0.21
+       unknown     n=   22  success: 54.5%  mean_attempted_difficulty:0.00
+      in_window:49.2% (of 618)  idle_rate:0.0% (of 715)
+
+## invariant runWorld probe, seeds 7 1 2 3 11 × 120 ticks — before (main f905e996)
+JSON {"seed":7,"inWindow":0.462,"bands":{"novice":{"n":210,"covered":true,"success":0.676,"meanAttempted":0.098},"journeyman":{"n":204,"covered":true,"success":0.637,"meanAttempted":0.206},"expert":{"n":131,"covered":true,"success":0.664,"meanAttempted":0.2},"master":{"n":65,"covered":true,"success":0.785,"meanAttempted":0.175},"unknown":{"n":27,"covered":false,"success":0.815,"meanAttempted":0}}}
+JSON {"seed":1,"inWindow":0.397,"bands":{"novice":{"n":261,"covered":true,"success":0.552,"meanAttempted":0.102},"journeyman":{"n":221,"covered":true,"success":0.665,"meanAttempted":0.18},"expert":{"n":146,"covered":true,"success":0.699,"meanAttempted":0.266},"master":{"n":92,"covered":true,"success":0.739,"meanAttempted":0.231},"unknown":{"n":19,"covered":false,"success":0.368,"meanAttempted":0}}}
+JSON {"seed":2,"inWindow":0.459,"bands":{"novice":{"n":184,"covered":true,"success":0.571,"meanAttempted":0.101},"journeyman":{"n":184,"covered":true,"success":0.707,"meanAttempted":0.208},"expert":{"n":85,"covered":true,"success":0.635,"meanAttempted":0.224},"master":{"n":108,"covered":true,"success":0.87,"meanAttempted":0.257},"unknown":{"n":22,"covered":false,"success":0.591,"meanAttempted":0}}}
+JSON {"seed":3,"inWindow":0.448,"bands":{"novice":{"n":203,"covered":true,"success":0.591,"meanAttempted":0.098},"journeyman":{"n":242,"covered":true,"success":0.645,"meanAttempted":0.214},"expert":{"n":138,"covered":true,"success":0.645,"meanAttempted":0.19},"master":{"n":79,"covered":true,"success":0.722,"meanAttempted":0.193},"unknown":{"n":28,"covered":false,"success":0.5,"meanAttempted":0}}}
+JSON {"seed":11,"inWindow":0.462,"bands":{"novice":{"n":211,"covered":true,"success":0.569,"meanAttempted":0.091},"journeyman":{"n":263,"covered":true,"success":0.65,"meanAttempted":0.212},"expert":{"n":133,"covered":true,"success":0.669,"meanAttempted":0.198},"master":{"n":95,"covered":true,"success":0.684,"meanAttempted":0.221},"unknown":{"n":38,"covered":false,"success":0.553,"meanAttempted":0}}}
+## after (branch)
+JSON {"seed":7,"inWindow":0.492,"bands":{"novice":{"n":207,"covered":true,"success":0.7,"meanAttempted":0.11},"journeyman":{"n":179,"covered":true,"success":0.698,"meanAttempted":0.2},"expert":{"n":113,"covered":true,"success":0.743,"meanAttempted":0.201},"master":{"n":77,"covered":true,"success":0.714,"meanAttempted":0.209},"unknown":{"n":22,"covered":false,"success":0.545,"meanAttempted":0}}}
+JSON {"seed":1,"inWindow":0.462,"bands":{"novice":{"n":237,"covered":true,"success":0.612,"meanAttempted":0.091},"journeyman":{"n":199,"covered":true,"success":0.638,"meanAttempted":0.22},"expert":{"n":121,"covered":true,"success":0.587,"meanAttempted":0.245},"master":{"n":82,"covered":true,"success":0.683,"meanAttempted":0.202},"unknown":{"n":16,"covered":false,"success":0.563,"meanAttempted":0}}}
+JSON {"seed":2,"inWindow":0.46,"bands":{"novice":{"n":183,"covered":true,"success":0.628,"meanAttempted":0.085},"journeyman":{"n":232,"covered":true,"success":0.647,"meanAttempted":0.204},"expert":{"n":124,"covered":true,"success":0.702,"meanAttempted":0.259},"master":{"n":90,"covered":true,"success":0.744,"meanAttempted":0.259},"unknown":{"n":17,"covered":false,"success":0.647,"meanAttempted":0}}}
+JSON {"seed":3,"inWindow":0.492,"bands":{"novice":{"n":215,"covered":true,"success":0.581,"meanAttempted":0.092},"journeyman":{"n":247,"covered":true,"success":0.652,"meanAttempted":0.209},"expert":{"n":126,"covered":true,"success":0.698,"meanAttempted":0.184},"master":{"n":86,"covered":true,"success":0.721,"meanAttempted":0.26},"unknown":{"n":27,"covered":false,"success":0.296,"meanAttempted":0}}}
+JSON {"seed":11,"inWindow":0.441,"bands":{"novice":{"n":205,"covered":true,"success":0.58,"meanAttempted":0.1},"journeyman":{"n":242,"covered":true,"success":0.624,"meanAttempted":0.208},"expert":{"n":145,"covered":true,"success":0.745,"meanAttempted":0.229},"master":{"n":91,"covered":true,"success":0.703,"meanAttempted":0.202},"unknown":{"n":30,"covered":false,"success":0.667,"meanAttempted":0}}}
+
+## live proof sweep (--play all), 8 encounters × seeds 42,99,7,1,2,3
+forged_charter_inquest seed=42 proved failure 
+forged_charter_inquest seed=99 proved failure 
+forged_charter_inquest seed=7 proved failure 
+forged_charter_inquest seed=1 proved failure 
+forged_charter_inquest seed=2 proved critical_failure 
+forged_charter_inquest seed=3 proved failure 
+cathedral_loan seed=42 proved failure 
+cathedral_loan seed=99 proved failure 
+cathedral_loan seed=7 proved failure 
+cathedral_loan seed=1 proved failure 
+cathedral_loan seed=2 proved critical_failure 
+cathedral_loan seed=3 proved failure 
+granary_riot seed=42 proved failure 
+granary_riot seed=99 proved failure 
+granary_riot seed=7 proved failure 
+granary_riot seed=1 proved failure 
+granary_riot seed=2 proved critical_failure 
+granary_riot seed=3 proved failure 
+judicial_duel seed=42 proved critical_failure 
+judicial_duel seed=99 proved failure 
+judicial_duel seed=7 proved failure 
+judicial_duel seed=1 proved failure 
+judicial_duel seed=2 proved critical_failure 
+judicial_duel seed=3 proved failure 
+coiners_mint seed=42 proved success_at_cost 
+coiners_mint seed=99 proved failure 
+coiners_mint seed=7 proved failure 
+coiners_mint seed=1 proved failure 
+coiners_mint seed=2 proved critical_failure 
+coiners_mint seed=3 proved failure 
+ducal_nativity seed=42 proved failure 
+ducal_nativity seed=99 proved failure 
+ducal_nativity seed=7 proved failure 
+ducal_nativity seed=1 proved failure 
+ducal_nativity seed=2 proved critical_failure 
+ducal_nativity seed=3 proved failure 
+cathedral_vault seed=42 proved failure 
+cathedral_vault seed=99 proved failure 
+cathedral_vault seed=7 proved failure 
+cathedral_vault seed=1 proved failure 
+cathedral_vault seed=2 proved critical_failure 
+cathedral_vault seed=3 proved failure 
+restless_ossuary seed=42 proved success_at_cost 
+restless_ossuary seed=99 proved failure 
+restless_ossuary seed=7 proved failure 
+restless_ossuary seed=1 proved failure 
+restless_ossuary seed=2 proved failure 
+restless_ossuary seed=3 proved failure 
+
+## free-choice engagements split by new (THR-1688) vs old templates, invariant runWorld, seeds 42/99 (band:new|old  n  success  mean attempted)
+SPLIT 42 {"expert:new":"n1 s0.00 d0.77","expert:old":"n108 s0.71 d0.25","journeyman:old":"n183 s0.63 d0.20","master:new":"n3 s0.67 d0.76","master:old":"n68 s0.69 d0.19","novice:old":"n210 s0.55 d0.10"}
+SPLIT 99 {"expert:new":"n2 s0.50 d0.77","expert:old":"n115 s0.72 d0.21","journeyman:old":"n179 s0.57 d0.20","master:new":"n6 s0.67 d0.77","master:old":"n70 s0.76 d0.21","novice:old":"n162 s0.60 d0.09"}

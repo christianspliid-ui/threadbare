@@ -81,6 +81,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.ledger_by_lamplight',
+  stakes: {
+    goal: 'copy one sealed ledger page by lamplight unseen',
+    risk: 'be caught at the open press with nothing copied',
+    won: 'copied the sealed page and set the seal back whole',
+    lost: 'cracked the seal, and the house found it at dawn',
+    lostBadly: 'ran from the clerk with nothing copied',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Ledger by Lamplight',

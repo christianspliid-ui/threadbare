@@ -14,6 +14,20 @@
   ],
   "template": {
     "id": "encounter.town.toll_gate_writ",
+    "stakes": {
+      "goal": "judge a family's forged writ at the toll gate",
+      "risk": "have the whole gate call their reading a guess",
+      "won": "named the writ false and found its seal-cutter",
+      "lost": "named the writ false and never found its maker",
+      "lostBadly": "lost the seal-cutter and had their reading called a guess",
+      "arms": {
+        "negative": {
+          "won": "passed the family through and kept the toll-master's trust",
+          "lost": "vouched for a forgery the toll house found out",
+          "lostBadly": "passed a forgery the whole gate knows was theirs"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Writ at the Toll Gate",

@@ -31,6 +31,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.rival.hired_knives',
+  stakes: {
+    goal: 'get clear of the hired knives on their trail',
+    risk: 'take a knife before they see it coming',
+    won: 'got clear of the hired knives unhurt',
+    lost: 'took a cut and ran, leaving the warner behind',
+    lostBadly: 'took the first knife unseen and ran bleeding',
+  },
   tags: ['#rival_strike'],
   rarityTier: 2,
   intrinsicTier: 'background',

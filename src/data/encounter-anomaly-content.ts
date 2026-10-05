@@ -43,6 +43,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ gem_deposit: "The Gleaming Vein" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.gleaming_vein',
+    stakes: {
+      goal: 'cut the gem vein out of the hillside',
+      risk: 'watch the vein seal shut along the fault',
+      won: 'cut the gem vein open and filled their palm',
+      lost: 'watched the vein seal shut along the fault',
+    },
     name: 'The Gleaming Vein',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -184,6 +190,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ crystal_cavern: "The Singing Dark" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.singing_dark',
+    stakes: {
+      goal: 'walk the singing crystal cavern unharmed',
+      risk: 'crawl out with ringing ears and nothing taken',
+      won: 'walked the singing cavern and were let in',
+      lost: 'crawled out with ringing ears and nothing taken',
+    },
     name: 'The Singing Dark',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -332,6 +344,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ golden_grove: "Sap of Ages" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.sap_of_ages',
+    stakes: {
+      goal: 'fill their vessels from the amber grove',
+      risk: 'leave with empty vessels and a closed grove',
+      won: 'filled their vessels from the amber grove',
+      lost: 'rushed the grove and left with empty vessels',
+    },
     name: 'Sap of Ages',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -465,6 +483,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ herb_garden: "The Wild Apothecary" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.wild_apothecary',
+    stakes: {
+      goal: 'take herbs from the wild garden cleanly',
+      risk: 'tear the root network and wilt the garden',
+      won: 'took herbs from the wild garden cleanly',
+      lost: 'tore a root and watched the garden wilt',
+    },
     name: 'The Wild Apothecary',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -588,6 +612,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ ancient_vault: "The Sealed Chamber" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.sealed_chamber',
+    stakes: {
+      goal: 'break the ward seal and loot the vault',
+      risk: 'flee as the vault seals shut, empty-handed',
+      won: 'broke the ward seal and got out with the hoard',
+      lost: 'fled as the vault sealed shut, empty-handed',
+    },
     name: 'The Sealed Chamber',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -740,6 +770,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ sunken_treasury: "The Drowned Hoard" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.drowned_hoard',
+    stakes: {
+      goal: 'raise the gold from the drowned treasury',
+      risk: 'get swept downstream by the draining current',
+      won: 'came up from the drowned treasury with the gold',
+      lost: 'got swept downstream with empty hands',
+    },
     name: 'The Drowned Hoard',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -881,6 +917,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ fossil_bed: "Bones of the Old World" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.bones_old_world',
+    stakes: {
+      goal: 'chisel the old bones free of the rock',
+      risk: 'shatter the fossil into rubble',
+      won: 'chiselled the old bones free intact',
+      lost: 'slipped the chisel and shattered the fossil',
+    },
     name: 'Bones of the Old World',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1012,6 +1054,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // Two authored choice cards: keep the metal vs chip a fragment vs seal it back.
   {
     id: 'encounter.anomaly.fallen_star',
+    stakes: {
+      goal: 'lever the star metal out of the crater',
+      risk: 'break their tools on the bedrock',
+      won: 'levered the star metal out of the crater',
+      lost: 'broke their tools and left the metal in the ground',
+    },
     name: 'The Fallen Star',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1172,6 +1220,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // â”€â”€ pearl_shoal: "The Moon's Tears" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {
     id: 'encounter.anomaly.moons_tears',
+    stakes: {
+      goal: 'reach the pearl bed before the tide turns',
+      risk: 'be pushed back salt-stung by the tide',
+      won: 'came up from the pearl bed with both hands full',
+      lost: 'was pushed back salt-stung and empty by the tide',
+    },
     name: "The Moon's Tears",
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1302,6 +1356,12 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // Two authored choice cards: discipline vs. breathe the spores vs. seal the hollow.
   {
     id: 'encounter.anomaly.dreaming_light',
+    stakes: {
+      goal: 'cut the glowing caps without breathing spores',
+      risk: 'breathe the spore cloud and lose hours',
+      won: 'sealed the glowing caps without breathing spores',
+      lost: 'breathed the spore cloud and woke hours later',
+    },
     name: 'The Dreaming Light',
     rarityTier: 2,
     intrinsicTier: 'shaping',

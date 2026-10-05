@@ -110,8 +110,9 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // Avatar name is visible text; archetype title is in a tooltip
-    expect(screen.getByText(/The Divine Witness/)).toBeInTheDocument();
+    // Avatar name is visible text; archetype title is in a tooltip. Since THR-1716 the
+    // opening beat is open at arrival and its prose names the avatar too.
+    expect(screen.getAllByText(/The Divine Witness/).length).toBeGreaterThan(0);
   });
 
   it('renders simulation controls with tick info', () => {

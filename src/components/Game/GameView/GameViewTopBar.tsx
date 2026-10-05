@@ -43,6 +43,8 @@ export interface GameViewTopBarProps {
   clockHeld?: boolean;
   /** THR-1724 — the name of what holds the clock (the open encounter), for the status line. */
   clockHeldBy?: string;
+  /** THR-1716 — the clock has never run and nothing holds it: the Play control asks for it. */
+  firstRunPrompt?: boolean;
   /**
    * THR-1724 — an encounter veil is open below the bar. The right group's
    * panels (settings, rivals, notables, doom) open beneath the veil's z-band,
@@ -117,6 +119,7 @@ export function GameViewTopBar({
   running,
   clockHeld = false,
   clockHeldBy,
+  firstRunPrompt = false,
   encounterOpen = false,
   speed,
   handleToggleRunning,
@@ -210,6 +213,7 @@ export function GameViewTopBar({
             running={running}
             held={clockHeld}
             heldBy={clockHeldBy}
+            firstRunPrompt={firstRunPrompt}
             speed={speed}
             onToggle={handleToggleRunning}
             onStep={doTick}

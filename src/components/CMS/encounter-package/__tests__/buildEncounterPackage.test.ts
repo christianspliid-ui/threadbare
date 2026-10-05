@@ -285,7 +285,7 @@ describe('buildEncounterPackage — verdict is delegated, never re-derived', () 
     expect(pkg.verdict.pass).toBe(pkg.verdict.report.violations.length === 0);
     // Every block gets a badge whether or not it failed, so a passing block is
     // visibly passing rather than merely absent.
-    expect(pkg.verdict.blocks).toHaveLength(8);
+    expect(pkg.verdict.blocks).toHaveLength(9);
   });
 
   it('reports retrofit-pending membership from the ratchet, not from the verdict', () => {

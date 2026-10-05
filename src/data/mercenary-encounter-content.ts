@@ -51,6 +51,12 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.patrol',
+    stakes: {
+      goal: 'walk the assigned stretch of road and clear it',
+      risk: 'let a lurker slip away and file a bad count',
+      won: 'cleared the stretch of road and filed a true count',
+      lost: 'let a shape slip off and filed a count that was off',
+    },
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Road Patrol',
@@ -150,6 +156,12 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.guard_caravan',
+    stakes: {
+      goal: 'bring the caravan through with its goods intact',
+      risk: 'lose wagons at the back of the line',
+      won: 'brought the caravan in with its goods intact',
+      lost: 'lost goods at the back and had pay docked',
+    },
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Guard the Caravan',
@@ -255,6 +267,12 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.collect_bounty',
+    stakes: {
+      goal: 'track down the mark and bring them in',
+      risk: 'lose the mark\'s trail and the bounty with it',
+      won: 'brought the mark in and collected the bounty',
+      lost: 'brought the mark in late and took the reduced pay',
+    },
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Collect a Bounty',
@@ -394,6 +412,12 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.siege_work',
+    stakes: {
+      goal: 'hold a section of the siege line and break the gate',
+      risk: 'see the section give and names go on the stone',
+      won: 'held the line and saw the gate open for double pay',
+      lost: 'watched the gate hold and drew only the base rate',
+    },
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Siege Work',
@@ -491,6 +515,12 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.escort_prisoner',
+    stakes: {
+      goal: 'deliver the chained prisoner in good condition',
+      risk: 'have the delivery disputed at the handover',
+      won: 'delivered the prisoner and closed the contract',
+      lost: 'saw the handover disputed and a clause applied',
+    },
     tags: ['#company_errand'],
     actorAffinities: ['individual'],
     name: 'Escort a Prisoner',
@@ -593,6 +623,12 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.field_command',
+    stakes: {
+      goal: 'hold the line for three days of contract',
+      risk: 'see the line break on the second day',
+      won: 'held the line three days for full pay',
+      lost: 'saw the line break on day two and took a cut',
+    },
     actorAffinities: ['individual'],
     name: 'Field Command',
     locationSubtypes: ['fortress', 'battlefield', 'city'],
@@ -702,6 +738,12 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.hostile_negotiation',
+    stakes: {
+      goal: 'talk the walled holdout into the Company\'s terms',
+      risk: 'see the terms refused and the sword come next',
+      won: 'got the terms signed with little blood',
+      lost: 'saw the terms refused at the gate',
+    },
     actorAffinities: ['individual'],
     name: 'Hostile Negotiation',
     locationSubtypes: ['city', 'capital', 'fortress'],
@@ -799,6 +841,12 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.extraction_op',
+    stakes: {
+      goal: 'bring the asset out of the town alive',
+      risk: 'pay for the extraction in names on the stone',
+      won: 'brought the asset out clean for full pay',
+      lost: 'got the asset out but lost hands doing it',
+    },
     actorAffinities: ['individual'],
     name: 'Extraction Operation',
     locationSubtypes: ['city', 'capital', 'fortress', 'dungeon'],
@@ -913,6 +961,12 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.elite.war_council',
+    stakes: {
+      goal: 'get the Company\'s war contract signed',
+      risk: 'watch a delegate walk out before signing',
+      won: 'got the war contract signed by the council',
+      lost: 'saw a delegate walk out before signing',
+    },
     actorAffinities: ['individual'],
     name: 'War Council',
     locationSubtypes: ['capital', 'fortress', 'city'],
@@ -1035,6 +1089,12 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.elite.siege_contract',
+    stakes: {
+      goal: 'take the gate within the two-week contract',
+      risk: 'close the contract on partial pay',
+      won: 'took full pay at the gate and closed the contract',
+      lost: 'closed the contract on partial pay',
+    },
     actorAffinities: ['individual'],
     name: 'Major Siege Contract',
     locationSubtypes: ['fortress', 'city', 'capital'],
@@ -1162,6 +1222,12 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.sparring_ring',
+    stakes: {
+      goal: 'hold their own in the Company sparring ring',
+      risk: 'be put down twice in front of the roster',
+      won: 'held their own in the ring before the Company',
+      lost: 'went down twice in the ring with the captain watching',
+    },
     actorAffinities: ['individual'],
     name: 'The Sparring Ring',
     locationSubtypes: ['town', 'city', 'capital', 'fortress', 'barracks'],
@@ -1245,6 +1311,12 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.war_stories',
+    stakes: {
+      goal: 'learn which clauses the old hands watch for',
+      risk: 'drift off and miss the lesson in the stories',
+      won: 'learned which clauses the old hands watch for',
+      lost: 'drifted off and missed why the names went on the stone',
+    },
     actorAffinities: ['individual'],
     name: 'War Stories by the Fire',
     locationSubtypes: ['town', 'city', 'capital', 'tavern', 'barracks'],
@@ -1328,6 +1400,12 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.contract_negotiation',
+    stakes: {
+      goal: 'set a fair split on a new client\'s contract',
+      risk: 'sign a soft contract that costs the Company',
+      won: 'set the pay at the Company\'s proper rate',
+      lost: 'let the pay come in soft for the captain to fix',
+    },
     actorAffinities: ['individual'],
     name: 'Contract Negotiation Practice',
     locationSubtypes: ['town', 'city', 'capital'],
@@ -1428,6 +1506,12 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.join',
+  stakes: {
+    goal: 'get their name on the Company\'s roll',
+    risk: 'be turned away until they have more ground',
+    won: 'signed the Company\'s standard contract',
+    lost: 'was asked to come back when the contract sits easy',
+  },
   actorAffinities: ['individual'],
   name: 'Join the Mercenary Company',
   locationSubtypes: ['town', 'city', 'capital', 'fortress', 'barracks'],
@@ -1530,6 +1614,12 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const MC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.promotion',
+  stakes: {
+    goal: 'earn the next rank from the captain\'s ledger',
+    risk: 'be sent back to wait for the next contract',
+    won: 'earned the next rank and its heavier contract',
+    lost: 'was told to come back after the next contract',
+  },
   actorAffinities: ['individual'],
   name: 'Promotion in the Mercenary Company',
   locationSubtypes: ['city', 'capital', 'fortress', 'barracks'],

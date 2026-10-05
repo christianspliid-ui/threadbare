@@ -204,7 +204,11 @@ function buildHeader(
 ): EncounterStageModel['header'] {
   const { template, activeAction, agentName, threadTier, graph, notification } = args;
   const currentStep = getCurrentStep(template, activeAction);
-  const rawSubtitle = template.description ?? resolveInitiationProse(template, currentStep);
+  // THR-1728 — the veil never shows `template.description`: it is designer voice
+  // ("A two-step master Heart job in a town…"), written for the factory, not the
+  // player. A template without a usable stakes line (none authored, or a malformed
+  // block that throws) falls back to the scene's own opening prose instead.
+  const rawSubtitle = resolveInitiationProse(template, currentStep);
 
   // Portrait for the focal agent — same resolution the aftermath actor-moments use.
   //

@@ -60,6 +60,12 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.trail_patrol',
+    stakes: {
+      goal: 'walk the trail and move the squatters on',
+      risk: 'let one of the camp run off into the deep country',
+      won: 'walked the trail and moved the squatters on',
+      lost: 'let one of the camp run off into the deep country',
+    },
     tags: ['#ranger_errand'],
     name: 'Trail Patrol',
     rarityTier: 1,
@@ -183,6 +189,12 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.track_beast',
+    stakes: {
+      goal: 'track the goat-killer to its den and kill it',
+      risk: 'leave it wounded and loose in the switchbacks',
+      won: 'tracked the goat-killer to its den and killed it',
+      lost: 'left it wounded and loose in the switchbacks',
+    },
     tags: ['#ranger_errand'],
     name: 'Track a Beast',
     rarityTier: 1,
@@ -341,6 +353,12 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.survey_border',
+    stakes: {
+      goal: 'map the borderland ridge by ridge',
+      risk: 'leave a gap in the map on the eastern slope',
+      won: 'mapped the borderland and found the blind gully',
+      lost: 'left a gap in the map on the eastern slope',
+    },
     tags: ['#ranger_errand'],
     name: 'Border Survey',
     rarityTier: 1,
@@ -476,6 +494,12 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.clear_threat',
+    stakes: {
+      goal: 'clear the hostile camp on the ridge',
+      risk: 'pull back with two wounded and the camp still up',
+      won: 'cleared the hostile camp on the ridge',
+      lost: 'pulled back with two wounded and the camp still up',
+    },
     tags: ['#ranger_errand'],
     name: 'Clear the Threat',
     rarityTier: 1,
@@ -603,6 +627,12 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'rb.quest.wilderness_rescue',
+    stakes: {
+      goal: 'find the lost family and walk them home',
+      risk: 'leave the father down at the creek as night falls',
+      won: 'found the lost family and walked them home by dark',
+      lost: 'left the father down at the creek as night fell',
+    },
     tags: ['#ranger_errand'],
     name: 'Wilderness Rescue',
     rarityTier: 1,
@@ -741,6 +771,12 @@ export const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'rb.senior.deep_scout',
+    stakes: {
+      goal: 'scout past the last waymark and slip back out',
+      risk: 'get spotted and put the deep country on alert',
+      won: 'scouted past the last waymark and slipped back out',
+      lost: 'got spotted and put the deep country on alert',
+    },
     name: 'Deep Scout Mission',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -890,6 +926,12 @@ export const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'rb.senior.ambush_raiders',
+    stakes: {
+      goal: 'ambush the road raiders at the third ford',
+      risk: 'let two raiders get away into the rough country',
+      won: 'ambushed the road raiders at the third ford',
+      lost: 'let two raiders get away into the rough country',
+    },
     name: 'Ambush the Raiders',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1058,6 +1100,12 @@ export const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'rb.senior.map_unknown',
+    stakes: {
+      goal: 'chart the blank country past the old map line',
+      risk: 'come back with the eastern face still blank',
+      won: 'charted the blank country past the old map line',
+      lost: 'came back with the eastern face still blank',
+    },
     name: 'Map the Unknown',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1218,6 +1266,12 @@ export const RANGERS_BROTHERHOOD_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'rb.elite.monster_hunt',
+    stakes: {
+      goal: 'hunt down the old beast of the tor',
+      risk: 'wound it and leave it loose with their scent',
+      won: 'hunted down the old beast of the tor',
+      lost: 'wounded it and left it loose with their scent',
+    },
     name: 'The Great Hunt',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -1396,6 +1450,12 @@ export const RANGERS_BROTHERHOOD_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'rb.elite.frontier_defense',
+    stakes: {
+      goal: 'hold the frontier against the marching column',
+      risk: 'lose the north post and fall back to the second line',
+      won: 'held the frontier and broke the marching column',
+      lost: 'lost the north post and fell back to the second line',
+    },
     name: 'Frontier Defense',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -1567,6 +1627,12 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'rb.social.campfire_tales',
+    stakes: {
+      goal: 'tell a story that holds the campfire circle',
+      risk: 'get only polite silence from the circle',
+      won: 'told a story that held the campfire circle',
+      lost: 'got only polite silence from the circle',
+    },
     name: 'Campfire Tales',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1671,6 +1737,12 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'rb.social.tracking_lesson',
+    stakes: {
+      goal: 'read every sign in the veteran\'s trail print',
+      risk: 'miss the one sign that mattered',
+      won: 'learned to read the heel pressure right',
+      lost: 'missed the one sign that mattered',
+    },
     name: 'Tracking Lesson',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1776,6 +1848,12 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'rb.social.equipment_trade',
+    stakes: {
+      goal: 'swap surplus gear for a better bow and knife',
+      risk: 'pack the old gear back up with nothing gained',
+      won: 'swapped surplus gear for a better bow and knife',
+      lost: 'packed the old gear back up with nothing gained',
+    },
     name: 'Trade Equipment',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1868,6 +1946,12 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const RB_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'rb.join',
+  stakes: {
+    goal: 'find the trial dog in the rough country',
+    risk: 'be sent away from the Brotherhood trial',
+    won: 'found the trial dog and joined the Brotherhood',
+    lost: 'was sent away from the Brotherhood trial',
+  },
   name: 'Join the Rangers Brotherhood',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1956,6 +2040,12 @@ export const RB_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const RB_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'rb.promotion',
+  stakes: {
+    goal: 'last seven days alone in the deep country',
+    risk: 'walk back in on the fifth day without the rank',
+    won: 'lasted seven days alone and earned the rank',
+    lost: 'walked back in on the fifth day without the rank',
+  },
   name: 'Ranger Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

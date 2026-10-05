@@ -784,7 +784,10 @@ export function buildNudgePhaseModel(
     }
     factors.push({
       id: line.id,
-      text: line.text,
+      // THR-1738 — the carryover line is authored prose like the step's own
+      // factor lines, so it takes the same placeholder fill ({actor},
+      // {cast:<key>}). The other derived lines are composed from resolved names.
+      text: line.kind === 'carryover' ? enrich(line.text) : line.text,
       polarity: line.polarity,
       source: line.source,
       // Three cases collapse to two here. A line may state a real contribution,

@@ -59,6 +59,12 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.catalogue_ruins',
+    stakes: {
+      goal: 'enter the uncovered ruins in the annal',
+      risk: 'leave a gap in the ruins\' record',
+      won: 'entered the uncovered ruins in the annal',
+      lost: 'left a gap in the ruins\' record',
+    },
     tags: ['#covenant_errand'],
     name: 'Catalogue the Ruins',
     rarityTier: 1,
@@ -185,6 +191,12 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.translate_text',
+    stakes: {
+      goal: 'translate the unmarked document cleanly',
+      risk: 'let opinion creep into the translation',
+      won: 'translated the unmarked document cleanly',
+      lost: 'let opinion creep in and saw it sent to the appendix',
+    },
     tags: ['#covenant_errand'],
     name: 'Translate the Text',
     rarityTier: 1,
@@ -313,6 +325,12 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.recover_tome',
+    stakes: {
+      goal: 'track down the missing tome and bring it back',
+      risk: 'bring the tome back with a broken binding',
+      won: 'tracked down the missing tome and brought it back',
+      lost: 'brought the tome back with a broken binding',
+    },
     tags: ['#covenant_errand'],
     name: 'Recover a Missing Tome',
     rarityTier: 1,
@@ -447,6 +465,12 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.map_ley_lines',
+    stakes: {
+      goal: 'walk the ley lines and file the survey',
+      risk: 'file a survey that clashes with the old entries',
+      won: 'walked the ley lines and filed the survey',
+      lost: 'filed a survey that clashed with the old entries',
+    },
     tags: ['#covenant_errand'],
     name: 'Map the Ley Lines',
     rarityTier: 1,
@@ -561,6 +585,12 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
 
   withEncounterContract({
     id: 'lk.quest.interview_elder',
+    stakes: {
+      goal: 'take down the elder\'s account for the annal',
+      risk: 'get a partial account with a date that won\'t fit',
+      won: 'took down the elder\'s account for the annal',
+      lost: 'got an account with a date that would not fit',
+    },
     tags: ['#covenant_errand'],
     name: 'Interview an Elder',
     rarityTier: 1,
@@ -682,6 +712,12 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'lk.senior.decipher_prophecy',
+    stakes: {
+      goal: 'decipher the prophecy and date its hands',
+      risk: 'leave a muddled margin note for others to fix',
+      won: 'deciphered the prophecy and signed the margin',
+      lost: 'left a muddled margin note for others to fix',
+    },
     name: 'Decipher a Prophecy',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -842,6 +878,12 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'lk.senior.excavate_archive',
+    stakes: {
+      goal: 'dig out the buried archive and record every page',
+      risk: 'rush the records as the vault gives way',
+      won: 'dug out the buried archive and recorded every page',
+      lost: 'rushed the records as the vault gave way',
+    },
     name: 'Excavate a Lost Archive',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -981,6 +1023,12 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'lk.senior.compose_treatise',
+    stakes: {
+      goal: 'write a clean treatise on the place for the annal',
+      risk: 'have the archivist strike opinion from the margin',
+      won: 'wrote a clean treatise and signed the margin',
+      lost: 'had the archivist strike opinion from the margin',
+    },
     name: 'Compose a Treatise',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1088,6 +1136,12 @@ export const LOREKEEPERS_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'lk.elite.forbidden_library',
+    stakes: {
+      goal: 'copy the forbidden library\'s entries to the vaults',
+      risk: 'be turned away at the library door',
+      won: 'carried the forbidden library\'s entries to the vaults',
+      lost: 'lost entries on the road, leaving holes in the annal',
+    },
     name: 'Access the Forbidden Library',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1238,6 +1292,12 @@ export const LOREKEEPERS_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'lk.elite.cosmic_revelation',
+    stakes: {
+      goal: 'find what the misplaced date in the annal refers to',
+      risk: 'see their conclusion struck from the annal',
+      won: 'entered the first account of the misplaced date',
+      lost: 'let opinion creep in and saw their conclusion struck',
+    },
     name: 'Cosmic Revelation',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1378,6 +1438,12 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'lk.social.lecture_hall',
+    stakes: {
+      goal: 'follow every entry of the Covenant lecture',
+      risk: 'leave with a date they cannot place',
+      won: 'followed the lecture and filled the margins',
+      lost: 'left with a date they could not place',
+    },
     name: 'Lecture Hall',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1460,6 +1526,12 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'lk.social.debate_forum',
+    stakes: {
+      goal: 'argue the contradicting account into the annal',
+      risk: 'leave the forum with heat and no new entry',
+      won: 'got both accounts dated and into the annal',
+      lost: 'left the forum with a name missing from the entry',
+    },
     name: 'Debate Forum',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1547,6 +1619,12 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'lk.social.manuscript_exchange',
+    stakes: {
+      goal: 'trade a duplicate to close a gap in the annal',
+      risk: 'carry the duplicate home with no trade made',
+      won: 'traded the duplicate and closed a gap in the annal',
+      lost: 'carried the duplicate home with no trade made',
+    },
     name: 'Manuscript Exchange',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1652,6 +1730,12 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const LK_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'lk.join',
+  stakes: {
+    goal: 'get their record accepted into the Covenant annal',
+    risk: 'be sent off to fill a hundred practice pages',
+    won: 'joined the Covenant with their record in the annal',
+    lost: 'was sent off to fill a hundred practice pages',
+  },
   name: 'Join the Lorekeepers Covenant',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1741,6 +1825,12 @@ export const LK_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const LK_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'lk.promotion',
+  stakes: {
+    goal: 'earn a new section of the annal to keep',
+    risk: 'be sent back to correct a misdated entry',
+    won: 'took charge of a new section of the annal',
+    lost: 'took the new section and found it larger than feared',
+  },
   name: 'Promotion in the Lorekeepers Covenant',
   rarityTier: 1,
   intrinsicTier: 'shaping',

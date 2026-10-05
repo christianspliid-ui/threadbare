@@ -41,6 +41,12 @@ const BOUNDS_BEATEN_FEAST_TICKS = 36;
 
 export const BOUNDS_BEATEN: UnifiedActionTemplate = {
   id: BOUNDS_BEATEN_ID,
+  stakes: {
+    goal: 'set the boundary stone true to the charter',
+    risk: 'set the stone off the line, the survey unsealed',
+    won: 'set the boundary stone true to the charter',
+    lost: 'set the stone off the line, the survey unsealed',
+  },
   // Seed-only: the boundary survey's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Bounds Beaten',
@@ -110,6 +116,12 @@ export const BOUNDS_BEATEN: UnifiedActionTemplate = {
 
 export const BOUNDS_STONE_UPROOTED: UnifiedActionTemplate = {
   id: BOUNDS_STONE_UPROOTED_ID,
+  stakes: {
+    goal: 'get the steward to seal the survey on their word',
+    risk: 'see the steward leave with the survey unsealed',
+    won: 'got the steward to seal the survey on their word',
+    lost: 'saw the steward leave with the survey unsealed',
+  },
   // Seed-only: the boundary survey's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Stone Uprooted',

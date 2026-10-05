@@ -1,0 +1,1236 @@
+{
+  "slug": "ducal-nativity",
+  "doc": [
+    "The Duke's Nativity — slot 6 of the master-everyday batch (THR-1688).",
+    "",
+    "Brief: `Docs/plans/encounters/master-everyday-brief.md` (slot 6, binding).",
+    "Pipeline: ducal-nativity-draft / -editorial (PASS WITH REVISIONS) / -revised /",
+    "          -systems (READY WITH CAVEATS) / -final / -package (PACKAGE PASS, connected).",
+    "",
+    "plotHookRolled: hook.builders_dilemma, hook.death_and_return, hook.civil_unrest",
+    "plotHookTaken:  hook.civil_unrest — drifted: the settlement coming apart is the court's",
+    "                panic of loyalty spilling into the streets as a plague rumour on the",
+    "                failure side. builders_dilemma and death_and_return fought a nativity reading.",
+    "",
+    "Rolled constraints (brief, binding): reach star · steps star 0.74 -> star 0.82 · settings",
+    "urban (rolled sacred -> the cathedral, inside the town) · shape opt-in complication ·",
+    "system items (advisory) · consequence hand drive + place · p3Shape obstruction · opposition",
+    "beast (panic) read as people, a court in a panic of loyalty · disposition open · agentRole",
+    "competitor · scale personal · rarityTier 2 · scale local · intrinsicTier shaping.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            The duke's heir is born, the cathedral's nativity promises a lucky life,",
+    "                  and the agent has seen a hard star in the same sky.",
+    "  Whose problem?  The agent's: they saw the star, and only they can carry it to the duke.",
+    "                  Scene-local; no prior tie to the duke or the cathedral asserted (rule 7).",
+    "  Reach = theme?  Star throughout. Step 0 (0.74) reads the child's fate from the sky. Step 1",
+    "                  Warn arm (0.82) makes a lord believe a reading of fate over a flattering",
+    "                  one; Quiet arm (0.76) gives a true but partial reading aloud.",
+    "  Shape           Opt-in Complication. Step 0 is taken by every mortal, then an agent-decided",
+    "                  fork on courage_prudence: positive = warn the duke (engage), negative (and",
+    "                  fallback) = keep the star quiet (decline). The two step-0 specials carry",
+    "                  opposite pole leans; the player never picks.",
+    "  Decline price   The decline arm is cheaper (0.76 vs 0.82) but stays inside the brief's",
+    "                  0.72-0.85 master band; its prize is smaller (no favour). Recorded deviation",
+    "                  from the row's single 0.82 step-1 figure.",
+    "  Carryover       Step 0 continue_weakened; both arms author carryoverFactorLines keyed on",
+    "                  step 0 (no critical_failure row: a step-0 critical failure ends the action).",
+    "                  Both arms and the fallback are fail_action.",
+    "  Consequence hand (binding, THR-1145): drive + place — no swap.",
+    "    drive         assign_ambition ambition_fulfill_destiny on $actor, both arms' success",
+    "                  half (EVENT_MINTED pool, resolvable since THR-1703). PATH chip.",
+    "    place         apply_condition trait.condition.location.plague_scare on $here, both arms'",
+    "                  failure half (intensity 0.6, term = CONDITION_PLAGUE_SCARE_DURATION). SCAR",
+    "                  chip on the failure band only.",
+    "  Extras          favor_creation debtor $cast:duke (Warn success); reputation_with $here",
+    "                  +0.08 Warn / +0.05 Quiet success, -0.08 / -0.06 failure, -0.03 step-0",
+    "                  failure (backs the critical_failure reputation chip on the step-0 route).",
+    "  Cool failure?   Nobody is hurt, jailed or branded. A lost telling costs the master's name",
+    "                  in the town and leaves a plague scare on it; the duke took a rival's word.",
+    "  Trait hooks     Gate: none. Variant: True (trait.core.core_integrity.virtue) +0.04.",
+    "                  Trait-only nudge: none. Trait fragment: none.",
+    "  Systems quota   cast + rewards (assign_ambition, favor_creation) + conditions + reputation.",
+    "  Cards           Step 0: Kindle Duty (Kindled Ambition, spirit, leans courage), Plant",
+    "                  Caution (Whisper, mind, leans prudence) + deal 4. Warn: Trip the Flatterer",
+    "                  (Stumble, chaos, opposes astrologer), Light the Sign (Omen, light) + deal 4.",
+    "                  Quiet arm deal-only. No libraryCardId bound; no Heavy Hand.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      {actor} arrives in {location} on the day the duke's heir is born.",
+    "  2 P2 events?       The cathedral's nativity is cast and celebrated; the agent was not",
+    "                     asked; a hard star rose at the hour of the birth.",
+    "  3 P3 one stake?    Obstruction: the court will hear nothing against the chart without proof.",
+    "  4 ≤80 words?       Opening 12 + spine 64 = 76.",
+    "  5 Read aloud?      Every sentence is a report.",
+    "  6 Stated?          The flattering chart, the star and the court's refusal are stated.",
+    "  7 Every sentence works? Challenge, test or outcome.",
+    "  8 Nothing unintroduced? The cathedral, its astrologers, the court and the star appear",
+    "                     before any card or chip names them; the duke and first astrologer in step 1.",
+    "  9 One named person? Warn {cast:duke}; Quiet {cast:astrologer}.",
+    " 10 Stake in a sentence? 'Tell the duke his heir faces a hard first year, against his",
+    "                     own court's flattering nativity, or keep it quiet.'",
+    " 11 Cards verb+noun? Yes; no name word repeated in its effect line; no digits.",
+    " 12 Opening per class? urban, the only class, written.",
+    "",
+    "─── Known caveats (systems pass) ────────────────────────────────────",
+    "  A step-1 critical failure writes plague_scare with no chip on its page (the band also",
+    "  serves the step-0 critical-failure route, where no scare is written). success_at_cost",
+    "  writes what success writes (metadata half-keyed; cost is prose). assign_ambition refuses",
+    "  on no_free_slot (engine-side). Measurement: the fork carries no top-level difficulty, so",
+    "  measure:roll-spread reads step 0 only (0.74)."
+  ],
+  "template": {
+    "id": "encounter.town.ducal_nativity",
+    "stakes": {
+      "goal": "learn what the hard star means for the heir",
+      "risk": "have the town call the star a plague they foresaw",
+      "won": "warned the duke, and healers watch the heir",
+      "lost": "was sent from the hall, the warning unheard",
+      "lostBadly": "had the warning called a curse on the heir",
+      "arms": {
+        "negative": {
+          "won": "kept the hard star quiet and read the bright years",
+          "lost": "had no answer for the first year and set off talk",
+          "lostBadly": "let the hard star slip, and the court heard a curse"
+        }
+      }
+    },
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Duke's Nativity",
+    "reach": "star",
+    "crudType": "update",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "courage_prudence",
+      "revelation_discretion"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} arrives in {location} on the day the duke's heir is born."
+    },
+    "steps": [
+      {
+        "reach": "star",
+        "duration": {
+          "min": 1,
+          "max": 1
+        },
+        "difficulty": 0.74,
+        "purposeLine": "Read the sky",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "The cathedral's astrologers have cast the child's nativity. It promises a long and lucky life, and the court is celebrating it. {actor} was not asked. At the hour of the birth, they saw a hard star rise over {location}.\n\nTonight {actor} reads the same sky to learn what the star means for the child. The court will hear nothing against the cathedral's chart without proof.",
+        "criticalSuccessAfterimage": "They read the whole year in the sky: a fever in the child's first winter, and the month it comes.",
+        "successAfterimage": "They read a sickness in the child's first winter.",
+        "successAtCostAfterimage": "They read a sickness in the child's first winter, and the cathedral's watchmen saw them at it.",
+        "failureAfterimage": "They read a hard year for the child, but could not say what kind.",
+        "criticalFailureAfterimage": "They read the hard star wrong, as a sign against {location} and not the child.",
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.03
+            }
+          ]
+        },
+        "deal": {
+          "count": 4,
+          "tags": [
+            "lore",
+            "insight"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "nativity.kindle_duty",
+            "name": "Kindle Duty",
+            "sphere": "spirit",
+            "essenceCost": 1,
+            "forecastDelta": 0.06,
+            "poleLean": {
+              "axis": "courage_prudence",
+              "toward": "positive"
+            },
+            "imageTag": "generic.energy",
+            "effectLine": "Set the child's safety on their conscience. It steadies the reading and makes them readier to tell the duke.",
+            "bandProse": {
+              "success": "The child's safety stayed on their mind, and they read the sky to the last star.",
+              "success_at_cost": "The child's safety kept them reading until first light.",
+              "failure": "The child's safety pressed on them, and they hurried the reading."
+            }
+          },
+          {
+            "id": "nativity.plant_caution",
+            "name": "Plant Caution",
+            "sphere": "mind",
+            "essenceCost": 1,
+            "forecastDelta": 0.06,
+            "poleLean": {
+              "axis": "courage_prudence",
+              "toward": "negative"
+            },
+            "imageTag": "generic.focus",
+            "effectLine": "Remind them what bad news costs the one who brings it. It makes them read more carefully, and readier to keep quiet.",
+            "bandProse": {
+              "critical_success": "They weighed every word they might say, and read the sky just as carefully.",
+              "near_miss": "They weighed what the news might cost, and missed a star.",
+              "failure": "They thought more about the court than the sky, and read half of it.",
+              "critical_failure": "They thought only of what the court would say, and lost their place in the sky."
+            }
+          }
+        ]
+      },
+      {
+        "branchOnStep": 0,
+        "decidedBy": {
+          "axis": "courage_prudence"
+        },
+        "variants": {
+          "positive": {
+            "reach": "star",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.82,
+            "purposeLine": "Warn the duke",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "The duke, {cast:duke}, gives {actor} an audience at the end of the birth feast. The first astrologer stands beside the duke, and the court cheers every line of the cathedral's chart. Anyone who doubts it is booed out of the hall. {actor} must make the duke believe the warning before the court shouts it down.",
+            "criticalSuccessAfterimage": "The duke believed the hard star and thanked them before the whole court.",
+            "successAfterimage": "The duke believed the warning and sent for healers that night.",
+            "successAtCostAfterimage": "The duke believed the warning, but the first astrologer would not look at them again.",
+            "failureAfterimage": "The duke would not hear the warning out, and sent them from the hall.",
+            "criticalFailureAfterimage": "The court called the warning a curse on the heir, and the word reached the streets by morning.",
+            "carryoverFactorLines": {
+              "critical_success": {
+                "text": "They can name the month the fever comes.",
+                "polarity": "for",
+                "forecastDelta": 0.06
+              },
+              "success": {
+                "text": "They know the child falls sick in the first winter.",
+                "polarity": "for",
+                "forecastDelta": 0.04
+              },
+              "success_at_cost": {
+                "text": "The cathedral knows they read the sky that night.",
+                "polarity": "against",
+                "forecastDelta": -0.02
+              },
+              "near_miss": {
+                "text": "They know only that the first year is hard.",
+                "polarity": "for",
+                "forecastDelta": 0.02
+              },
+              "failure": {
+                "text": "They cannot say what the hard star means.",
+                "polarity": "against",
+                "forecastDelta": -0.03
+              }
+            },
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": 0.08
+                },
+                {
+                  "kind": "favor_creation",
+                  "magnitudeRange": [
+                    0.15,
+                    0.3
+                  ],
+                  "context": "Warned the duke of a hard first year for the heir",
+                  "debtorAgentId": "$cast:duke"
+                },
+                {
+                  "kind": "assign_ambition",
+                  "templateId": "ambition_fulfill_destiny",
+                  "targetAgentId": "$actor",
+                  "narrativeHook": "Read a hard first year in the duke's heir's stars, and means to see the child through it."
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.08
+                },
+                {
+                  "kind": "apply_condition",
+                  "conditionTraitId": "trait.condition.location.plague_scare",
+                  "targetLocationId": "$here",
+                  "intensity": 0.6
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "presence",
+                "social"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "nativity.trip_the_flatterer",
+                "name": "Trip the Flatterer",
+                "sphere": "chaos",
+                "essenceCost": 2,
+                "forecastDelta": 0.08,
+                "opposes": "astrologer",
+                "imageTag": "generic.luck",
+                "effectLine": "Make the first astrologer misread the cathedral's own chart aloud. The court hears the error.",
+                "bandProse": {
+                  "success": "The first astrologer read a wrong house from the cathedral's chart, and the duke heard it.",
+                  "near_miss": "The first astrologer stumbled once and recovered, and the court laughed it off.",
+                  "failure": "The first astrologer stumbled over one line, and the court cheered louder to cover it.",
+                  "critical_failure": "The first astrologer read the chart without a slip, and the duke thanked the cathedral for it."
+                }
+              },
+              {
+                "id": "nativity.light_the_sign",
+                "name": "Light the Sign",
+                "sphere": "light",
+                "essenceCost": 2,
+                "forecastDelta": 0.09,
+                "imageTag": "generic.light",
+                "effectLine": "Make the hard star burn bright over the hall tonight, where the duke can see it.",
+                "bandProse": {
+                  "critical_success": "The hard star burned over the hall, and the duke went out to look at it.",
+                  "success": "The hard star showed bright over the hall when the duke looked up.",
+                  "success_at_cost": "The hard star showed bright, and the court called it a lucky sign.",
+                  "failure": "The hard star showed for a moment and was lost in cloud.",
+                  "critical_failure": "The hard star showed bright, and the court took it as proof against {actor}."
+                }
+              }
+            ]
+          },
+          "negative": {
+            "reach": "star",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.76,
+            "purposeLine": "Read the later years",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} keeps the hard star quiet. But word has spread that a second reader watched the same sky. {cast:astrologer}, the cathedral's first astrologer, asks {actor} to read for the court as well. {actor} must give a true reading of the child's later years, and keep the first year out of it.",
+            "criticalSuccessAfterimage": "They read the child's later years so well that the court asked for nothing more.",
+            "successAfterimage": "They read the child's bright later years, and the court was satisfied.",
+            "successAtCostAfterimage": "They read the later years, and the first astrologer noticed what they left out.",
+            "failureAfterimage": "The court asked about the first year, and they had no answer ready.",
+            "criticalFailureAfterimage": "They let the hard star slip, and the court took it for a curse on the heir.",
+            "carryoverFactorLines": {
+              "critical_success": {
+                "text": "They know which years are bright and which is not.",
+                "polarity": "for",
+                "forecastDelta": 0.05
+              },
+              "success": {
+                "text": "They know where the hard year falls.",
+                "polarity": "for",
+                "forecastDelta": 0.03
+              },
+              "success_at_cost": {
+                "text": "The cathedral is watching what they say.",
+                "polarity": "against",
+                "forecastDelta": -0.02
+              },
+              "near_miss": {
+                "text": "They know the later years better than the first.",
+                "polarity": "for",
+                "forecastDelta": 0.01
+              },
+              "failure": {
+                "text": "They are not sure which year to leave out.",
+                "polarity": "against",
+                "forecastDelta": -0.03
+              }
+            },
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": 0.05
+                },
+                {
+                  "kind": "assign_ambition",
+                  "templateId": "ambition_fulfill_destiny",
+                  "targetAgentId": "$actor",
+                  "narrativeHook": "Kept the duke's heir's hard first year to themselves, and means to be there when it comes."
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.06
+                },
+                {
+                  "kind": "apply_condition",
+                  "conditionTraitId": "trait.condition.location.plague_scare",
+                  "targetLocationId": "$here",
+                  "intensity": 0.6
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "lore",
+                "presence"
+              ]
+            }
+          }
+        },
+        "fallback": {
+          "reach": "star",
+          "duration": {
+            "min": 1,
+            "max": 2
+          },
+          "difficulty": 0.76,
+          "purposeLine": "Read the later years",
+          "onSuccess": [],
+          "onFailure": [],
+          "failBehavior": "fail_action",
+          "narrativeTemplate": "{actor} keeps the hard star quiet. But word has spread that a second reader watched the same sky. {cast:astrologer}, the cathedral's first astrologer, asks {actor} to read for the court as well. {actor} must give a true reading of the child's later years, and keep the first year out of it.",
+          "criticalSuccessAfterimage": "They read the child's later years so well that the court asked for nothing more.",
+          "successAfterimage": "They read the child's bright later years, and the court was satisfied.",
+          "successAtCostAfterimage": "They read the later years, and the first astrologer noticed what they left out.",
+          "failureAfterimage": "The court asked about the first year, and they had no answer ready.",
+          "criticalFailureAfterimage": "They let the hard star slip, and the court took it for a curse on the heir.",
+          "carryoverFactorLines": {
+            "critical_success": {
+              "text": "They know which years are bright and which is not.",
+              "polarity": "for",
+              "forecastDelta": 0.05
+            },
+            "success": {
+              "text": "They know where the hard year falls.",
+              "polarity": "for",
+              "forecastDelta": 0.03
+            },
+            "success_at_cost": {
+              "text": "The cathedral is watching what they say.",
+              "polarity": "against",
+              "forecastDelta": -0.02
+            },
+            "near_miss": {
+              "text": "They know the later years better than the first.",
+              "polarity": "for",
+              "forecastDelta": 0.01
+            },
+            "failure": {
+              "text": "They are not sure which year to leave out.",
+              "polarity": "against",
+              "forecastDelta": -0.03
+            }
+          },
+          "successMetadata": {
+            "effects": [
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": 0.05
+              },
+              {
+                "kind": "assign_ambition",
+                "templateId": "ambition_fulfill_destiny",
+                "targetAgentId": "$actor",
+                "narrativeHook": "Kept the duke's heir's hard first year to themselves, and means to be there when it comes."
+              }
+            ]
+          },
+          "failureMetadata": {
+            "effects": [
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": -0.06
+              },
+              {
+                "kind": "apply_condition",
+                "conditionTraitId": "trait.condition.location.plague_scare",
+                "targetLocationId": "$here",
+                "intensity": 0.6
+              }
+            ]
+          },
+          "deal": {
+            "count": 4,
+            "tags": [
+              "lore",
+              "presence"
+            ]
+          }
+        }
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_integrity.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being True, they will not read the sky kinder than it is."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "duke",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "noble"
+        ],
+        "supportRole": "duke",
+        "spawnNpcRole": "noble",
+        "spawnName": "Aldric Varre"
+      },
+      {
+        "kind": "actor",
+        "key": "astrologer",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "sage",
+          "scholar"
+        ],
+        "supportRole": "first_astrologer",
+        "spawnNpcRole": "sage",
+        "spawnName": "Mabry Holt"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A reader who saw a hard star at the duke's heir's birth must decide whether to tell the duke.",
+      "success": "The reader's reading of the heir's hard first year was heard.",
+      "failure": "The reader's reading of the heir's stars was not believed, and the town took it for plague."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {
+        "positive": {
+          "overview": "{actor} took the hard star to the duke.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "{cast:astrologer} left the feast early. The duke's healers are already watching over the child.",
+              "changes": [
+                {
+                  "id": "nativity.warn.crit.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.crit.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:duke} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:duke}",
+                      "entityId": "$cast:duke",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.crit.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The court went quiet. No one cheered the cathedral's chart again that night.",
+              "changes": [
+                {
+                  "id": "nativity.warn.success.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.success.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:duke} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:duke}",
+                      "entityId": "$cast:duke",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.success.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "The duke has sent for healers. {cast:astrologer} has told the cathedral that {actor} called its chart a lie.",
+              "changes": [
+                {
+                  "id": "nativity.warn.cost.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.cost.favour",
+                  "kind": "shell_state",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "A favour owed",
+                  "detail": "{cast:duke} owes {actor} a favour.",
+                  "stateNoun": {
+                    "text": "a favour owed",
+                    "tooltipId": "ui.favour_owed"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:duke}",
+                      "entityId": "$cast:duke",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.cost.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "The duke took the first astrologer's word over {actor}'s. By morning the streets were saying the stars foretell a plague.",
+              "changes": [
+                {
+                  "id": "nativity.warn.fail.scare",
+                  "kind": "trait",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Talk of plague",
+                  "detail": "Doors stay shut in {location}, and travellers go around it.",
+                  "stateNoun": {
+                    "text": "Plague Scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Doors stay shut",
+                      "entityId": "trait.condition.location.plague_scare",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.warn.fail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Trusted less",
+                  "detail": "{location} trusts {actor}'s star-reading less.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{location} is saying the star over the heir's birth means plague, and that {actor} saw it first.",
+              "changes": [
+                {
+                  "id": "nativity.warn.critfail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Trusted less",
+                  "detail": "{location} trusts {actor}'s star-reading less.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "negative": {
+          "overview": "{actor} kept the hard star from the court.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "Only {actor} knows that the child's first year will be hard.",
+              "changes": [
+                {
+                  "id": "nativity.quiet.crit.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.quiet.crit.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "No one asked about the child's first year.",
+              "changes": [
+                {
+                  "id": "nativity.quiet.success.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.quiet.success.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "The court was satisfied. {cast:astrologer} asked {actor} twice about the child's first year, and got no answer.",
+              "changes": [
+                {
+                  "id": "nativity.quiet.cost.standing",
+                  "kind": "reputation",
+                  "category": "bond",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "Trusted in town",
+                  "detail": "{location} thinks better of {actor}'s star-reading.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "thinks better of",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.quiet.cost.ambition",
+                  "kind": "future_hook",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "info",
+                  "title": "A new ambition",
+                  "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Fulfill the Destiny",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "By morning the streets were saying {actor} had seen a plague in the heir's stars.",
+              "changes": [
+                {
+                  "id": "nativity.quiet.fail.scare",
+                  "kind": "trait",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Talk of plague",
+                  "detail": "Doors stay shut in {location}, and travellers go around it.",
+                  "stateNoun": {
+                    "text": "Plague Scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Doors stay shut",
+                      "entityId": "trait.condition.location.plague_scare",
+                      "visualKind": "attachment"
+                    }
+                  ]
+                },
+                {
+                  "id": "nativity.quiet.fail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Trusted less",
+                  "detail": "{location} trusts {actor}'s star-reading less.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{location} is saying the star over the heir's birth means plague, and that {actor} saw it first.",
+              "changes": [
+                {
+                  "id": "nativity.quiet.critfail.standing",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Trusted less",
+                  "detail": "{location} trusts {actor}'s star-reading less.",
+                  "stateNoun": {
+                    "text": "reputation with {location}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "trusts",
+                      "tooltipId": "ui.standing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "fallback": {
+        "overview": "{actor} read the sky and told no one.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "changes": [
+              {
+                "id": "nativity.fallback.crit.standing",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Trusted in town",
+                "detail": "{location} thinks better of {actor}'s star-reading.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "nativity.fallback.crit.ambition",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "A new ambition",
+                "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Fulfill the Destiny",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The court kept its feast, and the cathedral's chart still stands.",
+            "changes": [
+              {
+                "id": "nativity.fallback.success.standing",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Trusted in town",
+                "detail": "{location} thinks better of {actor}'s star-reading.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "nativity.fallback.success.ambition",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "A new ambition",
+                "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Fulfill the Destiny",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "changes": [
+              {
+                "id": "nativity.fallback.cost.standing",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "Trusted in town",
+                "detail": "{location} thinks better of {actor}'s star-reading.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "nativity.fallback.cost.ambition",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "A new ambition",
+                "detail": "{actor} is pursuing Fulfill the Destiny now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Fulfill the Destiny",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The court never heard of the hard star, and the cathedral's chart still stands.",
+            "changes": [
+              {
+                "id": "nativity.fallback.fail.scare",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Talk of plague",
+                "detail": "Doors stay shut in {location}, and travellers go around it.",
+                "stateNoun": {
+                  "text": "Plague Scare",
+                  "entityId": "trait.condition.location.plague_scare",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "Doors stay shut",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "nativity.fallback.fail.standing",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Trusted less",
+                "detail": "{location} trusts {actor}'s star-reading less.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "{location} is saying the star over the heir's birth means plague.",
+            "changes": [
+              {
+                "id": "nativity.fallback.critfail.standing",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Trusted less",
+                "detail": "{location} trusts {actor}'s star-reading less.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A master star-reader saw a hard year in the newborn heir's stars. They must decide whether to warn the duke against the court's flattering nativity."
+  }
+}

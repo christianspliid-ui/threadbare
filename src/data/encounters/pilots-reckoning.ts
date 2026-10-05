@@ -99,6 +99,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.pilots_reckoning',
+  stakes: {
+    goal: 'find the fault in the house\'s star tables',
+    risk: 'see the wagons lost two nights in open country',
+    won: 'steered the night run in on the day it was due',
+    lost: 'brought the wagons in two days late again',
+    lostBadly: 'lost the wagons two nights in open country',
+    arms: {
+      negative: {
+        won: 'handed back the tables and was thanked for the reading',
+        lost: 'handed back the tables and was counted money wasted',
+        lostBadly: 'had their reckoning called a guess before the drivers',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Run the Pilot Refused',

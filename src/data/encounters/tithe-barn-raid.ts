@@ -119,6 +119,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.tithe_barn_raid',
+  stakes: {
+    goal: 'clear their name of the tithe-barn theft',
+    risk: 'be called the tithe thief by the whole village',
+    won: 'caught the elder moving the tithe grain',
+    lost: 'was found alone in the passage and called the thief',
+    lostBadly: 'was found beside the grain and called the thief',
+    arms: {
+      negative: {
+        won: 'carried the grain back before the dawn count',
+        lost: 'was caught with a sack and called the tithe thief',
+        lostBadly: 'met the reeve in the barn with the first sack',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Blamed for the Tithe Barn',

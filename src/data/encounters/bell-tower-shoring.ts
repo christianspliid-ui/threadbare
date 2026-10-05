@@ -102,6 +102,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.bell_tower_shoring',
+  stakes: {
+    goal: 'shore up the leaning bell tower',
+    risk: 'bring the top of the tower down into the street',
+    won: 'set the cracked courses and stood the tower straight',
+    lost: 'left the bell tower propped and leaning',
+    lostBadly: 'brought the top of the tower down, bell and all',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Leaning Bell Tower',

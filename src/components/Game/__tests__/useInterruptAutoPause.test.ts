@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useState } from 'react';
-import { useInterruptAutoPause } from '../hooks/useInterruptAutoPause';
+import { useInterruptAutoPause, releaseClockOnBond } from '../hooks/useInterruptAutoPause';
 
 /** Harness: two independent interrupt surfaces ORed into one interruptOpen flag. */
 function useHarness(initialRunning: boolean) {
@@ -203,5 +203,46 @@ describe('useInterruptAutoPause — the held state is visible (THR-1711 review)'
     act(() => result.current.setModalA(false));
     expect(result.current.handle.heldRunning).toBeNull();
     expect(result.current.running).toBe(false);
+  });
+});
+
+describe('useInterruptAutoPause — the bond starts time (THR-1716)', () => {
+  it('runIfHeld sets the held state to running; the clock runs when the last interrupt closes', () => {
+    const { result } = renderHook(() => useHarness(false));
+    act(() => result.current.setModalA(true));
+    expect(result.current.handle.heldRunning).toBe(false);
+    let handled = false;
+    act(() => { handled = result.current.handle.runIfHeld(); });
+    expect(handled).toBe(true);
+    expect(result.current.handle.heldRunning).toBe(true);
+    expect(result.current.running).toBe(false);
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(true);
+  });
+
+  it('runIfHeld declines with no interrupt open', () => {
+    const { result } = renderHook(() => useHarness(false));
+    expect(result.current.handle.runIfHeld()).toBe(false);
+    expect(result.current.running).toBe(false);
+  });
+
+  it('releaseClockOnBond: a never-run clock runs after the meeting closes', () => {
+    const { result } = renderHook(() => useHarness(false));
+    act(() => result.current.setModalA(true));
+    act(() => { expect(releaseClockOnBond(false, result.current.handle)).toBe(true); });
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(true);
+  });
+
+  it('releaseClockOnBond: once the clock has run, a paused world stays paused (resume-to-prior)', () => {
+    const { result } = renderHook(() => useHarness(false));
+    act(() => result.current.setModalA(true));
+    act(() => { expect(releaseClockOnBond(true, result.current.handle)).toBe(false); });
+    act(() => result.current.setModalA(false));
+    expect(result.current.running).toBe(false);
+  });
+
+  it('releaseClockOnBond fails soft with no hold handle', () => {
+    expect(releaseClockOnBond(false, null)).toBe(false);
   });
 });

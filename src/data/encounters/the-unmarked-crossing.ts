@@ -492,6 +492,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_UNMARKED_CROSSING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.gold.the_unmarked_crossing',
+  stakes: {
+    goal: 'seal the smuggler\'s blank manifests',
+    risk: 'leave the barge stuck at the wharf, papers unsigned',
+    won: 'sealed the manifests and saw the barge downriver',
+    lost: 'sealed the papers on a crossing that may not hold',
+    arms: {
+      take_the_manifest_to_its_rightful_owner: {
+        won: 'carried the blank manifests to the merchant\'s factor',
+        lost: 'warned the factor, who did not know what to make of it',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Unmarked Crossing',

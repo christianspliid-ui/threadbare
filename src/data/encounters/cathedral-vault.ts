@@ -1,0 +1,1729 @@
+/**
+ * The Vault Before the Rains — slot 7 of the master-everyday batch (THR-1688).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-brief.md` (slot 7, binding).
+ * Pipeline: cathedral-vault-draft / -editorial (PASS WITH REVISIONS) / -revised /
+ *           -systems (READY WITH CAVEATS) / -final / -package.
+ * 
+ * plotHookRolled: hook.impossible_heist, hook.meeting_to_keep, hook.long_road
+ * plotHookTaken:  hook.long_road (drifted: the weather between now and spring decides it)
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ * Brief row       reach stone · steps stone 0.76 → stone 0.82 (mean 0.79, window fit 0.93) ·
+ *                 shape opt-in complication · settings rural + urban · consequence hand
+ *                 relationship + place (binding, no swap) · rarityTier 2 · scale local ·
+ *                 intrinsicTier shaping · id encounter.town.cathedral_vault (final)
+ * Rolled          plotHookRolled: hook.impossible_heist, hook.meeting_to_keep, hook.long_road
+ *                 plotHookTaken:  hook.long_road, drifted — "the road itself, weather and
+ *                                 distance, is the thing that will decide it" becomes the
+ *                                 season between now and spring: the weather decides whether
+ *                                 the vault stands. impossible_heist and meeting_to_keep set
+ *                                 aside (no theft; the opt-in shape carries no appointment).
+ *                 p3Shape opportunity · opposition time (the clock is the enemy) ·
+ *                 disposition n/a · agentRole the_target (the monks will hear them blamed) ·
+ *                 scale settlement · system movement (advisory, not taken — brief override)
+ * Crux            The abbey's new stone vault still rests on its timber frame, and {actor}
+ *                 must take the frame out before the winter rains or keep it safe until
+ *                 spring, knowing the abbot will blame them if the vault falls.
+ * Title           The Vault Before the Rains — the crux (a vault, a deadline of weather).
+ * Whose problem?  The agent's: they are the master builder the abbey sent for, and the abbot
+ *                 has named them answerable for the vault. Scene-local (the summons is the
+ *                 reason they arrived; no prior graph tie asserted — prose rule 7).
+ * Reach = theme?  Stone throughout — building and endurance. Step 0 (stone 0.76) tests
+ *                 whether the vault's mortar has set hard enough to carry the vault. The fork:
+ *                 Vanguard strikes the centering now (stone 0.82, the brief's step 2) — one
+ *                 day of nerve and even hands; Watcher keeps the frame sound all winter
+ *                 (stone 0.78) — a season of wet nights loosening swollen wedges. Both
+ *                 arms are master tests (0.72–0.85 band).
+ * Shape           Opt-in Complication. Step 0 is taken by every mortal. Then an agent-decided
+ *                 fork on courage_prudence (positive = Vanguard strikes now; negative =
+ *                 Watcher waits for spring). The decline arm (waiting) is LEGIBLE (no strike,
+ *                 no consecration feast before winter) and CHEAPER IN WHAT IT RISKS (smaller
+ *                 bond and reputation swings, no fallen vault — a cracked bay at worst), but
+ *                 priced in the master band, because declining the strike does not make the
+ *                 rain go away (the oath-breaker-rite ruling, applied). The two step-0
+ *                 specials carry opposite pole leans; the player never picks.
+ * Carryover       Step 0 continue_weakened. Both arms author carryoverFactorLines keyed on
+ *                 step 0 (critical_failure omitted: a step-0 critical failure ends the
+ *                 action — the debt-arbitration caveat).
+ * Forecast sums   step 0: 0.76 + 0.06 + 0.06 = 0.88 · strike: 0.82 + 0.10 + 0.08 = 1.00 ·
+ *                 wait: 0.78 + 0.10 + 0.10 = 0.98 — every step ≤ 1.
+ * Opposition      Time — the winter rains. No villain. The abbot is the pressure, not the
+ *                 opposition: they want the church open and have named whom to blame.
+ * Consequence hand (binding, THR-1145): relationship + place — no swap.
+ *   relationship  bond_change with $cast:abbot on both arms: success side + (they trust the
+ *                 master's judgement of stone), failure side − (they blame the master).
+ *                 Reactions add bond_change with $cast:foreman.
+ *   place         apply_condition trait.condition.location.festival on $here on every
+ *                 success side of both arms: the church is consecrated and the town keeps
+ *                 a feast for it. Ends warm (brief: slot 7 ends warm on success).
+ * Extras          reputation_with $here on failure sides (master failure is the name before
+ *                 the purse: the town stops trusting their word on stone); reactions.
+ * Cool failure?   None killed, jailed or branded. Strike-arm critical failure: the vault falls
+ *                 into an empty nave. Wait-arm critical failure: half the vault is pulled
+ *                 down and another master is sent for. The cost is the master's name.
+ * Trait hooks     Gate: none. Variant: Humble (trait.core.core_humility.virtue) +0.04 —
+ *                 "Being Humble, they check their own work twice." Trait-only nudge: none.
+ *                 Trait fragment: none.
+ * Systems quota   cast (abbot, foreman) + conditions (Festival on $here) + reputation
+ *                 (reputation_with $here, bond_change) — three.
+ * Heavy Hand      none. No card grants. No libraryCardId bound on any special.
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ * 1. P1 arrival with graph names — {actor}, {location}, the abbey, and why they came (sent for as master builder). Yes.
+ * 2. P2 events with costs — the vault finished, the frame still in, the rains next week, the risk stated.
+ * 3. P3 one stake — Opportunity (open the church by winter, at the risk of the vault), with the agent as target ("answers for the vault").
+ * 4. ≤80 words — 75.
+ * 5. Read aloud as report — yes.
+ * 6. Facts stated, not encoded — the swelling-timber danger and the blame are stated.
+ * 7. Every sentence works — yes.
+ * 8. Nothing unintroduced — abbot, centering, mortar, wedges, foreman introduced before cards or chips use them.
+ * 9. One named person per beat — step 0 abbot; Vanguard foreman; Watcher foreman (the abbot role-voiced, unnamed).
+ * 10. Stake in a sentence — "Take the frame out before the rains and open the church, or keep it safe all winter, and answer to the abbot either way."
+ * 11. Cards verb+noun — yes, all six on the lexicon.
+ * 12. Opening per class — rural, urban.
+ * 
+ * ─── Known caveats (systems pass) ─────────────────────────────────────
+ *   A step-0 critical_failure ends the action after the fork pole is recorded, so the
+ *   chosen arm's critical_failure page renders chips whose writes never fired. Corpus-
+ *   wide engine gap (debt-arbitration-systems.md § 9). Rare at 0.76 for a master.
+ *   The Watcher arm compresses a winter into a 2–3-tick step (NFP 5, accepted).
+ *   Measurement: the fork carries no top-level difficulty, so measure:roll-spread reads
+ *   step 0 only (stone 0.76, window fit 0.90, inside the master band).
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.cathedral_vault',
+  stakes: {
+    goal: 'see the abbey\'s new vault take its own weight',
+    risk: 'see the new vault fall into the nave',
+    won: 'struck the frame, and the vault took its weight',
+    lost: 'cracked the vault and wedged the frame back in',
+    lostBadly: 'dropped the new vault into the nave',
+    arms: {
+      negative: {
+        won: 'kept the frame sound and the vault whole till spring',
+        lost: 'let a bay of the vault crack from below',
+        lostBadly: 'let the swollen frame split the vault in midwinter',
+      },
+    },
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Vault Before the Rains',
+  reach: 'stone',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence'],
+  settings: ['rural', 'urban'],
+  openings: {
+    rural: '{actor} arrives at the abbey outside {location}, sent for as master builder.',
+    urban: '{actor} arrives at the abbey in {location}, sent for as master builder.',
+  },
+  steps: [
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.76,
+      purposeLine: 'Test the vault',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The abbey has finished its new church\'s stone vault. It still rests on its centering, the '
+        + 'timber frame beneath it. The winter rains come next week. Wet timber swells and can crack the '
+        + 'vault.\n\n'
+        + 'Abbot {cast:abbot} wants the frame out and the church open by winter. The abbot has told the '
+        + 'monks {actor} answers for the vault. First {actor} must test the mortar.',
+      criticalSuccessAfterimage: 'They tested every course of the vault and found the mortar set through.',
+      successAfterimage: 'They found the mortar set hard enough to carry the vault.',
+      successAtCostAfterimage: 'They found the mortar set, but the test took most of the dry week.',
+      failureAfterimage: 'They could not tell whether the mortar had set.',
+      criticalFailureAfterimage: 'They judged the mortar set when it was still soft.',
+      deal: {
+        count: 4,
+        tags: ['craft', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'vault.hurry_the_season',
+          name: 'Hasten The Strike',
+          sphere: 'time',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'courage_prudence',
+            toward: 'positive',
+          },
+          imageTag: 'generic.memory',
+          effectLine: 'Put the coming rain first in their thoughts. They lean toward taking the frame out this week.',
+          bandProse: {
+            success: 'The coming rain kept them at the work, and they tested every course before dark.',
+            success_at_cost: 'The coming rain hurried them, and they had to test the first courses again.',
+            near_miss: 'The coming rain hurried them past the courses over the west door.',
+            failure: 'The coming rain rushed the test, and they trusted courses they never checked.',
+          },
+        },
+        {
+          id: 'vault.show_the_hairline',
+          name: 'Reveal The Hairline Crack',
+          sphere: 'light',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'courage_prudence',
+            toward: 'negative',
+          },
+          imageTag: 'generic.light',
+          effectLine: 'Throw lamplight across a fine split in the mortar. They lean toward leaving the frame in until '
+            + 'spring.',
+          bandProse: {
+            critical_success: 'The lamplight found the fine split, and they traced it to a single course.',
+            success: 'The lamplight showed them one fine split, and they knew the rest of the mortar held.',
+            failure: 'The lamplight showed them a fine split, and they doubted every course after it.',
+            critical_failure: 'The lamplight showed them one split, and they took it for the only one.',
+          },
+        },
+      ],
+    },
+    {
+      branchOnStep: 0,
+      decidedBy: {
+        axis: 'courage_prudence',
+      },
+      variants: {
+        positive: {
+          reach: 'stone',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.82,
+          purposeLine: 'Strike the centering',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} orders the centering struck. Foreman {cast:foreman} puts a mason at every wedge under '
+            + 'the frame. The wedges must come out together, a little at a time, so the vault takes its weight '
+            + 'evenly. If one side drops first, the vault will split and fall into the nave. The monks watch '
+            + 'from the door.',
+          criticalSuccessAfterimage: 'They struck the frame in one day, and the vault never moved.',
+          successAfterimage: 'They struck the frame, and the vault took its own weight.',
+          successAtCostAfterimage: 'They struck the frame, and the vault settled with a fine crack along its crown.',
+          failureAfterimage: 'The vault cracked along its crown, and they drove the wedges back in to hold it.',
+          criticalFailureAfterimage: 'The vault fell into the nave.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They know the mortar has set through.',
+              polarity: 'for',
+              forecastDelta: 0.06,
+            },
+            success: {
+              text: 'They know the mortar will carry the vault.',
+              polarity: 'for',
+              forecastDelta: 0.04,
+            },
+            success_at_cost: {
+              text: 'Most of the dry week is already gone.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They know most of the mortar has set.',
+              polarity: 'for',
+              forecastDelta: 0.02,
+            },
+            failure: {
+              text: 'They do not know whether the mortar has set.',
+              polarity: 'against',
+              forecastDelta: -0.03,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:abbot',
+                sentimentDelta: 0.12,
+                trustDelta: 0.1,
+              },
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.festival',
+                targetLocationId: '$here',
+                intensity: 0.5,
+                durationTicks: 36,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.08,
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:abbot',
+                sentimentDelta: -0.12,
+                trustDelta: -0.12,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['craft', 'peril'],
+          },
+          nudges: [
+            {
+              id: 'vault.bind_the_courses',
+              name: 'Bind The Courses',
+              sphere: 'matter',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              imageTag: 'generic.matter',
+              effectLine: 'Make the mortar grip each stone as the timber comes away. The vault settles as one piece.',
+              bandProse: {
+                critical_success: 'The mortar gripped every stone, and the vault settled without a sound.',
+                success: 'The mortar held each stone in place as the frame came away.',
+                near_miss: 'The mortar held, but one stone settled ahead of the rest.',
+                failure: 'The mortar gripped too late, and a stone slipped as the frame came away.',
+                critical_failure: 'The mortar gripped each stone, and the vault still fell as one piece.',
+              },
+            },
+            {
+              id: 'vault.pace_the_crew',
+              name: 'Steady The Crew',
+              sphere: 'order',
+              essenceCost: 2,
+              forecastDelta: 0.08,
+              imageTag: 'generic.oath',
+              effectLine: 'Set every hand at the wedges to one count. No side of the vault drops before the others.',
+              bandProse: {
+                success: 'Every wedge came out on the same count, and the vault dropped evenly.',
+                success_at_cost: 'The crew kept the count, but slowly, and the work ran on past dark.',
+                failure: 'One gang lost the count, and the west side dropped first.',
+                critical_failure: 'The crew kept the count until the last wedges, then broke it.',
+              },
+            },
+          ],
+        },
+        negative: {
+          reach: 'stone',
+          duration: {
+            min: 2,
+            max: 3,
+          },
+          difficulty: 0.78,
+          purposeLine: 'Keep the frame sound',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: '{actor} tells the monks the frame stays in until spring. The abbot calls it cowardice. All '
+            + 'winter the rain will soak the frame and push it up against the new stone. {actor} and Foreman '
+            + '{cast:foreman} must loosen the wedges after every wet night, or the frame will break the vault.',
+          criticalSuccessAfterimage: 'They kept the frame sound, and the vault never cracked.',
+          successAfterimage: 'They kept the frame sound until spring.',
+          successAtCostAfterimage: 'They kept the frame sound, except for one swell that cracked a course over the door.',
+          failureAfterimage: 'One wet week they fell behind, and a bay of the vault cracked from below.',
+          criticalFailureAfterimage: 'In midwinter the frame split the vault along its crown.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They know which courses can bear a swelling frame.',
+              polarity: 'for',
+              forecastDelta: 0.05,
+            },
+            success: {
+              text: 'They know the mortar will hold through a wet season.',
+              polarity: 'for',
+              forecastDelta: 0.03,
+            },
+            success_at_cost: {
+              text: 'The rain reached the frame before the work began.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They know most of the courses will hold.',
+              polarity: 'for',
+              forecastDelta: 0.02,
+            },
+            failure: {
+              text: 'They do not know which courses will give first.',
+              polarity: 'against',
+              forecastDelta: -0.03,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:abbot',
+                sentimentDelta: 0.1,
+                trustDelta: 0.08,
+              },
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.festival',
+                targetLocationId: '$here',
+                intensity: 0.5,
+                durationTicks: 36,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.05,
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:abbot',
+                sentimentDelta: -0.08,
+                trustDelta: -0.08,
+              },
+            ],
+          },
+          deal: {
+            count: 4,
+            tags: ['labor', 'craft'],
+          },
+          nudges: [
+            {
+              id: 'vault.stretch_the_dry_spells',
+              name: 'Stretch The Dry Spells',
+              sphere: 'time',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              imageTag: 'generic.time-slow',
+              effectLine: 'Lengthen the gaps between storms. The timber has more nights to shed its water.',
+              bandProse: {
+                critical_success: 'The storms came far apart all winter, and the frame never swelled.',
+                success: 'The storms came far apart, and the frame gave back its water between them.',
+                near_miss: 'The storms came far apart until the new year, then came night after night.',
+                failure: 'The gaps between storms closed in the new year, and the frame swelled.',
+              },
+            },
+            {
+              id: 'vault.wring_the_timber',
+              name: 'Draw The Water Out',
+              sphere: 'force',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              imageTag: 'generic.strength',
+              effectLine: 'Squeeze the frame dry between storms. The wedges stay loose through the wet nights.',
+              bandProse: {
+                success: 'The frame shed its water, and the wedges stayed loose.',
+                success_at_cost: 'The frame shed its water, but only after a night of swelling.',
+                failure: 'The frame held its water, and the wedges bound tight.',
+                critical_failure: 'The frame held its water through the worst storm, and the wedges would not move.',
+              },
+            },
+          ],
+        },
+      },
+      fallback: {
+        reach: 'stone',
+        duration: {
+          min: 2,
+          max: 3,
+        },
+        difficulty: 0.78,
+        purposeLine: 'Keep the frame sound',
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'fail_action',
+        narrativeTemplate: '{actor} tells the monks the frame stays in until spring. The abbot calls it cowardice. All '
+          + 'winter the rain will soak the frame and push it up against the new stone. {actor} and Foreman '
+          + '{cast:foreman} must loosen the wedges after every wet night, or the frame will break the vault.',
+        criticalSuccessAfterimage: 'They kept the frame sound, and the vault never cracked.',
+        successAfterimage: 'They kept the frame sound until spring.',
+        successAtCostAfterimage: 'They kept the frame sound, except for one swell that cracked a course over the door.',
+        failureAfterimage: 'One wet week they fell behind, and a bay of the vault cracked from below.',
+        criticalFailureAfterimage: 'In midwinter the frame split the vault along its crown.',
+        carryoverFactorLines: {
+          critical_success: {
+            text: 'They know which courses can bear a swelling frame.',
+            polarity: 'for',
+            forecastDelta: 0.05,
+          },
+          success: {
+            text: 'They know the mortar will hold through a wet season.',
+            polarity: 'for',
+            forecastDelta: 0.03,
+          },
+          success_at_cost: {
+            text: 'The rain reached the frame before the work began.',
+            polarity: 'against',
+            forecastDelta: -0.02,
+          },
+          near_miss: {
+            text: 'They know most of the courses will hold.',
+            polarity: 'for',
+            forecastDelta: 0.02,
+          },
+          failure: {
+            text: 'They do not know which courses will give first.',
+            polarity: 'against',
+            forecastDelta: -0.03,
+          },
+        },
+        successMetadata: {
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:abbot',
+              sentimentDelta: 0.1,
+              trustDelta: 0.08,
+            },
+            {
+              kind: 'apply_condition',
+              conditionTraitId: 'trait.condition.location.festival',
+              targetLocationId: '$here',
+              intensity: 0.5,
+              durationTicks: 36,
+            },
+          ],
+        },
+        failureMetadata: {
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: -0.05,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:abbot',
+              sentimentDelta: -0.08,
+              trustDelta: -0.08,
+            },
+          ],
+        },
+        deal: {
+          count: 4,
+          tags: ['labor', 'craft'],
+        },
+        nudges: [
+          {
+            id: 'vault.stretch_the_dry_spells',
+            name: 'Stretch The Dry Spells',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.1,
+            imageTag: 'generic.time-slow',
+            effectLine: 'Lengthen the gaps between storms. The timber has more nights to shed its water.',
+            bandProse: {
+              critical_success: 'The storms came far apart all winter, and the frame never swelled.',
+              success: 'The storms came far apart, and the frame gave back its water between them.',
+              near_miss: 'The storms came far apart until the new year, then came night after night.',
+              failure: 'The gaps between storms closed in the new year, and the frame swelled.',
+            },
+          },
+          {
+            id: 'vault.wring_the_timber',
+            name: 'Draw The Water Out',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.1,
+            imageTag: 'generic.strength',
+            effectLine: 'Squeeze the frame dry between storms. The wedges stay loose through the wet nights.',
+            bandProse: {
+              success: 'The frame shed its water, and the wedges stayed loose.',
+              success_at_cost: 'The frame shed its water, but only after a night of swelling.',
+              failure: 'The frame held its water, and the wedges bound tight.',
+              critical_failure: 'The frame held its water through the worst storm, and the wedges would not move.',
+            },
+          },
+        ],
+      },
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_humility.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Humble, they check their own work twice.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'abbot',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['monk', 'priest'],
+      supportRole: 'abbot',
+      spawnNpcRole: 'monk',
+      spawnName: 'Anselm Hale',
+    },
+    {
+      kind: 'actor',
+      key: 'foreman',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['mason'],
+      supportRole: 'works_foreman',
+      spawnNpcRole: 'mason',
+      spawnName: 'Wat Durran',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'An abbey\'s new stone vault still rests on its timber frame. {actor} may strike the frame before '
+      + 'the winter rains, or keep it sound until spring.',
+    success: '{actor} saw the abbey\'s new vault take its own weight.',
+    failure: '{actor} answered to the abbey for a broken vault.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {
+      positive: {
+        overview: '{actor} struck the centering before the rains.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'The church opened to {location} before the first rain, and the monks held their first service '
+              + 'under the new vault that week.',
+            changes: [
+              {
+                id: 'vault.pos.crit.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.crit.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.pos.crit.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.crit.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The church opened before winter, as {cast:abbot} wanted, and the vault needed no repair.',
+            changes: [
+              {
+                id: 'vault.pos.succ.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.succ.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.pos.succ.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.succ.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'The last dry days went on the vault, and the church opened late, in the first rain.',
+            changes: [
+              {
+                id: 'vault.pos.cost.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.cost.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.pos.cost.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.cost.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The church stays shut until spring, and the cracked vault must be repaired before it opens. A '
+              + 'builder sent for by name is only as good as the last vault they struck.',
+            changes: [
+              {
+                id: 'vault.pos.fail.town_doubt',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Doubt',
+                detail: '{location} no longer trusts {actor}\'s word on stone.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.fail.abbot_blame',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Abbot\'s Blame',
+                detail: '{cast:abbot} blames {actor} for the vault.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.pos.fail.stay_rebuild',
+                label: 'Stay And Rebuild',
+                intent: 'The mortal offers to rebuild what failed. {cast:abbot} thinks a little better of them.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: 0.06,
+                    trustDelta: 0.04,
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.fail.defend_name',
+                label: 'Defend Their Name',
+                intent: 'The mortal tells the town the winter rains broke the vault. The town hears them out; '
+                  + '{cast:abbot} does not forgive it.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.03,
+                  },
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: -0.06,
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'No one was hurt. The abbey must clear the broken stone and build its vault again.',
+            changes: [
+              {
+                id: 'vault.pos.critfail.town_doubt',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Doubt',
+                detail: '{location} no longer trusts {actor}\'s word on stone.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.critfail.abbot_blame',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Abbot\'s Blame',
+                detail: '{cast:abbot} blames {actor} for the vault.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.pos.critfail.stay_rebuild',
+                label: 'Stay And Rebuild',
+                intent: 'The mortal offers to rebuild what failed. {cast:abbot} thinks a little better of them.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: 0.06,
+                    trustDelta: 0.04,
+                  },
+                ],
+              },
+              {
+                id: 'vault.pos.critfail.defend_name',
+                label: 'Defend Their Name',
+                intent: 'The mortal tells the town the winter rains broke the vault. The town hears them out; '
+                  + '{cast:abbot} does not forgive it.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.03,
+                  },
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: -0.06,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      negative: {
+        overview: '{actor} kept the centering in until spring.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'In spring the frame came out in a day, and the church opened with the first fine weather.',
+            changes: [
+              {
+                id: 'vault.neg.crit.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.crit.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.neg.crit.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.crit.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The frame came out in spring, and the vault took its own weight. The church opened a season '
+              + 'late, with its vault whole.',
+            changes: [
+              {
+                id: 'vault.neg.succ.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.succ.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.neg.succ.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.succ.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'The church opened late in spring, once the last work on the vault was done.',
+            changes: [
+              {
+                id: 'vault.neg.cost.abbot_trust',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'The Abbot\'s Trust',
+                detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.cost.feast',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A Feast Day',
+                detail: '{location} keeps a feast for the new church.',
+                stateNoun: {
+                  text: 'Festival',
+                  entityId: 'trait.condition.location.festival',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.neg.cost.credit_crew',
+                label: 'Credit The Crew',
+                intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                  + 'remembers it.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:foreman',
+                    sentimentDelta: 0.12,
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.cost.accept_thanks',
+                label: 'Accept The Thanks',
+                intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                  + 'its church.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.04,
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The cracked bay must come down and be built again before the church can open. The rest of the '
+              + 'vault stands.',
+            changes: [
+              {
+                id: 'vault.neg.fail.town_doubt',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Doubt',
+                detail: '{location} no longer trusts {actor}\'s word on stone.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.fail.abbot_blame',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Abbot\'s Blame',
+                detail: '{cast:abbot} blames {actor} for the vault.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.neg.fail.stay_rebuild',
+                label: 'Stay And Rebuild',
+                intent: 'The mortal offers to rebuild what failed. {cast:abbot} thinks a little better of them.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: 0.06,
+                    trustDelta: 0.04,
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.fail.defend_name',
+                label: 'Defend Their Name',
+                intent: 'The mortal tells the town the winter rains broke the vault. The town hears them out; '
+                  + '{cast:abbot} does not forgive it.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.03,
+                  },
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: -0.06,
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'Half the vault had to come down. {cast:abbot} has sent for another master to build it again.',
+            changes: [
+              {
+                id: 'vault.neg.critfail.town_doubt',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Town\'s Doubt',
+                detail: '{location} no longer trusts {actor}\'s word on stone.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.critfail.abbot_blame',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The Abbot\'s Blame',
+                detail: '{cast:abbot} blames {actor} for the vault.',
+                stateNoun: {
+                  text: 'reputation with {target}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+            ],
+            reactions: [
+              {
+                id: 'vault.neg.critfail.stay_rebuild',
+                label: 'Stay And Rebuild',
+                intent: 'The mortal offers to rebuild what failed. {cast:abbot} thinks a little better of them.',
+                effects: [
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: 0.06,
+                    trustDelta: 0.04,
+                  },
+                ],
+              },
+              {
+                id: 'vault.neg.critfail.defend_name',
+                label: 'Defend Their Name',
+                intent: 'The mortal tells the town the winter rains broke the vault. The town hears them out; '
+                  + '{cast:abbot} does not forgive it.',
+                effects: [
+                  {
+                    kind: 'reputation_with',
+                    targetLocationId: '$here',
+                    delta: 0.03,
+                  },
+                  {
+                    kind: 'bond_change',
+                    withAgentId: '$cast:abbot',
+                    sentimentDelta: -0.06,
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview: '{actor} tested the vault for the abbey.',
+      changes: [],
+      byOutcome: {
+        critical_success: {
+          overview: 'In spring the frame came out in a day, and the church opened with the first fine weather.',
+          changes: [
+            {
+              id: 'vault.fb.crit.abbot_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Abbot\'s Trust',
+              detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:abbot',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.crit.feast',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A Feast Day',
+              detail: '{location} keeps a feast for the new church.',
+              stateNoun: {
+                text: 'Festival',
+                entityId: 'trait.condition.location.festival',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'vault.fb.crit.credit_crew',
+              label: 'Credit The Crew',
+              intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                + 'remembers it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:foreman',
+                  sentimentDelta: 0.12,
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.crit.accept_thanks',
+              label: 'Accept The Thanks',
+              intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                + 'its church.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.04,
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'The frame came out in spring, and the vault took its own weight. The church opened a season '
+            + 'late, with its vault whole.',
+          changes: [
+            {
+              id: 'vault.fb.succ.abbot_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Abbot\'s Trust',
+              detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:abbot',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.succ.feast',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A Feast Day',
+              detail: '{location} keeps a feast for the new church.',
+              stateNoun: {
+                text: 'Festival',
+                entityId: 'trait.condition.location.festival',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'vault.fb.succ.credit_crew',
+              label: 'Credit The Crew',
+              intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                + 'remembers it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:foreman',
+                  sentimentDelta: 0.12,
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.succ.accept_thanks',
+              label: 'Accept The Thanks',
+              intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                + 'its church.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.04,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The church opened late in spring, once the last work on the vault was done.',
+          changes: [
+            {
+              id: 'vault.fb.cost.abbot_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Abbot\'s Trust',
+              detail: '{cast:abbot} trusts {actor}\'s judgement of stone now.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:abbot',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.cost.feast',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A Feast Day',
+              detail: '{location} keeps a feast for the new church.',
+              stateNoun: {
+                text: 'Festival',
+                entityId: 'trait.condition.location.festival',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'vault.fb.cost.credit_crew',
+              label: 'Credit The Crew',
+              intent: 'The mortal tells the monks the vault stands because of the crew\'s work. {cast:foreman} '
+                + 'remembers it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:foreman',
+                  sentimentDelta: 0.12,
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.cost.accept_thanks',
+              label: 'Accept The Thanks',
+              intent: 'The mortal takes the town\'s thanks in person. The town thinks better of the master who opened '
+                + 'its church.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.04,
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'The cracked bay must come down and be built again before the church can open. The rest of the '
+            + 'vault stands.',
+          changes: [
+            {
+              id: 'vault.fb.fail.town_doubt',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The Town\'s Doubt',
+              detail: '{location} no longer trusts {actor}\'s word on stone.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.fail.abbot_blame',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The Abbot\'s Blame',
+              detail: '{cast:abbot} blames {actor} for the vault.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:abbot',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'vault.fb.fail.stay_rebuild',
+              label: 'Stay And Rebuild',
+              intent: 'The mortal offers to rebuild what failed. {cast:abbot} thinks a little better of them.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:abbot',
+                  sentimentDelta: 0.06,
+                  trustDelta: 0.04,
+                },
+              ],
+            },
+            {
+              id: 'vault.fb.fail.defend_name',
+              label: 'Defend Their Name',
+              intent: 'The mortal tells the town the winter rains broke the vault. The town hears them out; '
+                + '{cast:abbot} does not forgive it.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.03,
+                },
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:abbot',
+                  sentimentDelta: -0.06,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The frame stays under the vault, and the abbey has stopped all work on the church.',
+          changes: [],
+        },
+      },
+    },
+  },
+  description: 'An opt-in master\'s call at an abbey: test the new vault\'s mortar (Stone), then, by the '
+    + 'mortal\'s own nerve, strike the centering before the winter rains (a Vanguard, Stone) or keep '
+    + 'the swelling frame sound until spring (a Watcher, Stone). A vault that stands puts a Festival on '
+    + 'the settlement and wins the abbot\'s trust; one that fails costs the abbot\'s trust and the '
+    + 'town\'s faith in the master\'s word on stone.',
+  locationSubtypes: expandSettings(['rural', 'urban']),
+  consequenceDraw: ['relationship', 'place'],
+};
+
+export const CATHEDRAL_VAULT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

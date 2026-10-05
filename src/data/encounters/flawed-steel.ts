@@ -885,6 +885,25 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'crafting.quest.flawed_steel',
+  stakes: {
+    goal: 'settle the flawed-blade fraud at the forge gate',
+    risk: 'see the forge branded a fraud along the road',
+    won: 'settled the fraud with a full accounting',
+    lost: 'lost the contract and the forge\'s finished stock',
+    lostBadly: 'saw the forge called a fraud in three towns',
+    arms: {
+      temper_the_narrative: {
+        won: 'settled the fraud with a managed story',
+        lost: 'saw the story caught and every contract cancelled',
+        lostBadly: 'saw the lie caught mid-handshake before the town',
+      },
+      keep_your_hand_folded: {
+        won: 'saw the settlement settle the fraud on its own',
+        lost: 'saw the gate talk turn to shouting and lost buyers',
+        lostBadly: 'watched the whole settlement turn on itself',
+      },
+    },
+  },
   tags: ['#craft_commission'],
   rarityTier: 2,
   intrinsicTier: 'shaping',

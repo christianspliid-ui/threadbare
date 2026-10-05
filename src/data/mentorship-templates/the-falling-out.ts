@@ -59,6 +59,12 @@ const step1Branch: ActionStep = {
 
 export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
   id: 'mentorship.the-falling-out',
+  stakes: {
+    goal: 'part from their teacher without lasting enmity',
+    risk: 'break with the teacher as open enemies',
+    won: 'parted from their teacher without lasting enmity',
+    lost: 'broke with the teacher, carrying more wound than craft',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Falling Out',

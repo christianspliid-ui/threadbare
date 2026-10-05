@@ -27,6 +27,12 @@ const TRAIL_COLD_DIFFICULTY = 0.2;
 
 export const HUNT_TRAIL_COLD: UnifiedActionTemplate = {
   id: HUNT_TRAIL_COLD_ID,
+  stakes: {
+    goal: 'keep hold of the beast\'s cold trail',
+    risk: 'lose the chance to face the beast',
+    won: 'kept a place to start the hunt again',
+    lost: 'lost the chance to face the beast for now',
+  },
   // Seed-only: the missed branch of a hunt's appointment is its only planter (THR-1526).
   drawable: false,
   name: 'The Trail Went Cold',

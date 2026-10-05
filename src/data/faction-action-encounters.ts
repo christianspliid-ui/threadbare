@@ -19,6 +19,12 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 
 export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.quest_board',
+  stakes: {
+    goal: 'finish the faction\'s posted commission',
+    risk: 'leave the job half-done for the faction to remember',
+    won: 'finished the faction\'s posted commission',
+    lost: 'left the commission unfinished on the board',
+  },
   name: 'Faction Quest Board',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -86,6 +92,12 @@ export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.rivalry_confrontation',
+  stakes: {
+    goal: 'stare down the rival faction\'s member',
+    risk: 'give ground to the rival faction in public',
+    won: 'stared down the rival faction\'s member',
+    lost: 'gave ground to the rival faction in public',
+  },
   name: 'Rival Faction Confrontation',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -154,6 +166,12 @@ export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.loyalty_test',
+  stakes: {
+    goal: 'answer the faction\'s questions and keep their place',
+    risk: 'leave the room with the faction cold to them',
+    won: 'answered the faction\'s questions and kept their place',
+    lost: 'left the room with the faction cold to them',
+  },
   name: 'Loyalty Examination',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -206,6 +224,12 @@ export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.bounty_hunt',
+  stakes: {
+    goal: 'track down and collect the faction\'s bounty',
+    risk: 'let the target slip away, warned',
+    won: 'tracked down and collected the faction\'s bounty',
+    lost: 'let the target slip away, now warned of the hunt',
+  },
   name: 'Faction Bounty',
   rarityTier: 2,
   intrinsicTier: 'story_beat',
@@ -280,6 +304,12 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.alliance_ceremony',
+  stakes: {
+    goal: 'see the alliance concordat signed',
+    risk: 'watch the ceremony stall on small terms',
+    won: 'saw the alliance concordat signed',
+    lost: 'watched the ceremony stall with no concordat',
+  },
   name: 'Alliance Concordat',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -336,6 +366,12 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.rivalry_subterfuge',
+  stakes: {
+    goal: 'learn the rival faction\'s plans unseen',
+    risk: 'get caught watching the rival faction',
+    won: 'learned the rival faction\'s plans unseen',
+    lost: 'got caught watching the rival faction',
+  },
   name: 'Rival Espionage',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -388,6 +424,12 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.defection_pitch',
+  stakes: {
+    goal: 'plant doubt in a rival faction member',
+    risk: 'tip off the rival faction to the pitch',
+    won: 'planted doubt in a rival faction member',
+    lost: 'tipped off the rival faction to the pitch',
+  },
   name: 'Recruit from Rival',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -439,6 +481,12 @@ export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
 
 export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.conclave_debate',
+  stakes: {
+    goal: 'sway the faction conclave to their side',
+    risk: 'speak and have the vote go the other way',
+    won: 'swayed the faction conclave to their side',
+    lost: 'spoke and saw the vote go the other way',
+  },
   name: 'Faction Conclave',
   rarityTier: 3,
   intrinsicTier: 'story_beat',

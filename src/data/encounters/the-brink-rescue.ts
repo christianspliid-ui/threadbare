@@ -481,6 +481,19 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'enc.brink_rescue',
+  stakes: {
+    goal: 'get the trapped man out before the building falls',
+    risk: 'see the floor go down with him in it',
+    won: 'got the trapped man out with the ward in his pocket',
+    lost: 'saw the beam come down before he reached it',
+    lostBadly: 'saw the floor go down with him into the heat',
+    arms: {
+      work_through_the_bystander: {
+        won: 'sent the rescuer in with the rope and got him out',
+        lost: 'watched the rescuer freeze at the threshold',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Brink Rescue',

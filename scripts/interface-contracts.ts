@@ -5969,7 +5969,10 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Encounter', 'UnifiedActionTemplate'],
     // The template carries the authored parts (`stakes`); the tick path freezes why
     // the mortal is here (`stakesContext`) so the opening line and the result line
-    // share one lead. Retires the THR-972 motive intro line read.
+    // share one lead. Retires the THR-972 motive intro line read. THR-1728: every
+    // encounter template authors `stakes` (the write site is each encounter data file;
+    // the two below stand for them), the Composition Contract requires it, and the veil
+    // never falls back to `template.description` — it shows the opening prose instead.
     mechanism: {
       kind: 'function',
       symbols: ['stampStakesContext', 'buildStakesLine', 'buildResultLine', 'stakesLineForAction', 'rememberedStakesLine'],
@@ -5977,6 +5980,7 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: [
       'src/data/encounters/vertical-slice.ts',
+      'src/data/encounter-content.ts',
       'src/engine/orchestrator.ts',
       'src/engine/chapterArchive.ts',
     ],
@@ -5985,6 +5989,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/ChapterLedger.tsx',
       'src/components/Game/encounterStakesRows.ts',
       'src/debug-bridge.ts',
+      'src/data/content-eval/encounterStakesRules.ts',
     ],
     verifiedLive: {
       date: '2026-10-04',

@@ -76,6 +76,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.overdue_caravan',
+  stakes: {
+    goal: 'find the overdue caravan on the old road',
+    risk: 'lead the search party lost into the dark',
+    won: 'found the caravan down the cutting and brought it out',
+    lost: 'turned back at dark without the caravan',
+    lostBadly: 'took the wrong road and spent the night lost',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Overdue Caravan',
