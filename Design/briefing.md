@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 17:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,11 +25,11 @@ Say "veto set-down waits", "veto readable hovers", "veto found it" or "veto fair
 
 **4 jobs ready** (healthy), **none being built right now.** All four ready jobs are the design-lane decisions above, each waiting out its veto window. The first to open is the set-down-waits fix at ~20:40 tonight, so the builder has nothing it may start before then. That pause is by design, not a stall.
 
-- One pull request is open and will merge itself on green: [#2243](https://github.com/christianspliid-ui/threadbare/pull/2243) moves the plan-checking reviewer from Fable to Opus (a cost change, no game effect).
+- One pull request is open and will merge itself on green: [#2244](https://github.com/christianspliid-ui/threadbare/pull/2244), a notes-only entry in the problem log (no game effect). The Opus reviewer change ([#2243](https://github.com/christianspliid-ui/threadbare/pull/2243)) has merged.
 
 ## Health
 
-- **The heavy simulation tests are still red on main**, on the newest commit `2fe01185` ([runs](https://github.com/christianspliid-ui/threadbare/actions)). Two tests fail: one hits a 5-second time limit (`debugTickBatch`) and one is a doom-milestone check (`doomIdentityMilestones`). Red since ~06:40 your time; no builder has claimed the fix yet. A builder owes it, not you.
-- **Simulation speed read slow this hour:** "tick cost 144 ms/tick steady, 37% above the 7-day median (106, 120 rows since 88e4562c); top phase agent_decision, 645 agents. Name the merges between 88e4562c and 2fe01185: git log --oneline --merges 88e4562c..2fe01185". The same commit measured 105 ms an hour ago, so this is most likely the machine being busy, not a code change. The builder checks it if it repeats.
-- **The worktree reaper has 6 worktrees waiting for a decision** (476 worktrees, 316 local branches on disk). Noted for visibility.
-- Everything else is green. The live site serves the newest main (`2fe01185`), scheduled tasks are on time, and the reaper last ran at 17:40.
+- **The heavy simulation tests are still red on main**, on the newest game commit `2fe01185` ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). Red since ~06:40 your time, now about 12 hours; no builder has claimed the fix yet. A builder owes it, not you.
+- **The background-jobs check gave two different answers within a minute.** Its first read said the weekly drift scan had failed three runs in a row and asked for you; a re-run said it was fine, and GitHub's own record shows the [drift scan](https://github.com/christianspliid-ui/threadbare/actions/workflows/drift-scan.yml) green on every run since August. The scan is healthy; the check is misreading it. That is a tooling fault for the agents, so it is not on your list.
+- **The worktree reaper has 6 worktrees waiting for a decision** (478 worktrees, 316 local branches on disk). Noted for visibility.
+- Everything else is green. The live site serves the newest game build (`2fe01185`; later commits were notes only), scheduled tasks are on time, and the reaper last ran at 18:40. Simulation speed is back to normal (111 ms per tick, 6% over the weekly median), so last hour's slow reading was the machine being busy.
