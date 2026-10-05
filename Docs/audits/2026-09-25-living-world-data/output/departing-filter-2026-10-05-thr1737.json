@@ -1,0 +1,702 @@
+{
+ "min": {
+  "1": {
+   "seed": 1,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 26,
+    "kept": 11,
+    "missed:unreachable": 2,
+    "missed:absent": 4
+   },
+   "departingStarts": 5,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 9,
+    "waiting>lost": 2,
+    "far>leaning>departing>waiting": 3,
+    "far>leaning>departing>lost": 3,
+    "far>departing": 2,
+    "waiting>far>leaning>lost": 1
+   },
+   "wallMs": 54369
+  },
+  "2": {
+   "seed": 2,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 33,
+    "kept": 15,
+    "missed:absent": 5,
+    "missed:unreachable": 1
+   },
+   "departingStarts": 16,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 15,
+    "waiting>leaning>waiting": 2,
+    "waiting>far>leaning>departing": 1,
+    "far>leaning>departing>waiting": 1,
+    "far>leaning>departing": 1,
+    "leaning>departing": 1,
+    "far>leaning>departing>lost": 1,
+    "waiting>far>waiting>far>waiting>far>waiting>far>waiting>far>waiting>leaning>waiting": 1,
+    "waiting>lost": 1,
+    "far>lost": 2,
+    "far>waiting>leaning>departing>waiting": 1,
+    "far>leaning>far>leaning>departing>leaning>departing": 1,
+    "far>leaning": 1,
+    "far": 2
+   },
+   "wallMs": 48284
+  },
+  "3": {
+   "seed": 3,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 26,
+    "kept": 15,
+    "missed:absent": 3
+   },
+   "departingStarts": 23,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>lost": 1,
+    "waiting>far>leaning>departing>waiting": 2,
+    "waiting": 8,
+    "far>leaning>departing>waiting": 1,
+    "waiting>departing>waiting": 1,
+    "far>departing": 1,
+    "leaning>departing>waiting": 2,
+    "leaning>departing": 1,
+    "far>leaning>departing": 3,
+    "lost": 1,
+    "far": 2,
+    "leaning>departing>lost": 1
+   },
+   "wallMs": 48045
+  },
+  "4": {
+   "seed": 4,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 25,
+    "kept": 8,
+    "missed:absent": 3,
+    "missed:unreachable": 3
+   },
+   "departingStarts": 3,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 2,
+    "waiting": 8,
+    "far>leaning>lost>leaning>lost": 1,
+    "far>leaning": 1,
+    "waiting>lost": 2,
+    "far>leaning>lost": 1,
+    "lost": 1,
+    "far>leaning>departing": 1,
+    "far": 2
+   },
+   "wallMs": 54012
+  },
+  "5": {
+   "seed": 5,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 23,
+    "kept": 11,
+    "missed:absent": 5
+   },
+   "departingStarts": 12,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 1,
+   "paths": {
+    "waiting>lost>far": 1,
+    "waiting": 6,
+    "far>leaning>departing>waiting": 4,
+    "waiting>lost": 1,
+    "far>departing>waiting": 1,
+    "waiting>far>leaning>departing>waiting": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>far>leaning>departing>leaning>lost>departing>lost": 1,
+    "waiting>far>waiting": 1,
+    "leaning>departing": 1,
+    "far>leaning": 1
+   },
+   "wallMs": 47393
+  },
+  "6": {
+   "seed": 6,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 19,
+    "kept": 10,
+    "missed:absent": 5
+   },
+   "departingStarts": 22,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 1,
+   "paths": {
+    "waiting>leaning>departing": 1,
+    "far>leaning>departing>waiting": 2,
+    "waiting": 5,
+    "far>leaning>departing>lost": 3,
+    "leaning>lost": 1,
+    "departing": 1,
+    "waiting>far>waiting": 1,
+    "leaning>departing>waiting": 1,
+    "far": 1
+   },
+   "wallMs": 41330
+  },
+  "7": {
+   "seed": 7,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 23,
+    "kept": 10,
+    "missed:absent": 3,
+    "missed:unreachable": 1,
+    "missed:chose_to_miss": 1
+   },
+   "departingStarts": 31,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 4,
+    "waiting>far>leaning>lost": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>far>leaning>departing>leaning>departing>waiting": 1,
+    "far>leaning>departing": 2,
+    "waiting": 5,
+    "waiting>lost": 1,
+    "far>leaning>lost": 1,
+    "lost>leaning>departing>lost": 1,
+    "far>leaning>lost>departing>lost": 1,
+    "waiting>far>waiting>far>leaning": 1
+   },
+   "wallMs": 53279
+  },
+  "8": {
+   "seed": 8,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 29,
+    "kept": 14,
+    "missed:absent": 2,
+    "missed:unreachable": 2
+   },
+   "departingStarts": 8,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>waiting>leaning>departing>lost": 1,
+    "far": 2,
+    "waiting": 15,
+    "waiting>far>waiting": 1,
+    "waiting>far>leaning>departing>waiting": 1,
+    "leaning>departing": 1,
+    "leaning>departing>waiting": 2,
+    "waiting>lost": 1,
+    "lost": 1,
+    "far>leaning": 1
+   },
+   "wallMs": 52676
+  },
+  "11": {
+   "seed": 11,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 27,
+    "missed:absent": 5,
+    "kept": 13
+   },
+   "departingStarts": 22,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting>far>leaning>lost": 1,
+    "far>leaning>departing>waiting": 1,
+    "far>leaning>departing>leaning>lost": 1,
+    "far>leaning>far>leaning>departing>lost": 1,
+    "far>leaning>departing>lost": 1,
+    "far>departing": 1,
+    "waiting": 7,
+    "waiting>far>waiting>leaning>waiting": 2,
+    "far>leaning>departing>leaning>departing>lost": 1,
+    "far>leaning>departing>waiting>departing>waiting": 1,
+    "waiting>far>waiting": 2,
+    "far>leaning>lost": 1,
+    "far": 1
+   },
+   "wallMs": 58199
+  },
+  "13": {
+   "seed": 13,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 23,
+    "kept": 9,
+    "missed:absent": 5
+   },
+   "departingStarts": 15,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 6,
+    "far>leaning>departing>waiting": 3,
+    "waiting>far>leaning>departing>waiting": 1,
+    "far>leaning>departing>lost": 2,
+    "far>leaning>lost": 2,
+    "far>leaning>departing": 3,
+    "lost": 1,
+    "far>leaning>departing>leaning>departing>lost": 1,
+    "waiting>lost>waiting": 1,
+    "departing>waiting": 1
+   },
+   "wallMs": 42144
+  },
+  "42": {
+   "seed": 42,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 21,
+    "kept": 12,
+    "missed:absent": 1,
+    "missed:unreachable": 1
+   },
+   "departingStarts": 2,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 5,
+    "waiting>lost": 1,
+    "waiting": 8,
+    "far>leaning>departing": 1,
+    "far>leaning>departing>lost": 2,
+    "lost": 1,
+    "far": 1
+   },
+   "wallMs": 37723
+  },
+  "99": {
+   "seed": 99,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 36,
+    "kept": 19,
+    "missed:absent": 2
+   },
+   "departingStarts": 43,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting>departing>waiting": 1,
+    "far>leaning>lost": 1,
+    "waiting": 12,
+    "far>leaning>departing": 3,
+    "waiting>far>waiting": 1,
+    "departing>waiting": 1,
+    "waiting>leaning>waiting>departing": 1,
+    "leaning>departing>waiting": 1,
+    "waiting>far>waiting>leaning>waiting>leaning>waiting": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>departing>waiting": 1,
+    "leaning>departing": 1,
+    "far>leaning": 2,
+    "leaning": 1,
+    "lost>waiting": 1,
+    "far": 1
+   },
+   "wallMs": 53430
+  }
+ },
+ "max": {
+  "1": {
+   "seed": 1,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 25,
+    "kept": 11,
+    "missed:unreachable": 2,
+    "missed:absent": 2
+   },
+   "departingStarts": 7,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 7,
+    "waiting>lost": 2,
+    "far>leaning>departing>waiting": 3,
+    "far>leaning>departing>lost": 2,
+    "far>departing>waiting": 1,
+    "far>leaning>lost": 1,
+    "waiting>far>leaning>departing": 1,
+    "far>leaning>departing": 1
+   },
+   "wallMs": 53556
+  },
+  "2": {
+   "seed": 2,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 36,
+    "kept": 19,
+    "missed:absent": 3,
+    "missed:chose_to_miss": 1,
+    "missed:unreachable": 1
+   },
+   "departingStarts": 37,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 12,
+    "waiting>leaning>waiting": 3,
+    "waiting>far>leaning>departing": 1,
+    "far>leaning>departing>waiting": 2,
+    "far>leaning>departing>lost": 1,
+    "leaning>departing": 1,
+    "waiting>far>waiting>far>waiting>far>waiting>far>waiting>far>waiting>leaning>waiting": 1,
+    "waiting>lost": 2,
+    "far>leaning>lost": 1,
+    "far>leaning>departing>leaning": 1,
+    "far>waiting>leaning>departing>lost": 1,
+    "far>leaning>departing": 3,
+    "leaning>departing>waiting": 1,
+    "far": 2
+   },
+   "wallMs": 47710
+  },
+  "3": {
+   "seed": 3,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 28,
+    "kept": 16,
+    "missed:absent": 3
+   },
+   "departingStarts": 22,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>lost": 1,
+    "waiting>far>leaning>departing>waiting": 2,
+    "waiting": 8,
+    "far>leaning>departing>waiting": 1,
+    "waiting>departing>waiting": 1,
+    "far>departing": 1,
+    "leaning>departing>waiting": 3,
+    "leaning>departing": 1,
+    "far>leaning>departing": 3,
+    "lost": 1,
+    "far": 2
+   },
+   "wallMs": 48173
+  },
+  "4": {
+   "seed": 4,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 25,
+    "kept": 8,
+    "missed:absent": 3,
+    "missed:unreachable": 3
+   },
+   "departingStarts": 3,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 2,
+    "waiting": 8,
+    "far>leaning>lost>leaning>lost": 1,
+    "far>leaning": 1,
+    "waiting>lost": 2,
+    "far>leaning>lost": 1,
+    "lost": 1,
+    "far>leaning>departing": 1,
+    "far": 2
+   },
+   "wallMs": 54815
+  },
+  "5": {
+   "seed": 5,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 23,
+    "kept": 11,
+    "missed:absent": 5
+   },
+   "departingStarts": 12,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 1,
+   "paths": {
+    "waiting>lost>far": 1,
+    "waiting": 6,
+    "far>leaning>departing>waiting": 4,
+    "waiting>lost": 1,
+    "far>departing>waiting": 1,
+    "waiting>far>leaning>departing>waiting": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>far>leaning>departing>leaning>lost>departing>lost": 1,
+    "waiting>far>waiting": 1,
+    "leaning>departing": 1,
+    "far>leaning": 1
+   },
+   "wallMs": 49958
+  },
+  "6": {
+   "seed": 6,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 21,
+    "kept": 10,
+    "missed:absent": 5
+   },
+   "departingStarts": 25,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 1,
+   "paths": {
+    "waiting>leaning>departing": 1,
+    "far>leaning>departing>waiting": 2,
+    "waiting": 8,
+    "far>leaning>departing>lost": 3,
+    "leaning>lost": 1,
+    "departing": 2,
+    "far>leaning": 1,
+    "lost": 1
+   },
+   "wallMs": 41404
+  },
+  "7": {
+   "seed": 7,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 21,
+    "kept": 9,
+    "missed:absent": 1,
+    "missed:unreachable": 1,
+    "missed:chose_to_miss": 1
+   },
+   "departingStarts": 7,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 5,
+    "waiting>far>leaning>departing": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>far>leaning>departing>leaning>departing>waiting": 1,
+    "waiting": 2,
+    "waiting>far>waiting>far>waiting>far>waiting>far>waiting>far>waiting>far>waiting>far": 1,
+    "far>leaning>lost": 1,
+    "departing>waiting": 1,
+    "far>leaning>departing>leaning>departing>lost": 1,
+    "far>leaning>departing": 1
+   },
+   "wallMs": 52415
+  },
+  "8": {
+   "seed": 8,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 28,
+    "kept": 15,
+    "missed:absent": 1
+   },
+   "departingStarts": 6,
+   "departingOverruns": 1,
+   "absentAfterOverrun": 1,
+   "paths": {
+    "far>waiting>leaning>departing>waiting": 1,
+    "far": 2,
+    "waiting": 15,
+    "waiting>far>waiting": 1,
+    "waiting>far>leaning>departing>waiting": 1,
+    "leaning>departing>leaning>departing>lost": 1,
+    "far>leaning>departing": 1,
+    "far>leaning>departing>waiting": 1,
+    "waiting>far>leaning": 1
+   },
+   "wallMs": 54325
+  },
+  "11": {
+   "seed": 11,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 27,
+    "missed:absent": 5,
+    "kept": 13
+   },
+   "departingStarts": 22,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting>far>leaning>lost": 1,
+    "far>leaning>departing>waiting": 1,
+    "far>leaning>departing>leaning>lost": 1,
+    "far>leaning>far>leaning>departing>lost": 1,
+    "far>leaning>departing>lost": 1,
+    "far>departing": 1,
+    "waiting": 7,
+    "waiting>far>waiting>leaning>waiting": 2,
+    "far>leaning>departing>leaning>departing>lost": 1,
+    "far>leaning>departing>waiting>departing>waiting": 1,
+    "waiting>far>waiting": 2,
+    "far>leaning>lost": 1,
+    "far": 1
+   },
+   "wallMs": 66097
+  },
+  "13": {
+   "seed": 13,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 24,
+    "kept": 11,
+    "missed:absent": 5
+   },
+   "departingStarts": 9,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting": 10,
+    "far>leaning>departing>waiting": 4,
+    "waiting>far>leaning>departing>waiting": 1,
+    "far>leaning>departing>lost": 1,
+    "far>leaning>lost": 2,
+    "far>leaning>departing": 2,
+    "lost": 1,
+    "far>leaning>departing>leaning>lost>departing>lost": 1
+   },
+   "wallMs": 44851
+  },
+  "42": {
+   "seed": 42,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 24,
+    "kept": 12,
+    "missed:absent": 1,
+    "missed:unreachable": 1
+   },
+   "departingStarts": 2,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "far>leaning>departing>waiting": 5,
+    "waiting>lost": 1,
+    "waiting": 8,
+    "far>leaning>departing": 2,
+    "far>leaning>departing>lost": 2,
+    "lost": 1,
+    "far>leaning": 1,
+    "far": 1
+   },
+   "wallMs": 37666
+  },
+  "99": {
+   "seed": 99,
+   "ticks": 200,
+   "arm": {
+    "APPOINTMENT_DEPARTING_PRICED_TRAVEL": true
+   },
+   "appt": {
+    "planted": 21,
+    "kept": 13,
+    "missed:absent": 3,
+    "missed:unreachable": 2
+   },
+   "departingStarts": 26,
+   "departingOverruns": 0,
+   "absentAfterOverrun": 0,
+   "paths": {
+    "waiting>departing>waiting": 1,
+    "far>leaning>lost": 1,
+    "waiting": 5,
+    "far>leaning>departing>lost": 2,
+    "far>leaning>departing>waiting": 2,
+    "departing>waiting": 1,
+    "leaning>departing>waiting": 2,
+    "far>leaning>departing": 1,
+    "leaning>departing": 1,
+    "waiting>departing>lost": 2,
+    "lost": 1,
+    "departing": 1
+   },
+   "wallMs": 53706
+  }
+ }
+}
