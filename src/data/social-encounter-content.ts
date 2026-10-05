@@ -45,6 +45,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.forge_alliance',
+    stakes: {
+      goal: 'settle the terms of a binding alliance',
+      risk: 'leave the table marked as a future rival',
+      won: 'sealed a binding alliance',
+      lost: 'left without terms both sides could sign',
+      lostBadly: 'left the table marked as a future rival',
+    },
     name: 'Forge Alliance',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -218,6 +225,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.recruit_faction',
+    stakes: {
+      goal: 'bring the prospect into the faction',
+      risk: 'hear the offer\'s weakness named aloud',
+      won: 'swore the prospect into the faction',
+      lost: 'watched the prospect turn down the oath',
+      lostBadly: 'heard the offer\'s weakness named aloud',
+    },
     name: 'Recruit to Faction',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -368,6 +382,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.investigate_reputation',
+    stakes: {
+      goal: 'find out what is true behind the subject\'s name',
+      risk: 'tip off the subject that they are being asked about',
+      won: 'found what is true behind the subject\'s name',
+      lost: 'ended up with more questions than answers',
+      lostBadly: 'tipped off the subject that they were watched',
+    },
     name: 'Investigate Reputation',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -532,6 +553,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.spy_on',
+    stakes: {
+      goal: 'learn the secret the target is guarding',
+      risk: 'be spotted and marked by the target',
+      won: 'learned the secret the target was guarding',
+      lost: 'came away with thin, unusable observations',
+      lostBadly: 'were spotted and marked by the target',
+    },
     name: 'Spy On',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1298,6 +1326,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.deceive',
+    stakes: {
+      goal: 'make the target act on a false story',
+      risk: 'have the lie found out to their face',
+      won: 'sent the target off acting on a false story',
+      lost: 'had the lie found out to their face',
+    },
     name: 'Deceive',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1458,6 +1492,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.challenge_duel',
+    stakes: {
+      goal: 'win the formal duel before witnesses',
+      risk: 'lose the duel in front of the whole town',
+      won: 'won the formal duel before witnesses',
+      lost: 'lost the duel in front of the whole town',
+    },
     name: 'Challenge to Duel',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1640,6 +1680,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.sabotage',
+    stakes: {
+      goal: 'wreck the target\'s works and slip away unseen',
+      risk: 'be caught leaving the scene',
+      won: 'wrecked the target\'s works and slipped away',
+      lost: 'were caught leaving the scene',
+    },
     name: 'Sabotage',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1803,6 +1849,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.rob',
+    stakes: {
+      goal: 'rob the mark and get clear',
+      risk: 'run into the guard with the goods in hand',
+      won: 'robbed the mark and got clear',
+      lost: 'ran into the guard in the lane mid-robbery',
+    },
     name: 'Rob',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1942,6 +1994,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.establish_patronage',
+    stakes: {
+      goal: 'take on a client under their patronage',
+      risk: 'break the first promise of patronage',
+      won: 'took on a client and kept the first promise',
+      lost: 'let the first promised help arrive late and short',
+    },
     name: 'Establish Patronage',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -2321,6 +2379,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.found_group',
+    stakes: {
+      goal: 'gather members and ratify the group\'s charter',
+      risk: 'see the charter meeting split the group apart',
+      won: 'ratified the charter and founded the group',
+      lost: 'saw the charter meeting split the group apart',
+    },
     name: 'Found a Group',
     rarityTier: 2,
     intrinsicTier: 'shaping',

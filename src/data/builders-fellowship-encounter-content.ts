@@ -51,6 +51,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.repair_wall',
+    stakes: {
+      goal: 'find the real damage and rebed the wall',
+      risk: 'leave a thin joint the next winter will find',
+      won: 'found the deep damage and rebedded the wall sound',
+      lost: 'rebuilt the wall with a thin joint at the second course',
+    },
     tags: ['#fellowship_errand'],
     name: 'Repair the Wall',
     rarityTier: 1,
@@ -193,6 +199,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.lay_foundation',
+    stakes: {
+      goal: 'lay a level foundation to the marked line',
+      risk: 'pour it with a crack in the northeast corner',
+      won: 'laid a level foundation to Fellowship standard',
+      lost: 'laid the foundation with a crack in the northeast corner',
+    },
     tags: ['#fellowship_errand'],
     name: 'Lay a Foundation',
     rarityTier: 1,
@@ -331,6 +343,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.forge_tools',
+    stakes: {
+      goal: 'forge a set of sound tools for the Fellowship',
+      risk: 'hand over a tool with a fold that fails under load',
+      won: 'forged a set of tools that ring clear',
+      lost: 'handed over a tool with a fold that will fail under load',
+    },
     tags: ['#fellowship_errand'],
     name: 'Forge New Tools',
     rarityTier: 1,
@@ -479,6 +497,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.survey_site',
+    stakes: {
+      goal: 'survey the lot and fix the drainage in the plans',
+      risk: 'hand over plans with a bad drainage guess',
+      won: 'surveyed the lot and drew the drainage fix in',
+      lost: 'handed over plans with a drainage guess in them',
+    },
     tags: ['#fellowship_errand'],
     name: 'Survey a Building Site',
     rarityTier: 2,
@@ -636,6 +660,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.quest.craft_commission',
+    stakes: {
+      goal: 'make the merchant\'s ironwork to specification',
+      risk: 'deliver a center escutcheon cut off true',
+      won: 'delivered the ironwork to specification and better',
+      lost: 'delivered the ironwork with the center piece off true',
+    },
     tags: ['#fellowship_errand'],
     name: 'Fulfill a Craft Commission',
     rarityTier: 2,
@@ -783,6 +813,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.senior.raise_bridge',
+    stakes: {
+      goal: 'raise a stone bridge over the seasonal ford',
+      risk: 'leave a settling abutment on the soft east bank',
+      won: 'raised the bridge and retired the ford',
+      lost: 'raised the bridge with a settling east abutment',
+    },
     name: 'Raise a Bridge',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -943,6 +979,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.senior.design_fortification',
+    stakes: {
+      goal: 'close the weak northern approach to the walls',
+      risk: 'leave a gap in the north curtain defenses',
+      won: 'hardened the northern approach',
+      lost: 'built the works with a gap in the north curtain',
+    },
     name: 'Design Fortifications',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1081,6 +1123,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.senior.master_craft',
+    stakes: {
+      goal: 'make the best piece in the three-day challenge',
+      risk: 'submit safe work the judges pass over',
+      won: 'made a piece the judges handled with care',
+      lost: 'submitted good work that was not the best',
+    },
     name: 'Master Craft Challenge',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1233,6 +1281,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.elite.grand_monument',
+    stakes: {
+      goal: 'raise the city monument on the harbor hill',
+      risk: 'raise it with its northeast corner off the design',
+      won: 'raised the monument true from every sightline',
+      lost: 'raised the monument with its northeast corner off',
+    },
     name: 'Raise a Grand Monument',
     rarityTier: 4,
     intrinsicTier: 'story_beat',
@@ -1399,6 +1453,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'bf.elite.engineer_wonder',
+    stakes: {
+      goal: 'raise a vault with no interior columns',
+      risk: 'raise it with its third section out of true',
+      won: 'raised the columnless vault as calculated',
+      lost: 'raised the vault with its third section out of true',
+    },
     name: 'Engineer a Wonder',
     rarityTier: 4,
     intrinsicTier: 'story_beat',
@@ -1575,6 +1635,12 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'bf.social.workshop_tour',
+    stakes: {
+      goal: 'learn a technique from a master\'s workshop',
+      risk: 'get a short tour that skips the good rooms',
+      won: 'learned a lamination method not in any book',
+      lost: 'got a short tour that skipped the good rooms',
+    },
     name: 'Workshop Tour',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1680,6 +1746,12 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'bf.social.guild_feast',
+    stakes: {
+      goal: 'find a lead on work at the Fellowship feast',
+      risk: 'arrive late and eat at the far end of the table',
+      won: 'heard of a commission that might fit',
+      lost: 'arrived late and ate at the far end of the table',
+    },
     name: 'Guild Feast',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1782,6 +1854,12 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'bf.social.material_trade',
+    stakes: {
+      goal: 'swap their surplus for what they need',
+      risk: 'carry the surplus home unsold',
+      won: 'swapped their surplus for what they needed',
+      lost: 'carried the surplus home unsold',
+    },
     name: 'Material Trading',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1886,6 +1964,12 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'bf.join',
+  stakes: {
+    goal: 'pass the Fellowship\'s joinery test',
+    risk: 'be told to come back when the joints are cleaner',
+    won: 'passed the joinery test and joined the Fellowship',
+    lost: 'was sent off to make cleaner joints',
+  },
   name: 'Apply to the Fellowship',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1967,6 +2051,12 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'bf.promotion',
+  stakes: {
+    goal: 'win the next rank with their portfolio',
+    risk: 'be sent away for six months over one piece',
+    won: 'won the next rank from the masters',
+    lost: 'was sent away for six months over the ironwork panel',
+  },
   name: 'Fellowship Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

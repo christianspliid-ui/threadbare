@@ -65,6 +65,12 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.pickpocket_run',
+    stakes: {
+      goal: 'lift purses from the market crowd',
+      risk: 'get caught with a hand in a mark\'s purse',
+      won: 'lifted heavy purses from the market crowd',
+      lost: 'got caught with a hand in a mark\'s purse',
+    },
     tags: ['#court_errand'],
     name: 'Pickpocket Run',
     rarityTier: 1,
@@ -154,6 +160,12 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.fence_goods',
+    stakes: {
+      goal: 'sell the stolen haul to a fence at a good price',
+      risk: 'take the fence\'s lowball for a junk haul',
+      won: 'sold the stolen haul to a fence at a good price',
+      lost: 'took the fence\'s lowball for a junk haul',
+    },
     tags: ['#court_errand'],
     name: 'Fence Stolen Goods',
     rarityTier: 1,
@@ -243,6 +255,12 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.protection_racket',
+    stakes: {
+      goal: 'collect the Court\'s protection money',
+      risk: 'be walked out of the district by the guard',
+      won: 'collected protection money from every shop',
+      lost: 'was walked out of the district by the guard',
+    },
     tags: ['#court_errand'],
     name: 'Run the Racket',
     rarityTier: 1,
@@ -333,6 +351,12 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.smuggle_cargo',
+    stakes: {
+      goal: 'move the contraband past the gate watch',
+      risk: 'lose the cargo to the gate watch',
+      won: 'moved the contraband past the gate watch',
+      lost: 'lost the cargo to the gate watch',
+    },
     tags: ['#court_errand'],
     name: 'Smuggle Cargo',
     rarityTier: 1,
@@ -432,6 +456,12 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.quest.blackmail_mark',
+    stakes: {
+      goal: 'find a scandal and squeeze the mark for coin',
+      risk: 'have the mark call the bluff',
+      won: 'found a scandal and got the mark paying',
+      lost: 'had the mark call the bluff',
+    },
     tags: ['#court_errand'],
     name: 'Blackmail a Mark',
     rarityTier: 1,
@@ -534,6 +564,12 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'uk.senior.heist_planning',
+    stakes: {
+      goal: 'rob the wealthy estate\'s vault',
+      risk: 'trip the alarms and leave without the prize',
+      won: 'robbed the estate\'s vault and left unseen',
+      lost: 'tripped the alarms and left without the prize',
+    },
     name: 'Plan the Heist',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -631,6 +667,12 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'uk.senior.eliminate_rival',
+    stakes: {
+      goal: 'remove the rival working the Court\'s streets',
+      risk: 'let the rival escape knowing their face',
+      won: 'removed the rival and took over their holdings',
+      lost: 'let the rival escape knowing their face',
+    },
     name: 'Eliminate a Rival',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -735,6 +777,12 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'uk.senior.corrupt_official',
+    stakes: {
+      goal: 'buy an official in the city hall',
+      risk: 'be reported by the official they approached',
+      won: 'bought an official in the city hall',
+      lost: 'was turned down by the official and had to vanish',
+    },
     name: 'Corrupt an Official',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -836,6 +884,12 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'uk.elite.seize_territory',
+    stakes: {
+      goal: 'take the district\'s underworld for the Court',
+      risk: 'see the new hold on the district crack',
+      won: 'took the district\'s underworld for the Court',
+      lost: 'took ground in the district and watched it crack',
+    },
     name: 'Seize Territory',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -945,6 +999,12 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'uk.elite.shadow_coup',
+    stakes: {
+      goal: 'put the city\'s council under the Court\'s thumb',
+      risk: 'see the coup unravel and scapegoats called for',
+      won: 'put the city\'s council under the Court\'s thumb',
+      lost: 'saw the coup unravel and scapegoats called for',
+    },
     name: 'Shadow Coup',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1059,6 +1119,12 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.social.gambling_den',
+    stakes: {
+      goal: 'win at the Court\'s dice and card tables',
+      risk: 'lose their coin to the Court\'s tables',
+      won: 'left the tables with heavier pockets',
+      lost: 'lost their coin and learned who cheats',
+    },
     name: 'The Gambling Den',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1135,6 +1201,12 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.social.black_market',
+    stakes: {
+      goal: 'find a rare buy in the black market',
+      risk: 'find nothing worth having on the stalls',
+      won: 'found a rare buy in the black market',
+      lost: 'found nothing worth having on the stalls',
+    },
     name: 'Black Market Browse',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1212,6 +1284,12 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'uk.social.whisper_network',
+    stakes: {
+      goal: 'trade one rumour for two in the whisper rooms',
+      risk: 'give away more than they hear',
+      won: 'traded for good word and a favour owed',
+      lost: 'gave away more than they heard',
+    },
     name: 'Whisper Network',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1305,6 +1383,12 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const UK_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'uk.join',
+  stakes: {
+    goal: 'steal a prize clean to join the Court',
+    risk: 'fumble the test theft and never be called again',
+    won: 'stole the prize clean and joined the Court',
+    lost: 'fumbled the test theft and was never called again',
+  },
   name: 'Prove Your Worth to the Court',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1366,6 +1450,12 @@ export const UK_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const UK_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'uk.promotion',
+  stakes: {
+    goal: 'prove their cunning for a higher Court rank',
+    risk: 'be held at their rank for now',
+    won: 'rose to a higher rank in the Court',
+    lost: 'was held at their rank for now',
+  },
   name: 'Court Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

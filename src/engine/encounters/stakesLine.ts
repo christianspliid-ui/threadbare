@@ -346,7 +346,7 @@ export function stampStakesContext(
   action: UnifiedAction,
   graph: WorldGraph,
   tick: number,
-  template?: Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description'>,
+  template?: Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description' | 'narrativeTemplates'>,
 ): UnifiedAction {
   if (action.resolved || action.stakesContext) return action;
   const stakesContext = buildStakesContext(action, graph);
@@ -366,7 +366,8 @@ export function stampStakesContext(
         templateId: template.id,
         leadSource: result?.leadSource ?? stakesContext.motiveSource ?? 'none',
         fallback: result ? result.fallback : 'no_stakes_initiation_used',
-        line: result?.text ?? '',
+        // The text the veil actually shows in the slot when there is no line (THR-1728).
+        line: result?.text ?? template.narrativeTemplates?.initiation ?? '',
         summary: result
           ? `stakes line: ${result.text}`
           : `stakes line: ${template.id} has no stakes — opening prose used`,
@@ -388,7 +389,7 @@ export function stampStakesContext(
  */
 export function stampStakesContexts(
   state: GameState,
-  templateFor: (templateId: string) => Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description'> | undefined,
+  templateFor: (templateId: string) => Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description' | 'narrativeTemplates'> | undefined,
 ): Partial<GameState> {
   const actions = state.unifiedActions ?? [];
   if (!actions.some(a => !a.resolved && !a.stakesContext)) return {};

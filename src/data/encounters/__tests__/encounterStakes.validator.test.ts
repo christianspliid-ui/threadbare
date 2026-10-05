@@ -17,7 +17,8 @@
  * **Membership predicate** (THR-688 rule A, computed, never a snapshot count):
  * every template in the unified registry, the exploration encounter list or the
  * location-branching list that `isEncounterAction` classifies as an encounter or
- * whose id is `encounter.*` (`check:encounter --all`'s population) — i.e. every
+ * whose id is `encounter.*` (`check:encounter --all`'s population), plus every
+ * encounter-shaped registry member (`isEncounterShapedTemplate`) — i.e. every
  * template that can open on the encounter veil from those registries. The rules
  * themselves live in `content-eval/encounterStakesRules.ts`, shared with the
  * Composition Contract's `stakes` block.
@@ -28,6 +29,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getUnifiedTemplateById,
+  isEncounterShapedTemplate,
   LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
   UNIFIED_ACTION_TEMPLATES,
 } from '../../unified-action-templates';
@@ -42,10 +44,13 @@ import type { EncounterStakes } from '../../../types/encounterStakes';
 function templatesInPredicate(): UnifiedActionTemplate[] {
   const byId = new Map<string, UnifiedActionTemplate>();
   for (const t of [...UNIFIED_ACTION_TEMPLATES, ...ENCOUNTER_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES]) {
-    // THR-1728: plus every `encounter.*` id, which is `check:encounter --all`'s own
-    // population — company drama, anomalies and traps open on the veil too, but
-    // `isEncounterAction` (the chapter-archive predicate) does not count them.
-    if (byId.has(t.id) || !(isEncounterAction(t.id) || t.id.startsWith('encounter.'))) continue;
+    // THR-1728: plus every `encounter.*` id (`check:encounter --all`'s population)
+    // and every encounter-shaped registry member — a scene a mortal walks into, which
+    // opens on the veil when a threaded mortal runs it (guild quests, tavern, social,
+    // faction scenes). Only the verbs stay out: `action.*` / `npc_*` and anything
+    // ascendant-castable (`isEncounterShapedTemplate`, THR-1635).
+    const inPredicate = isEncounterAction(t.id) || t.id.startsWith('encounter.') || isEncounterShapedTemplate(t);
+    if (byId.has(t.id) || !inPredicate) continue;
     byId.set(t.id, getUnifiedTemplateById(t.id) ?? t);
   }
   return [...byId.values()];

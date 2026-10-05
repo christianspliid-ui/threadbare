@@ -25,6 +25,12 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Banditry: rich cargo drew exactly who rich cargo draws ─────────────
   withEncounterContract({
     id: 'encounter_route_ambush',
+    stakes: {
+      goal: 'break the ambushers on the trade road',
+      risk: 'pull back and leave the road to the ambushers',
+      won: 'broke the ambushers and brought cargo home',
+      lost: 'pulled back and left the road to the ambushers',
+    },
     name: 'Ambush on the Trade Road',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -150,6 +156,12 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Toll dispute: two masters, one road ────────────────────────────────
   withEncounterContract({
     id: 'encounter_toll_dispute',
+    stakes: {
+      goal: 'strike a toll rate both banners will take',
+      risk: 'leave the chain up and the wagons turning back',
+      won: 'struck a toll rate both banners would take',
+      lost: 'left the chain up and the wagons turning back',
+    },
     name: 'The Toll Dispute',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -249,6 +261,12 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── Embargo: a staple lifeline, squeezed ───────────────────────────────
   withEncounterContract({
     id: 'encounter_route_embargo',
+    stakes: {
+      goal: 'break the grain embargo',
+      risk: 'leave the granary with nothing coming in',
+      won: 'broke the grain embargo and got the wagons rolling',
+      lost: 'left the granary with nothing coming in',
+    },
     name: 'The Grain Does Not Come',
     rarityTier: 2,
     intrinsicTier: 'shaping',

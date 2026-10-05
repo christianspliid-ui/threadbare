@@ -46,6 +46,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.brawl',
+    stakes: {
+      goal: 'stay standing through the tavern brawl',
+      risk: 'get dragged out to the alley by the collar',
+      won: 'stayed standing when the brawl ended',
+      lost: 'got dragged out to the alley by the collar',
+    },
     tags: ['#tavern_night'],
     name: 'Tavern Brawl',
     rarityTier: 2,
@@ -223,6 +229,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.overheard_rumor',
+    stakes: {
+      goal: 'overhear a name worth carrying',
+      risk: 'leave with a sore head and nothing heard',
+      won: 'overheard a name, a route and a date',
+      lost: 'left with a sore head and nothing heard',
+    },
     tags: ['#tavern_night'],
     name: 'Overheard Rumor',
     rarityTier: 1,
@@ -345,6 +357,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.drinking_contest',
+    stakes: {
+      goal: 'outdrink the trapper',
+      risk: 'slide off the stool and wake to a headache',
+      won: 'drank the trapper under the table',
+      lost: 'slid off the stool before the last cup',
+    },
     tags: ['#tavern_night'],
     name: 'Drinking Contest',
     rarityTier: 1,
@@ -462,6 +480,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.bardic_performance',
+    stakes: {
+      goal: 'win over the common room with a song',
+      risk: 'play out the song to a room that stopped listening',
+      won: 'brought the common room to its feet',
+      lost: 'fumbled the last verse and lost the room',
+    },
     tags: ['#tavern_night'],
     name: 'Bardic Performance',
     rarityTier: 1,
@@ -768,6 +792,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.recruiting_drive',
+    stakes: {
+      goal: 'sign up a new companion over a round',
+      risk: 'leave alone with the round paid for',
+      won: 'signed up the shepherd as a new companion',
+      lost: 'heard the shepherd say no and left alone',
+    },
     tags: ['#tavern_night'],
     name: 'Recruiting Drive',
     rarityTier: 1,
@@ -1081,6 +1111,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.confession_over_drinks',
+    stakes: {
+      goal: 'hear out the stranger\'s confession',
+      risk: 'watch the stranger leave with it unsaid',
+      won: 'heard the stranger\'s confession through',
+      lost: 'pushed too soon and watched the stranger leave',
+    },
     tags: ['#tavern_night'],
     name: 'Confession Over Drinks',
     rarityTier: 1,
@@ -1225,6 +1261,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.merchants_pitch',
+    stakes: {
+      goal: 'strike a fair deal for the merchant\'s wares',
+      risk: 'pay for a doctored item at the bar',
+      won: 'struck a fair deal for the merchant\'s wares',
+      lost: 'walked away with no deal as the merchant moved tables',
+    },
     tags: ['#tavern_night'],
     name: "Merchant's Pitch",
     rarityTier: 1,
@@ -1326,6 +1368,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.the_warning',
+    stakes: {
+      goal: 'hear out the watcher\'s warning about the east road',
+      risk: 'send the watcher home with the warning unsaid',
+      won: 'heard the watcher out and kept off the east road',
+      lost: 'shrugged off the watcher\'s warning about the east road',
+    },
     tags: ['#tavern_night'],
     name: 'The Warning',
     rarityTier: 1,

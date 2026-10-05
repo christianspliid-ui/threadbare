@@ -39,6 +39,12 @@ const MILL_LEASE_FORFEIT_DIFFICULTY = 0.45;
 
 export const MILL_LEASE_SEALED: UnifiedActionTemplate = {
   id: MILL_LEASE_SEALED_ID,
+  stakes: {
+    goal: 'see the mill lease sealed and the fee paid',
+    risk: 'come up short on rent and leave the lease unsealed',
+    won: 'saw the mill lease sealed and the fee paid',
+    lost: 'came up short on rent and left the lease unsealed',
+  },
   // Seed-only: the mill lease auction's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Lease Sealed',
@@ -100,6 +106,12 @@ export const MILL_LEASE_SEALED: UnifiedActionTemplate = {
 
 export const MILL_LEASE_FORFEIT: UnifiedActionTemplate = {
   id: MILL_LEASE_FORFEIT_ID,
+  stakes: {
+    goal: 'get the cellarer to seal the mill lease anyway',
+    risk: 'watch the mill go to the merchant',
+    won: 'got the cellarer to seal the mill lease anyway',
+    lost: 'watched the mill go to the merchant',
+  },
   // Seed-only: the mill lease auction's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Lease Forfeit',

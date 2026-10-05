@@ -109,6 +109,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.wall_patrol',
+    stakes: {
+      goal: 'walk the wall and catch the climbers',
+      risk: 'let the intruders slip over the parapet',
+      won: 'caught the intruders on the wall',
+      lost: 'let the intruders slip over the parapet',
+    },
     tags: ['#watch_errand'],
     name: 'Wall Patrol',
     rarityTier: 1,
@@ -240,6 +246,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.gate_duty',
+    stakes: {
+      goal: 'spot and stop the false courier at the gate',
+      risk: 'stop him by force and earn the district\'s anger',
+      won: 'stopped the false courier cleanly',
+      lost: 'stopped the courier by force in front of the queue',
+    },
     tags: ['#watch_errand'],
     name: 'Gate Duty',
     rarityTier: 1,
@@ -593,6 +605,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.break_up_brawl',
+    stakes: {
+      goal: 'break up the street brawl and fine the starter',
+      risk: 'take a chair to the shoulder and fine no one',
+      won: 'broke up the brawl and fined the one who started it',
+      lost: 'broke up the brawl but never learned who started it',
+    },
     tags: ['#watch_errand'],
     name: 'Break Up a Brawl',
     rarityTier: 1,
@@ -718,6 +736,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.escort_prisoner',
+    stakes: {
+      goal: 'march the prisoner to the garrison lockup',
+      risk: 'lose the prisoner to an ambush in the street',
+      won: 'drove off the ambush and delivered the prisoner',
+      lost: 'lost the prisoner to an ambush in the street',
+    },
     tags: ['#watch_errand'],
     name: 'Escort Prisoner',
     rarityTier: 2,
@@ -865,6 +889,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.quest.investigate_disturbance',
+    stakes: {
+      goal: 'clear what lurks in the cellar under the ward',
+      risk: 'retreat and leave the threat below the ward',
+      won: 'cleared the threat from the cellar',
+      lost: 'retreated and left the threat below the ward',
+    },
     tags: ['#watch_errand'],
     name: 'Investigate Disturbance',
     rarityTier: 2,
@@ -1002,6 +1032,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.senior.raid_hideout',
+    stakes: {
+      goal: 'raid the smugglers\' den and seize the goods',
+      risk: 'break into an empty den the smugglers fled',
+      won: 'raided the den and seized the contraband',
+      lost: 'broke into an empty den the smugglers had fled',
+    },
     name: 'Raid Criminal Hideout',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1148,6 +1184,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.senior.defend_gate',
+    stakes: {
+      goal: 'hold the gate with seventeen guards',
+      risk: 'lose the gate and fall back to the inner ward',
+      won: 'held the gate with seventeen guards',
+      lost: 'lost the gate and fell back to the inner ward',
+    },
     name: 'Defend the Gate',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1283,6 +1325,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.senior.command_watch',
+    stakes: {
+      goal: 'hold the district through the night watch',
+      risk: 'answer for a slow call and a broken window',
+      won: 'held the district through the night watch',
+      lost: 'left the south quarter broken and a complaint filed',
+    },
     name: 'Command the Night Watch',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1417,6 +1465,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.elite.siege_defense',
+    stakes: {
+      goal: 'break the siege from the city walls',
+      risk: 'call back the sortie with the siege still on',
+      won: 'broke the siege with a sortie on the supply column',
+      lost: 'called back the sortie with the siege still on',
+    },
     name: 'Siege Defense',
     rarityTier: 4,
     intrinsicTier: 'story_beat',
@@ -1592,6 +1646,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.elite.purge_corruption',
+    stakes: {
+      goal: 'arrest and try the bribed guard officers',
+      risk: 'see the accused warned off and the trial fall flat',
+      won: 'arrested and tried the bribed guard officers',
+      lost: 'saw the trial leave the district more cynical',
+    },
     name: 'Purge Corruption',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1767,6 +1827,12 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'cg.social.training_yard',
+    stakes: {
+      goal: 'hold a clean wheel in the morning drill',
+      risk: 'earn extra drills for sloppy footwork',
+      won: 'held a clean wheel and got the sergeant\'s nod',
+      lost: 'earned extra drills for sloppy footwork',
+    },
     name: 'Training Yard',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1853,6 +1919,12 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.social.barracks_meal',
+    stakes: {
+      goal: 'find a seat among the guards at the mess table',
+      risk: 'eat alone at the far end of the table',
+      won: 'learned who owes favours over the barracks stew',
+      lost: 'ate alone at the far end of the table',
+    },
     name: 'Barracks Meal',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1941,6 +2013,12 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'cg.social.citizen_petition',
+    stakes: {
+      goal: 'answer a citizen\'s complaint on patrol',
+      risk: 'send the citizen off angry to the captain',
+      won: 'sent the citizen off with an answer to carry',
+      lost: 'sent the citizen off angry, with a complaint to file',
+    },
     name: 'Citizen Petition',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -2048,6 +2126,12 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const CG_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'cg.join',
+  stakes: {
+    goal: 'pass the Civic Guard fitness trial',
+    risk: 'be sent away from the trial to come back later',
+    won: 'passed the trial and took a recruit\'s tabard',
+    lost: 'was sent away from the trial to come back later',
+  },
   name: 'Enlist in the Civic Guard',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -2132,6 +2216,12 @@ export const CG_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const CG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'cg.promotion',
+  stakes: {
+    goal: 'win a promotion from the review board',
+    risk: 'have the promotion deferred for more service',
+    won: 'won a promotion from the review board',
+    lost: 'had the promotion deferred for more service',
+  },
   name: 'Guard Promotion Review',
   rarityTier: 2,
   intrinsicTier: 'shaping',
