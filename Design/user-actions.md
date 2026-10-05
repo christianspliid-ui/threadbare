@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-05 14:57 local (12:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-05 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-05: encounter summaries now read as player prose, not authoring prompts** ([THR-1739](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice)), your Granary Riot finding. Its conflict was cleared by the builder; merged via [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) at 15:53.
+- **2026-10-05: the commit button stays on screen when a five-card hand wraps** ([THR-1732](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls)). Merged via [#2242](https://github.com/christianspliid-ui/threadbare/pull/2242) at 15:18.
 - **2026-10-05: a mortal with a promise no longer starts a two-step job it can't finish** ([THR-1737](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its)). Its conflict was cleared by the builder; merged via [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) at 11:08 and live.
 - **2026-10-05: Tend to Wounds and Old Blood now tell one ending per result** ([THR-1741](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to)). Merged via [#2240](https://github.com/christianspliid-ui/threadbare/pull/2240) at 07:59.
 - **2026-10-05: the world now arrives with its first beat already open** ([THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says)). Its veto window closed at 08:45 with no veto; merged via [#2238](https://github.com/christianspliid-ui/threadbare/pull/2238) and live.
@@ -36,8 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-05: a mortal about to leave town no longer starts local encounters that break its promise** ([THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the)). Merged via [#2231](https://github.com/christianspliid-ui/threadbare/pull/2231) at 04:37 and live.
 - **2026-10-05: the fair draw for experts is live** ([THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Its veto window closed at 02:45 with no veto; merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and deployed.
 - **2026-10-04: the rulebook clean-up merged** ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)). Its clash with main was cleared by the builder, and it merged via [#2227](https://github.com/christianspliid-ui/threadbare/pull/2227) at 23:00.
-- **2026-10-04: show the roll is live** ([THR-1714](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice)): the bonding scenes now say what the hand did. Merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and live.
-- **2026-10-04: nine god cards that never appeared now reach the card drawer** ([THR-1734](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries)): Bestow Power, Rekindle and seven others. Merged via [#2225](https://github.com/christianspliid-ui/threadbare/pull/2225) and live.
 
 ---
 
