@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-10-02
+last_validated_against: 2026-10-05
 ---
 
 # design-session
@@ -189,7 +189,7 @@ executor rightly defers.
 
 1. **Intent-judge (Step 8.5).** Author an action proposal at `Docs/plans/.intent-proposals/<slug>.md`
    (template: `.claude/skills/intent-judge/proposal-template.md`), then spawn `intent-judge` as a Task
-   subagent (`model:"fable"`). Verdict gates: Allow → proceed; Revise → fix + re-run; Block → rewrite;
+   subagent (`model:"opus"`). Verdict gates: Allow → proceed; Revise → fix + re-run; Block → rewrite;
    Escalate → surface the verbatim finding to the user. Record the verdict in the plan-doc tail.
 2. **Design-audit-pipeline (Step 8.6).** Spawn the three forked auditors (NFP / three-pillar / Vision) in one
    message via `/design-audit <plan-doc-path>`. Write their ≤300-word verdicts into the plan-doc tail under
