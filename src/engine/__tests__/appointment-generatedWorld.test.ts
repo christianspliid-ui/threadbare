@@ -370,21 +370,6 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
   const SEND_AWAY_MIN_SLACK = 2;
 
   /**
-   * The mortal sets its chore down. These arms test the outvote mark on the moving-agent
-   * path, which a busy mortal never reaches; since THR-1687 a departing mortal is often
-   * mid-encounter through its whole window (the departing filter prices onward travel at
-   * a tick a hex, so local work that does not fit still passes — TODO(THR-1736)). Same
-   * kind of surgery as `sendAway`: the arm sets up the moment, the engine judges it.
-   */
-  function setChoreDown(s: GameState, actorId: string): GameState {
-    return {
-      ...s,
-      unifiedActions: s.unifiedActions.filter(a => a.actorId !== actorId || a.resolved),
-      encounterProgress: s.encounterProgress.filter(e => e.actorId !== actorId || e.status !== 'active'),
-    };
-  }
-
-  /**
    * The live world is not a fixture: the mortal may be mid-action, or slide back to
    * `leaning` as its standing shifts. So the arm is attempted on each tick where the
    * mortal is free and departing going in, and only a tick that was *still* departing
@@ -397,9 +382,6 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
       let { state, runtime, actorId, placeId, seedId, dueTick } = driveToDeparting();
       while (state.tick < dueTick) {
         const slackNow = departingSlack(state, actorId, seedId);
-        if (isDeparting(state, actorId, seedId) && slackNow !== null && slackNow >= SEND_AWAY_MIN_SLACK && !isFree(state, actorId)) {
-          state = setChoreDown(state, actorId);
-        }
         if (!isDeparting(state, actorId, seedId) || slackNow === null || slackNow < SEND_AWAY_MIN_SLACK || !isFree(state, actorId)) {
           state = runTick(onlyThePlant(state, actorId, seedId), [], runtime);
           clearTraces();

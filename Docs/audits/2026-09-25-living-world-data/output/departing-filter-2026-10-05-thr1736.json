@@ -1,0 +1,98 @@
+{
+ "departing": {
+  "proxy": {
+   "planted": 293,
+   "kept": 112,
+   "absent": 61,
+   "otherMissed": 5,
+   "starts": 231,
+   "overruns": 50,
+   "absentAfterOverrun": 40,
+   "perSeed": [
+    "42: kept 7 absent 4 overruns 5 absentAfter 3",
+    "99: kept 6 absent 6 overruns 5 absentAfter 3",
+    "4: kept 9 absent 3 overruns 2 absentAfter 2",
+    "8: kept 9 absent 2 overruns 2 absentAfter 2",
+    "1: kept 12 absent 8 overruns 7 absentAfter 6",
+    "2: kept 13 absent 9 overruns 4 absentAfter 4",
+    "3: kept 8 absent 2 overruns 3 absentAfter 2",
+    "5: kept 9 absent 5 overruns 6 absentAfter 4",
+    "6: kept 6 absent 6 overruns 3 absentAfter 3",
+    "7: kept 14 absent 3 overruns 2 absentAfter 2",
+    "11: kept 10 absent 5 overruns 6 absentAfter 4",
+    "13: kept 9 absent 8 overruns 5 absentAfter 5"
+   ]
+  },
+  "priced": {
+   "planted": 296,
+   "kept": 130,
+   "absent": 39,
+   "otherMissed": 9,
+   "starts": 337,
+   "overruns": 1,
+   "absentAfterOverrun": 1,
+   "perSeed": [
+    "42: kept 8 absent 4 overruns 0 absentAfter 0",
+    "99: kept 14 absent 2 overruns 0 absentAfter 0",
+    "4: kept 10 absent 1 overruns 0 absentAfter 0",
+    "8: kept 11 absent 0 overruns 0 absentAfter 0",
+    "1: kept 14 absent 2 overruns 0 absentAfter 0",
+    "2: kept 15 absent 7 overruns 0 absentAfter 0",
+    "3: kept 6 absent 3 overruns 0 absentAfter 0",
+    "5: kept 12 absent 4 overruns 0 absentAfter 0",
+    "6: kept 7 absent 5 overruns 0 absentAfter 0",
+    "7: kept 10 absent 3 overruns 0 absentAfter 0",
+    "11: kept 10 absent 5 overruns 1 absentAfter 1",
+    "13: kept 13 absent 3 overruns 0 absentAfter 0"
+   ]
+  }
+ },
+ "lead": {
+  "proxy": {
+   "arranged": 224,
+   "kept": 38,
+   "missed": 109,
+   "located": 5,
+   "delves": 5,
+   "waitingThenLost": 4,
+   "engagements": 21947,
+   "perSeed": [
+    "42: arranged 24 kept 6 missed 10",
+    "99: arranged 24 kept 3 missed 10",
+    "4: arranged 15 kept 4 missed 4",
+    "8: arranged 10 kept 3 missed 4",
+    "1: arranged 28 kept 3 missed 16",
+    "2: arranged 24 kept 1 missed 19",
+    "3: arranged 10 kept 2 missed 5",
+    "5: arranged 21 kept 1 missed 11",
+    "6: arranged 17 kept 3 missed 6",
+    "7: arranged 13 kept 5 missed 4",
+    "11: arranged 19 kept 3 missed 9",
+    "13: arranged 19 kept 4 missed 11"
+   ]
+  },
+  "priced": {
+   "arranged": 213,
+   "kept": 80,
+   "missed": 56,
+   "located": 21,
+   "delves": 20,
+   "waitingThenLost": 2,
+   "engagements": 21872,
+   "perSeed": [
+    "42: arranged 19 kept 6 missed 6",
+    "99: arranged 16 kept 8 missed 3",
+    "4: arranged 19 kept 8 missed 3",
+    "8: arranged 13 kept 4 missed 0",
+    "1: arranged 30 kept 11 missed 5",
+    "2: arranged 23 kept 8 missed 8",
+    "3: arranged 12 kept 3 missed 5",
+    "5: arranged 13 kept 2 missed 7",
+    "6: arranged 16 kept 6 missed 4",
+    "7: arranged 18 kept 10 missed 3",
+    "11: arranged 19 kept 6 missed 7",
+    "13: arranged 15 kept 8 missed 5"
+   ]
+  }
+ }
+}

@@ -56,6 +56,7 @@ import {
   DECISION_REEVALUATION_TICKS,
   APPOINTMENT_JOURNEY_PULL,
   APPOINTMENT_WAITING_HOLD_ENABLED,
+  APPOINTMENT_DEPARTING_PRICED_TRAVEL,
 } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -77,6 +78,8 @@ import {
   resolveAppointmentContext,
   rerankForAppointmentRegime,
   waitingTripOverruns,
+  departingTripOverruns,
+  appointmentTicksPerHex,
   holdsWaitingMemberAtPlace,
   APPOINTMENT_REGIME_MEMO_PROP,
   type AppointmentContext,
@@ -1073,14 +1076,19 @@ export function phaseAgentDecision(
       if (appointmentCtx && (appointmentCtx.regime === 'leaning' || appointmentCtx.regime === 'departing'
         || (appointmentCtx.regime === 'waiting' && APPOINTMENT_WAITING_HOLD_ENABLED))) {
         const { slack, appointment, regime } = appointmentCtx;
-        // Hex distances stand in for travel ticks here, the same proxy the scorer's
-        // own travel cost uses; the priced path is reserved for the slack itself.
+        // Leaning: hex distances stand in for travel ticks, the same proxy the scorer's
+        // own travel cost uses. THR-1736 — departing prices both legs at the mortal's
+        // own road rate (the slack's priced path over its hexes), so local work it
+        // cannot fit before setting out is dropped, not started.
         const budget = appointment.dueTick - state.tick;
+        const hereHex = resolveLocationToHex(graph, locationId);
+        const ticksPerHex = regime === 'departing' && APPOINTMENT_DEPARTING_PRICED_TRAVEL
+          ? appointmentTicksPerHex(slack.travelTicks, hereHex ? hexDistance(hereHex, slack.placeHex) : 0)
+          : 1;
         const overruns = (c: ScoredCandidate): boolean => {
           const entryHex = resolveLocationToHex(graph, c.entry.locationId);
           const onward = entryHex ? hexDistance(entryHex, slack.placeHex) : Infinity;
-          const there = Number.isFinite(c.hexDistanceToEntry) ? c.hexDistanceToEntry : Infinity;
-          return c.entry.totalTickCost + there + onward > budget;
+          return departingTripOverruns(c.entry.totalTickCost, c.hexDistanceToEntry, onward, ticksPerHex, budget);
         };
         // THR-1686 — waiting prices the trip there and back at the hex-priced rate.
         const waitingOverruns = (c: ScoredCandidate): boolean =>
@@ -1094,8 +1102,9 @@ export function phaseAgentDecision(
         // local encounter ranked sixth survives a filter that emptied the five (local
         // work stays, whatever it costs); an entry appended above (the arrival goal) is
         // kept when the re-cut does not already hold it. `leaning` and `departing` keep
-        // the scorer's five, reranked in place: their `overruns` prices a hex at one
-        // tick, so widening their board lets in trips that only look as if they fit —
+        // the scorer's five, reranked in place: when this was measured their `overruns`
+        // priced a hex at one tick (departing uses the road rate since THR-1736), so
+        // widening their board let in trips that only looked as if they fit —
         // measured over twelve seeds, re-cutting leaning too took kept visits 16 → 15
         // and delves 3 → 2, and re-cutting departing raised missed appointments 18 → 22.
         if (regime !== 'waiting') {
