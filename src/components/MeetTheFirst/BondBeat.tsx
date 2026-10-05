@@ -153,6 +153,9 @@ export function BondBeat({
           >
             {bondTest.setup}
           </p>
+          {/* THR-1732 — the shell's hand bar is `position: sticky` against this
+              beat's scrolling column; no ancestor between here and that column
+              may set `overflow`, or the commit falls back below the fold. */}
           <NudgePhaseShell
             phase={testPhase}
             portraitUrl={candidate.imageAssetPath}

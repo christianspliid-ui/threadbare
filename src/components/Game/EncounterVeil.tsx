@@ -2107,7 +2107,10 @@ export function EncounterVeil({
           // the commit control unclickable at max scroll.
           //
           // THR-1724 — the nudge stage draws no footer (see below), so it
-          // reserves only the clearance.
+          // reserves only the clearance. THR-1732 — its hand bar needs no
+          // reservation either: it is sticky *in* the flow, the last thing in
+          // the scroll content, so at max scroll it sits at its natural place
+          // and cannot be stranded the way THR-1410's floating footer was.
           paddingBottom: showVeilFooter
             ? VEIL_FOOTER_HEIGHT_PX + VEIL_FOOTER_CLEARANCE_PX
             : VEIL_FOOTER_CLEARANCE_PX,
@@ -2406,6 +2409,10 @@ export function EncounterVeil({
           }}
         >
           {model.nudgePhase ? (
+            // THR-1732 — the shell's hand bar is `position: sticky` against
+            // `veil-content-column`. No element between that column and this
+            // mount may set `overflow`, or sticky stops working and the
+            // commit drops back below the fold on a two-row hand.
             <NudgePhaseShell
               phase={model.nudgePhase}
               portraitUrl={model.header.portraitUrl}

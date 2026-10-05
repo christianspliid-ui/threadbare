@@ -231,7 +231,10 @@ export function FormativeTestBeat({
                 {fillProse(current.instance.setup, candidate.name, locationName)}
               </p>
 
-              {/* ── Deciding: the WS2 shell, consumed whole ── */}
+              {/* ── Deciding: the WS2 shell, consumed whole ──
+                  THR-1732 — its hand bar is `position: sticky` against this
+                  beat's scrolling column; no ancestor between here and that
+                  column may set `overflow`, or the commit falls below the fold. */}
               {!revealed && (
                 <NudgePhaseShell
                   phase={phase}
