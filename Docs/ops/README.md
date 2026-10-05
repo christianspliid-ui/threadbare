@@ -58,6 +58,10 @@ written, without anyone amending this page. When in doubt, durable stays.
   and what is deliberately not (THR-824).
 - **`Docs/ops/repo-automation-log.md`** — appended knowledge, not a scheduled
   overwrite.
+- **`Docs/ops/player-complaint-classes.md`** — cited by the `intent-judge` and
+  `cold-playtest` skills as a knowledge source (rule 3), and edited class by
+  class, never overwritten wholesale (THR-1743). The round reports it is distilled
+  from stay on `ops`.
 - **Dated one-off investigation reports** (`2026-07-21-thr-674-…`,
   `2026-07-25-autoclose-vector-verification`, `2026-07-27-thr-793-…`,
   `2026-07-30-thr-680-…`, `retired-global-claude-md-2026-07-25`) — session-authored

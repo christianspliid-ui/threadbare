@@ -92,7 +92,8 @@ inputs are what the prompt names explicitly.
    original handoff (per CLAUDE.md Reopened protocol).
 4. **Only as needed for specific dimensions** — `Vision/`, UL shards,
    `Docs/canon/`, `Docs/plans/wiring-checklist.md`, CLAUDE.md Rejected
-   Approaches and Load-Bearing Decisions. Do not pre-load; read on demand.
+   Approaches and Load-Bearing Decisions, and `Docs/ops/player-complaint-classes.md`
+   (dimension 12, UI-pillar plans only). Do not pre-load; read on demand.
 
 ## The four-way verdict
 
@@ -136,6 +137,17 @@ For each, produce: **PASS / GAP / VIOLATION** + quoted evidence.
 9. **Blast radius** — If touched files include any with ≥100 importers, is there a Blast Radius section?
 10. **Kill criteria** — Does the plan state how we'll know if the approach is wrong, and what we do then?
 11. **Substrate existence (Engine-pillar plans, THR-658)** — Does the plan open with a `## Substrate inventory` section, and does it match reality? Read `Docs/canon/systems-inventory.md`, match the plan's premise nouns/aliases against it, and score VIOLATION if the plan proposes to *build* a subsystem the inventory already lists (a 🟠 DORMANT badge still counts as existing — it must be *activated*, not rebuilt) or if an Engine-pillar plan lacks the `## Substrate inventory` section. This is the dimension that would have caught THR-614's green-field war plan. PASS / N/A if there is no Engine pillar.
+12. **Player legibility (UI-pillar plans, THR-1743)** — Will the player understand what this plan puts in front of them? Read `Docs/ops/player-complaint-classes.md`, which lists the cold-playtest complaint classes (`PC-n`) that are still live. Then check the plan's `### Player-facing text` and `### Playtest signal` subsections (plan template, UI pillar):
+    - **VIOLATION** if a plan with a UI pillar has no `### Player-facing text` subsection, or if that subsection describes text without quoting it anywhere ("show the odds", "add a tooltip explaining essence").
+    - **GAP** if any one of these holds:
+      - a new or changed player-facing surface the plan adds is missing from the table;
+      - a row gives no exact words, or for generated text no representative rendered sample;
+      - the plan touches a listed class and does not say, in the player's words, how the player will understand it (each class's last column says what is owed);
+      - there is no `### Playtest signal`, or the signal is a count rather than a predicate (THR-688 rule A).
+    - **PASS** when every surface is quoted, every class touched is answered, and the signal is a predicate a cold tester's log could confirm or refute.
+    - **N/A** when the UI pillar is N/A, or when the plan only changes debug surfaces (`window.__DEBUG`, DebugPanel) that a player never sees.
+
+    Quote the plan's words *and* the class row you scored against. This is a separate dimension rather than an extension of dimension 3 (wiring), for two reasons. Wiring asks whether a surface is *connected*; this asks whether it is *understood*, and a plan can pass one and fail the other. A separate row also keeps the score countable: before this dimension existed, 4 of 412 judge findings across 92 plans touched legibility, and the cold playtests showed that is where the product is weakest. Merged into dimension 3, the signal would have stayed invisible.
 
 ## Verdict aggregation rubric
 
@@ -144,9 +156,10 @@ Applied in order — first match wins:
 1. **High-risk impact class with no explicit user sign-off line in action proposal** → **Escalate**.
 2. **Any GAP on dimension 1 (intent fidelity)** → **Escalate**. The user needs to clarify intent before the executor starts coding.
 3. **Any VIOLATION on dimensions 1, 5, 7, or 8** → **Block**. These need a fresh draft.
-4. **Any VIOLATION on dimensions 2, 3, 4, 6, 9, 10, or 11** → **Revise**. Author can fix without user input.
-5. **3+ GAPs across any dimensions** → **Revise**.
-6. **0–2 GAPs and no VIOLATIONs** → **Allow**.
+4. **Any VIOLATION on dimensions 2, 3, 4, 6, 9, 10, 11, or 12** → **Revise**. Author can fix without user input.
+5. **Any GAP on dimension 12 (player legibility)** → **Revise**. A single GAP here is enough. Under rule 7 a lone GAP would pass as Allow, and that is exactly the path by which round 1's unreadable-resources finding (THR-1607) came back in round 2 (THR-1713). Quoting the words costs the author minutes and needs no input from the user.
+6. **3+ GAPs across any dimensions** → **Revise**.
+7. **0–2 GAPs, none on dimension 12, and no VIOLATIONs** → **Allow**.
 
 The rubric is deterministic. Subjective judgment lives in PASS/GAP/VIOLATION
 scoring per dimension, not in aggregation.
