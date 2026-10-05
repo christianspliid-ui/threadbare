@@ -282,13 +282,25 @@ export function buildResultLine(
 // ─── Per-action conveniences (the read sites) ─────────────────────
 
 /** Opening line for a live action, or `null` when the template authors no stakes. */
+/**
+ * THR-1728 — a stakes block is usable only when the four parts every line reads are
+ * non-empty strings. A malformed block (a gate let it through, an old save) reads as
+ * no stakes, so the veil falls back to the opening prose instead of printing
+ * "must undefined" (NFP #4).
+ */
+export function hasUsableStakes(stakes: EncounterStakes | undefined): stakes is EncounterStakes {
+  if (!stakes) return false;
+  return [stakes.goal, stakes.risk, stakes.won, stakes.lost]
+    .every(part => typeof part === 'string' && part.trim().length > 0);
+}
+
 export function stakesLineForAction(
   action: UnifiedAction,
   template: Pick<UnifiedActionTemplate, 'stakes'>,
   graph: WorldGraph,
   actorName?: string,
 ): StakesLineResult | null {
-  if (!template.stakes) return null;
+  if (!hasUsableStakes(template.stakes)) return null;
   return buildStakesLine(
     template.stakes,
     actorName ?? graph.getNode(action.actorId)?.name,
@@ -308,7 +320,7 @@ export function rememberedStakesLine(
   graph: WorldGraph,
   actorName?: string,
 ): string | null {
-  if (!template.stakes) return null;
+  if (!hasUsableStakes(template.stakes)) return null;
   const name = actorName ?? graph.getNode(action.actorId)?.name;
   if (action.resolved && action.outcome) {
     return buildResultLine(
@@ -343,7 +355,7 @@ export function stampStakesContext(
   if (template) {
     try {
       const actorName = graph.getNode(action.actorId)?.name;
-      const result = template.stakes
+      const result = hasUsableStakes(template.stakes)
         ? buildStakesLine(template.stakes, actorName, stakesContext, action.actionId)
         : null;
       const trace: Omit<EncounterStakesLineTrace, 'id' | 'timestamp'> = {

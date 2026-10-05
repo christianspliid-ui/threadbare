@@ -104,7 +104,9 @@ describe('THR-1728 · the veil subtitle never falls back to the description', ()
   it('a malformed stakes block fails soft to the opening prose, not the description', () => {
     const broken = { goal: undefined, risk: undefined } as unknown as EncounterStakes;
     const header = headerFor(variant(broken));
-    const shown = header.stakesLine?.text ?? header.subtitle ?? '';
-    expect(shown).not.toContain('master Heart job');
+    // `hasUsableStakes` reads a block missing its parts as no stakes — never
+    // "Kael must undefined — or undefined."
+    expect(header.stakesLine).toBeUndefined();
+    expect(header.subtitle).toBe(OPENING);
   });
 });
