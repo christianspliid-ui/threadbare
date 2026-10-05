@@ -153,6 +153,12 @@ export interface EncounterCacheEntry {
   guildFit?: number;
   // Pre-computed for scoring:
   totalTickCost: number;
+  /**
+   * THR-1737 — the longest the work can run (`computeTotalTickCostMaxUnified`). Read
+   * only by the `departing` appointment filter; scoring keeps `totalTickCost`.
+   * Optional: an entry without it is priced at `totalTickCost`.
+   */
+  totalTickCostMax?: number;
   successRewardEstimate: number;
   stepCount: number;
   /** Normalized 0..1 difficulty for each step, matching the resolver contract. */
@@ -241,6 +247,30 @@ export function computeTotalTickCostUnified(template: UnifiedActionTemplate): nu
   return total;
 }
 
+/**
+ * THR-1737 — the longest a UnifiedActionTemplate can run: the sum of each step's
+ * `duration.max` (a branch counts its longest arm, fallback or variant); a step
+ * without a duration counts 1, as in `computeTotalTickCostUnified`. The `departing`
+ * filter prices work at this, because a mortal that must set out cannot gamble on
+ * the shortest roll — `cathedral_loan` (two 1–2-tick steps) is 2 ticks at its
+ * minimum and ran 4 on seed 42, costing the promise.
+ */
+export function computeTotalTickCostMaxUnified(template: UnifiedActionTemplate): number {
+  const stepMax = (s: { duration?: { min: number; max: number } }): number =>
+    s.duration ? Math.max(s.duration.min, s.duration.max) : 1;
+  let total = 0;
+  for (const stepOrBranch of template.steps) {
+    if (isActionStepBranch(stepOrBranch)) {
+      let longest = stepMax(stepOrBranch.fallback);
+      for (const v of Object.values(stepOrBranch.variants)) longest = Math.max(longest, stepMax(v));
+      total += longest;
+    } else {
+      total += stepMax(stepOrBranch);
+    }
+  }
+  return total;
+}
+
 // ─── Internal helpers ───────────────────────────────────────────
 
 /**
@@ -291,6 +321,7 @@ function buildEntryUnified(
     sphereAffinity: tmpl.sphereAffinity,
     questPriority: 1.0,
     totalTickCost: computeTotalTickCostUnified(tmpl),
+    totalTickCostMax: computeTotalTickCostMaxUnified(tmpl),
     successRewardEstimate: computeRewardEstimateUnified(tmpl),
     stepCount: tmpl.steps.length,
     isQuestEncounter: tmpl.steps.some(s => isActionStepBranch(s)),
