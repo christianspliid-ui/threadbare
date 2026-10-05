@@ -178,7 +178,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           forecastDelta: 0.04,
         },
         success_at_cost: {
-          text: '{cast:warden} is angry that they touched the weavers\' bones.',
+          text: 'The weavers\' warden is angry that they touched the guild\'s bones.',
           polarity: 'against',
           forecastDelta: -0.02,
         },

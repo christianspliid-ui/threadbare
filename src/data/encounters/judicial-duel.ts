@@ -266,7 +266,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       criticalFailureAfterimage: '{actor} was beaten down and yielded in front of the whole valley.',
       carryoverFactorLines: {
         critical_success: {
-          text: '{cast:champion} is bleeding and wary.',
+          text: 'The order\'s champion is bleeding and wary.',
           polarity: 'for',
           forecastDelta: 0.06,
         },

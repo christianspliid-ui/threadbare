@@ -190,12 +190,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       criticalFailureAfterimage: 'Neither side would take the ruling, and the crowd broke into the granary.',
       carryoverFactorLines: {
         critical_success: {
-          text: 'The crowd trusts {actor} to be fair.',
+          text: 'The crowd trusts the judge to be fair.',
           polarity: 'for',
           forecastDelta: 0.06,
         },
         success: {
-          text: 'The crowd is willing to hear {actor} out.',
+          text: 'The crowd is willing to hear the judge out.',
           polarity: 'for',
           forecastDelta: 0.04,
         },
