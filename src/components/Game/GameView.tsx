@@ -1682,16 +1682,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectEncounterBadges(
       gameState.encounterNotifications,
       (notif) => stakesLineForNotification(gameState, notif),
-      // THR-1730 — a step held for the player says it is waiting.
+      // THR-1730 — a step held for the player says it is waiting, and keeps its
+      // badge — except while its own veil is open.
       new Set((gameState.unifiedActions ?? [])
-        .filter(a => isPlayerHoldLive(a, gameState.graph, gameState.tick))
+        .filter(a => a.actionId !== tieredEncounterState?.activeActionId
+          && isPlayerHoldLive(a, gameState.graph, gameState.tick))
         .map(a => a.actionId)),
     ),
     // The line reads the action and the archive; both change only with the tick.
     // Hold liveness reads the thread edge, edited in place by the attention
     // toggle (touchWorld), so worldVersion re-derives "waiting" while paused.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState.encounterNotifications, gameState.unifiedActions, gameState.tick, runtime.worldVersion],
+    [gameState.encounterNotifications, gameState.unifiedActions, gameState.tick, runtime.worldVersion, tieredEncounterState?.activeActionId],
   );
 
   // THR-1727 — each agent row's story line: the live encounter's stakes line,
@@ -3326,6 +3328,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * down in a row and the first must not pop back when the second is.
    */
   const minimisedEncounterNotificationIds = useRef<Set<string>>(new Set());
+  /**
+   * THR-1730 — step notifications the player has already committed a hand or a
+   * choice on. Each step raises its own notification id, so membership means
+   * "this step is decided": minimise never holds it. Pruned with the minimised
+   * set once the notification is no longer pending.
+   */
+  const committedEncounterNotificationIds = useRef<Set<string>>(new Set());
 
   // `openedAsInterrupt` no longer forces a resume (THR-1608): the central
   // auto-pause restores the clock to its state before the encounter opened.
@@ -3414,6 +3423,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       const stillPending = (gameState.encounterNotifications ?? [])
         .some(n => n.id === minimisedId && !n.resolved);
       const holdsStep = stillPending
+        && !committedEncounterNotificationIds.current.has(minimisedId)
         && notification.sourceSystem === 'unified_action'
         && (notification.kind ?? 'encounter') === 'encounter'
         && notification.autoResolveTick === null;
@@ -4054,6 +4064,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // The hand is committed; the step now resolves on mortal terms. Closing the
     // stage releases the THR-668 interrupt the veil registered.
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+    // THR-1730 — the step is decided; a later set-down of it (reopened from the
+    // badge before it resolves) must not hold it again.
+    committedEncounterNotificationIds.current.add(tieredEncounterState.notification.id);
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
   }, [
@@ -4133,9 +4146,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-1724 — a minimised encounter waits for its badge. Ids that are no
     // longer pending are pruned so the set cannot grow without bound.
     const minimised = minimisedEncounterNotificationIds.current;
-    if (minimised.size > 0) {
+    const committed = committedEncounterNotificationIds.current;
+    if (minimised.size > 0 || committed.size > 0) {
       const pending = new Set(notifications.filter(n => !n.resolved).map(n => n.id));
       for (const id of minimised) if (!pending.has(id)) minimised.delete(id);
+      for (const id of committed) if (!pending.has(id)) committed.delete(id);
     }
     runEncounterAutoOpenScan(
       minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications,

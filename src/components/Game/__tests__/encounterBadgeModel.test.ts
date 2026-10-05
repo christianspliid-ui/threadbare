@@ -230,6 +230,14 @@ describe('a held step says it waits (THR-1730)', () => {
     expect(selectEncounterBadges([live]).get('agent-kael')!.tooltipId).toBeUndefined();
   });
 
+  it('a held step keeps its badge after it was viewed (the badge is the only way back)', () => {
+    const viewed = { ...live, viewed: true };
+    expect(selectEncounterBadges([viewed]).size).toBe(0);
+    const badge = selectEncounterBadges([viewed], undefined, new Set(['ua-1'])).get('agent-kael');
+    expect(badge?.ariaLabel).toMatch(/— waiting for you$/);
+    expect(selectEncounterBadges([{ ...viewed, resolved: true }], undefined, new Set(['ua-1'])).size).toBe(0);
+  });
+
   it('an aftermath never reads as waiting', () => {
     const after = makeNotification({ kind: 'aftermath', actionId: 'ua-1' });
     const badge = selectEncounterBadges([after], undefined, new Set(['ua-1'])).get('agent-kael')!;

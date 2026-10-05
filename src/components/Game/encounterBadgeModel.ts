@@ -146,7 +146,14 @@ export function selectEncounterBadges(
   const byAgent = new Map<string, EncounterNotification[]>();
 
   for (const notif of notifications ?? []) {
-    if (!isBadgeWorthy(notif)) continue;
+    // THR-1730 — a held step keeps its badge even once viewed: the badge is the
+    // only way back to a moment that waits (Law 40), and a reopen that another
+    // modal pre-empted would otherwise leave the step held with nothing to open.
+    const held = notif.kind !== 'aftermath'
+      && !notif.resolved
+      && notif.actionId !== undefined
+      && (heldActionIds?.has(notif.actionId) ?? false);
+    if (!held && !isBadgeWorthy(notif)) continue;
     for (const anchorId of notificationAnchorIds(notif)) {
       const bucket = byAgent.get(anchorId);
       if (bucket) bucket.push(notif);
