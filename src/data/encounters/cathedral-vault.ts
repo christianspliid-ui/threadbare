@@ -601,6 +601,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.pos.crit.feast',
@@ -615,6 +622,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -663,6 +677,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.pos.succ.feast',
@@ -677,6 +698,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -725,6 +753,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.pos.cost.feast',
@@ -739,6 +774,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -788,6 +830,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'location',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
               {
                 id: 'vault.pos.fail.abbot_blame',
@@ -803,6 +852,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -856,6 +912,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'location',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
               {
                 id: 'vault.pos.critfail.abbot_blame',
@@ -871,6 +934,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -930,6 +1000,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.neg.crit.feast',
@@ -944,6 +1021,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -993,6 +1077,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.neg.succ.feast',
@@ -1007,6 +1098,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -1055,6 +1153,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
               {
                 id: 'vault.neg.cost.feast',
@@ -1069,6 +1174,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   entityId: 'trait.condition.location.festival',
                   visualKind: 'attachment',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -1118,6 +1230,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'location',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
               {
                 id: 'vault.neg.fail.abbot_blame',
@@ -1133,6 +1252,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -1186,6 +1312,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'location',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
               },
               {
                 id: 'vault.neg.critfail.abbot_blame',
@@ -1201,6 +1334,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   visualKind: 'agent',
                   tooltipId: 'ui.reputation_with',
                 },
+                concepts: [
+                  {
+                    text: '{cast:abbot}',
+                    entityId: '$cast:abbot',
+                    visualKind: 'agent',
+                  },
+                ],
               },
             ],
             reactions: [
@@ -1261,6 +1401,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 visualKind: 'agent',
                 tooltipId: 'ui.reputation_with',
               },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
             },
             {
               id: 'vault.fb.crit.feast',
@@ -1275,6 +1422,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: 'trait.condition.location.festival',
                 visualKind: 'attachment',
               },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
             },
           ],
           reactions: [
@@ -1324,6 +1478,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 visualKind: 'agent',
                 tooltipId: 'ui.reputation_with',
               },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
             },
             {
               id: 'vault.fb.succ.feast',
@@ -1338,6 +1499,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: 'trait.condition.location.festival',
                 visualKind: 'attachment',
               },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
             },
           ],
           reactions: [
@@ -1386,6 +1554,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 visualKind: 'agent',
                 tooltipId: 'ui.reputation_with',
               },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
             },
             {
               id: 'vault.fb.cost.feast',
@@ -1400,6 +1575,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 entityId: 'trait.condition.location.festival',
                 visualKind: 'attachment',
               },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
             },
           ],
           reactions: [
@@ -1449,6 +1631,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 visualKind: 'location',
                 tooltipId: 'ui.reputation_with',
               },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
             },
             {
               id: 'vault.fb.fail.abbot_blame',
@@ -1464,6 +1653,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                 visualKind: 'agent',
                 tooltipId: 'ui.reputation_with',
               },
+              concepts: [
+                {
+                  text: '{cast:abbot}',
+                  entityId: '$cast:abbot',
+                  visualKind: 'agent',
+                },
+              ],
             },
           ],
           reactions: [

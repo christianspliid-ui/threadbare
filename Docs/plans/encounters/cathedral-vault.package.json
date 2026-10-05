@@ -602,7 +602,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.pos.crit.feast",
@@ -616,7 +623,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -662,7 +676,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.pos.succ.feast",
@@ -676,7 +697,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -722,7 +750,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.pos.cost.feast",
@@ -736,7 +771,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -782,7 +824,14 @@
                     "entityId": "$here",
                     "visualKind": "location",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.pos.fail.abbot_blame",
@@ -797,7 +846,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -849,7 +905,14 @@
                     "entityId": "$here",
                     "visualKind": "location",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.pos.critfail.abbot_blame",
@@ -864,7 +927,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -922,7 +992,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.neg.crit.feast",
@@ -936,7 +1013,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -982,7 +1066,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.neg.succ.feast",
@@ -996,7 +1087,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -1042,7 +1140,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.neg.cost.feast",
@@ -1056,7 +1161,14 @@
                     "text": "Festival",
                     "entityId": "trait.condition.location.festival",
                     "visualKind": "attachment"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -1102,7 +1214,14 @@
                     "entityId": "$here",
                     "visualKind": "location",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.neg.fail.abbot_blame",
@@ -1117,7 +1236,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -1169,7 +1295,14 @@
                     "entityId": "$here",
                     "visualKind": "location",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
                 },
                 {
                   "id": "vault.neg.critfail.abbot_blame",
@@ -1184,7 +1317,14 @@
                     "entityId": "$cast:abbot",
                     "visualKind": "agent",
                     "tooltipId": "ui.reputation_with"
-                  }
+                  },
+                  "concepts": [
+                    {
+                      "text": "{cast:abbot}",
+                      "entityId": "$cast:abbot",
+                      "visualKind": "agent"
+                    }
+                  ]
                 }
               ],
               "reactions": [
@@ -1243,7 +1383,14 @@
                   "entityId": "$cast:abbot",
                   "visualKind": "agent",
                   "tooltipId": "ui.reputation_with"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:abbot}",
+                    "entityId": "$cast:abbot",
+                    "visualKind": "agent"
+                  }
+                ]
               },
               {
                 "id": "vault.fb.crit.feast",
@@ -1257,7 +1404,14 @@
                   "text": "Festival",
                   "entityId": "trait.condition.location.festival",
                   "visualKind": "attachment"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
               }
             ],
             "reactions": [
@@ -1303,7 +1457,14 @@
                   "entityId": "$cast:abbot",
                   "visualKind": "agent",
                   "tooltipId": "ui.reputation_with"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:abbot}",
+                    "entityId": "$cast:abbot",
+                    "visualKind": "agent"
+                  }
+                ]
               },
               {
                 "id": "vault.fb.succ.feast",
@@ -1317,7 +1478,14 @@
                   "text": "Festival",
                   "entityId": "trait.condition.location.festival",
                   "visualKind": "attachment"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
               }
             ],
             "reactions": [
@@ -1363,7 +1531,14 @@
                   "entityId": "$cast:abbot",
                   "visualKind": "agent",
                   "tooltipId": "ui.reputation_with"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:abbot}",
+                    "entityId": "$cast:abbot",
+                    "visualKind": "agent"
+                  }
+                ]
               },
               {
                 "id": "vault.fb.cost.feast",
@@ -1377,7 +1552,14 @@
                   "text": "Festival",
                   "entityId": "trait.condition.location.festival",
                   "visualKind": "attachment"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
               }
             ],
             "reactions": [
@@ -1423,7 +1605,14 @@
                   "entityId": "$here",
                   "visualKind": "location",
                   "tooltipId": "ui.reputation_with"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
               },
               {
                 "id": "vault.fb.fail.abbot_blame",
@@ -1438,7 +1627,14 @@
                   "entityId": "$cast:abbot",
                   "visualKind": "agent",
                   "tooltipId": "ui.reputation_with"
-                }
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:abbot}",
+                    "entityId": "$cast:abbot",
+                    "visualKind": "agent"
+                  }
+                ]
               }
             ],
             "reactions": [
