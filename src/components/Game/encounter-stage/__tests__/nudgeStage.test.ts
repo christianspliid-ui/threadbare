@@ -743,6 +743,47 @@ describe('buildNudgePhaseModel — derived factor lines (THR-892)', () => {
     expect(factorIds(head).filter((id) => id.startsWith('carryover:'))).toEqual([]);
   });
 
+  it('fills {actor} and {cast:<key>} in a carryover line like any authored line (THR-1738)', () => {
+    // The carryover line is authored prose. It used to reach the panel verbatim,
+    // so "{cast:drover} knows they found the carrion." rendered with the token.
+    const stepWithCarryover: ActionStep = {
+      ...STEP,
+      carryoverFactorLines: {
+        success_at_cost: {
+          text: '{cast:drover} knows {actor} found the carrion.',
+          polarity: 'against',
+          forecastDelta: -0.04,
+        },
+      },
+    };
+    const phase = buildNudgePhaseModel({
+      template: {
+        ...TEMPLATE,
+        steps: [STEP, stepWithCarryover],
+        supportBundle: [
+          {
+            kind: 'actor',
+            key: 'drover',
+            delivery: 'lazy-materialize-on-trigger',
+            persistence: 'scene-only',
+            supportRole: 'drover',
+            spawnNpcRole: 'drover',
+            spawnName: 'Old Brannoc',
+          },
+        ],
+      },
+      activeAction: buildAction({ currentStep: 1, stepOutcomes: ['success_at_cost'] }),
+      step: stepWithCarryover,
+      graph: buildGraph(),
+      gameState: buildState() as GameState,
+    })!;
+
+    const line = phase.testPanel.factors.find((f) => f.id === 'carryover:success_at_cost');
+    expect(line).toBeDefined();
+    expect(line!.text).toBe('Old Brannoc knows Sera Vance found the carrion.');
+    expect(line!.text).not.toContain('{');
+  });
+
   it('feeds a declared carryover delta into the forecast floor, not just the panel', () => {
     // The line is not decoration: its delta rides the same named channel a nudge
     // or trait delta rides, so the forecast the player reads already carries it.
