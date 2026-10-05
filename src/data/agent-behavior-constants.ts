@@ -274,9 +274,10 @@ export type CapFillLocalOrder = 'walk' | 'template_hash';
  *   ms +10% from that different world, not from the pass. Master success rose 0.59–0.66 →
  *   0.74–0.76 (expert work below their window now reaches them).
  * The plan says a failed guard rail ships `'walk'` plus a separate decision.
- * TODO(THR-1687): flip to `'template_hash'` once the design lane has read the shift above.
+ * **Flipped to `'template_hash'` (THR-1687 D4):** the `start_local` drop was a crash in the
+ * counter (THR-1722), not lost work — see `Docs/plans/2026-10-01-thr-1687-cap-local-order.md` § D4.
  */
-export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'walk';
+export const CAP_FILL_LOCAL_ORDER: CapFillLocalOrder = 'template_hash';
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */

@@ -11,8 +11,8 @@
 // least `KPI_IN_WINDOW_MIN`. THR-1581 (S3 + S4) un-skips the novice band; THR-1627
 // (local offset ruling) un-skips journeyman and expert level success; THR-1676 arms the
 // rise's novice→journeyman rung; THR-1681 un-skips master level success. THR-1687 ships
-// the board fix behind CAP_FILL_LOCAL_ORDER (default 'walk') and splits the rest of the
-// rise: journeyman→expert waits on that switch, expert→master on master content
+// the board fix behind CAP_FILL_LOCAL_ORDER (now 'template_hash', plan § D4) and splits the
+// rest of the rise: journeyman→expert armed by that flip, expert→master on master content
 // (THR-1688), the in-window share on the window (THR-1689).
 import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
@@ -160,10 +160,10 @@ describe('the level-success invariant (THR-1575)', () => {
   const bandOf = (report: EngagementKpiReport, band: (typeof PROFICIENCY_BANDS)[number]) =>
     report.bands.find(b => b.band === band)!;
 
-  // TODO(THR-1687): un-skip when CAP_FILL_LOCAL_ORDER flips to 'template_hash'. Measured
-  // passing on that branch (seeds 42 / 99, 2026-10-03); the switch ships 'walk' pending the
-  // design lane's read of the world shift it causes (see the constant's doc-comment).
-  it.skip('experts attempt harder content than journeymen', () => {
+  // Armed by THR-1687's flip (plan § D4): with CAP_FILL_LOCAL_ORDER = 'template_hash',
+  // expert everyday content reaches expert deciders and their attempted difficulty rises
+  // above journeymen's.
+  it('experts attempt harder content than journeymen', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
       const journeyman = bandOf(report, 'journeyman');
