@@ -76,6 +76,48 @@ The affinity of an actor or location for a particular Sphere, stored as an `alig
 
 ---
 
+### Dominion
+
+**Aliases:** home turf, the god's ground
+**Also see:** `[[Dominion Band]]`, `[[Opposing Dominion]]`, `[[Sphere]]`, `[[Sphere Alignment]]`
+**Status:** canonical (Christian's word, ruled 2026-10-05 on [THR-1745](https://linear.app/threadbare/issue/THR-1745); seated by delegation 2026-10-05, [THR-1746](https://linear.app/threadbare/issue/THR-1746)). The read itself is not built yet; it is [THR-1748](https://linear.app/threadbare/issue/THR-1748).
+
+How much a world object is the god's. It is the graded match between the object's sphere scores (a hex, place, mortal, faction, artifact or army) and the god's bought sphere affinities, weighted by the god's power in each sphere. A sphere the object holds that is the *opposite* of one the god holds counts against it, following `SPHERE_OPPOSITES`. Same-dominion objects are cheaper and stronger to influence. They are the god's home turf, and the player's power loop is spreading it.
+
+Dominion is graded and is **always read as a [Dominion Band](#dominion-band) word, never a number** (Laws 4/13).
+
+**Planned code anchor:** `dominionOf(graph, ascendantId, objectId)`, specified on THR-1748. Until the point-buy ticket ([THR-1749](https://linear.app/threadbare/issue/THR-1749)) lands, it falls back to today's `sphereAlignment` primary/secondary pair.
+
+**Other uses of the word, reconciled (THR-1746):**
+
+* **The god sheet's Reach section** was headed "Dominion". It is now **"Reaches"** (`AscendantSheet.tsx`).
+* **The mortal ambition category.** The engine literal `dominion` (`AmbitionCategory`, `VERBS_BY_CATEGORY`, premonition keys) stays as it is. The player says **Supremacy** (`CATEGORY_LABELS`, `AMBITION_CATEGORY_WORDS`). This is the Freehold pattern: an engine literal kept, a player word chosen so the two never collide.
+* **Claim Dominion / Shift Dominion** (`hex.claim_dominion`, `hex.shift_dominion`) keep their names. They are the plain Dominion verbs. Re-keying their effects is THR-1748's "sustained controls push toward the god's affinity vector" consumer. Today Claim writes a hex `divineInfluence` number that nothing reads, and Shift boosts `resonance`. Renaming the cards now would only mean renaming them back once that ticket lands.
+* **Proper nouns stay as they are:** the mandate *Dominion of Stone*, the spell *Word of Dominion*, and the remembrance title word "Dominion" (`remembrance.ts`). Each is a name, not the term.
+* **Narrative prose** ("asserting dominion", "share dominion over this place") is ordinary English, not the term. Leave it alone.
+
+---
+
+### Dominion Band
+
+**Aliases:** dominion word
+**Also see:** `[[Dominion]]`
+**Status:** canonical (seated by delegation 2026-10-05, THR-1746). The five words are proposed on THR-1745; THR-1748 names the thresholds as constants.
+
+The five words a [Dominion](#dominion) is read through, lowest to highest: **Hostile · Foreign · Touched · Held · Sovereign**. Foreign is neutral. The band is the one read that every consumer uses: card cost, effect magnitude, thread yield, source income and pressure direction. No consumer reads the underlying number.
+
+---
+
+### Opposing Dominion
+
+**Aliases:** the opposition
+**Also see:** `[[Dominion]]`, `[[Sphere]]`
+**Status:** canonical (seated by delegation 2026-10-05, THR-1746)
+
+The opposite pole of each sphere the god holds, as the designed cosmology pairs them (`SPHERE_OPPOSITES`: Chaos ↔ Order, Light ↔ Darkness, Force ↔ Mind, Matter ↔ Time, Energy ↔ Spirit, Life ↔ Entropy). Objects steeped in it read Hostile. Rival schemes and doom pressure are meant to push it actively (THR-1748).
+
+---
+
 ### Domain Capability
 
 **Aliases:** Capability Tier, Domain Tier

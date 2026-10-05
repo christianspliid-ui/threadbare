@@ -105,7 +105,7 @@ describe('chartered kinds — every catalog entry becomes a card', () => {
   it('resolves every rail group to a word, never a raw key', () => {
     // Law 14 on the nav rail. The ambition rows are the live risk: their subcategory is the
     // engine's own `AmbitionCategory` spelling, so a category added to the union without a
-    // word here would paint `vengeance` beside `Dominion`.
+    // word here would paint `vengeance` beside `Supremacy`.
     // Falsify: delete the `...AMBITION_CATEGORY_WORDS` spread from SUBCATEGORY_DISPLAY.
     const rails = getCodexCategories()
       .filter(c => [AMBITION_CATEGORY_ID, CARD_CATEGORY_ID, COMPANION_CATEGORY_ID].includes(c.id))

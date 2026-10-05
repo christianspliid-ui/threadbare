@@ -170,7 +170,7 @@ export const CARD_TIERS = {
  * unreachable instead of merely warned about).
  */
 export const AMBITION_CATEGORY_WORDS: Readonly<Record<AmbitionCategory, string>> = {
-  dominion: 'Dominion',
+  dominion: 'Supremacy', // engine literal `dominion`; never the god's Dominion (UL Cosmology, THR-1746)
   mastery: 'Mastery',
   legacy: 'Legacy',
   survival: 'Survival',

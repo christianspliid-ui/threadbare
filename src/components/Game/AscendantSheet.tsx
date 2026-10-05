@@ -345,9 +345,9 @@ export function AscendantSheet({
             </p>
           </section>
 
-          {/* Dominion — matches ProwessTab domain cards exactly */}
+          {/* Reaches — matches ProwessTab domain cards exactly. Not "Dominion": that word is the god's graded hold on a world object (UL Cosmology, THR-1746). */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '50ms', animationFillMode: 'backwards' }}>
-            <SectionHeading as="h2">Dominion</SectionHeading>
+            <SectionHeading as="h2">Reaches</SectionHeading>
             <p
               data-testid="sheet-reach-axis-caption"
               className="text-xs mb-2"

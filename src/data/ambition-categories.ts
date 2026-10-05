@@ -31,7 +31,7 @@ export const CATEGORY_COLORS: Record<AmbitionCategory, string> = {
 
 /** Human-readable labels */
 export const CATEGORY_LABELS: Record<AmbitionCategory, string> = {
-  dominion:  'Dominion',
+  dominion:  'Supremacy', // engine literal `dominion`; said Supremacy so it never collides with the god's Dominion (UL Cosmology, THR-1746)
   mastery:   'Mastery',
   vengeance: 'Vengeance',
   legacy:    'Legacy',
