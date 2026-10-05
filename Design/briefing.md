@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 16:56 local (14:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,10 +25,11 @@ Say "veto set-down waits", "veto readable hovers", "veto found it" or "veto fair
 
 **4 jobs ready** (healthy), **none being built right now.** All four ready jobs are the design-lane decisions above, each waiting out its veto window. The first to open is the set-down-waits fix at ~20:40 tonight, so the builder has nothing it may start before then. That pause is by design, not a stall.
 
-- Nothing new shipped this hour. The last two merges, [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (encounter summaries now read as player prose) and [#2242](https://github.com/christianspliid-ui/threadbare/pull/2242) (the commit button stays on screen), are both live.
+- One pull request is open and will merge itself on green: [#2243](https://github.com/christianspliid-ui/threadbare/pull/2243) moves the plan-checking reviewer from Fable to Opus (a cost change, no game effect).
 
 ## Health
 
-- **The heavy simulation tests are still red on main**, including on the newest commit `2fe01185` ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37320333766)). Two tests fail: one hits a 5-second time limit (`debugTickBatch`) and one is a doom-milestone check (`doomIdentityMilestones`). It has been red on every run since ~06:40 your time. A builder owes the follow-up, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (476 worktrees, 319 local branches on disk). Noted for visibility.
-- Everything else is green. The live site serves the newest main (`2fe01185`), no pull requests are waiting, scheduled tasks are on time, and the reaper last ran at 16:40. Simulation speed is healthy (105 ms per tick, 1% below its weekly median of 106).
+- **The heavy simulation tests are still red on main**, on the newest commit `2fe01185` ([runs](https://github.com/christianspliid-ui/threadbare/actions)). Two tests fail: one hits a 5-second time limit (`debugTickBatch`) and one is a doom-milestone check (`doomIdentityMilestones`). Red since ~06:40 your time; no builder has claimed the fix yet. A builder owes it, not you.
+- **Simulation speed read slow this hour:** "tick cost 144 ms/tick steady, 37% above the 7-day median (106, 120 rows since 88e4562c); top phase agent_decision, 645 agents. Name the merges between 88e4562c and 2fe01185: git log --oneline --merges 88e4562c..2fe01185". The same commit measured 105 ms an hour ago, so this is most likely the machine being busy, not a code change. The builder checks it if it repeats.
+- **The worktree reaper has 6 worktrees waiting for a decision** (476 worktrees, 316 local branches on disk). Noted for visibility.
+- Everything else is green. The live site serves the newest main (`2fe01185`), scheduled tasks are on time, and the reaper last ran at 17:40.
