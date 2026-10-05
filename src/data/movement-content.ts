@@ -371,6 +371,16 @@ export const APPOINTMENT_DEPARTING_PRICED_TRAVEL = true;
  */
 export const APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX = 1;
 
+/**
+ * THR-1737 — the `departing` filter prices the encounter's own work at its longest
+ * roll (`totalTickCostMax`, each step's `duration.max`), not its shortest. A mortal
+ * that must set out cannot gamble on short rolls: on seed 42 a departing mortal with
+ * 9 ticks took `cathedral_loan` (two 1–2-tick steps, priced 2), ran it 4 ticks and lost
+ * its promise. `false` restores the `duration.min` sum. `leaning`, `waiting` and the
+ * scorer keep `totalTickCost` either way.
+ */
+export const APPOINTMENT_DEPARTING_PRICES_LONGEST_ROLL = true;
+
 /** Ticks after the window closes before the missed sequel is eligible. */
 export const APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS = 12;
 

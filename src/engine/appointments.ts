@@ -70,6 +70,7 @@ import {
   APPOINTMENT_DISCOUNT_ON_BOARD,
   APPOINTMENT_WAITING_HOLD_ENABLED,
   APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX,
+  APPOINTMENT_DEPARTING_PRICES_LONGEST_ROLL,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -663,6 +664,18 @@ export function waitingTripOverruns(workTicks: number, hexesAway: number, ticksL
 export function appointmentTicksPerHex(travelTicks: number, hexesToPlace: number): number {
   if (!(hexesToPlace > 0) || !Number.isFinite(travelTicks) || travelTicks <= 0) return APPOINTMENT_HEX_TICKS_PER_HEX;
   return travelTicks / hexesToPlace;
+}
+
+/**
+ * THR-1737 — the work ticks the `departing` filter prices an encounter at: its longest
+ * roll (`totalTickCostMax`) under `APPOINTMENT_DEPARTING_PRICES_LONGEST_ROLL`, else the
+ * `duration.min` sum the scorer uses. An entry without a usable max falls back to
+ * `totalTickCost`, and the price is never below it.
+ */
+export function departingWorkTicks(entry: { totalTickCost: number; totalTickCostMax?: number }): number {
+  const max = entry.totalTickCostMax;
+  if (!APPOINTMENT_DEPARTING_PRICES_LONGEST_ROLL || max === undefined || !Number.isFinite(max)) return entry.totalTickCost;
+  return Math.max(entry.totalTickCost, max);
 }
 
 /**
