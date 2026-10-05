@@ -275,6 +275,7 @@ import {
 import { checkMidEncounterPromotion } from '../../engine/attentionTier';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
 import { observeResolutionIntelligence } from '../../engine/intelligence';
+import type { EncounterNotification } from '../../types/encounterVisibility';
 import { isPlayerHoldLive, releasePlayerHold, setPlayerHold, tracePlayerHoldReleased, tracePlayerHoldSet } from '../../engine/playerStepHold';
 import {
   markEncounterProgressDisregarded,
