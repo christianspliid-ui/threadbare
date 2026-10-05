@@ -30,6 +30,9 @@ export const BADGE_GLYPH_ACTIVE = '!';
 /** Glyph for a concluded encounter whose aftermath has not been read. */
 export const BADGE_GLYPH_AFTERMATH = '✦';
 
+/** THR-1730 — registry tooltip a held (minimised, waiting) step's badge carries. */
+export const BADGE_WAITING_TOOLTIP_ID = 'ui.encounter_waiting';
+
 // ─── Model ─────────────────────────────────────────────────────────
 
 export interface EncounterBadgeModel {
@@ -58,6 +61,12 @@ export interface EncounterBadgeModel {
   stakesLine?: string;
   /** Screen-reader label; includes the count, since the badge itself is aria-hidden. */
   ariaLabel: string;
+  /**
+   * THR-1730 — the primary's step is held for the player (they minimised it at
+   * pause-tier attention): it waits rather than playing out. Tooltip registry id
+   * for that state; absent otherwise.
+   */
+  tooltipId?: typeof BADGE_WAITING_TOOLTIP_ID;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -128,11 +137,23 @@ export function selectEncounterBadges(
   notifications: readonly EncounterNotification[] | undefined,
   /** THR-1727 — resolves a notification's stakes/result line; omitted ⇒ none. */
   stakesLineFor?: (notif: EncounterNotification) => string | undefined,
+  /**
+   * THR-1730 — unified action ids whose current step is held for the player.
+   * Computed by the caller from game state so this model stays pure; omitted ⇒ none.
+   */
+  heldActionIds?: ReadonlySet<string>,
 ): Map<string, EncounterBadgeModel> {
   const byAgent = new Map<string, EncounterNotification[]>();
 
   for (const notif of notifications ?? []) {
-    if (!isBadgeWorthy(notif)) continue;
+    // THR-1730 — a held step keeps its badge even once viewed: the badge is the
+    // only way back to a moment that waits (Law 40), and a reopen that another
+    // modal pre-empted would otherwise leave the step held with nothing to open.
+    const held = notif.kind !== 'aftermath'
+      && !notif.resolved
+      && notif.actionId !== undefined
+      && (heldActionIds?.has(notif.actionId) ?? false);
+    if (!held && !isBadgeWorthy(notif)) continue;
     for (const anchorId of notificationAnchorIds(notif)) {
       const bucket = byAgent.get(anchorId);
       if (bucket) bucket.push(notif);
@@ -156,6 +177,9 @@ export function selectEncounterBadges(
       ? (count > BADGE_COUNT_DISPLAY_MAX ? `${BADGE_COUNT_DISPLAY_MAX}+` : String(count))
       : undefined;
     const others = count > 1 ? ` and ${count - 1} more` : '';
+    const waiting = kind === 'encounter'
+      && primary.actionId !== undefined
+      && (heldActionIds?.has(primary.actionId) ?? false);
 
     badges.set(agentId, {
       agentId,
@@ -170,7 +194,8 @@ export function selectEncounterBadges(
       ...(stakesLine ? { stakesLine } : {}),
       ariaLabel: kind === 'aftermath'
         ? `${primary.encounterName} concluded${others} — open aftermath`
-        : `${primary.encounterName}, ${meta}${others} — open encounter`,
+        : `${primary.encounterName}, ${meta}${others} — ${waiting ? 'waiting for you' : 'open encounter'}`,
+      ...(waiting ? { tooltipId: BADGE_WAITING_TOOLTIP_ID } : {}),
     });
   }
 

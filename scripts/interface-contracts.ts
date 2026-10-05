@@ -6033,6 +6033,27 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/attentionCadence.ts', 'src/engine/orchestrator.ts'],
     readSites: ['src/engine/attentionCadence.ts', 'src/engine/encounterFilterPipeline.ts', 'src/debug-bridge.ts'],
   },
+  // ── A minimised moment waits (THR-1730) ───────────────────────────────────
+  {
+    id: 'minimised-step-hold',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide".',
+    ulTerms: ['Encounter'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['playerHold', 'isPlayerHoldLive', 'progressActionsWithPlayerHolds'],
+      module: 'src/engine/playerStepHold.ts',
+    },
+    writeSites: ['src/components/Game/GameView.tsx', 'src/engine/playerStepHold.ts', 'src/engine/unifiedActionLifecycle.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/components/Game/GameView.tsx',
+      'src/components/Game/encounterBadgeModel.ts',
+      'src/debug-bridge.ts',
+    ],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

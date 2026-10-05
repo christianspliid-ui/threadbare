@@ -418,6 +418,9 @@ export type TraceCategory =
   | 'encounter.chapter_archived'
   // Encounter stakes line (THR-1727)
   | 'encounter.stakes_line'
+  // Minimised-step hold (THR-1730)
+  | 'encounter.player_hold_set'
+  | 'encounter.player_hold_released'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
   // Mortal economy — trade cargo manifests (THR-616)
@@ -971,6 +974,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter.chapter_archived',
   // Encounter stakes line (THR-1727)
   'encounter.stakes_line',
+  // Minimised-step hold (THR-1730)
+  'encounter.player_hold_set',
+  'encounter.player_hold_released',
   // Player action progression — god-side capability growth (THR-613)
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
@@ -4779,6 +4785,8 @@ export type TraceEntry =
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
   | EncounterStakesLineTrace
+  | PlayerHoldSetTrace
+  | PlayerHoldReleasedTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
   // Mortal economy — trade cargo manifests (THR-616)
@@ -5176,6 +5184,28 @@ export interface EncounterStakesLineTrace extends TraceBase {
     | null;
   /** The opening line as stamped (unenriched), for inspection. */
   line: string;
+}
+
+/** Trace: the player minimised a pause-tier encounter step; it now waits for them (THR-1730). */
+export interface PlayerHoldSetTrace extends TraceBase {
+  category: 'encounter.player_hold_set';
+  actionId: string;
+  templateId: string;
+  stepIndex: number;
+}
+
+/** Why a minimised-step hold ended (THR-1730). */
+export type PlayerHoldReleaseReason =
+  | 'commit' | 'dismiss' | 'step_changed' | 'thread_not_pause' | 'resolved' | 'max_ticks' | 'disabled';
+
+/** Trace: a minimised-step hold ended, and why (THR-1730). */
+export interface PlayerHoldReleasedTrace extends TraceBase {
+  category: 'encounter.player_hold_released';
+  actionId: string;
+  stepIndex: number;
+  /** tick - sinceTick */
+  heldTicks: number;
+  reason: PlayerHoldReleaseReason;
 }
 
 /** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */

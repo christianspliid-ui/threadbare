@@ -309,6 +309,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'High Threat',
     desc: 'A dangerous encounter. Only your strongest agents can reliably see it through.',
   },
+  // THR-1730 — a minimised pause-tier step waits on its badge.
+  'ui.encounter_waiting': {
+    label: 'Waiting for you',
+    desc: 'This moment waits for you. Open it to play your hand, or let fate decide.',
+  },
   'ui.encounter_progress': {
     label: 'Encounter Progress',
     desc: 'Steps completed and outcomes so far — how deep into this encounter the agent has come.',
