@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { IconButton } from '../shared/IconButton';
 import { Tooltip } from '../shared/Tooltip';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
+import { getUITooltip } from '../../data/ui-content';
 
 /** Alpha of the accent colour used as the badge's resting background tint. */
 const BADGE_BG_OPACITY = 0.16;
@@ -34,10 +35,13 @@ export function EncounterBadge({ badge, onOpen }: EncounterBadgeProps) {
   const [hovered, setHovered] = useState(false);
   const [focusRing, setFocusRing] = useState(false);
   const accent = badge.accentColor;
+  // THR-1730 — a held step adds its registered "waits for you" sentence (Law 17).
+  const waitingDesc = badge.tooltipId ? getUITooltip(badge.tooltipId)?.desc : undefined;
+  const baseDesc = badge.stakesLine ? `${badge.stakesLine} · ${badge.meta}` : badge.meta;
 
   return (
     // THR-1727 — the story's own sentence leads; the step/band meta follows it.
-    <Tooltip label={badge.label} desc={badge.stakesLine ? `${badge.stakesLine} · ${badge.meta}` : badge.meta}>
+    <Tooltip label={badge.label} desc={waitingDesc ? `${baseDesc} · ${waitingDesc}` : baseDesc}>
       <IconButton
         size="sm"
         // `active` keeps IconButton's built-in hover mutation from resetting the
@@ -50,6 +54,7 @@ export function EncounterBadge({ badge, onOpen }: EncounterBadgeProps) {
         data-testid="thread-encounter-badge"
         data-encounter-badge-kind={badge.kind}
         data-encounter-badge-count={badge.count}
+        data-encounter-badge-waiting={badge.tooltipId ? 'true' : undefined}
         onClick={(e) => {
           e.stopPropagation();
           onOpen(badge);

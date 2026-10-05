@@ -213,3 +213,27 @@ describe('selectEncounterBadges', () => {
     expect(first.get('agent-kael')!.primary.id).toBe(second.get('agent-kael')!.primary.id);
   });
 });
+
+describe('a held step says it waits (THR-1730)', () => {
+  const live = makeNotification({ sourceSystem: 'unified_action', kind: 'encounter', actionId: 'ua-1', stepIndex: 0 });
+
+  it('a held action id turns "open encounter" into "waiting for you" and carries the tooltip id', () => {
+    const badge = selectEncounterBadges([live], undefined, new Set(['ua-1'])).get('agent-kael')!;
+    expect(badge.ariaLabel).toMatch(/— waiting for you$/);
+    expect(badge.tooltipId).toBe('ui.encounter_waiting');
+  });
+
+  it('an unheld action keeps today\'s label and no tooltip id', () => {
+    const badge = selectEncounterBadges([live], undefined, new Set(['ua-other'])).get('agent-kael')!;
+    expect(badge.ariaLabel).toMatch(/— open encounter$/);
+    expect(badge.tooltipId).toBeUndefined();
+    expect(selectEncounterBadges([live]).get('agent-kael')!.tooltipId).toBeUndefined();
+  });
+
+  it('an aftermath never reads as waiting', () => {
+    const after = makeNotification({ kind: 'aftermath', actionId: 'ua-1' });
+    const badge = selectEncounterBadges([after], undefined, new Set(['ua-1'])).get('agent-kael')!;
+    expect(badge.ariaLabel).toMatch(/open aftermath$/);
+    expect(badge.tooltipId).toBeUndefined();
+  });
+});
