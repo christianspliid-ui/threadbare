@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-05 05:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-05 06:56 local (04:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-05: master-level everyday work is in town** ([THR-1688](https://linear.app/threadbare/issue/THR-1688/content-above-novice-s7b-master-everyday-encounters-1-per-reach-once)): eight master encounters, one per Reach. Merged via [#2232](https://github.com/christianspliid-ui/threadbare/pull/2232) at 06:40 and live.
 - **2026-10-05: a mortal about to leave town no longer starts local encounters that break its promise** ([THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the)). Merged via [#2231](https://github.com/christianspliid-ui/threadbare/pull/2231) at 04:37 and live.
 - **2026-10-05: the fair draw for experts is live** ([THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Its veto window closed at 02:45 with no veto; merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and deployed.
 - **2026-10-04: the rulebook clean-up merged** ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)). Its clash with main was cleared by the builder, and it merged via [#2227](https://github.com/christianspliid-ui/threadbare/pull/2227) at 23:00.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: The First now asks** ([THR-1715](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her)). Her story chapters wait for you and her chores stay out of the Ledger. Merged via [#2224](https://github.com/christianspliid-ui/threadbare/pull/2224) at 16:53 and live; the next cold playtest round judges it.
 - **2026-10-04: the "threads" filler lines are gone** ([THR-1725](https://linear.app/threadbare/issue/THR-1725/remove-the-threads-placeholder-lines-from-encounters-show-nothing)), the last of your four Unsafe Bridge jobs. Merged via [#2218](https://github.com/christianspliid-ui/threadbare/pull/2218) at 15:20 and live. The playthrough invitation waits on [the five-card hand fix](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls), buildable from Monday.
 - **2026-10-04: the fair-draw pull request is no longer an ask** ([#2180](https://github.com/christianspliid-ui/threadbare/pull/2180)). The stuck-PR check stopped escalating it; it is held on purpose until its veto window closes (~02:45 Monday), then a builder clears the conflict. The ruin-visit fix ([#2199](https://github.com/christianspliid-ui/threadbare/pull/2199)) merged and is live.
-- **2026-10-04: spells now reach mortals as divine gifts and found tomes** ([THR-1672](https://linear.app/threadbare/issue/THR-1672/spells-as-divine-gifts-and-found-tomes-acquisition-channels-1-and-4)). Merged via [#2220](https://github.com/christianspliid-ui/threadbare/pull/2220) at 14:39 and live.
 
 ---
 
