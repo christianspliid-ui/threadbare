@@ -216,7 +216,61 @@ Cadence: a card every ~46 ticks across the whole run · a thread event every ~37
 | Where the late game comes from | nowhere | defending ground | the retinue's rise | attunement + trials |
 | Touches a parked direction | — | no | no | THR-870 (economy only) |
 
-**My recommendation, offered for veto:** ship the five shared prerequisites now (they are balance and wiring, not direction), and commit to **Model B as the spine with Model A's per-Area sources as its ground layer**. B is the one where growth is *the story of named people*, which is what the North Star asks a good run to be; A keeps the land legible and gives the Shepherd's Stone half something to do. Model C waits on the THR-870 decision and is written so it can be laid on top later without undoing B, because its writers (attunement, trials) do not touch threads or sources.
+**The recommendation as first offered (superseded the same day, kept for the record):** ship the five shared prerequisites now, and commit to Model B as the spine with Model A's per-Area sources as its ground layer, with Model C waiting on the THR-870 decision.
+
+## Director's ruling, 2026-10-05 — the Dominion loop
+
+Christian's answer in chat (recorded as a comment on THR-1745, `human gate satisfied via chat review 2026-10-05`): **a mix, organised by one idea he calls Dominion.**
+
+> *Dominion* designates the world objects that have the same dominating sphere affinities as your god. Objects with the same dominion let the god influence them through actions, cheaper and more powerfully, so that is your home turf, which you want to expand strategically and tactically. You build threads to help you spread dominion through secondary actors — agents, factions, artifacts, armies, locations. You can use powers to help these become more effective at what they do, as they fight the opposing dominion. Spending on a certain sphere will indirectly, through smart spending, build infrastructure (threads, actions, …) that should have a positive pay-off.
+
+Three rulings on the open questions:
+
+1. **Opposition follows the designed cosmology.** The opposing dominion is the opposite pole of each sphere the god holds (`SPHERE_OPPOSITES`, `src/engine/cosmology.ts`: Chaos–Order, Light–Darkness, Force–Mind, Matter–Time, Energy–Spirit, Life–Entropy).
+2. **You buy sphere points at the beginning of the game**, and dominion is scored on the god's affinity to *all* spheres summed, factored by the god's sphere score. This replaces the fixed primary/secondary pair as the god's identity vector.
+3. **Graded**, not binary.
+
+### What the loop is, in the engine's terms
+
+Every hex, place, mortal and faction already carries a `sphereAffinity.scores` sheet; every divine action, encounter step, rival move and doom stage already pushes `SpherePressureEvent`s that raise a target's sphere or erode its opposite (`phaseSpherePressure`). Dominion is a **read** of that state:
+
+```
+dominion(object) = Σ_s  affinity_god[s] × power_god[s] × (score_object[s] − score_object[opposite(s)])
+```
+
+normalised and shown as a **band word**: *Hostile · Foreign · Touched · Held · Sovereign*. Never a number (UI Law 13). `affinity_god` is the bought vector (fixed for the run); `power_god` is the god's own sphere score (grows by attunement and mandate, Model C's writers); `score_object` is the world's.
+
+One read, every consumer:
+
+| Consumer | Today | Under Dominion |
+|---|---|---|
+| Card cost (`getTargetActionSlots`) | sphere-matched nudge cards cost 1 less; interventions cost more against the opposite sphere | band multiplier ×1.5 Hostile → ×0.75 Sovereign, Foreign 1.0 |
+| Effect magnitude and the resolution sphere factor | `sphereFactor = 0`, hard-coded | reads the band; `spherePowerMultiplier` scales effect |
+| Thread yield | flat 0.1 per thread | a Held-or-better mortal yields more than a Foreign one (Model B's per-tier yield, gated by band) |
+| Source income | typed sources pay regardless of surroundings | Held and above only; the essence bridge already withers a source in hostile ground |
+| Where pressure goes | each successful action pushes `ACTION_PRESSURE_SUCCESS` (3) at its target | kept; sustained holds push toward the god's affinity vector (`CONTROL_PRESSURE_PER_TICK` 1 reaches score 5 in 15 ticks — tune down) |
+| The opposing dominion | rival schemes and doom cards push their own sphere | routed through the opposite of the god's strongest affinities; this is the sink the three models lacked (H7) |
+
+How the three models fold in: A is dominion over ground (sources and holds grow it, per-Area latent sources follow the player's people); B is dominion spread through people (threads, Champion shrines, Aspect relics); C is the god's own power deepening as it spends through a sphere (attunement marks, mandate pressure, trials).
+
+### Decisions taken under the 2026-09-11 delegation, veto invited
+
+- Point-buy covers the **eight Creation spheres**; the four Foundation spheres stay ruin-discovered (rulebook §5), so elder magic remains something found. **One pole per opposed pair** at point-buy: no Life and Entropy together.
+- "Primary / secondary" survive as prose for the two highest bought weights; the 35/25/4 income split is re-keyed to the vector, with a named floor so no sphere earns zero.
+- The five band words above, thresholds as named constants.
+- The word collides with `hex.claim_dominion`, `hex.shift_dominion` and the mandate *Dominion of Stone*; reconciled by UL-proposal.
+
+### Tickets filed from the ruling (all Todo, plan doc owed by the design lane)
+
+| Ticket | Scope | Order |
+|---|---|---|
+| THR-1746 | UL-proposal: Dominion, Dominion band, opposing dominion; reconcile the two cards and the mandate name | any time (docs) |
+| THR-1747 | Shared prerequisites: thread upkeep retune, Wellspring milestone, source upkeep charged, orphans granted, timing comments | **first** (mutex with the core on the essence files) |
+| THR-1748 | Dominion core: the read, the band, the consumers, `__DEBUG.getDominion` | blocked by THR-1747 |
+| THR-1749 | Buy your spheres: point-buy at Remembrance, income split re-keyed to the vector | parallel with the core (accessor with fallback) |
+| THR-1750 | Dominion on the map and on every sheet; income words on the essence bar | blocked by THR-1748 |
+
+The measured target for the whole loop is the Model B / C tables above: income rising with the count of Held-or-better objects, a card still arriving in the last third of the run, and a primary pool that is never pinned at zero.
 
 ## Engine pillar
 
