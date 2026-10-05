@@ -628,6 +628,13 @@ const step2AnswerTheWarden: ActionStep = {
 
 export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.delve.the_drowned_archive',
+  stakes: {
+    goal: 'bring the charter up before the water takes it',
+    risk: 'see the shelf go into the water with the charter',
+    won: 'brought the charter up out of the flooding vault',
+    lost: 'came up without the charter, the box back on its shelf',
+    lostBadly: 'saw the shelf go into the water with the charter',
+  },
   tags: ['#delve'],
   rarityTier: 2,
   intrinsicTier: 'background',

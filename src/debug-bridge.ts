@@ -2936,7 +2936,7 @@ if (import.meta.env.DEV) {
         templateId: action.templateId,
         line: built?.text ?? null,
         leadSource: built?.leadSource ?? null,
-        fallback: built ? built.fallback : 'no_stakes_description_used',
+        fallback: built ? built.fallback : 'no_stakes_initiation_used',
         stamped: Boolean(action.stakesContext),
         stakesContext: action.stakesContext ?? null,
         resultLine: template && action.resolved ? sl.rememberedStakesLine(action, template, state.graph) : null,

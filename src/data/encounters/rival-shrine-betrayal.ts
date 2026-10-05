@@ -646,6 +646,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const RIVAL_SHRINE_BETRAYAL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'broker.quest.rival_shrine_betrayal',
+  stakes: {
+    goal: 'settle the broker\'s offer for the hidden shrine',
+    risk: 'lose the broker\'s trust and the shrine map both',
+    won: 'traded the curing secret for the shrine map',
+    lost: 'fumbled the bargain and lost the broker\'s trust',
+    arms: {
+      refuse_trade: {
+        won: 'kept Brinewall\'s curing secret out of the deal',
+        lost: 'refused, and sent the broker off to uglier paths',
+      },
+    },
+  },
   tags: ['#broker_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',

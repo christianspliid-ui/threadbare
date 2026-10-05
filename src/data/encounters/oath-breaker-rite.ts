@@ -22,6 +22,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.oath_breaker_rite',
+  stakes: {
+    goal: 'settle the weaver\'s broken oath before the priest\'s rite',
+    risk: 'be named with the strangers the crowd blames',
+    won: 'loosed the weaver\'s oath at the shrine stone',
+    lost: 'left the oath on the stone and the crowd with the priest',
+    lostBadly: 'watched the rite fail and was named with the strangers',
+    arms: {
+      negative: {
+        won: 'showed the square the priest\'s rite was empty',
+        lost: 'lost the square to the priest and his blame',
+        lostBadly: 'was named with the strangers by the crowd',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Oath-Breaker\'s Rite',

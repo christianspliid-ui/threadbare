@@ -65,6 +65,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.judicial_duel',
+  stakes: {
+    goal: 'win back a family\'s farm in a trial by combat',
+    risk: 'yield in front of the whole valley',
+    won: 'made the order\'s champion yield and won the farm back',
+    lost: 'yielded, and the court gave the farm to the order',
+    lostBadly: 'yielded before the valley and lost the family\'s farm',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Judicial Duel',

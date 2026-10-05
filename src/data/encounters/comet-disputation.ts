@@ -100,6 +100,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.comet_disputation',
+  stakes: {
+    goal: 'win the comet disputation before the council',
+    risk: 'be jeered from the square and the fair called off',
+    won: 'won the council with the champion\'s own chart',
+    lost: 'lost the council, and the fair was called off',
+    lostBadly: 'were jeered for a forged chart, and the gates shut',
+    arms: {
+      negative: {
+        won: 'won the council and kept the champion\'s chart quiet',
+        lost: 'lost to the doctrine, and the fair was called off',
+        lostBadly: 'were cut off by the council, and the gates shut',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Comet Disputation',

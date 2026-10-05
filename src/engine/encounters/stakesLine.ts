@@ -353,11 +353,11 @@ export function stampStakesContext(
         actionId: action.actionId,
         templateId: template.id,
         leadSource: result?.leadSource ?? stakesContext.motiveSource ?? 'none',
-        fallback: result ? result.fallback : 'no_stakes_description_used',
-        line: result?.text ?? template.description ?? '',
+        fallback: result ? result.fallback : 'no_stakes_initiation_used',
+        line: result?.text ?? '',
         summary: result
           ? `stakes line: ${result.text}`
-          : `stakes line: ${template.id} has no stakes — description used`,
+          : `stakes line: ${template.id} has no stakes — opening prose used`,
       };
       emitTrace(trace);
     } catch {

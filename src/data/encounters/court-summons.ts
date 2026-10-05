@@ -80,6 +80,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.court_summons',
+  stakes: {
+    goal: 'answer the crown\'s summons before dusk',
+    risk: 'bore the court and never be called again',
+    won: 'answered the crown and earned a use at court',
+    lost: 'was heard out, and the crown called the next name',
+    lostBadly: 'gave the court a stale answer and was never called again',
+  },
   tags: ['#crown_errand'],
   rarityTier: 2,
   intrinsicTier: 'background',

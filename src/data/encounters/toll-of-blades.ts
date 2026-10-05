@@ -524,6 +524,13 @@ const step2OutlastTheColumn: ActionStep = {
 
 export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.toll_of_blades',
+  stakes: {
+    goal: 'keep their pack and outlast the war column',
+    risk: 'go down in the mud as the column marches past',
+    won: 'kept their pack and outlasted the war column',
+    lost: 'sat down in the verge as the column stepped around',
+    lostBadly: 'went down in the mud and woke with the column gone',
+  },
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Toll of Blades',

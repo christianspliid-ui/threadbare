@@ -57,6 +57,13 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.roadside_shakedown ──────────────────────────────────────────
   {
     id: 'borderland.roadside_shakedown',
+    stakes: {
+      goal: 'see off the knife-wielding bandit',
+      risk: 'walk into the bandit\'s bigger partner',
+      won: 'saw the bandit off and took his purse',
+      lost: 'lost the bandit in the alders',
+      lostBadly: 'walked into the bandit\'s bigger partner in the brush',
+    },
     name: 'Roadside Shakedown',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -173,6 +180,13 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.bandit_scouts ───────────────────────────────────────────────
   {
     id: 'borderland.bandit_scouts',
+    stakes: {
+      goal: 'stop the bandit scouts reporting back',
+      risk: 'be cut by a hidden third scout',
+      won: 'stopped the scouts carrying word back',
+      lost: 'let the scouts slip off with their face in mind',
+      lostBadly: 'was cut by a hidden third scout and pulled back',
+    },
     name: 'Bandit Scouts',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -294,6 +308,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.toll_bridge_bully ───────────────────────────────────────────
   {
     id: 'borderland.toll_bridge_bully',
+    stakes: {
+      goal: 'cross the stone bridge without paying the bully',
+      risk: 'go off the bridge and pay double before witnesses',
+      won: 'crossed the stone bridge without paying',
+      lost: 'took the wet ford a half-mile north instead',
+    },
     name: 'Toll Bridge Bully',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -376,6 +396,13 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.outlaw_camp ─────────────────────────────────────────────────
   {
     id: 'borderland.outlaw_camp',
+    stakes: {
+      goal: 'break the outlaw camp in the hollow',
+      risk: 'flee bleeding as the outlaws burn the camp',
+      won: 'broke the outlaw camp in the hollow',
+      lost: 'withdrew bleeding as the camp moved on',
+      lostBadly: 'fled bleeding as the outlaws burned the camp',
+    },
     name: 'Outlaw Camp',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -515,6 +542,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.desperate_deserter ──────────────────────────────────────────
   {
     id: 'borderland.desperate_deserter',
+    stakes: {
+      goal: 'disarm the starving deserter',
+      risk: 'take a knife cut and let the boy bolt',
+      won: 'disarmed the deserter and settled his fate',
+      lost: 'watched the boy bolt into the ditch-grass',
+    },
     name: 'Desperate Deserter',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -644,6 +677,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.caravan_thieves ─────────────────────────────────────────────
   {
     id: 'borderland.caravan_thieves',
+    stakes: {
+      goal: 'drive the thieves off the merchant\'s wagon',
+      risk: 'watch the thieves go off with half the cargo',
+      won: 'drove the thieves off the merchant\'s wagon',
+      lost: 'watched the thieves go off with half the cargo',
+    },
     name: 'Caravan Thieves',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -761,6 +800,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.smugglers_stash ─────────────────────────────────────────────
   {
     id: 'borderland.smugglers_stash',
+    stakes: {
+      goal: 'take proof from the smugglers\' cache',
+      risk: 'be caught at the cache by the smugglers',
+      won: 'took the seal-stamp from the smugglers\' cache',
+      lost: 'was caught at the cache by the smugglers',
+    },
     name: 'Smuggler\'s Stash',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -881,6 +926,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.feral_dogs ──────────────────────────────────────────────────
   {
     id: 'borderland.feral_dogs',
+    stakes: {
+      goal: 'drive off the feral dog pack',
+      risk: 'walk on bitten by the feral dogs',
+      won: 'drove off the feral dog pack',
+      lost: 'walked on bitten, the pack merely bored',
+    },
     name: 'Feral Dog Pack',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -947,6 +998,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.territorial_boar ────────────────────────────────────────────
   {
     id: 'borderland.territorial_boar',
+    stakes: {
+      goal: 'hold the ground against the charging boar',
+      risk: 'wait up a sapling until the boar wanders off',
+      won: 'held the ground until the boar backed off',
+      lost: 'waited up a sapling until the boar wandered off',
+    },
     name: 'Territorial Boar',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1021,6 +1078,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.venomous_serpent ────────────────────────────────────────────
   {
     id: 'borderland.venomous_serpent',
+    stakes: {
+      goal: 'get past the serpent coiled on the trail',
+      risk: 'be driven off the trail by the serpent',
+      won: 'killed the serpent and walked on',
+      lost: 'took the long detour around the nest',
+    },
     name: 'Venomous Serpent',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1088,6 +1151,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.wolves_at_dusk ──────────────────────────────────────────────
   {
     id: 'borderland.wolves_at_dusk',
+    stakes: {
+      goal: 'drive the wolf pack away from the camp',
+      risk: 'bleed through a sleepless night against the pack',
+      won: 'drove the wolf pack off with a burning brand',
+      lost: 'held the camp until dawn with no sleep',
+    },
     name: 'Wolves at Dusk',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1203,6 +1272,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.spider_nest ─────────────────────────────────────────────────
   {
     id: 'borderland.spider_nest',
+    stakes: {
+      goal: 'burn out the giant spider nest',
+      risk: 'back out of the ruin and leave it to the spider',
+      won: 'burned out the giant spider nest',
+      lost: 'backed out of the ruin and left it to the spider',
+    },
     name: 'Giant Spider Nest',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1276,6 +1351,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.swamp_lurker ────────────────────────────────────────────────
   {
     id: 'borderland.swamp_lurker',
+    stakes: {
+      goal: 'drive the lurker back into the swamp',
+      risk: 'crawl to dry land bruised and beaten',
+      won: 'drove the lurker back under the dark water',
+      lost: 'crawled to dry land bruised and beaten',
+    },
     name: 'Swamp Lurker',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1351,6 +1432,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.carrion_birds ───────────────────────────────────────────────
   {
     id: 'borderland.carrion_birds',
+    stakes: {
+      goal: 'drive the carrion birds off the pack',
+      risk: 'lose a parcel to the flock',
+      won: 'drove the carrion birds off the pack',
+      lost: 'lost a wrapped parcel to the flock',
+    },
     name: 'Carrion Bird Flock',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1421,6 +1508,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.ruins_scavengers ────────────────────────────────────────────
   {
     id: 'borderland.ruins_scavengers',
+    stakes: {
+      goal: 'run the scavengers out of the ruins',
+      risk: 'get lost in the ruins and leave with nothing',
+      won: 'ran the scavengers out of the ruins',
+      lost: 'got lost in the ruins and left with nothing',
+    },
     name: 'Ruins Scavengers',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1496,6 +1589,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.restless_bones ──────────────────────────────────────────────
   {
     id: 'borderland.restless_bones',
+    stakes: {
+      goal: 'put the cursed dead back in the ground',
+      risk: 'flee the cursed ground with the dead still walking',
+      won: 'put the cursed dead back in the ground',
+      lost: 'fled the cursed ground with the dead still walking',
+    },
     name: 'Restless Bones',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1609,6 +1708,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.wisp_trail ──────────────────────────────────────────────────
   {
     id: 'borderland.wisp_trail',
+    stakes: {
+      goal: 'follow the wisp to what it guards',
+      risk: 'end up lost in the bog until dawn',
+      won: 'followed the wisp to an old offering cache',
+      lost: 'dug at the mossy stone and found only roots',
+    },
     name: 'Will-o\'-the-Wisp Trail',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1677,6 +1782,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.goblin_foragers ─────────────────────────────────────────────
   {
     id: 'borderland.goblin_foragers',
+    stakes: {
+      goal: 'chase the goblin foragers from the clearing',
+      risk: 'take the long way around the goblins',
+      won: 'chased the goblin foragers from the clearing',
+      lost: 'took the long way around, pelted by goblins',
+    },
     name: 'Goblin Foragers',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1746,6 +1857,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.plague_rats ─────────────────────────────────────────────────
   {
     id: 'borderland.plague_rats',
+    stakes: {
+      goal: 'burn out the plague-rat nest',
+      risk: 'let the nest live and the plague travel',
+      won: 'burned out the plague-rat nest',
+      lost: 'let the rats scatter and the plague travel',
+    },
     name: 'Plague Rat Swarm',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1856,6 +1973,12 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── borderland.camp_raiders ────────────────────────────────────────────────
   {
     id: 'borderland.camp_raiders',
+    stakes: {
+      goal: 'drive the raiders out of the camp',
+      risk: 'lose half the supplies to the raiders',
+      won: 'drove the raiders out of the camp',
+      lost: 'lost half the supplies to the raiders',
+    },
     name: 'Camp Raiders',
     rarityTier: 1,
     intrinsicTier: 'shaping',

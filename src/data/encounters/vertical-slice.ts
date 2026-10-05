@@ -2489,6 +2489,13 @@ const FULL_MOON_STEP: ActionStep = {
 
 export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.fullMoon,
+  stakes: {
+    goal: 'keep the crossroads promise under the full moon',
+    risk: 'end up a line in the stranger\'s ledger',
+    won: 'kept the crossroads promise and took the gift',
+    lost: 'fumbled the exchange and took the cold parcel',
+    lostBadly: 'kept the promise and became a line in his ledger',
+  },
   // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
   // board never offers it; only its planter (seed / appointment branch) starts it.
   drawable: false,
@@ -3526,6 +3533,20 @@ const SWINDLER_SUPPORT_BUNDLE: EncounterSupportBundle = [
 
 export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.swindlerFound,
+  stakes: {
+    goal: 'mark the swindler and end the paper trade here',
+    risk: 'lose the swindler and his satchel to another town',
+    won: 'had the swindler taken by the wardens at the scales',
+    lost: 'watched the swindler leave before the wardens came',
+    lostBadly: 'brought the wardens to an empty pitch',
+    arms: {
+      negative: {
+        won: 'cornered the swindler and took back the satchel',
+        lost: 'lost the swindler down one of his own exits',
+        lostBadly: 'came off worse against his knife in the alley',
+      },
+    },
+  },
   // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
   // board never offers it; only its planter (seed / appointment branch) starts it.
   drawable: false,
@@ -4003,6 +4024,13 @@ const KIN_STEP: ActionStep = {
 
 export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.gratefulKin,
+  stakes: {
+    goal: 'take the family\'s thanks well before company',
+    risk: 'wear the thanks like a bill all evening',
+    won: 'took the thanks well and warmed the room',
+    lost: 'shrugged off the thanks in front of the room',
+    lostBadly: 'wore the long thanks all evening like a bill',
+  },
   // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
   // board never offers it; only its planter (seed / appointment branch) starts it.
   drawable: false,
@@ -4742,6 +4770,20 @@ function tableStandingReaction(id: string, label: string, intent: string, delta:
 
 export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.tableThatHolds,
+  stakes: {
+    goal: 'bring two feuding camps onto one plan by dusk',
+    risk: 'see the causeway line break and carry people back',
+    won: 'brought both camps together and held the causeway',
+    lost: 'let the riders through a gap in the causeway line',
+    lostBadly: 'came back off the causeway carrying people',
+    arms: {
+      negative: {
+        won: 'emptied the fen side before the riders came',
+        lost: 'were still loading carts on the open road at dawn',
+        lostBadly: 'left a household waiting on the fen side at dawn',
+      },
+    },
+  },
   // THR-1526: a seed target (the Grateful Kin plants it) that is also a reputation-gated
   // organic draw by design — its opening stands alone.
   drawable: true,
@@ -5269,6 +5311,13 @@ const RECKONING_STEP: ActionStep = {
 
 export const SLICE_FULL_MOON_RECKONING: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.fullMoonReckoning,
+  stakes: {
+    goal: 'own the broken word to the stranger',
+    risk: 'explain the miss until it costs more than the miss',
+    won: 'owned the broken word, and the stranger nodded',
+    lost: 'answered sideways, and the stranger wrote it down',
+    lostBadly: 'explained the miss until it cost more than the miss',
+  },
   // THR-1526: seed-only sequel — its opening assumes its parent, so the decision
   // board never offers it; only its planter (seed / appointment branch) starts it.
   drawable: false,

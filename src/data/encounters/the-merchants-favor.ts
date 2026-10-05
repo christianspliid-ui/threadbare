@@ -466,6 +466,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_MERCHANTS_FAVOR_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.gold.the_merchants_favor',
+  stakes: {
+    goal: 'get the robbed merchant heard at the guildhall',
+    risk: 'leave the merchant on the books as a defaulter',
+    won: 'got the robbed merchant before the guild committee',
+    lost: 'got the guildmaster\'s ear but not his help',
+    arms: {
+      mark_the_robbers: {
+        won: 'took down the robbers\' pattern and the driver\'s name',
+        lost: 'sent the merchant off with nothing in hand',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Merchant\'s Favor',

@@ -704,6 +704,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.negotiate_deal',
+    stakes: {
+      goal: 'close the deal on good terms',
+      risk: 'see the deal fall apart at the closing',
+      won: 'closed the deal with a dry handshake',
+      lost: 'saw the deal fall apart over a disputed clause',
+    },
     name: 'Negotiate Deal',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -895,6 +901,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.persuade',
+    stakes: {
+      goal: 'talk the target round to their side',
+      risk: 'run out of argument before the target bends',
+      won: 'talked the target round',
+      lost: 'ran out of argument before the target bent',
+    },
     name: 'Persuade',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1088,6 +1100,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.intimidate',
+    stakes: {
+      goal: 'force a demand on the target by plain threat',
+      risk: 'turn the target into a sworn enemy',
+      won: 'forced the target to give in',
+      lost: 'watched the target refuse the demand',
+      lostBadly: 'made a sworn enemy of the target',
+    },
     name: 'Intimidate',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -2097,6 +2116,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'social.political_leverage',
+    stakes: {
+      goal: 'bend the target with what they know of them',
+      risk: 'watch the target slip free of the pressure',
+      won: 'bent the target into a lasting new arrangement',
+      lost: 'watched the target slip free once the pressure eased',
+    },
     name: 'Political Leverage',
     rarityTier: 3,
     intrinsicTier: 'shaping',

@@ -79,6 +79,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.assize_letter',
+  stakes: {
+    goal: 'carry the sealed letter to the assize in time',
+    risk: 'see the miller found guilty and the mill lost',
+    won: 'carried the letter to the assize in time',
+    lost: 'got the letter there a day late; the mill is forfeit',
+    lostBadly: 'lost a day on the wrong road; the miller was found guilty',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Assize Letter',

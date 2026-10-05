@@ -104,6 +104,12 @@ export const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta> = new M
  */
 export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.army.raise',
+  stakes: {
+    goal: 'muster and pay an army from the town',
+    risk: 'stand on an empty muster ground with unpaid bills',
+    won: 'raised an army that marches at the third bell',
+    lost: 'watched the unpaid muster scatter by the second day',
+  },
   name: 'Raise an Army',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -275,6 +281,12 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.supply_crisis',
+  stakes: {
+    goal: 'get a supply convoy to the hungry column',
+    risk: 'watch the column go gaunt on short rations',
+    won: 'got the supply convoy to the column in time',
+    lost: 'watched the column go gaunt on short rations',
+  },
   name: 'Supply Crisis',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -419,6 +431,12 @@ export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.desertion',
+  stakes: {
+    goal: 'stop the men slipping away in the night',
+    risk: 'watch the column thin night after night',
+    won: 'stopped the desertions and held the column',
+    lost: 'watched the pickets keep vanishing each night',
+  },
   name: 'Desertion Wave',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -577,6 +595,12 @@ export const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.mutiny',
+  stakes: {
+    goal: 'put down the mutiny at the command tent',
+    risk: 'be deposed as the column splits apart',
+    won: 'put down the mutiny and kept command',
+    lost: 'was deposed as the column split apart',
+  },
   name: 'Mutiny',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -740,6 +764,12 @@ export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_THRESHOLD_DISBANDMENT_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.disbandment',
+  stakes: {
+    goal: 'keep a loyal core as the army dissolves',
+    risk: 'stand alone with the standard in the mud',
+    won: 'kept a loyal core to discharge with honour',
+    lost: 'stood alone with the standard in the mud',
+  },
   name: 'Forced Disbandment',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -879,6 +909,12 @@ export const ARMY_THRESHOLD_DISBANDMENT_TEMPLATE: UnifiedActionTemplate = {
  */
 export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.aftermath.refugees',
+  stakes: {
+    goal: 'take in the refugees and feed them through winter',
+    risk: 'see the granary thin and blood spilled in the longhouse',
+    won: 'took in the refugees and fed them through winter',
+    lost: 'saw the granary thin and two dead in the longhouse',
+  },
   name: 'Refugees at the Gates',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -1054,6 +1090,12 @@ export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_SUPPLY_FORAGE_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.supply.forage',
+  stakes: {
+    goal: 'feed the column without raiding the farms',
+    risk: 'leave the steadings stripped bare like a raid',
+    won: 'fed the column on sealed tallies, not raids',
+    lost: 'fed the column by stripping the steadings bare',
+  },
   name: 'The Foraging Parties',
   rarityTier: 2,
   intrinsicTier: 'shaping',
@@ -1201,6 +1243,12 @@ export const ARMY_SUPPLY_FORAGE_TEMPLATE: UnifiedActionTemplate = {
  */
 export const ARMY_SUPPLY_SIEGE_LIFTED_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.supply.siege_lifted',
+  stakes: {
+    goal: 'lift the siege and march out as an army',
+    risk: 'see the withdrawal turn into a rout',
+    won: 'lifted the siege and marched out intact',
+    lost: 'saw the withdrawal turn into a rout under the walls',
+  },
   name: 'The Besiegers Break',
   rarityTier: 3,
   intrinsicTier: 'story_beat',

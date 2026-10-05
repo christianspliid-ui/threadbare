@@ -96,6 +96,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.cunning_fair',
+  stakes: {
+    goal: 'read the widow\'s dream before the rival\'s charm sells',
+    risk: 'shame the widow and lose trade at the fair',
+    won: 'read the widow\'s dream right, to the chimney',
+    lost: 'misread the dream, and the widow bought the charm',
+    lostBadly: 'called her husband angry and sent the widow off in tears',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Widow\'s Dream',

@@ -477,6 +477,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_STAR_PILGRIM_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.star.the_star_pilgrim',
+  stakes: {
+    goal: 'ease the sick child\'s breathing with a touch',
+    risk: 'send the father off with the child still sick',
+    won: 'eased the child\'s breathing and heard them speak',
+    lost: 'reached the child but did not mend what was wrong',
+    arms: {
+      bless_and_send_onward: {
+        won: 'blessed the child and sent the father to the shrine',
+        lost: 'sent the father onward with a weak blessing',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Star Pilgrim',

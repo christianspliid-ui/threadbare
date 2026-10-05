@@ -55,6 +55,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.flood_dyke_mending',
+  stakes: {
+    goal: 'mend the failing dyke before the meltwater crest',
+    risk: 'be blamed for breaking the dyke over the wheat',
+    won: 'mended the dyke, and the lower fields stayed dry',
+    lost: 'lost the race, and the river drowned the wheat',
+    lostBadly: 'lost the culvert and a length of dyke to the crest',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Failing Dyke',

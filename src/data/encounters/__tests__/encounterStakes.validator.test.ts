@@ -1,5 +1,5 @@
 /**
- * Encounter stakes validator — THR-1727, **report mode**.
+ * Encounter stakes validator — THR-1727, **required mode** since THR-1728.
  *
  * The stakes line only holds its shape if every template's parts read in the
  * slots the formula gives them (`[actor] must [goal] — or [risk].`, `[actor]
@@ -9,9 +9,10 @@
  *    punctuation, caps, forbidden words, raw tokens, a missing `lostBadly` where
  *    the template authors a distinct critical-failure ending, missing `arms`
  *    where fork arms end differently);
- * 2. **lists** (never fails) the templates in the predicate that author no
- *    `stakes` yet — the migration backlog THR-1728 drains, after which it flips
- *    this suite to required mode.
+ * 2. **fails** when a template in the predicate authors no `stakes` (THR-1728
+ *    drained the backlog and flipped this from report mode). Without stakes the
+ *    veil falls back to the scene's opening prose; the designer-voice
+ *    `description` never reaches it.
  *
  * **Membership predicate** (THR-688 rule A, computed, never a snapshot count):
  * every template in the unified registry, the exploration encounter list or the
@@ -129,7 +130,7 @@ function stakesProblems(t: UnifiedActionTemplate, stakes: EncounterStakes): stri
   return out;
 }
 
-describe('THR-1727 · encounter stakes validator (report mode)', () => {
+describe('THR-1727 · encounter stakes validator (required mode, THR-1728)', () => {
   const templates = templatesInPredicate();
 
   it('the predicate is computed and non-trivial', () => {
@@ -158,16 +159,9 @@ describe('THR-1727 · encounter stakes validator (report mode)', () => {
     }
   });
 
-  it('reports the templates still without stakes (THR-1728 drains this, then flips to required)', () => {
+  it('every template in the predicate authors stakes (THR-1728 required mode)', () => {
     const missing = templates.filter(t => !t.stakes).map(t => t.id).sort();
-    if (missing.length > 0) {
-      console.info(
-        `[stakes validator] ${missing.length} of ${templates.length} encounter templates author no stakes yet:\n  ` +
-          missing.join('\n  '),
-      );
-    }
-    // Report mode: listing is the assertion. Required mode is `expect(missing).toEqual([])`.
-    expect(Array.isArray(missing)).toBe(true);
+    expect(missing, 'encounter templates without stakes — author goal/risk/won/lost (see Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md § Content pillar)').toEqual([]);
   });
 
   // The validator's own falsification twin: a malformed block must be caught.

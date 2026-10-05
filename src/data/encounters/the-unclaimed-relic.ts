@@ -292,6 +292,13 @@ const step0HoldOnToIt: ActionStep = {
 
 export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_unclaimed_relic',
+  stakes: {
+    goal: 'carry the freezing relic out of the frost',
+    risk: 'collapse in the cold beside it',
+    won: 'carried the freezing relic out',
+    lost: 'dropped the relic back into the frost',
+    lostBadly: 'collapsed in the cold and was dragged clear',
+  },
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Unclaimed Relic',

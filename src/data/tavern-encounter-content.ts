@@ -572,6 +572,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.shady_deal',
+    stakes: {
+      goal: 'trade for the parcel in the back booth unseen',
+      risk: 'walk out short-changed and marked by the guard',
+      won: 'made the back-booth trade and left unseen',
+      lost: 'walked out with a guard\'s eye fixed on them',
+    },
     tags: ['#tavern_night'],
     name: 'Shady Deal',
     rarityTier: 2,
@@ -885,6 +891,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'tavern.the_challenge',
+    stakes: {
+      goal: 'beat the challenger in a first-blood bout',
+      risk: 'take a cut to the shoulder and yield',
+      won: 'beat the challenger with one clean touch',
+      lost: 'took a cut to the shoulder and yielded',
+    },
     tags: ['#tavern_night'],
     name: 'The Challenge',
     rarityTier: 2,

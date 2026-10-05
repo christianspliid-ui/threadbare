@@ -393,6 +393,18 @@ const HAMMER_WITHHELD_AFTERMATH = {
 
 export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'eye.reckoning.verdict_that_burns',
+  stakes: {
+    goal: 'judge the war-lord for the massacre at the fords',
+    risk: 'leave the region with neither justice nor peace',
+    won: 'spoke the true verdict, and the region went up in fire',
+    lost: 'mangled the verdict, and the region burned anyway',
+    arms: {
+      bear_witness: {
+        won: 'recorded the truth and kept the region\'s peace',
+        lost: 'botched the withholding, and the lord walked free',
+      },
+    },
+  },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
   name: 'The Verdict That Burns',

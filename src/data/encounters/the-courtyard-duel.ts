@@ -498,6 +498,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'enc.courtyard_duel',
+  stakes: {
+    goal: 'win the courtyard duel and clear the accusation',
+    risk: 'see the accusation stand on a clean disarm',
+    won: 'won the duel on honest technique',
+    lost: 'lost to the bigger man\'s reach and weight',
+    arms: {
+      manipulate_the_terms: {
+        won: 'turned the Code so no judgment fell',
+        lost: 'saw the arbiter rule the disarm a clean win',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Courtyard Duel',
