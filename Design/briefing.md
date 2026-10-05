@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 06:56 local (04:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 07:55 local (05:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,15 +23,15 @@ Say "veto readable hovers", "veto arrival", "veto hand bar" or "veto set-down wa
 
 ## Queue
 
-**7 jobs ready** (healthy), **1 being built.** Four of the seven wait on the veto windows above (the first closes ~08:45 today).
+**5 jobs ready** (healthy), **3 being built.** Four of the five wait on the veto windows above (the first closes ~08:45 today); the fifth is the small [raw `{cast:drover}` text bug](https://linear.app/threadbare/issue/THR-1738/the-encounter-test-panel-shows-castdrover-literally-carryover-factor).
 
-- The builder is on [measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) since 04:29; its write-up is up as [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233).
-- Next on the shelf, not held by any veto: [author stakes for every encounter](https://linear.app/threadbare/issue/THR-1728/author-stakes-for-every-encounter-template-and-make-the-stakes-line) (High), plus two small bugs found overnight: [a mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) and [raw `{cast:drover}` text on an encounter step](https://linear.app/threadbare/issue/THR-1738/the-encounter-test-panel-shows-castdrover-literally-carryover-factor).
-- [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready. Most likely a pickup run that backed off for the veto window; the next pickup run after ~08:45 sorts it out.
+- [Author stakes for every encounter](https://linear.app/threadbare/issue/THR-1728/author-stakes-for-every-encounter-template-and-make-the-stakes-line) (High) is being built since 06:48; its branch was pushed 17 minutes ago.
+- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) is being built; pushed 4 minutes ago, with live edits in its worktree.
+- [Measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) has its write-up up as [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233), queued to merge, but nothing has moved on it for ~62 minutes (see Health).
 
 ## Health
 
-- **The heavy simulation tests are red on the latest main** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37264571321), after the master-encounters merge). One test, "emits exactly one aggregate trace per call", ran 5.06 s against what looks like a 5 s limit; the same suite went red then green earlier tonight. Most likely a timing flake, not a defect. A builder owes the follow-up.
-- **[#2233](https://github.com/christianspliid-ui/threadbare/pull/2233) has a merge conflict.** It was opened minutes ago by the session still holding THR-1689, so clearing it is that session's job.
-- **The worktree reaper has 6 worktrees waiting for a decision** (481 worktrees, 320 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (108 ms per tick, 3% below its weekly median of 112). The live site is current with the master-encounters merge, automated checks run normally, and all 11 scheduled tasks are on time.
+- **[#2233](https://github.com/christianspliid-ui/threadbare/pull/2233) has a merge conflict and has sat ~1 hour**, so GitHub isn't running its checks either. It is queued to merge as soon as the conflict clears. Clearing it is the builder's unstick duty, not yours.
+- **The heavy simulation tests are still red on the latest main** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37264571321)). Same single test as last hour, 5.06 s against a 5 s limit, and the suite went red then green earlier tonight. Most likely a timing flake; a builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (470 worktrees, 321 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (106 ms per tick, 4% below its weekly median of 110). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 07:40.
