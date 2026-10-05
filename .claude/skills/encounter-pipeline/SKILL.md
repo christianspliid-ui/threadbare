@@ -16,7 +16,7 @@ Automated encounter pipeline: brief → deployed, proved code. Each agent pass p
 
 ```
 BRIEF ─▶ DRAFT ─▶ CRITIC LOOP ─▶ MACHINE GATES ─▶ LIVE PROOF ─▶ BATCH REVIEW
-(plan)   (Fable)  (editorial+systems)  (npm run)     (headless)    (Christian samples)
+(plan)   (Opus)   (editorial+systems)  (npm run)     (headless)    (Christian samples)
 ```
 
 ## What v3 adds to v2, and what it leaves alone

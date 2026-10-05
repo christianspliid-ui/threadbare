@@ -10,7 +10,7 @@ description: >
   by the design session after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-05
 ---
 
 # Intent Judge
@@ -46,7 +46,7 @@ architectural change that catches these.
 
 ## Constants
 
-- `INTENT_JUDGE_MODEL = "fable"` — frontier model required (see "Anti-correlation")
+- `INTENT_JUDGE_MODEL = "opus"` — the same model the authoring lanes run (see "Anti-correlation"); Fable retired from this skill 2026-10-05 on Christian's direction (cost)
 - `INTENT_JUDGE_TARGET_LATENCY_SECONDS = 90` — target wall time per judgment
 - `INTENT_JUDGE_MAX_FINDINGS = 12` — cap on findings; consolidate beyond this
 - `INTENT_JUDGE_ESCALATION_FLOOR = 0.05` — below this, judge may be rubber-stamping
@@ -74,7 +74,7 @@ via the Agent tool:
     Agent({
       description: "Intent judge for <plan-doc-slug>",
       subagent_type: "general-purpose",
-      model: "fable",
+      model: "opus",
       prompt: "Load the intent-judge skill via Read at .claude/skills/intent-judge/SKILL.md and follow it exactly. Action proposal: <path>. Plan doc: <path>. Linear issue: <id>. User's verbatim ask is in the action proposal under `intent_quote`. Do not read any other files unless this skill instructs you to. Return the structured verdict block."
     })
 
@@ -193,19 +193,18 @@ Return one markdown block in exactly this shape:
 The failure mode that voids the whole pattern is judge and author sharing
 context, prompts, or assumptions. Four rules enforce separation:
 
-- **Model parity or better.** Judge runs on `fable` — at least as capable as
-  any author session (authors run Opus or Fable). Cold context and separate
+- **Model parity.** Judge runs on `opus` — the model every authoring lane
+  runs, so it is never weaker than its author. Cold context and separate
   persona carry the anti-correlation weight, not model diversity; a judge
-  weaker than its author inverts the manager/worker framing. Frontier
-  unavailable → judge declines and surfaces Escalate. **Exception — frontier
-  rate-limited (HTTP 429 on `fable`), not absent:** spawn the judge on `opus`
-  rather than parking the handoff, tell it the limit is exhausted, and have it
-  record `Anti-correlation guard slipped: partial — fable rate-limited, judged on
-  opus`; copy that slip into the plan tail's intent-judge section and into the
-  metrics row's `Anti-corr slipped` column. The fallback does **not** waive the
-  metrics row — every fallback verdict is still one row (2026-09-25 retro:
-  impediment #1060, 24 fallback verdicts on 2026-09-23 wrote zero rows to
-  `Docs/judge-metrics/`, so the week's aggregate saw one judgment of twenty-five).
+  weaker than its author inverts the manager/worker framing, so never spawn
+  it on `sonnet` or `haiku`. A judge on `opus` is **not** a slip — record
+  `Anti-correlation guard slipped: no` unless context actually leaked. (Until
+  2026-10-05 the judge ran on `fable` with an `opus` fallback recorded as a
+  partial slip; Christian retired Fable from this skill on cost, and the
+  plan tails that say "judged on fable" or "model slip" predate that.)
+  Every verdict is one metrics row in `Docs/judge-metrics/` — 2026-09-25
+  retro, impediment #1060: 24 verdicts on 2026-09-23 wrote zero rows, so the
+  week's aggregate saw one judgment of twenty-five.
 - **Cold context.** Spawned via Agent tool; sees only what the prompt names.
 - **Different persona.** This skill is the persona. The judge does not draft.
 - **Reversed reading order.** Author writes intent → scope → design. Judge

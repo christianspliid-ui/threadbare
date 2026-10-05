@@ -2,7 +2,7 @@
 name: undertaking-pipeline
 description: The undertaking factory line (THR-1300) — brief keyed on the kind × CRUD grid → draft → bounded critic loop → machine gate (`check:undertaking`) → live proof → compiler → batch report, for contract-complete undertaking templates, one or a batch of six. Triggers on "undertaking pipeline", "draft undertaking", "author undertaking", "undertaking batch", "run the undertaking line", or "/undertaking-pipeline".
 model: opus
-last_validated_against: 2026-10-04
+last_validated_against: 2026-10-05
 ---
 
 > **Step 0, always:** `Docs/canon/undertakings.md` — the current spec, the kind registry, the gate, the levers, the words. Then `Docs/canon/rulebook-quick-reference.md`. Load `Docs/canon/prose.md` before drafting a single line of prose: undertaking prose is held to the encounter standard (Prose Doctrine v2, narrator mode).
@@ -18,7 +18,7 @@ The production line for **undertakings** — the long works a mortal chooses on 
 | Stage | What | Where | Ships in |
 |---|---|---|---|
 | 0 | **Batch brief**, keyed on the kind × CRUD grid, gap-weighted toward empty cells, the mechanical fix before any premise; Christian-approved in chat | `reference/batch-brief-format.md`, `reference/kind-row-catalog.generated.md` | slice 1 |
-| 1 | **Draft** (Fable) against the Undertaking Contract as skeleton — game design before fiction | `agents/draft-prompt.md` | **slice 3** |
+| 1 | **Draft** (Opus) against the Undertaking Contract as skeleton — game design before fiction | `agents/draft-prompt.md` | **slice 3** |
 | 2 | **Critic loop**, bounded at two passes, then park: systems (the write set is real), editorial (the register), package (assemble, dry-run, refuse) | `agents/systems-prompt.md`, `agents/editorial-prompt.md`, `agents/package-prompt.md` | **slice 3** |
 | 3 | **Machine gate** — `npm run check:undertaking -- <id> \| --all` | `scripts/check-undertaking.ts`, `src/data/content-eval/undertakingContract.ts` | **slice 1** |
 | 4 | **Live proof** — `npm run check:undertaking-live -- <id>... [--seed N]... [--band <band>\|none]`, non-vacuous by construction; pins `success` by default | `scripts/undertaking-live-proof.ts` | **slice 3** |
