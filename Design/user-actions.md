@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-05 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-05 03:55 local (01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,7 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-05: the fair draw for experts went ahead** ([THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Its veto window closed at 02:45 with no veto, and the builder picked it up at 02:51 to finish [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180).
+- **2026-10-05: the fair draw for experts is live** ([THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert)). Its veto window closed at 02:45 with no veto; merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and deployed.
 - **2026-10-04: the rulebook clean-up merged** ([THR-912](https://linear.app/threadbare/issue/THR-912/drift-scan-2026-10-02-rulebook-ul-9-ul-references-broken-in-rulebook), [THR-913](https://linear.app/threadbare/issue/THR-913/drift-scan-2026-10-02-rulebook-impl-tags-9-impl-tags-with-broken-code)). Its clash with main was cleared by the builder, and it merged via [#2227](https://github.com/christianspliid-ui/threadbare/pull/2227) at 23:00.
 - **2026-10-04: show the roll is live** ([THR-1714](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice)): the bonding scenes now say what the hand did. Merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and live.
 - **2026-10-04: nine god cards that never appeared now reach the card drawer** ([THR-1734](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries)): Bestow Power, Rekindle and seven others. Merged via [#2225](https://github.com/christianspliid-ui/threadbare/pull/2225) and live.

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 02:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 03:55 local (01:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,17 +19,18 @@ One reply covers both, for example "away both times" or "app was closed". If eit
 - [A five-card hand doesn't fit 1080](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls): **the "Let fate decide" button stays on screen however many cards you're dealt.** Cards stay four per row at the size you approved; when they wrap, the button, your essence and the price · odds · setback key sit in a bar pinned to the bottom. *The call to veto:* say **"five across"** or **"one row"** if you'd rather change your four-per-row rule. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-04-thr-1732-five-card-hand-fit.md). Veto window closes ~14:40 Monday. *— from the design lane*
 - [A minimised encounter step plays out on its own](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should): **a moment you set down now waits for you, however long the world runs.** The mortal stands still in that moment, their badge reads "waiting for you", and it never plays out by itself or pops back up. Switching their thread to **Lives on** lets it go. *The call to veto:* say so if you meant minimise as "I'll come back if I can, otherwise let it play out", which is a one-line switch. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-04-thr-1730-minimised-step-waits.md). Veto window closes ~20:40 Monday. *— from the design lane*
 
-Say "veto readable hovers", "veto arrival", "veto hand bar" or "veto set-down waits" to reverse any of these. The fair-draw veto window closed at 02:45 tonight with no veto, so that decision stands.
+Say "veto readable hovers", "veto arrival", "veto hand bar" or "veto set-down waits" to reverse any of these.
 
 ## Queue
 
 **4 jobs ready** (healthy), **1 being built.** All four ready jobs wait on the veto windows above (the first opens ~08:45 Monday).
 
-- [THR-1687, the fair draw for experts](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert), was picked up by the builder at 02:51, minutes after its veto window closed. It finishes the held pull request [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180).
+- **The fair draw for experts is live.** [THR-1687](https://linear.app/threadbare/issue/THR-1687/the-candidate-cap-starves-newly-authored-everyday-content-expert) merged via [#2180](https://github.com/christianspliid-ui/threadbare/pull/2180) and the live site serves it.
+- Its follow-up, [THR-1736](https://linear.app/threadbare/issue/THR-1736/a-departing-mortal-starts-local-encounters-that-break-its-promise-the) (a mortal about to leave town still starts local encounters that break its promise), was picked up by the builder at 03:29.
 - [THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) still shows as assigned while Ready (last touched 02:31). Most likely a pickup run that backed off for the veto window; the next pickup run after ~08:45 sorts it out.
 
 ## Health
 
-- **The heavy simulation tests are red on main**, now ~9 h. A builder owes a fix, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (473 worktrees, 319 local branches on disk; reaper ran 02:43). Noted for visibility.
-- Everything else is green. Simulation speed is inside its normal band (142 ms per tick, 23% above its weekly median of 115; the warning line is 25%). The live site is current (only docs changed since the last publish), automated checks run normally, and all 11 scheduled tasks are on time.
+- **The heavy simulation tests are red on main**, now ~10 h. A builder owes a fix, not you.
+- **The worktree reaper has 6 worktrees waiting for a decision** (474 worktrees, 315 local branches on disk; reaper ran 03:44). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (96 ms per tick, 18% below its weekly median of 116). The live site is current, automated checks run normally, no pull requests are waiting to merge, and all 11 scheduled tasks are on time.
