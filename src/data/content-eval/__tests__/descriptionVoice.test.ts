@@ -23,6 +23,7 @@ import {
 } from '../descriptionVoice';
 import { compilePackageInMemory } from '../encounterPackage';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
 describe('DESIGNER_VOICE_MARKERS', () => {
@@ -110,7 +111,12 @@ describe('encounter description census', () => {
     const ids = fileIds();
     // Nudge and aftermath ids share the `id:` shape; intersecting with the registry
     // keeps template ids only.
-    const corpus = UNIFIED_ACTION_TEMPLATES.filter(t => ids.has(t.id) || t.id.startsWith('encounter.'));
+    // The golden exemplar is registered nowhere, but authors copy it and
+    // `check:encounter` treats it as the contract's green reference.
+    const corpus = [
+      ...UNIFIED_ACTION_TEMPLATES.filter(t => ids.has(t.id) || t.id.startsWith('encounter.')),
+      NUDGE_GOLDEN_EXEMPLAR,
+    ];
     expect(corpus.length).toBeGreaterThan(200);
     const offenders = corpus
       .filter(t => (t.description ?? '').length > 0)
