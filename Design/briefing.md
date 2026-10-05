@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 08:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,17 +23,17 @@ Say "veto found it", "veto readable hovers", "veto hand bar" or "veto set-down w
 
 ## Queue
 
-**6 jobs ready** (healthy), **3 being built.** Four of the six wait on the veto windows above; the other two are fresh follow-ups from this morning's stakes work: [encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) and [two encounters tell different endings in different places](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to).
+**4 jobs ready** (healthy), **4 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
 
-- [The world arrives paused with no direction](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) is being built now. Its veto window closed at 08:45 with no veto; live edits in its worktree as of 08:55.
-- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) is finished as [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) and queued to merge, but has a conflict with main (see Health).
-- [Measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) is finished as [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233), also stuck on a conflict.
+- [Encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) is finished as [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) and queued to merge, but has a conflict with main (see Health).
+- [Two encounters tell different endings in different places](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to) is finished as [#2240](https://github.com/christianspliid-ui/threadbare/pull/2240) and queued to merge, no conflict.
+- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) ([#2235](https://github.com/christianspliid-ui/threadbare/pull/2235)) and [measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) ([#2233](https://github.com/christianspliid-ui/threadbare/pull/2233)) are finished but still stuck on conflicts.
 
-Shipped since the last brief: [stakes on every encounter](https://linear.app/threadbare/issue/THR-1728/author-stakes-for-every-encounter-template-and-make-the-stakes-line) ([#2234](https://github.com/christianspliid-ui/threadbare/pull/2234)) and the [raw `{cast:drover}` text fix](https://linear.app/threadbare/issue/THR-1738/the-encounter-test-panel-shows-castdrover-literally-carryover-factor) ([#2236](https://github.com/christianspliid-ui/threadbare/pull/2236)).
+Shipped since the last brief: [the world arrives with its first beat already open](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) ([#2238](https://github.com/christianspliid-ui/threadbare/pull/2238)), now live.
 
 ## Health
 
-- **Two finished pull requests have a merge conflict: [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233) (~2 hours) and [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) (~45 min).** GitHub isn't running their checks either. Both are queued to merge once the conflict clears. Clearing it is the builder's unstick duty, not yours.
-- **The heavy simulation tests have now failed on the last three main merges** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37273155284)). Last hour it was one test at 5.06 s against a 5 s limit; now two tests time out (6.1 s and 17.7 s). That looks less like a flake and more like a slowdown in those tests. A builder owes the follow-up.
-- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 310 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (105 ms per tick, 4% below its weekly median of 109). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 08:40.
+- **Three finished pull requests have a merge conflict: [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233) (~3 hours), [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) (~2 hours) and [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~20 min).** GitHub won't run their checks until the conflict clears. Clearing it is the builder's unstick duty, not yours; #2233 has now outlasted two builder runs.
+- **The heavy simulation tests have failed on the last four main merges** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37278629747)); the last pass was 02:37 UTC. A builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 311 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (103 ms per tick, 5% below its weekly median of 108). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 09:45.
