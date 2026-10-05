@@ -1688,8 +1688,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         .map(a => a.actionId)),
     ),
     // The line reads the action and the archive; both change only with the tick.
+    // Hold liveness reads the thread edge, edited in place by the attention
+    // toggle (touchWorld), so worldVersion re-derives "waiting" while paused.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState.encounterNotifications, gameState.unifiedActions, gameState.tick],
+    [gameState.encounterNotifications, gameState.unifiedActions, gameState.tick, runtime.worldVersion],
   );
 
   // THR-1727 — each agent row's story line: the live encounter's stakes line,
