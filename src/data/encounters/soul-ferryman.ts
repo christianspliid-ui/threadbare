@@ -415,6 +415,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'liminal.quest.soul_ferryman',
+  stakes: {
+    goal: 'cross the fog river past the soul ferryman',
+    risk: 'turn south for the ford, four days late',
+    won: 'broke the ferryman\'s contract with the river',
+    lost: 'left the ferryman bound to the river',
+    arms: {
+      steady_the_courier: {
+        won: 'crossed and paid the toll, letters still on time',
+        lost: 'turned south for the ford, four days late',
+      },
+    },
+  },
   tags: ['#threshold_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',

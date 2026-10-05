@@ -515,6 +515,13 @@ const step1SayWhatIsThere: ActionStep = {
 
 export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_sign_over_the_ruin',
+  stakes: {
+    goal: 'read the sign over the ruin and make the camp hear',
+    risk: 'take the whole camp\'s blame for a wrong reading',
+    won: 'read the sign and made enough of the camp take it',
+    lost: 'left both sides holding their old answers',
+    lostBadly: 'read it wrong and took the camp\'s blame for it',
+  },
   /**
    * `rarityTier: 3` — required for `drawnHandForTemplate` to actually draw
    * `['condition', 'knowledge', 'movement']` at `reach: 'veil'` (verified

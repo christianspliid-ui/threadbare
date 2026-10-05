@@ -399,7 +399,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-04 by Claude Code (THR-1715 — The First asks). **Added** two rows, UNVERIFIED-OK:
+2026-10-05 by Claude Code (THR-1728 — stakes on every encounter). **Changed** 🟢 LIVE
+`encounter-stakes-line-reaches-veil-ledger-badge-row`: every template in the encounter predicate
+now authors `stakes` (write site: each encounter data file), the Composition Contract's new
+`stakes` block requires it (`content-eval/encounterStakesRules.ts`, shared with the validator),
+and **retired** the `template.description` → veil subtitle fallback: a template without usable
+stakes shows its opening prose. `description` stays for the Codex and story beats (THR-1739).
+Earlier: 2026-10-04 by Claude Code (THR-1715 — The First asks). **Added** two rows, UNVERIFIED-OK:
 `routine-flag-keeps-daily-life-off-notifications-and-ledger` (Encounters & Dilemmas →
 Attention, Chronicle & Narrative: authored `trivial` carried as `routine`, read by the
 visibility phase, the filter pipeline's story breath and the Chapter Ledger) and

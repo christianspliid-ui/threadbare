@@ -57,6 +57,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.pocket_run',
+    stakes: {
+      goal: 'lift a purse in the market crowd',
+      risk: 'leave the purse in the mark\'s pocket',
+      won: 'lifted a purse in the market crowd clean',
+      lost: 'slipped away, with the purse still on the mark',
+    },
     tags: ['#thieves_errand'],
     name: 'Pocket Run',
     rarityTier: 1,
@@ -180,6 +186,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.fence_goods',
+    stakes: {
+      goal: 'get a fair price from the fence',
+      risk: 'sell the stolen goods for thin coin',
+      won: 'got a fair price from the fence',
+      lost: 'sold the stolen goods for thin coin',
+    },
     tags: ['#thieves_errand'],
     name: 'Fence Stolen Goods',
     rarityTier: 1,
@@ -311,6 +323,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.case_the_mark',
+    stakes: {
+      goal: 'find a way into the merchant\'s house',
+      risk: 'find every entry watched or warded',
+      won: 'found a way into the merchant\'s house',
+      lost: 'found every entry watched or warded',
+    },
     tags: ['#thieves_errand'],
     name: 'Case the Mark',
     rarityTier: 2,
@@ -442,6 +460,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.warehouse_raid',
+    stakes: {
+      goal: 'rob the warehouse before the watch comes round',
+      risk: 'drop the goods and run from the watchman',
+      won: 'robbed the warehouse before the watch came round',
+      lost: 'dropped the goods and ran from the watchman',
+    },
     tags: ['#thieves_errand'],
     name: 'Warehouse Raid',
     rarityTier: 2,
@@ -574,6 +598,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.quest.blackmail_ledger',
+    stakes: {
+      goal: 'copy the noble\'s ledger unseen',
+      risk: 'flee the study with only scraps',
+      won: 'copied the noble\'s ledger unseen',
+      lost: 'fled the study with only scraps',
+    },
     tags: ['#thieves_errand'],
     name: 'Blackmail Ledger',
     rarityTier: 2,
@@ -710,6 +740,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.senior.jewel_heist',
+    stakes: {
+      goal: 'lift the gems from the warded case',
+      risk: 'slip the guards with empty hands',
+      won: 'lifted the gems from the warded case',
+      lost: 'slipped the guards with empty hands',
+    },
     name: 'The Jewel Heist',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -868,6 +904,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.senior.smuggler_route',
+    stakes: {
+      goal: 'open a smuggling lane past customs',
+      risk: 'lose the test shipment to the customs men',
+      won: 'opened a smuggling lane past customs',
+      lost: 'lost the test shipment to the customs men',
+    },
     name: 'Establish Smuggler Route',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -984,6 +1026,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.senior.noble_con',
+    stakes: {
+      goal: 'pass as a noble and work the court',
+      risk: 'slip out of court with nothing',
+      won: 'passed as a noble and worked the court',
+      lost: 'slipped out of court with nothing',
+    },
     name: 'The Noble Con',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1128,6 +1176,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.elite.vault_break',
+    stakes: {
+      goal: 'crack the capital vault before dawn',
+      risk: 'scatter at the alarms with the vault still shut',
+      won: 'cracked the capital vault before dawn',
+      lost: 'scattered at the alarms with the vault still shut',
+    },
     name: 'The Vault Break',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -1311,6 +1365,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.elite.shadow_war',
+    stakes: {
+      goal: 'drive the rival guild out of the lower quarter',
+      risk: 'let the rival boss get away to rebuild',
+      won: 'drove the rival guild out of the lower quarter',
+      lost: 'let the rival boss get away to rebuild',
+    },
     name: 'Shadow War',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1477,6 +1537,12 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'tg.social.dice_game',
+    stakes: {
+      goal: 'win at the back-alley dice',
+      risk: 'lose the stake to cold dice',
+      won: 'won at the back-alley dice',
+      lost: 'lost the stake to cold dice',
+    },
     name: 'Back-Alley Dice',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1583,6 +1649,12 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.social.fence_deal',
+    stakes: {
+      goal: 'sell the haul to the fence',
+      risk: 'carry the haul home unsold',
+      won: 'sold the haul to the fence at a good price',
+      lost: 'carried the haul home unsold',
+    },
     name: 'Meet the Fence',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1679,6 +1751,12 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'tg.social.rumor_trade',
+    stakes: {
+      goal: 'trade for a useful tip',
+      risk: 'pay full price for stale gossip',
+      won: 'traded for a useful tip',
+      lost: 'paid full price for stale gossip',
+    },
     name: 'Trade Rumors',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1782,6 +1860,12 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const TG_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'tg.join',
+  stakes: {
+    goal: 'make a clean lift for the guild test',
+    risk: 'fumble the lift and be turned away',
+    won: 'made a clean lift and joined the guild',
+    lost: 'fumbled the lift and was turned away',
+  },
   name: 'Join the Thieves Guild',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1864,6 +1948,12 @@ export const TG_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const TG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'tg.promotion',
+  stakes: {
+    goal: 'pull off the guild\'s test job for the next rank',
+    risk: 'botch the job and stay at the old rank',
+    won: 'pulled off the test job and took the next rank',
+    lost: 'botched the test job and stayed at the old rank',
+  },
   name: 'Shadow Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

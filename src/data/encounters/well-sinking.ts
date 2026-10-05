@@ -98,6 +98,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.well_sinking',
+  stakes: {
+    goal: 'sink and line the new well before the night\'s rain',
+    risk: 'see the shaft cave in and bury the advance',
+    won: 'lined the new well before the rain came',
+    lost: 'lost the shaft and the spring to the rain',
+    lostBadly: 'watched the lining collapse and fill the shaft',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Well Sinking',

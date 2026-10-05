@@ -701,6 +701,20 @@ const WITHHOLD_AFTERMATH = {
 export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(
   withEncounterContract({
     id: APOTHEOSIS_ENCOUNTER_TEMPLATE_ID,
+    stakes: {
+      goal: 'answer at the threshold while the door holds',
+      risk: 'come apart under the pouring',
+      won: 'took the filling and became a living aspect',
+      lost: 'took the filling, and the frame split and ran dry',
+      lostBadly: 'came apart under the pouring',
+      arms: {
+        negative: {
+          won: 'chose to stay mortal and woke whole',
+          lost: 'chose to stay mortal and felt the door snap shut',
+          lostBadly: 'felt the door tear shut and take some faith with it',
+        },
+      },
+    },
     rarityTier: 4,
     intrinsicTier: 'story_beat',
     name: 'The Apotheosis',

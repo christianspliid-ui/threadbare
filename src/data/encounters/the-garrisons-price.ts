@@ -531,6 +531,13 @@ const step2GetOutFromUnder: ActionStep = {
 
 export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_garrisons_price',
+  stakes: {
+    goal: 'buy passage through the company\'s barrier',
+    risk: 'lose a whole day to the ledger and still not pass',
+    won: 'bought passage and saw the ledger line struck',
+    lost: 'turned back for the three-day low track',
+    lostBadly: 'lost the whole day to the ledger and got nothing',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: "The Garrison's Price",

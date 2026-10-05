@@ -510,6 +510,20 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const PILGRIMS_OFFERING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.heart.pilgrims_offering',
+  stakes: {
+    goal: 'accept the pilgrim\'s offering of herbs with grace',
+    risk: 'send the pilgrim home with their faith cooled',
+    won: 'accepted the pilgrim\'s herbs and sent them home glad',
+    lost: 'took the herbs in a moment that slipped',
+    lostBadly: 'took the herbs and sent the pilgrim home doubting',
+    arms: {
+      bless_them_instead: {
+        won: 'blessed the pilgrim and let them keep their herbs',
+        lost: 'blessed the pilgrim, but it did not land',
+        lostBadly: 'blessed the pilgrim and left them doubting the shrines',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'Pilgrim\'s Offering',

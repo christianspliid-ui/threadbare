@@ -44,6 +44,12 @@ const FIRST_PEAL_FESTIVAL_TICKS = 36;
 
 export const BELL_TOWER_FIRST_PEAL: UnifiedActionTemplate = {
   id: BELL_TOWER_FIRST_PEAL_ID,
+  stakes: {
+    goal: 'see the tower hold through the first peal',
+    risk: 'watch mortar fall and lose part of the fee',
+    won: 'saw the tower hold through the first peal',
+    lost: 'watched mortar fall and lost part of the fee',
+  },
   // Seed-only: the bell tower shoring's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The First Peal',
@@ -112,6 +118,12 @@ export const BELL_TOWER_FIRST_PEAL: UnifiedActionTemplate = {
 
 export const BELL_TOWER_CRACKED: UnifiedActionTemplate = {
   id: BELL_TOWER_CRACKED_ID,
+  stakes: {
+    goal: 'talk the councillor into paying for the cracked tower',
+    risk: 'lose the rest of the fee and the councillor\'s trust',
+    won: 'talked the councillor into paying part of the fee',
+    lost: 'lost the rest of the fee and the councillor\'s trust',
+  },
   // Seed-only: the bell tower shoring's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Crack Reopened',

@@ -461,6 +461,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_INFILTRATORS_APPROACH_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.shadow.the_infiltrators_approach',
+  stakes: {
+    goal: 'take the hooded stranger\'s list of names',
+    risk: 'buy a list that is not what was promised',
+    won: 'took the stranger\'s deal and their list of names',
+    lost: 'took a list whose names did not match the promise',
+    arms: {
+      reveal_to_master: {
+        won: 'sold the stranger out to their master unseen',
+        lost: 'sold the stranger out through a chain that may trace back',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Infiltrator\'s Approach',

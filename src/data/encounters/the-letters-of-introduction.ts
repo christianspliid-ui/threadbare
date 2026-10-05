@@ -526,6 +526,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const LETTERS_OF_INTRODUCTION_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'enc.letters_of_introduction',
+  stakes: {
+    goal: 'secure letters of introduction to the patron',
+    risk: 'find the patron\'s calendar shut to them',
+    won: 'secured the sealed letters through the civic hall',
+    lost: 'saw the request deferred on a revision',
+    arms: {
+      work_the_social_bridge: {
+        won: 'secured the letters through an old favor',
+        lost: 'lost the favor before it could open the door',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Letters of Introduction',

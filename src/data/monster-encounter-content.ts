@@ -267,6 +267,13 @@ function eliteHuntVariant(result: FightResult): AftermathVariant {
 
 export const MONSTER_HUNT_NAMED_ELITE: UnifiedActionTemplate = {
   id: 'monster.hunt.named_elite',
+  stakes: {
+    goal: 'kill the named beast in its lair',
+    risk: 'be struck down in the beast\'s lair',
+    won: 'killed the named beast in its lair',
+    lost: 'was driven out of the lair, the beast still alive',
+    lostBadly: 'was struck down by the beast in its lair',
+  },
   name: 'The Named Beast',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
@@ -322,6 +329,12 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── monster.hunt.minor ─────────────────────────────────────────────────────
   {
     id: 'monster.hunt.minor',
+    stakes: {
+      goal: 'kill the beast in the marked lair',
+      risk: 'back out wounded and leave the beast its lair',
+      won: 'killed the beast and cleared its lair',
+      lost: 'backed out bleeding and left the beast its lair',
+    },
     name: 'Clear the Minor Lair',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -486,6 +499,12 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── monster.encounter.ambush ───────────────────────────────────────────────
   {
     id: 'monster.encounter.ambush',
+    stakes: {
+      goal: 'drive off the predator stalking the trail',
+      risk: 'limp away with a wound and the beast still out there',
+      won: 'drove off the predator stalking the trail',
+      lost: 'limped away torn while the beast went to ground',
+    },
     name: 'Wilderness Ambush',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -621,6 +640,12 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── monster.encounter.lair_defense ─────────────────────────────────────────
   {
     id: 'monster.encounter.lair_defense',
+    stakes: {
+      goal: 'take the defended lair with the unit intact',
+      risk: 'pull the unit back out with fewer ranks',
+      won: 'took the lair and counted the cost',
+      lost: 'called the withdrawal and led out a thinner column',
+    },
     name: 'Lair Defenders',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -778,6 +803,12 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   // ── monster.encounter.horde_raid ───────────────────────────────────────────
   {
     id: 'monster.encounter.horde_raid',
+    stakes: {
+      goal: 'hold the town against the oncoming horde',
+      risk: 'see the horde overrun the town',
+      won: 'held the town against the horde, at heavy cost',
+      lost: 'fled through the back alleys as the horde took the town',
+    },
     name: 'The Horde at the Gates',
     rarityTier: 4,
     intrinsicTier: 'story_beat',

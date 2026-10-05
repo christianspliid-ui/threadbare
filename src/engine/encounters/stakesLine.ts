@@ -282,13 +282,25 @@ export function buildResultLine(
 // ─── Per-action conveniences (the read sites) ─────────────────────
 
 /** Opening line for a live action, or `null` when the template authors no stakes. */
+/**
+ * THR-1728 — a stakes block is usable only when the four parts every line reads are
+ * non-empty strings. A malformed block (a gate let it through, an old save) reads as
+ * no stakes, so the veil falls back to the opening prose instead of printing
+ * "must undefined" (NFP #4).
+ */
+export function hasUsableStakes(stakes: EncounterStakes | undefined): stakes is EncounterStakes {
+  if (!stakes) return false;
+  return [stakes.goal, stakes.risk, stakes.won, stakes.lost]
+    .every(part => typeof part === 'string' && part.trim().length > 0);
+}
+
 export function stakesLineForAction(
   action: UnifiedAction,
   template: Pick<UnifiedActionTemplate, 'stakes'>,
   graph: WorldGraph,
   actorName?: string,
 ): StakesLineResult | null {
-  if (!template.stakes) return null;
+  if (!hasUsableStakes(template.stakes)) return null;
   return buildStakesLine(
     template.stakes,
     actorName ?? graph.getNode(action.actorId)?.name,
@@ -308,7 +320,7 @@ export function rememberedStakesLine(
   graph: WorldGraph,
   actorName?: string,
 ): string | null {
-  if (!template.stakes) return null;
+  if (!hasUsableStakes(template.stakes)) return null;
   const name = actorName ?? graph.getNode(action.actorId)?.name;
   if (action.resolved && action.outcome) {
     return buildResultLine(
@@ -324,6 +336,17 @@ export function rememberedStakesLine(
 // ─── The stamp (tick path) ────────────────────────────────────────
 
 /**
+ * The opening prose the veil shows in the stakes slot when there is no usable line —
+ * the same order `resolveInitiationProse` reads at render (template opening, then the
+ * first step's prose), so the trace names what the player saw (THR-1728).
+ */
+function openingProseFor(template: Pick<UnifiedActionTemplate, 'narrativeTemplates' | 'steps'>): string {
+  const first = template.steps?.[0];
+  const firstProse = first && 'narrativeTemplate' in first ? first.narrativeTemplate : undefined;
+  return template.narrativeTemplates?.initiation ?? firstProse ?? '';
+}
+
+/**
  * Freeze an encounter action's stakes context and trace the line it yields.
  * Returns the action unchanged when it is already stamped or resolved.
  *
@@ -334,7 +357,7 @@ export function stampStakesContext(
   action: UnifiedAction,
   graph: WorldGraph,
   tick: number,
-  template?: Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description'>,
+  template?: Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description' | 'narrativeTemplates' | 'steps'>,
 ): UnifiedAction {
   if (action.resolved || action.stakesContext) return action;
   const stakesContext = buildStakesContext(action, graph);
@@ -343,7 +366,7 @@ export function stampStakesContext(
   if (template) {
     try {
       const actorName = graph.getNode(action.actorId)?.name;
-      const result = template.stakes
+      const result = hasUsableStakes(template.stakes)
         ? buildStakesLine(template.stakes, actorName, stakesContext, action.actionId)
         : null;
       const trace: Omit<EncounterStakesLineTrace, 'id' | 'timestamp'> = {
@@ -353,11 +376,12 @@ export function stampStakesContext(
         actionId: action.actionId,
         templateId: template.id,
         leadSource: result?.leadSource ?? stakesContext.motiveSource ?? 'none',
-        fallback: result ? result.fallback : 'no_stakes_description_used',
-        line: result?.text ?? template.description ?? '',
+        fallback: result ? result.fallback : 'no_stakes_initiation_used',
+        // The text the veil actually shows in the slot when there is no line (THR-1728).
+        line: result?.text ?? openingProseFor(template),
         summary: result
           ? `stakes line: ${result.text}`
-          : `stakes line: ${template.id} has no stakes — description used`,
+          : `stakes line: ${template.id} has no stakes — opening prose used`,
       };
       emitTrace(trace);
     } catch {
@@ -376,7 +400,7 @@ export function stampStakesContext(
  */
 export function stampStakesContexts(
   state: GameState,
-  templateFor: (templateId: string) => Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description'> | undefined,
+  templateFor: (templateId: string) => Pick<UnifiedActionTemplate, 'id' | 'stakes' | 'description' | 'narrativeTemplates' | 'steps'> | undefined,
 ): Partial<GameState> {
   const actions = state.unifiedActions ?? [];
   if (!actions.some(a => !a.resolved && !a.stakesContext)) return {};

@@ -61,6 +61,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.coiners_mint',
+  stakes: {
+    goal: 'take the false dies before the assayer comes',
+    risk: 'be found beside the anvil and called the coiner',
+    won: 'took the coiner\'s dies and kept the mint open',
+    lost: 'let the coiner flee, and the mint was shut',
+    lostBadly: 'was found beside the anvil and called the coiner',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'False Coin at the Mint',

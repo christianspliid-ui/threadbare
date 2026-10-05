@@ -496,6 +496,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_JURY_OF_THE_RUINED_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.stone.the_jury_of_the_ruined',
+  stakes: {
+    goal: 'rule against the accused for the ruined circle',
+    risk: 'leave the circle unsure it was heard',
+    won: 'ruled against the accused as the circle wanted',
+    lost: 'gave the ruling, but it fell flat with the circle',
+    arms: {
+      rule_against_the_circle: {
+        won: 'ruled on the evidence, against the circle\'s grief',
+        lost: 'ruled against the circle without being heard',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Jury of the Ruined',

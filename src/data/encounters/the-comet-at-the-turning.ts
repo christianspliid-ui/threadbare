@@ -435,6 +435,20 @@ const ANCHORED_ENDINGS: AftermathVariant = {
 
 export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'star.turning.comet_omen',
+  stakes: {
+    goal: 'read the comet as the turning of the age',
+    risk: 'send false ruins out to the nations as prophecy',
+    won: 'proclaimed the turning to the nations',
+    lost: 'spoke the turning in a shaking voice',
+    lostBadly: 'named false ruins and sent them out as prophecy',
+    arms: {
+      let_them_read_it: {
+        won: 'told a frightened world to hold fast',
+        lost: 'gave a hedged reading that left nations arguing',
+        lostBadly: 'told the nations to hold fast against ruin',
+      },
+    },
+  },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
   name: 'The Comet at the Turning',

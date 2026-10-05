@@ -428,6 +428,12 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
 const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.deep_descent',
+    stakes: {
+      goal: 'cross the old span and lift what lies on the far ledge',
+      risk: 'fall when the span gives and leave the prize below',
+      won: 'crossed the old span and lifted what lay on the far ledge',
+      lost: 'fell short when the span gave and left the prize below',
+    },
     name: 'The Deep Descent',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon'],
@@ -505,6 +511,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.trial_of_flame',
+    stakes: {
+      goal: 'reforge the master\'s old blade',
+      risk: 'see the old blade crumble at the weld',
+      won: 'reforged the old blade with an edge that holds',
+      lost: 'watched the old blade crumble at the weld',
+    },
     name: 'Trial of Flame',
     locationTypes: ['mining', 'fort', 'camp'],
     sublocationTypes: ['sublocation-type.temple-quarter', 'sublocation-type.barracks'],
@@ -579,6 +591,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.spirit_walk',
+    stakes: {
+      goal: 'walk through the veil at the shrine and come back',
+      risk: 'come back to the flagstones with nothing kept',
+      won: 'held the opened veil and walked back out',
+      lost: 'came back too fast and lost what was shown',
+    },
     name: 'The Spirit Walk',
     locationTypes: ['shrine', 'temple'],
     reachPrimary: 'veil',
@@ -652,6 +670,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.merchants_gambit',
+    stakes: {
+      goal: 'work the grain market and refuse the bad salt',
+      risk: 'end up in the gate cell over the salt',
+      won: 'worked the market and turned down the bad salt',
+      lost: 'took the salt and lost it to the excise men',
+      lostBadly: 'spent the night in the gate cell over the salt',
+    },
     name: 'Merchant\'s Gambit',
     locationTypes: ['town', 'city', 'capital', 'oasis'],
     reachPrimary: 'gold',
@@ -737,6 +762,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.shadow_hunt',
+    stakes: {
+      goal: 'get over the compound wall and out unseen',
+      risk: 'be chased back over the wall with the watch doubled',
+      won: 'got over the wall and out before the dog finished',
+      lost: 'was chased back over the wall, and the watch doubled',
+    },
     name: 'The Shadow Hunt',
     locationTypes: ['ruins', 'ruined_village', 'ruined_city', 'city'],
     reachPrimary: 'shadow',
@@ -815,6 +846,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.knowledge_test',
+    stakes: {
+      goal: 'pass the academy\'s three tests',
+      risk: 'hand in a synthesis that falls apart on reading',
+      won: 'passed the academy\'s three tests',
+      lost: 'handed in a synthesis that fell apart on reading',
+    },
     name: 'The Knowledge Test',
     locationTypes: ['tower', 'temple', 'capital'],
     reachPrimary: 'eye',
@@ -887,6 +924,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.warlords_crucible',
+    stakes: {
+      goal: 'win the fortress and the warlord\'s title',
+      risk: 'be put down and dragged out in chains',
+      won: 'was left standing and took the fortress',
+      lost: 'was put down and dragged out in chains',
+    },
     name: 'The Warlord\'s Crucible',
     locationTypes: ['fort', 'castle', 'battleground'],
     reachPrimary: 'iron',
@@ -957,6 +1000,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.healers_oath',
+    stakes: {
+      goal: 'break the sickness in the lower streets',
+      risk: 'go down with the sickness they fought all month',
+      won: 'broke the sickness in the lower streets',
+      lost: 'went down with the sickness they fought all month',
+    },
     name: 'The Healer\'s Oath',
     locationTypes: ['temple', 'shrine'],
     sublocationTypes: ['sublocation-type.temple-quarter'],
@@ -1028,6 +1077,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.diplomats_maze',
+    stakes: {
+      goal: 'bring three rival houses into one alliance',
+      risk: 'see two houses walk out and the ruler keep the list',
+      won: 'brought three rival houses into one alliance',
+      lost: 'saw two houses walk out and the ruler keep the list',
+    },
     name: 'The Diplomat\'s Maze',
     locationTypes: ['capital', 'city', 'town'],
     sublocationTypes: ['sublocation-type.throne-room'],
@@ -1092,6 +1147,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.starborn_vigil',
+    stakes: {
+      goal: 'read the dawn alignment and go through its passage',
+      risk: 'watch the sky close and the passage go with it',
+      won: 'read the alignment and went through the passage',
+      lost: 'hesitated, and the sky closed over the passage',
+    },
     name: 'The Starborn Vigil',
     locationTypes: ['tower', 'fort', 'castle', 'camp'],
     sublocationTypes: ['sublocation-type.temple-quarter'],
@@ -1170,6 +1231,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.market_haggle',
+    stakes: {
+      goal: 'buy the goods without emptying the purse',
+      risk: 'be outbid and watch the goods go',
+      won: 'bought the goods without emptying the purse',
+      lost: 'was outbid and walked out empty-handed',
+    },
     name: 'The Market Haggle',
     locationTypes: ['town', 'city', 'capital', 'oasis'],
     sublocationTypes: ['sublocation-type.market-district'],
@@ -1240,6 +1307,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.relic_hunt',
+    stakes: {
+      goal: 'bring the relic up out of the collapsed east wing',
+      risk: 'lose the relic down a hole in the floor',
+      won: 'brought the relic out as the doorway fell',
+      lost: 'lost the relic down a hole in the floor',
+    },
     name: 'The Relic Hunt',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon', 'sublocation-type.library'],
@@ -1310,6 +1383,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.harvest_bounty',
+    stakes: {
+      goal: 'bring in the heavy harvest and dry it right',
+      risk: 'see the grain store go to mould by midwinter',
+      won: 'brought in the harvest and the forgotten strip',
+      lost: 'lost most of the forgotten strip to other families',
+    },
     name: 'The Harvest Bounty',
     locationTypes: ['farmland', 'hamlet', 'oasis', 'ruined_village'],
     reachPrimary: 'gold',
@@ -1381,6 +1460,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.spell_bargain',
+    stakes: {
+      goal: 'win the mage\'s spell and hold through the binding',
+      risk: 'be left with a half-bound spell and a month of ache',
+      won: 'won the spell and held still through the binding',
+      lost: 'moved in the third hour, and the spell came apart',
+    },
     name: 'The Spell Bargain',
     locationTypes: ['tower', 'temple', 'shrine'],
     reachPrimary: 'veil',
@@ -1450,6 +1535,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.war_trophy',
+    stakes: {
+      goal: 'claim the fallen banner and keep it',
+      risk: 'lose the banner to a raid in the night',
+      won: 'kept the banner in the open and the ground clear',
+      lost: 'lost the banner to a raid in the night',
+    },
     name: 'The War Trophy',
     locationTypes: ['battleground', 'fort', 'castle'],
     sublocationTypes: ['sublocation-type.barracks'],
@@ -1520,6 +1611,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.sacred_offering',
+    stakes: {
+      goal: 'make an offering the shrine will accept',
+      risk: 'balk at the shrine\'s price and walk away empty',
+      won: 'gave the shrine a year and took its warmth back',
+      lost: 'balked at the shrine\'s price and left the knife on the stone',
+    },
     name: 'The Sacred Offering',
     locationTypes: ['shrine', 'temple'],
     reachPrimary: 'veil',
@@ -1589,6 +1686,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.rare_material',
+    stakes: {
+      goal: 'prove the old seam and haul the load to the buyer',
+      risk: 'lose a third of the load to a broken axle',
+      won: 'brought the load in whole at the agreed price',
+      lost: 'lost a third of the load and the price besides',
+    },
     name: 'The Rare Material',
     locationTypes: ['mining', 'camp', 'wilderness', 'unexplored_poi'],
     reachPrimary: 'stone',
@@ -1660,6 +1763,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.forbidden_tome',
+    stakes: {
+      goal: 'steal the forbidden book from the warded library',
+      risk: 'drop the book on the stairs and flee out the window',
+      won: 'carried the forbidden book out in a grain sack',
+      lost: 'dropped the book on the stairs and fled out the window',
+    },
     name: 'The Forbidden Tome',
     locationTypes: ['tower', 'ruins', 'capital'],
     reachPrimary: 'eye',
@@ -1734,6 +1843,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.brew_potion',
+    stakes: {
+      goal: 'brew the potion down to one vial',
+      risk: 'burn the whole batch to a black ring',
+      won: 'brewed the potion down to one good vial',
+      lost: 'burned the whole batch to a black ring',
+    },
     name: 'The Brew Potion',
     locationTypes: ['hamlet', 'shrine', 'camp', 'ruined_village'],
     reachPrimary: 'gold',
@@ -1805,6 +1920,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.inscribe_ward',
+    stakes: {
+      goal: 'cut and bind the old ward to the stone',
+      risk: 'see the binding fail and the ward go dead',
+      won: 'cut and bound the old ward to the stone',
+      lost: 'watched the binding fail and the ward go grey',
+    },
     name: 'The Inscribe Ward',
     locationTypes: ['tower', 'temple', 'ruins', 'ruined_tower'],
     reachPrimary: 'veil',
@@ -1876,6 +1997,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.compose_saga',
+    stakes: {
+      goal: 'make the hall go quiet with a new saga',
+      risk: 'sing it to the front two tables and lose the stage',
+      won: 'made the hall go quiet with a new saga',
+      lost: 'sang it to the front two tables and lost the stage',
+    },
     name: 'The Compose Saga',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'heart',
@@ -1945,6 +2072,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.craft_talisman',
+    stakes: {
+      goal: 'bind a spirit into a talisman',
+      risk: 'drive the spirit off and keep only bone, wire and stone',
+      won: 'bound the spirit into a warm talisman',
+      lost: 'drove the spirit off and kept only bone, wire and stone',
+    },
     name: 'The Craft Talisman',
     locationTypes: ['shrine', 'camp', 'wilderness', 'unexplored_poi'],
     reachPrimary: 'veil',
@@ -2016,6 +2149,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.raise_monument',
+    stakes: {
+      goal: 'raise a monument people will stop at',
+      risk: 'leave a stone standing that nobody stops at',
+      won: 'raised a monument people come back to',
+      lost: 'named the wrong family first at a stone nobody visits',
+    },
     name: 'The Raise Monument',
     locationTypes: ['capital', 'city', 'battleground'],
     reachPrimary: 'stone',
@@ -2088,6 +2227,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.recruit_militia',
+    stakes: {
+      goal: 'swear the farmers in as a militia',
+      risk: 'get a fence of farmers who won\'t leave their fields',
+      won: 'swore the farmers in one at a time',
+      lost: 'got a fence of farmers, not a militia',
+    },
     name: 'The Recruit Militia',
     locationTypes: ['hamlet', 'town', 'farmland', 'ruined_village', 'battleground'],
     reachPrimary: 'heart',
@@ -2156,6 +2301,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.sway_mercenary',
+    stakes: {
+      goal: 'buy the mercenary captain\'s forty swords',
+      risk: 'see the band walk off to a better offer',
+      won: 'bought the band and made leaving cost them more',
+      lost: 'kept the band eleven days before it walked',
+    },
     name: 'The Sway Mercenary',
     locationTypes: ['camp', 'battleground', 'fort'],
     reachPrimary: 'gold',
@@ -2223,6 +2374,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.court_noble',
+    stakes: {
+      goal: 'win a place in the noble\'s house on fair terms',
+      risk: 'see the house\'s name go to a less fussy candidate',
+      won: 'won a place in the noble\'s house, two days a month free',
+      lost: 'saw the house\'s name go to a less fussy candidate',
+    },
     name: 'The Court Noble',
     locationTypes: ['capital', 'city', 'castle'],
     reachPrimary: 'heart',
@@ -2290,6 +2447,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.bind_spirit',
+    stakes: {
+      goal: 'bind the spirit on clean terms',
+      risk: 'bind it with a flaw the spirit will judge',
+      won: 'bound the spirit with no loose clause',
+      lost: 'bound the spirit with a flaw in the terms',
+    },
     name: 'The Bind Spirit',
     locationTypes: ['shrine', 'temple', 'tower'],
     reachPrimary: 'veil',
@@ -2356,6 +2519,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.rally_faithful',
+    stakes: {
+      goal: 'get the congregation to leave for the fortnight',
+      risk: 'watch the room find its reasons to stay home',
+      won: 'sent twenty-two of the faithful out before dawn',
+      lost: 'watched the room find its reasons to stay home',
+    },
     name: 'The Rally Faithful',
     locationTypes: ['temple', 'shrine', 'town'],
     reachPrimary: 'veil',
@@ -2422,6 +2591,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.hire_guide',
+    stakes: {
+      goal: 'hire a guide who gets them across',
+      risk: 'arrive four days late and short of water',
+      won: 'hired a guide who got them across',
+      lost: 'arrived four days late and short of water',
+    },
     name: 'The Hire Guide',
     locationTypes: ['wilderness', 'oasis', 'camp', 'unexplored_poi'],
     reachPrimary: 'star',
@@ -2492,6 +2667,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.tavern_brawl',
+    stakes: {
+      goal: 'come through the tavern brawl and settle the bill',
+      risk: 'be shut out of every door that matters in town',
+      won: 'came through the brawl and paid the keeper square',
+      lost: 'got banned from the tavern in front of everyone',
+      lostBadly: 'was shut out of every door that matters in town',
+    },
     name: 'The Tavern Brawl',
     locationTypes: ['town', 'hamlet', 'camp', 'ruined_village'],
     reachPrimary: 'iron',
@@ -2565,6 +2747,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.arcane_duel',
+    stakes: {
+      goal: 'beat the mage in the witnessed duel',
+      risk: 'go down on the flagstones to the mage\'s counter',
+      won: 'made the mage yield in the old form',
+      lost: 'went down on the flagstones to the counter',
+    },
     name: 'The Arcane Duel',
     locationTypes: ['tower', 'temple', 'ruins'],
     reachPrimary: 'veil',
@@ -2637,6 +2825,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.arena_combat',
+    stakes: {
+      goal: 'win the arena bout and the crowd',
+      risk: 'be carried out under the gate by attendants',
+      won: 'won the bout and the crowd\'s cheers',
+      lost: 'was carried out under the gate',
+    },
     name: 'The Arena Combat',
     locationTypes: ['city', 'capital', 'battleground'],
     reachPrimary: 'iron',
@@ -2707,6 +2901,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.shadow_ambush',
+    stakes: {
+      goal: 'turn on the assassin following them',
+      risk: 'lose the assassin, who now knows their face',
+      won: 'turned the hunt on the assassin and finished it',
+      lost: 'lost the assassin, who now knows their face',
+    },
     name: 'The Shadow Ambush',
     locationTypes: ['ruins', 'wilderness', 'camp', 'unexplored_poi'],
     reachPrimary: 'shadow',
@@ -2777,6 +2977,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.trial_by_combat',
+    stakes: {
+      goal: 'win the trial by combat and the verdict',
+      risk: 'be sentenced even after winning the fight',
+      won: 'came out of the trial with an innocent verdict',
+      lost: 'won on the sand and was sentenced anyway',
+    },
     name: 'The Trial By Combat',
     locationTypes: ['castle', 'fort', 'capital'],
     reachPrimary: 'iron',
@@ -2849,6 +3055,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.honor_duel',
+    stakes: {
+      goal: 'answer the noble\'s insult on the dueling grass',
+      risk: 'be put on the grass in under a minute',
+      won: 'took the noble\'s arm and stopped there',
+      lost: 'was put on the grass in under a minute',
+    },
     name: 'The Honor Duel',
     locationTypes: ['castle', 'capital', 'fort'],
     reachPrimary: 'iron',
@@ -2924,6 +3136,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.pickpocket',
+    stakes: {
+      goal: 'lift the wool-buyer\'s purse unseen',
+      risk: 'spend the night in the market lockup',
+      won: 'lifted the wool-buyer\'s purse unseen',
+      lost: 'was caught by the wrist with the lane shouting',
+      lostBadly: 'spent the night in the market lockup',
+    },
     name: 'The Pickpocket',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'shadow',
@@ -3008,6 +3227,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.vault_heist',
+    stakes: {
+      goal: 'get the strongbox out of the counting-house vault',
+      risk: 'go over the wall with none of the money',
+      won: 'got out by the coal chute with the money',
+      lost: 'dropped the strongbox and went over the wall empty',
+    },
     name: 'The Vault Heist',
     locationTypes: ['castle', 'capital', 'tower'],
     reachPrimary: 'shadow',
@@ -3077,6 +3302,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.grave_robbery',
+    stakes: {
+      goal: 'rob the captain\'s barrow of its gold',
+      risk: 'drop the gorget and flee the barrow with the cold behind',
+      won: 'robbed the captain\'s barrow and set the stone back',
+      lost: 'dropped the gorget and fled the barrow with the cold behind',
+    },
     name: 'The Grave Robbery',
     locationTypes: ['ruins', 'ruined_village', 'battleground'],
     reachPrimary: 'shadow',
@@ -3148,6 +3379,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.smuggle_goods',
+    stakes: {
+      goal: 'run three crates of untaxed salt to the mill buyer',
+      risk: 'end up robbed and tied up in the mill till morning',
+      won: 'ran the salt crates to the mill buyer and got paid',
+      lost: 'dropped the crates at the mill and ran for the road',
+      lostBadly: 'was robbed and left tied up in the mill',
+    },
     name: 'The Smuggle Goods',
     locationTypes: ['town', 'city', 'oasis'],
     reachPrimary: 'shadow',
@@ -3232,6 +3470,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.steal_secrets',
+    stakes: {
+      goal: 'copy the tower\'s letters and get down unseen',
+      risk: 'be dragged off the wall with the copies found',
+      won: 'copied the tower\'s letters and got down unseen',
+      lost: 'was caught on the wall and the letters went back',
+      lostBadly: 'broke loose from the guards, but lost the copies',
+    },
     name: 'The Steal Secrets',
     locationTypes: ['castle', 'tower', 'capital'],
     reachPrimary: 'shadow',
@@ -3323,6 +3568,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.caravan_deal',
+    stakes: {
+      goal: 'strike a season-long deal with the caravan',
+      risk: 'lose the cargo to a dispute on the weighing',
+      won: 'won a place at the head of the caravan\'s board',
+      lost: 'lost the cargo to a disputed weighing',
+    },
     // THR-1526 / THR-1676: a seed target (The Pilot's Reckoning and The Last Lot at the
     // Exchange send a caravan master looking) whose opening stands alone on the board.
     drawable: true,
@@ -3395,6 +3646,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.guild_negotiation',
+    stakes: {
+      goal: 'get the guild\'s seal on a contract',
+      risk: 'see the guild master close the folio',
+      won: 'got the guild\'s seal on a contract',
+      lost: 'saw the guild master close the folio over one clause',
+    },
     name: 'The Guild Negotiation',
     locationTypes: ['city', 'capital', 'town'],
     reachPrimary: 'gold',
@@ -3465,6 +3722,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.smuggler_pact',
+    stakes: {
+      goal: 'earn a smuggler\'s token and a route on no chart',
+      risk: 'watch the smuggler walk off and the door close',
+      won: 'earned the token and a route on no chart',
+      lost: 'asked for the route too soon and lost the smuggler',
+    },
     name: 'The Smuggler Pact',
     locationTypes: ['camp', 'town', 'ruins'],
     reachPrimary: 'gold',
@@ -3537,6 +3800,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.tribute_exchange',
+    stakes: {
+      goal: 'win the crown\'s protection in the tribute oath',
+      risk: 'see the protection clause struck from the oath',
+      won: 'swore the tribute with the crown\'s protection on the page',
+      lost: 'kept the tribute and lost the protection clause',
+    },
     name: 'The Tribute Exchange',
     locationTypes: ['capital', 'castle', 'temple'],
     reachPrimary: 'gold',
@@ -3606,6 +3875,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.barter_survival',
+    stakes: {
+      goal: 'trade ridge goods for food enough for the road',
+      risk: 'run out of grain a day and a half short',
+      won: 'reached the far settlement with grain to spare',
+      lost: 'ran out of grain a day and a half short',
+    },
     name: 'The Barter Survival',
     locationTypes: ['wilderness', 'hamlet', 'camp', 'ruined_village', 'oasis'],
     reachPrimary: 'gold',
@@ -3677,6 +3952,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.mystic_trade',
+    stakes: {
+      goal: 'trade the mystic a road for a true blessing',
+      risk: 'give up a road for a mark that runs',
+      won: 'traded the northern pass for a clean blessing',
+      lost: 'gave up a road for a mark that ran',
+    },
     name: 'The Mystic Trade',
     locationTypes: ['shrine', 'tower', 'temple'],
     reachPrimary: 'gold',
@@ -3752,6 +4033,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.aid_refugees',
+    stakes: {
+      goal: 'feed and shelter the forty refugees',
+      risk: 'see a fight break out over the last sack',
+      won: 'fed and sheltered the forty for four days',
+      lost: 'ran out of food on the second day',
+    },
     name: 'The Refugee Aid',
     locationTypes: ['hamlet', 'town', 'ruined_village'],
     reachPrimary: 'heart',
@@ -3837,6 +4124,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.healer_aid',
+    stakes: {
+      goal: 'carry the vigil hall through the fever',
+      risk: 'lose the quiet ones in the night',
+      won: 'carried the vigil hall through the fever',
+      lost: 'slept and woke to two beds already stripped',
+    },
     name: 'The Healing Vigil',
     locationTypes: ['shrine', 'temple', 'tower'],
     reachPrimary: 'gold',
@@ -3908,6 +4201,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.militia_aid',
+    stakes: {
+      goal: 'hold the village wall with the militia',
+      risk: 'see the wall overrun from the east side',
+      won: 'held the wall with the militia',
+      lost: 'lost the wall and pulled back who they could',
+    },
     name: 'The Militia Assistance',
     locationTypes: ['fort', 'castle', 'battleground'],
     reachPrimary: 'iron',
@@ -3978,6 +4277,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.scholar_aid',
+    stakes: {
+      goal: 'copy the archive before the roof comes down',
+      risk: 'lose the shelf to the falling roof',
+      won: 'copied four volumes before the roof came down',
+      lost: 'fell behind, and the shelf went down with the roof',
+    },
     name: 'The Academic Preservation',
     locationTypes: ['ruins', 'temple'],
     reachPrimary: 'eye',
@@ -4048,6 +4353,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.guild_aid',
+    stakes: {
+      goal: 'save the failing guild from its creditors',
+      risk: 'be left holding the ledger when the creditors come',
+      won: 'saved the failing guild from its creditors',
+      lost: 'saw the guild sold off in pieces to its creditors',
+      lostBadly: 'was left holding the ledger when the creditors came',
+    },
     name: 'The Guild Crisis',
     locationTypes: ['city', 'capital', 'town'],
     reachPrimary: 'gold',
@@ -4136,6 +4448,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.forge_construction',
+    stakes: {
+      goal: 'build a forge that survives its first firing',
+      risk: 'crack the hearth stone on the first firing',
+      won: 'built a forge that fired clean the first time',
+      lost: 'cracked the hearth stone on the first firing',
+    },
     name: 'The Forge Construction',
     locationTypes: ['town', 'castle', 'fort'],
     reachPrimary: 'stone',
@@ -4203,6 +4521,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.tower_restoration',
+    stakes: {
+      goal: 'rebuild the ruined tower so people will use it',
+      risk: 'finish a tower nobody trusts to climb',
+      won: 'rebuilt the tower, and a family moved in',
+      lost: 'finished a tower nobody trusts to climb',
+    },
     name: 'The Tower Restoration',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city'],
     reachPrimary: 'stone',
@@ -4266,6 +4590,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.bridge_engineering',
+    stakes: {
+      goal: 'build a bridge that carries the stone carts',
+      risk: 'see the deck crack and the bridge closed',
+      won: 'built a bridge that held the loaded carts',
+      lost: 'saw the deck crack and the bridge closed',
+    },
     name: 'The Bridge Engineering',
     locationTypes: ['wilderness', 'farmland', 'oasis'],
     reachPrimary: 'stone',
@@ -4329,6 +4659,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.temple_expansion',
+    stakes: {
+      goal: 'raise the new temple hall from rite to first service',
+      risk: 'raise a hall nobody wants to pray in',
+      won: 'raised a new hall that holds a voice well',
+      lost: 'raised a hall that echoes every word twice',
+    },
     name: 'The Temple Expansion',
     locationTypes: ['shrine', 'temple', 'city'],
     reachPrimary: 'stone',
@@ -4392,6 +4728,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.harbor_construction',
+    stakes: {
+      goal: 'build a harbor that works at every tide',
+      risk: 'set the wharves a foot too high for easy unloading',
+      won: 'built a harbor that works at every tide',
+      lost: 'set the wharves a foot too high for easy unloading',
+    },
     name: 'The Harbor Construction',
     locationTypes: ['city', 'capital', 'town'],
     reachPrimary: 'stone',
@@ -4458,6 +4800,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.expedition_leadership',
+    stakes: {
+      goal: 'lead the party out and back whole',
+      risk: 'push past the turn and bring the party down in pieces',
+      won: 'led the party out and back thin but whole',
+      lost: 'pushed past the turn and brought the party down in pieces',
+    },
     name: 'The Expedition Leadership',
     locationTypes: ['wilderness', 'unexplored_poi', 'ruined_city'],
     reachPrimary: 'heart',
@@ -4521,6 +4869,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.council_mediation',
+    stakes: {
+      goal: 'settle the council\'s dispute with a fair ruling',
+      risk: 'rule for the strongest and watch the losers walk out',
+      won: 'settled the council\'s dispute on the plain point of law',
+      lost: 'ruled for the strongest and watched the losers walk out',
+    },
     name: 'The Council Mediation',
     locationTypes: ['capital', 'city', 'castle'],
     reachPrimary: 'heart',
@@ -4584,6 +4938,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.merchant_caravan',
+    stakes: {
+      goal: 'bring the caravan to market at a profit',
+      risk: 'see the market close on a wagon half full',
+      won: 'brought the caravan to market at a profit',
+      lost: 'held too long and left a wagon half full',
+    },
     name: 'The Merchant Caravan Leadership',
     locationTypes: ['town', 'city', 'farmland'],
     reachPrimary: 'gold',
@@ -4647,6 +5007,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.faction_unification',
+    stakes: {
+      goal: 'hold the factions together through the battle',
+      risk: 'see the coalition break and the alliance die in retreat',
+      won: 'held the factions together through the battle',
+      lost: 'saw the coalition break and the alliance die in retreat',
+    },
     name: 'The Faction Unification',
     locationTypes: ['capital', 'castle', 'ruins'],
     reachPrimary: 'heart',
@@ -4711,6 +5077,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.sanctuary_construction',
+    stakes: {
+      goal: 'make the cavern a place people will live in',
+      risk: 'build a cave that only keeps the rain off',
+      won: 'made the cavern a home, with washing strung in it',
+      lost: 'built a sanctuary that only keeps the rain off',
+    },
     name: 'The Sanctuary Construction',
     locationTypes: ['mining', 'unexplored_poi'],
     reachPrimary: 'stone',
@@ -4775,6 +5147,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.library_expansion',
+    stakes: {
+      goal: 'build the library and a vault that keeps it',
+      risk: 'lose the bindings to a warm vault',
+      won: 'built the library and a vault that keeps it',
+      lost: 'lost the bindings to a warm vault',
+    },
     name: 'The Library Expansion',
     locationTypes: ['tower', 'ruins', 'city'],
     reachPrimary: 'eye',
@@ -4838,6 +5216,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.warband_training',
+    stakes: {
+      goal: 'turn the recruits into a warband that holds',
+      risk: 'hold the ground with a warband of strangers',
+      won: 'built a warband that took the ground at full strength',
+      lost: 'held the ground with a warband of strangers',
+    },
     name: 'The Warband Training',
     locationTypes: ['fort', 'camp', 'castle'],
     reachPrimary: 'iron',
@@ -4901,6 +5285,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.frontier_settlement',
+    stakes: {
+      goal: 'build a frontier settlement that runs without them',
+      risk: 'leave a settlement that runs on them alone',
+      won: 'built a frontier settlement that runs without them',
+      lost: 'left a settlement that runs on them alone',
+    },
     name: 'The Frontier Settlement',
     locationTypes: ['farmland', 'battleground', 'camp', 'mining', 'temple', 'unexplored_poi', 'ruined_tower', 'ruined_city', 'ruined_village', 'oasis'],
     reachPrimary: 'stone',
@@ -4969,6 +5359,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Market District (2) ──────────────────────────────────────────
   {
     id: 'encounter.the_haggle',
+    stakes: {
+      goal: 'strike a deal with the old stallholder',
+      risk: 'leave the stall empty-handed',
+      won: 'struck the deal on their own terms',
+      lost: 'left the stall empty-handed, the deal dead',
+    },
     name: 'The Haggle',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.market-district'],
@@ -5039,6 +5435,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.market_day_festival',
+    stakes: {
+      goal: 'turn a festival stranger into a contact',
+      risk: 'press too hard and lose the stranger',
+      won: 'turned a festival stranger into a contact',
+      lost: 'pressed too hard and lost the stranger',
+    },
     name: 'Market Day Festival',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.market-district'],
@@ -5094,6 +5496,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Mine (2) ────────────────────────────────────────────────────
   {
     id: 'encounter.the_rich_vein',
+    stakes: {
+      goal: 'bring out the rich ore before the shaft gives',
+      risk: 'be caught when the shaft comes down',
+      won: 'braced the shaft and brought the ore out',
+      lost: 'got out of the fallen shaft with a ruined leg',
+    },
     name: 'The Rich Vein',
     locationTypes: ['mining', 'hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.mine'],
@@ -5166,6 +5574,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.labor_dispute',
+    stakes: {
+      goal: 'get the striking miners back to work',
+      risk: 'send the miners down carrying a grudge',
+      won: 'got the miners back to work on honest terms',
+      lost: 'sent the miners down carrying a grudge',
+    },
     name: 'Labor Dispute',
     locationTypes: ['mining', 'hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.mine'],
@@ -5215,6 +5629,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Harbor (2) ─────────────────────────────────────────────────
   {
     id: 'encounter.foreign_trader',
+    stakes: {
+      goal: 'strike a fair deal with the foreign captain',
+      risk: 'overpay the captain for sound goods',
+      won: 'struck a fair deal with the foreign captain',
+      lost: 'overpaid the captain for sound goods',
+    },
     name: 'Foreign Trader',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.harbor'],
@@ -5268,6 +5688,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.pirate_raid',
+    stakes: {
+      goal: 'drive the pirate raiders off the quay',
+      risk: 'see the harbor stripped back to the stone',
+      won: 'drove the pirate raiders into the water',
+      lost: 'saw the harbor stripped back to the stone',
+    },
     name: 'Pirate Raid',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.harbor'],
@@ -5343,6 +5769,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Counting House (2) ─────────────────────────────────────────
   {
     id: 'encounter.the_loan',
+    stakes: {
+      goal: 'set fair terms on a loan to a desperate borrower',
+      risk: 'sign a loan the borrower resents from day one',
+      won: 'set a loan both sides signed without flinching',
+      lost: 'signed a loan the borrower resents already',
+    },
     name: 'The Loan',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.counting-house'],
@@ -5396,6 +5828,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.debt_collection',
+    stakes: {
+      goal: 'collect the overdue debt in full',
+      risk: 'see the debtor skip town and the debt go uncollectable',
+      won: 'collected the overdue debt in full',
+      lost: 'saw the debtor skip town and the debt go uncollectable',
+    },
     name: 'Debt Collection',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.counting-house'],
@@ -5448,6 +5886,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Smuggler's Den (2) ─────────────────────────────────────────
   {
     id: 'encounter.black_market_deal',
+    stakes: {
+      goal: 'buy the goods and get out unseen',
+      risk: 'lose the goods and land on a watcher\'s list',
+      won: 'bought the goods and walked out unseen',
+      lost: 'lost the goods and landed on a watcher\'s list',
+    },
     // THR-1526 / THR-1679: a seed target (The Cooper's Pawned Box sends the losing buyer's
     // broker looking) whose opening stands alone on the board.
     drawable: true,
@@ -5508,6 +5952,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.the_fence',
+    stakes: {
+      goal: 'sell the stolen goods and leave the quarter unseen',
+      risk: 'be marked by a constable on the way out',
+      won: 'sold the goods and left the quarter unseen',
+      lost: 'got the coin, and the constable\'s eye with it',
+    },
     name: 'The Fence',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.smugglers-den'],
@@ -5563,6 +6013,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Caravan Rest (2) ──────────────────────────────────────────
   {
     id: 'encounter.toll_bridge',
+    stakes: {
+      goal: 'set a toll the merchants will pay at the bridge',
+      risk: 'watch the merchants find other roads',
+      won: 'set a toll the road calls fair',
+      lost: 'watched the merchants turn to other roads',
+    },
     name: 'Toll Bridge',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'camp'],
     sublocationTypes: ['sublocation-type.caravan-rest'],
@@ -5610,6 +6066,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.caravan_guard',
+    stakes: {
+      goal: 'guard the caravan to the gate with no losses',
+      risk: 'lose two guards at the ford',
+      won: 'brought the caravan in whole and earned the bonus',
+      lost: 'lost two guards at the ford and the bonus',
+    },
     name: 'Caravan Guard',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'camp'],
     sublocationTypes: ['sublocation-type.caravan-rest'],
@@ -5686,6 +6148,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.guild_initiation_trial',
+    stakes: {
+      goal: 'pass the guild\'s trial and take the oath',
+      risk: 'have the guild\'s door closed to them for good',
+      won: 'passed the guild\'s trial and took the oath',
+      lost: 'had membership withheld before the masters',
+      lostBadly: 'had the guild\'s door closed to them for good',
+    },
     name: 'Guild Initiation Trial',
     locationTypes: ['hamlet', 'town', 'city'],
     reachPrimary: 'iron',
@@ -5741,6 +6210,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.master_craftsman_challenge',
+    stakes: {
+      goal: 'build the joint that should not hold',
+      risk: 'see the piece fail at the unveiling',
+      won: 'built the joint and was paid without haggling',
+      lost: 'turned in competent work and lost the patron',
+      lostBadly: 'saw the piece fail at the unveiling, fee withheld',
+    },
     name: 'Master Craftsman Challenge',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'stone',
@@ -5798,6 +6274,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.political_intrigue',
+    stakes: {
+      goal: 'seal a deal at court among three factions',
+      risk: 'watch the deal come apart at the table',
+      won: 'sealed the deal the court actually wanted',
+      lost: 'watched the deal come apart at the table',
+    },
     name: 'Political Intrigue at Court',
     locationTypes: ['city', 'capital'],
     reachPrimary: 'heart',
@@ -5862,6 +6344,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.trade_caravan_escort',
+    stakes: {
+      goal: 'bring the caravan through the treeline ambush',
+      risk: 'lose the lead wagon and two guards to the ambush',
+      won: 'drove off the ambush and brought the caravan through',
+      lost: 'lost half the goods and a guard to the ambush',
+    },
     name: 'Trade Caravan Escort',
     locationTypes: ['hamlet', 'town', 'city'],
     reachPrimary: 'iron',
@@ -5927,6 +6415,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.festival_of_spheres',
+    stakes: {
+      goal: 'make a worthy offering at the festival',
+      risk: 'give the least they carried and see it set at the back',
+      won: 'made an offering the officiant held a moment longer',
+      lost: 'gave the least they carried and saw it set at the back',
+    },
     name: 'Festival of the Spheres',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'veil',
@@ -5984,6 +6478,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.plague_outbreak',
+    stakes: {
+      goal: 'contain the plague before the quarantine breaks',
+      risk: 'see the quarantine break and the plague spread',
+      won: 'contained the plague without turning cruel',
+      lost: 'lost the east gate, and the plague got out',
+      lostBadly: 'barred the wrong doors, and the town remembers who chose',
+    },
     name: 'Plague Outbreak',
     locationTypes: ['hamlet', 'town', 'city'],
     reachPrimary: 'eye',
@@ -6078,6 +6579,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.siege_defense_planning',
+    stakes: {
+      goal: 'ready the walls before the enemy arrives',
+      risk: 'face the siege with a spent, undermanned garrison',
+      won: 'readied the walls and a rested garrison',
+      lost: 'left the repairs unfinished and the garrison spent',
+    },
     name: 'Siege Defense Planning',
     locationTypes: ['fort', 'castle'],
     reachPrimary: 'iron',
@@ -6129,6 +6636,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.prisoner_interrogation',
+    stakes: {
+      goal: 'break the prisoner\'s story',
+      risk: 'leave with sore knuckles and nothing new',
+      won: 'broke the prisoner\'s story open',
+      lost: 'left with sore knuckles and a name already known',
+    },
     name: 'Prisoner Interrogation',
     locationTypes: ['fort', 'castle'],
     reachPrimary: 'shadow',
@@ -6176,6 +6689,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.fortification_engineering',
+    stakes: {
+      goal: 'raise the castle\'s new wing on hard ground',
+      risk: 'find a flaw on the last day and redo the work',
+      won: 'raised the castle\'s new wing square and true',
+      lost: 'found a flaw on the last day and had to redo the work',
+    },
     name: 'Fortification Engineering',
     locationTypes: ['fort', 'castle'],
     reachPrimary: 'stone',
@@ -6225,6 +6744,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.delve_into_depths',
+    stakes: {
+      goal: 'bring a prize up from the ruin\'s lowest floor',
+      risk: 'climb out with empty hands',
+      won: 'brought a sealed case up from the ruin\'s lowest floor',
+      lost: 'climbed out with empty hands and the route in mind',
+    },
     name: 'Delve into the Depths',
     // THR-1488 — the first raw entry in this file to carry a content tag, and the
     // mechanism's own argument: this *is* a delve, but `encounterFamily: 'encounter.delve'`
@@ -6305,6 +6830,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.decipher_ancient_inscriptions',
+    stakes: {
+      goal: 'read the ancient inscription to its end',
+      risk: 'get four clauses of nine and miss who and why',
+      won: 'read the inscription and the names of the builders',
+      lost: 'got four clauses of nine and missed who and why',
+    },
     name: 'Decipher Ancient Inscriptions',
     locationTypes: ['ruins', 'ruined_city'],
     reachPrimary: 'eye',
@@ -6361,6 +6892,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.restless_spirits',
+    stakes: {
+      goal: 'quiet the spirits clinging to the ruin',
+      risk: 'drive the spirits deeper into the ruin',
+      won: 'quieted the spirits, and the ruin is no longer haunted',
+      lost: 'saw the spirits turn away into the ruin',
+    },
     name: 'Restless Spirits',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_village'],
     reachPrimary: 'veil',
@@ -6416,6 +6953,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.salvage_operation',
+    stakes: {
+      goal: 'haul a good load out of the ruin',
+      risk: 'be driven back by a collapse with nothing but rubble',
+      won: 'hauled a good load out of the ruin',
+      lost: 'was driven back by a collapse with two good beams',
+    },
     name: 'Salvage Operation',
     locationTypes: ['ruins', 'ruined_city', 'ruined_village'],
     reachPrimary: 'stone',
@@ -6471,6 +7014,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.seal_the_breach',
+    stakes: {
+      goal: 'seal the breach before it reaches the foundations',
+      risk: 'see the ruin fold in around an open breach',
+      won: 'sealed the breach in the ruin',
+      lost: 'ran as the seal cracked and the floor gave way',
+    },
     name: 'Seal the Breach',
     locationTypes: ['ruins', 'ruined_city'],
     reachPrimary: 'veil',
@@ -6538,6 +7087,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.beast_hunt',
+    stakes: {
+      goal: 'track down and kill the camp-raiding beast',
+      risk: 'lose the beast and take a torn arm',
+      won: 'killed the beast in the clearing',
+      lost: 'lost the beast to the trees, with a torn arm',
+    },
     name: 'Beast Hunt',
     locationTypes: ['wilderness', 'camp'],
     reachPrimary: 'iron',
@@ -6593,6 +7148,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.prospecting_expedition',
+    stakes: {
+      goal: 'find ore and sink a shaft into it',
+      risk: 'spend a season on three dry shafts',
+      won: 'struck ore at eleven feet in the second shaft',
+      lost: 'spent a season on three dry shafts',
+    },
     name: 'Prospecting Expedition',
     locationTypes: ['wilderness', 'mining'],
     reachPrimary: 'eye',
@@ -6649,6 +7210,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.hermits_wisdom',
+    stakes: {
+      goal: 'find the hermit and pass the silent test',
+      risk: 'get weather talk and be sent home',
+      won: 'found the hermit and passed the silent test',
+      lost: 'got weather talk and an early end to the test',
+    },
     name: "Hermit's Wisdom",
     locationTypes: ['wilderness'],
     reachPrimary: 'heart',
@@ -6705,6 +7272,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.bandit_ambush',
+    stakes: {
+      goal: 'break the bandit ambush on the narrow track',
+      risk: 'lose the pack and a good deal of blood',
+      won: 'broke the ambush from the bandits\' own rocks',
+      lost: 'fled down the streambed without the pack',
+    },
     name: 'Bandit Ambush',
     locationTypes: ['wilderness', 'camp'],
     reachPrimary: 'iron',
@@ -6761,6 +7334,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.mineral_vein_discovery',
+    stakes: {
+      goal: 'follow the seam and measure what it is worth',
+      risk: 'find the vein a third of what was promised',
+      won: 'mapped the richest seam in forty years',
+      lost: 'found the vein a third of what was promised',
+    },
     name: 'Mineral Vein Discovery',
     locationTypes: ['mining'],
     reachPrimary: 'stone',
@@ -6819,6 +7398,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.pilgrimage_trial',
+    stakes: {
+      goal: 'give up what they would rather keep and reach the shrine',
+      risk: 'stand an hour at a shrine that stays shut',
+      won: 'gave up what they would rather keep, and was received',
+      lost: 'stood an hour at a shrine that stayed shut',
+    },
     name: 'Pilgrimage Trial',
     locationTypes: ['shrine', 'temple'],
     reachPrimary: 'veil',
@@ -6875,6 +7460,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.sacred_text_study',
+    stakes: {
+      goal: 'get past the custodians to what the doctrine hides',
+      risk: 'leave word-perfect and none the wiser',
+      won: 'found what the doctrine was locking away',
+      lost: 'left word-perfect and none the wiser',
+    },
     name: 'Sacred Text Study',
     locationTypes: ['shrine', 'temple'],
     reachPrimary: 'eye',
@@ -6931,6 +7522,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.mystical_vision_quest',
+    stakes: {
+      goal: 'bring the answer back from the vision',
+      risk: 'lose the answer at the crossing back',
+      won: 'brought the answer back from the vision',
+      lost: 'lost the answer at the crossing back',
+    },
     name: 'Mystical Vision Quest',
     locationTypes: ['shrine', 'temple'],
     reachPrimary: 'veil',
@@ -7006,6 +7603,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.dragons_challenge',
+    stakes: {
+      goal: 'last the dragon\'s contest to the end',
+      risk: 'leave with a truth from the dragon they never wanted said',
+      won: 'lasted the dragon\'s contest and earned its word',
+      lost: 'lost the dragon\'s contest and was let go',
+      lostBadly: 'left with a truth from the dragon they never wanted said',
+    },
     name: "Dragon's Challenge",
     locationTypes: ['wilderness', 'ruins'],
     reachPrimary: 'iron',
@@ -7064,6 +7668,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.arcane_cataclysm',
+    stakes: {
+      goal: 'unmake the source of the spreading ruin-power',
+      risk: 'turn back while the villages downriver flee',
+      won: 'unmade the source and quieted the ruin',
+      lost: 'turned back with the source still burning',
+    },
     name: 'Arcane Cataclysm',
     locationTypes: ['ruins', 'temple'],
     reachPrimary: 'veil',
@@ -7112,6 +7722,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.grand_tournament',
+    stakes: {
+      goal: 'win the Grand Tournament',
+      risk: 'fall in the final before the whole city',
+      won: 'won the Grand Tournament',
+      lost: 'lost the final and went home runner-up',
+      lostBadly: 'fell in the final before the whole city',
+    },
     name: 'Grand Tournament',
     locationTypes: ['city', 'capital', 'castle'],
     reachPrimary: 'iron',
@@ -7199,6 +7816,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.patrol_perimeter',
+    stakes: {
+      goal: 'walk the perimeter and close the worst gaps',
+      risk: 'pull down a whole length of fence',
+      won: 'walked the perimeter and closed the worst gaps',
+      lost: 'left the gaps open, with too little to fix them',
+      lostBadly: 'pulled down a whole length of fence',
+    },
     name: 'Patrol the Perimeter',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'iron',
@@ -7254,6 +7878,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.sharpen_blades',
+    stakes: {
+      goal: 'put a true edge back on the blade',
+      risk: 'leave the edge worse than they found it',
+      won: 'put a true edge back on the blade',
+      lost: 'got an edge that cuts rope and nothing harder',
+      lostBadly: 'left the blade with two edges arguing along it',
+    },
     name: 'Sharpen Blades',
     // THR-1222 — the widest *honest* envelope, replacing `[...ALL_LOCATION_SUBTYPES]`.
     // Steel gets an edge wherever there is a bench and an hour: a wayside camp, a
@@ -7644,6 +8275,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.barter_supplies',
+    stakes: {
+      goal: 'trade goods for the supplies they need',
+      risk: 'be called a cheat before the whole market',
+      won: 'closed a fair trade with the trader',
+      lost: 'left the market with what they came with',
+    },
     name: 'Barter for Supplies',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'gold',
@@ -7703,6 +8340,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.assess_holdings',
+    stakes: {
+      goal: 'count every coin and plan the next trade',
+      risk: 'spend the coin on the wrong purchase',
+      won: 'counted everything and planned the next trade',
+      lost: 'set the ledger aside no clearer than before',
+    },
     // THR-1314: id keeps the engine literal; the player-facing name says *Freeholds*.
     name: 'Take Stock of Freeholds',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
@@ -7766,6 +8409,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.night_watch',
+    stakes: {
+      goal: 'keep the camp safe through the night watch',
+      risk: 'sleep while a thief walks through camp',
+      won: 'kept the camp safe through the night',
+      lost: 'woke the whole camp shouting at a noise',
+      lostBadly: 'woke the camp charging at a lost child',
+    },
     name: 'Keep the Night Watch',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'shadow',
@@ -7821,6 +8471,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.listen_for_rumors',
+    stakes: {
+      goal: 'pick one true lead out of the well talk',
+      risk: 'leave certain of a story told to fool strangers',
+      won: 'picked one true lead out of the well talk',
+      lost: 'heard only what everyone already knows',
+      lostBadly: 'left certain of a story told to fool strangers',
+    },
     name: 'Listen for Rumors',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'shadow',
@@ -7889,6 +8546,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.ward_the_camp',
+    stakes: {
+      goal: 'ward the camp before night falls',
+      risk: 'leave the camp open to what comes in at night',
+      won: 'set a ward around the camp that held',
+      lost: 'lost the ward\'s anchor before midnight',
+      lostBadly: 'left a gap in the circle nobody could find',
+    },
     name: 'Ward the Camp',
     // THR-1222 — the widest honest envelope. A circle gets walked wherever people
     // stop for a night they are not sure of: the roadside camp, the outlying
@@ -8301,6 +8965,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.trace_ley_lines',
+    stakes: {
+      goal: 'find the ley line under this ground and follow it',
+      risk: 'sink into a bog and lose the map and a boot',
+      won: 'followed the ley line to where the magic runs strong',
+      lost: 'lost the thread with no map to show for it',
+    },
     name: 'Trace the Ley Lines',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'veil',
@@ -8370,6 +9040,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.local_tales',
+    stakes: {
+      goal: 'learn the old stories of this land',
+      risk: 'repeat the story wrong and be laughed at',
+      won: 'learned the old stories of this land',
+      lost: 'kept the shape of the story and lost the names',
+      lostBadly: 'got the story wrong and was laughed at for it',
+    },
     name: 'Gather Local Tales',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'heart',
@@ -8434,6 +9111,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.tend_the_weary',
+    stakes: {
+      goal: 'get a worn-out stranger back on their feet',
+      risk: 'make the weary one sick with spoiled food',
+      won: 'got the weary one back on their feet',
+      lost: 'had too little to give, and both knew it',
+      lostBadly: 'made the weary one sick with spoiled food',
+    },
     name: 'Tend the Weary',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'heart',
@@ -8496,6 +9180,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.study_surroundings',
+    stakes: {
+      goal: 'read the land from the high ground',
+      risk: 'scare the birds off and take the herders\' blame',
+      won: 'read the land and found where the ley runs',
+      lost: 'learned nothing the road did not already tell',
+      lostBadly: 'scared the birds off and took the herders\' blame',
+    },
     name: 'Study the Surroundings',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'eye',
@@ -8563,6 +9254,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.decipher_old_markings',
+    stakes: {
+      goal: 'read the old marks on the wall',
+      risk: 'misread the marks and tell the village they are a curse',
+      won: 'read the old marks on the wall',
+      lost: 'copied marks they could not read',
+      lostBadly: 'misread the marks and told the village they are a curse',
+    },
     name: 'Decipher Old Markings',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'eye',
@@ -8630,6 +9328,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.mend_equipment',
+    stakes: {
+      goal: 'mend the cracked haft and loose strap',
+      risk: 'have the repair fail out on the road',
+      won: 'mended the gear well enough to hold',
+      lost: 'packed the broken gear away unmended',
+      lostBadly: 'had the repair fail out where it mattered',
+    },
     name: 'Mend Equipment',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'stone',
@@ -8689,6 +9394,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.shore_up_shelter',
+    stakes: {
+      goal: 'shore up the shelter before night',
+      risk: 'split the old wall and lose the shelter',
+      won: 'shored up the shelter for a dry night',
+      lost: 'ran out of timber with the shelter no better',
+      lostBadly: 'split the old wall, and nobody will sleep under it',
+    },
     name: 'Shore Up Shelter',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'stone',
@@ -8747,6 +9459,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.commune_with_stars',
+    stakes: {
+      goal: 'read an omen in the clear night sky',
+      risk: 'mistake a warning for good news and spread it',
+      won: 'read a thread of fate in the stars',
+      lost: 'saw a sign but could not read its meaning',
+    },
     name: 'Commune with the Stars',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'star',
@@ -8810,6 +9528,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.offer_small_prayer',
+    stakes: {
+      goal: 'say a prayer at the roadside and wait it out',
+      risk: 'get up clinging to an answer of their own making',
+      won: 'said the prayer and rose with the next step chosen',
+      lost: 'rose no better for the asking',
+      lostBadly: 'got up certain of an answer they built themselves',
+    },
     name: 'Offer a Small Prayer',
     // THR-1222 — a small prayer is said where the person is when they need to say
     // it, which is mostly not a temple. `sacred` is in the envelope because that is
@@ -9228,6 +9953,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.rest_and_recover',
+    stakes: {
+      goal: 'find a dry hollow and sleep the night through',
+      risk: 'wake with a fever from the cold ground',
+      won: 'slept deep and woke renewed',
+      lost: 'rose no more rested than when they lay down',
+      lostBadly: 'woke with a fever from the cold ground',
+    },
     name: 'Rest and Recover',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'heart',
@@ -9287,6 +10019,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.forage_provisions',
+    stakes: {
+      goal: 'bring back enough roots and water to eat',
+      risk: 'drop the load to a boar and spend the night up a tree',
+      won: 'brought back enough roots and water to eat',
+      lost: 'came back with half the load and a sore shoulder',
+      lostBadly: 'dropped the load to a boar and spent the night up a tree',
+    },
     name: 'Forage for Provisions',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'eye',
@@ -9357,6 +10096,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.forage_the_land',
+    stakes: {
+      goal: 'dig a day\'s food out of worked-over land',
+      risk: 'wrench a wrist in a bank collapse and bring home nothing',
+      won: 'dug half again the expected haul from the land',
+      lost: 'broke the roots in hard ground and lost the day',
+      lostBadly: 'wrenched a wrist in a bank collapse and brought home nothing',
+    },
     name: 'Forage the Land',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'stone',
@@ -9418,6 +10164,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.rest_and_reflect',
+    stakes: {
+      goal: 'count the month back to the turn it hangs on',
+      risk: 'have the whole month crash in at once',
+      won: 'found the turn the whole month hangs on',
+      lost: 'gave up on the month and watched the fire',
+      lostBadly: 'lost the order of the days and rested not at all',
+    },
     // THR-1526: a seed target (it re-seeds itself) whose opening stands alone.
     drawable: true,
     name: 'Rest and Reflect',
@@ -9816,6 +10569,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.local_gossip',
+    stakes: {
+      goal: 'find the one account nobody bent',
+      risk: 'believe an account made up to fool them',
+      won: 'found the one account nobody bent',
+      lost: 'heard only what the place prefers to believe',
+      lostBadly: 'believed an account made up to fool them',
+    },
     name: 'Local Gossip',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'heart',
@@ -9878,6 +10638,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.tend_to_wounds',
+    stakes: {
+      goal: 'set the broken arm before the swelling closes',
+      risk: 'lose the patient to a wound under his belt',
+      won: 'set the broken arm, and he slept',
+      lost: 'bound the arm as it lay, out of true for life',
+      lostBadly: 'lost him to the wound under his belt',
+    },
     name: 'Tend to Wounds',
     // THR-1222 — wider than the other two camp scenes, and honestly so: a hurt body
     // gets worked on wherever it is when someone competent reaches it. The camp, the
@@ -10221,7 +10988,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'The bone has to go back before the swelling closes over it. {actor} has two people to hold him, a strip of boiled linen, and the length of time he can stand it.',
         successAtCostAfterimage: 'The arm went back. He will not use the hand the same way again.',
         criticalSuccessAfterimage: 'One pull, clean, and he was asleep before the splint was tied.',
-        criticalFailureAfterimage: 'The arm came back out of true under the linen, and by morning it had set that way.',
+        // THR-1741: a critical failure here is the death the step-1 crit, the
+        // aftermath `critical_failure` overview and the stakes `lostBadly` all tell.
+        // The crooked arm is the plain `failure` ending (stakes `lost`).
+        criticalFailureAfterimage: 'They set the arm while he went grey. The wound that killed him was under his belt.',
         nudges: [
           {
             // Shared generic pool — the `strength` family.
@@ -10246,7 +11016,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'A large help. He stops fighting the hands holding him.',
             bandProse: {
               failure: 'He felt none of it and the arm still would not seat.',
-              critical_failure: 'He was somewhere else for the setting, and came back to an arm bent where no arm bends.',
+              critical_failure: 'He was somewhere else for the setting, and he did not come back from it.',
             },
           },
           {
@@ -10306,6 +11076,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.scout_the_perimeter',
+    stakes: {
+      goal: 'close the weak side of the place before light',
+      risk: 'leave the gap worse and the watch set light',
+      won: 'stopped the gap with stakes and thorn before light',
+      lost: 'found the gap and left it open at dawn',
+      lostBadly: 'cut the ditch bank open and left the gap worse',
+    },
     name: 'Scout the Perimeter',
     // THR-1222 — a perimeter is a thing you walk where there is something inside it
     // worth walking around. Camp, steading, fort. A city's edge belongs to its watch
@@ -10717,6 +11494,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.barter_with_travelers',
+    stakes: {
+      goal: 'strike a fair trade with the travelers',
+      risk: 'insult the travelers and have the story spread',
+      won: 'struck a good trade with the travelers',
+      lost: 'watched the travelers move on with no deal',
+    },
     name: 'Barter with Travelers',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'gold',
@@ -10782,6 +11565,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.defend_against_predators',
+    stakes: {
+      goal: 'drive the circling predator off',
+      risk: 'leave the predator still out there at dusk',
+      won: 'drove the circling predator off for the day',
+      lost: 'pushed the predator back, still out there at dusk',
+    },
     name: 'Defend Against Predators',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'iron',
@@ -10830,6 +11619,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.investigate_anomaly',
+    stakes: {
+      goal: 'trace the wrong room to its cause',
+      risk: 'leave knowing only the hour it happened',
+      won: 'traced the wrong room to its cause',
+      lost: 'left knowing only the hour it happened',
+    },
     name: 'Investigate Anomaly',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'eye',
@@ -10888,6 +11683,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.rally_the_locals',
+    stakes: {
+      goal: 'rally the drained townsfolk to their feet',
+      risk: 'watch the crowd drift away unchanged',
+      won: 'got the townsfolk to rise of their own accord',
+      lost: 'watched the crowd drift away unchanged',
+    },
     name: 'Rally the Locals',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'star',
@@ -10936,6 +11737,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.negotiate_dispute',
+    stakes: {
+      goal: 'settle the quarrel over the injury',
+      risk: 'send both parties off with the grievance',
+      won: 'settled the quarrel over the injury',
+      lost: 'sent both parties off with the grievance',
+    },
     name: 'Negotiate a Dispute',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'heart',
@@ -10983,6 +11790,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.shadow_in_the_night',
+    stakes: {
+      goal: 'finish the night\'s job and leave no trace',
+      risk: 'leave a mark that sets the household hunting them',
+      won: 'finished the job and left the room as found',
+      lost: 'met a better lock and left the job unfinished',
+      lostBadly: 'left the job undone and a mark the household will hunt',
+    },
     name: 'Shadow in the Night',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'shadow',
@@ -11055,6 +11869,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.master_local_craft',
+    stakes: {
+      goal: 'make a piece the masters cannot dismiss',
+      risk: 'split a seam in front of the masters',
+      won: 'made a piece the masters could not dismiss',
+      lost: 'made competent work and stayed an outsider',
+      lostBadly: 'split a seam in front of the assembled masters',
+    },
     name: 'Master the Local Craft',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'stone',
@@ -11112,6 +11933,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.confront_the_unknown',
+    stakes: {
+      goal: 'stare down the old thing bound to this place',
+      risk: 'walk out with a door left open behind their eyes',
+      won: 'stared down the old thing until it withdrew',
+      lost: 'walked out carrying a mark they will find later',
+      lostBadly: 'walked out with a door left open behind their eyes',
+    },
     name: 'Confront the Unknown',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'iron',
@@ -11170,6 +11998,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.weave_political_alliance',
+    stakes: {
+      goal: 'seal an alliance between the partners',
+      risk: 'see the alliance dissolve with its price named aloud',
+      won: 'sealed the alliance with the room behind it',
+      lost: 'watched the alliance dissolve at the sealing',
+      lostBadly: 'saw the alliance dissolve with its price named aloud',
+    },
     name: 'Weave a Political Alliance',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'star',
@@ -11237,6 +12072,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.arcane_resonance_study',
+    stakes: {
+      goal: 'read the room\'s old memory into words',
+      risk: 'come out of the stillness shaking and sick',
+      won: 'read a quarrel and a name out of the room',
+      lost: 'felt the room\'s memory but could not word it',
+    },
     name: 'Arcane Resonance Study',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'veil',
@@ -11317,6 +12158,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.read_the_wards',
+    stakes: {
+      goal: 'map the old wards in the stone',
+      risk: 'finish with a ward-map too thin to trust',
+      won: 'mapped every strength and gap in the wards',
+      lost: 'came away with a ward-map too thin to trust',
+    },
     name: 'Read the Wards',
     locationTypes: ['castle', 'fort', 'tower', 'temple'],
     reachPrimary: 'veil',
@@ -11389,6 +12236,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.minor_cantrip',
+    stakes: {
+      goal: 'cast, hold and set down a small cantrip',
+      risk: 'let the cantrip sputter out',
+      won: 'cast, held and set down the cantrip',
+      lost: 'let the cantrip sputter out at the release',
+    },
     name: 'Practice a Minor Cantrip',
     locationTypes: ['shrine', 'temple', 'tower', 'ruins'],
     reachPrimary: 'veil',
@@ -11456,6 +12309,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.hedge_remedy',
+    stakes: {
+      goal: 'brew a hedge remedy that takes',
+      risk: 'lay on a remedy that falls short of enough',
+      won: 'brewed a hedge remedy that took',
+      lost: 'laid on a remedy that fell short of enough',
+    },
     name: 'Brew a Hedge Remedy',
     locationTypes: ['wilderness', 'oasis', 'farmland', 'hamlet'],
     reachPrimary: 'veil',
@@ -11526,6 +12385,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.test_the_seal',
+    stakes: {
+      goal: 'read the binding seal on the ruin door',
+      risk: 'come away with burnt fingers and no reading',
+      won: 'read the seal\'s age, strength and tradition',
+      lost: 'kept the place but lost the reading of the seal',
+    },
     name: 'Test a Binding Seal',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city'],
     reachPrimary: 'veil',
@@ -11600,6 +12465,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.shrine_offering',
+    stakes: {
+      goal: 'stay at the shrine until an answer comes',
+      risk: 'take the wind for an answer and follow it',
+      won: 'came away with a heading from the shrine',
+      lost: 'got up cold with no reply to carry off',
+      lostBadly: 'took the wind for an answer and followed it',
+    },
     name: 'Leave a Shrine Offering',
     // THR-1130 (batch 3) — the widest honest envelope. The old
     // `locationTypes: ['shrine', 'temple', 'ruins']` maps to exactly `sacred` +
@@ -12269,6 +13141,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.read_the_stars',
+    stakes: {
+      goal: 'read the old markers in the moonless sky',
+      risk: 'lose the reading at first light',
+      won: 'carried the reading down off the hill intact',
+      lost: 'lost every word of the reading at first light',
+    },
     name: 'Read the Night Sky',
     locationTypes: ['wilderness', 'camp', 'oasis', 'battleground'],
     reachPrimary: 'star',
@@ -12338,6 +13216,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.tend_the_dead',
+    stakes: {
+      goal: 'lay the restless dead to rest under a cairn',
+      risk: 'leave a rough cairn that will not last winter',
+      won: 'laid the dead to rest under a lasting cairn',
+      lost: 'raised a rough cairn that will not last winter',
+    },
     name: 'Tend the Resting Dead',
     locationTypes: ['battleground', 'ruins', 'ruined_village', 'ruined_city'],
     reachPrimary: 'star',
@@ -12409,6 +13293,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.blessing_of_passage',
+    stakes: {
+      goal: 'bless the road for travelers',
+      risk: 'leave a blessing that fades by the next rain',
+      won: 'blessed the road for all who walk it after',
+      lost: 'left a thin blessing that fades by the next rain',
+    },
     name: 'Bless the Road',
     locationTypes: ['camp', 'hamlet', 'oasis', 'farmland'],
     reachPrimary: 'star',
@@ -12488,6 +13378,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.patch_the_walls',
+    stakes: {
+      goal: 'patch the fortress wall down to the footing',
+      risk: 'leave a patch the foundation will undo',
+      won: 'patched the wall and braced its foundation',
+      lost: 'patched the wall over a shifting foundation',
+    },
     name: 'Patch the Walls',
     locationTypes: ['castle', 'fort', 'tower', 'ruined_tower'],
     reachPrimary: 'stone',
@@ -12551,6 +13447,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.dig_a_well',
+    stakes: {
+      goal: 'dig and line a well that holds',
+      risk: 'leave a leaking well for someone else to finish',
+      won: 'dug and lined a well of clean water',
+      lost: 'left a leaking well for someone else to finish',
+    },
     name: 'Dig a Well',
     locationTypes: ['hamlet', 'farmland', 'camp', 'oasis'],
     reachPrimary: 'stone',
@@ -12614,6 +13516,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.clear_the_rubble',
+    stakes: {
+      goal: 'clear the rubble down to the old foundation',
+      risk: 'waste the day on broken stone',
+      won: 'cleared down to a sound foundation and a cache',
+      lost: 'found only more rubble under the rubble',
+    },
     name: 'Clear the Rubble',
     locationTypes: ['ruins', 'ruined_village', 'ruined_city', 'ruined_tower', 'battleground'],
     reachPrimary: 'stone',
@@ -12686,6 +13594,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.drill_the_watch',
+    stakes: {
+      goal: 'drill the watch until it holds under a false alarm',
+      risk: 'watch the watch scatter at the false alarm',
+      won: 'drilled the watch until it held under a false alarm',
+      lost: 'watched the watch scatter at the false alarm',
+    },
     name: 'Drill the Watch',
     locationTypes: ['castle', 'fort', 'camp', 'town'],
     reachPrimary: 'iron',
@@ -12749,6 +13663,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.spar_with_a_stranger',
+    stakes: {
+      goal: 'earn a nod from the stranger in the sparring yard',
+      risk: 'walk off bruised and beaten in the yard',
+      won: 'earned the stranger\'s nod with blunt steel',
+      lost: 'lost the last exchange and bowed out bruised',
+    },
     name: 'Spar with a Stranger',
     locationTypes: ['town', 'city', 'camp', 'fort'],
     reachPrimary: 'iron',
@@ -12822,6 +13742,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.case_the_joint',
+    stakes: {
+      goal: 'learn the guard rota and the ways in',
+      risk: 'be marked by the watch at the corner',
+      won: 'learned the building better than its sleepers',
+      lost: 'could not put a price on the strongroom',
+    },
     name: 'Case the Joint',
     locationTypes: ['city', 'capital', 'town', 'castle'],
     reachPrimary: 'shadow',
@@ -12890,6 +13816,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.dead_drop',
+    stakes: {
+      goal: 'service the dead drop and vanish unseen',
+      risk: 'get marked by a watcher in a doorway',
+      won: 'serviced the dead drop and vanished unseen',
+      lost: 'got marked by a watcher in a doorway',
+    },
     name: 'Service a Dead Drop',
     locationTypes: ['town', 'city', 'capital', 'camp'],
     reachPrimary: 'shadow',
@@ -12962,6 +13894,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.inspect_the_armoury',
+    stakes: {
+      goal: 'count the armoury and get repairs signed off',
+      risk: 'file a report that changes nothing',
+      won: 'counted the armoury and got the requisition signed',
+      lost: 'filed a vague report that will change nothing',
+    },
     name: 'Inspect the Armoury',
     locationTypes: ['castle', 'fort'],
     reachPrimary: 'iron',
@@ -13034,6 +13972,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.shore_up_the_mine',
+    stakes: {
+      goal: 'shore up the mine\'s rotten timbers',
+      risk: 'see a timber crack and the section closed',
+      won: 'shored up the timbers, and the cart passed',
+      lost: 'saw a timber crack and the section closed off',
+    },
     name: 'Shore Up the Mine',
     locationTypes: ['mining'],
     reachPrimary: 'stone',
@@ -13097,6 +14041,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.map_the_passages',
+    stakes: {
+      goal: 'map the passages and the way back out',
+      risk: 'run out of lamp oil with the bottom unmapped',
+      won: 'mapped the passages and the way back out',
+      lost: 'ran low on oil with the bottom third unmapped',
+    },
     name: 'Map the Passages',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining'],
     reachPrimary: 'eye',
@@ -13165,6 +14115,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.catalogue_the_tower',
+    stakes: {
+      goal: 'catalogue every book in the tower library',
+      risk: 'leave half the library uncatalogued',
+      won: 'catalogued every book in the tower',
+      lost: 'catalogued only two walls of the four',
+    },
     name: 'Catalogue the Tower Library',
     locationTypes: ['tower'],
     reachPrimary: 'eye',
@@ -13237,6 +14193,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.gather_firewood',
+    stakes: {
+      goal: 'lay in a dry, covered woodstack',
+      risk: 'pile wet wood rough against the wall',
+      won: 'laid in a dry, covered woodstack',
+      lost: 'piled the wood rough against the wall',
+    },
     name: 'Gather Firewood',
     locationTypes: ['wilderness', 'camp', 'farmland', 'ruins'],
     reachPrimary: 'eye',
@@ -13304,6 +14266,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.prospect_the_seam',
+    stakes: {
+      goal: 'stake a claim on the seam before dark',
+      risk: 'find another prospector filed on it first',
+      won: 'staked the claim and entered it at the assay office',
+      lost: 'found another prospector had filed on it first',
+    },
     name: 'Prospect the Seam',
     locationTypes: ['mining', 'wilderness', 'ruins'],
     reachPrimary: 'gold',
@@ -13372,6 +14340,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.wildcraft_shelter',
+    stakes: {
+      goal: 'build a dry shelter from what the land offers',
+      risk: 'spend the night in a shelter that leaks',
+      won: 'built a shelter that stayed dry in the rain',
+      lost: 'spent the night under a roof that leaked in three places',
+    },
     name: 'Build a Wildcraft Shelter',
     locationTypes: ['wilderness', 'unexplored_poi', 'battleground'],
     reachPrimary: 'stone',
@@ -13435,6 +14409,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.negotiate_passage',
+    stakes: {
+      goal: 'talk their way through the checkpoint',
+      risk: 'find the road closed at the checkpoint',
+      won: 'talked their way through the checkpoint',
+      lost: 'got through the checkpoint with no goodwill left',
+    },
     name: 'Negotiate Safe Passage',
     locationTypes: ['wilderness', 'camp', 'fort', 'hamlet'],
     reachPrimary: 'heart',
@@ -13506,6 +14486,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.garrison_gossip',
+    stakes: {
+      goal: 'piece together the garrison from mess-hall talk',
+      risk: 'leave with forty true facts and no sense of them',
+      won: 'pieced together the garrison from mess-hall talk',
+      lost: 'left with forty true facts and no sense of them',
+    },
     name: 'Garrison Gossip',
     locationTypes: ['castle', 'fort', 'tower'],
     reachPrimary: 'heart',
@@ -13574,6 +14560,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.mend_fishing_nets',
+    stakes: {
+      goal: 'mend the fishing nets for a meal and a bed',
+      risk: 'have the pay docked for a missed flaw',
+      won: 'mended the nets and earned a meal and a bed',
+      lost: 'had a third of the pay docked for a missed flaw',
+    },
     name: 'Mend the Fishing Nets',
     locationTypes: ['hamlet', 'oasis', 'camp'],
     reachPrimary: 'gold',
@@ -13650,6 +14642,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // acting member for that step while the others back them.
   {
     id: 'encounter.sunken_vault',
+    stakes: {
+      goal: 'haul the treasure out of the sunken vault',
+      risk: 'leave the prize to the rising water',
+      won: 'hauled the treasure out of the sunken vault',
+      lost: 'lost their footing and left the prize below',
+    },
     name: 'The Sunken Vault',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon'],
@@ -13720,6 +14718,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.broken_span',
+    stakes: {
+      goal: 'get the company across the chasm and out',
+      risk: 'be overrun and lose the company\'s haul',
+      won: 'got the company across and out with the prize',
+      lost: 'was overrun, and the company fled without its haul',
+    },
     name: 'The Broken Span',
     locationTypes: ['ruins', 'ruined_tower', 'mining', 'unexplored_poi', 'cavern'],
     sublocationTypes: ['sublocation-type.dungeon'],
@@ -13790,6 +14794,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.hollow_watch',
+    stakes: {
+      goal: 'bring the warren down on the nest',
+      risk: 'lose part of the company in the collapse',
+      won: 'brought the warren down on the nest',
+      lost: 'barely cleared the early collapse, and lost people',
+    },
     name: 'The Hollow Watch',
     locationTypes: ['ruins', 'ruined_city', 'mining', 'fort', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon', 'sublocation-type.barracks'],
@@ -13873,6 +14883,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // Two steps, not three: the answering side is reacting, not mounting an expedition.
   {
     id: 'encounter.band_defend',
+    stakes: {
+      goal: 'hold the hall doorway against the strangers',
+      risk: 'give ground and leave the hall open',
+      won: 'held the hall doorway against the strangers',
+      lost: 'gave ground and left the hall open',
+    },
     name: 'Hold the Ground',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
     sublocationTypes: ['sublocation-type.barracks', 'sublocation-type.guild-hall'],
@@ -13922,6 +14938,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.band_raid',
+    stakes: {
+      goal: 'take the road from the ambush in the grass',
+      risk: 'be met on the way in and driven back',
+      won: 'took the road before anyone fought for it',
+      lost: 'was met on the way in and fell back to the grass',
+    },
     name: 'Take the Road',
     locationTypes: ['camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
     reachPrimary: 'shadow',
@@ -13985,6 +15007,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // the whole company rather than its strongest fighter three times.
   {
     id: 'encounter.confront_ambush',
+    stakes: {
+      goal: 'break the ambush on the road',
+      risk: 'leave the road to the ambushers, carrying what they can',
+      won: 'broke the ambush and sent them back into the grass',
+      lost: 'left the road to the ambushers, carrying what they could',
+    },
     name: 'The Ambush',
     locationTypes: ['camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
     reachPrimary: 'eye',
@@ -14051,6 +15079,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.confront_den_assault',
+    stakes: {
+      goal: 'storm the den and carry out what it keeps',
+      risk: 'come back out the way in, with less than they brought',
+      won: 'stormed the den and carried out what it kept',
+      lost: 'came back out the way in, with less than they brought',
+    },
     name: 'Den Assault',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi', 'cavern'],
     sublocationTypes: ['sublocation-type.dungeon'],
@@ -14121,6 +15155,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.confront_guild_falls',
+    stakes: {
+      goal: 'take the guild hall and the names that run it',
+      risk: 'retreat from the hall with the guild knowing whose it was',
+      won: 'took the guild hall and the names that ran it',
+      lost: 'retreated from the hall with the guild knowing whose it was',
+    },
     name: 'The Guild Falls',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
     // `guild-hall`, hyphenated — the id worldgen actually mints (34 on seed 42
@@ -14195,6 +15235,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.confront_standoff',
+    stakes: {
+      goal: 'end the standoff with both companies walking off',
+      risk: 'back the company off and give up the ground',
+      won: 'ended the standoff with both companies walking off',
+      lost: 'backed the company off and gave up the ground',
+    },
     name: 'The Standoff',
     locationTypes: ['hamlet', 'town', 'city', 'camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
     reachPrimary: 'gold',

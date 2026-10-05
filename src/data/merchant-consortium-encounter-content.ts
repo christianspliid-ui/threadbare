@@ -54,6 +54,12 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.market_survey',
+    stakes: {
+      goal: 'find the hidden margin in the salt market',
+      risk: 'file a thin report that shows nothing',
+      won: 'found the cheap salt before the market did',
+      lost: 'filed a thin report that showed nothing',
+    },
     tags: ['#consortium_errand'],
     name: 'Market Survey',
     rarityTier: 1,
@@ -194,6 +200,12 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.negotiate_contract',
+    stakes: {
+      goal: 'win better terms from the supplier',
+      risk: 'sign the supplier\'s standard contract',
+      won: 'won better terms from the supplier',
+      lost: 'signed the supplier\'s standard contract',
+    },
     tags: ['#consortium_errand'],
     name: 'Negotiate a Contract',
     rarityTier: 1,
@@ -322,6 +334,12 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.caravan_escort',
+    stakes: {
+      goal: 'bring the caravan through with every crate',
+      risk: 'arrive with spoiled crates and a thin split',
+      won: 'brought the caravan through with every crate',
+      lost: 'arrived with spoiled crates and a thin split',
+    },
     tags: ['#consortium_errand'],
     name: 'Manage the Caravan',
     rarityTier: 1,
@@ -450,6 +468,12 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.settle_dispute',
+    stakes: {
+      goal: 'settle the double bill of lading under seal',
+      risk: 'see the dispute go to the civil court',
+      won: 'settled the double bill of lading under seal',
+      lost: 'saw the dispute go to the civil court',
+    },
     tags: ['#consortium_errand'],
     name: 'Settle a Trade Dispute',
     rarityTier: 1,
@@ -577,6 +601,12 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
 
   withEncounterContract({
     id: 'mct.quest.appraise_goods',
+    stakes: {
+      goal: 'price the carvings and spot the forgeries',
+      risk: 'hand the factor a valuation that is off',
+      won: 'priced the carvings and spotted the forgeries',
+      lost: 'handed the factor a valuation that was off',
+    },
     tags: ['#consortium_errand'],
     name: 'Appraise Rare Goods',
     rarityTier: 1,
@@ -710,6 +740,12 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mct.senior.trade_monopoly',
+    stakes: {
+      goal: 'sign up the suppliers and corner the market',
+      risk: 'pay for a costly campaign that falls short',
+      won: 'signed up the suppliers and cornered the market',
+      lost: 'lost two suppliers and paid for half a monopoly',
+    },
     name: 'Establish Trade Monopoly',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -845,6 +881,12 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mct.senior.foreign_deal',
+    stakes: {
+      goal: 'get the foreign delegation to sign the pact',
+      risk: 'watch the delegation leave unsigned',
+      won: 'got the foreign delegation to sign the pact',
+      lost: 'watched the delegation leave unsigned',
+    },
     name: 'Foreign Trade Deal',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -981,6 +1023,12 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mct.senior.acquire_warehouse',
+    stakes: {
+      goal: 'find a dry warehouse near the docks and buy it',
+      risk: 'walk away from the owner\'s price with no keys',
+      won: 'bought a dry warehouse eighty paces from the quay',
+      lost: 'walked away from the owner\'s price with no keys',
+    },
     name: 'Acquire a Warehouse',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1114,6 +1162,12 @@ export const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mct.elite.trade_summit',
+    stakes: {
+      goal: 'get the summit to sign the trade charter',
+      risk: 'see three houses refuse to sign the charter',
+      won: 'got the summit to sign the trade charter',
+      lost: 'saw three houses refuse to sign the charter',
+    },
     name: 'Trade Summit',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -1277,6 +1331,12 @@ export const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mct.elite.market_domination',
+    stakes: {
+      goal: 'bring every trading house under consortium terms',
+      risk: 'overreach and fall back to the core buyouts',
+      won: 'brought the trading houses under consortium terms',
+      lost: 'overreached and fell back to the core buyouts',
+    },
     name: 'Market Domination',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -1452,6 +1512,12 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mct.social.wine_tasting',
+    stakes: {
+      goal: 'make useful contacts at the wine tasting',
+      risk: 'spend the evening with a bore and an empty ledger',
+      won: 'made three useful contacts at the wine tasting',
+      lost: 'spent the evening with a bore and an empty ledger',
+    },
     name: 'Wine Tasting Evening',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1555,6 +1621,12 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mct.social.ledger_review',
+    stakes: {
+      goal: 'get the quarter\'s ledger past the factors',
+      risk: 'owe the factors a written answer on a discrepancy',
+      won: 'got the quarter\'s ledger past the factors',
+      lost: 'owed the factors a written answer on a discrepancy',
+    },
     name: 'Quarterly Ledger Review',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1656,6 +1728,12 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mct.social.guild_feast',
+    stakes: {
+      goal: 'make the right introductions at the feast',
+      risk: 'sit the feast out six chairs from anyone useful',
+      won: 'made the right introductions at the feast',
+      lost: 'sat the feast out six chairs from anyone useful',
+    },
     name: 'Consortium Feast',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1762,6 +1840,12 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'mct.join',
+  stakes: {
+    goal: 'pass the consortium\'s entrance examination',
+    risk: 'fail the exam and be sent off to study',
+    won: 'passed the exam and joined the consortium',
+    lost: 'failed the exam and was sent off to study',
+  },
   name: 'Join the Merchant Consortium',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -1842,6 +1926,12 @@ export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const MCT_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'mct.promotion',
+  stakes: {
+    goal: 'earn the new seal at the portfolio review',
+    risk: 'be told to come back in six months',
+    won: 'earned the new seal at the portfolio review',
+    lost: 'was told to come back in six months',
+  },
   name: 'Consortium Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

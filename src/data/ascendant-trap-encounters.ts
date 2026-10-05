@@ -29,6 +29,12 @@ import { TRAP_SPRUNG_TEMPLATE_ID } from './ascendant-expression-constants';
 
 export const TRAP_SPRUNG_TEMPLATE: UnifiedActionTemplate = {
   id: TRAP_SPRUNG_TEMPLATE_ID,
+  stakes: {
+    goal: 'tear free of the snare before it closes',
+    risk: 'be held fast in the snare',
+    won: 'tore free of the snare and kept moving',
+    lost: 'was caught and held fast in the snare',
+  },
   name: 'The Snare Springs',
   rarityTier: 2,
   intrinsicTier: 'shaping',

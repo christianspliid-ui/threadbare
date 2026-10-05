@@ -368,6 +368,13 @@ const step0ReadTheGround: ActionStep = {
 
 export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.one_body_short',
+  stakes: {
+    goal: 'count the dead before leaving the ground',
+    risk: 'lose the count and be walked off the ground',
+    won: 'counted the dead and found one body missing',
+    lost: 'walked off with the count still one wrong',
+    lostBadly: 'lost the count and was walked off the ground',
+  },
   // THR-1526: a seed target (Standing the Line plants it) whose opening stands alone.
   drawable: true,
   rarityTier: 2,

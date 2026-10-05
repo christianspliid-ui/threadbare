@@ -555,6 +555,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_STONES_JUDGEMENT_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.stone.the_stones_judgement',
+  stakes: {
+    goal: 'settle the land dispute for the older claim',
+    risk: 'leave the dispute sharper than it came in',
+    won: 'upheld the older claim before the square',
+    lost: 'gave a ruling one party picked apart on the spot',
+    arms: {
+      rule_for_transforming_claim: {
+        won: 'upheld the newer claim and what was built on it',
+        lost: 'ruled for the newer claim and left it weaker',
+      },
+    },
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Stone\'s Judgement',

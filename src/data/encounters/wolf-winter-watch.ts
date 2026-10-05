@@ -39,6 +39,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.wolf_winter_watch',
+  stakes: {
+    goal: 'hold the great fold against the wolf pack',
+    risk: 'see the pack in the fold until dawn',
+    won: 'held the fold gate until dawn',
+    lost: 'lost the great fold, and the flock goes to the drover',
+    lostBadly: 'watched the watch run and the pack take the fold',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Wolves at the Fold',

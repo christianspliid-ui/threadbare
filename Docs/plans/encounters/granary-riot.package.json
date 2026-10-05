@@ -72,6 +72,13 @@
   ],
   "template": {
     "id": "encounter.town.granary_riot",
+    "stakes": {
+      "goal": "settle the granary riot before the gate gives",
+      "risk": "see the crowd break into the abbey granary",
+      "won": "settled the granary riot with a ruling both sides took",
+      "lost": "sent the crowd home hungry behind a locked gate",
+      "lostBadly": "watched the crowd break into the abbey granary"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Granary Riot",

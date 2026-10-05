@@ -48,6 +48,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.pawnbrokers_strongroom',
+  stakes: {
+    goal: 'take the cooper\'s box back before the hired thief',
+    risk: 'be found under the pawnbroker\'s house empty-handed',
+    won: 'got the cooper\'s box out ahead of the hired thief',
+    lost: 'lost the box to the hired thief and was named for it',
+    lostBadly: 'was found under the pawnbroker\'s house empty-handed',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Cooper\'s Pawned Box',

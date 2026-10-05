@@ -521,6 +521,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const SHADOW_COURT_AUDIENCE_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.shadow.shadow_court_audience',
+  stakes: {
+    goal: 'win the noble court\'s trust with plain talk',
+    risk: 'leave the court polite but cooled',
+    won: 'won the senior courtier\'s ear with plain talk',
+    lost: 'stumbled on the court\'s sharpest question',
+    arms: {
+      drop_a_veiled_threat: {
+        won: 'pressed a favor out of the court without a word',
+        lost: 'was seen through and shown the closed door',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Shadow Court Audience',

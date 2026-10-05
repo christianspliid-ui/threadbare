@@ -58,6 +58,12 @@ const step1Branch: ActionStep = {
 
 export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
   id: 'mentorship.the-offer',
+  stakes: {
+    goal: 'answer the teacher\'s offer of an apprenticeship',
+    risk: 'let the offer slip and walk away unapprenticed',
+    won: 'took up the apprenticeship under the teacher',
+    lost: 'let the offer slip and walked away unapprenticed',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Offer',

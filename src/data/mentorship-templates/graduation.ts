@@ -60,6 +60,12 @@ const step1Branch: ActionStep = {
 
 export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
   id: 'mentorship.graduation',
+  stakes: {
+    goal: 'close the apprenticeship on good terms',
+    risk: 'part with the teacher\'s last lesson unpassed',
+    won: 'closed the apprenticeship on good terms',
+    lost: 'parted with the teacher\'s last lesson unpassed',
+  },
   rarityTier: 3,
   intrinsicTier: 'story_beat',
   name: 'Graduation',

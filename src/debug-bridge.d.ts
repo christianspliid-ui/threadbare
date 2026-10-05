@@ -1765,6 +1765,8 @@ export interface DebugBridge {
   _registerOpenModalsProvider(fn: () => string[]): void;
   /** @internal GameView registers the interrupt-state provider here (THR-1608) */
   _registerInterruptStateProvider(fn: () => DebugInterruptState): void;
+  /** THR-1716 — GameView registers the UI-session half of `getOpeningState()`. */
+  _registerOpeningUiProvider(fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }): void;
   /**
    * Both surface records the ref router dispatches on (THR-1490, THR-1491).
    *
@@ -2209,6 +2211,12 @@ export interface DebugBridge {
    *    not yet run). `null` when it may be offered now, or when the spine is exhausted.
    *    A gift already pending on screen is not "held" — read `getAscendantBeats()`.
    *
+   *  - `arrivalBeatOffered` — THR-1716: the opening beat ("Reach Down") was offered at
+   *    arrival, before any tick (an unbonded First). `false` on the pre-bonded dev routes.
+   *  - `clockEverRan` — THR-1716: the clock has run at least once this session (Play, Space,
+   *    the bond's "Let them walk.", or a debug tick). While `false` and nothing holds the
+   *    clock, the Play control shows the first-run prompt.
+   *
    *  Resolves `{ error }` with no live game state.
    *
    *  **Async** (`await` it). */
@@ -2226,6 +2234,8 @@ export interface DebugBridge {
       playerActCount: number;
       nextSpineBeat: string | null;
       spineGateBlockedBy: 'min_turn' | 'first_not_bonded' | 'min_gap' | 'awaiting_player_act' | null;
+      arrivalBeatOffered: boolean;
+      clockEverRan: boolean;
     }
   >;
 

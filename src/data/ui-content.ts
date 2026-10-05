@@ -11,6 +11,16 @@ import type { TooltipContent } from '../types/tooltip';
 import { buildReachTierTooltips } from './ascendant-reach-register';
 import { REACH_COPY } from './ascendant-bar-content';
 
+/**
+ * THR-1716 — the first-run Play prompt's caption, shown in the time control's status
+ * line until the clock runs for the first time. Second person: it is the god's own
+ * control (Law 42).
+ */
+export const FIRST_RUN_PROMPT_CAPTION = 'Time is still. Press Play or Space to let the world move.';
+
+/** THR-1716 — the remembrance's undo while a chosen picture holds before the flow moves on. */
+export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
+
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
   'ui.doom_bar': {
@@ -63,6 +73,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.sim_play_pause': {
     label: 'Play / Pause',
     desc: 'Advance or pause the world simulation.',
+  },
+  // THR-1716: the Play control's tooltip while the first-run prompt shows.
+  'ui.sim_first_run': {
+    label: 'Let the world move',
+    desc: 'The world waits while time is still. Play lets mortals live their days; it stops again for every moment that matters.',
   },
   'ui.sim_speed': {
     label: 'Tick Speed',

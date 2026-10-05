@@ -61,6 +61,12 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.temple_vigil',
+    stakes: {
+      goal: 'keep the night vigil over the reliquary',
+      risk: 'lose a relic from the reliquary to a thief',
+      won: 'kept the vigil with the reliquary untouched',
+      lost: 'lost a relic from the reliquary to a thief',
+    },
     tags: ['#dawn_errand'],
     name: 'Temple Vigil',
     rarityTier: 1,
@@ -285,6 +291,13 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.purify_shrine',
+    stakes: {
+      goal: 'cleanse the cold roadside shrine',
+      risk: 'loose the shrine\'s cold along the pilgrim road',
+      won: 'cleansed the roadside shrine for the pilgrim road',
+      lost: 'spoke the rite and left the shrine still cold',
+      lostBadly: 'loosed the shrine\'s cold along the pilgrim road',
+    },
     tags: ['#dawn_errand'],
     name: 'Purify a Shrine',
     rarityTier: 1,
@@ -520,6 +533,12 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.escort_pilgrims',
+    stakes: {
+      goal: 'bring the pilgrims whole to the high temple',
+      risk: 'lose pilgrims to the bandits on the road',
+      won: 'brought every pilgrim whole to the high temple',
+      lost: 'reached the temple with pilgrims hurt by bandits',
+    },
     tags: ['#dawn_errand'],
     name: 'Escort Pilgrims',
     rarityTier: 1,
@@ -772,6 +791,13 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.slay_abomination',
+    stakes: {
+      goal: 'find the abomination\'s lair and kill it',
+      risk: 'flee the lair with the creature on their heels',
+      won: 'killed the abomination in its lair',
+      lost: 'came out of the lair wounded, the creature alive',
+      lostBadly: 'fled the lair and left the blade, the creature following',
+    },
     tags: ['#dawn_errand'],
     name: 'Slay the Abomination',
     rarityTier: 1,
@@ -1015,6 +1041,12 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.quest.deliver_judgment',
+    stakes: {
+      goal: 'investigate the heresy charge and speak judgment',
+      risk: 'see the verdict questioned in open assembly',
+      won: 'spoke a clear judgment on the heresy charge',
+      lost: 'saw the verdict questioned in open assembly',
+    },
     tags: ['#dawn_errand'],
     name: 'Deliver Judgment',
     rarityTier: 1,
@@ -1290,6 +1322,13 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hod.senior.cleanse_corruption',
+    stakes: {
+      goal: 'burn out the corruption beneath the temple',
+      risk: 'let the corruption break loose through the rite',
+      won: 'burned out the corruption beneath the temple',
+      lost: 'spoke the full rite below with nothing to show',
+      lostBadly: 'broke the rite and let the corruption loose',
+    },
     name: 'Cleanse Deep Corruption',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1532,6 +1571,12 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hod.senior.lead_crusade',
+    stakes: {
+      goal: 'take the enemy stronghold for the order',
+      risk: 'be thrown back from the gates with heavy losses',
+      won: 'took the enemy stronghold and raised the banner',
+      lost: 'was thrown back from the gates with heavy losses',
+    },
     name: 'Lead a Crusade',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1818,6 +1863,12 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hod.senior.inquisition',
+    stakes: {
+      goal: 'break the dark cult in a single night\'s raid',
+      risk: 'find the cult\'s houses already emptied',
+      won: 'broke the cult and brought its leaders to judgment',
+      lost: 'found the cult\'s houses already emptied',
+    },
     name: 'Conduct Inquisition',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -2063,6 +2114,13 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hod.elite.holy_war',
+    stakes: {
+      goal: 'lead the order\'s host to victory in holy war',
+      risk: 'see the host broken in the field in one afternoon',
+      won: 'led the order\'s host to victory in holy war',
+      lost: 'led the order back from the field in defeat',
+      lostBadly: 'saw the host broken in the field in one afternoon',
+    },
     name: 'Holy War',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
@@ -2376,6 +2434,13 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hod.elite.divine_trial',
+    stakes: {
+      goal: 'pass the divine trial in the inner sanctum',
+      risk: 'be refused outright by the light in the sanctum',
+      won: 'passed the trial and received the mandate',
+      lost: 'waited in the sanctum with no answer from the light',
+      lostBadly: 'was refused outright by the light in the sanctum',
+    },
     name: 'Divine Trial',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -2642,6 +2707,12 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.social.dawn_prayer',
+    stakes: {
+      goal: 'join the order\'s dawn prayer in the courtyard',
+      risk: 'mouth the dawn prayer with their mind elsewhere',
+      won: 'joined the dawn prayer and found some peace',
+      lost: 'mouthed the dawn prayer with their mind elsewhere',
+    },
     name: 'Dawn Prayer',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -2715,6 +2786,12 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.social.blessing_ceremony',
+    stakes: {
+      goal: 'give the blessings at the temple square table',
+      risk: 'give blessings the townsfolk can tell are empty',
+      won: 'sent the faithful away from the square steadier',
+      lost: 'gave blessings the townsfolk could tell were empty',
+    },
     name: 'Blessing Ceremony',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -2789,6 +2866,12 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'hod.social.tend_wounded',
+    stakes: {
+      goal: 'ease the wounded through a hospice shift',
+      risk: 'meet wounds beyond their skill in the hospice',
+      won: 'eased the wounded through a hospice shift',
+      lost: 'met wounds beyond their skill in the hospice',
+    },
     name: 'Tend the Wounded',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -2872,6 +2955,12 @@ export const HOLY_ORDER_DAWN_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const HOD_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'hod.join',
+  stakes: {
+    goal: 'swear the oath of the Dawn at the altar',
+    risk: 'kneel at the altar and get no answer',
+    won: 'swore the oath and became a squire of the Dawn',
+    lost: 'knelt at the altar and got no answer',
+  },
   name: 'Take the Oath of Dawn',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -2945,6 +3034,12 @@ export const HOD_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const HOD_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'hod.promotion',
+  stakes: {
+    goal: 'pass the rite of ascension to a higher rank',
+    risk: 'be sent back from the chamber to meditate',
+    won: 'passed the rite of ascension to a higher rank',
+    lost: 'was sent back from the chamber to meditate',
+  },
   name: 'Rite of Ascension',
   rarityTier: 2,
   intrinsicTier: 'shaping',

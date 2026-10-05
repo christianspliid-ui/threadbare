@@ -57,6 +57,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.ley_survey',
+    stakes: {
+      goal: 'map the ley currents along the survey route',
+      risk: 'bring back a map full of gaps',
+      won: 'mapped the ley currents and marked an anomaly',
+      lost: 'brought back a gappy map and a smudged anomaly',
+    },
     tags: ['#circle_errand'],
     name: 'Ley Line Survey',
     rarityTier: 1,
@@ -205,6 +211,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.reagent_gather',
+    stakes: {
+      goal: 'buy every reagent on the circle\'s list',
+      risk: 'come back without the one reagent that matters',
+      won: 'bought every reagent, the rare one included',
+      lost: 'came back without the rare reagent',
+    },
     tags: ['#circle_errand'],
     name: 'Gather Arcane Reagents',
     rarityTier: 1,
@@ -333,6 +345,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.ward_inspection',
+    stakes: {
+      goal: 'find and mend the weak points in the tower wards',
+      risk: 'leave the wards patched and still fragile',
+      won: 'mended the wards and found one had been tested',
+      lost: 'patched the wards, the third weak point unexplained',
+    },
     tags: ['#circle_errand'],
     name: 'Ward Inspection',
     rarityTier: 2,
@@ -476,6 +494,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.translate_tome',
+    stakes: {
+      goal: 'translate the old tome from the estate auction',
+      risk: 'leave the working inside half unreadable',
+      won: 'translated the tome and found a working that works',
+      lost: 'translated only an outline of the working inside',
+    },
     tags: ['#circle_errand'],
     name: 'Translate an Ancient Tome',
     rarityTier: 2,
@@ -641,6 +665,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.quest.anomaly_report',
+    stakes: {
+      goal: 'measure the stillness in the field and file it',
+      risk: 'file a thin report that no one will review',
+      won: 'measured the anomaly and filed a report for review',
+      lost: 'filed a thin report the circle set aside',
+    },
     tags: ['#circle_errand'],
     name: 'Investigate Arcane Anomaly',
     rarityTier: 1,
@@ -776,6 +806,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.senior.planar_probe',
+    stakes: {
+      goal: 'look across the planar boundary and pull back data',
+      risk: 'have the probe collapse and be traced back',
+      won: 'brought back data, and the watcher across took note',
+      lost: 'lost the probe and was traced back by the watcher',
+    },
     name: 'Planar Probe',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -942,6 +978,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.senior.enchant_artifact',
+    stakes: {
+      goal: 'bind the enchantment into the purified clasp',
+      risk: 'crack the vessel at the final bind',
+      won: 'bound the enchantment into a new artifact',
+      lost: 'cracked the vessel at the final bind',
+    },
     name: 'Enchant an Artifact',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1087,6 +1129,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.senior.ruin_expedition',
+    stakes: {
+      goal: 'recover the lost formulae from the old ruin',
+      risk: 'be driven out hurt by the ruin\'s old defenses',
+      won: 'recovered the lost formulae from the ruin',
+      lost: 'fled the ruin\'s defenses, hurt, with thin notes',
+    },
     name: 'Arcane Ruin Expedition',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1247,6 +1295,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.elite.arcane_thesis',
+    stakes: {
+      goal: 'prove the grand thesis before the full council',
+      risk: 'let the working break loose in front of the council',
+      won: 'proved the thesis beyond its own claims',
+      lost: 'let the working outrun its bounds before the council',
+    },
     name: 'Present the Grand Thesis',
     rarityTier: 4,
     intrinsicTier: 'story_beat',
@@ -1445,6 +1499,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.elite.seal_the_breach',
+    stakes: {
+      goal: 'seal the planar tear in the cellar',
+      risk: 'leave the tear open and only narrowed',
+      won: 'sealed the planar tear for good',
+      lost: 'narrowed the tear but could not close it',
+    },
     name: 'Seal the Planar Breach',
     rarityTier: 3,
     intrinsicTier: 'shaping',
@@ -1624,6 +1684,12 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'ac.social.lecture_hall',
+    stakes: {
+      goal: 'take two new ideas from the circle lecture',
+      risk: 'sit through a lecture pitched past them',
+      won: 'left the lecture with two new ideas',
+      lost: 'sat through a lecture pitched past them',
+    },
     name: 'Attend a Lecture',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1745,6 +1811,12 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.social.spell_exchange',
+    stakes: {
+      goal: 'trade two formulae for one worth having',
+      risk: 'leave the exchange with nothing worth the trade',
+      won: 'traded for a formula worth developing',
+      lost: 'left the exchange with nothing worth the trade',
+    },
     name: 'Spell Exchange',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1850,6 +1922,12 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ac.social.library_browse',
+    stakes: {
+      goal: 'turn up a find in the circle library',
+      risk: 'find only books they already know',
+      won: 'turned up a misfiled text in the wrong section',
+      lost: 'found only books they already knew',
+    },
     name: 'Browse the Library',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1958,6 +2036,12 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const AC_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'ac.join',
+  stakes: {
+    goal: 'pass the circle\'s precision test',
+    risk: 'land the workings wide and be turned away',
+    won: 'passed the precision test and joined as apprentice',
+    lost: 'landed the workings wide and was turned away',
+  },
   name: 'Join the Arcane Circle',
   rarityTier: 1,
   intrinsicTier: 'shaping',
@@ -2050,6 +2134,12 @@ export const AC_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const AC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'ac.promotion',
+  stakes: {
+    goal: 'pass the practical exam for the next arcane rank',
+    risk: 'fail the examiners on judgment and stay put',
+    won: 'passed the practical exam and took the new rank',
+    lost: 'failed the examiners on judgment and stayed put',
+  },
   name: 'Arcane Advancement',
   rarityTier: 2,
   intrinsicTier: 'shaping',

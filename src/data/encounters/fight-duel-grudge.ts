@@ -67,6 +67,12 @@ function resultVariant(result: FightResult): AftermathVariant {
 
 export const FIGHT_DUEL_GRUDGE: UnifiedActionTemplate = {
   id: FIGHT_DUEL_GRUDGE_ID,
+  stakes: {
+    goal: 'settle an old grudge with blades',
+    risk: 'be cut down by an old enemy in the square',
+    won: 'beat an old enemy in front of the square',
+    lost: 'was beaten by an old enemy in the square',
+  },
   name: 'Old Blood',
   description: '{name} and {target} settle an old grudge with blades.',
   rarityTier: 3,
@@ -81,8 +87,10 @@ export const FIGHT_DUEL_GRUDGE: UnifiedActionTemplate = {
   steps: STEPS,
   narrativeTemplates: {
     initiation: '{name} sees {target} across the square near {location}, and the old wound opens.',
-    success: '{name} walked away from the fight with {target} the winner.',
-    failure: '{name} walked away from the fight with {target} beaten.',
+    // THR-1741: read from the actor's side, like RESULT_LINES and the stakes —
+    // success is {name} winning. These two lines were swapped until then.
+    success: '{name} walked away from the fight the winner, and {target} did not.',
+    failure: '{name} walked away from the fight beaten, and {target} saw it done.',
   },
   aftermathConfig: {
     branchOnStep: fightResultIndex(STEPS),

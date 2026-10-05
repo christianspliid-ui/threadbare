@@ -86,6 +86,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.bell_at_the_exchange',
+  stakes: {
+    goal: 'win the last lot at the exchange before the bell',
+    risk: 'push the price up and still lose the lot',
+    won: 'held the last bid when the bell rang',
+    lost: 'lost the last lot to the merchant house',
+    lostBadly: 'drove the price up and still lost the lot',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Last Lot at the Exchange',

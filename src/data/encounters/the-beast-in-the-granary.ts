@@ -82,6 +82,20 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.hunt.the_beast_in_the_granary',
+  stakes: {
+    goal: 'drive the bear out of the winter store',
+    risk: 'be mauled by the bear and see the store burned',
+    won: 'drove the bear out and saved the winter store',
+    lost: 'left the bear asleep on the grain',
+    lostBadly: 'came out mauled, and the store burned anyway',
+    arms: {
+      negative: {
+        won: 'got their pack out the near door unheard',
+        lost: 'went out past the waking bear, hurt',
+        lostBadly: 'got caught by the bear at the near door',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Beast in the Granary',

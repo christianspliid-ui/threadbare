@@ -57,6 +57,7 @@ import {
 // THR-1172 — the same predicate the renderer styles on, so the gate and the
 // pixels cannot disagree about which nouns answer.
 import { tooltipResolves } from '../../engine/tooltipResolver';
+import { encounterStakesProblems } from './encounterStakesRules';
 // THR-1499 — the binder's own field table and sentinel, so "this template binds $realm"
 // is decided by the same rule that binds it at runtime.
 import { SCENE_SENTINEL_FIELD_NAMES, SENTINEL_REALM } from '../../engine/sceneSentinels';
@@ -259,7 +260,8 @@ export type CompositionBlock =
   | 'aftermath'
   | 'systems'
   | 'images'
-  | 'draw';
+  | 'draw'
+  | 'stakes';
 
 export interface CompositionViolation {
   readonly templateId: string;
@@ -338,6 +340,8 @@ const PLAN_SECTION: Readonly<Record<CompositionBlock, string>> = {
   // The one block whose rule is not in the factory-workflow plan: the draw was
   // designed later, in the palette-expansion pass (THR-1145).
   draw: 'Docs/plans/2026-08-16-consequence-palette-expansion.md § The Consequence Draw',
+  // THR-1728 — the stakes line's parts, required on every encounter once the corpus carried them.
+  stakes: 'Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md § Content pillar',
 };
 
 // ─── Manifest readers ────────────────────────────────────────────────
@@ -1893,6 +1897,13 @@ export function checkCompositionContract(
   for (const problem of sentinelBindabilityViolations(allAftermathEffects(template))) {
     add('draw', problem);
   }
+
+  // ─── Stakes (THR-1728) ─────────────────────────────────────────────
+  // The veil opens on the stakes line and the Chapter Ledger closes on the result
+  // line; a template without `stakes` shows the scene's opening prose in that slot
+  // instead. Same predicate as the validator's required mode, so the factory cannot
+  // ship a batch that falls back again.
+  for (const problem of encounterStakesProblems(template)) add('stakes', problem);
 
   return { templateId: template.id, violations, systems, bands };
 }

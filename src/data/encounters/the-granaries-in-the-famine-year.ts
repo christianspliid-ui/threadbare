@@ -386,6 +386,18 @@ const MARKET_CLOSED_AFTERMATH = {
 
 export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'gold.famine.merchant_granaries',
+  stakes: {
+    goal: 'decide who eats from the region\'s grain this famine',
+    risk: 'leave the region bled, starved and full of hate',
+    won: 'opened the granaries and fed the region at a loss',
+    lost: 'fed the region thin and unevenly, and unforgiven',
+    arms: {
+      let_the_market_close: {
+        won: 'cornered the grain and bought the region',
+        lost: 'botched the cornering and earned a region\'s hatred',
+      },
+    },
+  },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
   name: 'The Granaries in the Famine Year',

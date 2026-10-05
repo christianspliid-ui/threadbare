@@ -103,6 +103,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.delve.the_unfinished_rite',
+  stakes: {
+    goal: 'read the half-done rite and say whether it will hold',
+    risk: 'get lost in the working and have to be carried out',
+    won: 'read the rite and gave a true answer to all',
+    lost: 'could not follow the working, and the paid answer stood',
+    lostBadly: 'got lost in the working and had to be carried out',
+  },
   tags: ['#delve'],
   rarityTier: 1,
   intrinsicTier: 'background',

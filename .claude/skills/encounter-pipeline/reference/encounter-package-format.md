@@ -55,10 +55,30 @@ npm run compile:encounter -- <path> --force     # overwrite an existing compile
     "supportBundle": [ /* EncounterSupportActorSpec[] */ ],
     "narrativeTemplates": { "initiation": "…", "success": "…", "failure": "…" },
     "aftermathConfig": { /* BranchAwareAftermathConfig — byOutcome keys on the SEVEN-value UnifiedActionOutcome */ },
-    "description": "…"
+    "stakes": {                                // REQUIRED (THR-1728) — the veil's opening line and
+      "goal": "cross the rotten toll bridge",  //   the ledger's result line; see § Stakes below
+      "risk": "go into the river with the pack",
+      "won": "crossed the rotten toll bridge",
+      "lost": "turned back to the long ford and lost the day",
+      "lostBadly": "went into the river with the pack"
+    },
+    "description": "…"                         // designer voice for the Codex; NEVER shown on the veil
   }
 }
 ```
+
+## Stakes (required, THR-1727 / THR-1728)
+
+The encounter screen opens on one line built from `stakes` — `[lead], [Actor] must [goal] — or [risk].` — and the Chapter Ledger closes on a result line from the same parts plus the outcome band (`[Actor] [won].`, `[Actor] [won], at a cost.`, `[Actor] nearly [won], but [lost].`, `[Actor] [lost].`, `[Actor] [lostBadly ?? lost].`). The `description` is **not** a fallback for the player: without `stakes` the veil shows the scene's opening prose, and `check:encounter` fails the template.
+
+Authoring rules (enforced by the Composition Contract's `stakes` block, `content-eval/encounterStakesRules.ts`):
+
+1. Every part is a **bare verb phrase**: lowercase first letter, no final period, no `{tokens}`, ≤ 60 characters.
+2. Never the mortal's name, never "the traveler", never "god", "you" or "your" — the god is not the subject of the mortal's stakes.
+3. `risk` is **the worst ending the encounter can reach** (the cost of failing), not the other option inside the scene.
+4. `won` is the past tense of `goal`. `lost` is written from the template's own **plain-failure** ending and `lostBadly` from its **critical-failure** ending, so the ledger never tells a different story from the screen. Endings follow one actor's name, so they agree with a singular subject ("was caught", never "were caught"). `lostBadly` is required when `aftermathConfig` authors a distinct `critical_failure` overview.
+5. A fork whose arms end differently (a branch whose arms key their own aftermath variants) authors `arms`: the top level covers one arm, `arms.<variantKey>` gives every other arm its own `won` / `lost` / `lostBadly`.
+6. Plain game register: concrete nouns from the scene, no vagueness-lexicon words. Small errands get small stakes.
 
 ## What the compiler validates before writing (loud, named errors)
 

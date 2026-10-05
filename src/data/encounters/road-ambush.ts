@@ -551,6 +551,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'liminal.quest.road_ambush',
+  stakes: {
+    goal: 'get the caravan through the road ambush',
+    risk: 'see the caravan guards overwhelmed on the road',
+    won: 'broke the ambush with the caravan guards standing',
+    lost: 'saw the caravan guards overwhelmed',
+    arms: {
+      turn_the_chaos: {
+        won: 'stalled the fight and took what the wreck offered',
+        lost: 'saw the pause collapse and the fight turn worse',
+      },
+    },
+  },
   tags: ['#threshold_errand'],
   rarityTier: 2,
   intrinsicTier: 'shaping',
