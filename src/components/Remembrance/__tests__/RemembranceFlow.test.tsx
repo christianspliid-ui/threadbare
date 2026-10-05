@@ -25,26 +25,18 @@ describe('RemembranceFlow', () => {
     expect(images.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('transitions from stirring to origin on double-click (focus then confirm)', async () => {
+  it('transitions from stirring to origin on one click (THR-1716)', async () => {
     const onComplete = vi.fn();
     render(<RemembranceFlow seed={42} onComplete={onComplete} />);
 
-    // First click = focus the image (grid buttons become a full-bleed div)
+    // One click chooses: the chosen picture holds, with "Choose again".
     const gridButton = screen.getAllByTestId(/^stirring-/)[0];
     await act(async () => {
       fireEvent.click(gridButton);
     });
-    expect(screen.getByText(/click again to choose/i)).toBeInTheDocument();
+    expect(screen.getByTestId('remembrance-choose-again')).toBeInTheDocument();
 
-    // Re-query: the focused image is now a different DOM element (full-bleed div)
-    const focusedImage = screen.getAllByTestId(/^stirring-/)[0];
-
-    // Second click = confirm selection. Schedules setTimeout(1200).
-    await act(async () => {
-      fireEvent.click(focusedImage);
-    });
-
-    // Advance past StirringBeat's 1200ms timer to trigger the beat transition.
+    // Advance past the stirring hold to trigger the beat transition.
     await act(async () => {
       vi.advanceTimersByTime(1300);
     });
@@ -56,8 +48,6 @@ describe('RemembranceFlow', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    // After transition to OriginBeat, verify we see OriginBeat content.
-    // OriginBeat renders "You remember..." prompt text (may appear multiple times in fragments).
     const originMatches = screen.queryAllByText(/You remember/);
     const originTestIds = screen.queryAllByTestId(/^origin-/);
     expect(originMatches.length + originTestIds.length).toBeGreaterThan(0);
@@ -67,16 +57,10 @@ describe('RemembranceFlow', () => {
     const onComplete = vi.fn();
     render(<RemembranceFlow seed={42} onComplete={onComplete} />);
 
-    // Focus
+    // One click chooses (THR-1716)
     const gridButton = screen.getAllByTestId(/^stirring-/)[0];
     await act(async () => {
       fireEvent.click(gridButton);
-    });
-
-    // Re-query after focus changes the DOM, then confirm
-    const focusedImage = screen.getAllByTestId(/^stirring-/)[0];
-    await act(async () => {
-      fireEvent.click(focusedImage);
     });
 
     // Advance past StirringBeat 1200ms timer

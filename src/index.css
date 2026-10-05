@@ -770,6 +770,13 @@
   50% { box-shadow: 0 0 12px 4px var(--sphere-color, #d4a040); }
 }
 
+/* THR-1716 — the remembrance's keyboard focus ring (Law 23): arrow keys move it
+   along a picture row, Enter chooses. Inset so full-bleed cells keep it on screen. */
+.remembrance-choice:focus-visible {
+  outline: 2px solid rgba(201, 184, 240, 0.7);
+  outline-offset: -4px;
+}
+
 /* === FE Polish Sprint #1 — Animation Classes === */
 
 /* Mount/unmount animation pairs */

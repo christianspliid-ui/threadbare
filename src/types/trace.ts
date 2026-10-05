@@ -105,6 +105,8 @@ export type TraceCategory =
   | 'player_receipt'
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
+  | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
+  | 'clock.first_run' // THR-1716: the clock ran for the first time this session
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -955,6 +957,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'receipt.target_changes', 'beat.gift_placed',
   // Spine gifts wait for the player (THR-1647)
   'beat.spine_deferred',
+  // The arrival hands the player into the first beat (THR-1716)
+  'beat.arrival_offer',
+  'clock.first_run',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
   // Reach signature: Veil / Rend the Gate (THR-551)
@@ -4789,6 +4794,8 @@ export type TraceEntry =
   | ReceiptTargetChangesTrace
   | BeatGiftPlacedTrace
   | SpineDeferredTrace
+  | BeatArrivalOfferTrace
+  | ClockFirstRunTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
   // Agent residence (THR-822)
@@ -5085,6 +5092,25 @@ export interface SpineDeferredTrace extends TraceBase {
   category: 'beat.spine_deferred';
   beatId: string;
   reason: 'first_not_bonded' | 'min_gap' | 'awaiting_player_act';
+}
+
+/**
+ * Trace: the opening spine beat was offered at arrival, before any tick
+ * (THR-1716). Emitted once by `offerArrivalSpineBeat` from the UI arrival site;
+ * the headless CLI never emits it.
+ */
+export interface BeatArrivalOfferTrace extends TraceBase {
+  category: 'beat.arrival_offer';
+  beatId: string;
+}
+
+/**
+ * Trace: the simulation clock ran for the first time this session (THR-1716) —
+ * the bond's "Let them walk.", the Play control, the Space hotkey, or a debug tick.
+ */
+export interface ClockFirstRunTrace extends TraceBase {
+  category: 'clock.first_run';
+  source: 'bond_release' | 'play_control' | 'hotkey' | 'debug';
 }
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */

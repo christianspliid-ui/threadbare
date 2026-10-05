@@ -21,6 +21,12 @@ import { computeMaxEssence } from '../../../engine/influence';
 import type { ScryState } from '../../../types/scry';
 import { getScryTargetHexes } from '../../../engine/visibility';
 import { runTickBatch } from '../../../engine/debugTickBatch';
+import { offerArrivalSpineBeat } from '../../../engine/ascendantBeat';
+import { emitTrace } from '../../../engine/traceBuffer';
+import type { ClockFirstRunTrace } from '../../../types/trace';
+
+/** What started the clock the first time this session (THR-1716) — `clock.first_run`'s `source`. */
+export type ClockFirstRunSource = ClockFirstRunTrace['source'];
 import type { DebugTickBatchResult } from '../../../engine/debugTickBatch';
 
 interface UseSimulationParams {
@@ -77,7 +83,14 @@ export function useSimulation({
       if (seedFirst) devSeedTheFirst(result.state);
       if (seedTestPackage) devSeedAscendantTestPackage(result.state);
       if (placeAvatarForMeeting) devPlaceAvatarAtSettlement(result.state);
-      return result;
+      // THR-1716 E2: the arrival is a player event, so the opening beat is offered
+      // here — never inside `initializeGameState`, which the CLI and every fixture
+      // share. No-op when The First is already bonded (the pre-bonded dev routes).
+      const arrival = offerArrivalSpineBeat(result.state);
+      if (arrival.ascendantBeats) {
+        return { ...result, state: { ...result.state, ...arrival }, arrivalBeatOffered: true };
+      }
+      return { ...result, arrivalBeatOffered: false };
     },
     [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting]
   );
@@ -87,6 +100,16 @@ export function useSimulation({
   const [riverPaths] = useState<RiverPath[]>(initial.riverPaths);
   const [lakeIds] = useState<Int16Array>(initial.lakeIds);
   const [running, setRunning] = useState(false);
+  /**
+   * THR-1716 U3: true from the first time the clock runs in this session; never
+   * reset (a page reload is a new arrival). Drives the first-run Play prompt.
+   */
+  const [clockEverRan, setClockEverRan] = useState(false);
+  /** Who is about to start the clock — read once, when it first runs. Defaults to the Play control. */
+  const firstRunSourceRef = useRef<ClockFirstRunSource | null>(null);
+  const noteClockRunSource = useCallback((source: ClockFirstRunSource) => {
+    firstRunSourceRef.current = source;
+  }, []);
   const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
 
@@ -132,6 +155,8 @@ export function useSimulation({
     // Auto-pause: leaving the interval armed would let it resume mid-inspection from
     // the state we just advanced, which is exactly the ambiguity the caller is avoiding.
     setRunning(false);
+    // THR-1716: the world has moved, so the first-run prompt has done its job.
+    if (n > 0) setClockEverRan(true);
     const { state, ...result } = runTickBatch(
       gameStateRef.current,
       n,
@@ -151,6 +176,21 @@ export function useSimulation({
       setGameState(startTwilight(gameStateRef.current));
     }
   }, [gameState.phase, harvestResult]);
+
+  // ── First clock run (THR-1716 U3) ──
+  useEffect(() => {
+    if (!running || clockEverRan) return;
+    setClockEverRan(true);
+    const source = firstRunSourceRef.current ?? 'play_control';
+    firstRunSourceRef.current = null;
+    const entry: Omit<ClockFirstRunTrace, 'id' | 'timestamp'> = {
+      tick: gameStateRef.current.tick,
+      category: 'clock.first_run',
+      source,
+      summary: `clock ran for the first time (${source})`,
+    };
+    emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
+  }, [running, clockEverRan]);
 
   // ── Auto-play ──
   useEffect(() => {
@@ -243,6 +283,12 @@ export function useSimulation({
     handleBeginNextCycle,
     handleToggleRunning,
     setRunning,
+    /** THR-1716: true once the clock has run in this session. */
+    clockEverRan,
+    /** THR-1716: the opening beat was offered at arrival, before any tick (E1/E2). */
+    arrivalBeatOffered: initial.arrivalBeatOffered,
+    /** THR-1716: tag who is about to start the clock, for `clock.first_run`. */
+    noteClockRunSource,
     seasonName,
     year,
     maxEssence,

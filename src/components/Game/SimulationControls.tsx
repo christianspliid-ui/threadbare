@@ -1,6 +1,8 @@
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { FIRST_RUN_PROMPT_CAPTION } from '../../data/ui-content';
 
 interface SimulationControlsProps {
   /*
@@ -30,7 +32,18 @@ interface SimulationControlsProps {
    * encounter surface itself. Absent ⇒ the generic held wording.
    */
   heldBy?: string;
+  /**
+   * THR-1716 — the clock has never run and nothing holds it: the Play control
+   * pulses and the status line asks for it, until the first run. A static ring
+   * under `prefers-reduced-motion` (Law 44).
+   */
+  firstRunPrompt?: boolean;
 }
+
+/** THR-1716 — one slow breath of the first-run ring. */
+const FIRST_RUN_PULSE = 'pulseGlow 2.4s ease-in-out infinite';
+/** THR-1716 — the ring drawn without motion (Law 44). */
+const FIRST_RUN_STATIC_RING = '0 0 0 2px var(--accent-gold, #d4a040)';
 
 export const SPEED_STEPS = [1, 2, 3, 5, 10, 20];
 
@@ -40,8 +53,9 @@ const SEASON_ICONS: Record<string, string> = {
 
 export function SimulationControls({
   season, year, running, speed,
-  onToggle, onStep, onSpeedChange, compact, held = false, heldBy,
+  onToggle, onStep, onSpeedChange, compact, held = false, heldBy, firstRunPrompt = false,
 }: SimulationControlsProps) {
+  const reducedMotion = usePrefersReducedMotion();
   function speedDown() {
     const idx = SPEED_STEPS.indexOf(speed);
     const prev = SPEED_STEPS[Math.max(idx - 1, 0)];
@@ -55,24 +69,50 @@ export function SimulationControls({
   }
 
   if (compact) {
+    const prompting = firstRunPrompt && !running && !held;
     const statusText = held
       ? (heldBy ? `paused · ${heldBy}` : running ? 'held · runs on after' : 'held · stays paused')
+      : prompting ? FIRST_RUN_PROMPT_CAPTION
       : running ? `running ×${speed}` : 'paused';
+    const playButton = (
+      <IconButton
+        icon={<span>{running ? '⏸' : '⏵'}</span>}
+        size="sm"
+        active={running}
+        onClick={onToggle}
+        aria-label={running ? 'Pause simulation' : 'Play simulation'}
+      />
+    );
     return (
       <div className="topbar-tier">
         <span className="topbar-section-label">Time</span>
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           {/* THR-1426 (Shape 1): the tooltip named the engine's clock index (Laws 13/14). The
               control it labels is play/pause, so the tooltip says what the control does. */}
-          <Tooltip label={running ? 'Pause' : 'Play'} desc="Hold the world still, or let it run on">
-            <IconButton
-              icon={<span>{running ? '⏸' : '⏵'}</span>}
-              size="sm"
-              active={running}
-              onClick={onToggle}
-              aria-label={running ? 'Pause simulation' : 'Play simulation'}
-            />
-          </Tooltip>
+          {prompting ? (
+            // THR-1716: the first-run ring sits on a wrapper so the button's own
+            // styles stay untouched; it goes for good once the clock first runs.
+            <Tooltip id="ui.sim_first_run">
+              <span
+                data-testid="first-run-prompt"
+                data-motion={reducedMotion ? 'static' : 'pulse'}
+                style={{
+                  display: 'inline-flex',
+                  borderRadius: 'var(--radius-sm, 4px)',
+                  '--sphere-color': 'var(--accent-gold, #d4a040)',
+                  ...(reducedMotion
+                    ? { boxShadow: FIRST_RUN_STATIC_RING }
+                    : { animation: FIRST_RUN_PULSE }),
+                } as React.CSSProperties}
+              >
+                {playButton}
+              </span>
+            </Tooltip>
+          ) : (
+            <Tooltip label={running ? 'Pause' : 'Play'} desc="Hold the world still, or let it run on">
+              {playButton}
+            </Tooltip>
+          )}
           <span
             style={{
               font: 'var(--type-body-small)',
@@ -89,10 +129,11 @@ export function SimulationControls({
         <span
           style={{
             font: 'var(--type-body-small)',
-            color: 'var(--text-tertiary)',
+            color: prompting ? 'var(--text-secondary)' : 'var(--text-tertiary)',
             fontStyle: 'italic',
             whiteSpace: 'nowrap',
           }}
+          {...(prompting ? { 'data-testid': 'first-run-caption' } : {})}
         >
           {statusText}
         </span>

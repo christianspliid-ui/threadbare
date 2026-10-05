@@ -38,6 +38,7 @@ import type {
   BeatSkippedTrace,
   BeatResolvedTrace,
   SpineDeferredTrace,
+  BeatArrivalOfferTrace,
 } from '../types/trace';
 import {
   ASCENDANT_SPINE,
@@ -84,7 +85,8 @@ function emitBeatTrace(
     | Omit<BeatOfferedTrace, 'id' | 'timestamp'>
     | Omit<BeatSkippedTrace, 'id' | 'timestamp'>
     | Omit<BeatResolvedTrace, 'id' | 'timestamp'>
-    | Omit<SpineDeferredTrace, 'id' | 'timestamp'>,
+    | Omit<SpineDeferredTrace, 'id' | 'timestamp'>
+    | Omit<BeatArrivalOfferTrace, 'id' | 'timestamp'>,
 ): void {
   emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
 }
@@ -512,6 +514,49 @@ export function forceOfferBeatById(
     };
   }
   return null;
+}
+
+/**
+ * Offer the opening spine beat at arrival, before any tick (THR-1716).
+ *
+ * Beat 0 ("Reach Down") is authored as due on turn 0, but the Director only runs
+ * inside a tick and the world arrives paused — so the first beat waited behind a
+ * Play button nothing pointed at. The UI arrival site (`useSimulation`'s initial
+ * state) calls this once; `initializeGameState` deliberately does not, so the CLI
+ * and every fixture keep a byte-identical tick-0 state.
+ *
+ * Offers only when all hold: beat state exists, the cursor is at 0, nothing is
+ * pending, the cursor beat's trigger is satisfied now, and The First is not bonded
+ * (pre-bonded dev routes keep today's first-tick offer). Otherwise returns `{}`.
+ * Draws no PRNG — it reuses `forceOfferBeatById`, the Director's spine branch.
+ * Fail-soft: any error is traced and returns `{}`.
+ */
+export function offerArrivalSpineBeat(state: GameState): Partial<GameState> {
+  const beats = state.ascendantBeats;
+  if (!beats) return {};
+  const turn = state.tick;
+  try {
+    if (beats.spineCursor !== 0 || beats.pending !== null) return {};
+    const def = ASCENDANT_SPINE[0];
+    if (!def || !isTriggerSatisfied(def.trigger, state, turn)) return {};
+    if (firstIsBonded(state)) return {};
+    const offered = forceOfferBeatById(beats, def.beatId, turn, state);
+    if (!offered) return {};
+    emitBeatTrace({
+      tick: turn,
+      category: 'beat.arrival_offer',
+      beatId: def.beatId,
+      summary: `opening beat offered at arrival: ${def.beatId}`,
+    });
+    return { ascendantBeats: offered.next };
+  } catch (err) {
+    emitTrace({
+      tick: turn,
+      category: 'engine_warning',
+      summary: `offerArrivalSpineBeat error (turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
+    });
+    return {};
+  }
 }
 
 // ─── Spine pacing (THR-1647 S4) ──────────────────────────────────────────────
