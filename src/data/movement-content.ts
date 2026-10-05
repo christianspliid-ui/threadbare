@@ -351,6 +351,17 @@ export const APPOINTMENT_JOURNEY_PULL = 1.0;
  */
 export const APPOINTMENT_HEX_TICKS_PER_HEX = 3;
 
+/**
+ * THR-1736 — the `departing` filter prices travel the way the slack does. A candidate
+ * is dropped when its own ticks plus the way there and the way on to the place,
+ * priced at the mortal's own road rate (`slack.travelTicks` over the hexes it covers,
+ * see `appointmentTicksPerHex`), would outlast the due tick. For local work that is
+ * exactly `totalTickCost > slack`. `false` restores THR-1479's one-tick-a-hex proxy,
+ * under which a departing mortal started local chains it could not fit and missed.
+ * `leaning` keeps the proxy either way (its discount is a lean, not a drop).
+ */
+export const APPOINTMENT_DEPARTING_PRICED_TRAVEL = true;
+
 /** Ticks after the window closes before the missed sequel is eligible. */
 export const APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS = 12;
 

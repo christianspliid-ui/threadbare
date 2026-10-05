@@ -652,3 +652,36 @@ export function waitingTripOverruns(workTicks: number, hexesAway: number, ticksL
   if (!Number.isFinite(hexesAway)) return true;
   return workTicks + 2 * hexesAway * APPOINTMENT_HEX_TICKS_PER_HEX > ticksLeft;
 }
+
+/**
+ * THR-1736 — the mortal's own road rate to its appointment, in ticks a hex: the priced
+ * path the slack uses (`slack.travelTicks`) over the hexes it covers (`hexesToPlace`,
+ * from where the mortal stands). Falls back to `APPOINTMENT_HEX_TICKS_PER_HEX` when the
+ * ratio means nothing — at the place, or an unreachable / unpriced path.
+ */
+export function appointmentTicksPerHex(travelTicks: number, hexesToPlace: number): number {
+  if (!(hexesToPlace > 0) || !Number.isFinite(travelTicks) || travelTicks <= 0) return APPOINTMENT_HEX_TICKS_PER_HEX;
+  return travelTicks / hexesToPlace;
+}
+
+/**
+ * THR-1736 — would a `departing` mortal outlast its due tick by taking this encounter?
+ * The encounter's own `workTicks`, plus the way there (`hexesThere`) and on to the place
+ * (`hexesOnward`), each hex at `ticksPerHex` (see `appointmentTicksPerHex`). On the
+ * mortal's own hex the onward leg is the slack's own path, so local work overruns
+ * exactly when `workTicks > slack`. An unknown distance always overruns.
+ *
+ * THR-1479's test priced both legs at one tick a hex while the slack used the priced
+ * path; on seed 42 two departing mortals started local chains that passed it and lost
+ * their promise.
+ */
+export function departingTripOverruns(
+  workTicks: number,
+  hexesThere: number,
+  hexesOnward: number,
+  ticksPerHex: number,
+  ticksLeft: number,
+): boolean {
+  if (!Number.isFinite(hexesThere) || !Number.isFinite(hexesOnward)) return true;
+  return workTicks + (hexesThere + hexesOnward) * ticksPerHex > ticksLeft;
+}
