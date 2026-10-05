@@ -13,7 +13,7 @@
  * Plan: `Docs/plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md` § WS2
  */
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { CostPips } from '../../../shared/OddsPips';
@@ -71,6 +71,59 @@ export const CARDS_PER_ROW = 4;
 
 /** Gap between cards, both axes. */
 const CARD_GAP_PX = 12;
+
+/**
+ * THR-1732 — the hand bar (essence left · commit · glyph legend) is pinned to
+ * the bottom of whatever column scrolls the shell, so the commit — Law 48's
+ * fire beat — never sits below the fold when the hand wraps to a second row.
+ * Vertical padding under the commit row.
+ */
+export const HAND_BAR_PAD_Y_PX = 12;
+
+/**
+ * THR-1732 — height of the fade from transparent to the veil void above the
+ * bar's solid base. It is also the bar's top padding, so in flow (hand fits)
+ * the commit sits about where its old `marginTop: 24` put it, and when the
+ * bar is stuck a card sliding under it reads as continuing, not cut.
+ */
+export const HAND_BAR_FADE_PX = 28;
+
+/** The veil's void colour — the solid base the bar's fade resolves to. */
+const VOID = 'var(--veil-void)';
+
+/** Nearest ancestor that scrolls vertically — the column the bar sticks to. */
+function findScrollParent(el: HTMLElement | null): HTMLElement | null {
+  let node = el?.parentElement ?? null;
+  while (node) {
+    const { overflowY } = getComputedStyle(node);
+    if (overflowY === 'auto' || overflowY === 'scroll') return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/**
+ * THR-1732 — whether the scroll column holding the shell overflows. Drives the
+ * bar's `data-hand-overflow` attribute only: presentation state for evidence
+ * and tests, never game state, and the layout does not depend on it (sticky
+ * does the work). No `ResizeObserver` (jsdom, old engines) ⇒ stays false.
+ */
+function useColumnOverflow(ref: RefObject<HTMLElement | null>): boolean {
+  const [overflow, setOverflow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const column = findScrollParent(el);
+    if (!column) return;
+    const measure = () => setOverflow(column.scrollHeight > column.clientHeight + 1);
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    observer.observe(column);
+    measure();
+    return () => observer.disconnect();
+  }, [ref]);
+  return overflow;
+}
 
 export interface NudgePhaseShellProps {
   phase: EncounterStageNudgePhaseModel;
@@ -225,9 +278,11 @@ export function NudgePhaseShell({
   const ownHand = useNudgeHand(externalHand ? undefined : phase);
   const hand = externalHand ?? ownHand;
   const { testPanel } = phase;
+  const shellRef = useRef<HTMLDivElement>(null);
+  const handOverflow = useColumnOverflow(shellRef);
 
   return (
-    <div data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
+    <div ref={shellRef} data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
       {/* ── Motive ──────────────────────────────────────────────
           THR-1727 retired the motive intro line (THR-972) everywhere. Why the
           mortal is here is now the lead clause of the encounter's stakes line,
@@ -291,54 +346,12 @@ export function NudgePhaseShell({
 
       {/* ── The hand ───────────────────────────────────────────── */}
       <div style={{ marginTop: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-          {/* THR-1724 — the "What you can do" heading is gone (Christian,
-              2026-10-04): playable cards light up on hover instead, which says
-              the same thing where the player's hand already is. */}
-          {/* Rounded down: promising essence the player cannot actually spend
-              is worse than under-reporting a fraction of it. */}
-          <Tooltip id="ui.nudge_essence">
-            {/* THR-1706 — the paying sphere's own pool, named, not all twelve
-                pools summed: the summed "600" matched no bar the player could
-                see. Falls back to the pooled total when no sphere pays. */}
-            <span
-              data-testid="nudge-remaining-essence"
-              {...(hand.budget ? { 'data-budget-sphere': hand.budget.sphere } : {})}
-              style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
-            >
-              {hand.budget
-                ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`
-                : `${formatEssencePool(hand.remainingEssence)} essence left`}
-            </span>
-          </Tooltip>
-
-          {/* ── Glyph legend (THR-972 directive 5) ────────────────
-              *"help me understand which is which."* Naming the three vocabularies
-              once, where the hand begins, costs one line and removes the guess.
-              Each entry pairs the glyph with the noun it means, so this is a key
-              *to a symbol set* rather than a `label: value` readout — the pattern
-              the project treats as unfinished UX. Sits at the right of the
-              heading row so it reads as chrome on the hand, not as a card. */}
-          <Tooltip id="ui.nudge_glyphs">
-            <span
-              data-testid="nudge-glyph-legend"
-              style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}
-            >
-              {NUDGE_GLYPH_LEGEND.map((entry) => (
-                <span
-                  key={entry.id}
-                  data-testid={`nudge-legend-${entry.id}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
-                >
-                  <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1 }}>
-                    {entry.glyph}
-                  </span>
-                  {entry.label}
-                </span>
-              ))}
-            </span>
-          </Tooltip>
-        </div>
+        {/* THR-1724 — the "What you can do" heading is gone (Christian,
+            2026-10-04): playable cards light up on hover instead, which says
+            the same thing where the player's hand already is. */}
+        {/* THR-1732 — the essence-left counter and the glyph legend that sat
+            in a row here moved into the hand bar below, beside the commit
+            where the price is paid; the row's height went to the hand. */}
 
         {hand.cards.length === 0 ? (
           <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', color: TEXT_WHISPER, margin: 0 }}>
@@ -396,43 +409,118 @@ export function NudgePhaseShell({
         </div>
       )}
 
-      {/* ── Commit ─────────────────────────────────────────────── */}
-      <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14 }}>
-        <button
-          type="button"
-          className="focus-ring"
-          data-testid="nudge-commit"
-          onClick={() => onCommit(hand.selectedIds, hand.selectedCost)}
-          style={{
-            padding: '10px 22px',
-            borderRadius: 8,
-            border: `1px solid ${GOLD}`,
-            background: 'rgb(var(--veil-gold-rgb) / 0.1)',
-            color: GOLD,
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-base)',
-            letterSpacing: '0.06em',
-            cursor: 'pointer',
-          }}
-        >
-          {/* THR-1714 — the button names the act. With a hand staged it is
-              playing that hand; with none it is silence, which is a choice with
-              odds of its own, not a skip. Changes the instant a card stages (Law 47). */}
-          {hand.selectedIds.length > 0 ? NUDGE_COMMIT_LABEL : NUDGE_COMMIT_LABEL_SILENT}
-        </button>
-        {/* The running price of the selection, in the same pips the cards quote —
-            the player should never have to convert between two cost notations to
-            check what they are about to spend. The remaining-essence counter above
-            stays a numeral: it is a pool balance, not a card face, and a
-            forty-glyph row would be unreadable. */}
-        {hand.selectedCost > 0 && (
-          <span
-            data-testid="nudge-selected-cost"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+      {/* ── The hand bar (THR-1732) ─────────────────────────────
+          Essence left · commit · glyph legend, pinned to the bottom of the
+          column that scrolls the shell (`position: sticky`). Hands deal 4–8
+          cards and wrap at CARDS_PER_ROW, so a second row is ordinary; when it
+          overflows the column, the cards scroll under this bar and the commit
+          — Law 48's fire beat — stays on screen. When the hand fits, the bar
+          simply sits in flow under the cards.
+
+          Sticky needs no `overflow` declaration between this shell and the
+          scrolling column (EncounterVeil's `veil-content-column`, the meeting
+          beats' `overflow-y-auto` column). Keep it that way; if one appears,
+          the bar degrades to today's in-flow commit row, never worse. */}
+      <div
+        data-testid="nudge-hand-bar"
+        data-hand-overflow={handOverflow ? 'true' : 'false'}
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          // Above the cards (their hover lift), inside the veil's content zone (Law 35).
+          zIndex: 2,
+          paddingTop: HAND_BAR_FADE_PX,
+          paddingBottom: HAND_BAR_PAD_Y_PX,
+          background: `linear-gradient(to bottom, transparent 0px, ${VOID} ${HAND_BAR_FADE_PX}px)`,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* Rounded down: promising essence the player cannot actually spend
+              is worse than under-reporting a fraction of it. */}
+          <Tooltip id="ui.nudge_essence">
+            {/* THR-1706 — the paying sphere's own pool, named, not all twelve
+                pools summed: the summed "600" matched no bar the player could
+                see. Falls back to the pooled total when no sphere pays. */}
+            <span
+              data-testid="nudge-remaining-essence"
+              {...(hand.budget ? { 'data-budget-sphere': hand.budget.sphere } : {})}
+              style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+            >
+              {hand.budget
+                ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`
+                : `${formatEssencePool(hand.remainingEssence)} essence left`}
+            </span>
+          </Tooltip>
+
+          <button
+            type="button"
+            className="focus-ring"
+            data-testid="nudge-commit"
+            onClick={() => onCommit(hand.selectedIds, hand.selectedCost)}
+            style={{
+              padding: '10px 22px',
+              borderRadius: 8,
+              border: `1px solid ${GOLD}`,
+              background: 'rgb(var(--veil-gold-rgb) / 0.1)',
+              color: GOLD,
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-base)',
+              letterSpacing: '0.06em',
+              cursor: 'pointer',
+            }}
           >
-            <CostPips cost={hand.selectedCost} size={13} />
-          </span>
-        )}
+            {/* THR-1714 — the button names the act. With a hand staged it is
+                playing that hand; with none it is silence, which is a choice with
+                odds of its own, not a skip. Changes the instant a card stages (Law 47). */}
+            {hand.selectedIds.length > 0 ? NUDGE_COMMIT_LABEL : NUDGE_COMMIT_LABEL_SILENT}
+          </button>
+          {/* The running price of the selection, in the same pips the cards quote —
+              the player should never have to convert between two cost notations to
+              check what they are about to spend. The remaining-essence counter beside it
+              stays a numeral: it is a pool balance, not a card face, and a
+              forty-glyph row would be unreadable. */}
+          {hand.selectedCost > 0 && (
+            <span
+              data-testid="nudge-selected-cost"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+            >
+              <CostPips cost={hand.selectedCost} size={13} />
+            </span>
+          )}
+
+          {/* No cards, no glyphs on screen to explain — the empty hand keeps
+              its commit (let fate decide) and drops the key. */}
+          {hand.cards.length > 0 && (
+            <>
+              {/* ── Glyph legend (THR-972 directive 5) ────────────────
+                  *"help me understand which is which."* Naming the three vocabularies
+                  once, on the bar the hand is played from, costs one line and removes the guess.
+                  Each entry pairs the glyph with the noun it means, so this is a key
+                  *to a symbol set* rather than a `label: value` readout — the pattern
+                  the project treats as unfinished UX. Sits at the right of the
+                  hand bar so it reads as chrome on the hand, not as a card. */}
+              <Tooltip id="ui.nudge_glyphs">
+                <span
+                  data-testid="nudge-glyph-legend"
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}
+                >
+                  {NUDGE_GLYPH_LEGEND.map((entry) => (
+                    <span
+                      key={entry.id}
+                      data-testid={`nudge-legend-${entry.id}`}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+                    >
+                      <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1 }}>
+                        {entry.glyph}
+                      </span>
+                      {entry.label}
+                    </span>
+                  ))}
+                </span>
+              </Tooltip>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
