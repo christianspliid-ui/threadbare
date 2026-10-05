@@ -499,6 +499,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_SILENT_CHAMBER_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.veil.the_silent_chamber',
+  stakes: {
+    goal: 'read the buried manuscript in the sealed chamber',
+    risk: 'come out with only scraps of the forbidden text',
+    won: 'read the buried manuscript and kept what it held',
+    lost: 'read the manuscript but kept only scraps of it',
+    arms: {
+      destroy_the_manuscript_unread: {
+        won: 'burned the buried manuscript unread',
+        lost: 'left the manuscript half-burned on its plinth',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Silent Chamber',

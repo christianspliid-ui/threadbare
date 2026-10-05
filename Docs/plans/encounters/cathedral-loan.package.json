@@ -66,6 +66,13 @@
   ],
   "template": {
     "id": "encounter.town.cathedral_loan",
+    "stakes": {
+      "goal": "save the cathedral's altar plate from the bailiffs",
+      "risk": "watch the plate carted off to be melted",
+      "won": "traded the chapter's tithes for the altar plate",
+      "lost": "saw the plate driven away to be melted",
+      "lostBadly": "lost the plate to the melting pot as the chapter watched"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Cathedral Loan",

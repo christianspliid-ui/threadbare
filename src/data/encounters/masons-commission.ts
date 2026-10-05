@@ -82,6 +82,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.masons_commission',
+  stakes: {
+    goal: 'win the pier commission with a trial footing',
+    risk: 'see their footing break while the whole town watches',
+    won: 'won the pier commission with a footing that held',
+    lost: 'watched their footing settle and lost the work',
+    lostBadly: 'broke their footing into the fill before the town',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Mason\'s Commission',

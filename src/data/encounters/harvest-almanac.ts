@@ -38,6 +38,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.harvest_almanac',
+  stakes: {
+    goal: 'name the right day to start the barley harvest',
+    risk: 'see the storm flatten the barley before the cut',
+    won: 'named a harvest day early enough to beat the storm',
+    lost: 'named the day too late and lost half the barley',
+    lostBadly: 'kept the stars\' day and lost most of the barley',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Calling the Harvest',

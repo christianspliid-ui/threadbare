@@ -81,6 +81,20 @@
   ],
   "template": {
     "id": "encounter.town.ducal_nativity",
+    "stakes": {
+      "goal": "learn what the hard star means for the heir",
+      "risk": "have the town call the star a plague they foresaw",
+      "won": "warned the duke, and healers watch the heir",
+      "lost": "was sent from the hall, the warning unheard",
+      "lostBadly": "had the warning called a curse on the heir",
+      "arms": {
+        "negative": {
+          "won": "kept the hard star quiet and read the bright years",
+          "lost": "had no answer for the first year and set off talk",
+          "lostBadly": "let the hard star slip, and the court heard a curse"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Duke's Nativity",

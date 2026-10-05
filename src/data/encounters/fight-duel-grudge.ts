@@ -67,6 +67,12 @@ function resultVariant(result: FightResult): AftermathVariant {
 
 export const FIGHT_DUEL_GRUDGE: UnifiedActionTemplate = {
   id: FIGHT_DUEL_GRUDGE_ID,
+  stakes: {
+    goal: 'settle an old grudge with blades',
+    risk: 'be cut down by an old enemy in the square',
+    won: 'beat an old enemy in front of the square',
+    lost: 'was beaten by an old enemy in the square',
+  },
   name: 'Old Blood',
   description: '{name} and {target} settle an old grudge with blades.',
   rarityTier: 3,

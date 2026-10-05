@@ -95,6 +95,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.drowned_mans_testimony',
+  stakes: {
+    goal: 'find the drowned trader\'s will through his dream',
+    risk: 'tell the court there never was a will',
+    won: 'read the dream, and the will was under the boat',
+    lost: 'read the estate to the heir, and the will stayed lost',
+    lostBadly: 'told the court there was never a will',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Drowned Man\'s Will',

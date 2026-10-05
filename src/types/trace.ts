@@ -5140,6 +5140,9 @@ export interface EncounterStakesLineTrace extends TraceBase {
   templateId: string;
   leadSource: 'choice' | 'mission' | 'chance' | 'divine' | 'none';
   fallback:
+    /** THR-1728: no stakes — the veil shows the scene's opening prose (never the description). */
+    | 'no_stakes_initiation_used'
+    /** Pre-THR-1728 value; kept so older trace buffers still type-check. */
     | 'no_stakes_description_used'
     | 'no_mission_name'
     | 'no_location'

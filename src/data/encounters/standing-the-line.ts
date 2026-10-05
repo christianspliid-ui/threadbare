@@ -1211,6 +1211,20 @@ const STANDING_THE_LINE_SETTINGS = ['stronghold', 'ruin', 'wayside', 'battlefiel
 
 export const STANDING_THE_LINE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.standing_the_line',
+  stakes: {
+    goal: 'get the pilgrim clear before the four riders come',
+    risk: 'see the riders carry the pilgrim off up the road',
+    won: 'paid the riders through without a blow struck',
+    lost: 'was beaten down when the bargain broke',
+    lostBadly: 'went down and lost the pilgrim to the riders',
+    arms: {
+      negative: {
+        won: 'broke the riders at the narrow place',
+        lost: 'fought the riders to a standstill and a short count',
+        lostBadly: 'went down three steps into the fight',
+      },
+    },
+  },
   rarityTier: 3,
   intrinsicTier: 'background',
   name: 'Standing the Line',

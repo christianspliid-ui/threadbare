@@ -593,6 +593,22 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const WARLORDS_TRIBUTE_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.iron.warlords_tribute',
+  stakes: {
+    goal: 'accept the warlord\'s tribute of coin and blade',
+    risk: 'leave the warlord\'s hall with a debt unsettled',
+    won: 'accepted the tribute and the warlord\'s alliance',
+    lost: 'took the tribute in an exchange that sat badly',
+    arms: {
+      demand_the_oath: {
+        won: 'forced an oath from the warlord before his men',
+        lost: 'saw the warlord refuse the oath before his hall',
+      },
+      withdraw_your_hand: {
+        won: 'took the tribute in a clean, quiet exchange',
+        lost: 'left the exchange feeling like a debt deferred',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'Warlord\'s Tribute',

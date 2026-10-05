@@ -25,6 +25,13 @@
   ],
   "template": {
     "id": "encounter.town.mill_lease_auction",
+    "stakes": {
+      "goal": "win the abbey mill lease for the fellowship",
+      "risk": "lose the mill on a charge they could not prove",
+      "won": "won the abbey mill lease for the fellowship",
+      "lost": "saw the merchant outbid the fellowship for the mill",
+      "lostBadly": "lost the mill on a charge they could not prove"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Mill Lease",

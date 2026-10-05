@@ -87,6 +87,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.levee_breach',
+  stakes: {
+    goal: 'hold the levee until the river falls at dawn',
+    risk: 'see the river take every field below the bank',
+    won: 'held the breach until the river fell',
+    lost: 'lost the far bank and the fields below it',
+    lostBadly: 'saw the breach tear open and take every field',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Levee Breach',

@@ -95,6 +95,20 @@
   ],
   "template": {
     "id": "encounter.town.cathedral_vault",
+    "stakes": {
+      "goal": "see the abbey's new vault take its own weight",
+      "risk": "see the new vault fall into the nave",
+      "won": "struck the frame, and the vault took its weight",
+      "lost": "cracked the vault and wedged the frame back in",
+      "lostBadly": "dropped the new vault into the nave",
+      "arms": {
+        "negative": {
+          "won": "kept the frame sound and the vault whole till spring",
+          "lost": "let a bay of the vault crack from below",
+          "lostBadly": "let the swollen frame split the vault in midwinter"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Vault Before the Rains",

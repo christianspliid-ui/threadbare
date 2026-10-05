@@ -466,6 +466,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_RENOWNED_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.power.the_renowned_duel',
+  stakes: {
+    goal: 'give the young contender a true bout',
+    risk: 'send the contender off unsure what they met',
+    won: 'met the contender fully and disarmed them',
+    lost: 'fought the bout without truly meeting the contender',
+    arms: {
+      decline_with_dignity: {
+        won: 'declined the bout and named the contender\'s flaw',
+        lost: 'declined the bout and left the contender empty-handed',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Renowned Duel',

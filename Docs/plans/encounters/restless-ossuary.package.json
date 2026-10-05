@@ -49,6 +49,13 @@
   ],
   "template": {
     "id": "encounter.town.restless_ossuary",
+    "stakes": {
+      "goal": "lay the restless dead under the cathedral",
+      "risk": "be sent away with the dead still moving",
+      "won": "laid the dead and made a ruling the guilds took",
+      "lost": "left the dead restless and the ruling torn up",
+      "lostBadly": "was sent away with the dead still moving"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Restless Charnel House",

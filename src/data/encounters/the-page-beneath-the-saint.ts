@@ -439,6 +439,20 @@ const TRUTH_SURFACED_ENDINGS: AftermathVariant = {
 
 export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'veil.truth.page_beneath_saint',
+  stakes: {
+    goal: 'seal the forged saint’s page back in the dark',
+    risk: 'be found weeping over the open page',
+    won: 'sealed the saint’s page deeper in the stacks',
+    lost: 'sealed the page but botched the forgeries',
+    lostBadly: 'was found weeping over the open page',
+    arms: {
+      let_the_truth_surface: {
+        won: 'carried the chronicle into the light',
+        lost: 'leaked the truth half-proven and easy to deny',
+        lostBadly: 'was named a heretic as the copies burned',
+      },
+    },
+  },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
   name: 'The Page Beneath the Saint',

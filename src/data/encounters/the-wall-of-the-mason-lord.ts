@@ -373,6 +373,20 @@ const WALL_UNFINISHED_AFTERMATH = {
 
 export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'stone.permanence.mason_lord_wall',
+  stakes: {
+    goal: 'finish the great wall across the pass',
+    risk: 'raise a flawed wall that fails both sides',
+    won: 'finished the wall and sealed the valley safe',
+    lost: 'finished the wall, but flawed',
+    lostBadly: 'drove the wall up on a cracked footing',
+    arms: {
+      let_the_doubt_in: {
+        won: 'walked away and left the pass open',
+        lost: 'stalled with the wall half-built',
+        lostBadly: 'froze on the half-wall all season',
+      },
+    },
+  },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
   name: 'The Wall of the Mason-Lord',

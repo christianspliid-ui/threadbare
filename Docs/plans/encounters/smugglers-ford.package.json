@@ -87,6 +87,20 @@
   ],
   "template": {
     "id": "encounter.town.smugglers_ford",
+    "stakes": {
+      "goal": "get the salt train over the ford unseen",
+      "risk": "be caught on the lead rope by the excise post",
+      "won": "led the salt train over before the fog lifted",
+      "lost": "lost the salt train to the excise mid-river",
+      "lostBadly": "was caught by the excise with the lead rope in hand",
+      "arms": {
+        "positive": {
+          "won": "handed back the rope with a reading that worked",
+          "lost": "handed back the rope and left the salt in the reeds",
+          "lostBadly": "was called faint-hearted in front of the drovers"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "background",
     "name": "The Salt Train at the Ford",

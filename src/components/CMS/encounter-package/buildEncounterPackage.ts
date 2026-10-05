@@ -308,6 +308,8 @@ const CONTRACT_BLOCKS: readonly CompositionBlock[] = [
   'aftermath',
   'systems',
   'images',
+  // THR-1728 — without it a package missing `stakes` read 'not complete, 0 blocks failing'.
+  'stakes',
 ];
 
 /**

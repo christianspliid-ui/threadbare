@@ -645,6 +645,22 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const VEILED_CONSULTATION_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.veil.the_veiled_consultation',
+  stakes: {
+    goal: 'read the sage\'s sealed text in full',
+    risk: 'lose the sage\'s trust over the sealed text',
+    won: 'read the sealed text in full for the sage',
+    lost: 'read the text but left parts of it dark',
+    arms: {
+      withhold_half_as_leverage: {
+        won: 'gave the sage half the reading and kept the rest',
+        lost: 'held back too plainly and lost the sage\'s trust',
+      },
+      refuse_the_reading: {
+        won: 'refused the reading and turned the sage\'s question',
+        lost: 'refused the reading and left the sage feeling dismissed',
+      },
+    },
+  },
   rarityTier: 3,
   intrinsicTier: 'shaping',
   name: 'The Veiled Consultation',

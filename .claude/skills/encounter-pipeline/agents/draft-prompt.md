@@ -67,6 +67,17 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 9. **Outcome Ladder** — critical_success, success, success_at_cost, failure, critical_failure. Each with: what progress was made, what was spent, what new burden or opening exists.
 
+9b. **Stakes Line (required, THR-1728)** — the encounter screen's one opening sentence and the ledger's result line, written from the ladder above:
+   ```
+   goal:      <bare verb phrase after "must">          e.g. cross the rotten toll bridge
+   risk:      <the WORST ending, after "— or">          e.g. go into the river with the pack
+   won:       <past tense of goal>                      e.g. crossed the rotten toll bridge
+   lost:      <the plain-failure ending, past tense>    e.g. turned back to the long ford and lost the day
+   lostBadly: <the critical-failure ending, past tense> e.g. went into the river with the pack
+   arms:      <per fork arm whose ending differs — its own won / lost / lostBadly>
+   ```
+   Lowercase, no final period, no tokens, ≤60 characters each; never the mortal's name, "the traveler", "god", "you" or "your". `risk` is the cost of failing, not the scene's other option. Rules: the format card's § Stakes. The `description` field is designer voice for the Codex — it never reaches the encounter screen, so do not write the player's summary there.
+
 10. **Sample Opening** — Written in **narrator mode per the spec's § Prose doctrine v2** (the authoritative prose contract; where anything in this prompt disagrees with it, the spec wins). Three short paragraphs, ≤80 words total: arrival (real graph names) · situation & complication (events, costs already paid) · the problem (one stake shape). Narrate like a game master reading a module aloud — state facts directly; no interior sensation, no camera work, no atmosphere without a job. A plain, direct account is the target, not a fallback.
 
 11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, compose a hand per the shared spec's step 3: author the 0–2 **specials** only this encounter could offer and **declare the fill** (`deal: { count, tags, exclude }`, spec § 3b) so the god's Repertoire supplies the rest. The *composed* hand lands at 4–8 cards; each authored card names its library type and carries a spell-style face per Doctrine v2 (imperative verb + noun title, 1–2 direct effect sentences — no flavor quote, retired 2026-08-25), and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.

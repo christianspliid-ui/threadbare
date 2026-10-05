@@ -35,6 +35,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.forged_charter_inquest',
+  stakes: {
+    goal: 'find which of the steward\'s clerks forged the charter',
+    risk: 'hand the count\'s lawyers a master\'s mistake',
+    won: 'named the clerk who forged the count\'s charter',
+    lost: 'could not say which clerk forged the charter',
+    lostBadly: 'named the wrong clerk, and the steward proved it',
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Forged Charter',

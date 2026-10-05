@@ -91,6 +91,13 @@ const LOST: EncounterAftermathChange = {
 
 export const RUIN_LEAD_VISIT: UnifiedActionTemplate = {
   id: RUIN_LEAD_VISIT_ID,
+  stakes: {
+    goal: 'find the way down into the ruin',
+    risk: 'bury the way in under a slide of stone',
+    won: 'found the steps down into the ruin',
+    lost: 'found only more stone, and the lead went cold',
+    lostBadly: 'buried the way in under a slide of stone',
+  },
   // Seed-only: the survey's appointment is its only planter (THR-1526).
   drawable: false,
   name: 'Where the Lead Points',

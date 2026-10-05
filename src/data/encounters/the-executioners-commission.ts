@@ -511,6 +511,18 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_EXECUTIONERS_COMMISSION_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.iron.the_executioners_commission',
+  stakes: {
+    goal: 'carry out the magistrate\'s quiet death sentence',
+    risk: 'botch the sentence under the magistrate\'s eye',
+    won: 'carried out the sentence and had the debt erased',
+    lost: 'botched the sentence and left the magistrate wary',
+    arms: {
+      refuse_and_warn_the_condemned: {
+        won: 'warned the condemned in time to run',
+        lost: 'sent a warning that may have come too late',
+      },
+    },
+  },
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Executioner\'s Commission',

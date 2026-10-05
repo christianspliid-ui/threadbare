@@ -75,6 +75,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.keepers_petition',
+  stakes: {
+    goal: 'settle the crown\'s levy between two households',
+    risk: 'send the reeve to court with neither household paying',
+    won: 'settled the levy with both households behind it',
+    lost: 'let the reeve write the figure, with no one behind it',
+    lostBadly: 'sent the reeve to court with neither household paying',
+  },
   tags: ['#crown_errand', '#town_keeper'],
   rarityTier: 2,
   intrinsicTier: 'background',

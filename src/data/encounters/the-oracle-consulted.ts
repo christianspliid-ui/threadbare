@@ -483,6 +483,20 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const THE_ORACLE_CONSULTED_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'reputation.eye.the_oracle_consulted',
+  stakes: {
+    goal: 'read the scholars\' sealed clay tablet aloud',
+    risk: 'send the scholars off with a wrong reading',
+    won: 'read the tablet\'s land-grant aloud in full',
+    lost: 'read most of the tablet but lost the last lines',
+    lostBadly: 'misread the key line and the scholars wrote it down',
+    arms: {
+      give_truth_as_riddle: {
+        won: 'gave the scholars a riddle that led them to the answer',
+        lost: 'gave the scholars a riddle that did not catch',
+        lostBadly: 'set the scholars on the wrong meaning of the tablet',
+      },
+    },
+  },
   rarityTier: 1,
   intrinsicTier: 'shaping',
   name: 'The Oracle Consulted',

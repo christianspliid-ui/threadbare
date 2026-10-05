@@ -38,6 +38,12 @@ const CHARTER_INQUEST_DEFAULTED_DIFFICULTY = 0.45;
 
 export const CHARTER_INQUEST_HEARD: UnifiedActionTemplate = {
   id: CHARTER_INQUEST_HEARD_ID,
+  stakes: {
+    goal: 'hold the charter findings against the lawyers',
+    risk: 'see the bench put off its ruling',
+    won: 'held the charter findings and the charter stood',
+    lost: 'saw the bench put off its ruling',
+  },
   // Seed-only: the forged charter's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Inquest Heard',
@@ -96,6 +102,12 @@ export const CHARTER_INQUEST_HEARD: UnifiedActionTemplate = {
 
 export const CHARTER_INQUEST_DEFAULTED: UnifiedActionTemplate = {
   id: CHARTER_INQUEST_DEFAULTED_ID,
+  stakes: {
+    goal: 'swear to the charter findings before witnesses',
+    risk: 'be shamed at the count\'s table for staying away',
+    won: 'swore to the charter findings before witnesses',
+    lost: 'was shamed at the count\'s table for staying away',
+  },
   // Seed-only: the forged charter's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Inquest Defaulted',

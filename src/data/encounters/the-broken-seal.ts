@@ -460,6 +460,13 @@ const step1CarryItBackUp: ActionStep = {
 
 export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.delve.the_broken_seal',
+  stakes: {
+    goal: 'carry the sealed coffer up past the keepers',
+    risk: 'get hauled out by the ankles with the coffer left below',
+    won: 'carried the sealed coffer up past the keepers',
+    lost: 'came away empty with the keepers holding the stair',
+    lostBadly: 'got hauled out by the ankles with the coffer left below',
+  },
   tags: ['#delve'],
   rarityTier: 2,
   intrinsicTier: 'background',

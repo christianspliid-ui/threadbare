@@ -37,6 +37,12 @@ const LEAD_GONE_COLD = {
 
 export const RUIN_LEAD_COLD: UnifiedActionTemplate = {
   id: RUIN_LEAD_COLD_ID,
+  stakes: {
+    goal: 'keep hold of the ruin\'s lead',
+    risk: 'lose the thread of the ruin entirely',
+    won: 'kept the ruin in mind, should word come again',
+    lost: 'lost the thread of the ruin entirely',
+  },
   // Seed-only: the missed branch of a ruin visit is its only planter (THR-1526).
   drawable: false,
   name: 'The Lead Went Cold',

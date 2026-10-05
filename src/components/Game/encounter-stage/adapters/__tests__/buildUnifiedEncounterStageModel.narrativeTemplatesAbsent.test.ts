@@ -144,7 +144,9 @@ describe('buildUnifiedEncounterStageModel — templates with no narrativeTemplat
       });
 
       expect(model.scene.situationProse.length).toBeGreaterThan(0);
-      expect((model.header.subtitle ?? '').length).toBeGreaterThan(0);
+      // THR-1728: every encounter authors stakes now, so the header slot carries
+      // the stakes line; a template without one would carry the opening prose.
+      expect((model.header.stakesLine?.text ?? model.header.subtitle ?? '').length).toBeGreaterThan(0);
       expect(model.narrative.paragraphs.length).toBeGreaterThan(0);
     }
   });

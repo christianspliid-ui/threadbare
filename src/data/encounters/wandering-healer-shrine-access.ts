@@ -365,6 +365,12 @@ function withEncounterContract(template: UnifiedActionTemplate): UnifiedActionTe
 
 export const WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE: UnifiedActionTemplate = withEncounterContract({
   id: 'healer.quest.wandering_healer_shrine_access',
+  stakes: {
+    goal: 'get through the ward-gate to the moonwort',
+    risk: 'be turned away while the child stays sick',
+    won: 'got through the ward-gate to the moonwort',
+    lost: 'was turned away at the ward-gate',
+  },
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Healer at the Ward-Gate',

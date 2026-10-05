@@ -59,6 +59,12 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.tend_shrine',
+    stakes: {
+      goal: 'set the neglected shrine back in alignment',
+      risk: 'leave the shrine half-mended and tilted',
+      won: 'set the shrine back in alignment',
+      lost: 'left the shrine half-mended and still tilted',
+    },
     tags: ['#temple_errand'],
     name: 'Tend the Shrine',
     rarityTier: 1,
@@ -183,6 +189,12 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.heal_the_sick',
+    stakes: {
+      goal: 'turn the sick back toward health',
+      risk: 'leave the sick only half recovered',
+      won: 'turned the sick back toward health',
+      lost: 'eased the sickness but could not cure it',
+    },
     tags: ['#temple_errand'],
     name: 'Heal the Sick',
     rarityTier: 1,
@@ -310,6 +322,12 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.meditate_on_spheres',
+    stakes: {
+      goal: 'find the resting orbit and name what it shows',
+      risk: 'come back with a muddled reading',
+      won: 'named what the resting orbit showed',
+      lost: 'came back with a muddled reading of two spheres',
+    },
     tags: ['#temple_errand'],
     name: 'Meditate on the Spheres',
     rarityTier: 1,
@@ -440,6 +458,12 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.consecrate_ground',
+    stakes: {
+      goal: 'consecrate the ground for a new shrine',
+      risk: 'leave ground fit only for a lesser shrine',
+      won: 'consecrated the ground for a full shrine',
+      lost: 'left ground fit only for a lesser shrine',
+    },
     tags: ['#temple_errand'],
     name: 'Consecrate the Ground',
     rarityTier: 1,
@@ -582,6 +606,12 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.quest.copy_scriptures',
+    stakes: {
+      goal: 'copy the scriptures in the original\'s hand',
+      risk: 'hand over a copy with a passage out of true',
+      won: 'made a clean copy of the scriptures',
+      lost: 'slipped one passage for a senior scribe to fix',
+    },
     tags: ['#temple_errand'],
     name: 'Copy the Scriptures',
     rarityTier: 1,
@@ -725,6 +755,12 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'ts.senior.sphere_communion',
+    stakes: {
+      goal: 'hold the spheres together through the communion',
+      risk: 'drop four spheres and report a vague reading',
+      won: 'held seven spheres and reported them exactly',
+      lost: 'lost the weight before they could name it',
+    },
     name: 'Sphere Communion',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -893,6 +929,12 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'ts.senior.banish_corruption',
+    stakes: {
+      goal: 'open the sealed sphere and drive out the corruption',
+      risk: 'leave the corruption smaller but still rooted',
+      won: 'opened the sealed sphere and dissolved the corruption',
+      lost: 'only shrank the corruption, leaving its roots',
+    },
     name: 'Banish the Corruption',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1051,6 +1093,12 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'ts.senior.craft_relic',
+    stakes: {
+      goal: 'craft a relic weighted to one sphere',
+      risk: 'make a lopsided relic the Temple must mark',
+      won: 'crafted a relic weighted true to one sphere',
+      lost: 'made a lopsided relic, two spheres too heavy',
+    },
     name: 'Craft a Sphere Relic',
     rarityTier: 1,
     intrinsicTier: 'shaping',
@@ -1201,6 +1249,12 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'ts.elite.sphere_convergence',
+    stakes: {
+      goal: 'hold all nine stations through the convergence',
+      risk: 'see two stations drop and the turning fall short',
+      won: 'held all nine stations through the convergence',
+      lost: 'recorded a half-faded turning, too late to be whole',
+    },
     name: 'Sphere Convergence',
     rarityTier: 1,
     intrinsicTier: 'story_beat',
@@ -1384,6 +1438,12 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'ts.elite.found_cathedral',
+    stakes: {
+      goal: 'found the cathedral on quiet ground',
+      risk: 'found it with a flaw in the founding record',
+      won: 'founded the cathedral with a clean record',
+      lost: 'opened the cathedral with a slip in the record',
+    },
     name: 'Found a Cathedral',
     rarityTier: 1,
     intrinsicTier: 'story_beat',
@@ -1560,6 +1620,12 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.social.evening_prayer',
+    stakes: {
+      goal: 'hold all nine through the evening count',
+      risk: 'lose the count at six',
+      won: 'held all nine through the evening count',
+      lost: 'lost the count at six',
+    },
     name: 'Evening Prayer',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1668,6 +1734,12 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.social.alms_giving',
+    stakes: {
+      goal: 'give alms that truly help the one receiving',
+      risk: 'hand over coin that changes nothing',
+      won: 'gave alms that shifted the receiver\'s lot',
+      lost: 'handed over coin that changed nothing',
+    },
     name: 'Alms Giving',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1779,6 +1851,12 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'ts.social.theological_debate',
+    stakes: {
+      goal: 'argue the debate from an honest footing',
+      risk: 'be told their stance is lopsided',
+      won: 'argued well and moved the room toward the open',
+      lost: 'leaned too hard on one sphere and were corrected',
+    },
     name: 'Theological Debate',
     rarityTier: 1,
     intrinsicTier: 'background',
@@ -1924,6 +2002,12 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const TS_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'ts.join',
+  stakes: {
+    goal: 'pass the Temple of Spheres entry rite',
+    risk: 'be sent away until their reading is honest',
+    won: 'passed the entry rite and joined the Temple',
+    lost: 'joined with one sphere marked as resisted',
+  },
   name: 'Join the Temple of Spheres',
   rarityTier: 1,
   intrinsicTier: 'story_beat',
@@ -2062,6 +2146,12 @@ export const TS_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const TS_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'ts.promotion',
+  stakes: {
+    goal: 'earn the next rank in the Temple of Spheres',
+    risk: 'be sent back to even out a heavy sphere',
+    won: 'earned the next rank in the Temple',
+    lost: 'took the rank and found it heavier than expected',
+  },
   name: 'Promotion in the Temple of Spheres',
   rarityTier: 1,
   intrinsicTier: 'story_beat',
