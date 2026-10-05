@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-05 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-05 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-05: Tend to Wounds and Old Blood now tell one ending per result** ([THR-1741](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to)). Merged via [#2240](https://github.com/christianspliid-ui/threadbare/pull/2240) at 07:59.
 - **2026-10-05: the world now arrives with its first beat already open** ([THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says)). Its veto window closed at 08:45 with no veto; merged via [#2238](https://github.com/christianspliid-ui/threadbare/pull/2238) and live.
 - **2026-10-05: every encounter now has a stakes line, and the veil never shows the designer's description** ([THR-1728](https://linear.app/threadbare/issue/THR-1728/author-stakes-for-every-encounter-template-and-make-the-stakes-line)). Merged via [#2234](https://github.com/christianspliid-ui/threadbare/pull/2234) at 07:59; the raw `{cast:drover}` text fix ([THR-1738](https://linear.app/threadbare/issue/THR-1738/the-encounter-test-panel-shows-castdrover-literally-carryover-factor)) followed via [#2236](https://github.com/christianspliid-ui/threadbare/pull/2236) at 08:35.
 - **2026-10-05: master-level everyday work is in town** ([THR-1688](https://linear.app/threadbare/issue/THR-1688/content-above-novice-s7b-master-everyday-encounters-1-per-reach-once)): eight master encounters, one per Reach. Merged via [#2232](https://github.com/christianspliid-ui/threadbare/pull/2232) at 06:40 and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-04: show the roll is live** ([THR-1714](https://linear.app/threadbare/issue/THR-1714/dilemmas-hide-the-roll-the-players-whisper-is-a-weight-not-a-choice)): the bonding scenes now say what the hand did. Merged via [#2229](https://github.com/christianspliid-ui/threadbare/pull/2229) and live.
 - **2026-10-04: nine god cards that never appeared now reach the card drawer** ([THR-1734](https://linear.app/threadbare/issue/THR-1734/nine-divine-cards-target-agent-a-node-type-no-target-context-carries)): Bestow Power, Rekindle and seven others. Merged via [#2225](https://github.com/christianspliid-ui/threadbare/pull/2225) and live.
 - **2026-10-04: the two-month-old process tidy-up is done** ([THR-984](https://linear.app/threadbare/issue/THR-984/process-tidy-bundle-bare-lintplan-doc-lints-staged-files-companies)). Merged via [#2226](https://github.com/christianspliid-ui/threadbare/pull/2226).
-- **2026-10-04: The First now asks** ([THR-1715](https://linear.app/threadbare/issue/THR-1715/after-the-bond-the-game-lives-the-firsts-life-without-the-player-her)). Her story chapters wait for you and her chores stay out of the Ledger. Merged via [#2224](https://github.com/christianspliid-ui/threadbare/pull/2224) at 16:53 and live; the next cold playtest round judges it.
 
 ---
 

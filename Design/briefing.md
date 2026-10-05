@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 09:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 10:55 local (08:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,17 +23,16 @@ Say "veto found it", "veto readable hovers", "veto hand bar" or "veto set-down w
 
 ## Queue
 
-**4 jobs ready** (healthy), **4 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
+**4 jobs ready** (healthy), **2 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
 
 - [Encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) is finished as [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) and queued to merge, but has a conflict with main (see Health).
-- [Two encounters tell different endings in different places](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to) is finished as [#2240](https://github.com/christianspliid-ui/threadbare/pull/2240) and queued to merge, no conflict.
-- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) ([#2235](https://github.com/christianspliid-ui/threadbare/pull/2235)) and [measuring why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) ([#2233](https://github.com/christianspliid-ui/threadbare/pull/2233)) are finished but still stuck on conflicts.
+- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) is finished as [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235), also stuck on a conflict.
 
-Shipped since the last brief: [the world arrives with its first beat already open](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says) ([#2238](https://github.com/christianspliid-ui/threadbare/pull/2238)), now live.
+Shipped since the last brief: [two encounters now tell one ending per result](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to) ([#2240](https://github.com/christianspliid-ui/threadbare/pull/2240)), and the [measurement of why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) ([#2233](https://github.com/christianspliid-ui/threadbare/pull/2233)): its answer is *choice, not availability*, and it opened a design request.
 
 ## Health
 
-- **Three finished pull requests have a merge conflict: [#2233](https://github.com/christianspliid-ui/threadbare/pull/2233) (~3 hours), [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) (~2 hours) and [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~20 min).** GitHub won't run their checks until the conflict clears. Clearing it is the builder's unstick duty, not yours; #2233 has now outlasted two builder runs.
-- **The heavy simulation tests have failed on the last four main merges** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37278629747)); the last pass was 02:37 UTC. A builder owes the follow-up.
-- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 311 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (103 ms per tick, 5% below its weekly median of 108). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 09:45.
+- **Two finished pull requests have a merge conflict: [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) (~2¾ hours) and [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~1 hour).** GitHub won't start their checks until the conflict clears. Clearing it is the builder's unstick duty, not yours.
+- **The heavy simulation tests have failed on the last three main merges** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37280891532)); red for ~17 hours by the workflow check. A builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (473 worktrees, 312 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (106 ms per tick, 2% below its weekly median of 108). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 10:40.
