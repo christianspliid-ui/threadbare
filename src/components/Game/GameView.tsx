@@ -3407,7 +3407,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       // set-down writes a hold that Phase 1 honours. Auto-mode and legacy
       // notifications keep today's behaviour (no hold; they play out).
       const notification = tieredEncounterState.notification;
-      const holdsStep = notification.sourceSystem === 'unified_action'
+      // Read the live record, not the veil's snapshot: an authored-choice commit
+      // resolves the notification but leaves the veil open, and a set-down after
+      // that must not hold a step the player already decided (it would have no
+      // badge to come back through).
+      const stillPending = (gameState.encounterNotifications ?? [])
+        .some(n => n.id === minimisedId && !n.resolved);
+      const holdsStep = stillPending
+        && notification.sourceSystem === 'unified_action'
         && (notification.kind ?? 'encounter') === 'encounter'
         && notification.autoResolveTick === null;
       const holdTarget = holdsStep
@@ -3434,7 +3441,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
-  }, [closeEncounterModalAndResume, gameState.tick, gameState.unifiedActions, setGameState, tieredEncounterState]);
+  }, [closeEncounterModalAndResume, gameState.encounterNotifications, gameState.tick, gameState.unifiedActions, setGameState, tieredEncounterState]);
 
   const handleEncounterAcknowledgeAftermath = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {
