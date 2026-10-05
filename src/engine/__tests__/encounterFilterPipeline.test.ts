@@ -19,6 +19,9 @@ import {
 import {
   MAX_COMPLETIONS_PER_TEMPLATE,
   CAP_FILL_ROTATE,
+  CAP_FILL_DISTINCT_FIRST,
+  CAP_FILL_LOCAL_SLOTS,
+  CAP_FILL_LOCAL_ORDER,
   ANOMALY_SITE_CAP_RESERVE,
   ANOMALY_SITE_MAX_HEX_DISTANCE,
   ANOMALY_SITE_TEMPLATE_PREFIX,
@@ -606,6 +609,126 @@ describe('capWithDiversity', () => {
     const without = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 0 }, 'home');
     expect(withPass.map(e => e.templateId)).toEqual(without.map(e => e.templateId));
   });
+
+  // ── Own-hex pass by template hash (THR-1687) ──────────────────
+  //
+  // The walk entered the mortal's block at its head, so the local slots went to the
+  // templates registered first and the newest (the harder bands) were never scored:
+  // third-quarter own-hex templates reached scoring ~1% of the time against ~60% for
+  // the first quarter. These pin the hashed order with the switch passed explicitly.
+  const HASHED = { ...FAIR, localSlots: 30, localOrder: 'template_hash' } as const;
+  const crowdedHome = (): EncounterCacheEntry[] => [
+    ...Array.from({ length: 300 }, (_, i) =>
+      makeEntry({ templateId: `far-${i}`, locationId: 'far', encounterType: 'explore' })),
+    ...Array.from({ length: 90 }, (_, i) =>
+      makeEntry({ templateId: `home-${String(i).padStart(2, '0')}`, locationId: i % 2 ? 'home-inn' : 'home', encounterType: 'explore' })),
+  ];
+
+  it('the shipped fill uses CAP_FILL_LOCAL_ORDER, whichever order it names', () => {
+    expect(['walk', 'template_hash']).toContain(CAP_FILL_LOCAL_ORDER);
+    const graph = hexGraph();
+    const shipped = capWithDiversity(crowdedHome(), 'agent-1', graph, 9, undefined, 'home');
+    const explicit = capWithDiversity(crowdedHome(), 'agent-1', graph, 9,
+      { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: CAP_FILL_LOCAL_ORDER }, 'home');
+    expect(shipped.map(e => `${e.templateId}@${e.locationId}`)).toEqual(explicit.map(e => `${e.templateId}@${e.locationId}`));
+  });
+
+  it("'walk' (or no localOrder, or an unknown value) reproduces the THR-1633 pass exactly", () => {
+    const graph = hexGraph();
+    for (let tick = 1; tick <= 10; tick++) {
+      const absent = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30 }, 'home');
+      const walk = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, { ...FAIR, localSlots: 30, localOrder: 'walk' }, 'home');
+      const unknown = capWithDiversity(crowdedHome(), 'agent-1', graph, tick,
+        { ...FAIR, localSlots: 30, localOrder: 'bogus' as unknown as 'walk' }, 'home');
+      const key = (r: EncounterCacheEntry[]) => r.map(e => `${e.templateId}@${e.locationId}`);
+      expect(key(walk)).toEqual(key(absent));
+      expect(key(unknown)).toEqual(key(absent));
+    }
+  });
+
+  it('under the walk, the templates registered last on a crowded hex rarely get a slot', () => {
+    // The mechanism the hash removes, pinned so a reader can see it. A walk that starts
+    // outside the mortal's block enters it at its head, so the local slots go to the
+    // first-registered templates; only the rare start that lands inside the block's tail
+    // reaches the last ones. Counted over several agents, because one agent's starts
+    // cluster wherever its hash puts them (agent-1 never starts in the tail at all).
+    const graph = hexGraph();
+    const quarter = (templateId: string): number => Math.floor(Number(templateId.slice('home-'.length)) / 23);
+    const offers = [0, 0, 0, 0];
+    for (const agent of ['agent-1', 'agent-2', 'agent-x', 'a1']) {
+      for (let tick = 1; tick <= 200; tick++) {
+        for (const e of capWithDiversity(crowdedHome(), agent, graph, tick, { ...FAIR, localSlots: 30 }, 'home')) {
+          if (e.templateId.startsWith('home-')) offers[quarter(e.templateId)]++;
+        }
+      }
+    }
+    expect(offers[3] * 4, `offers by registration quarter: ${offers.join(' · ')}`).toBeLessThan(offers[0]);
+  });
+
+  it('offers every own-hex template at least once across 200 ticks, the last-registered included', () => {
+    const graph = hexGraph();
+    const offered = new Set<string>();
+    for (let tick = 1; tick <= 200; tick++) {
+      const result = capWithDiversity(crowdedHome(), 'agent-1', graph, tick, HASHED, 'home');
+      expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+      // Own hex first, bounded at localSlots (no reserve takes a slot here).
+      expect(result.filter(e => e.templateId.startsWith('home-')).length).toBeGreaterThanOrEqual(30);
+      for (const e of result) offered.add(e.templateId);
+    }
+    for (let i = 0; i < 90; i++) expect(offered.has(`home-${String(i).padStart(2, '0')}`)).toBe(true);
+  });
+
+  it('picks the same local templates whatever order they were registered in', () => {
+    const graph = hexGraph();
+    const forward = crowdedHome();
+    const reversed = [...forward.slice(0, 300), ...forward.slice(300).reverse()];
+    for (let tick = 1; tick <= 10; tick++) {
+      const local = (r: EncounterCacheEntry[]) =>
+        r.filter(e => e.templateId.startsWith('home-')).map(e => e.templateId).sort();
+      // Every free slot goes to the local pass (90 home templates > free slots), so the
+      // general fill takes nothing and the hash alone decides which home templates appear.
+      const a = capWithDiversity(forward, 'agent-1', graph, tick, { ...HASHED, localSlots: MAX_SCORED_CANDIDATES }, 'home');
+      const b = capWithDiversity(reversed, 'agent-1', graph, tick, { ...HASHED, localSlots: MAX_SCORED_CANDIDATES }, 'home');
+      expect(local(a).length).toBeGreaterThan(0);
+      expect(local(a)).toEqual(local(b));
+    }
+  });
+
+  it('keeps the THR-1633 intent under the hash: all of a small hex, bounded, skipped without a location', () => {
+    const graph = hexGraph();
+    for (let tick = 1; tick <= 20; tick++) {
+      const all = capWithDiversity(farAndLocal(), 'agent-1', graph, tick, HASHED, 'home');
+      expect(all.filter(e => e.templateId.startsWith('home-'))).toHaveLength(8);
+    }
+    const bounded = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...HASHED, localSlots: 3 }, 'home');
+    expect(bounded.filter(e => e.templateId.startsWith('home-')).length).toBeGreaterThanOrEqual(3);
+    expect(bounded.filter(e => e.templateId.startsWith('home-')).length).toBeLessThan(8);
+    const nowhere = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, HASHED, 'nowhere');
+    const none = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 0 }, 'home');
+    expect(nowhere.map(e => e.templateId)).toEqual(none.map(e => e.templateId));
+  });
+
+  it('reports the own-hex order only when the local pass ran (the trace reads this)', () => {
+    const graph = hexGraph();
+    for (const localOrder of ['walk', 'template_hash'] as const) {
+      const ran: { localOrder?: 'walk' | 'template_hash' } = {};
+      capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30, localOrder }, 'home', ran);
+      expect(ran.localOrder).toBe(localOrder);
+      // The cap ran, but the location resolves to no hex, so no own-hex pass did.
+      const skipped: { localOrder?: 'walk' | 'template_hash' } = {};
+      const r = capWithDiversity(farAndLocal(), 'agent-1', graph, 4, { ...FAIR, localSlots: 30, localOrder }, 'nowhere', skipped);
+      expect(r).toHaveLength(MAX_SCORED_CANDIDATES);
+      expect(skipped.localOrder).toBeUndefined();
+    }
+  });
+
+  it('is deterministic per (agent, tick) and changes with the tick', () => {
+    const graph = hexGraph();
+    const local = (tick: number) => capWithDiversity(crowdedHome(), 'agent-1', graph, tick, HASHED, 'home')
+      .filter(e => e.templateId.startsWith('home-')).map(e => e.templateId);
+    expect(local(33)).toEqual(local(33));
+    expect(local(34)).not.toEqual(local(33));
+  });
 });
 
 // ─── Full Pipeline ──────────────────────────────────────────────
@@ -690,6 +813,26 @@ describe('runFilterPipeline', () => {
     const trace = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 3).trace;
     // Every entry is its own template, so the templates cut equal the entries cut.
     expect(trace.capCutTemplates).toBe(Math.max(0, trace.afterThreat - trace.afterCap));
+  });
+
+  it('names the own-hex order on the trace when the cap ran, and honours an explicit capFill (THR-1687)', () => {
+    const graph = buildAgentGraph('agent-1', { iron: 10 });
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
+    const many = Array.from({ length: 60 }, (_, i) =>
+      makeEntry({ templateId: `t-${i}`, threatRating: 'moderate', reachPrimary: 'iron' as ReachDomain }));
+    const shipped = runFilterPipeline(many, 'agent-1', 'loc-agent', graph, 3).trace;
+    expect(shipped.afterThreat).toBeGreaterThan(MAX_SCORED_CANDIDATES);
+    {
+      expect(shipped.capLocalOrder).toBe(CAP_FILL_LOCAL_ORDER);
+      for (const localOrder of ['walk', 'template_hash'] as const) {
+        const t = runFilterPipeline(many, 'agent-1', 'loc-agent', graph, 3, undefined, undefined, undefined, undefined,
+          { distinctFirst: true, rotate: true, localSlots: 30, localOrder }).trace;
+        expect(t.capLocalOrder).toBe(localOrder);
+      }
+    }
+    const few = runFilterPipeline(many.slice(0, 5), 'agent-1', 'loc-agent', graph, 3).trace;
+    expect(few.capLocalOrder).toBeUndefined();
   });
 
   it('stage 1 calls awareness + faction filters', () => {

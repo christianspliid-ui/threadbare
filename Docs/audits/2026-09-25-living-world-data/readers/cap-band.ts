@@ -3,8 +3,10 @@
 // cache entries exactly as phaseAgentDecision does, then run `runFilterPipeline` twice on the
 // same state:
 //   walk — the shipped local pass (rotated walk over the list, enters each location block at its head)
-//   hash — the prototype (proto/thr-1687 branch only): own-hex entries ordered by
-//          hash(agent:tick:templateId), first 30 distinct templates
+//   hash — the shipped THR-1687 pass (CAP_FILL_LOCAL_ORDER 'template_hash'): own-hex templates
+//          ordered by a mixed hash(agent:tick:templateId), first 30 distinct templates
+// The arms are passed to runFilterPipeline as `capFill` (THR-1687 executor; the plan-time
+// prototype switched on a globalThis toggle that main never read).
 // Survival = an own-hex template in the input that reaches the candidates, bucketed by the
 // template's window-fit band ← the decider's band on the template's reach (THR-1627 D2 helpers).
 // Also: distinct templates on the decider's own hex, and survival by registration-order quartile.
@@ -18,7 +20,7 @@ import { runFilterPipeline } from '../../../../src/engine/encounterFilterPipelin
 import { getAgentLocationId } from '../../../../src/engine/graphQueries';
 import { resolveLocationToHex } from '../../../../src/engine/encounterAwareness';
 import { hexDistance } from '../../../../src/lib/hexMath';
-import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../../../../src/data/agent-behavior-constants';
+import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS, CAP_FILL_DISTINCT_FIRST, CAP_FILL_ROTATE, CAP_FILL_LOCAL_SLOTS } from '../../../../src/data/agent-behavior-constants';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../../../src/data/unified-action-templates';
 import { computeCapability } from '../../../../src/engine/domainCapability';
 import { proficiencyBandFor, windowFitBandFor, demandedDifficultyOf } from '../../../../src/engine/kpi/engagementKpi';
@@ -28,8 +30,11 @@ const TICKS = Number(process.argv[3] ?? 120);
 const EVERY = Number(process.argv[4] ?? 10);
 const RANGE = MAX_AWARENESS_HOPS + EDGE_HEX_AWARENESS_BONUS + 1;
 const { cols, rows } = MAP_SIZE_PRESETS.medium;
-const G = globalThis as Record<string, unknown>;
 const ARMS = ['walk', 'hash'] as const;
+const FILL = {
+  walk: { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: 'walk' as const },
+  hash: { distinctFirst: CAP_FILL_DISTINCT_FIRST, rotate: CAP_FILL_ROTATE, localSlots: CAP_FILL_LOCAL_SLOTS, localOrder: 'template_hash' as const },
+};
 
 const regIndex = new Map<string, number>();
 (UNIFIED_ACTION_TEMPLATES as Array<{ id: string }>).forEach((t, i) => regIndex.set(t.id, i));
@@ -49,7 +54,6 @@ const contentBand = (id: string): string => {
 const out: Record<string, unknown> = {};
 for (const seed of seeds) {
   resetEventCounter(); resetReputationTraitInit(); resetDecisionCache();
-  G.__CAP_LOCAL_ORDER = 'walk';
   const runtime = createSimulationRuntime();
   const cosmology = deriveCosmologyFromIdentity({ sphereAlignment: DEV_ASCENDANT_IDENTITY.sphereAlignment, mortalTags: DEV_ASCENDANT_IDENTITY.mortalTags, hungerId: DEV_ASCENDANT_IDENTITY.hungerId });
   let { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, cosmology, 'medium') as any;
@@ -61,7 +65,6 @@ for (const seed of seeds) {
   const localDistinct: number[] = [];
   let boards = 0;
   for (let i = 1; i <= TICKS; i++) {
-    G.__CAP_LOCAL_ORDER = 'walk';
     state = runTick(state, [], runtime);
     if (i % EVERY !== 0) continue;
     const cache = (runtime as any).encounterCache;
@@ -80,9 +83,8 @@ for (const seed of seeds) {
       if (!localIds.size) continue;
       boards++; localDistinct.push(localIds.size);
       for (const arm of ARMS) {
-        G.__CAP_LOCAL_ORDER = arm;
         const t0 = performance.now();
-        const r = runFilterPipeline(nearby, n.id, loc, state.graph, state.tick, cols, rows);
+        const r = runFilterPipeline(nearby, n.id, loc, state.graph, state.tick, cols, rows, undefined, undefined, FILL[arm]);
         pipelineMs[arm] += performance.now() - t0;
         const kept = new Set((r.candidates as any[]).map(c => c.templateId));
         for (const id of localIds) {
@@ -94,7 +96,6 @@ for (const seed of seeds) {
           if (ri !== undefined) { const q = quart[arm][Math.min(3, Math.floor(4 * ri / regN))]; q[0]++; if (kept.has(id)) q[1]++; }
         }
       }
-      G.__CAP_LOCAL_ORDER = 'walk';
       if (process.env.FILTER_ONLY) {
         // Cap-free pass: each local template alone (<= 40 entries never reaches the cap), so
         // survival here is the earlier stages only (awareness, visibility, prerequisites).
