@@ -58,7 +58,7 @@
       "risk": "be found beside the anvil and called the coiner",
       "won": "took the coiner's dies and kept the mint open",
       "lost": "let the coiner flee, and the mint was shut",
-      "lostBadly": "were found beside the anvil and called the coiner"
+      "lostBadly": "was found beside the anvil and called the coiner"
     },
     "rarityTier": 2,
     "intrinsicTier": "shaping",

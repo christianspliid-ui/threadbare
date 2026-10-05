@@ -99,13 +99,13 @@
       "goal": "stand down the champion's corner at the ring",
       "risk": "be beaten in the first exchange and jeered out",
       "won": "beat the ring champion and took the purse",
-      "lost": "were put down, and the purse stayed with the champion",
-      "lostBadly": "were put down in the first exchange and jeered out",
+      "lost": "was put down, and the purse stayed with the champion",
+      "lostBadly": "was put down in the first exchange and jeered out",
       "arms": {
         "negative": {
           "won": "walked out through the jeers without turning",
           "lost": "turned on the corner and were pulled apart",
-          "lostBadly": "were named a coward and lost the scuffle besides"
+          "lostBadly": "was named a coward and lost the scuffle besides"
         }
       }
     },

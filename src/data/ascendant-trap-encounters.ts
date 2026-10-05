@@ -33,7 +33,7 @@ export const TRAP_SPRUNG_TEMPLATE: UnifiedActionTemplate = {
     goal: 'tear free of the snare before it closes',
     risk: 'be held fast in the snare',
     won: 'tore free of the snare and kept moving',
-    lost: 'were caught and held fast in the snare',
+    lost: 'was caught and held fast in the snare',
   },
   name: 'The Snare Springs',
   rarityTier: 2,

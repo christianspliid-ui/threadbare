@@ -109,7 +109,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       negative: {
         won: 'left with a full third in good coin',
         lost: 'left with the master\'s note instead of coin',
-        lostBadly: 'were seen taking a dead house\'s note for coin',
+        lostBadly: 'was seen taking a dead house\'s note for coin',
       },
     },
   },

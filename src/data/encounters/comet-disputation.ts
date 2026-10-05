@@ -105,12 +105,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     risk: 'be jeered from the square and the fair called off',
     won: 'won the council with the champion\'s own chart',
     lost: 'lost the council, and the fair was called off',
-    lostBadly: 'were jeered for a forged chart, and the gates shut',
+    lostBadly: 'was jeered for a forged chart, and the gates shut',
     arms: {
       negative: {
         won: 'won the council and kept the champion\'s chart quiet',
         lost: 'lost to the doctrine, and the fair was called off',
-        lostBadly: 'were cut off by the council, and the gates shut',
+        lostBadly: 'was cut off by the council, and the gates shut',
       },
     },
   },

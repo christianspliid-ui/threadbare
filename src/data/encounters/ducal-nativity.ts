@@ -93,7 +93,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     goal: 'learn what the hard star means for the heir',
     risk: 'have the town call the star a plague they foresaw',
     won: 'warned the duke, and healers watch the heir',
-    lost: 'were sent from the hall, the warning unheard',
+    lost: 'was sent from the hall, the warning unheard',
     lostBadly: 'had the warning called a curse on the heir',
     arms: {
       negative: {

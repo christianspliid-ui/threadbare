@@ -76,7 +76,7 @@ Authoring rules (enforced by the Composition Contract's `stakes` block, `content
 1. Every part is a **bare verb phrase**: lowercase first letter, no final period, no `{tokens}`, ≤ 60 characters.
 2. Never the mortal's name, never "the traveler", never "god", "you" or "your" — the god is not the subject of the mortal's stakes.
 3. `risk` is **the worst ending the encounter can reach** (the cost of failing), not the other option inside the scene.
-4. `won` is the past tense of `goal`. `lost` is written from the template's own **plain-failure** ending and `lostBadly` from its **critical-failure** ending, so the ledger never tells a different story from the screen. `lostBadly` is required when `aftermathConfig` authors a distinct `critical_failure` overview.
+4. `won` is the past tense of `goal`. `lost` is written from the template's own **plain-failure** ending and `lostBadly` from its **critical-failure** ending, so the ledger never tells a different story from the screen. Endings follow one actor's name, so they agree with a singular subject ("was caught", never "were caught"). `lostBadly` is required when `aftermathConfig` authors a distinct `critical_failure` overview.
 5. A fork whose arms end differently (a branch whose arms key their own aftermath variants) authors `arms`: the top level covers one arm, `arms.<variantKey>` gives every other arm its own `won` / `lost` / `lostBadly`.
 6. Plain game register: concrete nouns from the scene, no vagueness-lexicon words. Small errands get small stakes.
 

@@ -1734,7 +1734,7 @@ export const LK_JOIN_TEMPLATE: UnifiedActionTemplate = {
     goal: 'get their record accepted into the Covenant annal',
     risk: 'be sent off to fill a hundred practice pages',
     won: 'joined the Covenant with their record in the annal',
-    lost: 'were sent off to fill a hundred practice pages',
+    lost: 'was sent off to fill a hundred practice pages',
   },
   name: 'Join the Lorekeepers Covenant',
   rarityTier: 1,

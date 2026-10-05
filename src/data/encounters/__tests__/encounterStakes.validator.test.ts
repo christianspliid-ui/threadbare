@@ -110,6 +110,9 @@ describe('THR-1727 · encounter stakes validator (required mode, THR-1728)', () 
     expect(problems.join('\n')).toMatch(/risk uses forbidden word "traveler"/);
     expect(problems.join('\n')).toMatch(/lost is \d+ chars/);
     expect(problems.join('\n')).toMatch(/lostBadly missing/);
+    // An ending follows a single actor's name: "Kael were spotted" is caught.
+    expect(stakesProblems(bridge, { ...bridge.stakes!, lost: 'were spotted at the toll' }).join('\n'))
+      .toMatch(/lost opens with plural "were"/);
 
     const family = getUnifiedTemplateById(SLICE_TEMPLATE_IDS.family)!;
     expect(stakesProblems(family, { ...family.stakes!, arms: undefined }).join('\n')).toMatch(/arms missing/);

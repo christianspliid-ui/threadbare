@@ -4779,7 +4779,7 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
     arms: {
       negative: {
         won: 'emptied the fen side before the riders came',
-        lost: 'were still loading carts on the open road at dawn',
+        lost: 'was still loading carts on the open road at dawn',
         lostBadly: 'left a household waiting on the fen side at dawn',
       },
     },

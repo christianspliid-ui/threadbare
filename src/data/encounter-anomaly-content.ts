@@ -1224,7 +1224,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       goal: 'reach the pearl bed before the tide turns',
       risk: 'be pushed back salt-stung by the tide',
       won: 'came up from the pearl bed with both hands full',
-      lost: 'were pushed back salt-stung and empty by the tide',
+      lost: 'was pushed back salt-stung and empty by the tide',
     },
     name: "The Moon's Tears",
     rarityTier: 1,

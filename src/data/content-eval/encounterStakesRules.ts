@@ -22,8 +22,15 @@ import type { EncounterStakes } from '../../types/encounterStakes';
 
 const FORBIDDEN = new RegExp(`\\b(${STAKES_FORBIDDEN_WORDS.join('|')})\\b`, 'i');
 
+/**
+ * An ending follows one actor's name (`[Actor] [lost].`, `… nearly [won], but [lost].`),
+ * so it must agree with a singular subject: "Kael was spotted", never "Kael were
+ * spotted" (THR-1728 review). Endings only — `goal` / `risk` follow "must" / "— or".
+ */
+const PLURAL_LEAD = /^(were|are|have)\b/;
+
 /** The part's own shape: a lowercase verb phrase with no final period or token. */
-function partProblems(name: string, text: string | undefined, cap: number): string[] {
+function partProblems(name: string, text: string | undefined, cap: number, ending = false): string[] {
   if (text === undefined) return [];
   if (typeof text !== 'string') return [`${name} is not a string`];
   const out: string[] = [];
@@ -35,6 +42,8 @@ function partProblems(name: string, text: string | undefined, cap: number): stri
   if (/\{\w[^}]*\}/.test(text)) out.push(`${name} carries a raw token ("${text}")`);
   const hit = FORBIDDEN.exec(text);
   if (hit) out.push(`${name} uses forbidden word "${hit[1]}" ("${text}")`);
+  const plural = ending ? PLURAL_LEAD.exec(text) : null;
+  if (plural) out.push(`${name} opens with plural "${plural[1]}" after a single actor ("${text}")`);
   return out;
 }
 
@@ -75,18 +84,18 @@ export function stakesProblems(t: UnifiedActionTemplate, stakes: EncounterStakes
   const out = [
     ...partProblems('goal', stakes.goal, STAKES_GOAL_MAX_CHARS),
     ...partProblems('risk', stakes.risk, STAKES_RISK_MAX_CHARS),
-    ...partProblems('won', stakes.won, STAKES_GOAL_MAX_CHARS),
-    ...partProblems('lost', stakes.lost, STAKES_RISK_MAX_CHARS),
-    ...partProblems('lostBadly', stakes.lostBadly, STAKES_RISK_MAX_CHARS),
+    ...partProblems('won', stakes.won, STAKES_GOAL_MAX_CHARS, true),
+    ...partProblems('lost', stakes.lost, STAKES_RISK_MAX_CHARS, true),
+    ...partProblems('lostBadly', stakes.lostBadly, STAKES_RISK_MAX_CHARS, true),
   ];
   for (const part of ['goal', 'risk', 'won', 'lost'] as const) {
     if (stakes[part] === undefined) out.push(`${part} is missing`);
   }
   for (const [arm, endings] of Object.entries(stakes.arms ?? {})) {
     out.push(
-      ...partProblems(`arms.${arm}.won`, endings.won, STAKES_GOAL_MAX_CHARS),
-      ...partProblems(`arms.${arm}.lost`, endings.lost, STAKES_RISK_MAX_CHARS),
-      ...partProblems(`arms.${arm}.lostBadly`, endings.lostBadly, STAKES_RISK_MAX_CHARS),
+      ...partProblems(`arms.${arm}.won`, endings.won, STAKES_GOAL_MAX_CHARS, true),
+      ...partProblems(`arms.${arm}.lost`, endings.lost, STAKES_RISK_MAX_CHARS, true),
+      ...partProblems(`arms.${arm}.lostBadly`, endings.lostBadly, STAKES_RISK_MAX_CHARS, true),
     );
   }
   if (!stakes.lostBadly && hasDistinctCriticalFailure(t)) {

@@ -102,12 +102,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     risk: 'see the ruling go to the magistrate in their name',
     won: 'ruled for House Corrow and got Aldane to sign',
     lost: 'could not get Aldane to sign the ruling',
-    lostBadly: 'were called Corrow\'s creature as Aldane walked out',
+    lostBadly: 'was called Corrow\'s creature as Aldane walked out',
     arms: {
       negative: {
         won: 'ruled for House Aldane and got Corrow to sign',
         lost: 'could not get Corrow to sign the ruling',
-        lostBadly: 'were called Aldane\'s creature as Corrow walked out',
+        lostBadly: 'was called Aldane\'s creature as Corrow walked out',
       },
     },
   },
