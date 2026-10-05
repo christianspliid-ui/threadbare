@@ -1,0 +1,36 @@
+{
+ "seed": 99,
+ "ticks": 300,
+ "sites": {
+  "ruin:ruins:never": 10,
+  "wonder:healing_spring:never": 2,
+  "wonder:glowcap_hollow:never": 4,
+  "wonder:crystal_cavern:never": 3,
+  "wonder:golden_grove:never": 1,
+  "ruin:elder_ruin:now": 88
+ },
+ "located": {
+  "wonder:glowcap_hollow:never": 1,
+  "ruin:elder_ruin:now": 3
+ },
+ "resurveys": {
+  "wonder:glowcap_hollow:never": 9
+ },
+ "liveLocated": {
+  "wonder:glowcap_hollow:never": 1
+ },
+ "visit": {
+  "arranged": 21,
+  "refused:lead_visit_visit_pending": 21,
+  "refused:lead_visit_not_narrowed": 9
+ },
+ "arrangedAt": {
+  "wonder:glowcap_hollow:never": 1,
+  "ruin:elder_ruin:now": 20
+ },
+ "counts": {
+  "location_surveys": 54,
+  "delve_admitted": 3
+ },
+ "wallMs": 80275
+}
