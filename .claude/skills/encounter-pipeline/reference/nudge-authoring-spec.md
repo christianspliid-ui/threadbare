@@ -214,6 +214,7 @@ code wins.
 | **Aftermath** | `aftermathConfig` present; the `byOutcome` floor (ruling 7): ≥3 bands — one success-side, one failure-side, one extreme; every variant carries an `overview`; every change declares an anchor — `stateNoun` or `concepts` (Law 2) |
 | **Systems** | ≥3 game-system connections, counted from the authored manifest — `cast` / `rewards` / `seeds` / `conditions` / `reputation` / `factions`. Prose counts for nothing: an encounter that *names* a faction but touches no faction surface has not connected to it |
 | **Images** | every card `imageTag` resolves to a library row (the gate resolves, never trusts — a dead tag falls back silently at render); `illustrationUrl`, when declared, is public-absolute |
+| **Stakes** | `stakes` authored (THR-1728): `goal` / `risk` / `won` / `lost` bare verb phrases (lowercase, no final period, no tokens, ≤60 chars, never the mortal's name, "the traveler", "god", "you"/"your"); `risk` is the worst ending, not the scene's other option; `lost` / `lostBadly` are written from the authored failure / critical-failure endings (`lostBadly` required when a distinct `critical_failure` overview exists); a fork whose arms end differently authors `arms`. The veil opens on `[lead], [Actor] must [goal] — or [risk].` and never shows `description`. Rules: `content-eval/encounterStakesRules.ts`; format: `reference/encounter-package-format.md` § Stakes |
 
 **No exemptions, ever (ruling 3).** The plan's first draft allowed
 `composition: { cast: { exempt: "…" } }`; Christian deleted it. A shape that cannot
@@ -927,7 +928,7 @@ Absent declaration ⇒ **baseline**. Canon: `Docs/canon/prose.md` § the registe
 
 | Field | Register |
 |---|---|
-| `name`, `effectLine`, factor lines, purpose lines | **interactive-plain** |
+| `name`, `effectLine`, factor lines, purpose lines, `stakes` parts | **interactive-plain** |
 | Openings, spine, band base text | **narrator mode** (Doctrine v2 below) |
 | Final-step band prose, the fate-reveal line | narrator mode; peak lyricism retired for encounter surfaces (2026-08-25) |
 

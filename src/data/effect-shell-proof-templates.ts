@@ -19,6 +19,12 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
  */
 export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
   id: 'encounter.shell_proof.fate_card_trial',
+  stakes: {
+    goal: 'endure the ordeal until the card turns',
+    risk: 'break in the ordeal before the card turns',
+    won: 'endured the ordeal and saw the card turn',
+    lost: 'broke in the ordeal before the card turned',
+  },
   name: 'Trial of the Fate Card',
   description: 'A two-step ordeal whose hidden outcome is sealed in a fate card, revealed only at the end.',
   sphere: 'mind',
@@ -78,6 +84,12 @@ export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
  */
 export const RECKLESS_WAGER_TEMPLATE: UnifiedActionTemplate = {
   id: 'encounter.shell_proof.reckless_wager',
+  stakes: {
+    goal: 'win the reckless wager',
+    risk: 'lose the wager and walk away in debt',
+    won: 'won the reckless wager',
+    lost: 'lost the wager',
+  },
   name: 'The Reckless Wager',
   description: 'A single bold gamble. The variant is decided the moment the dice leave the hand.',
   sphere: 'fortune',
@@ -132,6 +144,12 @@ export const RECKLESS_WAGER_TEMPLATE: UnifiedActionTemplate = {
  */
 export const TIERED_PROVING_TEMPLATE: UnifiedActionTemplate = {
   id: 'encounter.shell_proof.tiered_proving',
+  stakes: {
+    goal: 'pass the proving ground',
+    risk: 'fall on the proving ground',
+    won: 'passed the proving ground',
+    lost: 'fell on the proving ground',
+  },
   name: 'Tiered Proving Ground',
   description: 'The outcome quality scales with how decisively the step was passed.',
   sphere: 'force',

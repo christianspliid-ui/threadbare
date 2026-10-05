@@ -61,6 +61,13 @@
   ],
   "template": {
     "id": "encounter.realm.crowns_reckoning",
+    "stakes": {
+      "goal": "man the wall and answer the marshal for the granary",
+      "risk": "lose the keeping of the town to the crown",
+      "won": "manned the wall and sent the marshal off satisfied",
+      "lost": "sent the marshal off with a half-manned wall on paper",
+      "lostBadly": "let the marshal ride off with a refusal and an empty wall"
+    },
     "tags": ["#crown_errand", "#town_keeper"],
     "rarityTier": 2,
     "intrinsicTier": "background",

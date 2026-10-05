@@ -57,6 +57,13 @@
   ],
   "template": {
     "id": "encounter.realm.tithe_demanded",
+    "stakes": {
+      "goal": "make the collector take only the true tithe",
+      "risk": "leave the place owing more than it did that morning",
+      "won": "made the collector take only the true tithe",
+      "lost": "met the tithe's difference out of their own purse",
+      "lostBadly": "was marked for arguing, and the place owes more now"
+    },
     "tags": [
       "#crown_errand"
     ],

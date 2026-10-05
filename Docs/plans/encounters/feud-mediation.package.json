@@ -92,6 +92,13 @@
   ],
   "template": {
     "id": "encounter.town.feud_mediation",
+    "stakes": {
+      "goal": "end the feud between the two houses at sundown",
+      "risk": "be called bought by both houses before the hall",
+      "won": "ended the feud with a new mill contract",
+      "lost": "watched the heads walk out and the feud go on",
+      "lostBadly": "saw the hall break up in shouting, called bought"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "Called to End a Feud",

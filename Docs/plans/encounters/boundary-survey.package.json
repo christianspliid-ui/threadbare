@@ -22,6 +22,13 @@
   ],
   "template": {
     "id": "encounter.town.boundary_survey",
+    "stakes": {
+      "goal": "find the true line of the village common",
+      "risk": "swear to the moved stones as the true line",
+      "won": "found the true line and won back the common",
+      "lost": "could not find the line, and the lord keeps the grazing",
+      "lostBadly": "swore to the moved stones as the true line"
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Boundary Survey",

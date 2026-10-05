@@ -18,6 +18,20 @@
   ],
   "template": {
     "id": "encounter.town.inheritance_wake",
+    "stakes": {
+      "goal": "keep a farmer's family whole through his wake",
+      "risk": "see the wake end in blows beside the coffin",
+      "won": "kept the farm whole and the family at the grave",
+      "lost": "left the eldest still claiming the whole farm",
+      "lostBadly": "let the wake end in a quarrel no one could stop",
+      "arms": {
+        "negative": {
+          "won": "wrote a fair split that all three children signed",
+          "lost": "came away with no deed and the family still quarrelling",
+          "lostBadly": "let the wake end in a quarrel no one could stop"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
     "name": "The Inheritance Wake",

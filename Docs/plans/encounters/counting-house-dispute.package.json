@@ -89,6 +89,20 @@
   ],
   "template": {
     "id": "encounter.town.counting_house_dispute",
+    "stakes": {
+      "goal": "rule on the founder's debt and make it hold",
+      "risk": "see the ruling go to the magistrate in their name",
+      "won": "ruled for House Corrow and got Aldane to sign",
+      "lost": "could not get Aldane to sign the ruling",
+      "lostBadly": "were called Corrow's creature as Aldane walked out",
+      "arms": {
+        "negative": {
+          "won": "ruled for House Aldane and got Corrow to sign",
+          "lost": "could not get Corrow to sign the ruling",
+          "lostBadly": "were called Aldane's creature as Corrow walked out"
+        }
+      }
+    },
     "rarityTier": 2,
     "intrinsicTier": "background",
     "name": "The Counting-House Dispute",

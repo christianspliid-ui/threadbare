@@ -582,6 +582,15 @@ const step1MakeTheCrossing: ActionStep = {
  */
 export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
   id: 'fixture.encounter.swollen_ford',
+  // THR-1728 — the stakes line's parts, written from the endings below: plain
+  // failure keeps them on the near bank, critical failure is the river.
+  stakes: {
+    goal: 'cross the swollen ford before the flood rises',
+    risk: 'be pulled out of the river stripped of all they carried',
+    won: 'crossed the swollen ford with gear and skin intact',
+    lost: 'stayed on the near bank, two days from the high bridge',
+    lostBadly: 'was pulled out of the river stripped of all they carried',
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Swollen Ford',
