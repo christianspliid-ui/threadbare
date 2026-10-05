@@ -198,11 +198,6 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           polarity: 'against',
           forecastDelta: -0.05,
         },
-        critical_failure: {
-          text: 'The coiner has been warned.',
-          polarity: 'against',
-          forecastDelta: -0.07,
-        },
       },
       successMetadata: {
         effects: [
