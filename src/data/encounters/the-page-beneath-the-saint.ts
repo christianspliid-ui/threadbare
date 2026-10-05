@@ -527,9 +527,8 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
 
   description:
-    'A regional-scale truth-versus-comfort encounter: a threaded archivist has found proof that a regional ' +
-    'faith\'s founding saint was forged, and a god can press the truth back into the dark ' +
-    'or let the scholar carry it into the light. Reach: veil (Seer ↔ Manipulator).',
+    'An archivist has found proof that a regional faith\'s founding saint was forged. A god can '
+    + 'press the truth back into the dark, or let the scholar carry it into the light.',
 });
 
 export default PAGE_BENEATH_THE_SAINT_TEMPLATE;

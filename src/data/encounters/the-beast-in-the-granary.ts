@@ -1025,10 +1025,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A bear has denned three days on a settlement\'s winter store, and the agent\'s own goods are '
-    + 'locked behind the bar. Cross the dark room to reach the pack, then find out — by nature, not by '
-    + 'choice — whether the mortal stays to drive the animal out and save the store, or takes what is '
-    + 'theirs and leaves the settlement to burn it.',
+  description:
+    'A bear has denned for three days on a settlement\'s winter store, and a traveler\'s own goods '
+    + 'are locked in the same room. Once the pack is reached, they either drive the animal out and '
+    + 'save the store, or take what is theirs and leave the settlement to burn it.',
   locationSubtypes: expandSettings(['rural', 'wayside', 'stronghold']),
   consequenceDraw: ['possession', 'membership'],
 };

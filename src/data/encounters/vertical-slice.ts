@@ -5188,10 +5188,9 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
     failure: 'The table came apart, and the fen road found a town that had made two plans.',
   },
   description:
-    'A two-step return visit at a town whose regard the traveler has earned: bring two ' +
-    'feuding camps onto one plan before riders reach the fen road, then hold the causeway ' +
-    'or empty the steadings, whichever way the mortal leans. A god can sway the table; ' +
-    'fate settles what the night does with it.',
+    'Two feuding camps in a town that trusts the traveler must agree on one plan before riders '
+    + 'reach the fen road. Whatever they agree, someone still has to hold the causeway or empty the '
+    + 'steadings before night falls.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -5489,10 +5488,9 @@ export const SLICE_FULL_MOON_RECKONING: UnifiedActionTemplate = {
     failure: 'The broken word was explained instead of owned, and the explaining cost more.',
   },
   description:
-    'The missed branch of the crossroads appointment: the stranger finds the traveler wherever ' +
-    'the road has taken them, a day past the full moon, with no parcel and no question about ' +
-    'where they were. A single test of the heart — own the broken word or explain it — with the ' +
-    'promise already marked broken on their sheet before he arrives.',
+    'The traveler missed the crossroads at the full moon, and the stranger who holds their '
+    + 'promise has found them anyway, a day late. The promise is already broken; what is left is '
+    + 'whether they own it or try to explain it away.',
 };
 
 // ─── The slice, assembled ────────────────────────────────────────────

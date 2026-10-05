@@ -530,13 +530,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'An expert two-step Eye job for a village: read where the boundary stones between the lord\'s '
-    + 'land and the common used to stand, then find the true line from the charter\'s marks, with the '
-    + 'friendly reeve who moved the stones walking the bounds beside the surveyor. A found line wins '
-    + 'the village\'s regard, a map in kind from the assize and the knowledge of why the stones were '
-    + 'moved, and plants an appointment at the beating of the bounds in three days (kept, the '
-    + 'bounds-beaten sequel; missed, the stone-uprooted sequel). A lost survey costs the village\'s '
-    + 'regard.',
+  description:
+    'Someone has moved the boundary stones between the lord\'s land and the village common, and '
+    + 'the friendly reeve who did it is walking the bounds beside the surveyor. The true line has '
+    + 'to be found from the charter\'s marks before the bounds are beaten in three days.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['possession', 'knowledge'],
 };

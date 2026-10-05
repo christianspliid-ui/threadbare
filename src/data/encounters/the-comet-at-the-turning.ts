@@ -522,9 +522,8 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   },
 
   description:
-    'A cosmic-scale turning-of-the-age encounter: a threaded prophet reads a comet the whole world is ' +
-    'watching, and a god can sway the omen toward an ending or an enduring. Reach: star ' +
-    '(Wanderer ↔ Anchor).',
+    'A comet crosses a sky the whole world is watching, and a prophet must say whether it marks '
+    + 'an ending or an enduring. A god can sway what the prophet sees.',
 });
 
 export default COMET_AT_THE_TURNING_TEMPLATE;

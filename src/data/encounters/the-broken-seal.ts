@@ -873,6 +873,6 @@ export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnv
   },
 
   description:
-    'A two-step delve: the seal over the stair is broken, the keepers who kept it are leaving and ' +
-    'will stop anyone who goes near it, and another treasure hunter is already below.',
+    'The seal over the stair is broken, and the keepers who guarded it are leaving and will stop '
+    + 'anyone who goes near it. Another treasure hunter is already below.',
 });

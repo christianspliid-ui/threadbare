@@ -713,9 +713,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A three-step search for a merchant house\'s overdue caravan: read the carters\' reports, read '
-    + 'the old road by its star-cut markers, then pick the way by the stars at a fork before the search '
-    + 'turns back for the night.',
+  description:
+    'A merchant house\'s caravan is overdue. The carters\' reports, the old road\'s star-cut markers '
+    + 'and the stars over a fork are all there is to go on before the search turns back for the '
+    + 'night.',
   locationSubtypes: expandSettings(['urban', 'rural']),
   consequenceDraw: ['story_seed', 'thread'],
 };

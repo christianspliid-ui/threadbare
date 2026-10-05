@@ -826,6 +826,6 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
   },
 
   description:
-    'A two-step endurance test: a war column stopped across the road, taking a toll from everyone who ' +
-    'passes, and an afternoon that has to be outlasted before it clears.',
+    'A war column has stopped across the road and takes a toll from everyone who passes. There is '
+    + 'a whole afternoon to outlast before it clears.',
 });

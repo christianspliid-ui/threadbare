@@ -506,10 +506,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A one-step Star test for a journeyman: judge the road to the assize and carry a sealed letter '
-    + 'that a miller\'s heresy case turns on. Success sends the carrier onward knowing who laid the '
-    + 'charge and trusted by the clerk; failure leaves the letter late, the mill forfeit and the '
-    + 'clerk\'s trust lower.',
+  description:
+    'A sealed letter has to reach the assize in time, and a miller\'s heresy case turns on it. If '
+    + 'it arrives late, the miller loses the mill.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['knowledge', 'movement'],
 };

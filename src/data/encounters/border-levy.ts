@@ -470,8 +470,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step border levy: argue a crooked figure, then stand at the rope while armed men decide '
-    + 'whether to take it anyway. Binds $realm for the standing it moves.',
+  description:
+    'A border levy has been reckoned on a crooked figure, and armed men are waiting at the rope '
+    + 'to take it anyway if the argument fails.',
   locationSubtypes: expandSettings(['wayside', 'rural']),
   consequenceDraw: ['thread', 'drive'],
 };

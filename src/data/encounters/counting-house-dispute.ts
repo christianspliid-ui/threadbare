@@ -1034,10 +1034,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A merchant arbitration in a town counting house: read two houses\' books on a founder\'s unpaid '
-    + 'balance (Gold), then — by the mortal\'s own lean, Mender or Magnate — rule for the small house '
-    + 'or the letter of the contract and bring the losing house to sign (Heart). The house ruled for '
-    + 'pays the arbiter and owes a favour.',
+  description:
+    'Two merchant houses dispute a founder\'s unpaid balance in a town counting house. The arbiter '
+    + 'has to read both sets of books, rule for the small house or for the letter of the contract, '
+    + 'and bring the losing house to sign.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['knowledge', 'secret'],
 };

@@ -76,7 +76,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
    lostBadly: <the critical-failure ending, past tense> e.g. went into the river with the pack
    arms:      <per fork arm whose ending differs — its own won / lost / lostBadly>
    ```
-   Lowercase, no final period, no tokens, ≤60 characters each; never the mortal's name, "the traveler", "god", "you" or "your". `risk` is the cost of failing, not the scene's other option. Rules: the format card's § Stakes. The `description` field is designer voice for the Codex — it never reaches the encounter screen, so do not write the player's summary there.
+   Lowercase, no final period, no tokens, ≤60 characters each; never the mortal's name, "the traveler", "god", "you" or "your". `risk` is the cost of failing, not the scene's other option. Rules: the format card's § Stakes. The `description` field is **player prose** (the Codex, story beat and actions block print it): one or two narrator-mode sentences of situation and stake, never a step count, band, Reach, "the mortal", sequel or payoff. Rules: the format card's § Description (THR-1739); `check:encounter` fails designer voice there. Design notes go in the package `doc` block.
 
 10. **Sample Opening** — Written in **narrator mode per the spec's § Prose doctrine v2** (the authoritative prose contract; where anything in this prompt disagrees with it, the spec wins). Three short paragraphs, ≤80 words total: arrival (real graph names) · situation & complication (events, costs already paid) · the problem (one stake shape). Narrate like a game master reading a module aloud — state facts directly; no interior sensation, no camera work, no atmosphere without a job. A plain, direct account is the target, not a fallback.
 

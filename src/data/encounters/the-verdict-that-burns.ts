@@ -479,10 +479,9 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
   },
 
   description:
-    'A regional-scale justice-versus-survival encounter: a threaded magistrate must judge the war-lord who ' +
-    'holds the region together for a massacre the evidence proves, knowing a true verdict burns the region ' +
-    'down, and a god can lean the verdict toward the hammer or toward the truth witnessed and withheld. ' +
-    'Reach: eye (Witness ↔ Judge).',
+    'A magistrate must judge the war-lord who holds a region together for a massacre the evidence '
+    + 'proves, knowing a true verdict will burn the region down. A god can lean the verdict toward '
+    + 'the hammer, or toward the truth witnessed and withheld.',
 });
 
 export default VERDICT_THAT_BURNS_TEMPLATE;

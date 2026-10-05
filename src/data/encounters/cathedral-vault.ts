@@ -1717,11 +1717,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'An opt-in master\'s call at an abbey: test the new vault\'s mortar (Stone), then, by the '
-    + 'mortal\'s own nerve, strike the centering before the winter rains (a Vanguard, Stone) or keep '
-    + 'the swelling frame sound until spring (a Watcher, Stone). A vault that stands puts a Festival on '
-    + 'the settlement and wins the abbot\'s trust; one that fails costs the abbot\'s trust and the '
-    + 'town\'s faith in the master\'s word on stone.',
+  description:
+    'An abbey\'s new vault is swelling in its frame, and the winter rains are coming. Strike the '
+    + 'centering now, or keep the frame sound until spring; either way, the abbot will judge the '
+    + 'master\'s word on stone by what stands.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['relationship', 'place'],
 };

@@ -412,8 +412,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step tithe collection: read a ledger that does not add up, then answer the collector who '
-    + 'cannot leave short. Binds $realm for the standing it moves.',
+  description:
+    'A tithe collector holds a ledger that does not add up, and orders that do not let him leave '
+    + 'short.',
   locationSubtypes: expandSettings(['rural', 'urban']),
   consequenceDraw: ['condition', 'drive'],
 };

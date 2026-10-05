@@ -879,11 +879,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'A two-step master Heart job in a town: bread has doubled overnight and a crowd is forcing the '
-    + 'abbey granary gate. The mortal holds the crowd back, then rules before the abbey and the crowd '
-    + 'on how much of the abbey\'s seed grain leaves the granary. A ruling both sides accept wins the '
-    + 'trust of the crowd\'s speaker and the abbey\'s cellarer, raises the mortal\'s standing with the '
-    + 'town and plants a town-watch errand; a refused ruling costs both and the town\'s regard.',
+  description:
+    'Bread has doubled overnight and a crowd is forcing the abbey granary gate. Someone has to '
+    + 'hold the crowd back and then rule, before the abbey and the crowd, how much seed grain '
+    + 'leaves the granary.',
   locationSubtypes: expandSettings(['urban']),
   consequenceDraw: ['relationship', 'story_seed'],
 };

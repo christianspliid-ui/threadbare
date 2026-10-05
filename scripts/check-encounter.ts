@@ -18,7 +18,9 @@
  *   2. Register detectors    `auditTemplate().failures` — vagueness, not-X-but-Y,
  *                            thin premise, second person, and divine
  *                            outcome-authorship (THR-1166: the god sways the
- *                            odds; fate settles the result). Abstraction and
+ *                            odds; fate settles the result), plus a designer-
+ *                            voice `description` (`descriptionVoice.ts`,
+ *                            THR-1739: the field is player prose). Abstraction and
  *                            intensifiers report into `warnings` and are
  *                            deliberately not read here (THR-1092): the
  *                            abstract-noun measure is a suffix proxy that counts
@@ -94,6 +96,7 @@ import {
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
+import { designerVoiceProblems } from '../src/data/content-eval/descriptionVoice';
 import { doctrineV2Warnings, colorationLineProblems } from '../src/data/content-eval/doctrineV2Checks';
 import { allColorationLines } from '../src/data/culture-sphere-lines';
 import { pinnedForkAxisWarnings } from '../src/data/content-eval/motivationPoleChecks';
@@ -298,7 +301,9 @@ interface TemplateResult {
 function runOne(template: UnifiedActionTemplate): TemplateResult {
   const composition = checkCompositionContract(template);
   const audit = auditTemplate(template);
-  const register = audit.failures;
+  // THR-1739 — `description` is player-facing summary prose (Codex, story beat, veil
+  // fallback); a design spec written into it is a register failure like any other.
+  const register = [...audit.failures, ...designerVoiceProblems(template)];
   const liveness = [
     ...validateNudgeGrantRefs([template]).dead.map(
       d => `${d.site} ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,

@@ -699,12 +699,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
   },
-  description: 'An expert three-step iron job for a village: find what draws a wolf pack to its folds (a drover '
-    + 'from the next village has staked carrion past the last fold), post a frightened watch on the '
-    + 'folds, then hold the great fold\'s barred gate until dawn while the drover waits to buy what is '
-    + 'left. A held fold wins the village\'s regard, leaves it Under Watch, and puts the drover\'s '
-    + 'secret in the mortal\'s hands to keep or spend. A fallen fold costs the village\'s regard and '
-    + 'sells the flock cheap.',
+  description:
+    'A wolf pack keeps coming to a village\'s folds, drawn by carrion a drover from the next '
+    + 'village has staked past the last fold. The great fold\'s gate has to hold until dawn, while '
+    + 'the drover waits to buy whatever is left.',
   locationSubtypes: expandSettings(['rural']),
   consequenceDraw: ['secret', 'place'],
 };
