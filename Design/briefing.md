@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-05 10:55 local (08:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-05 11:57 local (09:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,16 +23,15 @@ Say "veto found it", "veto readable hovers", "veto hand bar" or "veto set-down w
 
 ## Queue
 
-**4 jobs ready** (healthy), **2 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
+**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
 
-- [Encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) is finished as [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) and queued to merge, but has a conflict with main (see Health).
-- [A mortal with a promise starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) is finished as [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235), also stuck on a conflict.
+- [Encounter summaries read like authoring prompts](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice) (your Granary Riot finding) is finished as [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) and queued to merge, but still has a conflict with main (see Health).
 
-Shipped since the last brief: [two encounters now tell one ending per result](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to) ([#2240](https://github.com/christianspliid-ui/threadbare/pull/2240)), and the [measurement of why mortals still pick work outside the "win about half the time" window](https://linear.app/threadbare/issue/THR-1689/in-window-share-sits-at-045-even-with-the-shortlist-fixed-measure) ([#2233](https://github.com/christianspliid-ui/threadbare/pull/2233)): its answer is *choice, not availability*, and it opened a design request.
+Shipped since the last brief: [a mortal with a promise no longer starts a two-step job it can't finish](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its) ([#2235](https://github.com/christianspliid-ui/threadbare/pull/2235), merged 11:08 after its conflict was cleared, and live).
 
 ## Health
 
-- **Two finished pull requests have a merge conflict: [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) (~2¾ hours) and [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~1 hour).** GitHub won't start their checks until the conflict clears. Clearing it is the builder's unstick duty, not yours.
-- **The heavy simulation tests have failed on the last three main merges** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37280891532)); red for ~17 hours by the workflow check. A builder owes the follow-up.
-- **The worktree reaper has 6 worktrees waiting for a decision** (473 worktrees, 312 local branches on disk). Noted for visibility.
-- Everything else is green. Simulation speed is healthy (106 ms per tick, 2% below its weekly median of 108). The live site is current with main, scheduled tasks are on time, and the reaper last ran at 10:40.
+- **One finished pull request has a merge conflict: [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) (~2 hours).** GitHub won't start its checks until the conflict clears. Clearing it is the builder's unstick duty, not yours.
+- **The heavy simulation tests are still red on the latest main** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions)). A builder owes the follow-up.
+- **The worktree reaper has 6 worktrees waiting for a decision** (472 worktrees, 314 local branches on disk). Noted for visibility.
+- Everything else is green. Simulation speed is healthy (103 ms per tick, 4% below its weekly median of 108). The live site is current with main (`e2f765fc`), scheduled tasks are on time, and the reaper last ran at 11:43.
