@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 00:57 local (22:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 01:56 local (23:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,13 +23,13 @@ Say "veto readable hovers", "veto found it", "veto fair fights" or "veto warm pl
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens at ~02:45 (readable hovers). That pause is by design, not a stall. Nothing merged in the last hour.
+**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens at ~02:45 (readable hovers). That pause is by design, not a stall. In the last hour the written record of your Dominion ruling merged ([#2249](https://github.com/christianspliid-ui/threadbare/pull/2249), 23:19 UTC).
 
 - **Being built:** [naming "Dominion" in the glossary](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere), the first piece of tonight's power-progression ruling. Its pull request [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) is open but clashes with newer main (see Health). The other four Dominion pieces wait for design docs (the design lane writes them) or for this one.
 
 ## Health
 
-- **Two pull requests are stuck**: [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) (Dominion in the glossary) has a merge conflict, now ~2 h 15 min untouched; [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) (the written record of your Dominion ruling) is still blocked on a cancelled docs check, ~3 h. Nothing is wrong with the work; the builder's unstick duty owes both, not you.
-- **The heavy simulation tests are still red on main**, about 15 hours now, including the newest commit `df6bcd84` ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
+- **One pull request is stuck**: [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) (Dominion in the glossary) has a merge conflict, now ~3 h 15 min untouched. Nothing is wrong with the work; the builder's unstick duty owes it, not you.
+- **The heavy simulation tests are still red on main**, about 16 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
 - **The worktree reaper has 6 worktrees waiting for a decision** (482 worktrees, 319 local branches on disk). Noted for visibility.
-- Everything else is green. The live site serves the newest commit on main (`df6bcd84`), scheduled tasks are on time. Simulation speed is normal (108 ms per tick, 1% over the weekly median of 107).
+- Everything else is green. The live site is current (commits since `df6bcd84` touched only docs), scheduled tasks are on time. Simulation speed is normal (108 ms per tick, 1% over the weekly median of 107).
