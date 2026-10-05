@@ -362,6 +362,15 @@ export const APPOINTMENT_HEX_TICKS_PER_HEX = 3;
  */
 export const APPOINTMENT_DEPARTING_PRICED_TRAVEL = true;
 
+/**
+ * THR-1736 — floor on the ticks a hex for a departing trip *off the mortal's own hex*.
+ * The road rate is the slack's own path, which a trip elsewhere does not ride: on a
+ * major road it falls to ~0.4 a hex, and pricing an off-road detour at that rate would
+ * keep trips the one-tick-a-hex proxy dropped. Off-hex legs pay at least this; local
+ * work keeps the exact road rate.
+ */
+export const APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX = 1;
+
 /** Ticks after the window closes before the missed sequel is eligible. */
 export const APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS = 12;
 

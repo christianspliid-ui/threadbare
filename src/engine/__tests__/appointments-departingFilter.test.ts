@@ -44,6 +44,16 @@ describe('departingTripOverruns', () => {
     expect(departingTripOverruns(6, 1, 4, rate, ticksLeft)).toBe(true);
   });
 
+  it('a fast road never makes a detour off the mortal hex cheaper than one tick a hex', () => {
+    // 10 hexes on a major road priced at 4 ticks: 0.4 a hex. An off-road encounter 3 hexes
+    // away and 13 from the place, 3 ticks of work, 10 ticks left: at 0.4 it would read 9.4.
+    const fast = appointmentTicksPerHex(4, 10);
+    expect(fast).toBeCloseTo(0.4);
+    expect(departingTripOverruns(3, 3, 13, fast, 10)).toBe(true); // 3 + 16 × 1 = 19
+    // Local work keeps the exact road rate: 3 + 10 × 0.4 = 7 ≤ 10.
+    expect(departingTripOverruns(3, 0, 10, fast, 10)).toBe(false);
+  });
+
   it('an unknown distance always overruns', () => {
     expect(departingTripOverruns(0, Infinity, 1, rate, 1000)).toBe(true);
     expect(departingTripOverruns(0, 0, Infinity, rate, 1000)).toBe(true);

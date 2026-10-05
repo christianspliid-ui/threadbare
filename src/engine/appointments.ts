@@ -69,6 +69,7 @@ import {
   APPOINTMENT_OVERRUN_DISCOUNT,
   APPOINTMENT_DISCOUNT_ON_BOARD,
   APPOINTMENT_WAITING_HOLD_ENABLED,
+  APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX,
 } from '../data/movement-content';
 
 /** Edge property key that marks an `owes_favor` edge as an appointment's promise. */
@@ -669,7 +670,10 @@ export function appointmentTicksPerHex(travelTicks: number, hexesToPlace: number
  * The encounter's own `workTicks`, plus the way there (`hexesThere`) and on to the place
  * (`hexesOnward`), each hex at `ticksPerHex` (see `appointmentTicksPerHex`). On the
  * mortal's own hex the onward leg is the slack's own path, so local work overruns
- * exactly when `workTicks > slack`. An unknown distance always overruns.
+ * exactly when `workTicks > slack`. A trip off the mortal's hex does not ride that path,
+ * so its legs pay at least `APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX` a hex — a fast road
+ * never makes a detour cheaper than THR-1479's proxy did. An unknown distance always
+ * overruns.
  *
  * THR-1479's test priced both legs at one tick a hex while the slack used the priced
  * path; on seed 42 two departing mortals started local chains that passed it and lost
@@ -683,5 +687,6 @@ export function departingTripOverruns(
   ticksLeft: number,
 ): boolean {
   if (!Number.isFinite(hexesThere) || !Number.isFinite(hexesOnward)) return true;
-  return workTicks + (hexesThere + hexesOnward) * ticksPerHex > ticksLeft;
+  const rate = hexesThere > 0 ? Math.max(ticksPerHex, APPOINTMENT_OFF_PATH_MIN_TICKS_PER_HEX) : ticksPerHex;
+  return workTicks + (hexesThere + hexesOnward) * rate > ticksLeft;
 }

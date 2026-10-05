@@ -1102,8 +1102,9 @@ export function phaseAgentDecision(
         // local encounter ranked sixth survives a filter that emptied the five (local
         // work stays, whatever it costs); an entry appended above (the arrival goal) is
         // kept when the re-cut does not already hold it. `leaning` and `departing` keep
-        // the scorer's five, reranked in place: their `overruns` prices a hex at one
-        // tick, so widening their board lets in trips that only look as if they fit —
+        // the scorer's five, reranked in place: when this was measured their `overruns`
+        // priced a hex at one tick (departing uses the road rate since THR-1736), so
+        // widening their board let in trips that only looked as if they fit —
         // measured over twelve seeds, re-cutting leaning too took kept visits 16 → 15
         // and delves 3 → 2, and re-cutting departing raised missed appointments 18 → 22.
         if (regime !== 'waiting') {
