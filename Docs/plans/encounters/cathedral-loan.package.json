@@ -1,0 +1,673 @@
+{
+  "slug": "cathedral-loan",
+  "doc": [
+    "The Cathedral Loan — slot 2 of the master-everyday batch (THR-1688).",
+    "",
+    "Brief: `Docs/plans/encounters/master-everyday-brief.md` (slot 2, binding).",
+    "Pipeline: cathedral-loan-draft / -editorial (PASS WITH REVISIONS) / -revised /",
+    "          -systems (READY WITH CAVEATS) / -final / -package.",
+    "",
+    "plotHookRolled: hook.political_labyrinth, hook.death_and_return, hook.rebuilding_trust",
+    "plotHookTaken:  hook.political_labyrinth — the plate cannot be taken back by force; it stays only",
+    "                if the lenders grant other terms, and their factor wants a better security first.",
+    "",
+    "Rolled constraints (brief, binding): reach gold · steps gold 0.74 -> gold 0.80 · settings urban",
+    "(rolled battlefield, overridden: the cathedral steps) · shape danger -> confrontation -> aftermath ·",
+    "consequence hand relationship + possession · p3Shape threat · opposition law (duty) · disposition",
+    "hostile · agentRole competitor (the tithes bid against the plate) · scale company · rarityTier 2 ·",
+    "scale local · intrinsicTier shaping.",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "  Crux            A cathedral has defaulted on its loan, and bailiffs with a lawful writ are taking",
+    "                  its altar plate unless {actor} finds the lenders a better security.",
+    "  Whose problem?  The agent's: sent for by the chapter as a master of money. Scene-local; no prior",
+    "                  tie to any graph agent is asserted (prose rule 7).",
+    "  Reach = theme?  Step 0 Gold 0.74 prices the plate against the tithes before the carts are loaded.",
+    "                  Step 1 Gold 0.80 makes the tithes worth more than melted silver to the factor.",
+    "  Shape           Danger – Confrontation – Aftermath, linear. Step 0 continue_weakened (a step-0",
+    "                  critical_failure ends the action); step 1 carries carryover lines keyed on step 0.",
+    "  Consequence hand (binding, THR-1145): relationship + possession — no swap.",
+    "    relationship  bond_change $cast:dean: step 1 success +0.12/+0.15; step 0 failure -0.05/-0.08;",
+    "                  step 1 failure -0.12/-0.15. Reactions move the bond with $cast:factor either way.",
+    "    possession    step 1 successMetadata.rewardPool { possession: 1, #divine }: a piece from the",
+    "                  cathedral treasury, tier by band, engine PRIZE chip. success_at_cost reaction",
+    "                  'Stand surety' grants agreement.debt.minor, counterparty $cast:factor.",
+    "  Extras          reputation_with $here +0.08 (step 1 success) / -0.10 (step 1 failure) / -0.05",
+    "                  (step 0 failure: backs the critical_failure town SCAR on the step-0 route).",
+    "  Cool failure?   Nobody is hurt, jailed or branded. A master's failure costs the name before the",
+    "                  purse: the dean's trust and the town's regard for their word on money.",
+    "  Trait hooks     Gate: none. Variant: Generous (trait.personality.gold.virtue) +0.04. Trait-only",
+    "                  nudge: none. Trait fragment: none.",
+    "  Systems quota   cast + rewards + reputation — three.",
+    "  Heavy Hand      none. Specials: Slow The Loading (order), Dull The Silver (matter), Plant The",
+    "                  Fear (mind, opposes factor), Open The Ledger (light). No card.boost.core special.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "  1 P1 arrival?      {actor} arrives in {location} at midday, sent for by the cathedral chapter.",
+    "  2 P2 events?       Default; the lenders won a writ; the bailiffs are weighing the plate.",
+    "  3 P3 one stake?    Threat: the bailiffs stop only for a better security, before the carts load.",
+    "  4 ≤80 words?       Opening + step-0 spine: 79.",
+    "  5 Read aloud?      Every sentence is a report.",
+    "  6 Stated?          The writ, the default and the clock are stated, never encoded.",
+    "  7 Every sentence works? Challenge, test or outcome.",
+    "  8 Nothing unintroduced? Chapter, loan, writ, bailiffs, plate, tithes, dean before any card;",
+    "                     the factor in step 1's spine before its cards act on them.",
+    "  9 One named person? Step 0 {cast:dean}; step 1 {cast:factor}.",
+    " 10 Stake in a sentence? 'Get the lenders to take the chapter's tithes instead of the altar plate",
+    "                     before the bailiffs' carts are loaded.'",
+    " 11 Cards verb+noun? Yes; no name word repeated in its effect line; no digits.",
+    " 12 Opening per class? urban, the only class, written.",
+    "",
+    "─── Known caveats (systems pass) ────────────────────────────────────",
+    "  A step-0 critical_failure ends the action, so that critical_failure route carries only step 0's",
+    "  writes (dean -0.05/-0.08, town -0.05); both chips on that page are backed by them. A small share",
+    "  of step-1 wins draw the reward pool's bad-outcome table while the overview names a gift (engine-",
+    "  wide). Live proof needs pinned bands at master difficulty."
+  ],
+  "template": {
+    "id": "encounter.town.cathedral_loan",
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Cathedral Loan",
+    "reach": "gold",
+    "crudType": "update",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "asceticism_extravagance",
+      "courage_prudence"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} arrives in {location} at midday, sent for by the cathedral chapter."
+    },
+    "steps": [
+      {
+        "reach": "gold",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.74,
+        "purposeLine": "Offer a better security",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "The chapter has defaulted on the loan that built the cathedral's nave. The lenders went to law and won a writ. Their bailiffs are on the cathedral steps, weighing the altar plate for their carts.\n\nThe writ is lawful. The bailiffs will stop only for a better security than the plate. {cast:dean}, the dean, asks {actor} to offer them the chapter's tithes before the carts are loaded.",
+        "criticalSuccessAfterimage": "They showed the bailiffs that the chapter's tithes are worth more than the plate, and the weighing stopped.",
+        "successAfterimage": "They offered the chapter's tithes in place of the plate, and the bailiffs sent word to the lenders.",
+        "successAtCostAfterimage": "The bailiffs stopped, but the plate they had already weighed stayed on the carts.",
+        "failureAfterimage": "The bailiffs kept weighing, and the plate went onto the carts to wait for the lenders' word.",
+        "criticalFailureAfterimage": "The bailiffs would not hear the offer, and loaded every piece of plate onto the carts.",
+        "deal": {
+          "count": 4,
+          "tags": [
+            "social",
+            "peril"
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:dean",
+              "sentimentDelta": -0.05,
+              "trustDelta": -0.08
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.05
+            }
+          ]
+        },
+        "nudges": [
+          {
+            "id": "cathedral.slow_the_loading",
+            "name": "Slow The Loading",
+            "sphere": "order",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.oath",
+            "effectLine": "Make the bailiffs write down every piece before it moves. The carts wait until the list is signed.",
+            "bandProse": {
+              "critical_success": "The bailiffs were still writing their list when {actor} made the offer, and not one piece had moved.",
+              "success": "The bailiffs stopped loading to write the list, and heard the offer while they wrote.",
+              "near_miss": "The bailiffs wrote the list quickly, and went on loading while they heard the offer.",
+              "failure": "The bailiffs loaded first and wrote their list on the carts."
+            }
+          },
+          {
+            "id": "cathedral.dull_the_silver",
+            "name": "Dull The Silver",
+            "sphere": "matter",
+            "essenceCost": 1,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.matter",
+            "effectLine": "Tarnish the plate as it is weighed. It reads lighter and cheaper on the scales than it is.",
+            "bandProse": {
+              "success": "The plate weighed light on the bailiffs' scales, and the tithes looked the better security beside it.",
+              "success_at_cost": "The plate weighed light, but the tarnish stayed on it after the weighing.",
+              "failure": "The plate weighed light, and the bailiffs loaded more of it to make up the sum.",
+              "critical_failure": "The plate weighed light, so the bailiffs took every last piece to make up the sum."
+            }
+          }
+        ]
+      },
+      {
+        "reach": "gold",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.8,
+        "purposeLine": "Win the factor's terms",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "{cast:factor}, the lenders' factor, comes to the chapter house and sits across the table from {actor}. The factor wants the whole debt, and the plate is the surest way to get it. {actor} has to make the chapter's tithes worth more to the lenders than the silver. If the factor says no, the plate goes to the melting pot, and every lender in town will hear who failed to stop it.",
+        "criticalSuccessAfterimage": "The factor took the tithes for the whole debt and gave back every piece of plate.",
+        "successAfterimage": "The factor took the tithes in place of the plate, and the plate went back inside.",
+        "successAtCostAfterimage": "The factor took the tithes only when {actor} agreed to a harder rate.",
+        "failureAfterimage": "The factor refused the tithes, and the bailiffs drove the plate away to be melted.",
+        "criticalFailureAfterimage": "The factor refused, and called for the bailiffs before {actor} had finished speaking.",
+        "carryoverFactorLines": {
+          "critical_success": {
+            "text": "The bailiffs have already stopped for the chapter's offer.",
+            "polarity": "for",
+            "forecastDelta": 0.06
+          },
+          "success": {
+            "text": "The plate is still inside the cathedral.",
+            "polarity": "for",
+            "forecastDelta": 0.04
+          },
+          "success_at_cost": {
+            "text": "Part of the plate is already on the carts.",
+            "polarity": "against",
+            "forecastDelta": -0.02
+          },
+          "near_miss": {
+            "text": "The bailiffs listened, but kept loading.",
+            "polarity": "against",
+            "forecastDelta": -0.03
+          },
+          "failure": {
+            "text": "The plate is already on the lenders' carts.",
+            "polarity": "against",
+            "forecastDelta": -0.04
+          }
+        },
+        "deal": {
+          "count": 4,
+          "tags": [
+            "social",
+            "presence"
+          ]
+        },
+        "successMetadata": {
+          "rewardPool": {
+            "categoryWeights": {
+              "possession": 1
+            },
+            "tagFilters": [
+              "#divine"
+            ]
+          },
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:dean",
+              "sentimentDelta": 0.12,
+              "trustDelta": 0.15
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": 0.08
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:dean",
+              "sentimentDelta": -0.12,
+              "trustDelta": -0.15
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.1
+            }
+          ]
+        },
+        "nudges": [
+          {
+            "id": "cathedral.plant_the_fear",
+            "name": "Plant The Fear",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.12,
+            "opposes": "factor",
+            "imageTag": "generic.rumor",
+            "effectLine": "Set a cold worry in the factor's mind that melted silver sells for less than the loan is owed. They lean toward other security.",
+            "bandProse": {
+              "critical_success": "The factor worked out the melting-pot price aloud, and did not like the figure.",
+              "success": "The factor began to doubt what the silver would fetch, and listened to the offer of tithes.",
+              "near_miss": "The factor doubted the silver, but not enough to let the plate go cheaply.",
+              "failure": "The factor worried about the silver's price, and asked for the tithes as well as the plate."
+            }
+          },
+          {
+            "id": "cathedral.open_the_ledger",
+            "name": "Open The Ledger",
+            "sphere": "light",
+            "essenceCost": 1,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.light",
+            "effectLine": "Bring every hidden charge in the lenders' accounts into plain view. Nobody at the table can hide a figure.",
+            "bandProse": {
+              "critical_success": "A charge the lenders had added twice came to light, and the factor struck it out.",
+              "success_at_cost": "Every charge came to light, including one the chapter had hidden from {actor}.",
+              "failure": "Every charge came to light, and every one of them was lawful.",
+              "critical_failure": "Every charge came to light, and the largest was the chapter's own unpaid interest."
+            }
+          }
+        ]
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.personality.gold.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Generous, they would sooner pay than see the plate melted."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "dean",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "priest"
+        ],
+        "supportRole": "cathedral_dean",
+        "spawnNpcRole": "priest",
+        "spawnName": "Anselm Hale"
+      },
+      {
+        "kind": "actor",
+        "key": "factor",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "merchant",
+          "broker"
+        ],
+        "supportRole": "lenders_factor",
+        "spawnNpcRole": "merchant",
+        "spawnName": "Odile Marrow"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "Bailiffs are taking a cathedral's altar plate for an unpaid loan. {actor} has been sent for to stop them lawfully.",
+      "success": "{actor} kept the cathedral's altar plate out of the lenders' hands.",
+      "failure": "The lenders took the cathedral's altar plate, and {actor} could not stop them."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 1,
+      "variants": {},
+      "fallback": {
+        "overview": "{actor} left the chapter house once the factor had given an answer.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "{cast:dean} thanked {actor} before the whole chapter, and gave them a gift from the cathedral treasury.",
+            "changes": [
+              {
+                "id": "cathedral.cs.dean",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Dean's Trust",
+                "detail": "{cast:dean} trusts {actor} now.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:dean",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.cs.town",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Town's Regard",
+                "detail": "{location} thinks better of {actor}'s word on money.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "cathedral.cs.lenders_goodwill",
+                "label": "Keep the lenders' goodwill",
+                "intent": "Tell the factor the tithes are sound and the lenders were fair. The factor thinks well of the mortal for it.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:factor",
+                    "sentimentDelta": 0.1,
+                    "trustDelta": 0.08
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.cs.stand_with_chapter",
+                "label": "Stand with the chapter",
+                "intent": "Tell the dean the lenders pressed too hard. The dean trusts the mortal more, and the factor takes against them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:dean",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:factor",
+                    "sentimentDelta": -0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The chapter will pay off its loan from the tithes in the years ahead. {cast:dean} sent {actor} away with a piece from the cathedral treasury.",
+            "changes": [
+              {
+                "id": "cathedral.s.dean",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Dean's Trust",
+                "detail": "{cast:dean} trusts {actor} now.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:dean",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.s.town",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Town's Regard",
+                "detail": "{location} thinks better of {actor}'s word on money.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "cathedral.s.lenders_goodwill",
+                "label": "Keep the lenders' goodwill",
+                "intent": "Tell the factor the tithes are sound and the lenders were fair. The factor thinks well of the mortal for it.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:factor",
+                    "sentimentDelta": 0.1,
+                    "trustDelta": 0.08
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.s.stand_with_chapter",
+                "label": "Stand with the chapter",
+                "intent": "Tell the dean the lenders pressed too hard. The dean trusts the mortal more, and the factor takes against them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:dean",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:factor",
+                    "sentimentDelta": -0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The plate is back inside, but the chapter will pay the lenders a harder rate for a generation. {cast:dean} paid {actor} from the treasury, and called the terms a fair price for the plate.",
+            "changes": [
+              {
+                "id": "cathedral.sac.dean",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Dean's Trust",
+                "detail": "{cast:dean} trusts {actor} now.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:dean",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.sac.town",
+                "kind": "reputation",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Town's Regard",
+                "detail": "{location} thinks better of {actor}'s word on money.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "cathedral.sac.stand_surety",
+                "label": "Stand surety for the chapter",
+                "intent": "Take part of the chapter's debt in the mortal's own name. The mortal owes the factor, and the dean trusts them more for it.",
+                "effects": [
+                  {
+                    "kind": "attachment_grant",
+                    "templateId": "agreement.debt.minor",
+                    "targetAgentId": "$actor",
+                    "counterpartyId": "$cast:factor"
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:dean",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.06
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.sac.leave_terms",
+                "label": "Leave the chapter its terms",
+                "intent": "The chapter carries its terms alone. None of its debt falls on the mortal, and the dean is cooler toward them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:dean",
+                    "sentimentDelta": -0.04,
+                    "trustDelta": -0.04
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "A master is judged by what they save. The chapter sent for {actor} by name to save its plate, and the plate is lost.",
+            "changes": [
+              {
+                "id": "cathedral.f.town",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Town's Regard",
+                "detail": "{location} thinks less of {actor}'s word on money.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "causeClause": "Every lender heard"
+              },
+              {
+                "id": "cathedral.f.dean",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Dean's Trust",
+                "detail": "{cast:dean} trusts {actor} less.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:dean",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "The plate is gone to be melted down, and the whole chapter watched it go. {cast:dean} had sent for {actor} to save it.",
+            "changes": [
+              {
+                "id": "cathedral.cf.town",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Town's Regard",
+                "detail": "{location} thinks less of {actor}'s word on money.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              },
+              {
+                "id": "cathedral.cf.dean",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Dean's Trust",
+                "detail": "{cast:dean} trusts {actor} less.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$cast:dean",
+                  "visualKind": "agent",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.reputation_with"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A master is sent for to save a cathedral's altar plate from lenders' bailiffs holding a lawful writ: stop the weighing with a better security (Gold), then bring the lenders' factor to take the chapter's tithes instead (Gold). Success pays a #divine possession from the cathedral treasury and the dean's trust; failure costs the dean's trust and the town's regard for the master's word on money."
+  }
+}

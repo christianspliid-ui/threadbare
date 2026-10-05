@@ -1,0 +1,623 @@
+/**
+ * False Coin at the Mint (slug coiners-mint) - slot 5 of the master-everyday batch (THR-1688).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-brief.md`.
+ * Final: `Docs/plans/encounters/coiners-mint-final.md`. Package critic: `coiners-mint-package.md`.
+ * plotHookRolled: hook.reconciliation, hook.stronghold_raid, hook.death_and_return
+ * plotHookTaken:  hook.stronghold_raid - the mint's strongroom is entered, learned and left before the watch
+ *                 understands. Reconciliation survives as the mercy-or-justice reaction over the apprentice.
+ * Seed dice: p3 unmitigated_risk - opposition own_trait (Warm, Proud) - disposition neutral -
+ *            agentRole bystander_pulled_in - scale personal - system cards.
+ * 
+ * --- The narrator's 12 questions, answered ---
+ *   1 P1 arrival?      Yes: {actor} is in {location} on market day when {cast:mintmaster} sends for them.
+ *   2 P2 events?       False coin with the mint's mark is in the market, every piece light; nobody caught.
+ *   3 P3 one stake?    Unmitigated risk (rolled): the assayer comes at the week's end; light coin shuts the
+ *                      mint and hangs its master unless someone finds the coiners first.
+ *   4 <=80 words?      79 / 80 by the gate (opening + step-0 spine).
+ *   5 Read aloud?      Report throughout; no interior sensation.
+ *   6 Stated?          The light coin, the assayer, the hanging and the quiet ask each take one plain sentence.
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? Mint, coin, assayer in the opening; the strongroom, the apprentice and the dies
+ *                      are revealed by step 0's afterimages (the investigation gate), then named in step 1.
+ *   9 One named person? {cast:mintmaster}; the apprentice, porter, watch and assayer are role nouns.
+ *  10 Stake in a sentence? Can {actor} find the coiners and take their dies before the assayer comes,
+ *                      without rousing the town?
+ *  11 Cards verb+noun? Loosen A Tongue, Stir A Banked Fire, Hold The Door Shut, Harden A Kind Heart.
+ *  12 Opening per class? urban, written.
+ * 
+ * --- Mechanical design block ---
+ *   Crux            False coin is leaving the town mint, and its master asks {actor} to find the coiners
+ *                   quietly before the crown's assayer comes.
+ *   Shape           Puzzle - Investigation - Resolution. shadow 0.75 (continue_weakened) -> shadow 0.81
+ *                   (fail_action). Linear, branch count 0. Mean 0.78.
+ *   Consequence hand (binding): standing (reputation_with $here +0.05 on step 1 success; -0.03 on step 0
+ *                   failure, backing the critical_failure chip when a step-0 critical failure ends the action;
+ *                   -0.08 on step 1 failure) + possession (spawn_artifact The Coiner's Dies to $actor on step 1
+ *                   success). No swap.
+ *   Opposition      The mortal's own trait, read from the graph: Warm (trait.core.core_warmth.virtue, -0.05,
+ *                   unlocks the trait card Harden A Kind Heart) and Proud (trait.core.core_humility.vice, -0.05).
+ *                   Shadow Walker (trait.mastery.shadow-walker, +0.05) is the one variant for.
+ *   Cost channels   Hold The Door Shut is the batch's one Heavy Hand (libraryCardId card.heavy_hand.signature.force):
+ *                   essence 0, detectionDelta 0.15, one channel. Trait card at cost 0. No darkness Undertow.
+ *   Cool failure    Nobody is killed, jailed or branded. The mint is shut, its master goes before the crown's
+ *                   court, and the town stops sending for {actor} - the name before the purse.
+ *   Reactions       Mercy or justice over the apprentice: bond_change with $cast:mintmaster (+/-0.12), and the
+ *                   justice arm adds reputation_with $here +0.03.
+ *   Accepted limit  No band-keyed step write: success_at_cost takes the same +0.05 standing as success (the
+ *                   mint-master still vouches); the street talk is prose only.
+ *   Brief deviation The brief's 'old friend' is agent history the graph does not hold (prose rule 7); the pull
+ *                   it was meant to carry is the Warm trait read instead.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.coiners_mint',
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'False Coin at the Mint',
+  reach: 'shadow',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['mercy_ruthlessness', 'revelation_discretion'],
+  tags: ['#steal'],
+  settings: ['urban'],
+  openings: {
+    urban: '{actor} is in {location} on market day when {cast:mintmaster}, master of the town mint, sends '
+      + 'for them.',
+  },
+  steps: [
+    {
+      reach: 'shadow',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.75,
+      purposeLine: 'Find the striking place',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'False coin with the mint\'s own mark is turning up in the market, and every piece is light. No '
+        + 'furnace worker has been caught at it.\n\n'
+        + 'The crown\'s assayer comes at the week\'s end to weigh the coin. If it is light, the mint will '
+        + 'be shut and its master hanged. {cast:mintmaster} asks {actor} to find the coiners first, and '
+        + 'quietly.',
+      criticalSuccessAfterimage: 'The coiner is the mint-master\'s own apprentice, who strikes light coin in the strongroom each '
+        + 'night and hides the dies behind the furnace.',
+      successAfterimage: 'They learned that the light coin is struck in the strongroom by night. They did not learn who '
+        + 'strikes it.',
+      successAtCostAfterimage: 'They found the strongroom where the coin is struck, but the workers saw them asking, and talk '
+        + 'has started.',
+      failureAfterimage: 'They found the strongroom only on the last night, too late to learn who comes there.',
+      criticalFailureAfterimage: 'They asked too openly. The coiner, the mint-master\'s own apprentice, heard every question.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.03,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['shadow', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'coin.loosen_a_tongue',
+          name: 'Loosen A Tongue',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.rumor',
+          effectLine: 'Put careless words in people\'s mouths, so they say more than they meant to.',
+          bandProse: {
+            critical_success: 'The night porter let slip that the strongroom chimney smokes after the mint is locked.',
+            success: 'The night porter grumbled about a lamp burning behind the strongroom door.',
+            near_miss: 'The porter talked, but in the yard, where the workers heard every word.',
+            failure: 'The porter talked freely, about everything except the strongroom.',
+            critical_failure: 'The porter told the workers what {actor} had asked before the day was out.',
+          },
+        },
+        {
+          id: 'coin.stir_a_banked_fire',
+          name: 'Stir A Banked Fire',
+          sphere: 'energy',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.energy',
+          effectLine: 'Wake the embers in hidden hearths, so their smoke rises where it can be seen.',
+          bandProse: {
+            success: 'Smoke rose from the strongroom chimney after dark, where no fire should be lit.',
+            success_at_cost: 'Smoke rose from the strongroom chimney, and the coiner saw it too and let the fire die.',
+            failure: 'Smoke rose over the mint after dark, from too many chimneys to tell apart.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'shadow',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.81,
+      purposeLine: 'Take the dies quietly',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The assayer is due, and the coiner\'s dies are still inside the mint. {actor} must take them out '
+        + 'without a hue and cry. Whoever struck the false coin will hang for it.\n\n'
+        + 'The night watch passes the mint every hour and tries its doors. If the watch is roused, all of '
+        + '{location} will know of the coining by morning.',
+      criticalSuccessAfterimage: 'They took the dies from the hands of the mint-master\'s own apprentice, and nobody in the street '
+        + 'woke.',
+      successAfterimage: 'They waited for the mint-master\'s apprentice to set the dies down, then took them and left '
+        + 'unseen.',
+      successAtCostAfterimage: 'They got the dies, but the mint-master\'s apprentice ran shouting into the street, and lamps '
+        + 'were lit along it.',
+      failureAfterimage: 'The mint-master\'s apprentice saw them first and fled with the dies. The watch found {actor} '
+        + 'alone in the strongroom.',
+      criticalFailureAfterimage: 'The watch broke in and found {actor} beside the anvil, with light coin on the floor. The coiner, '
+        + 'the mint-master\'s apprentice, had slipped away.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They can be waiting before the coiner arrives.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They know where to wait.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The coiner may know they are being watched.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They found the strongroom with little time left.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They go in without a plan.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+        critical_failure: {
+          text: 'The coiner has been warned.',
+          polarity: 'against',
+          forecastDelta: -0.07,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'spawn_artifact',
+            category: 'mundane',
+            tier: 'common',
+            nameOverride: 'The Coiner\'s Dies',
+            targetAgentId: '$actor',
+            tags: ['#shadow', '#tool'],
+            messageOverride: 'The Coiner\'s Dies have left the mint\'s strongroom.',
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.05,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.08,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['shadow', 'finesse'],
+      },
+      nudges: [
+        {
+          id: 'coin.hold_the_door_shut',
+          libraryCardId: 'card.heavy_hand.signature.force',
+          name: 'Hold The Door Shut',
+          sphere: 'force',
+          essenceCost: 0,
+          forecastDelta: 0.12,
+          costs: {
+            detectionDelta: 0.15,
+          },
+          imageTag: 'generic.strength',
+          effectLine: 'Brace a way in with divine force, so no one outside can open it. Rival gods notice a hand this '
+            + 'heavy.',
+          bandProse: {
+            critical_success: 'The watch tried the strongroom door on their round, found it fast, and walked on.',
+            success: 'The watch rattled the strongroom door once on their round, and went on when it held.',
+            success_at_cost: 'The door held, and the watch pounded on it until the next houses woke.',
+            near_miss: 'The door held until the watch fetched a bar, and {actor} was out the back by then.',
+            failure: 'The door held, so the watch came in by the yard gate instead.',
+            critical_failure: 'The door held so hard against the watch that they called half the street to break it.',
+          },
+        },
+        {
+          id: 'coin.harden_a_kind_heart',
+          libraryCardId: 'card.trait_card.core',
+          name: 'Harden A Kind Heart',
+          requiredTrait: 'trait.core.core_warmth.virtue',
+          essenceCost: 0,
+          forecastDelta: 0.07,
+          imageTag: 'generic.focus',
+          effectLine: 'Steel them against pity, so they finish the task even when the culprit begs.',
+          bandProse: {
+            critical_success: 'The apprentice begged to keep the dies, and {actor} did not stop to listen.',
+            failure: '{actor} pitied the frightened apprentice, and stopped short of grabbing the dies.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_warmth.virtue',
+      forecastDelta: -0.05,
+      factorLine: 'Being Warm, they are slow to hand anyone to the hangman.',
+      addNudgeIds: ['coin.harden_a_kind_heart'],
+    },
+    {
+      traitId: 'trait.core.core_humility.vice',
+      forecastDelta: -0.05,
+      factorLine: 'Being Proud, they will not stop short, whatever the noise.',
+    },
+    {
+      traitId: 'trait.mastery.shadow-walker',
+      forecastDelta: 0.05,
+      factorLine: 'Being a Shadow Walker, they wait in the dark without a sound.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'mintmaster',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['smith'],
+      supportRole: 'mint_master',
+      spawnNpcRole: 'smith',
+      spawnName: 'Marrin Coyle',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A town\'s mint-master asks {actor} to find who is striking false coin before the crown\'s '
+      + 'assayer comes.',
+    success: 'The coiner\'s dies are taken, and the assayer found the mint\'s coin true.',
+    failure: 'The coiner was not stopped, and the assayer found light coin at the mint.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The assayer has come and weighed the mint\'s coin.',
+      changes: [],
+      reactions: [
+        {
+          id: 'coin.keep_name_quiet',
+          label: 'Keep the apprentice\'s name quiet',
+          intent: 'The mortal tells no one who struck the coin. The mint-master will remember the mercy.',
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:mintmaster',
+              sentimentDelta: 0.12,
+            },
+          ],
+        },
+        {
+          id: 'coin.name_to_council',
+          label: 'Name the apprentice to the council',
+          intent: 'The town trusts the mortal more, and the mint-master will not forgive it.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.03,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:mintmaster',
+              sentimentDelta: -0.12,
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: 'The assayer weighed the mint\'s coin and found it true. {cast:mintmaster} told the town council '
+            + 'that {actor} saved the mint, and did not say from what.',
+          changes: [
+            {
+              id: 'coin.crit.trusted',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'Spoken For',
+              detail: '{location} thinks well of {actor} now.',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'coin.crit.dies',
+              kind: 'item',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Coiner\'s Dies',
+              causeClause: 'Carried out of the strongroom',
+              detail: 'The Coiner\'s Dies are in {actor}\'s possessions now.',
+              stateNoun: {
+                text: 'The Coiner\'s Dies',
+                entityId: '$artifact',
+                visualKind: 'artifact',
+              },
+              concepts: [
+                {
+                  text: 'The Coiner\'s Dies',
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'The assayer found the mint\'s coin true, and the mint stays open. {cast:mintmaster} speaks for '
+            + '{actor} to the council.',
+          changes: [
+            {
+              id: 'coin.win.trusted',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'Spoken For',
+              detail: '{location} thinks well of {actor} now.',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'coin.win.dies',
+              kind: 'item',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Coiner\'s Dies',
+              causeClause: 'Carried out of the strongroom',
+              detail: 'The Coiner\'s Dies are in {actor}\'s possessions now.',
+              stateNoun: {
+                text: 'The Coiner\'s Dies',
+                entityId: '$artifact',
+                visualKind: 'artifact',
+              },
+              concepts: [
+                {
+                  text: 'The Coiner\'s Dies',
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The assayer found the coin true, and the mint stays open. The street still talks of a thief at '
+            + 'the mint that night.',
+          changes: [
+            {
+              id: 'coin.cost.vouched',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'Vouched For',
+              causeClause: 'Vouched for by {cast:mintmaster}',
+              detail: '{location} thinks a little better of {actor}.',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'coin.cost.dies',
+              kind: 'item',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'The Coiner\'s Dies',
+              causeClause: 'Carried out of the strongroom',
+              detail: 'The Coiner\'s Dies are in {actor}\'s possessions now.',
+              stateNoun: {
+                text: 'The Coiner\'s Dies',
+                entityId: '$artifact',
+                visualKind: 'artifact',
+              },
+              concepts: [
+                {
+                  text: 'The Coiner\'s Dies',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'The assayer found light coin in the mint\'s chests. The mint is shut, and {cast:mintmaster} is '
+            + 'held for the crown\'s court. {location} had sent for {actor} to stop it.',
+          changes: [
+            {
+              id: 'coin.fail.distrusted',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'Found Wanting',
+              detail: '{location} thinks less of {actor} now.',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'coin.swear_for_mintmaster.fail',
+              label: 'Swear for the mint-master',
+              intent: 'The mortal swears the mint-master did not know. The mint-master will remember who stood up.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:mintmaster',
+                  sentimentDelta: 0.12,
+                },
+              ],
+            },
+            {
+              id: 'coin.name_to_court.fail',
+              label: 'Name the apprentice to the court',
+              intent: 'The town hears it, and the mint-master will not forgive it.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.03,
+                },
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:mintmaster',
+                  sentimentDelta: -0.12,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The assayer found light coin, and the mint is shut. {location} sent for {actor} as a master, and '
+            + 'now calls them the coiner.',
+          changes: [
+            {
+              id: 'coin.critfail.called_the_coiner',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'Named a Coiner',
+              detail: '{location} thinks less of {actor} now.',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'coin.swear_for_mintmaster.crit_fail',
+              label: 'Swear for the mint-master',
+              intent: 'The mortal swears the mint-master did not know. The mint-master will remember who stood up.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:mintmaster',
+                  sentimentDelta: 0.12,
+                },
+              ],
+            },
+            {
+              id: 'coin.name_to_court.crit_fail',
+              label: 'Name the apprentice to the court',
+              intent: 'The town hears it, and the mint-master will not forgive it.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.03,
+                },
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:mintmaster',
+                  sentimentDelta: -0.12,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A two-step master Shadow job in a town: false coin with the mint\'s own mark is turning up in '
+    + 'the market, and the mint-master asks the mortal to find the coiners quietly before the crown\'s '
+    + 'assayer comes. The first step finds where the coin is struck; the second takes the false dies at '
+    + 'night without rousing the watch. Winning puts The Coiner\'s Dies in the mortal\'s possessions '
+    + 'and raises their standing with the town; losing leaves the mint shut and the town thinking less '
+    + 'of them. A Warm or Proud mortal\'s own nature works against them.',
+  locationSubtypes: expandSettings(['urban']),
+  consequenceDraw: ['standing', 'possession'],
+};
+
+export const COINERS_MINT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

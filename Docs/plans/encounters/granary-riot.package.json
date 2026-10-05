@@ -1,0 +1,870 @@
+{
+  "slug": "granary-riot",
+  "doc": [
+    "The Granary Riot (slug granary-riot) - slot 3 of the master-everyday batch (THR-1688).",
+    "",
+    "Brief: `Docs/plans/encounters/master-everyday-brief.md`.",
+    "Final: `Docs/plans/encounters/granary-riot-final.md`. Package critic: `granary-riot-package.md`.",
+    "plotHookRolled: hook.civil_unrest, hook.relic_awakening, hook.the_great_building",
+    "plotHookTaken:  hook.civil_unrest - a town turning on its own institution over bread. The Great Building",
+    "                survives as the question underneath it: whose winter pays for whose spring.",
+    "Seed dice: p3 plea - opposition beast (territory), read as a frightened crowd (brief override) -",
+    "           disposition open - agentRole judge_asked_to_rule - scale settlement - system cards.",
+    "",
+    "--- The narrator's 12 questions, answered ---",
+    "  1 P1 arrival?      Yes: {actor} arrives at {location} in the morning. Graph names.",
+    "  2 P2 events?       Bread doubled overnight; a crowd is pushing at the abbey granary's gate; two people are",
+    "                     already hurt (cost paid); the abbot will not open it because the grain is next year's seed.",
+    "  3 P3 one stake?    Plea (rolled): {cast:speaker} and the abbey's cellarer both ask {actor} to rule on the grain,",
+    "                     and first to talk the crowd back before the gate gives.",
+    "  4 <=80 words?      78 by the gate (opening + step-0 spine).",
+    "  5 Read aloud?      Report throughout; no interior sensation, no camera work.",
+    "  6 Stated?          \"The abbot will not open it.\" \"The grain inside is the abbey's seed for next year.\"",
+    "  7 Every sentence works? Challenge, test or outcome.",
+    "  8 Nothing unintroduced? Crowd, gate, bar, key, seed, speaker and cellarer are in the spines before the hands.",
+    "  9 One named person? Step 0 names {cast:speaker}; step 1 names {cast:cellarer}; the abbot is a role noun.",
+    " 10 Stake in a sentence? Can {actor} hold a hungry crowd back from the abbey granary and name a share of the",
+    "                     grain that both the crowd and the abbey accept?",
+    " 11 Cards verb+noun? Calm Frightened People, Hold The Gate, Remember Lean Years, Open Closed Hands.",
+    " 12 Opening per class? urban, written.",
+    "",
+    "--- Mechanical design block ---",
+    "  Crux            A hungry crowd is forcing the abbey granary's gate, and both the crowd and the abbey ask",
+    "                  {actor} to rule how much grain leaves it.",
+    "  Shape           Danger - Confrontation - Aftermath. heart 0.76 (continue_weakened) -> heart 0.80",
+    "                  (fail_action). Linear, branch count 0. Mean 0.78, window fit 0.92 (master).",
+    "  Consequence hand (binding): relationship + story_seed, no swap.",
+    "                  relationship - bond_change with $cast:speaker and $cast:cellarer on both sides of step 1,",
+    "                  and with $cast:cellarer on step 0 failure (the gate gave way on the abbey's watch).",
+    "                  story_seed - placeless encounter_seed query #watch_errand on step 1 success: a town watch",
+    "                  hears how the mortal settled the granary and has work for them.",
+    "  Standing        reputation_with $here +0.06 on step 1 success, -0.06 on step 1 failure, -0.02 on step 0",
+    "                  failure (backs the critical_failure chip on both routes: a critical failure at either step",
+    "                  ends the action).",
+    "  Chips (THR-1685) Person bond chips use the plain noun `reputation` anchored on the cast member, no",
+    "                  {target}. The only `reputation with {location}` chips are anchored on $here.",
+    "  Reactions       Failure-side reactions held at +/-0.04 so no band chip is false after either pick.",
+    "  Tone            Ends warm on the success side: the crowd goes home with bread and the abbey keeps its seed.",
+    "  Cool failure    Nobody dies, is jailed or branded. Failure is the master's name: people send for a master",
+    "                  because a master's word ends quarrels, and neither side took this one's.",
+    "  Cost channels   All specials essence-priced except the Warm trait card (cost 0). No Heavy Hand, no rider,",
+    "                  no grants, no over-exposed library card as a special.",
+    "  Expert collision The Heart experts are feud_mediation (make peace) and inheritance_wake (settle a will);",
+    "                  this verb is hold back a crowd, then apportion a store.",
+    "  Accepted limit  The #watch_errand query keeps the family eligibility filter, so the sequel withers if the",
+    "                  mortal is outside a town, city or capital when it ripens. The chip claims only that word",
+    "                  reaches a town watch.",
+    "",
+    "--- Trait hooks (mandatory four questions) ---",
+    "  Gate? No - everyday board, no rule gates by brief. Variant? Yes - Warm (trait.core.core_warmth.virtue)",
+    "  +0.04 and Cold (trait.core.core_warmth.vice) -0.04. Trait-only nudge? Yes - granary.open_closed_hands on",
+    "  step 1, cost 0, unlocked by the Warm variant. Trait fragment? The trait card's own band fragments.",
+    "",
+    "--- Hands ---",
+    "  Step 0: Whisper (mind, Calm Frightened People) + Boost (force, Hold The Gate), deal 3 presence/peril.",
+    "  Step 1: Omen (time, Remember Lean Years) + Trait card (Warm, Open Closed Hands), deal 3 presence/social.",
+    "",
+    "--- Critic loop (2026-10-05) ---",
+    "  Editorial loop 1 REVISE (opening contradiction, passive danger act, carryover/afterimage echoes, band-page",
+    "  repetition, reaction magnitudes) -> redraft -> editorial loop 2 PASS WITH REVISIONS. Systems READY FOR",
+    "  IMPLEMENTATION (S1-S5: seed chip promise, three rule-7b overview fixes, person chip anchors). Package PASS",
+    "  (connected)."
+  ],
+  "template": {
+    "id": "encounter.town.granary_riot",
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Granary Riot",
+    "reach": "heart",
+    "crudType": "update",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "sacrifice_survival"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} arrives at {location} in the morning."
+    },
+    "steps": [
+      {
+        "reach": "heart",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.76,
+        "purposeLine": "Hold back the crowd",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "Bread doubled in price overnight. A crowd is pushing at the abbey granary's gate, and two people are already hurt. The abbot will not open it. The grain inside is the abbey's seed for next year.\n\n{cast:speaker} speaks for the crowd, and the abbey's cellarer for the abbey. Both ask {actor} to rule how much grain leaves the granary. First {actor} must talk the crowd back before the gate gives.",
+        "criticalSuccessAfterimage": "The crowd stepped back from the gate and sat down to wait.",
+        "successAfterimage": "The crowd stepped back from the gate and fell quiet.",
+        "successAtCostAfterimage": "The crowd stepped back, but not before the gate bar cracked under their weight.",
+        "failureAfterimage": "The crowd forced the gate and carried sacks out before {cast:speaker} turned them back.",
+        "criticalFailureAfterimage": "The crowd broke the gate down and poured into the granary.",
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:cellarer",
+              "sentimentDelta": -0.06,
+              "trustDelta": -0.06
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.02
+            }
+          ]
+        },
+        "deal": {
+          "count": 3,
+          "tags": [
+            "presence",
+            "peril"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "granary.calm_frightened_people",
+            "name": "Calm Frightened People",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.crowd",
+            "effectLine": "Take the panic out of a crowd, so those at the front stop pushing and start to listen.",
+            "bandProse": {
+              "critical_success": "The pushing stopped at the front first, and then all the way back to the street.",
+              "success": "The people at the front stopped pushing and turned to listen.",
+              "near_miss": "The front of the crowd grew calm, but the back kept pushing for a while.",
+              "failure": "The people at the front grew calm, and the people behind pushed them into the gate anyway."
+            }
+          },
+          {
+            "id": "granary.hold_the_gate",
+            "name": "Hold The Gate",
+            "sphere": "force",
+            "essenceCost": 2,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.ward",
+            "effectLine": "Make a door or bar bear far more weight than it was built for, so it stands a while longer.",
+            "bandProse": {
+              "success": "The gate bar bowed under the crowd's weight and did not break.",
+              "success_at_cost": "The hinges held the gate shut after the bar gave way.",
+              "failure": "The bar held, and the hinges tore out of the wall instead.",
+              "critical_failure": "The gate held until it fell flat into the yard all at once."
+            }
+          }
+        ]
+      },
+      {
+        "reach": "heart",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.8,
+        "purposeLine": "Rule on the grain",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "Now {actor} must rule, in front of the crowd and the abbey. {cast:cellarer} holds the granary key, and says every sack given away now is a field unsown next spring. The crowd's speaker says the town will not reach spring without bread. The ruling has to be one both sides accept.",
+        "criticalSuccessAfterimage": "Both sides took the ruling. The cellarer opened the gate, and the crowd cheered {actor}.",
+        "successAfterimage": "Both sides took the ruling, and the cellarer opened the gate.",
+        "successAtCostAfterimage": "Both sides took the ruling, but the cellarer argued over every sack.",
+        "failureAfterimage": "Neither side would take the ruling. The cellarer locked the gate, and the crowd went home hungry.",
+        "criticalFailureAfterimage": "Neither side would take the ruling, and the crowd broke into the granary.",
+        "carryoverFactorLines": {
+          "critical_success": {
+            "text": "The crowd trusts {actor} to be fair.",
+            "polarity": "for",
+            "forecastDelta": 0.06
+          },
+          "success": {
+            "text": "The crowd is willing to hear {actor} out.",
+            "polarity": "for",
+            "forecastDelta": 0.04
+          },
+          "success_at_cost": {
+            "text": "The cellarer is angry about the damage to the gate.",
+            "polarity": "against",
+            "forecastDelta": -0.02
+          },
+          "near_miss": {
+            "text": "The crowd stepped back late, and is still angry.",
+            "polarity": "against",
+            "forecastDelta": -0.03
+          },
+          "failure": {
+            "text": "The abbey is already short of seed, and angry about it.",
+            "polarity": "against",
+            "forecastDelta": -0.05
+          }
+        },
+        "successMetadata": {
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:speaker",
+              "sentimentDelta": 0.12,
+              "trustDelta": 0.1
+            },
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:cellarer",
+              "sentimentDelta": 0.12,
+              "trustDelta": 0.1
+            },
+            {
+              "kind": "encounter_seed",
+              "query": {
+                "kind": "encounter_template",
+                "tags": [
+                  "#watch_errand"
+                ]
+              },
+              "targetAgentId": "$actor",
+              "delayTicks": 48,
+              "priority": 0.8,
+              "seedLabel": "A town watch has heard how {actor} settled the granary, and has work for them."
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": 0.06
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:speaker",
+              "sentimentDelta": -0.12,
+              "trustDelta": -0.1
+            },
+            {
+              "kind": "bond_change",
+              "withAgentId": "$cast:cellarer",
+              "sentimentDelta": -0.1,
+              "trustDelta": -0.1
+            },
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.06
+            }
+          ]
+        },
+        "deal": {
+          "count": 3,
+          "tags": [
+            "presence",
+            "social"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "granary.remember_lean_years",
+            "name": "Remember Lean Years",
+            "sphere": "time",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.memory",
+            "effectLine": "Bring back a hungry winter everyone listening lived through, so they weigh tomorrow's hunger against today's.",
+            "bandProse": {
+              "critical_success": "Old people in the crowd spoke of the spring the seed was eaten, and the young ones listened.",
+              "success": "An old weaver in the crowd remembered the spring with no seed to sow, and said so.",
+              "success_at_cost": "The crowd remembered the lean spring, but only the old ones would settle for less.",
+              "near_miss": "The crowd remembered the hungry winter, but only after it had refused the first ruling.",
+              "failure": "The crowd remembered a hungry winter, and judged this one worse.",
+              "critical_failure": "The crowd remembered the last hungry winter, and would not wait to starve through another."
+            }
+          },
+          {
+            "id": "granary.open_closed_hands",
+            "name": "Open Closed Hands",
+            "requiredTrait": "trait.core.core_warmth.virtue",
+            "essenceCost": 0,
+            "forecastDelta": 0.08,
+            "imageTag": "generic.warmth",
+            "effectLine": "Wake their care for others, so everyone listening believes they mind who goes hungry, and each side gives a little.",
+            "bandProse": {
+              "success": "{actor} spoke as one who cares who eats, and the crowd believed it.",
+              "failure": "{actor} plainly cared who ate, and the cellarer called that soft."
+            }
+          }
+        ]
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_warmth.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Warm, they can make a hungry crowd believe they care.",
+        "addNudgeIds": [
+          "granary.open_closed_hands"
+        ]
+      },
+      {
+        "traitId": "trait.core.core_warmth.vice",
+        "forecastDelta": -0.04,
+        "factorLine": "Being Cold, they cannot make a hungry crowd believe they care."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "speaker",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "smith",
+          "innkeeper"
+        ],
+        "supportRole": "granary_crowd_speaker",
+        "spawnNpcRole": "smith",
+        "spawnName": "Wynn Halloway"
+      },
+      {
+        "kind": "actor",
+        "key": "cellarer",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "priest"
+        ],
+        "supportRole": "abbey_cellarer",
+        "spawnNpcRole": "monk",
+        "spawnName": "Osric Vane"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "A hungry crowd is at the abbey granary gate, and both sides send for a judge to rule on the grain.",
+      "success": "The ruling held, and the granary gave the town bread without giving up the seed.",
+      "failure": "The ruling failed, and the granary stayed shut against a hungry town."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The yard empties, and {location} counts what the granary gave.",
+        "changes": [],
+        "reactions": [
+          {
+            "id": "granary.stay_until_the_last_sack",
+            "label": "Stay until the last sack leaves",
+            "intent": "The mortal stays at the granary until the last sack of the share has gone, and the town hears of it.",
+            "effects": [
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": 0.03
+              }
+            ]
+          },
+          {
+            "id": "granary.sup_at_the_abbey",
+            "label": "Sup at the abbey's table",
+            "intent": "The mortal eats at the abbey's table that night. The cellarer will remember the company.",
+            "effects": [
+              {
+                "kind": "bond_change",
+                "withAgentId": "$cast:cellarer",
+                "sentimentDelta": 0.04
+              }
+            ]
+          }
+        ],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The abbey sold the share {actor} named at last year's price and kept the rest for seed. The abbot came out to thank {actor} in front of the town.",
+            "changes": [
+              {
+                "id": "granary.crit.town_thanks",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Town's Thanks",
+                "detail": "{location} thinks better of {actor} now."
+              },
+              {
+                "id": "granary.crit.crowd_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:speaker}",
+                    "entityId": "$cast:speaker",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Crowd's Trust",
+                "detail": "{cast:speaker} trusts {actor} now."
+              },
+              {
+                "id": "granary.crit.abbey_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:cellarer}",
+                    "entityId": "$cast:cellarer",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Abbey's Trust",
+                "detail": "{cast:cellarer} trusts {actor}'s judgment now."
+              },
+              {
+                "id": "granary.crit.watch_seed",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Watch",
+                "detail": "Word of {actor}'s ruling reaches a town watch.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "{cast:speaker} led the crowd home with bread for the month. The abbey keeps its seed for the spring.",
+            "changes": [
+              {
+                "id": "granary.win.town_thanks",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Town's Thanks",
+                "detail": "{location} thinks better of {actor} now."
+              },
+              {
+                "id": "granary.win.crowd_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:speaker}",
+                    "entityId": "$cast:speaker",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Crowd's Trust",
+                "detail": "{cast:speaker} trusts {actor} now."
+              },
+              {
+                "id": "granary.win.abbey_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:cellarer}",
+                    "entityId": "$cast:cellarer",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Abbey's Trust",
+                "detail": "{cast:cellarer} trusts {actor}'s judgment now."
+              },
+              {
+                "id": "granary.win.watch_seed",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Watch",
+                "detail": "Word of {actor}'s ruling reaches a town watch.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "{cast:speaker} led the crowd home with bread. The abbey has less seed left than it wanted.",
+            "changes": [
+              {
+                "id": "granary.cost.town_thanks",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks better of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Town's Thanks",
+                "detail": "{location} thinks better of {actor} now."
+              },
+              {
+                "id": "granary.cost.crowd_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:speaker}",
+                    "entityId": "$cast:speaker",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Crowd's Trust",
+                "detail": "{cast:speaker} trusts {actor} now."
+              },
+              {
+                "id": "granary.cost.abbey_trust",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:cellarer}",
+                    "entityId": "$cast:cellarer",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Abbey's Trust",
+                "detail": "{cast:cellarer} trusts {actor}'s judgment now."
+              },
+              {
+                "id": "granary.cost.watch_seed",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Watch",
+                "detail": "Word of {actor}'s ruling reaches a town watch.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "Bread is still dear in {location}. People send for a master because a master's word ends quarrels. This quarrel is still going.",
+            "changes": [
+              {
+                "id": "granary.fail.town_regard",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "Ruling Refused",
+                "detail": "{location} thinks less of {actor} now."
+              },
+              {
+                "id": "granary.fail.crowd_doubt",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:speaker}",
+                    "entityId": "$cast:speaker",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Crowd's Doubt",
+                "detail": "{cast:speaker} trusts {actor} less now."
+              },
+              {
+                "id": "granary.fail.abbey_doubt",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:cellarer}",
+                    "entityId": "$cast:cellarer",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "doubts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Abbey's Doubt",
+                "detail": "{cast:cellarer} doubts {actor}'s judgment now."
+              }
+            ],
+            "reactions": [
+              {
+                "id": "granary.fail.side_with_the_crowd",
+                "label": "Side with the crowd",
+                "intent": "The mortal says the town's hunger mattered more than the abbey's seed. The crowd's speaker will remember it kindly, and the cellarer will not.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:speaker",
+                    "sentimentDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:cellarer",
+                    "sentimentDelta": -0.04
+                  }
+                ]
+              },
+              {
+                "id": "granary.fail.side_with_the_abbey",
+                "label": "Side with the abbey",
+                "intent": "The mortal backs the abbey: the seed should have been kept, whatever the town thinks. The cellarer is grateful; the crowd's speaker is not.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:cellarer",
+                    "sentimentDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:speaker",
+                    "sentimentDelta": -0.04
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "The abbey has lost most of its seed for the spring. Both sides asked {actor} to settle this, and both have lost by it.",
+            "changes": [
+              {
+                "id": "granary.critfail.town_regard",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "Blamed for the Granary",
+                "detail": "{location} thinks less of {actor} now."
+              },
+              {
+                "id": "granary.critfail.abbey_blame",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:cellarer}",
+                    "entityId": "$cast:cellarer",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "trusts",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Abbey's Blame",
+                "detail": "{cast:cellarer} trusts {actor} less now."
+              }
+            ],
+            "reactions": [
+              {
+                "id": "granary.critfail.side_with_the_crowd",
+                "label": "Side with the crowd",
+                "intent": "The mortal says the town's hunger mattered more than the abbey's seed. The crowd's speaker will remember it kindly, and the cellarer will not.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:speaker",
+                    "sentimentDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:cellarer",
+                    "sentimentDelta": -0.04
+                  }
+                ]
+              },
+              {
+                "id": "granary.critfail.side_with_the_abbey",
+                "label": "Side with the abbey",
+                "intent": "The mortal backs the abbey: the seed should have been kept, whatever the town thinks. The cellarer is grateful; the crowd's speaker is not.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:cellarer",
+                    "sentimentDelta": 0.04
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:speaker",
+                    "sentimentDelta": -0.04
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A two-step master Heart job in a town: bread has doubled overnight and a crowd is forcing the abbey granary gate. The mortal holds the crowd back, then rules before the abbey and the crowd on how much of the abbey's seed grain leaves the granary. A ruling both sides accept wins the trust of the crowd's speaker and the abbey's cellarer, raises the mortal's standing with the town and plants a town-watch errand; a refused ruling costs both and the town's regard."
+  }
+}
