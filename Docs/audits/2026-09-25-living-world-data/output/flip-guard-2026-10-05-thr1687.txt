@@ -1,0 +1,33 @@
+THR-1687 D4 — the flip's guard rail with honest counts (THR-1722 merged), main d9ca6c1c + PR #2180 branch
+Reader: readers/flip-guard.ts (walk bundle = the constant patched to 'walk' at build time; hash = as shipped)
+Medium map, 200 ticks, one process per arm per seed, same session.
+
+Done-when 9 — guard rail (bar: within -10% of 'walk')
+                                   seed 42 walk → hash      seed 99 walk → hash
+recorded start_local               901 → 962  (+6.8%)       806 → 994  (+23.3%)
+planner-begun encounters           795 → 862  (+8.4%)       698 → 900  (+28.9%)
+  of which encounter.town.* / reputation.*   3 → 180          7 → 213
+seeded actions                     103 → 134                98 → 145
+actions attempted (balance)        986 → 1,077              885 → 1,118
+PASS on both seeds, both counts.
+
+Done-when 10 — strategic board wins (report, not a guard rail)
+contests with a strategic candidate     1,049 → 945          980 → 1,051
+  strategic won                            37 → 59             91 → 80
+  share                                 3.5% → 6.2%          9.3% → 7.6%
+contests with no strategic candidate      103 → 142            85 → 111
+recorded strategic decisions (instant+project+control)  37 → 59 · 91 → 80
+Reading: with honest counting the ambition share no longer collapses (D4's 4.6% → 3.0% / 9.5% → 3.8% was
+measured through the THR-1722 crash). Seed 42 rises, seed 99 falls ~1.7 points.
+
+Done-when 3 (re-read) — gameplay-report --seeds 42,99,7, 120 ticks, hash shipped
+                      seed 42    seed 99    seed 7
+novice   mean diff      0.10       0.10       0.10   success 59.1% / 60.6% / 63.9%
+journeyman mean diff    0.19       0.21       0.20   success 67.3% / 57.9% / 64.7%
+expert   mean diff      0.22       0.23       0.22   success 64.6% / 59.2% / 65.4%
+master   mean diff      0.17       0.23       0.22   success 69.9% / 72.9% / 84.1%
+total success           70.7%      63.1%      72.3%
+in-window share         0.441      0.442      0.459   (advisory, under KPI_IN_WINDOW_MIN 0.50 — THR-1689's question)
+Experts now attempt harder work than journeymen on every seed (Done-when 11's clause runs live and passes).
+Masters: 72.9% / 84.1% above the 0.70 ceiling on seeds 99 / 7 — the known failure D4 names; the master
+success clause stays skipped (TODO(THR-1688)), ceiling unchanged.
