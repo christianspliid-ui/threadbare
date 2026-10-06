@@ -16,7 +16,7 @@
  *  - Prose-first: a tier is a word, never an index or a float.
  *
  * Consumed by BOTH the Ascendant Bar (`ascendant-bar/selectors.ts`) and the character
- * sheet's Dominion section, so the two surfaces cannot drift on what a tier is called.
+ * sheet's Reaches section, so the two surfaces cannot drift on what a tier is called.
  */
 
 import type { ReachDomain } from '../types/traits';

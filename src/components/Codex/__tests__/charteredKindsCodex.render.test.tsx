@@ -73,7 +73,7 @@ describe('codex surface — the three chartered categories', () => {
     expect(cardCount()).toBe(AMBITION_COUNT);
     expect(screen.getByText('Dominate Regional Trade')).toBeTruthy();
     // The rail resolves the engine's own category spellings to words (Law 14).
-    for (const word of ['Dominion', 'Vengeance', 'Devotion']) {
+    for (const word of ['Supremacy', 'Vengeance', 'Devotion']) {
       expect(screen.getAllByText(new RegExp(`^${word}$`)).length, `no "${word}" rail group`).toBeGreaterThan(0);
     }
   });

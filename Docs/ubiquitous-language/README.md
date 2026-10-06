@@ -33,6 +33,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Foundation](./Cosmology.md#foundation)** — root Sphere anchoring stability and permanence
 - **[Creation](./Cosmology.md#creation)** — root Sphere driving change and generativity
 - **[Sphere Alignment](./Cosmology.md#sphere-alignment)** — an actor or location's affinity for a Sphere; stored as `aligned_with` edge
+- **[Dominion](./Cosmology.md#dominion)** — how much a world object is the god's: graded match of its sphere scores to the god's bought affinities; home turf is cheaper and stronger to influence
+- **[Dominion Band](./Cosmology.md#dominion-band)** — Hostile · Foreign · Touched · Held · Sovereign; the one read every consumer uses, never a number
+- **[Opposing Dominion](./Cosmology.md#opposing-dominion)** — the opposite pole of each sphere the god holds, per `SPHERE_OPPOSITES`
 - **[Domain Capability](./Cosmology.md#domain-capability)** — tiered proficiency across a Reach; gates action access with a tier + alignment prerequisite check
 - **[Cosmology Profile](./Cosmology.md#cosmology-profile)** — the seeded sphere configuration for a world instance; stored in `GameState.cosmology`
 - **[Quintessence](./Cosmology.md#quintessence)** — the system that absorbed the deprecated Flesh Reach in TB-075; not a ninth Reach
