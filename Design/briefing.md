@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 11:56 local (09:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 12:55 local (10:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,6 +27,6 @@ Say "veto buy your spheres", "veto divine economy", "veto fair fights" or "veto 
 
 ## Health
 
-- **The long simulation tests are red on main** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37315731022), failing since 5 October ~11:00). The everyday checks are green and the live site is unaffected; a builder session owes the fix (pickup lane's unstick duty). Not yours.
-- **The worktree reaper has 6 worktrees waiting for a decision** (480 worktrees, 315 local branches on disk). Noted for visibility; it ran at 11:43.
-- Everything else is green. The live site is serving the latest main, scheduled tasks are on time, no pull requests are waiting. Simulation speed is normal (118 ms per tick, 9% over the weekly median of 108, inside the 25% drift line).
+- **The long simulation tests are red on main** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37448713090), 10:16 UTC). They passed at 02:58 UTC and first failed on the merge of [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) (the found-leads fix), so that merge is the first suspect. The everyday checks are green and the live site is unaffected; a builder session owes the fix (pickup lane's unstick duty). Not yours.
+- **The worktree reaper has 6 worktrees waiting for a decision** (483 worktrees, 315 local branches on disk). Noted for visibility; it ran at 12:40.
+- Everything else is green. The live site is serving the latest main, scheduled tasks are on time, no pull requests are waiting. Simulation speed is normal (111 ms per tick, 2% over the weekly median of 108).
