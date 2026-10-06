@@ -42,6 +42,8 @@ describe('causeForPhase', () => {
     expect(causeForPhase('control_effects')).toBe('sustained');
     expect(causeForPhase('divine_premonition')).toBe('premonition');
     expect(causeForPhase('unified_action_progress')).toBe('acts');
+    // Measured on a 150-tick run: the delve phases were the one unmapped mover.
+    expect(causeForPhase('delve_emergence')).toBe('ruins');
     expect(causeForPhase('rival_actions')).toBe('other');
   });
 });

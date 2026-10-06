@@ -333,7 +333,9 @@ export interface CardFaceModel {
  */
 function MaybeTooltip({ id, children }: { id?: string; children: React.ReactNode }) {
   if (!id) return <>{children}</>;
-  return <Tooltip id={id}>{children}</Tooltip>;
+  // THR-1713 — `fit`: the wrapper is exactly the mark's height, so turning
+  // the hovers on cannot grow the chip row (the nudge face's pinned geometry).
+  return <Tooltip id={id} fit>{children}</Tooltip>;
 }
 
 /**

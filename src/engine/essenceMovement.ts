@@ -67,6 +67,13 @@ export const ESSENCE_MOVEMENT_CAUSE_BY_PHASE: Readonly<Record<string, EssenceMov
   control_effects: 'sustained',
   divine_premonition: 'premonition',
   unified_action_progress: 'acts',
+  // Measured, not guessed (plan § Systems design): on a 150-tick seed-42 medium
+  // run the only unmapped phase that moved a pool was `delve_emergence` — 100%
+  // of that sphere's inflow, past the plan's one-third bar — so the delve
+  // phases (registered, `phases/delve*.ts`) get their own cause.
+  delve_admission: 'ruins',
+  delve_progression: 'ruins',
+  delve_emergence: 'ruins',
 };
 
 // ─── Pure core ───────────────────────────────────────────────────────

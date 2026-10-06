@@ -96,7 +96,7 @@ export const OddsPips = memo(function OddsPips({
       <span aria-hidden="true">{glyphs}</span>
     </span>
   );
-  return tierTooltip ? <Tooltip id={`ui.card.odds.${reading.tier.id}`}>{row}</Tooltip> : row;
+  return tierTooltip ? <Tooltip id={`ui.card.odds.${reading.tier.id}`} fit>{row}</Tooltip> : row;
 });
 
 /**
@@ -150,7 +150,7 @@ export const CostPips = memo(function CostPips({
   tooltipId,
   'data-testid': dataTestId,
 }: CostPipsProps) {
-  const wrap = (node: React.ReactElement) => (tooltipId ? <Tooltip id={tooltipId}>{node}</Tooltip> : node);
+  const wrap = (node: React.ReactElement) => (tooltipId ? <Tooltip id={tooltipId} fit>{node}</Tooltip> : node);
   const rounded = Math.max(0, Math.round(cost));
 
   // The badge chrome, shared by the "Free" and priced branches so a free card

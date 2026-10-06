@@ -43,6 +43,7 @@ export type EssenceMovementCause =
   | 'sustained'       // phase `control_effects` — sustained effects' cost and income
   | 'premonition'     // phase `divine_premonition`
   | 'acts'            // phase `unified_action_progress` — god-acts resolving in-tick
+  | 'ruins'           // phases `delve_*` — what an elder site or a delve gave up (or cost)
   | 'spend_nudge'     // out-of-tick: a played hand (nudge commit, authored-choice spend)
   | 'spend_cast'      // out-of-tick: a cast (playerCastDispatch)
   | 'other';          // any phase not in the cause table — still counted, never dropped

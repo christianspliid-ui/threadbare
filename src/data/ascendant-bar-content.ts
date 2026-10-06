@@ -212,12 +212,15 @@ export const ESSENCE_TREND_WORDS: Record<'rising' | 'steady' | 'ebbing', string>
  * new cause without a phrase is a type error, not a blank.
  */
 export const ESSENCE_CAUSE_PHRASES: Record<EssenceMovementCause, { fed: string; drawn: string }> = {
-  income:      { fed: "the cosmos's flow",           drawn: "the cosmos's ebb" },
+  // A negative `income` is the essence phase clamping a pool back to its cap,
+  // so its "drawn" phrase names the limit, not an ebb that never happened.
+  income:      { fed: "the cosmos's flow",           drawn: 'the limit of what you can hold' },
   places:      { fed: 'your places of power',        drawn: 'your places of power' },
   upkeep:      { fed: 'threads released',            drawn: "your threads' upkeep" },
   sustained:   { fed: 'your sustained workings',     drawn: 'your sustained workings' },
   premonition: { fed: 'premonition',                 drawn: 'premonition' },
   acts:        { fed: 'your workings resolving',     drawn: 'your workings resolving' },
+  ruins:       { fed: 'what the ruins gave up',      drawn: 'the ruins' },
   spend_nudge: { fed: 'a hand returned',             drawn: 'the hands you played' },
   spend_cast:  { fed: 'a cast returned',             drawn: 'your casts' },
   other:       { fed: 'other currents',              drawn: 'other costs' },

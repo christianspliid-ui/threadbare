@@ -39,6 +39,12 @@ interface TooltipProps {
    * a whole row can be one hover target at its full width (Law 46).
    */
   block?: boolean;
+  /**
+   * Render the trigger wrapper as `inline-flex` so it is exactly its child's
+   * height (THR-1713). An `inline-block` wrapper carries a line box at the
+   * inherited line-height, which grew a 14px pip row to 27px on the card face.
+   */
+  fit?: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -149,6 +155,7 @@ export const Tooltip = React.memo(function Tooltip({
   as = 'span',
   focusable,
   block = false,
+  fit = false,
 }: TooltipProps) {
   const tooltipId = useId();
   const triggerRef = useRef<HTMLElement | SVGGElement>(null);
@@ -541,7 +548,7 @@ export const Tooltip = React.memo(function Tooltip({
   );
 
   const WrapperTag = as;
-  const wrapperStyle = as === 'g' ? undefined : { display: block ? 'block' as const : 'inline-block' as const, cursor: 'inherit' as const };
+  const wrapperStyle = as === 'g' ? undefined : { display: block ? 'block' as const : fit ? 'inline-flex' as const : 'inline-block' as const, cursor: 'inherit' as const };
 
   return (
     <>

@@ -102,9 +102,11 @@ describe('ActionCard — what the card says', () => {
   });
 
   it('prints the forecast tier word when the slot carries one', () => {
-    expect(screen.queryByText('favorable')).toBeNull();
+    expect(screen.queryByText('Favorable')).toBeNull();
     render(<ActionCard slot={slot()} onClick={vi.fn()} />);
-    expect(screen.getByText('favorable')).toBeTruthy();
+    // THR-1713 — the display word, never the lowercase key (Law 14).
+    expect(screen.getByText('Favorable')).toBeTruthy();
+    expect(screen.queryByText('favorable')).toBeNull();
   });
 
   it('renders no odds zone at all when no capability was supplied', () => {

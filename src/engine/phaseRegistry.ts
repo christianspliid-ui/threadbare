@@ -14,6 +14,7 @@
 import type { GameState } from '../types/gameState';
 import type { SimulationRuntime } from './simulationRuntime';
 import { applyEssenceEarned } from './essenceEarned';
+import { applyEssenceMovement } from './essenceMovement';
 import { emitTrace, emitPhaseTiming } from './traceBuffer';
 
 /** Inputs every registered phase receives. */
@@ -267,7 +268,8 @@ export function runRegisteredPhases(
       // funnels are hooked because a registered phase that grants essence is a
       // phase the counter must see, and which funnel a phase runs through is a
       // migration detail (THR-238) rather than a property of what it does.
-      s = applyEssenceEarned(s, { ...s, ...delta } as GameState);
+      // THR-1713 — and the movement record, filed under this phase's id.
+      s = applyEssenceMovement(s, applyEssenceEarned(s, { ...s, ...delta } as GameState), phase.id);
     } catch (err) {
       emitTrace({
         tick: s.tick,
