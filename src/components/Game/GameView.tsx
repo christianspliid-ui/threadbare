@@ -275,6 +275,8 @@ import {
 import { checkMidEncounterPromotion } from '../../engine/attentionTier';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
 import { observeResolutionIntelligence } from '../../engine/intelligence';
+import type { EncounterNotification } from '../../types/encounterVisibility';
+import { isPlayerHoldLive, releasePlayerHold, setPlayerHold, tracePlayerHoldReleased, tracePlayerHoldSet } from '../../engine/playerStepHold';
 import {
   markEncounterProgressDisregarded,
   markUnifiedActionDisregarded,
@@ -337,6 +339,21 @@ function formatJourneyPhaseLabel(
     case 'return': return active ? 'Return' : 'Return resolved';
     default: return active ? 'Unfolding' : 'Dormant';
   }
+}
+
+/**
+ * The unified action the open encounter veil is showing: its pinned action id,
+ * or (older notifications) the actor's unresolved action on the template.
+ * Shared by dismiss and minimise (THR-1730) so both touch the same action.
+ */
+function matchesTieredEncounterAction(
+  action: UnifiedAction,
+  open: { activeActionId?: string; agentId: string; notification: EncounterNotification },
+): boolean {
+  if (open.activeActionId) return action.actionId === open.activeActionId;
+  return !action.resolved
+    && action.actorId === open.agentId
+    && action.templateId === open.notification.encounterId;
 }
 
 export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle }: GameViewProps) {
@@ -1665,10 +1682,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectEncounterBadges(
       gameState.encounterNotifications,
       (notif) => stakesLineForNotification(gameState, notif),
+      // THR-1730 — a step held for the player says it is waiting, and keeps its
+      // badge — except while its own veil is open.
+      new Set((gameState.unifiedActions ?? [])
+        .filter(a => a.actionId !== tieredEncounterState?.activeActionId
+          && isPlayerHoldLive(a, gameState.graph, gameState.tick))
+        .map(a => a.actionId)),
     ),
     // The line reads the action and the archive; both change only with the tick.
+    // Hold liveness reads the thread edge, edited in place by the attention
+    // toggle (touchWorld), so worldVersion re-derives "waiting" while paused.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState.encounterNotifications, gameState.tick],
+    [gameState.encounterNotifications, gameState.unifiedActions, gameState.tick, runtime.worldVersion, tieredEncounterState?.activeActionId],
   );
 
   // THR-1727 — each agent row's story line: the live encounter's stakes line,
@@ -3303,6 +3328,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * down in a row and the first must not pop back when the second is.
    */
   const minimisedEncounterNotificationIds = useRef<Set<string>>(new Set());
+  /**
+   * THR-1730 — step notifications the player has already committed a hand or a
+   * choice on. Each step raises its own notification id, so membership means
+   * "this step is decided": minimise never holds it. Pruned with the minimised
+   * set once the notification is no longer pending.
+   */
+  const committedEncounterNotificationIds = useRef<Set<string>>(new Set());
 
   // `openedAsInterrupt` no longer forces a resume (THR-1608): the central
   // auto-pause restores the clock to its state before the encounter opened.
@@ -3318,20 +3350,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState?.notification?.id) {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      const heldAction = (gameState.unifiedActions ?? []).find(action =>
+        action.playerHold && matchesTieredEncounterAction(action, tieredEncounterState));
+      if (heldAction) tracePlayerHoldReleased(heldAction, gameState.tick, 'dismiss');
       setGameState(prev => {
         const unifiedActions = (prev.unifiedActions ?? []).map(action => {
-          const matchesActiveAction =
-            (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
-            || (
-              !tieredEncounterState.activeActionId
-              && !action.resolved
-              && action.actorId === tieredEncounterState.agentId
-              && action.templateId === tieredEncounterState.notification.encounterId
-            );
-          if (!matchesActiveAction) return action;
+          if (!matchesTieredEncounterAction(action, tieredEncounterState)) return action;
           const step = tieredEncounterState.template.steps[action.currentStep];
+          // THR-1730 (U2) — a dismiss ends the set-down.
           return markUnifiedActionDisregarded(
-            action,
+            releasePlayerHold(action),
             action.currentStep,
             step?.id ?? `step-${action.currentStep + 1}`,
             prev.tick,
@@ -3370,7 +3398,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       });
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
-  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+  }, [closeEncounterModalAndResume, gameState.tick, gameState.unifiedActions, setGameState, tieredEncounterState]);
 
   /**
    * THR-1724 — set the encounter down without deciding it. Nothing on the action
@@ -3384,18 +3412,46 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (minimisedId) {
       minimisedEncounterNotificationIds.current.add(minimisedId);
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // THR-1730 (U1) — a pause-tier unified-action step waits for its god: the
+      // set-down writes a hold that Phase 1 honours. Auto-mode and legacy
+      // notifications keep today's behaviour (no hold; they play out).
+      const notification = tieredEncounterState.notification;
+      // Read the live record, not the veil's snapshot: an authored-choice commit
+      // resolves the notification but leaves the veil open, and a set-down after
+      // that must not hold a step the player already decided (it would have no
+      // badge to come back through).
+      const stillPending = (gameState.encounterNotifications ?? [])
+        .some(n => n.id === minimisedId && !n.resolved);
+      const holdsStep = stillPending
+        && !committedEncounterNotificationIds.current.has(minimisedId)
+        && notification.sourceSystem === 'unified_action'
+        && (notification.kind ?? 'encounter') === 'encounter'
+        && notification.autoResolveTick === null;
+      const holdTarget = holdsStep
+        ? (gameState.unifiedActions ?? []).find(action =>
+            !action.resolved && matchesTieredEncounterAction(action, tieredEncounterState))
+        : undefined;
       // The badge counts unviewed notifications (`isBadgeWorthy`), and a badge
       // reopen marks one viewed — so a minimise un-views it, or the second
       // set-down would leave the encounter pending with no way back in.
       setGameState(prev => ({
         ...prev,
+        ...(holdTarget
+          ? {
+              unifiedActions: (prev.unifiedActions ?? []).map(action =>
+                action.actionId === holdTarget.actionId ? setPlayerHold(action, prev.tick) : action),
+            }
+          : {}),
         encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
           n.id === minimisedId && n.viewed ? { ...n, viewed: false } : n,
         ),
       }));
+      if (holdTarget && !holdTarget.playerHold) {
+        tracePlayerHoldSet(holdTarget, gameState.tick, tieredEncounterState.agentName);
+      }
     }
     closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
-  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+  }, [closeEncounterModalAndResume, gameState.encounterNotifications, gameState.tick, gameState.unifiedActions, setGameState, tieredEncounterState]);
 
   const handleEncounterAcknowledgeAftermath = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {
@@ -3818,10 +3874,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               && action.templateId === notification.encounterId
             );
           if (!matchesActiveAction) return action;
+          // THR-1730 (U2) — a commit ends the set-down: the step resumes its clock.
+          const released = releasePlayerHold(action);
           const step = tieredEncounterState.template.steps[action.currentStep];
-          if (!step) return action;
+          if (!step) return released;
           return recordUnifiedActionChoiceMemory(
-            action,
+            released,
             action.currentStep,
             step.id,
             choice,
@@ -3856,6 +3914,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       };
     });
 
+    const heldAction = (gameState.unifiedActions ?? []).find(action =>
+      action.playerHold && matchesTieredEncounterAction(action, tieredEncounterState));
+    if (heldAction) tracePlayerHoldReleased(heldAction, gameState.tick, 'commit');
+
     // Emit trace
     console.debug('[EncounterVeil] Intervention:', {
       agentId,
@@ -3872,6 +3934,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     archetype.sphereAlignment.primary,
     gameState.essencePool,
     gameState.tick,
+    gameState.unifiedActions,
     handlePushToast,
   ]);
 
@@ -3946,7 +4009,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         cardPlayTally: tally,
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           if (action.actionId !== phase.actionId) return action;
-          const withHand = { ...action, activeNudges: [...nudgeIds] };
+          // THR-1730 (U2) — a commit (cards or an empty hand) ends the set-down.
+          const withHand = { ...releasePlayerHold(action), activeNudges: [...nudgeIds] };
           // THR-1123 — also remember the hand per step. `activeNudges` is
           // replaced when the next step commits, so it cannot answer "what was
           // played on step 0" afterwards; retrospective surfaces (gate duty's
@@ -3975,6 +4039,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       };
     });
 
+    const heldAction = (gameState.unifiedActions ?? []).find(a => a.actionId === phase.actionId && a.playerHold);
+    if (heldAction) tracePlayerHoldReleased(heldAction, gameState.tick, 'commit');
+
     // One trace per played card (player-driven, low volume — not an
     // all-agents phase, so the aggregate-batching rule does not apply).
     for (const id of nudgeIds) {
@@ -3997,6 +4064,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // The hand is committed; the step now resolves on mortal terms. Closing the
     // stage releases the THR-668 interrupt the veil registered.
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+    // THR-1730 — the step is decided; a later set-down of it (reopened from the
+    // badge before it resolves) must not hold it again.
+    committedEncounterNotificationIds.current.add(tieredEncounterState.notification.id);
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
   }, [
@@ -4004,6 +4074,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     encounterVeilModel,
     gameState.essencePool,
     gameState.tick,
+    gameState.unifiedActions,
     archetype.sphereAlignment.primary,
     handlePushToast,
     setGameState,
@@ -4075,9 +4146,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-1724 — a minimised encounter waits for its badge. Ids that are no
     // longer pending are pruned so the set cannot grow without bound.
     const minimised = minimisedEncounterNotificationIds.current;
-    if (minimised.size > 0) {
+    const committed = committedEncounterNotificationIds.current;
+    if (minimised.size > 0 || committed.size > 0) {
       const pending = new Set(notifications.filter(n => !n.resolved).map(n => n.id));
       for (const id of minimised) if (!pending.has(id)) minimised.delete(id);
+      for (const id of committed) if (!pending.has(id)) committed.delete(id);
     }
     runEncounterAutoOpenScan(
       minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications,
@@ -4087,8 +4160,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
-  // player (the engine does not hold steps; THR-1730) must not leave a badge
-  // that opens nothing. Once its step can no longer be opened — the same three
+  // player must not leave a badge that opens nothing. Since THR-1730 a
+  // minimised pause-tier unified-action step is held and does not resolve, so
+  // this now covers legacy and auto-mode notifications, and a hold the engine
+  // released (thread set to Lives on); a held step found here is a real bug. Once its step can no longer be opened — the same three
   // checks `handleOpenEncounterFromNotification` makes — the notification is
   // resolved, which retires the badge and prunes the minimised set. Pause-tier
   // records carry no `autoResolveTick`, so nothing else would ever retire it.

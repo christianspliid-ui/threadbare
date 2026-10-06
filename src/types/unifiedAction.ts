@@ -3124,6 +3124,12 @@ export interface UnifiedAction {
   readonly choiceHistory?: readonly EncounterChoiceMemory[];
   /** Player has chosen to stop interfering; remaining beats resolve on mortal terms. */
   readonly disregardRemaining?: boolean;
+  /**
+   * THR-1730 — the player set this step down (minimise) at pause-tier attention.
+   * While live (`isPlayerHoldLive`), Phase 1 does not advance `stepProgress`: the
+   * step waits for its god. Absent ⇒ today's behaviour, byte for byte.
+   */
+  readonly playerHold?: { readonly stepIndex: number; readonly sinceTick: number };
   /** Effective attention tier — computed at action creation, may be promoted mid-encounter. */
   readonly effectiveTier?: AttentionTier | 'invisible';
   /**

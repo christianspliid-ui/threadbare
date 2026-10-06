@@ -399,7 +399,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-05 by Claude Code (THR-1728 — stakes on every encounter). **Changed** 🟢 LIVE
+2026-10-05 by Claude Code (THR-1730 — a minimised moment waits). **Added** `minimised-step-hold`
+(Attention, Chronicle & Narrative → Encounters & Dilemmas: the player's minimise writes
+`UnifiedAction.playerHold`; Phase 1 of `phaseUnifiedActionProgress` skips a live hold via
+`progressActionsWithPlayerHolds`, and the thread badge reads it as *waiting for you*).
+Audit-on-touch for the unaudited Encounters core; the THR-1608 auto-pause contract is preserved
+unchanged (a hold is about the step, not the clock).
+Earlier: 2026-10-05 by Claude Code (THR-1728 — stakes on every encounter). **Changed** 🟢 LIVE
 `encounter-stakes-line-reaches-veil-ledger-badge-row`: every template in the encounter predicate
 now authors `stakes` (write site: each encounter data file), the Composition Contract's new
 `stakes` block requires it (`content-eval/encounterStakesRules.ts`, shared with the validator),

@@ -6,6 +6,17 @@
 
 ---
 
+## A minimised moment waits (THR-1730)
+
+Plan: `Docs/plans/2026-10-04-thr-1730-minimised-step-waits.md`.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/playerStepHold.ts` (new — `setPlayerHold`, `releasePlayerHold`, `playerHoldReleaseReason`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds`) | `2a` unified-action progress, Phase 1 (`phaseUnifiedActionProgress`) | — | `unifiedActions[].playerHold` | `encounter.player_hold_released` | `__DEBUG.getPlayerHolds()` |
+| `GameView.tsx` minimise (sets) / nudge commit, authored-choice commit, dismiss (clear) | — (player input) | EncounterVeil via GameView | `unifiedActions[].playerHold` | `encounter.player_hold_set`, `encounter.player_hold_released` (`commit` / `dismiss`) | `getPlayerHolds()` |
+| `unifiedActionLifecycle.ts` `advanceStep` / `completeUnifiedAction` strip the hold (`withoutPlayerHold`) | `2a` | — | `unifiedActions[].playerHold` | — | — |
+| `encounterBadgeModel.ts` (held action ids → "waiting for you" + `ui.encounter_waiting`) | — | thread badge | reads held ids | — | badge `aria-label` |
+
 ## The First asks — pause by default, daily life, the story breath (THR-1715)
 
 Plan: `Docs/plans/2026-10-03-thr-1715-the-first-asks.md`.

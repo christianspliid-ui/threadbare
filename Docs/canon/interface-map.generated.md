@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 54 |
-| **Total** | **222** |
+| 🔵 UNVERIFIED-OK | 55 |
+| **Total** | **223** |
 
 ## Contracts by producing subsystem
 
@@ -110,6 +110,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `minimised-step-hold` | The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". | state-field: `playerHold`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `world-ref-opens-one-card` | Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended). | function: `SURFACE_BY_WORLD_REF`, `useRefRouter` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -1970,6 +1971,18 @@ exit
 - **Write sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
 - **Read sites:** `src/engine/encounters/nudges.ts`
 - **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `minimised-step-hold` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide".
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
+- **UL terms:** *Encounter*
+- **Module:** `src/engine/playerStepHold.ts`
+- **Production hits:** 6 total — 3 write, 2 read, 1 unclassified
+- **Write sites:** `src/components/Game/GameView.tsx`, `src/engine/playerStepHold.ts`, `src/engine/unifiedActionLifecycle.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `minted-ambition-provenance` — 🟢 LIVE

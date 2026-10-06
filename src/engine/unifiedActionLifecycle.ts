@@ -135,6 +135,17 @@ export function progressUnifiedAction(action: UnifiedAction): UnifiedAction {
 }
 
 /**
+ * THR-1730 — drop a minimised-step hold. A hold is per step and never carries
+ * into the next one (an object spread would carry it). Same object when absent.
+ */
+export function withoutPlayerHold(action: UnifiedAction): UnifiedAction {
+  if (action.playerHold === undefined) return action;
+  const rest: { -readonly [K in keyof UnifiedAction]?: UnifiedAction[K] } = { ...action };
+  delete rest.playerHold;
+  return rest as UnifiedAction;
+}
+
+/**
  * Check if the current step has completed (progress >= duration).
  */
 export function isStepComplete(action: UnifiedAction): boolean {
@@ -198,6 +209,8 @@ export function advanceStep(
   rng: () => number,
   targetProperties?: Readonly<Record<string, unknown>>,
 ): UnifiedAction {
+  // THR-1730 (E4): every branch below spreads `action`; the step is over, so its hold is too.
+  action = withoutPlayerHold(action);
   const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const newStepOutcomes = [...action.stepOutcomes, outcome];
 
@@ -271,7 +284,7 @@ export function completeUnifiedAction(
   outcome: UnifiedActionOutcome,
 ): UnifiedAction {
   return {
-    ...action,
+    ...withoutPlayerHold(action),
     resolved: true,
     outcome,
   };

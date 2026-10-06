@@ -361,7 +361,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pilgrim` (1) | `pilgrimWays.ts` | `THR-1632`, `THR-1660` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
-| `player` (4) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts` | `THR-1581`, `THR-1647`, `THR-727`, `THR-739`, `THR-998` |
+| `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `premonition` (2) | `premonitionActions.ts`, `premonitionCompulsion.ts` | — |
 | `profile` (1) | `profileGenerator.ts` | `THR-872` |
@@ -437,4 +437,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 104 tick phases · 206 engine domains · 644 modules._
+_Counts: 28 registered subsystems (3 dormant) · 104 tick phases · 206 engine domains · 645 modules._

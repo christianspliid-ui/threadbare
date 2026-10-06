@@ -812,6 +812,28 @@ if (import.meta.env.DEV) {
      * most-recent) unified-action encounter. Resolves the agent by exact id,
      * id prefix, then case-insensitive partial name — same notes as gotoAgent.
      */
+    /**
+     * THR-1730 — every unified action carrying a minimised-step hold: the step
+     * that waits for the player, how long it has waited, and whether Phase 1
+     * still honours it (`live`). Empty when nothing is held. Read-only.
+     */
+    getPlayerHolds: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { isPlayerHoldLive } = await import('./engine/playerStepHold');
+      return (state.unifiedActions ?? [])
+        .filter(a => a.playerHold !== undefined)
+        .map(a => ({
+          actionId: a.actionId,
+          actorId: a.actorId,
+          templateId: a.templateId,
+          stepIndex: a.playerHold!.stepIndex,
+          sinceTick: a.playerHold!.sinceTick,
+          heldTicks: Math.max(0, state.tick - a.playerHold!.sinceTick),
+          live: isPlayerHoldLive(a, state.graph, state.tick),
+        }));
+    },
+
     getStepProse: (agentRef: string) => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

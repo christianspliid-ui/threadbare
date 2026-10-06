@@ -78,6 +78,7 @@ import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
 import { emitTrace } from './traceBuffer';
+import { progressActionsWithPlayerHolds } from './playerStepHold';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
@@ -3728,8 +3729,10 @@ export function phaseUnifiedActionProgress(
   // Digest buffer: accumulate background/invisible action outcomes for Read the Threads.
   const digestBuffer: DigestEntry[] = [...(state.digestBuffer ?? [])];
 
-  // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
-  let actions = progressAllActions(state.unifiedActions ?? []);
+  // Phase 1: Progress all (defensive: state may not have unifiedActions yet).
+  // THR-1730: a step the player minimised at pause-tier attention waits for them
+  // (live hold → un-progressed); a stale hold releases and progresses this tick.
+  let actions = progressActionsWithPlayerHolds(state.unifiedActions ?? [], state.graph, state.tick);
 
   // Phase 2: Collect completions
   const completing = collectCompletions(actions);
