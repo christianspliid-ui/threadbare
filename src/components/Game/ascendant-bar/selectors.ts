@@ -18,7 +18,17 @@ import {
 } from '../../../types/quintessence';
 import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
-import { REACH_COPY, COVENANT_UPKEEP_COPY } from '../../../data/ascendant-bar-content';
+import {
+  REACH_COPY,
+  COVENANT_UPKEEP_COPY,
+  SPHERE_COPY,
+  ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW,
+  ESSENCE_TREND_WORDS,
+  ESSENCE_CAUSE_PHRASES,
+  ESSENCE_FED_LEAD,
+  ESSENCE_DRAWN_LEAD,
+} from '../../../data/ascendant-bar-content';
+import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -72,6 +82,11 @@ export interface QuintessenceView {
   ratio: number;
   band: QuintessenceBand;
   lexiconWord: string;
+  /**
+   * Whether the identity strip shows it (THR-1713 D8): only once it has fallen
+   * below {@link ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW}. The sheet ignores this.
+   */
+  showOnStrip?: boolean;
 }
 
 export function selectQuintessenceView(
@@ -80,7 +95,7 @@ export function selectQuintessenceView(
   const ascendantNode = gameState.graph.getNode(gameState.ascendantId);
 
   if (!ascendantNode) {
-    return { ratio: 1.0, band: 'healthy', lexiconWord: 'Absolute' };
+    return { ratio: 1.0, band: 'healthy', lexiconWord: 'Absolute', showOnStrip: false };
   }
 
   const ratio = getQuintessenceRatio(ascendantNode);
@@ -93,7 +108,12 @@ export function selectQuintessenceView(
     'Resonant', 'Crystalline', 'Radiant', 'Transcendent', 'Absolute',
   ] as const;
 
-  return { ratio, band, lexiconWord: LEXICON[idx] };
+  return {
+    ratio,
+    band,
+    lexiconWord: LEXICON[idx],
+    showOnStrip: ratio < ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW,
+  };
 }
 
 // ─── Essence rows ─────────────────────────────────────────────────────────────
@@ -109,6 +129,33 @@ export interface EssenceRowView {
    * under the *Elder powers* disclosure — elder magic, discovered, not selected.
    */
   isElder: boolean;
+  /**
+   * The row's hover (THR-1713 D2): the sphere's role, its trend word, and up to
+   * two things that fed it and two that drew on it — in words, never rates.
+   */
+  hoverDesc?: string;
+}
+
+/** Join cause phrases as "a" / "a and b". */
+function joinPhrases(phrases: readonly string[]): string {
+  return phrases.length <= 1 ? (phrases[0] ?? '') : `${phrases.slice(0, -1).join(', ')} and ${phrases[phrases.length - 1]}`;
+}
+
+/**
+ * The essence row's hover description. Pure; reads the movement record only
+ * through `readEssenceMovement`. An absent record reads *Steady* with the role
+ * alone (fail-soft — the designed empty state).
+ */
+export function essenceRowHover(sphere: SphereName, reading: EssenceMovementReading): string {
+  const role = SPHERE_COPY[sphere]?.role ?? '';
+  const parts = [role, `${ESSENCE_TREND_WORDS[reading.trend]}.`];
+  if (reading.feeds.length > 0) {
+    parts.push(`${ESSENCE_FED_LEAD} ${joinPhrases(reading.feeds.map((c) => ESSENCE_CAUSE_PHRASES[c].fed))}.`);
+  }
+  if (reading.draws.length > 0) {
+    parts.push(`${ESSENCE_DRAWN_LEAD} ${joinPhrases(reading.draws.map((c) => ESSENCE_CAUSE_PHRASES[c].drawn))}.`);
+  }
+  return parts.filter(Boolean).join(' ');
 }
 
 /**
@@ -141,13 +188,16 @@ export function selectEssenceRows(
       const level = pool[sphere] ?? 0;
       const isPrimary = sphere === primary;
       const isSecondary = sphere === secondary && !isPrimary;
+      // THR-1713 — the arrow and the hover read one record, so they cannot disagree.
+      const reading = readEssenceMovement(gameState.essenceMovement?.[sphere], gameState.tick);
       return {
         sphere,
         level,
-        trend: 'steady' as const,    // income delta not yet surfaced in EssencePool; placeholder
+        trend: reading.trend,
         isPrimary,
         isSecondary,
         isElder: foundation.has(sphere) && !isPrimary && !isSecondary,
+        hoverDesc: essenceRowHover(sphere, reading),
       };
     });
 }

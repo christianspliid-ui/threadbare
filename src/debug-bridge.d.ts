@@ -1397,6 +1397,14 @@ export interface DebugBridge {
     | { error: string }
   >;
 
+  /**
+   * THR-1713 — recent essence movement per sphere, filed by cause (two rolling
+   * windows each). `{}` until a pool first moves. Positive = fed, negative = drawn.
+   */
+  getEssenceMovement: () => Promise<
+    import('./types/influence').EssenceMovementBySphere | { error: string }
+  >;
+
   getEssenceSources: () => Promise<
     | {
         sources: Array<{

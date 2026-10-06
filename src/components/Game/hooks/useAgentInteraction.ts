@@ -6,6 +6,7 @@ import type { AgendaTemplate } from '../../../data/agenda-content';
 import type { PendingChoiceData } from '../../../engine/effectExecutors';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
 import { getRetinueAgents, getThreadedNodes } from '../../../engine/retinue';
+import { withEssenceSpend } from '../../../engine/essenceMovement';
 import type { ThreadCategory, ThreadedNode } from '../../../engine/retinue';
 import { enrichRetinueWithActivity } from '../../../engine/agentActivity';
 import { getAgentActivityLabel } from '../../../engine/agentActivity';
@@ -561,7 +562,7 @@ export function useAgentInteraction({
             );
             return {
               ...prev,
-              essencePool: newPool,
+              ...withEssenceSpend(prev, newPool, 'spend_cast'),
               recentEvents: [
                 ...prev.recentEvents.slice(-99),
                 {

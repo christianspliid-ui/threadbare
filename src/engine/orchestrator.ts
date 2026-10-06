@@ -159,6 +159,7 @@ import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { applyEssenceEarned } from './essenceEarned';
+import { applyEssenceMovement, snapshotEssencePool } from './essenceMovement';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 import { phaseEssenceSources } from './phaseEssenceSources';
 import { phaseInfluenceMaintenance } from './phaseInfluenceMaintenance';
@@ -2793,12 +2794,18 @@ function runInlinePhase(
 ): { next: GameState; eventDelta: number } {
   const start = tickProfilingEnabled ? performance.now() : 0;
   const prevEvents = s.tickEvents.length;
+  // THR-1713 — by value, before the phase runs: some phases move the pool on
+  // `s` itself (see `snapshotEssencePool`), which a reference compare misses.
+  const poolBefore = snapshotEssencePool(s.essencePool);
   const delta = run();
   // THR-1180 — the essence-earned accrual seam. Every grant site in the divine
   // economy lands in some phase's returned pool, so diffing here counts them
   // all, including the site nobody has written yet. Reference-compares out on
   // every phase that leaves the pool alone, which is nearly all of them.
-  const next = applyEssenceEarned(s, { ...s, ...delta } as GameState);
+  const merged = applyEssenceEarned(s, { ...s, ...delta } as GameState);
+  // THR-1713 — the same seam files the movement under the phase's cause, so the
+  // essence row can say what fed or drew it. Reference-compares out alike.
+  const next = applyEssenceMovement(s, merged, phaseId, poolBefore);
   const eventDelta = next.tickEvents.length - prevEvents;
   if (tickProfilingEnabled) {
     const durationMs = performance.now() - start;

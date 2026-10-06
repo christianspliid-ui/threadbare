@@ -230,7 +230,20 @@ export function NudgeCard({
           alt: card.name,
           kind: 'encounter',
         },
-        ...(card.keyword ? { keyword: { label: card.keyword, icon: card.keywordIcon } } : {}),
+        // THR-1713 D4 — the keyword chip explains itself (Law 12), keyed on the
+        // library type; a one-off authored option has no type and no chip.
+        ...(card.keyword
+          ? {
+              keyword: {
+                label: card.keyword,
+                icon: card.keywordIcon,
+                ...(card.keywordTypeId ? { tooltipId: `ui.card.keyword.${card.keywordTypeId}` } : {}),
+              },
+            }
+          : {}),
+        // THR-1713 D4 — the dilemma's cards were the one surface whose cost,
+        // odds and sphere marks never hovered: only the cast model set this.
+        markTooltips: true,
         ...(card.sphere ? { sphere: card.sphere } : {}),
         // THR-1586: sphere tint when the nudge draws essence from a named sphere.
         ...(card.sphere && card.essenceCost > 0 ? { sphereTint: card.sphere } : {}),

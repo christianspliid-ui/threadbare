@@ -53,6 +53,22 @@
  * border. Only colour values moved. Any future failure that is not a colour string
  * still means the primitive is wrong.
  *
+ * ─── The third update — the marks hover (THR-1713) ─────────────────────
+ *
+ * Re-recorded 2026-10-06. THR-1713's plan (D4, decided under delegation) turns on
+ * the card-mark tooltips for nudge cards: the sphere, cost and odds marks each
+ * gain a `Tooltip` wrapper carrying `data-tooltip-id`, and the cost and odds
+ * primitives drop their raw `title` (Law 17) while keeping `aria-label` (Law 11).
+ * That is the whole diff — wrapper spans and two removed attributes.
+ *
+ * Geometry measured against the bar above: the first cut used inline-block
+ * wrappers and grew the card 13px (a 27px line box around a 14px pip row), which
+ * is why the wrappers render `fit` (inline-flex). After that, `?view=game&seeded
+ * &size=medium&spawn=encounter.slice.unsafe_bridge` at 1920×1080 measured
+ * 210×322.25 (four cards) and 210×298.25 (the wrapped fifth) on this branch and
+ * on the deployed main build alike. Any future failure that is not a wrapper or
+ * a retired `title` still means the primitive is wrong.
+ *
  * ─── Why a hand-built card model is correct here, unusually ───
  *
  * This repo's `fixture_invents_both_sides` trap says a fixture that supplies

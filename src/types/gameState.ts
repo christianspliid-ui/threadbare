@@ -7,7 +7,7 @@
  */
 import type { CosmologyProfile, HexTile, SphereName } from './index';
 import type { SimulationClock, ActionInProgress } from './temporal';
-import type { EssenceEarnedBySphere, EssencePool } from './influence';
+import type { EssenceEarnedBySphere, EssenceMovementBySphere, EssencePool } from './influence';
 import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
@@ -246,6 +246,15 @@ export interface GameState {
    * `sphere_attunement` unlock kind.
    */
   essenceEarnedBySphere?: EssenceEarnedBySphere;
+  /**
+   * Recent essence movement per sphere, by cause (THR-1713) — the record behind
+   * the essence row's trend arrow and "fed by / drawn by" hover. Two rolling
+   * windows per sphere, bounded. Written at the same phase-merge seam as
+   * `essenceEarnedBySphere` plus the three out-of-tick spend sites; observes
+   * only, never writes `essencePool`. Absent ⇒ no movement yet.
+   * See `src/engine/essenceMovement.ts`.
+   */
+  essenceMovement?: EssenceMovementBySphere;
   mandateDefinition: MandateDefinition | null;
   mandateState: MandateState | null;
 

@@ -512,6 +512,13 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // THR-1713 — the per-sphere, per-cause movement record behind the essence row's hover.
+    getEssenceMovement: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      return state.essenceMovement ?? {};
+    },
+
     getEssenceSources: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

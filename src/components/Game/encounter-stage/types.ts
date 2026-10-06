@@ -651,6 +651,11 @@ export interface EncounterStageNudgeCardModel {
   keyword?: string;
   /** Single glyph drawn on the keyword chip. Present whenever `keyword` is. */
   keywordIcon?: string;
+  /**
+   * The library type behind {@link keyword} (THR-1713) — keys the chip's
+   * `ui.card.keyword.<typeId>` hover. Present whenever `keyword` is.
+   */
+  keywordTypeId?: string;
   name: string;
   /*
    * The `fiction` carrier is **gone** (THR-1225), together with

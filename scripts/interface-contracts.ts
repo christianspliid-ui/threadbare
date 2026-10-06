@@ -1754,6 +1754,30 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/components/Game/ascendant-bar/AscendantBar.tsx'],
   },
   {
+    id: 'essence-movement-explains-the-bar',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'An essence row says why it moved (THR-1713). Every phase\'s pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row\'s hover ("Ebbing. Drawn by your threads\' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause.',
+    ulTerms: ['Essence', 'Sphere'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['essenceMovement'],
+      module: 'src/engine/essenceMovement.ts',
+    },
+    // The write is `applyEssenceMovement` (both phase funnels: `runInlinePhase`
+    // and `runRegisteredPhases`) and `withEssenceSpend` (the spend sites). Both
+    // live in the module, so the module is the one write site; the funnels and
+    // spend sites are call sites, as for `essence-earned-unlocks-attunement-cards`.
+    writeSites: ['src/engine/essenceMovement.ts'],
+    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-06',
+      evidence:
+        'Playwright at 1920×1080 on ?view=game&seeded&size=medium after __DEBUG.tick(150): __DEBUG.getEssenceMovement() gave mind income +57.75 / upkeep −95 (net −37.25) and every other held sphere a positive net; each row\'s data-trend matched the sign (mind ebbing, the rest rising), and hovering the Mind bar showed "Ebbing. Fed by the cosmos\'s flow. Drawn by your threads\' upkeep." Headless CLI seed 42 medium, 150 ticks: the one unmapped mover was delve_emergence, now filed as ruins.',
+    },
+  },
+  {
     id: 'cast-influence-shifts-target-values',
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: ENCOUNTERS,

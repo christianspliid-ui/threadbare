@@ -11,7 +11,10 @@
  * - The order is fixed by the selector; a spend never reorders the list.
  * - The four Foundation spheres fold under *Elder powers*, closed by default,
  *   unless the god's own identity holds one.
- * - Every balance carries the `ui.essence.row` registry tooltip (Law 17).
+ * - The whole row — icon, label, bar, numeral, arrow — is one hover target
+ *   (THR-1713 D1): round-2 testers pointed at bars, not 13px digits. Its hover
+ *   gives the sphere's role, a trend word, and what fed or drew the pool lately
+ *   (D2), read from the engine's movement record; the arrow reads the same one.
  * - After a spend the row shows the Law 15 delta cluster for
  *   {@link ESSENCE_SPEND_FLASH_MS}; hovering a card lights the row it will draw
  *   from before the player commits.
@@ -22,7 +25,7 @@ import { Tooltip } from '../../shared/Tooltip';
 import { DeltaCluster } from '../../shared/DeltaCluster';
 import { formatEssencePool } from '../../shared/formatEssence';
 import { getSphereColor } from '../../../data/sphereIcons';
-import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL } from '../../../data/ascendant-bar-content';
+import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL, ESSENCE_TREND_WORDS } from '../../../data/ascendant-bar-content';
 import { sphereDeltaReading } from '../../../engine/aftermathWords';
 import type { SphereName } from '../../../types';
 import type { EssenceRowView } from './selectors';
@@ -94,6 +97,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
 
   return (
     <div>
+      <Tooltip label={label} desc={row.hoverDesc ?? sphereCopy?.role ?? ''} focusable={false} block>
       <div
         className={styles.essenceRow}
         data-testid={`essence-row-${row.sphere}`}
@@ -138,8 +142,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
             />
           </span>
         )}
-        <Tooltip id="ui.essence.row" focusable={false}>
-          <span
+        <span
             data-testid={`essence-balance-${row.sphere}`}
             style={{
               fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 600,
@@ -151,11 +154,16 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
           >
             {formatEssencePool(row.level)}
           </span>
-        </Tooltip>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: trendColor, minWidth: 12 }}>
+        <span
+          data-testid={`essence-trend-${row.sphere}`}
+          data-trend={row.trend}
+          aria-label={ESSENCE_TREND_WORDS[row.trend]}
+          style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: trendColor, minWidth: 12 }}
+        >
           {arrow}
         </span>
       </div>
+      </Tooltip>
       {expanded && sphereCopy && (
         <div style={{
           fontFamily: 'var(--font-body)', fontStyle: 'italic',

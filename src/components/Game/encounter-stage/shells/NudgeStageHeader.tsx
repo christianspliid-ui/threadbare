@@ -33,6 +33,7 @@ import {
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
   NUDGE_FORECAST_SHIFT_LINE,
+  NUDGE_FACTOR_KIND_TAGS,
 } from '../../../../data/nudge-stage-content';
 import type {
   EncounterStageForecastModel,
@@ -168,7 +169,9 @@ export function NudgeReadingMarks({
           it names its cause in the present tense — "was Perilous" read as the
           roll having already happened. */}
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-        <Tooltip id="ui.nudge_forecast">
+        {/* THR-1713 D5 — the pill's hover explains *its* word, then chains the
+            ladder; it changes as the hand moves the tier. */}
+        <Tooltip id={`ui.forecast.${forecast.tier}`}>
           <ForecastPill tier={forecast.tier} word={forecast.word} />
         </Tooltip>
         {forecastMoved && (
@@ -356,6 +359,27 @@ export function NudgeBalance({ testPanel, onOpenEntity }: NudgeBalanceProps) {
                 gap: FACTOR_PIP_GAP,
               }}
             >
+              {/* THR-1713 D6 — Law 31: the polarity is a word as well as a
+                  colour. Only the tag hovers; the per-line rulebook hover that
+                  THR-1478 removed stays removed. Neutral lines carry no tag. */}
+              {(factor.polarity === 'for' || factor.polarity === 'against') && (
+                <Tooltip id={`ui.nudge_factor.${factor.polarity}`}>
+                  <span
+                    data-testid={`nudge-factor-kind-${factor.id}`}
+                    data-factor-kind={factor.polarity}
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 'var(--text-2xs)',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap',
+                      cursor: 'help',
+                    }}
+                  >
+                    {NUDGE_FACTOR_KIND_TAGS[factor.polarity]}
+                  </span>
+                </Tooltip>
+              )}
               <FactorLineText factor={factor} onOpenEntity={onOpenEntity} />
               {/* THR-970 — the magnitude beside the sentence, in the same pip
                   vocabulary the cards use. Polarity stays on the text colour;

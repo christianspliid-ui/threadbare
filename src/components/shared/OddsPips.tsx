@@ -24,6 +24,7 @@ import {
 } from '../../data/nudge-card-display';
 import { NUDGE_FREE_COST_LABEL } from '../../data/nudge-stage-content';
 import { oddsPips, pipReadingLabel } from '../../data/nudge-pip-vocabulary';
+import { Tooltip } from './Tooltip';
 
 /** Gold, matching the veil's essence accent (Law 30 — the token, not a copy). */
 const ESSENCE_COLOR = 'var(--veil-gold)';
@@ -48,6 +49,11 @@ export interface OddsPipsProps {
   size?: number;
   /** Dim the row without changing its reading (unaffordable cards). */
   muted?: boolean;
+  /**
+   * Hover the row with its tier's registry entry, `ui.card.odds.<tier>`
+   * (THR-1713 D4). Replaces the raw `title` (Law 17); `aria-label` stays (Law 11).
+   */
+  tierTooltip?: boolean;
   'data-testid'?: string;
 }
 
@@ -60,6 +66,7 @@ export const OddsPips = memo(function OddsPips({
   value,
   size = 12,
   muted = false,
+  tierTooltip = false,
   'data-testid': dataTestId,
 }: OddsPipsProps) {
   const reading = oddsPips(value);
@@ -69,14 +76,14 @@ export const OddsPips = memo(function OddsPips({
     (i < reading.filled ? reading.tier.filledGlyph : reading.tier.hollowGlyph),
   ).join('');
 
-  return (
+  const row = (
     <span
       data-testid={dataTestId}
       data-pip-tier={reading.tier.id}
       data-pip-filled={reading.filled}
       role="img"
       aria-label={pipReadingLabel(reading)}
-      title={pipReadingLabel(reading)}
+      title={tierTooltip ? undefined : pipReadingLabel(reading)}
       style={{
         fontSize: size,
         lineHeight: 1,
@@ -89,6 +96,7 @@ export const OddsPips = memo(function OddsPips({
       <span aria-hidden="true">{glyphs}</span>
     </span>
   );
+  return tierTooltip ? <Tooltip id={`ui.card.odds.${reading.tier.id}`} fit>{row}</Tooltip> : row;
 });
 
 /**
@@ -121,6 +129,11 @@ export interface CostPipsProps {
    * and has no odds row to be confused with, stays unchanged.
    */
   framed?: boolean;
+  /**
+   * Hover the price with this registry entry (THR-1713 D4) — replaces the raw
+   * `title` (Law 17); `aria-label` stays (Law 11).
+   */
+  tooltipId?: string;
   'data-testid'?: string;
 }
 
@@ -134,8 +147,10 @@ export const CostPips = memo(function CostPips({
   size = 12,
   emphasised = false,
   framed = false,
+  tooltipId,
   'data-testid': dataTestId,
 }: CostPipsProps) {
+  const wrap = (node: React.ReactElement) => (tooltipId ? <Tooltip id={tooltipId} fit>{node}</Tooltip> : node);
   const rounded = Math.max(0, Math.round(cost));
 
   // The badge chrome, shared by the "Free" and priced branches so a free card
@@ -152,7 +167,7 @@ export const CostPips = memo(function CostPips({
     : {};
 
   if (rounded === 0) {
-    return (
+    return wrap(
       <span
         data-testid={dataTestId}
         data-cost-pips={0}
@@ -167,7 +182,7 @@ export const CostPips = memo(function CostPips({
         }}
       >
         {NUDGE_FREE_COST_LABEL}
-      </span>
+      </span>,
     );
   }
 
@@ -175,14 +190,14 @@ export const CostPips = memo(function CostPips({
   const overflowed = rounded > MAX_COST_PIPS;
   const label = `${rounded} essence`;
 
-  return (
+  return wrap(
     <span
       data-testid={dataTestId}
       data-cost-pips={rounded}
       data-cost-framed={framed || undefined}
       role="img"
       aria-label={label}
-      title={label}
+      title={tooltipId ? undefined : label}
       style={{
         fontSize: size,
         lineHeight: 1,
@@ -197,6 +212,6 @@ export const CostPips = memo(function CostPips({
         {ESSENCE_PIP_GLYPH.repeat(shown)}
         {overflowed ? COST_OVERFLOW_GLYPH : ''}
       </span>
-    </span>
+    </span>,
   );
 });

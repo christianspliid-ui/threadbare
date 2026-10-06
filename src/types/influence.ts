@@ -31,6 +31,39 @@ export type EssencePool = Record<SphereName, number>;
  */
 export type EssenceEarnedBySphere = Partial<Record<SphereName, number>>;
 
+/**
+ * Why a sphere's pool moved — the cause a phase diff or an out-of-tick spend is
+ * filed under (THR-1713). Maintained by `src/engine/essenceMovement.ts`; declared
+ * here for the same reason as {@link EssenceEarnedBySphere}.
+ */
+export type EssenceMovementCause =
+  | 'income'          // phase `essence` — the cosmos's flow (worship, portfolio, places)
+  | 'places'          // phase `essence_sources` — places of power and their streams
+  | 'upkeep'          // phase `influence_maintenance` — thread upkeep
+  | 'sustained'       // phase `control_effects` — sustained effects' cost and income
+  | 'premonition'     // phase `divine_premonition`
+  | 'acts'            // phase `unified_action_progress` — god-acts resolving in-tick
+  | 'ruins'           // phases `delve_*` — what an elder site or a delve gave up (or cost)
+  | 'spend_nudge'     // out-of-tick: a played hand (nudge commit, authored-choice spend)
+  | 'spend_cast'      // out-of-tick: a cast (playerCastDispatch)
+  | 'other';          // any phase not in the cause table — still counted, never dropped
+
+/** One rolling window of essence movement for one sphere. */
+export interface EssenceMovementWindow {
+  readonly fromTick: number;
+  /** Net change per cause inside the window. Positive = fed, negative = drawn. */
+  readonly byCause: Readonly<Partial<Record<EssenceMovementCause, number>>>;
+}
+
+/** The current window plus the last closed one, so a row just after a roll still has a story. */
+export interface EssenceMovementRecord {
+  readonly current: EssenceMovementWindow;
+  readonly previous?: EssenceMovementWindow;
+}
+
+/** Per-sphere essence movement record. Absent ⇒ "no movement yet". */
+export type EssenceMovementBySphere = Readonly<Partial<Record<SphereName, EssenceMovementRecord>>>;
+
 /** Per-tick generation rates by sphere. */
 export type EssenceGeneration = Record<SphereName, number>;
 

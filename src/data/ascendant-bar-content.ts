@@ -10,6 +10,7 @@
 
 import type { QuintessenceBand } from '../types/quintessence';
 import type { SphereName } from '../types';
+import type { EssenceMovementCause } from '../types/influence';
 
 // ─── Archetype copy — retired (THR-1118) ─────────────────────────────────────
 //
@@ -186,6 +187,48 @@ export const ESSENCE_ELDER_FOLD_LABEL = 'Elder powers';
  * the measure beside its reading is what makes it one.
  */
 export const QUINTESSENCE_CONCEPT_LABEL = 'Quintessence';
+
+/**
+ * Ratio below which the identity strip shows the god's quintessence (THR-1713
+ * D8). At the top word (Absolute, ≥ 0.9) it never moves on a fresh run, and
+ * round-2 testers listed "Absolute / whole and present" as never understood —
+ * a persistent datum that never changes is HUD budget spent on nothing (Law 53).
+ * The ascendant sheet keeps it at all times (Law 13 visibility parity).
+ */
+export const ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW = 0.9;
+
+// ─── Essence movement — why a pool moved (THR-1713 D2) ──────────────────────
+
+/** The trend word an essence row's hover leads with. No rates, no numbers (Law 13). */
+export const ESSENCE_TREND_WORDS: Record<'rising' | 'steady' | 'ebbing', string> = {
+  rising: 'Rising',
+  steady: 'Steady',
+  ebbing: 'Ebbing',
+};
+
+/**
+ * What fed or drew a pool, by cause — the phrases an essence row's hover joins
+ * after "Fed by" / "Drawn by". Keyed on the engine's `EssenceMovementCause`, so a
+ * new cause without a phrase is a type error, not a blank.
+ */
+export const ESSENCE_CAUSE_PHRASES: Record<EssenceMovementCause, { fed: string; drawn: string }> = {
+  // A negative `income` is the essence phase clamping a pool back to its cap,
+  // so its "drawn" phrase names the limit, not an ebb that never happened.
+  income:      { fed: "the cosmos's flow",           drawn: 'the limit of what you can hold' },
+  places:      { fed: 'your places of power',        drawn: 'your places of power' },
+  upkeep:      { fed: 'threads released',            drawn: "your threads' upkeep" },
+  sustained:   { fed: 'your sustained workings',     drawn: 'your sustained workings' },
+  premonition: { fed: 'your premonitions',          drawn: 'your premonitions' },
+  acts:        { fed: 'your workings resolving',     drawn: 'your workings resolving' },
+  ruins:       { fed: 'what the ruins gave up',      drawn: 'the ruins' },
+  spend_nudge: { fed: 'a hand returned',             drawn: 'the hands you played' },
+  spend_cast:  { fed: 'a cast returned',             drawn: 'your casts' },
+  other:       { fed: 'other currents',              drawn: 'other costs' },
+};
+
+/** Lead words for the cause clauses: "Fed by …" / "Drawn by …". */
+export const ESSENCE_FED_LEAD = 'Fed by';
+export const ESSENCE_DRAWN_LEAD = 'Drawn by';
 
 /** Eyebrow labels for the two permanent domains. */
 export const REACH_RANK_LABEL = {

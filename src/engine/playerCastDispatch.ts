@@ -41,6 +41,7 @@ import { tierScaledEssenceCost } from './targetTierScaling';
 import { recordPlayerAct } from './playerActs';
 import { appendEvent } from './encounterTimeline';
 import { touchWorld } from './simulationRuntime';
+import { withEssenceSpend } from './essenceMovement';
 import { mulberry32 } from '../lib/prng';
 
 // ─── Tunables (NFP #1) ─────────────────────────────────────────────
@@ -215,7 +216,8 @@ export function commitPlayerCast(
 
   const next: GameState = {
     ...prev,
-    essencePool,
+    // THR-1713 — the cast's charge is filed as `spend_cast` for the essence row's hover.
+    ...withEssenceSpend(prev, essencePool, 'spend_cast'),
     unifiedActions: [...(prev.unifiedActions ?? []), cast.action],
     // A committed cast is a player act — it paces the opening's spine gifts (THR-1647).
     ...recordPlayerAct(prev),

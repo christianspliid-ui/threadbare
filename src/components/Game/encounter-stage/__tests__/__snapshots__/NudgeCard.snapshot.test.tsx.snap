@@ -36,18 +36,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -70,18 +76,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -141,68 +153,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); text-shadow: 0 0 6px var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); text-shadow: 0 0 6px var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -225,18 +250,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 0.5; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 0.5; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -301,68 +332,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -385,18 +429,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -455,68 +505,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -579,18 +642,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -649,68 +718,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -733,6 +815,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
        — 
       <span
         class="focus-ring"
+        data-tooltip-id="sphere.darkness"
         style="display: inline-block; cursor: inherit;"
         tabindex="0"
       >
@@ -754,18 +837,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -824,68 +913,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -915,18 +1017,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -985,68 +1093,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -1069,18 +1190,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
@@ -1147,68 +1274,81 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto;"
       >
         <span
-          aria-label="force"
+          class="focus-ring"
+          data-tooltip-id="sphere.force"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            style="display: inline-block;"
+            aria-label="force"
           >
-            <svg
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              style="display: inline-block;"
             >
-              <circle
-                cx="8"
-                cy="8"
-                fill="#261010"
-                r="7"
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-width="1.5"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="4.955"
-                x2="11.045"
-                y1="8"
-                y2="8"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="8"
-                x2="8"
-                y1="4.955"
-                y2="11.045"
-              />
-              <line
-                stroke="var(--sphere-force-bright, #ff6b6b)"
-                stroke-linecap="round"
-                stroke-width="2"
-                x1="5.8685"
-                x2="10.131499999999999"
-                y1="5.8685"
-                y2="10.131499999999999"
-              />
-            </svg>
+              <svg
+                height="16"
+                viewBox="0 0 16 16"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="8"
+                  cy="8"
+                  fill="#261010"
+                  r="7"
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-width="1.5"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="4.955"
+                  x2="11.045"
+                  y1="8"
+                  y2="8"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="8"
+                  x2="8"
+                  y1="4.955"
+                  y2="11.045"
+                />
+                <line
+                  stroke="var(--sphere-force-bright, #ff6b6b)"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  x1="5.8685"
+                  x2="10.131499999999999"
+                  y1="5.8685"
+                  y2="10.131499999999999"
+                />
+              </svg>
+            </span>
           </span>
         </span>
         <span
-          aria-label="2 essence"
-          data-cost-framed="true"
-          data-cost-pips="2"
-          data-testid="nudge-card-cost-nudge.steady_hand"
-          role="img"
-          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
-          title="2 essence"
+          class="focus-ring"
+          data-tooltip-id="ui.card.cost"
+          style="display: inline-flex; cursor: inherit;"
+          tabindex="0"
         >
           <span
-            aria-hidden="true"
+            aria-label="2 essence"
+            data-cost-framed="true"
+            data-cost-pips="2"
+            data-testid="nudge-card-cost-nudge.steady_hand"
+            role="img"
+            style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: var(--veil-gold); white-space: nowrap; display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.4); background: rgb(var(--veil-gold-rgb) / 0.1);"
           >
-            ✦✦
+            <span
+              aria-hidden="true"
+            >
+              ✦✦
+            </span>
           </span>
         </span>
       </span>
@@ -1231,18 +1371,24 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         His grip stops shaking.
       </span>
       <span
-        aria-label="Faint, 2 of 5"
-        data-pip-filled="2"
-        data-pip-tier="faint"
-        data-testid="nudge-card-odds-nudge.steady_hand"
-        role="img"
-        style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
-        title="Faint, 2 of 5"
+        class="focus-ring"
+        data-tooltip-id="ui.card.odds.faint"
+        style="display: inline-flex; cursor: inherit;"
+        tabindex="0"
       >
         <span
-          aria-hidden="true"
+          aria-label="Faint, 2 of 5"
+          data-pip-filled="2"
+          data-pip-tier="faint"
+          data-testid="nudge-card-odds-nudge.steady_hand"
+          role="img"
+          style="font-size: 14px; line-height: 1; letter-spacing: 0.14em; color: rgba(134, 239, 172, 0.9); opacity: 1; white-space: nowrap;"
         >
-          ●●○○○
+          <span
+            aria-hidden="true"
+          >
+            ●●○○○
+          </span>
         </span>
       </span>
     </div>
