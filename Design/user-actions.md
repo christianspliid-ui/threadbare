@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-06 04:57 local (02:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-06 05:56 local (03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-06: essence a god earns through its own acts now counts toward attunement** ([THR-1752](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves)), caught by code review on the hover work. Merged via [#2253](https://github.com/christianspliid-ui/threadbare/pull/2253) and live.
 - **2026-10-06: what you spend and what you risk now reads on hover** ([THR-1713](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2)), a round-2 playtest finding. Merged via [#2252](https://github.com/christianspliid-ui/threadbare/pull/2252) and live.
 - **2026-10-06: "Dominion" is in the glossary** ([THR-1746](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere)), the first piece of your power-progression ruling. Its conflict was cleared by the builder; merged via [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) at 00:28 UTC.
 - **2026-10-05: your Dominion ruling is on record** ([THR-1745](https://linear.app/threadbare/issue/THR-1745)). The plan doc merged via [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) at 23:19.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-05: the commit button stays on screen when a five-card hand wraps** ([THR-1732](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls)). Merged via [#2242](https://github.com/christianspliid-ui/threadbare/pull/2242) at 15:18.
 - **2026-10-05: a mortal with a promise no longer starts a two-step job it can't finish** ([THR-1737](https://linear.app/threadbare/issue/THR-1737/a-departing-mortal-starts-a-two-step-encounter-and-misses-its)). Its conflict was cleared by the builder; merged via [#2235](https://github.com/christianspliid-ui/threadbare/pull/2235) at 11:08 and live.
 - **2026-10-05: Tend to Wounds and Old Blood now tell one ending per result** ([THR-1741](https://linear.app/threadbare/issue/THR-1741/two-encounters-tell-a-different-ending-in-different-places-tend-to)). Merged via [#2240](https://github.com/christianspliid-ui/threadbare/pull/2240) at 07:59.
-- **2026-10-05: the world now arrives with its first beat already open** ([THR-1716](https://linear.app/threadbare/issue/THR-1716/the-world-arrives-paused-with-no-direction-after-ascend-nothing-says)). Its veto window closed at 08:45 with no veto; merged via [#2238](https://github.com/christianspliid-ui/threadbare/pull/2238) and live.
 
 ---
 

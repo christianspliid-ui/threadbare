@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 04:57 local (02:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 05:56 local (03:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,11 +23,11 @@ Say "veto divine economy", "veto found it", "veto fair fights" or "veto warm pla
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
+**4 jobs ready** (healthy), **nothing being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window; the first ([found it](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)) can be picked up from ~08:50 today. Until then the builder has nothing it may start, which is expected.
 
-- **Being built, now in review:** [essence a god earns through its own acts now counts toward attunement](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves) — a small fix the code review caught on last night's hover work. Its pull request ([#2253](https://github.com/christianspliid-ui/threadbare/pull/2253)) is waiting on checks and will merge on green.
+- **Just landed:** [essence a god earns through its own acts now counts toward attunement](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves) merged via [#2253](https://github.com/christianspliid-ui/threadbare/pull/2253) and is live.
 
 ## Health
 
-- **The worktree reaper has 6 worktrees waiting for a decision** (480 worktrees, 317 local branches on disk). Noted for visibility; it ran at 04:40.
-- Everything else is green. **The heavy simulation tests are passing again** on the latest main ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37401777551)), after ~17 hours red. The live site is serving the latest commit (`c0ac7fd0`, the hover work), scheduled tasks are on time, one pull request is waiting on checks. Simulation speed is normal (107 ms per tick, 1% under the weekly median of 108).
+- **The worktree reaper has 6 worktrees waiting for a decision** (478 worktrees, 315 local branches on disk). Noted for visibility; it ran at 05:40.
+- Everything else is green. The live site is serving the latest commit (`5e0bcb60`, the essence fix), scheduled tasks are on time, no pull requests are waiting, CI and the heavy simulation tests are green on main. Simulation speed is normal (106 ms per tick, 2% under the weekly median of 108).
