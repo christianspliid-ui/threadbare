@@ -30,5 +30,9 @@
   "wonder:glowcap_hollow:never": 1
  },
  "foundTwice": 0,
- "wallMs": 117056
+ "delvers": [],
+ "finders": [
+  "t60:ind_9>loc_128"
+ ],
+ "wallMs": 105247
 }

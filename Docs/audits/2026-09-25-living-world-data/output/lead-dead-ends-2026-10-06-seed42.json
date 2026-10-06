@@ -34,5 +34,13 @@
   "ruin:ruins:never": 1
  },
  "foundTwice": 0,
- "wallMs": 88828
+ "delvers": [
+  "t57:ind_10>elder_ruin_3",
+  "t156:ind_2>elder_ruin_69",
+  "t216:ind_10>elder_ruin_20"
+ ],
+ "finders": [
+  "t250:ind_2>elder_ruin_69"
+ ],
+ "wallMs": 71748
 }
