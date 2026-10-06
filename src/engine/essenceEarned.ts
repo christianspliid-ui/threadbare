@@ -122,16 +122,27 @@ export function attunementThresholdsCrossed(
  * is where the tests live. Returns `next` untouched when the phase did not move
  * the pool, so this is a reference compare on nearly every phase of every tick.
  *
+ * Pass `poolBefore` — `snapshotEssencePool` taken before the phase ran — so a
+ * phase that moves the pool on the state object it was handed (self-casts
+ * reassign `state.essencePool`, the elder-site reward edits it in place) is
+ * diffed by value. Without it the seam falls back to `prev.essencePool`, which
+ * by then *is* `next.essencePool`, and the god-act's essence never banks
+ * (THR-1752 — the same blind spot THR-1713 closed for `applyEssenceMovement`).
+ *
  * Fail-soft (NFP #4): nothing here can throw into the tick loop. An absent pool,
  * an absent counter and an empty threshold table are all ordinary inputs, and
  * the trace is emitted after the state is already correct.
  */
-export function applyEssenceEarned(prev: GameState, next: GameState): GameState {
-  if (prev.essencePool === next.essencePool) return next;
+export function applyEssenceEarned(
+  prev: GameState,
+  next: GameState,
+  poolBefore: EssencePool | undefined = prev.essencePool,
+): GameState {
+  if (poolBefore === next.essencePool) return next;
 
   const accrued = accrueEssenceEarned(
     next.essenceEarnedBySphere,
-    prev.essencePool,
+    poolBefore,
     next.essencePool,
   );
   if (accrued === next.essenceEarnedBySphere) return next;

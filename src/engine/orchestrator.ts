@@ -2802,7 +2802,8 @@ function runInlinePhase(
   // economy lands in some phase's returned pool, so diffing here counts them
   // all, including the site nobody has written yet. Reference-compares out on
   // every phase that leaves the pool alone, which is nearly all of them.
-  const merged = applyEssenceEarned(s, { ...s, ...delta } as GameState);
+  // THR-1752 — diffed against the same by-value snapshot, so god-act essence banks.
+  const merged = applyEssenceEarned(s, { ...s, ...delta } as GameState, poolBefore);
   // THR-1713 — the same seam files the movement under the phase's cause, so the
   // essence row can say what fed or drew it. Reference-compares out alike.
   const next = applyEssenceMovement(s, merged, phaseId, poolBefore);

@@ -30,6 +30,7 @@ import {
   resetRepertoireWarnings,
   validateRepertoire,
 } from '../nudgeCardRepertoire';
+import { buildPhasePlan, runRegisteredPhases, type EnginePhase } from '../phaseRegistry';
 
 function pool(overrides: Partial<Record<SphereName, number>> = {}): EssencePool {
   const p = {} as EssencePool;
@@ -400,5 +401,44 @@ describe('applyEssenceEarned — the phase-merge seam', () => {
       stateWith(pool({ chaos: 0 }), { chaos: 90 }),
     );
     expect(getTraces().filter((t) => t.category === 'nudge_attunement_unlock')).toHaveLength(0);
+  });
+});
+
+// ─── THR-1752: a phase that moves the pool on the state it was handed ──
+
+describe('applyEssenceEarned — in-place pool moves (THR-1752)', () => {
+  function phaseState(chaos: number): GameState {
+    return { tick: 3, tickEvents: [], essencePool: pool({ chaos }) } as unknown as GameState;
+  }
+
+  function runOne(state: GameState, run: EnginePhase['run']): GameState {
+    const phase: EnginePhase = { id: 'unified_action_progress', slot: 'post-decision', run };
+    return runRegisteredPhases(state, {}, 'post-decision', buildPhasePlan([phase]));
+  }
+
+  it('banks essence a phase adds by editing the pool in place (the elder-site reward shape)', () => {
+    const out = runOne(phaseState(2), (s) => {
+      s.essencePool.chaos += 6;
+      return {};
+    });
+    expect(out.essencePool.chaos).toBe(8);
+    expect(essenceEarnedIn(out.essenceEarnedBySphere, 'chaos')).toBe(6);
+  });
+
+  it('banks essence a phase adds by reassigning the pool on its input state (the self-cast shape)', () => {
+    const out = runOne(phaseState(2), (s) => {
+      s.essencePool = { ...s.essencePool, chaos: s.essencePool.chaos + 5 };
+      return {};
+    });
+    expect(essenceEarnedIn(out.essenceEarnedBySphere, 'chaos')).toBe(5);
+  });
+
+  it('without the snapshot the seam still reference-compares (default stays backward-compatible)', () => {
+    const s = phaseState(2);
+    s.essencePool.chaos += 6; // prev and next now share one mutated pool
+    expect(applyEssenceEarned(s, s)).toBe(s);
+    expect(
+      essenceEarnedIn(applyEssenceEarned(s, s, pool({ chaos: 2 })).essenceEarnedBySphere, 'chaos'),
+    ).toBe(6);
   });
 });
