@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 08:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,9 +23,9 @@ Say "veto buy your spheres", "veto divine economy", "veto fair fights" or "veto 
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built.** The builder picked up [found it](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and) as soon as its veto window closed; work is in progress in a local worktree (edited minutes ago, not yet pushed). The four ready jobs are the design-lane decisions above, each waiting out its veto window; the next ([fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)) opens ~14:57 today. No parked or stale jobs.
+**4 jobs ready** (healthy), **1 being built.** The builder has finished [found it](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and): a found lead now ends the climb. It is up for merge as [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) and will go in once its checks pass. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the next ([fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)) opens ~14:57 today. No parked or stale jobs.
 
 ## Health
 
-- **The worktree reaper has 6 worktrees waiting for a decision** (484 worktrees, 319 local branches on disk). Noted for visibility; it ran at 08:40.
-- Everything else is green. The live site is current (the latest commits were docs only), scheduled tasks are on time, no pull requests are waiting, CI is green. Simulation speed is normal (108 ms per tick, right on the weekly median).
+- **The worktree reaper has 6 worktrees waiting for a decision** (484 worktrees, 316 local branches on disk). Noted for visibility; it ran at 09:46.
+- Everything else is green. The live site is current (the latest commits were docs only), scheduled tasks are on time, the one open pull request is waiting on checks and will merge on green, CI is green. Simulation speed is normal (107 ms per tick, 1% under the weekly median).
