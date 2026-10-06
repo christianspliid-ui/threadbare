@@ -43,6 +43,8 @@ export interface InterruptSnapshot {
   courtOpen: boolean;
   /** The head of the popup-channel queue (doom stages, the Unmaking, mandate failure). */
   popupQueued: boolean;
+  /** A `?warm=<ticks>` warm-up is advancing the world behind its overlay (THR-1744). Optional: absent = false. */
+  warmStartRunning?: boolean;
 }
 
 export type InterruptTier = 'interrupt';
@@ -65,6 +67,9 @@ const YIELDING_SURFACE_IDS = new Set(['MomentCard', 'EventPopup']);
 
 /** Every surface that stops the world, in render-priority order. */
 export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
+  // The warm start holds the slot while it advances the world, so nothing else opens
+  // over it (THR-1744). It renders first: the overlay covers the whole game.
+  { id: 'WarmStartOverlay', tier: 'interrupt', isOpen: s => s.warmStartRunning === true },
   { id: 'EncounterVeil', tier: 'interrupt', isOpen: s => s.encounterOpen },
   { id: 'MeetTheFirstFlow', tier: 'interrupt', isOpen: s => s.meetingPending && s.hasAscendantIdentity },
   { id: 'PremonitionModal', tier: 'interrupt', isOpen: s => s.premonitionPending && !s.interruptsSuppressed },

@@ -1,8 +1,8 @@
 ---
 name: cold-playtest
-description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door. Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest".
-last_validated_against: 2026-10-05
-invocation: /cold-playtest [--dry-run] [--lane]
+description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door — or, in `--warm` mode, arrive a few seasons into a world with The First already bonded, to reach the mid-game (factions, undertakings, ambitions). Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest", "warm playtest", "/cold-playtest --warm", "mid-game playtest".
+last_validated_against: 2026-10-06
+invocation: /cold-playtest [--warm] [--dry-run] [--lane]
 audience: claude-code
 ---
 
@@ -19,13 +19,33 @@ Every other verification lane is driven by an agent that knows the rules and usu
 | `scripts/cold-playtest/config.json` | every tunable (cadence, budget, model, pinned Playwright MCP, thresholds) |
 | `scripts/cold-playtest/personas.json` | the fixed persona set: `story`, `veteran`, `skimmer` |
 | `scripts/cold-playtest/player-brief.md` | brief v1: the store-page pitch, persona slot, playtest-log protocol, 7-section debrief |
-| `scripts/cold-playtest/run-player.ps1` | one tester: fresh `claude -p`, replaced system prompt, `--setting-sources local`, Playwright-only tools |
-| `scripts/cold-playtest/run-round.ps1` | all personas in parallel, then `round.json`, then screenshot pruning |
-| `scripts/cold-playtest/extract.mjs` | transcript → `log.md` + `summary.json` (verdict, tag counts, debrief bullet counts, cost) |
+| `scripts/cold-playtest/player-brief-warm.md` | warm brief v1 (`warmBriefVersion`): "you played the opening an hour ago and are coming back"; the playtest-log, budget and debrief sections are cold's, verbatim |
+| `scripts/cold-playtest/run-player.ps1` | one tester: fresh `claude -p`, replaced system prompt, `--setting-sources local`, Playwright-only tools. `-Mode warm` swaps in the warm brief and `warmStartUrl` |
+| `scripts/cold-playtest/run-round.ps1` | all personas in parallel, then `round.json` (with `mode`, `warmTicks`, per-persona `coverage`), then screenshot pruning. `-Mode warm` writes under `%USERPROFILE%\.threadbare\warm-playtest\` |
+| `scripts/cold-playtest/extract.mjs` | transcript → `log.md` + `summary.json` (verdict, tag counts, debrief bullet counts, cost, `coverage`; warm adds `warmStartOk`). `--coverage-only <dir>` prints just the coverage block |
 
 Artifacts are written to `%USERPROFILE%\.threadbare\cold-playtest\round-N\<persona>\`, never into the repo (~240 MB of screenshots per round).
 
 **Brief wording is load-bearing.** It is phrased as a *playtest log* because the round-1 draft ("think aloud before every action") was refused by the model's safeguard as reasoning extraction. Never reword it inside a run, and never ask a tester about its own instructions. A brief or persona change is a PR that bumps `briefVersion`.
+
+## Warm mode (`--warm`, THR-1744)
+
+**Plan:** `Docs/plans/2026-10-05-thr-1744-warm-playtest.md`. Cold rounds never get past the first ten minutes; warm rounds start the same three testers at `warmStartUrl` (`?view=game&seeded&size=medium&warm=<warmTicks>`), where the game advances the seeded world behind a "The world moves on" screen before handing over control. Everything below applies unchanged except:
+
+| Step | Warm difference |
+|---|---|
+| 0. Gates | The same four gates, applied to the warm series: gate 1 reads the highest `Warm playtest · round <k>` milestone in project **Thematic Pressure & Living World** (`warmMilestoneProject`); gate 3 uses `warmMinDaysBetweenRounds`. **Lane mode evaluates the warm gates only when no cold round ran on this fire — at most one round per fire, cold first.** Attended `--warm` skips gates 1 and 3, as cold attended does |
+| 1. Pick N | Highest `Warm playtest · round <k>` + 1 (the first warm round is 1) |
+| 2. Run | `pwsh scripts/cold-playtest/run-round.ps1 -Round N -Mode warm` (`-Label dry-run` for a dry run). A persona whose console never logged `[warm-start] done` is unusable with `failure: warm-start` — it played the wrong world |
+| 3. Read | Also read each persona's `coverage` block in `round.json`, and the `warmStart` done line (`ms`, `pendingInterruptsAtArrival`, `openInterruptsAtArrival`). More than one decision waiting at arrival is a PC-5 pile-up candidate |
+| 6. Compare | Read **both** `cold-playtest` and `warm-playtest` issues. A cold finding a warm tester hits again is `recurred` and is commented on the original, never re-filed |
+| 7. File | Milestone `Warm playtest · round N` in **Thematic Pressure & Living World**; label `warm-playtest` plus `Bug`/`Game Design` and the pillar labels |
+| 8. Publish | `Docs/ops/warm-playtest-round-N.md` and `Docs/ops/warm-playtest-scorecard.tsv` on `ops`. The report adds a **Coverage** table: per tester, `faction` / `undertaking` / `ambition` / `threadHistory` each `reached` / `reached-empty` / `—`, and a `coverage failure` flag. The scorecard has cold's columns plus `faction`, `undertaking`, `ambition`, `threadHistory`, `coverageFailure`. Fewer than `minCoveredPersonas` covered testers puts "fell short on coverage" in the headline |
+| 8b. Complaints | Runs for warm rounds too, against the same `player-complaint-classes.md` |
+
+**The coverage-failure rule is deliberate.** A tester who reached none of faction / undertaking / ambition is a coverage failure — thread history does not count, because cold testers already reach it. Report it per tester, never hidden in a total; its verified findings still file. Never loosen the rule to make a round pass: if testers miss the mid-game, that is the finding. A marker that misses because copy changed is fixed by editing `coverageMarkers` in `config.json` (re-check with `extract.mjs --coverage-only` on a known round).
+
+**Kill criteria** (plan § Kill criteria) the observer reports against: ≥2 coverage failures on brief v1 → bump `warmBriefVersion`, never the bar; a live warm-up over 180 s, or a pile-up at arrival on two consecutive rounds → the lever is the wrong shape; two consecutive warm rounds filing only what cold already filed → the retro retires warm mode.
 
 ## Procedure
 

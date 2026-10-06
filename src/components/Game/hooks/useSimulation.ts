@@ -173,12 +173,17 @@ export function useSimulation({
   // gameStateRef.current, which React only refreshes on render, so every iteration
   // would tick from the same `prev` and the counter would move by 1. The batch keeps
   // its own cursor and commits once at the end.
-  const runTicksSync = useCallback((n: number): Omit<DebugTickBatchResult, 'state'> => {
+  const runTicksSync = useCallback((
+    n: number,
+    options: { markClock?: boolean } = {},
+  ): Omit<DebugTickBatchResult, 'state'> => {
     // Auto-pause: leaving the interval armed would let it resume mid-inspection from
     // the state we just advanced, which is exactly the ambiguity the caller is avoiding.
     setRunning(false);
     // THR-1716: the world has moved, so the first-run prompt has done its job.
-    if (n > 0) markClockRan('debug');
+    // THR-1744: the warm start passes `markClock: false` so the arrival keeps the
+    // first-run Play prompt — the player has not run the clock yet.
+    if (n > 0 && options.markClock !== false) markClockRan('debug');
     const { state, ...result } = runTickBatch(
       gameStateRef.current,
       n,
@@ -191,6 +196,8 @@ export function useSimulation({
     setGameState(state);
     return result;
   }, [markClockRan]);
+
+  const getLiveState = useCallback(() => gameStateRef.current, []);
 
   // Watch for phase transition to twilight (doom expired)
   useEffect(() => {
@@ -292,6 +299,8 @@ export function useSimulation({
     doTick,
     /** THR-689: advance n ticks synchronously, bypassing the document.hidden-throttled interval. */
     runTicksSync,
+    /** THR-1744: the live state as `runTicksSync` left it, before React re-renders. Read-only. */
+    getLiveState,
     handleBeginNextCycle,
     handleToggleRunning,
     setRunning,

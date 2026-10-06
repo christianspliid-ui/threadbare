@@ -3,10 +3,14 @@
 # replaced system prompt, no setting sources, and only Playwright browser tools,
 # so it carries none of the project's rules, vocabulary or debug levers.
 # Plan: Docs/plans/2026-09-25-thr-1610-cold-playtest-loop.md (THR-1610).
+# -Mode warm (THR-1744, Docs/plans/2026-10-05-thr-1744-warm-playtest.md): the same
+# isolation, but the warm brief and the warm start URL (?warm=<ticks>), so the
+# tester arrives a few seasons into a world with The First already bonded.
 param(
   [Parameter(Mandatory)] [string] $Persona,
   [Parameter(Mandatory)] [string] $OutDir,
-  [string] $Kickoff = "Begin. Open the game and play."
+  [string] $Kickoff = "Begin. Open the game and play.",
+  [ValidateSet('cold', 'warm')] [string] $Mode = 'cold'
 )
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
@@ -19,9 +23,13 @@ New-Item -ItemType Directory -Force $shotDir | Out-Null
 $personas = Get-Content (Join-Path $root 'personas.json') -Raw | ConvertFrom-Json
 $personaText = $personas.$Persona
 if (-not $personaText) { throw "unknown persona '$Persona'" }
-$brief = (Get-Content (Join-Path $root 'player-brief.md') -Raw).
+# extract.mjs reads the mode to decide whether the warm-start console line is required.
+Set-Content -Path (Join-Path $runDir 'mode.txt') -Value $Mode -NoNewline
+$briefFile = if ($Mode -eq 'warm') { 'player-brief-warm.md' } else { 'player-brief.md' }
+$startUrl = if ($Mode -eq 'warm') { $cfg.warmStartUrl.Replace('{{WARM_TICKS}}', [string]$cfg.warmTicks) } else { $cfg.startUrl }
+$brief = (Get-Content (Join-Path $root $briefFile) -Raw).
   Replace('{{PERSONA}}', $personaText).
-  Replace('{{START_URL}}', $cfg.startUrl).
+  Replace('{{START_URL}}', $startUrl).
   Replace('{{ACTION_BUDGET}}', [string]$cfg.actionBudget)
 $sysFile = Join-Path $runDir 'system.md'
 Set-Content -Path $sysFile -Value $brief -NoNewline
@@ -60,4 +68,4 @@ try {
 } finally { Pop-Location }
 
 node (Join-Path $root 'extract.mjs') $runDir | Out-Null
-"persona=$Persona exit=$code dir=$runDir"
+"persona=$Persona mode=$Mode exit=$code dir=$runDir"
