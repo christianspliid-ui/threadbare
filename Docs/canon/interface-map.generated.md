@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 161 |
+| 🟢 LIVE | 163 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 55 |
-| **Total** | **224** |
+| **Total** | **226** |
 
 ## Contracts by producing subsystem
 
@@ -296,9 +296,11 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `found-lead-becomes-known-place` | A `located` lead on a site whose delve road is `never` (a wonder, a plain worldgen ruin) has finished its climb: the next `phaseClueDecay` sweep writes the holder's `knows_of.foundTick` (created, or stamped on an existing edge), removes the lead and emits `ruins.lead_found`. The sheet's known places read `foundTick` as "found it", and the survey reader refuses `already_found` on a found never-site so the climb does not restart. `CLUE_SPENT_LEAD_ENDS_CLIMB = false` restores the old climb. | function: `recordPlaceFound`, `isLeadSpent`, `phaseClueDecay`, `CLUE_SPENT_LEAD_ENDS_CLIMB` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `held-lead-draws-a-survey` | A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`). | edge-prop: `knows_clue_of`, `heldLeadRuinIds`, `sharpenClue`, `leadPull` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `lair-monster-gates-the-hunt` | A hunt for a lair's named beast is offered only where that beast still lives, and the hunt fights that very creature: the draw reads the lair's `namedEliteId` and the monster's life, and the hunt's cast binds the living monster standing in the lair — never a body, never someone made up to fill the part. | node-prop: `namedEliteId`, `liveLairMonsterAt`, `requiresLiveMonster`, `matchProperty` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `lead-pass-reads-delve-road` | The lead pass and the survey reader ask the ruins layer whether a held lead still has a rung to climb: `heldLeadRuinIds` leaves a spent lead out (no `leadPull`, no lead-pass survey), and `maybeSpawnSiteClue` does not refresh it. Both read `isLeadSpent` / `delveRoadOf`, the same rule delve admission reads as `delveRoadOf === 'now'`. | function: `delveRoadOf`, `isLeadSpent`, `heldLeadRuinIds` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `monster-card-shows-on-lair` | A lair tells the player what lives there and how close it is to falling — a sentence, square pips and a word — and once the beast is felled it says so, naming the slayer only when the beast's own sheet does. | function: `buildLairMonsterCardModel`, `readOpponentCard`, `monsterState`, `getAgentInfoCard` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `survey-arranges-a-ruin-visit` | A survey that leaves its surveyor holding a `narrowed` lead on a ruin or a wonder arranges a visit there — one pending per holder per ruin — the pending visit spares the lead from decay, and the visit's outcome sets the lead: success `located`, at cost `narrowed`, failure or a missed visit cold. | edge-prop: `knows_clue_of`, `pendingVisitDueTick`, `pendingVisitSeedId`, `claimLeadVisit`, `releaseLeadVisit`, `resolveVisitLead`, `sharpen_clue` | Ambitions & Undertakings | 🟢 LIVE | — |
 
@@ -1598,6 +1600,18 @@ exit
 - **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/debug-bridge.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `found-lead-becomes-known-place` — 🟢 LIVE
+
+- **Intent:** A `located` lead on a site whose delve road is `never` (a wonder, a plain worldgen ruin) has finished its climb: the next `phaseClueDecay` sweep writes the holder's `knows_of.foundTick` (created, or stamped on an existing edge), removes the lead and emits `ruins.lead_found`. The sheet's known places read `foundTick` as "found it", and the survey reader refuses `already_found` on a found never-site so the climb does not restart. `CLUE_SPENT_LEAD_ENDS_CLIMB = false` restores the old climb.
+- **Producer → Consumer:** Ruins, Clues & Delves → Intelligence, Knowledge & Familiarity
+- **UL terms:** *Lead*, *Clue*
+- **Module:** `src/engine/ruins/clueLifecycle.ts`
+- **Production hits:** 10 total — 2 write, 1 read, 7 unclassified
+- **Write sites:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/strategicGraphOps.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`
+- **Other hits:** `src/engine/phases/clueDecay.ts`, `src/engine/ruins/constants.ts`, `src/engine/ruins/delveRoad.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/strategicActionCandidates.ts` +2 more
+- **Verdict:** Verified 2026-10-06: THR-1702. `src/engine/ruins/__tests__/foundLeadsEndTheClimb.test.ts`: decay creates `knows_of { fromSurvey, convergedTick, foundTick }` for a located glowcap-hollow lead, removes the lead and emits `ruins.lead_found` (siteClass wonder, knowsOf created); an existing `knows_of` is stamped with its other properties untouched; a located elder-ruin lead is left for the delve; `collectKnownPlaces` reads "found it"; the reader refuses `already_found` both for a spent lead and for a found place with no lead. `foundLeadsKillSwitch.test.ts` pins the switch-off arm. Census `readers/lead-dead-ends.ts` (output/lead-dead-ends-2026-10-06-seed*.json): see the THR-1702 status fragment.
+
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
 
 - **Intent:** What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word.
@@ -1722,10 +1736,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/strategicActionCandidates.ts`
-- **Production hits:** 26 total — 3 write, 3 read, 20 unclassified
+- **Production hits:** 27 total — 3 write, 3 read, 21 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/strategic-packs/wandererStrategicPack.ts` +15 more
+- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/strategic-packs/wandererStrategicPack.ts` +16 more
 - **Verdict:** Verified 2026-09-29: THR-1663. `readers/upkeep.ts` 42,99 300 ticks, medium, unattended: surveys of a ruin 0 · 1 before, 6 · 3 after; `ruins.clue_sharpened` survey vague→narrowed 2 · 1 (before: every lead `vague` on seed 42). `leadReasonToLook.test.ts` asserts the far ruin is cut by the cap without a lead and surveyed with `leadPull` with one, the lead pass for a decider and not an ambient mortal, and the survey reader sharpening in place (one edge, `narrowed`, no `clue_already_held`). Delve admission now scans from `located`-lead holders; `delveAdmissionEquivalence.test.ts` pins seven dense seeded worlds' admissions, queues and spent leads to snapshots recorded on the old every-actor × every-location scan.
 
 ### `held-town-affinity-on-the-board` — 🟢 LIVE
@@ -1770,10 +1784,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 167 total — 3 write, 7 read, 157 unclassified
+- **Production hits:** 168 total — 3 write, 7 read, 158 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +152 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +153 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1879,6 +1893,18 @@ exit
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/monsters/liveMonster.ts`, `src/engine/unifiedCandidates.ts`
 - **Other hits:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/lairArrivalTrigger.ts` +5 more
 - **Verdict:** Verified 2026-09-25: THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.
+
+### `lead-pass-reads-delve-road` — 🟢 LIVE
+
+- **Intent:** The lead pass and the survey reader ask the ruins layer whether a held lead still has a rung to climb: `heldLeadRuinIds` leaves a spent lead out (no `leadPull`, no lead-pass survey), and `maybeSpawnSiteClue` does not refresh it. Both read `isLeadSpent` / `delveRoadOf`, the same rule delve admission reads as `delveRoadOf === 'now'`.
+- **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
+- **UL terms:** *Lead*, *Delve*
+- **Module:** `src/engine/ruins/delveRoad.ts`
+- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Write sites:** `src/engine/ruins/delveRoad.ts`
+- **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
+- **Other hits:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/leadVisit.ts`
+- **Verdict:** Verified 2026-10-06: THR-1702. `foundLeadsEndTheClimb.test.ts`: `delveRoadOf` returns now / later / never on an elder ruin, a fresh and a settled mortal ruin, a worldgen `ruins`, a shipwreck and a healing spring; `heldLeadRuinIds` drops a located wonder lead and keeps a narrowed lead on the same wonder. The existing delve-admission tests (`delveVariant.test.ts`) pass unchanged through the `isDelvableRuin` wrapper.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
 
@@ -2364,10 +2390,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 123 total — 1 write, 1 read, 121 unclassified
+- **Production hits:** 124 total — 1 write, 1 read, 122 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +116 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +117 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2500,10 +2526,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 112 total — 1 write, 1 read, 110 unclassified
+- **Production hits:** 113 total — 1 write, 1 read, 111 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +105 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +106 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2631,10 +2657,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Location*
 - **Module:** `src/engine/ruins/leadVisit.ts`
-- **Production hits:** 29 total — 3 write, 2 read, 24 unclassified
+- **Production hits:** 31 total — 3 write, 2 read, 26 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts` +19 more
+- **Other hits:** `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/consequenceDraw.ts` +21 more
 - **Verdict:** Verified 2026-09-29: THR-1664. `leadVisit.test.ts` (11 tests) asserts the visit planted on a narrowed lead at a ruin and refused on a town, a vague lead, a located lead and no lead; one pending visit per holder per ruin (a repeat survey plants nothing and traces `lead_visit_visit_pending`); decay spared while pending and resumed once cleared; and the outcome table. Live on `readers/upkeep.ts` seed 4 / medium / 300 ticks: 1 visit arranged, the repeat survey refused, the visit missed (`absent`) and `ruins.lead.cold` turned the lead cold (`missed_visit: narrowed → cold`). Seeds 42 and 99 surveyed no ruin in 300 ticks on current main, so no visit was arranged there — the starving rung is upstream (THR-1663's survey supply). THR-1696 (2026-10-03): the stamp also carries the visit's seed id and is released when the planter refuses (`over_max`, `place_unresolved`); `sharpen_clue` resolves the lead stamped with the action's `spawnedFromSeedId`, and a lapsed stamp never wins the fallback pick. `leadVisit.test.ts` (18 tests) pins the over_max refusal, the two-ruin missed visit, a re-stamped seed never taking another visit's lead, and the expired-stamp pick.
 
 ### `t1-undertaking-objects-feed-existing-economies` — 🟢 LIVE
@@ -2643,10 +2669,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 115 total — 2 write, 4 read, 109 unclassified
+- **Production hits:** 116 total — 2 write, 4 read, 110 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +104 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +105 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -2861,10 +2887,10 @@ exit
 - **Producer → Consumer:** Agent Lifecycle → Strategic Projects & Control
 - **UL terms:** *World Object*, *Location*, *Place*, *Route*, *Area*
 - **Module:** `src/data/world-objects.ts`
-- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
+- **Production hits:** 13 total — 1 write, 2 read, 10 unclassified
 - **Write sites:** `src/data/world-objects.ts`
 - **Read sites:** `src/engine/graph.ts`, `src/types/nodeSchema.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldPast.ts` +3 more
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/leadVisit.ts`, `src/engine/seedLivingWorld.ts` +5 more
 - **Verdict:** Verified 2026-09-03: THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.
 
 ### `world-past-descent-feeds-clue-scoring` — 🟢 LIVE
@@ -2920,10 +2946,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 273 total — 2 write, 6 read, 265 unclassified
+- **Production hits:** 274 total — 2 write, 6 read, 266 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +260 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +261 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

@@ -23,7 +23,7 @@ import { computeCapability } from '../domainCapability';
 import { gatherNarrativeContext, enrichProse } from '../proseEnrichment';
 import { consumeCluesOnConvergence } from './clueLifecycle';
 import { resolveDelveProseEntry } from '../../data/ruins-delve-content';
-import { RUINED_SETTLEMENT_DELVE_DECAY_TICKS } from '../../data/strategic-action-constants';
+import { delveRoadOf } from './delveRoad';
 import {
   MAX_SAGA_DELVES_CONCURRENT,
   MAX_MAJOR_DELVES_CONCURRENT,
@@ -243,17 +243,11 @@ export function rollDelveConsequence(
   return 'transformed';
 }
 
-/**
- * Is this Location somewhere a delve can be admitted: a worldgen elder ruin, or a
- * settlement a mortal ruined once `RUINED_SETTLEMENT_DELVE_DECAY_TICKS` have passed.
- */
+export { delveRoadOf, type DelveRoad } from './delveRoad';
+
+/** Is this Location somewhere a delve can be admitted now — `delveRoadOf(...) === 'now'`. */
 function isDelvableRuin(props: Record<string, unknown>, tick: number): boolean {
-  if (props.locationType === 'elder_ruin') return true;
-  const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
-  const ruinedTick = props.ruinedTick;
-  return subtype === 'ruins'
-    && typeof ruinedTick === 'number'
-    && ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick;
+  return delveRoadOf(props, tick) === 'now';
 }
 
 // ── Phase: Delve Admission ────────────────────────────────────────────────────

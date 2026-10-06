@@ -633,6 +633,53 @@ export function seedKnowsOf(
 }
 
 /**
+ * THR-1702 — a spent lead's find: the actor now knows the place. Creates
+ * `knows_of { fromSurvey: true, convergedTick, foundTick }`, or stamps `foundTick` on an
+ * existing `knows_of` without touching its other properties; an existing `foundTick` is
+ * kept (`knowsOf: 'kept'`). `createdId` is the edge's id; `knowsOf` says which happened.
+ * Fail-soft: refuses rather than throws.
+ */
+export function recordPlaceFound(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+): GraphOpResult & { knowsOf?: 'created' | 'stamped' | 'kept' } {
+  try {
+    const actor = graph.getNode(actorId);
+    const target = graph.getNode(targetLocationId);
+    if (!actor || !target) {
+      return { success: false, op: 'record_place_found', error: 'node_not_found' };
+    }
+    const violation = validateEdgeEndpoints('knows_of', actor.type, target.type);
+    if (violation) {
+      return { success: false, op: 'record_place_found', error: violation.message };
+    }
+    const existing = graph.getOutgoingEdges(actorId, 'knows_of')
+      .find(e => e.target === targetLocationId);
+    if (existing) {
+      if (typeof existing.properties?.foundTick === 'number') {
+        // Already found: nothing new is known, so the caller emits no second find.
+        return { success: true, op: 'record_place_found', createdId: existing.id, knowsOf: 'kept' };
+      }
+      graph.updateEdge(existing.id, { properties: { foundTick: tick } });
+      return { success: true, op: 'record_place_found', createdId: existing.id, knowsOf: 'stamped' };
+    }
+    const edgeId = `knows_of_${actorId}_${targetLocationId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: actorId,
+      target: targetLocationId,
+      type: 'knows_of',
+      properties: { fromSurvey: true, convergedTick: tick, foundTick: tick },
+    });
+    return { success: true, op: 'record_place_found', createdId: edgeId, knowsOf: 'created' };
+  } catch (e) {
+    return { success: false, op: 'record_place_found', error: String(e) };
+  }
+}
+
+/**
  * Mint a treasure map possession pointing at a location.
  *
  * A **possession**, not a property, and that is the design rather than an

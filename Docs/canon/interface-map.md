@@ -357,6 +357,17 @@ Deciders only and no spotlight pull, so the t0 decider headcount is unchanged. A
 changes its holder's t0 calling, which `recomputeCalling` derives from ambitions — expected.
 Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
 
+**Two contracts added by THR-1702 (2026-10-06), audit-on-touch for Ruins & Delves** —
+`found-lead-becomes-known-place` and `lead-pass-reads-delve-road`. A `located` lead on a site
+no delve can ever enter (a wonder, a plain worldgen ruin; `delveRoadOf === 'never'`) is
+*spent*: the lead pass (`heldLeadRuinIds`) stops pulling its holder back, the survey reader
+(`maybeSpawnSiteClue`) refuses `already_found` instead of refreshing it, and the next
+`phaseClueDecay` sweep writes `knows_of.foundTick` (`recordPlaceFound`), removes the lead and
+emits `ruins.lead_found`. The sheet's known places read `foundTick` as "found it".
+`CLUE_SPENT_LEAD_ENDS_CLIMB = false` restores the old climb exactly. Delve admission still reads
+`isDelvableRuin`, now `delveRoadOf === 'now'` (preserved). Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

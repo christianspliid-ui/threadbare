@@ -385,6 +385,8 @@ With parts 1 and 2, every seed arranges at least 3 visits, so lead hand-off stay
 - kept and missed visits are reported, with the `waiting → lost` count expected to be 0 with part 2 on;
 - `observe` undertakings **other than ruin surveys** stay within +50% of the same-run baseline on each seed. That is the guard that the exemption stays narrow. A lead survey is itself an `observe` undertaking, so the raw count rises by design: the chosen arm is +88% · +7% · +64% · −3% raw, but +29% · −15% · +44% · −9% with ruin surveys netted out of both sides. The rejected arm fails it on every seed (seed 42: 358 against 17).
 
+- *Follow-up (THR-1702, 2026-10-06):* a `located` lead on a site no delve can ever enter (a wonder, a plain ruin) now ends as a known place instead of being re-surveyed forever — [`2026-10-05-thr-1702-found-leads-end-the-climb.md`](2026-10-05-thr-1702-found-leads-end-the-climb.md).
+
 **Would change the call.** Christian saying that a survey of a lead should face the forecast window like any other work (it would then need a lead hand-off to a holder who forecasts in the window, or a fairer survey, both slower). Or the census after the build showing a seed under 2 visits, which brings lead hand-off forward.
 
 ### Interface, tracing and fail-soft for the re-plan

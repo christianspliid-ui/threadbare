@@ -261,6 +261,7 @@ export type TraceCategory =
   | 'ruins.clue_decayed'
   | 'ruins.clue_rumor_sweep' // THR-1506: one aggregate per rumour sweep
   | 'ruins.clue_sharpened' // THR-1663: a held lead changed precision
+  | 'ruins.lead_found' // THR-1702: a spent lead became a known place
   | 'ruins.delve_admitted'
   | 'ruins.delve_blocked'
   | 'ruins.delve_beat'
@@ -781,6 +782,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.clue_decayed',
   'ruins.clue_rumor_sweep',
   'ruins.clue_sharpened',
+  'ruins.lead_found',
   'ruins.delve_admitted',
   'ruins.delve_blocked',
   'ruins.delve_beat',
@@ -2815,7 +2817,9 @@ export interface UndertakingReaderTrace extends TraceBase {
         | 'already_known' | 'clue_already_held' | 'map_already_held' | 'nobody_there'
           | 'schema_violation' | 'exhausted' | 'no_band_row' | 'nothing_eligible'
           /** `use × Power` on a power a seal has bound (THR-1429). */
-          | 'power_suppressed';
+          | 'power_suppressed'
+          /** THR-1702: the surveyor already found this never-site (spent lead, or `knows_of.foundTick`). */
+          | 'already_found';
 }
 
 /**
@@ -4850,6 +4854,7 @@ export type TraceEntry =
   | KpiSnapshotTrace
   | ClueRumorSweepTrace
   | ClueSharpenedTrace
+  | LeadFoundTrace
   | ForecastComputedTrace
   | HandFilteredTrace
   | DriftThresholdCrossedTrace
@@ -6248,6 +6253,23 @@ export interface ClueSharpenedTrace extends TraceBase {
   to: import('./knowledge').CluePrecision | 'cold';
   via: 'survey' | 'visit' | 'missed_visit';
   band?: StepOutcome;
+}
+
+/**
+ * Trace: a spent lead became a known place (THR-1702). Emitted by `phaseClueDecay` when a
+ * `located` lead sits on a site no delve can ever enter: the holder's `knows_of` edge is
+ * created or stamped with `foundTick`, and the lead is removed.
+ */
+export interface LeadFoundTrace extends TraceBase {
+  category: 'ruins.lead_found';
+  knowerId: string;
+  /** Same key the other `ruins.clue_*` traces use. */
+  targetRuinId: string;
+  /** `locationClassOf` the site (`'wonder'` | `'ruin'` | …), `'unknown'` when unclassed. */
+  siteClass: string;
+  knowsOf: 'created' | 'stamped';
+  /** tick − the lead's `discoveredTick`. */
+  heldTicks: number;
 }
 
 /** Emitted by branchingCurator.ts when a branching template's score is boosted (THR-452). */

@@ -4054,6 +4054,47 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on 3 decisions on seed 99 and on seeds 1, 2, 3 and 7 (1 · 1 · 3 · 3), and on seeds 42 · 99 · 4 · 8 arms p12 (part 3 off) vs all (on) kept 6 vs 7 visits — the discount does not lower kept visits (the plan’s keep condition).',
     },
   },
+  // -- Ruins -> Intelligence: a spent lead becomes a known place (THR-1702)
+  // What these rows make impossible: a `located` lead on a site no delve can enter that
+  // its holder re-surveys forever — refreshed by every survey, refused by every visit.
+  {
+    id: 'found-lead-becomes-known-place',
+    producerSystem: RUINS,
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'A `located` lead on a site whose delve road is `never` (a wonder, a plain worldgen ruin) has finished its climb: the next `phaseClueDecay` sweep writes the holder\'s `knows_of.foundTick` (created, or stamped on an existing edge), removes the lead and emits `ruins.lead_found`. The sheet\'s known places read `foundTick` as "found it", and the survey reader refuses `already_found` on a found never-site so the climb does not restart. `CLUE_SPENT_LEAD_ENDS_CLIMB = false` restores the old climb.',
+    ulTerms: ['Lead', 'Clue'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['recordPlaceFound', 'isLeadSpent', 'phaseClueDecay', 'CLUE_SPENT_LEAD_ENDS_CLIMB'],
+      module: 'src/engine/ruins/clueLifecycle.ts',
+    },
+    writeSites: ['src/engine/ruins/clueLifecycle.ts', 'src/engine/strategicGraphOps.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/data/undertaking-objects.ts'],
+    verifiedLive: {
+      date: '2026-10-06',
+      evidence: 'THR-1702. `src/engine/ruins/__tests__/foundLeadsEndTheClimb.test.ts`: decay creates `knows_of { fromSurvey, convergedTick, foundTick }` for a located glowcap-hollow lead, removes the lead and emits `ruins.lead_found` (siteClass wonder, knowsOf created); an existing `knows_of` is stamped with its other properties untouched; a located elder-ruin lead is left for the delve; `collectKnownPlaces` reads "found it"; the reader refuses `already_found` both for a spent lead and for a found place with no lead. `foundLeadsKillSwitch.test.ts` pins the switch-off arm. Census `readers/lead-dead-ends.ts` (output/lead-dead-ends-2026-10-06-seed*.json): see the THR-1702 status fragment.',
+    },
+  },
+  {
+    id: 'lead-pass-reads-delve-road',
+    producerSystem: RUINS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'The lead pass and the survey reader ask the ruins layer whether a held lead still has a rung to climb: `heldLeadRuinIds` leaves a spent lead out (no `leadPull`, no lead-pass survey), and `maybeSpawnSiteClue` does not refresh it. Both read `isLeadSpent` / `delveRoadOf`, the same rule delve admission reads as `delveRoadOf === \'now\'`.',
+    ulTerms: ['Lead', 'Delve'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['delveRoadOf', 'isLeadSpent', 'heldLeadRuinIds'],
+      module: 'src/engine/ruins/delveRoad.ts',
+    },
+    writeSites: ['src/engine/ruins/delveRoad.ts'],
+    readSites: ['src/engine/strategicActionCandidates.ts', 'src/data/undertaking-objects.ts', 'src/engine/ruins/delveVariant.ts'],
+    verifiedLive: {
+      date: '2026-10-06',
+      evidence: 'THR-1702. `foundLeadsEndTheClimb.test.ts`: `delveRoadOf` returns now / later / never on an elder ruin, a fresh and a settled mortal ruin, a worldgen `ruins`, a shipwreck and a healing spring; `heldLeadRuinIds` drops a located wonder lead and keeps a narrowed lead on the same wonder. The existing delve-admission tests (`delveVariant.test.ts`) pass unchanged through the `isDelvableRuin` wrapper.',
+    },
+  },
   {
     id: 'missed-appointment-breaks-agreement',
     producerSystem: ENCOUNTERS,

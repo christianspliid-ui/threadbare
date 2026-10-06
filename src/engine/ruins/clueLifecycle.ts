@@ -17,7 +17,10 @@ import { getFactionMembershipEdges } from '../graphQueries';
 import type { WorldGraph } from '../graph';
 import type { EncounterProgress } from '../../types/encounter';
 import type { AttentionTier } from '../../types/attention';
-import type { AgentNodeProperties } from '../../types/graph';
+import type { AgentNodeProperties, GraphEdge } from '../../types/graph';
+import { locationClassOf } from '../../data/world-objects';
+import { recordPlaceFound } from '../strategicGraphOps';
+import { hasFoundPlace, isLeadSpent } from './delveRoad';
 import type { ClueSource, CluePrecision, KnowsClueOfEdgeProperties } from '../../types/knowledge';
 import { emitTrace } from '../traceBuffer';
 import {
@@ -525,6 +528,41 @@ const CLUE_MAX_AGE: Record<CluePrecision, number> = {
  * Runs every CLUE_DECAY_CHECK_INTERVAL ticks (not every tick).
  * Mutates graph edges in place (standard pattern).
  */
+/**
+ * THR-1702 — turn a spent lead into a known place: `recordPlaceFound` creates or stamps
+ * the holder's `knows_of.foundTick`, then the lead is removed and `ruins.lead_found`
+ * emitted. A lead on a place the holder had already found (`knowsOf: 'kept'`) is removed
+ * with no second find. On a refused write the lead stays, untraced, for the next sweep.
+ */
+function settleSpentLead(
+  graph: WorldGraph,
+  edge: GraphEdge,
+  props: KnowsClueOfEdgeProperties,
+  tick: number,
+): void {
+  try {
+    const found = recordPlaceFound(graph, edge.source, edge.target, tick);
+    if (!found.success) return;
+    try { graph.removeEdge(edge.id); } catch { /* already gone */ }
+    if (found.knowsOf === 'kept') return;
+    const site = graph.getNode(edge.target);
+    const subtype = (site?.properties.locationSubtype ?? site?.properties.locationType) as string | undefined;
+    const name = site?.name ?? edge.target;
+    emitTrace({
+      category: 'ruins.lead_found',
+      tick,
+      knowerId: edge.source,
+      targetRuinId: edge.target,
+      siteClass: locationClassOf(subtype) ?? 'unknown',
+      knowsOf: found.knowsOf === 'stamped' ? 'stamped' : 'created',
+      heldTicks: tick - (props.discoveredTick ?? tick),
+      summary: `${edge.source} found ${name}; it is a known place now`,
+    });
+  } catch {
+    // fail-soft: leave the lead for the next sweep
+  }
+}
+
 export function phaseClueDecay(state: GameState): Partial<GameState> {
   const { graph, tick } = state;
 
@@ -538,6 +576,17 @@ export function phaseClueDecay(state: GameState): Partial<GameState> {
       // Consumed clues should have been pruned at convergence; clean up stragglers
       if (props.consumed) {
         try { graph.removeEdge(edge.id); } catch { /* already gone */ }
+        continue;
+      }
+
+      // THR-1702: a spent lead (`located` on a site no delve can ever enter) has finished
+      // its climb — the holder knows the place now. Runs before the pending-visit and age
+      // checks so every path to `located` (visit, survey critical, whisper, rumour) ends
+      // here. A refused write leaves the lead for the next sweep (NFP #4).
+      // A later lead (any precision) on a never-site the holder already found ends the same
+      // way, so a rumour cannot restart a finished climb.
+      if (isLeadSpent(graph, edge, tick) || hasFoundPlace(graph, edge.source, edge.target, tick)) {
+        settleSpentLead(graph, edge, props, tick);
         continue;
       }
 
