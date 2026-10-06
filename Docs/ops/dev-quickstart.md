@@ -22,6 +22,7 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run generate-ul-dashboard` | Regenerate UL dashboard JSON snapshot (auto-runs on `npm run build`) |
 | `npm run rebuild-index` | Rebuild Obsidian vault Index.md from all vault pages |
 | `npm run cli` | Interactive REPL for headless game testing (see below) |
+| `npm run model:power` | Deterministic 1,080-tick scripted-player power-progression model (THR-1745 economies; `-- --model <key>`, `-- --events`, `-- --check` asserts the plan doc's tables) |
 
 **Dev Quick-Start URLs** (append to `http://localhost:5173`):
 

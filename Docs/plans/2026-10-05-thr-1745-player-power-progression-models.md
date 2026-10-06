@@ -14,7 +14,7 @@ Christian asked (chat, 2026-10-05) for a rough, mathematical roadmap of how a ba
 
 This doc does four things. It records the engine's economy constants as they are today (every number cited to its file). It runs one scripted player through one 90-day doom window under the current rules and shows, with numbers, where growth stalls. It names ten holes. It then runs the same player through three candidate economies, each built from systems that already exist plus the smallest content needed to plug a measured gap, and tabulates ticks-between-growth for each.
 
-The model script is deterministic and lives beside this doc in the session scratchpad; the formulas it uses are reproduced below so an executor can re-run them without it. Where the model makes an assumption that the engine does not fix (how often the player acts, how many sources are within reach), the assumption is stated as a tunable.
+The model script is deterministic and lives at `scripts/power-progression-model.mjs` (`npm run model:power`; `-- --check` asserts every table below, THR-1767); the formulas it uses are reproduced below so an executor can re-run them without it. Where the model makes an assumption that the engine does not fix (how often the player acts, how many sources are within reach), the assumption is stated as a tunable.
 
 ## Substrate inventory
 
