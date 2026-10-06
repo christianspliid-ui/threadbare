@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-06 18:56 local (16:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 19:56 local (17:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Were you away, or was the app closed, last week?** On two weekday stretches no lane ran at all, and nothing recorded a pause. The longer one: **"The scheduled lanes went silent for 25h (2026-09-29T17:38:06.000Z → 2026-09-30T18:36:30.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time."** *— from the lane-silence check* In your time that was Tuesday ~19:30 to Wednesday ~20:20. The other stretch ran from Thursday 1 October ~17:00 to Friday 2 October ~13:45.
+**Were you away, or was the app closed, last week?** On two weekday stretches no lane ran at all, and nothing recorded a pause. The newer one: **"The scheduled lanes went silent for 20.9h (2026-10-01T14:55:14.000Z → 2026-10-02T11:48:32.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time."** *— from the lane-silence check* In your time that was Thursday 1 October ~17:00 to Friday 2 October ~13:45. The other stretch ran from Tuesday 29 September ~19:30 to Wednesday 30 September ~20:20.
 
 One reply covers both, for example "away both times" or "app was closed". If either one wasn't you, say so and it becomes a fault to chase. Details: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
@@ -23,9 +23,11 @@ Say "veto threading rite", "veto buy your spheres", "veto divine economy" or "ve
 
 ## Queue
 
-**4 jobs ready** (healthy), **none being built**. [Why masters skip master-level work](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master) merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 17:16 and is live; nothing has merged since. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). No parked or stale jobs.
+**4 jobs ready** (healthy), **none being built**. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). Since the last brief: the [Dominion research audit](https://github.com/christianspliid-ui/threadbare/pull/2259) merged at 19:19 (notes only), and the [power-progression model script](https://github.com/christianspliid-ui/threadbare/pull/2260) is waiting on its checks and will merge on green. No parked or stale jobs.
+
+- **Optional, no reply needed:** the new [Dominion map](https://linear.app/threadbare/issue/THR-1758/wayfinder-map-dominion-how-the-gods-power-grows-across-a-run) has two questions you could keep for yourself — [what you see of your turf on the map and cards](https://linear.app/threadbare/issue/THR-1766/what-the-player-sees-a-mock-of-the-dominion-overlay-on-the-map-the-band) and [how harsh losing ground to the opposing dominion feels](https://linear.app/threadbare/issue/THR-1763/the-opposing-dominion-as-a-force-who-pushes-back-how-fast-turf-erodes). If you say nothing, the design lane decides both and invites your veto; neither can start until the formula lands. *— from the orchestrator*
 
 ## Health
 
-- **The worktree reaper has 6 worktrees waiting for a decision** (482 worktrees, 315 local branches on disk; last sweep 18:40). Noted for visibility.
-- Everything else is green. The long simulation tests stay green on [the masters merge](https://github.com/christianspliid-ui/threadbare/actions/runs/37486092882), no pull requests are waiting to merge, the live site serves the latest build, scheduled tasks are on time, and the simulation speed probe reads 118 ms per tick (5% above its weekly median, normal).
+- **The worktree reaper has 6 worktrees waiting for a decision** (484 worktrees, 317 local branches on disk; last sweep 19:40). Noted for visibility.
+- Everything else is green. The live site serves the latest build (the last merge was notes only), automated checks and scheduled tasks are on time, and the simulation speed probe reads 115 ms per tick (2% above its weekly median, normal).

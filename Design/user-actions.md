@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-06 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-06 19:56 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)): who writes sphere scores, how fast, and what the formula reads today. Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) at 17:19 UTC (notes only).
 - **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)): the shortlist cut them out by sheer volume. Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 15:16 UTC and live.
 - **2026-10-06: fair fights — quests now face the same odds window as everything else, and sure things stop paying twice** ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) at 13:42 UTC and live.
 - **2026-10-06: a found lead now ends the climb** ([THR-1702](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)): a located lead on a site you can never delve becomes a known place. Merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) at 07:57 UTC and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-05: your Dominion ruling is on record** ([THR-1745](https://linear.app/threadbare/issue/THR-1745)). The plan doc merged via [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) at 23:19.
 - **2026-10-05: a set-down encounter now waits for you** ([THR-1730](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should)). Unstuck after last hour's cancelled checks; merged via [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) at 23:30 and live.
 - **2026-10-05: the intent judge now checks what the player will read** ([THR-1743](https://linear.app/threadbare/issue/THR-1743/intent-judge-checks-what-the-player-will-read-ui-plans-must-quote)), your filing from this evening. Merged via [#2245](https://github.com/christianspliid-ui/threadbare/pull/2245).
-- **2026-10-05: encounter summaries now read as player prose, not authoring prompts** ([THR-1739](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice)), your Granary Riot finding. Its conflict was cleared by the builder; merged via [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) at 15:53.
 
 ---
 
