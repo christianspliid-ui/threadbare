@@ -67,6 +67,9 @@ const arrangedAt: Record<string, number> = {};
 const counts: Record<string, number> = {};
 const leadFound: Record<string, number> = {};
 const foundPairs: Record<string, number> = {};
+/** THR-1702 kill-criterion attribution: who delved, who found (`t<tick>:<agent>><site>`). */
+const delvers: string[] = [];
+const finders: string[] = [];
 const started = Date.now();
 
 for (let t = 1; t <= TICKS; t++) {
@@ -91,7 +94,8 @@ for (let t = 1; t <= TICKS; t++) {
       inc(refusals, tr.refused ? `refused:${tr.refused}` : 'arranged');
       if (!tr.refused) inc(arrangedAt, tag(g().getNode(String(tr.locationId ?? '')), t));
     }
-    if (c === 'ruins.delve_admitted') inc(counts, 'delve_admitted');
+    if (c === 'ruins.delve_admitted') { inc(counts, 'delve_admitted'); delvers.push(`t${t}:${tr.agentId}>${tr.ruinId}`); }
+    if (c === 'ruins.lead_found') finders.push(`t${t}:${tr.knowerId}>${tr.targetRuinId}`);
     if (c === 'ruins.lead_found') {
       inc(counts, 'lead_found');
       inc(leadFound, tag(g().getNode(String(tr.targetRuinId ?? '')), t));
@@ -110,6 +114,6 @@ for (const e of g().getEdgesByType('knows_clue_of')) {
 }
 
 const foundTwice = Object.values(foundPairs).filter(n => n > 1).length;
-const result = { seed, ticks: TICKS, sites, located, resurveys, liveLocated, visit: refusals, arrangedAt, counts, leadFound, foundTwice, wallMs: Date.now() - started };
+const result = { seed, ticks: TICKS, sites, located, resurveys, liveLocated, visit: refusals, arrangedAt, counts, leadFound, foundTwice, delvers, finders, wallMs: Date.now() - started };
 console.log(JSON.stringify(result));
 if (process.argv[4]) writeFileSync(process.argv[4], JSON.stringify(result, null, 1));

@@ -1,0 +1,30 @@
+{
+ "seed": 1,
+ "ticks": 300,
+ "sites": {
+  "ruin:ruins:never": 11,
+  "wonder:crystal_cavern:never": 9,
+  "wonder:master_forge:never": 1,
+  "ruin:elder_ruin:now": 94
+ },
+ "located": {
+  "ruin:elder_ruin:now": 2
+ },
+ "resurveys": {},
+ "liveLocated": {},
+ "visit": {
+  "arranged": 19,
+  "refused:lead_visit_visit_pending": 22
+ },
+ "arrangedAt": {
+  "ruin:elder_ruin:now": 18,
+  "ruin:ruins:never": 1
+ },
+ "counts": {
+  "location_surveys": 41,
+  "delve_admitted": 2
+ },
+ "leadFound": {},
+ "foundTwice": 0,
+ "wallMs": 135642
+}
