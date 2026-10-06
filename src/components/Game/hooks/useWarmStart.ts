@@ -33,11 +33,17 @@ export const WARM_START_PARAM = 'warm';
 /** Clamp. 300 ticks measured at 93 s headless on seed 42; tick cost grows with population. */
 export const WARM_START_MAX_TICKS = 600;
 /** Ticks per `runTicksSync` call between yields — keeps the overlay repainting. */
-export const WARM_START_CHUNK_TICKS = 10;
+export const WARM_START_CHUNK_TICKS = 3;
 /** Decisions that may wait at arrival before the done line flags a pile-up. Never auto-resolved. */
 export const WARM_START_MAX_ARRIVAL_DECISIONS = 1;
 /** Re-tier the warm-up's interrupt-tier undertaking moments to badges at the end. */
 export const WARM_START_SETTLE_MOMENTS = true;
+/**
+ * How long after the arrival render the done line waits before reading the registry.
+ * Some held decisions open one render after suppression clears (a spine beat enters
+ * from an effect), so reading on the arrival render itself undercounts them.
+ */
+export const WARM_START_ARRIVAL_SETTLE_MS = 500;
 /** The console marker `scripts/cold-playtest/extract.mjs` looks for. */
 export const WARM_START_LOG_MARKER = '[warm-start] done';
 
@@ -262,16 +268,19 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
   // reads the registry with the overlay closed and suppression cleared.
   useEffect(() => {
     if (!arrival || running) return;
-    let openInterruptsAtArrival: string[] = [];
-    try {
-      openInterruptsAtArrival = argsRef.current.getOpenInterrupts().filter(id => id !== 'WarmStartOverlay');
-    } catch { /* fail-soft: an unreadable registry logs an empty list */ }
-    const line = { ...arrival, openInterruptsAtArrival };
-    console.info(`${WARM_START_LOG_MARKER} ${JSON.stringify(line)}`);
-    if (openInterruptsAtArrival.length > WARM_START_MAX_ARRIVAL_DECISIONS) {
-      console.warn(`[warm-start] ${openInterruptsAtArrival.length} decisions wait at arrival (> ${WARM_START_MAX_ARRIVAL_DECISIONS})`);
-    }
-    setArrival(null);
+    const timer = setTimeout(() => {
+      let openInterruptsAtArrival: string[] = [];
+      try {
+        openInterruptsAtArrival = argsRef.current.getOpenInterrupts().filter(id => id !== 'WarmStartOverlay');
+      } catch { /* fail-soft: an unreadable registry logs an empty list */ }
+      const line = { ...arrival, openInterruptsAtArrival };
+      console.info(`${WARM_START_LOG_MARKER} ${JSON.stringify(line)}`);
+      if (openInterruptsAtArrival.length > WARM_START_MAX_ARRIVAL_DECISIONS) {
+        console.warn(`[warm-start] ${openInterruptsAtArrival.length} decisions wait at arrival (> ${WARM_START_MAX_ARRIVAL_DECISIONS})`);
+      }
+      setArrival(null);
+    }, WARM_START_ARRIVAL_SETTLE_MS);
+    return () => clearTimeout(timer);
   }, [arrival, running]);
 
   return { running, progress };

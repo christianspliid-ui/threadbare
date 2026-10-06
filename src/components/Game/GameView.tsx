@@ -3227,9 +3227,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Spine beats present modally so the opening is not missable; pool beats wait behind
   // the offer affordance. Keyed on the spine id prefix so the closing selection beat
   // (Beat 4, kind 'selection') auto-opens too. Gated by interrupt suppression.
+  // THR-1744: it also waits while a journey vignette is pending, so two held decisions
+  // (e.g. after a warm start) open one at a time instead of stacking; it enters once
+  // the vignette is answered.
+  const journeyVignettePending = (gameState.pendingVignettes?.length ?? 0) > 0;
   useEffect(() => {
-    if (pendingBeat && isSpineBeatId(pendingBeat.beatId) && !interruptsSuppressed) setBeatEntered(true);
-  }, [pendingBeat?.beatId, pendingBeat, interruptsSuppressed]);
+    if (pendingBeat && isSpineBeatId(pendingBeat.beatId) && !interruptsSuppressed && !journeyVignettePending) setBeatEntered(true);
+  }, [pendingBeat?.beatId, pendingBeat, interruptsSuppressed, journeyVignettePending]);
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
@@ -4646,7 +4650,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     runChunk: n => runTicksSync(n, { markClock: false }),
     getFirstMode: (): AttentionMode | null => {
       const edge = getFirstThreadEdge();
-      return edge ? resolveAttentionMode(edge.properties as ThreadEdgeProperties) : null;
+      return edge ? resolveAttentionMode(edge.properties as unknown as ThreadEdgeProperties) : null;
     },
     toggleFirstMode: () => {
       const edge = getFirstThreadEdge();
