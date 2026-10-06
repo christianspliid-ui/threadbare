@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 10:57 local (08:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 11:56 local (09:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,10 +23,10 @@ Say "veto buy your spheres", "veto divine economy", "veto fair fights" or "veto 
 
 ## Queue
 
-**4 jobs ready** (healthy), **none being built** right now. [Found it](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and) shipped: a found lead now ends the climb, merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) and live. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first ([fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)) opens ~14:57 today, so the builder idles until then. No parked or stale jobs.
+**4 jobs ready** (healthy), **none being built** right now. Nothing new merged this hour. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first ([fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)) opens ~14:57 today, so the builder idles until then. No parked or stale jobs.
 
 ## Health
 
 - **The long simulation tests are red on main** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37315731022), failing since 5 October ~11:00). The everyday checks are green and the live site is unaffected; a builder session owes the fix (pickup lane's unstick duty). Not yours.
-- **The worktree reaper has 6 worktrees waiting for a decision** (481 worktrees, 319 local branches on disk). Noted for visibility; it ran at 10:43.
-- Everything else is green. The live site is serving the latest main, scheduled tasks are on time, no pull requests are waiting. Simulation speed is normal (107 ms per tick, 1% under the weekly median).
+- **The worktree reaper has 6 worktrees waiting for a decision** (480 worktrees, 315 local branches on disk). Noted for visibility; it ran at 11:43.
+- Everything else is green. The live site is serving the latest main, scheduled tasks are on time, no pull requests are waiting. Simulation speed is normal (118 ms per tick, 9% over the weekly median of 108, inside the 25% drift line).
