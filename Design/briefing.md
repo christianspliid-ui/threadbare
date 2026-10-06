@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 14:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 15:57 local (13:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,11 +23,10 @@ Say "veto threading rite", "veto buy your spheres", "veto divine economy" or "ve
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built**. [Fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the) is under way now: its veto window has closed and a builder is actively editing it (local worktree `nervous-leavitt-9e9202`, last edit about a minute ago, no pull request yet). The four ready jobs are the design-lane decisions above, each waiting out its veto window; the next opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). No parked or stale jobs.
+**4 jobs ready** (healthy), **none being built**. [Fair fights](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the) shipped this hour: merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) and already live. The four ready jobs are the design-lane decisions above, each waiting out its veto window, so the builder is idle by design until the first opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). No parked or stale jobs.
 
 ## Health
 
-- **The long simulation tests are still red on main** (red about 5 hours; [latest run](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). They first failed on the merge of [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) (the found-leads fix), so that merge is the first suspect. No builder has picked it up yet; the pickup lane owes the fix. The everyday checks are green and the live site is unaffected. Not yours.
-- **Simulation speed probe tripped:** "tick cost 174 ms/tick steady, 59% above the 7-day median (109, 119 rows since cf68929f); top phase agent_decision, 645 agents. Name the merges between cf68929f and 7c419359: git log --oneline --merges cf68929f..7c419359". The only change since last hour's 109 ms reading is a docs-only merge ([#2256](https://github.com/christianspliid-ui/threadbare/pull/2256)), and the fair-fights builder was running engine work on the same machine during the measurement. That points to machine load, not a slowdown in the game. Watch next hour's reading. Not yours.
-- **The worktree reaper has 6 worktrees waiting for a decision** (484 worktrees, 319 local branches on disk). Noted for visibility.
-- Everything else is green. The live site is serving the latest game build (only docs changed since), scheduled tasks are on time, and no pull requests are waiting.
+- **The long simulation tests are still red on main** (red about 6 hours since the merge of [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255), the found-leads fix, so that merge is the first suspect). A fresh run on the fair-fights merge is [in progress now](https://github.com/christianspliid-ui/threadbare/actions/runs/37472868522). No builder has claimed the fix yet; the pickup lane owes it. The everyday checks are green and the live site is unaffected. Not yours.
+- **The worktree reaper has 6 worktrees waiting for a decision** (486 worktrees, 318 local branches on disk). Noted for visibility.
+- Everything else is green. The simulation speed probe is back to normal (116 ms per tick, 6% above its weekly median), so last hour's spike was machine load, as suspected. The live site is serving the latest build, scheduled tasks are on time, and no pull requests are waiting.
