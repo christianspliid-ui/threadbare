@@ -99,7 +99,7 @@ $roundInfo = [ordered]@{
   # Per-persona mid-game coverage (THR-1744). extract.mjs ran inside each tester's
   # run, before the prune below, so every persona's snapshots were still on disk.
   coverage = [ordered]@{}
-  covered = @($summaries | Where-Object { $_.coverage -and -not $_.coverage.coverageFailure }).Count
+  covered = @($summaries | Where-Object { $_.ok -and $_.coverage -and -not $_.coverage.coverageFailure }).Count
 }
 foreach ($s in $summaries) { $roundInfo.coverage[$s.persona] = $s.coverage }
 $roundInfo | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $outDir 'round.json')

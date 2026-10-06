@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { flushSync } from 'react-dom';
 import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { resumeMusic as resumeTheme, getMusicVolume, setMusicVolume, isMusicMuted, toggleMusicMute } from '../../audio/MusicChannel';
@@ -4647,7 +4648,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     requested: warmTicks,
     ready: gameState.phase === 'playing',
     startTick: gameState.tick,
-    runChunk: n => runTicksSync(n, { markClock: false }),
+    // One tick per chunk, committed synchronously: `runTickBatch` commits only a batch's
+    // final state, and `tickEvents` is reset every tick, so a multi-tick chunk would hide
+    // the intermediate ticks' events from the notification layer (doom-stage popups,
+    // arrival toasts). flushSync makes each tick's state render — and its effects run —
+    // before the next tick, exactly as live play does.
+    runChunk: n => {
+      let result!: ReturnType<typeof runTicksSync>;
+      flushSync(() => { result = runTicksSync(n, { markClock: false }); });
+      return result;
+    },
     getFirstMode: (): AttentionMode | null => {
       const edge = getFirstThreadEdge();
       return edge ? resolveAttentionMode(edge.properties as unknown as ThreadEdgeProperties) : null;

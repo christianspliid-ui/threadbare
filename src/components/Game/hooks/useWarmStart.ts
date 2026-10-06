@@ -32,8 +32,12 @@ import type { DebugTickStopReason } from '../../../engine/debugTickBatch';
 export const WARM_START_PARAM = 'warm';
 /** Clamp. 300 ticks measured at 93 s headless on seed 42; tick cost grows with population. */
 export const WARM_START_MAX_TICKS = 600;
-/** Ticks per `runTicksSync` call between yields — keeps the overlay repainting. */
-export const WARM_START_CHUNK_TICKS = 3;
+/**
+ * Ticks per `runTicksSync` call between yields. 1 so every tick's `tickEvents` reaches
+ * the notification layer (a batch commits only its final state) and the page stays
+ * responsive to Playwright (at 10 a dev-build chunk blocked ~2 s and screenshots timed out).
+ */
+export const WARM_START_CHUNK_TICKS = 1;
 /** Decisions that may wait at arrival before the done line flags a pile-up. Never auto-resolved. */
 export const WARM_START_MAX_ARRIVAL_DECISIONS = 1;
 /** Re-tier the warm-up's interrupt-tier undertaking moments to badges at the end. */
