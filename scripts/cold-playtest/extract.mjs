@@ -2,12 +2,78 @@
 // plus a machine-readable summary.
 // Usage: node extract.mjs <personaRunDir>
 //   writes <dir>/log.md and <dir>/summary.json, prints the summary.
-// Plan: Docs/plans/2026-09-25-thr-1610-cold-playtest-loop.md (THR-1610).
+//        node extract.mjs --coverage-only <personaRunDir>
+//   prints only the coverage block (which mid-game surfaces the tester reached),
+//   read from the tester's shots/*.yml snapshots. Writes nothing. (THR-1744)
+// Plan: Docs/plans/2026-09-25-thr-1610-cold-playtest-loop.md (THR-1610);
+//       warm mode + coverage: Docs/plans/2026-10-05-thr-1744-warm-playtest.md (THR-1744).
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const dir = process.argv[2];
-if (!dir) { console.error('usage: node extract.mjs <personaRunDir>'); process.exit(2); }
+const argv = process.argv.slice(2);
+const coverageOnly = argv.includes('--coverage-only');
+const dir = argv.find(a => !a.startsWith('--'));
+if (!dir) { console.error('usage: node extract.mjs [--coverage-only] <personaRunDir>'); process.exit(2); }
+
+const cfg = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'config.json'), 'utf8'));
+
+// ── Coverage (THR-1744) ──
+// A surface is `reached` when any snapshot carries one of its markers; `reached-empty`
+// when every snapshot that matched shows only its empty state. The markers live in
+// config.json so a copy change is a config edit. A coverage failure is reaching none
+// of faction / undertaking / ambition — thread history does not count (cold testers
+// already reach it).
+const MID_GAME_SURFACES = ['faction', 'undertaking', 'ambition'];
+function readCoverage(runDir) {
+  const shots = path.join(runDir, 'shots');
+  const files = fs.existsSync(shots) ? fs.readdirSync(shots).filter(f => f.endsWith('.yml')) : [];
+  const texts = files.map(f => fs.readFileSync(path.join(shots, f), 'utf8'));
+  const surfaces = {};
+  const matched = {};
+  for (const [surface, m] of Object.entries(cfg.coverageMarkers ?? {})) {
+    const reachedMarkers = m.reached ?? [];
+    const emptyMarkers = m.empty ?? [];
+    let full = false;
+    let any = false;
+    const hits = new Set();
+    for (const t of texts) {
+      const r = reachedMarkers.filter(k => t.includes(k));
+      const e = emptyMarkers.filter(k => t.includes(k));
+      r.concat(e).forEach(k => hits.add(k));
+      if (r.length || e.length) any = true;
+      if (r.length && !e.length) full = true;
+    }
+    surfaces[surface] = full ? 'reached' : any ? 'reached-empty' : '—';
+    matched[surface] = [...hits];
+  }
+  const coverageFailure = MID_GAME_SURFACES.every(s => (surfaces[s] ?? '—') === '—');
+  return { snapshots: files.length, ...surfaces, coverageFailure, matched };
+}
+
+// The warm-up's own console line, from Playwright MCP's console-*.log. A warm tester
+// whose warm-up never logged completion played the wrong world.
+function readWarmStart(runDir) {
+  const shots = path.join(runDir, 'shots');
+  const marker = cfg.warmStartLogMarker ?? '[warm-start] done';
+  const logs = fs.existsSync(shots) ? fs.readdirSync(shots).filter(f => /^console.*\.log$/.test(f)) : [];
+  for (const f of logs) {
+    const text = fs.readFileSync(path.join(shots, f), 'utf8');
+    const i = text.indexOf(marker);
+    if (i < 0) continue;
+    const json = text.slice(i + marker.length).match(/\{.*\}/);
+    let line = null;
+    try { line = json ? JSON.parse(json[0]) : null; } catch { line = null; }
+    return { ok: true, line };
+  }
+  return { ok: false, line: null };
+}
+
+if (coverageOnly) {
+  console.log(JSON.stringify({ persona: path.basename(dir), coverage: readCoverage(dir) }));
+  process.exit(0);
+}
+const mode = fs.existsSync(path.join(dir, 'mode.txt')) ? fs.readFileSync(path.join(dir, 'mode.txt'), 'utf8').trim() : 'cold';
 const transcript = path.join(dir, 'transcript.jsonl');
 const lines = fs.existsSync(transcript)
   ? fs.readFileSync(transcript, 'utf8').split('\n').filter(Boolean)
@@ -58,6 +124,8 @@ if (!failure && /safeguards flagged/i.test(resultText)) failure = 'safeguard';
 if (!failure && /authenticat/i.test(resultText) && result?.is_error) failure = 'auth';
 if (!failure && !result) failure = lines.length ? 'incomplete' : 'no-transcript';
 if (!failure && result?.is_error) failure = 'error';
+const warmStart = mode === 'warm' ? readWarmStart(dir) : null;
+if (!failure && warmStart && !warmStart.ok) failure = 'warm-start';
 
 // The debrief is the final assistant message. Tags are counted on the in-play
 // notes only, so the debrief's own recap of "WOULD QUIT" does not double-count.
@@ -97,6 +165,9 @@ const summary = {
   turns: result?.num_turns ?? null,
   minutes: result ? Math.round(result.duration_ms / 60000) : null,
   notionalCostUsd: result?.total_cost_usd != null ? Number(result.total_cost_usd.toFixed(2)) : null,
+  mode,
+  coverage: readCoverage(dir),
+  ...(warmStart ? { warmStartOk: warmStart.ok, warmStart: warmStart.line } : {}),
 };
 
 fs.writeFileSync(path.join(dir, 'log.md'), out.join('\n') + '\n');

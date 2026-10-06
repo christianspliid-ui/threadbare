@@ -50,6 +50,13 @@ describe('interruptRegistry', () => {
     }
   });
 
+  it('the warm-start overlay stops the world and holds the moment card (THR-1744)', () => {
+    const r = resolveInterrupts(snap({ warmStartRunning: true, momentPending: true }));
+    expect(r.open).toEqual(['WarmStartOverlay']);
+    expect(r.momentMayRender).toBe(false);
+    expect(r.anyOpen).toBe(true);
+  });
+
   it('nothing open → the clock is free', () => {
     const r = resolveInterrupts(closed);
     expect(r.anyOpen).toBe(false);

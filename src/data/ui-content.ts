@@ -569,6 +569,22 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Lives on',
     desc: "{name}'s moments resolve on their own; you can read them afterwards.",
   },
+  // ─── Warm start (THR-1744) ────────────────────────────────────
+  // The `?warm=<ticks>` overlay. `{now}` / `{target}` are season words from the
+  // one calendar conversion (Law 13 — never a tick count). The overlay's First
+  // line reuses `ui.attention.lives_on` rather than a copy (Law 17).
+  'ui.warm_start.title': {
+    label: 'The world moves on',
+    desc: 'The world is catching up on the seasons you were away.',
+  },
+  'ui.warm_start.wait': {
+    label: 'Catching up',
+    desc: 'Catching up on the seasons you were away. This takes a minute or two.',
+  },
+  'ui.warm_start.progress': {
+    label: 'Catching up',
+    desc: '{now} — catching up to {target}',
+  },
   'ui.attention.thread_too_thin': {
     label: 'Thread too thin',
     desc: 'The thread is too thin for this mortal to stop the world. Strengthen it first.',

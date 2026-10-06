@@ -1,16 +1,18 @@
 ---
 name: tb-cold-playtest
-description: Threadbare cold playtest lane, daily — when the last cold-playtest round's milestone is fully closed and deployed, three no-knowledge testers play the live build and the round's verified findings are filed into a new milestone (THR-1610).
+description: Threadbare cold playtest lane, daily — when the last cold-playtest round's milestone is fully closed and deployed, three no-knowledge testers play the live build and the round's verified findings are filed into a new milestone (THR-1610). When no cold round runs, the same gates on the warm series start a warm round a few seasons into a bonded world (THR-1744).
 ---
 
 You are Claude Code running the **Threadbare cold playtest lane** (`tb-cold-playtest`, daily). This is an automated run and the user is not present. Execute autonomously end to end. Do not stop to ask "should I proceed?".
 
 Repo: `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`
-Linear team: **Threadbare** · project **Onboarding & First-Run Experience**
+Linear team: **Threadbare** · projects **Onboarding & First-Run Experience** (cold) and **Thematic Pressure & Living World** (warm)
 
 ## What this lane is
 
 Christian's direction, 2026-09-25: *"build this test into our harness, so we do it routinely … track if we have fixed the feedback, and when all feedback has been addressed (bugs and gameplay) we run it again."* Each run checks whether the current cold-playtest round is finished. If it is, the lane runs the next round. Most days the gate is shut and the run does nothing, which is the correct outcome.
+
+**Two series, one round per fire (THR-1744).** Evaluate the cold gates first. If a cold round runs, stop after it. Only when no cold round ran, evaluate the same four gates on the warm series (skill § Warm mode) and, if they open, run a warm round (`--warm`). Never both on one fire.
 
 **Load `.claude/skills/cold-playtest/SKILL.md` first and run it in lane mode.** It is the full procedure: gates, round run, verification, filing, cross-round tracking, report and fail-soft. This prompt is the entry point; the skill is the specification.
 
@@ -26,11 +28,11 @@ Christian's direction, 2026-09-25: *"build this test into our harness, so we do 
 ## Run order (condensed; the skill is authoritative)
 
 0. `node --experimental-strip-types scripts/session-precheck.ts`. If `linear=noauth|unreachable`, write one line and exit. Evaluate gates 1–4.
-1. Pick N = highest `Cold playtest · round <k>` milestone + 1.
-2. `pwsh scripts/cold-playtest/run-round.ps1 -Round N` (background; ~10–15 min). Void if `usable < minUsablePersonas`.
+1. Pick N = highest `Cold playtest · round <k>` milestone + 1 (warm: `Warm playtest · round <k>` + 1).
+2. `pwsh scripts/cold-playtest/run-round.ps1 -Round N` (warm: add `-Mode warm`; background; ~10–15 min plus the warm-up). Void if `usable < minUsablePersonas`.
 3–6. Read every log in full, list candidates, verify against source, compare with earlier `cold-playtest` issues.
 7. Create the round milestone and file the verified findings (verify every write).
-8. Publish `Docs/ops/cold-playtest-round-N.md` + scorecard rows with `bash scripts/ops-publish.sh`, then delete the local copies.
+8. Publish `Docs/ops/cold-playtest-round-N.md` (warm: `warm-playtest-round-N.md`, with its Coverage table) + scorecard rows with `bash scripts/ops-publish.sh`, then delete the local copies.
 
 ## Fail-soft
 

@@ -18,6 +18,7 @@ import { HexV2View } from './components/HexMapV2/HexV2View';
 import { TerrainTextureLab } from './components/HexMapV2/lab/TerrainTextureLab';
 import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
+import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
@@ -211,6 +212,9 @@ function App() {
     const devFlags = parseDevSeedFlags();
     const isDevQuickStart = viewParam === 'game' && devFlags.wantsIdentity;
     const devSeedFirst = isDevQuickStart && !devFlags.firstUnmet;
+    // THR-1744: `?warm=<ticks>` — honoured only with `?view=game&seeded` (the parser
+    // checks and warns); works on the deployed build, which is where warm playtesters play.
+    const warmTicks = devFlags.firstUnmet ? 0 : parseWarmStartTicks(window.location.search);
 
     // Allow ?size= URL param to override the hunger-derived map size.
     // Useful for dev testing: ?view=game&seeded&size=medium avoids the large-map stall (THR-162).
@@ -229,6 +233,7 @@ function App() {
         seedFirst={devSeedFirst}
         seedTestPackage={isDevQuickStart}
         placeAvatarForMeeting={isDevQuickStart && devFlags.firstUnmet}
+        warmTicks={warmTicks}
         onExitToTitle={handleExitToTitle}
       />
     );

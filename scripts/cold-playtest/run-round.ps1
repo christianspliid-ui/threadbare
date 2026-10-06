@@ -4,10 +4,16 @@
 #        pwsh scripts/cold-playtest/run-round.ps1 -Round 2 -Label dry-run   (writes round-2-dry-run/)
 #        pwsh scripts/cold-playtest/run-round.ps1 -Round 2 -SummarizeOnly    (recovery: testers already ran,
 #                                                                             only re-extract + write round.json)
-# Plan: Docs/plans/2026-09-25-thr-1610-cold-playtest-loop.md (THR-1610).
+#        pwsh scripts/cold-playtest/run-round.ps1 -Round 1 -Mode warm         (warm round: writes under
+#                                                                             %USERPROFILE%\.threadbare\warm-playtest\)
+# Plan: Docs/plans/2026-09-25-thr-1610-cold-playtest-loop.md (THR-1610);
+#       warm mode: Docs/plans/2026-10-05-thr-1744-warm-playtest.md (THR-1744).
 param(
   [Parameter(Mandatory)] [int] $Round,
-  [string] $ArtifactRoot = (Join-Path $env:USERPROFILE '.threadbare\cold-playtest'),
+  [ValidateSet('cold', 'warm')] [string] $Mode = 'cold',
+  # Default: %USERPROFILE%\.threadbare\<mode>-playtest — the warm series keeps its own
+  # root, so its round numbers never collide with cold's.
+  [string] $ArtifactRoot = '',
   # Optional suffix for the round directory. A dry run uses it so it never
   # occupies the real round-N directory the next lane round will need.
   [string] $Label = '',
@@ -20,6 +26,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 $cfg = Get-Content (Join-Path $root 'config.json') -Raw | ConvertFrom-Json
+if (-not $ArtifactRoot) { $ArtifactRoot = Join-Path $env:USERPROFILE ".threadbare\$Mode-playtest" }
+$startUrl = if ($Mode -eq 'warm') { $cfg.warmStartUrl.Replace('{{WARM_TICKS}}', [string]$cfg.warmTicks) } else { $cfg.startUrl }
 $dirName = if ($Label) { "round-$Round-$Label" } else { "round-$Round" }
 $outDir = Join-Path $ArtifactRoot $dirName
 if (Test-Path (Join-Path $outDir 'round.json')) { throw "round $Round already has a round.json in $outDir — pick the next round number" }
@@ -27,8 +35,8 @@ New-Item -ItemType Directory -Force $outDir | Out-Null
 
 if (-not $SummarizeOnly) {
 # Fail fast if the site is down: a dead page would waste every tester's budget.
-try { $null = Invoke-WebRequest $cfg.startUrl -UseBasicParsing -TimeoutSec 20 }
-catch { throw "start URL unreachable: $($cfg.startUrl) — $($_.Exception.Message)" }
+try { $null = Invoke-WebRequest $startUrl -UseBasicParsing -TimeoutSec 20 }
+catch { throw "start URL unreachable: $startUrl — $($_.Exception.Message)" }
 
 # Deployed build identity, so the report can say which commit the round played.
 $deployedCommit = $null
@@ -38,9 +46,9 @@ try {
 
 $started = Get-Date
 $jobs = foreach ($p in $cfg.personas) {
-  Start-ThreadJob -ArgumentList $root, $p, $outDir -ScriptBlock {
-    param($root, $p, $outDir)
-    & (Join-Path $root 'run-player.ps1') -Persona $p -OutDir $outDir
+  Start-ThreadJob -ArgumentList $root, $p, $outDir, $Mode -ScriptBlock {
+    param($root, $p, $outDir, $mode)
+    & (Join-Path $root 'run-player.ps1') -Persona $p -OutDir $outDir -Mode $mode
   }
 }
 $null = $jobs | Wait-Job -Timeout ($cfg.playerTimeoutMinutes * 60)
@@ -80,15 +88,22 @@ $roundInfo = [ordered]@{
   label = $Label
   startedAt = $started.ToUniversalTime().ToString('o')
   minutes = [int]($ended - $started).TotalMinutes
-  startUrl = $cfg.startUrl
+  mode = $Mode
+  startUrl = $startUrl
   deployedCommit = $deployedCommit
-  briefVersion = $cfg.briefVersion
+  briefVersion = if ($Mode -eq 'warm') { $cfg.warmBriefVersion } else { $cfg.briefVersion }
+  warmTicks = if ($Mode -eq 'warm') { $cfg.warmTicks } else { $null }
   testerModel = $cfg.testerModel
   personas = $summaries
   usable = @($summaries | Where-Object ok).Count
+  # Per-persona mid-game coverage (THR-1744). extract.mjs ran inside each tester's
+  # run, before the prune below, so every persona's snapshots were still on disk.
+  coverage = [ordered]@{}
+  covered = @($summaries | Where-Object { $_.coverage -and -not $_.coverage.coverageFailure }).Count
 }
+foreach ($s in $summaries) { $roundInfo.coverage[$s.persona] = $s.coverage }
 $roundInfo | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $outDir 'round.json')
-"round=$Round usable=$($roundInfo.usable)/$($cfg.personas.Count) dir=$outDir"
+"round=$Round mode=$Mode usable=$($roundInfo.usable)/$($cfg.personas.Count) covered=$($roundInfo.covered) dir=$outDir"
 
 # Prune: keep screenshots only for the newest `keepRoundsWithScreenshots` rounds
 # (~240 MB/round). Transcripts, logs and summaries are always kept.

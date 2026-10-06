@@ -11,5 +11,30 @@
   "deploySettleMinutes": 60,
   "staleRoundDays": 21,
   "minUsablePersonas": 2,
-  "keepRoundsWithScreenshots": 3
+  "keepRoundsWithScreenshots": 3,
+  "warmTicks": 300,
+  "warmStartUrl": "https://threadbearer.co/?view=game&seeded&size=medium&warm={{WARM_TICKS}}",
+  "warmBriefVersion": 1,
+  "warmMinDaysBetweenRounds": 7,
+  "warmMilestoneProject": "Thematic Pressure & Living World",
+  "minCoveredPersonas": 2,
+  "warmStartLogMarker": "[warm-start] done",
+  "coverageMarkers": {
+    "faction": {
+      "reached": ["Network Graph", "Current Agenda", "Ascendant Actions"],
+      "empty": []
+    },
+    "undertaking": {
+      "reached": ["heading \"The Work\""],
+      "empty": ["No long work under way"]
+    },
+    "ambition": {
+      "reached": ["heading \"Ambitions\"", "Completed Ambitions"],
+      "empty": ["know what drives"]
+    },
+    "threadHistory": {
+      "reached": ["Story so far", "dialog \"Chapter Ledger\"", "heading \"Timeline\""],
+      "empty": []
+    }
+  }
 }

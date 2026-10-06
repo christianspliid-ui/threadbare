@@ -139,6 +139,32 @@ export function nextInterruptMoment(
 }
 
 /**
+ * Re-tier interrupt moments raised at or after `sinceTick` to badge tier, leaving them
+ * unacknowledged so the badge and the arc strip still count them (THR-1744 warm start).
+ *
+ * Records before `sinceTick`, acknowledged records and badge-tier records are returned
+ * unchanged. Returns the same array when nothing changes, so an untouched queue does
+ * not churn React state.
+ *
+ * Why not `acknowledgeUndertakingMoment`: an acknowledged record leaves the badge
+ * (`isMomentBadgeable`), which would hide the warm-up's moments rather than collect
+ * them. No trace: the warm-start done line's `momentsSettled` counts the changes.
+ */
+export function settleUndertakingMomentsAsBadges(
+  queue: readonly UndertakingMomentRecord[] | undefined,
+  sinceTick: number,
+): readonly UndertakingMomentRecord[] {
+  const existing = queue ?? [];
+  let changed = false;
+  const next = existing.map(r => {
+    if (r.presentation !== 'interrupt' || r.acknowledged || r.tick < sinceTick) return r;
+    changed = true;
+    return { ...r, presentation: 'badge' as const };
+  });
+  return changed ? next : existing;
+}
+
+/**
  * The queue as a surface reads it, optionally narrowed to one actor. Returns the
  * full record set including acknowledged ones — the badge model decides what it
  * counts, this does not pre-decide for it.

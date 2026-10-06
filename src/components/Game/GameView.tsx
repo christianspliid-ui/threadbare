@@ -15,7 +15,11 @@ import {
   acknowledgeUndertakingMoment,
   markUndertakingMomentOpened,
   nextInterruptMoment,
+  settleUndertakingMomentsAsBadges,
 } from '../../engine/undertakingMoments';
+import { resolveAttentionMode } from '../../engine/attentionCadence';
+import { useWarmStart, type AttentionMode } from './hooks/useWarmStart';
+import { WarmStartOverlay } from './WarmStartOverlay';
 import { canAfford } from '../../engine/influence';
 import type { UndertakingMomentRecord } from '../../types/strategicAction';
 import type { GameState } from '../../types/gameState';
@@ -318,6 +322,8 @@ interface GameViewProps {
   placeAvatarForMeeting?: boolean;
   /** Leave this world for the title screen (THR-1604). Settings offers it only when wired. */
   onExitToTitle?: () => void;
+  /** THR-1744: `?warm=<ticks>` — advance the seeded world this many ticks before handing over control. 0/absent = off. */
+  warmTicks?: number;
 }
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
@@ -357,7 +363,7 @@ function matchesTieredEncounterAction(
     && action.templateId === open.notification.encounterId;
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0 }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -397,7 +403,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
-    running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
+    running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
@@ -4622,6 +4628,53 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return { ok: true as const };
   }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, runtime]);
 
+  // ── Warm start (THR-1744) ──
+  // `?view=game&seeded&warm=<ticks>` advances the world behind WarmStartOverlay before
+  // the player gets control. Nothing is decided for the player: held decisions wait,
+  // The First runs on Lives on through the toggle's own path and is restored, and the
+  // warm-up's undertaking moments are re-tiered to unacknowledged badges.
+  const getFirstThreadEdge = useCallback(() => {
+    const live = getLiveState();
+    return live.graph.getEdgesByType('thread')
+      .find(e => (e.properties as { courtPosition?: string }).courtPosition === 'the_first') ?? null;
+  }, [getLiveState]);
+  const warmOpenInterruptsRef = useRef<string[]>([]);
+  const warmStart = useWarmStart({
+    requested: warmTicks,
+    ready: gameState.phase === 'playing',
+    startTick: gameState.tick,
+    runChunk: n => runTicksSync(n, { markClock: false }),
+    getFirstMode: (): AttentionMode | null => {
+      const edge = getFirstThreadEdge();
+      return edge ? resolveAttentionMode(edge.properties as ThreadEdgeProperties) : null;
+    },
+    toggleFirstMode: () => {
+      const edge = getFirstThreadEdge();
+      if (edge) handleToggleAttentionMode(edge.id);
+    },
+    setSuppressedUntil: setInterruptSuppressedUntilTick,
+    settleMoments: since => {
+      const before = getLiveState().pendingUndertakingMoments ?? [];
+      const after = settleUndertakingMomentsAsBadges(before, since);
+      const settled = after.filter((r, i) => r !== before[i]).length;
+      if (after !== before) {
+        setGameState(prev => ({
+          ...prev,
+          pendingUndertakingMoments: settleUndertakingMomentsAsBadges(prev.pendingUndertakingMoments, since),
+        }));
+      }
+      const pendingInterrupts = after.filter(r => r.presentation === 'interrupt' && !r.acknowledged).length;
+      return { settled, pendingInterrupts };
+    },
+    getOpenInterrupts: () => warmOpenInterruptsRef.current,
+  });
+  const warmFirstName = useMemo(() => {
+    if (!warmStart.running) return null;
+    const edge = getFirstThreadEdge();
+    const node = edge ? gameState.graph.getNode(edge.target) : undefined;
+    return (node?.properties as { name?: string } | undefined)?.name ?? node?.name ?? null;
+  }, [warmStart.running, getFirstThreadEdge, gameState.graph]);
+
   // ── Journey vignette (auto-interrupt for The First) ──
   const activeVignette: PendingVignette | null = useMemo(() => {
     const pending = gameState.pendingVignettes;
@@ -4696,7 +4749,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     chapterLedgerOpen,
     courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
+    warmStartRunning: warmStart.running,
   });
+  warmOpenInterruptsRef.current = interruptResolution.open;
   const otherInterruptOpen = interruptResolution.otherThanMomentOpen;
 
   const interruptAutoPause = useInterruptAutoPause({
@@ -5714,6 +5769,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         >
           <ScryOverlay />
         </ScryProvider>
+      )}
+
+      {/* Warm start overlay (THR-1744) — covers the game while the warm-up runs */}
+      {warmStart.running && warmStart.progress && (
+        <WarmStartOverlay
+          progress={warmStart.progress}
+          ticksPerSeason={gameState.clock?.ticksPerSeason}
+          firstName={warmFirstName}
+        />
       )}
 
       {/* Harvest overlay */}
