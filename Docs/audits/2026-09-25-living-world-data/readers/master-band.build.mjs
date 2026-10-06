@@ -55,7 +55,12 @@ const build1 = (keep, outfile) => build({
       ['current = filterByThreat(current, agentId, graph);', 'current = filterByThreat(current, agentId, graph); (globalThis as any).__MB_FSTAGE?.(\'threat\', current);'],
       ['current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId, capReport);', 'current = capWithDiversity(current, agentId, graph, tick, capFill, agentLocationId, capReport); (globalThis as any).__MB_FSTAGE?.(\'cap\', current);'],
     ]),
-    patchFile('phaseAgentDecision.ts', [['      const decision = scoreAndSelect(', '      (globalThis as any).__MB_STAGES?.(agentId, state.tick, graph, encounterCache, mergedEntries, rawCandidates, candidates);\n      const decision = scoreAndSelect(']]),
+    patchFile('phaseAgentDecision.ts', [
+      ['      const decision = scoreAndSelect(', '      (globalThis as any).__MB_STAGES?.(agentId, state.tick, graph, encounterCache, mergedEntries, rawCandidates, candidates);\n      const decision = scoreAndSelect('],
+      // The live board reads only `decision.topCandidates` (the scorer's top five after the
+      // goal / appointment re-ranks), so "on the board" means in this list, not in `scored`.
+      ['          const board = scoreUnifiedBoard({', '          (globalThis as any).__MB_TOP?.(agentId, state.tick, decision.topCandidates);\n          const board = scoreUnifiedBoard({'],
+    ]),
   ],
 });
 await build1(false, '.cache/master-band.mjs');

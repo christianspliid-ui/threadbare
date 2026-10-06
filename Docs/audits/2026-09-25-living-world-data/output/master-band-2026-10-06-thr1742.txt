@@ -1,6 +1,7 @@
 # THR-1742 — master-band reader (Docs/audits/2026-09-25-living-world-data/readers/master-band.ts)
 # origin/main @ f23f37e4, seeds 42,99,7 x 120 ticks, medium, gameplay-report world
 # build: node Docs/audits/2026-09-25-living-world-data/readers/master-band.build.mjs
+# 'on the board' = decision.topCandidates, the list the live decision board reads (review-gate round 1 fix)
 
 ########## ARM A — shipped (traced): node .cache/master-band.mjs 42,99,7 120
 
@@ -41,28 +42,28 @@ ledger sha1 5089aa9ebfc6, inWindowShare 0.5288, freeChoiceCommits 711
   unknown       0.0%
 
 -- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
-  seed 42   n=  66  chosen 6.1%  outscored 10.6%  cut-cooldown 1.5%  cut-filter 81.8%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  54  chosen 11.1%  outscored 20.4%  cut-cooldown 1.9%  cut-filter 66.7%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  65  chosen 9.2%  outscored 6.2%  cut-cooldown 4.6%  cut-filter 80.0%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 185  chosen 8.6%  outscored 11.9%  cut-cooldown 2.7%  cut-filter 76.8%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  66  chosen 6.1%  outscored 10.6%  cut-top5 0.0%  cut-cooldown 1.5%  cut-filter 81.8%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  54  chosen 11.1%  outscored 16.7%  cut-top5 3.7%  cut-cooldown 1.9%  cut-filter 66.7%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  65  chosen 9.2%  outscored 6.2%  cut-top5 0.0%  cut-cooldown 4.6%  cut-filter 80.0%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 185  chosen 8.6%  outscored 10.8%  cut-top5 1.1%  cut-cooldown 2.7%  cut-filter 76.8%  absent-nearby 0.0%  absent-world 0.0%
 
 -- M2. where any-master work (master band, any reach) was, per master commit --
-  seed 42   n=  66  chosen 6.1%  outscored 36.4%  cut-cooldown 0.0%  cut-filter 57.6%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  54  chosen 11.1%  outscored 57.4%  cut-cooldown 0.0%  cut-filter 31.5%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  65  chosen 9.2%  outscored 29.2%  cut-cooldown 3.1%  cut-filter 58.5%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 185  chosen 8.6%  outscored 40.0%  cut-cooldown 1.1%  cut-filter 50.3%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  66  chosen 6.1%  outscored 12.1%  cut-top5 24.2%  cut-cooldown 0.0%  cut-filter 57.6%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  54  chosen 11.1%  outscored 18.5%  cut-top5 38.9%  cut-cooldown 0.0%  cut-filter 31.5%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  65  chosen 9.2%  outscored 9.2%  cut-top5 20.0%  cut-cooldown 3.1%  cut-filter 58.5%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 185  chosen 8.6%  outscored 13.0%  cut-top5 27.0%  cut-cooldown 1.1%  cut-filter 50.3%  absent-nearby 0.0%  absent-world 0.0%
 
--- M3. own-master work present and outscored (18): winner vs best own-master --
-  best own-master rank median 3; winner÷it score median 1.96
-  forecast: winner median 0.563, own-master median 0.518
-  window fit: winner median 1.000, own-master median 0.978
-  value/tick ratio (winner÷own) median 16.03; desire ratio median 1.00; travel winner 0.00 vs own 0.00
-  winner content band: {"expert":2,"journeyman":5,"novice":11}
-  the outscored own-master templates: {"encounter.town.granary_riot":3,"encounter.town.judicial_duel":11,"encounter.town.forged_charter_inquest":2,"encounter.town.ducal_nativity":2}
+-- M3. own-master work on the board and not chosen (20 of 20 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 2; winner÷it score median 1.09
+  forecast: winner median 0.653, own-master median 0.500
+  window fit: winner median 0.945, own-master median 0.806
+  value/tick ratio (winner÷own) median 67.58; desire ratio median 1.46; travel winner 0.00 vs own 0.00
+  winner content band: {"novice":15,"expert":2,"journeyman":3}
+  the outscored own-master templates: {"encounter.town.granary_riot":3,"encounter.town.judicial_duel":12,"encounter.town.forged_charter_inquest":2,"encounter.town.ducal_nativity":2,"encounter.town.cathedral_vault":1}
 
 -- M4. own-master work through the funnel (mean count per master commit) --
-  pool 5.40 → filtered 0.23 → eligible 0.21 → scored 0.21 (n=185)
-  commits with ≥1 own-master entry in pool: 100.0%; in scored: 20.5%
+  pool 5.40 → filtered 0.23 → eligible 0.21 → scored 0.21 → board 0.19 (n=185)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 20.5%; ON THE BOARD (top list): 19.5%
   own-master entries surviving each filter stage (mean per commit): awareness 3.09 → visibility 3.09 → prerequisites 3.09 → reputation 3.09 → outgrowth 3.09 → story-breath 3.09 → threat 3.09 → cap 0.23
   filter cuts by the stage that removed the last own-master entry: {"cap":136,"awareness":6}
   master reaches per master decider: median 1
@@ -70,14 +71,15 @@ ledger sha1 5089aa9ebfc6, inWindowShare 0.5288, freeChoiceCommits 711
 -- M5. per-template survival of the cap, and the per-reach count it implies --
   own-master templates reaching the cap: 200 over 179 commits (median 1 per commit); surviving it: 43 → q = 0.215
   distinct templates of any band the cap chose among: median 202
-  K = 1 per reach: P(own-master work on the board) ≈ 0.21 (q diluted to 0.215)
-  K = 2 per reach: P(own-master work on the board) ≈ 0.37 (q diluted to 0.207)
-  K = 3 per reach: P(own-master work on the board) ≈ 0.49 (q diluted to 0.199)
-  K = 4 per reach: P(own-master work on the board) ≈ 0.57 (q diluted to 0.192)
-  K = 5 per reach: P(own-master work on the board) ≈ 0.64 (q diluted to 0.186)
-  K = 6 per reach: P(own-master work on the board) ≈ 0.69 (q diluted to 0.179)
-  K = 7 per reach: P(own-master work on the board) ≈ 0.74 (q diluted to 0.174)
-  K = 8 per reach: P(own-master work on the board) ≈ 0.77 (q diluted to 0.168)
+  of commits with own-master work scored, it was also on the board (top list): t = 0.947 (38)
+  K = 1 per reach: P(scored) ≈ 0.21, P(on the board) ≈ 0.20 (q diluted to 0.215; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 0.37, P(on the board) ≈ 0.35 (q diluted to 0.207; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 0.49, P(on the board) ≈ 0.46 (q diluted to 0.199; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 0.57, P(on the board) ≈ 0.54 (q diluted to 0.192; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 0.64, P(on the board) ≈ 0.61 (q diluted to 0.186; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 0.69, P(on the board) ≈ 0.66 (q diluted to 0.179; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 0.74, P(on the board) ≈ 0.70 (q diluted to 0.174; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 0.77, P(on the board) ≈ 0.73 (q diluted to 0.168; t held at the measured value)
 
 ########## ARM A' — shipped UNTRACED (behaviour-neutral proof: ledger sha1 must match arm A): --no-trace
 
@@ -144,28 +146,28 @@ ledger sha1 5997ad187fa4, inWindowShare 0.4971, freeChoiceCommits 696
   unknown       0.0%
 
 -- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
-  seed 42   n=  63  chosen 11.1%  outscored 34.9%  cut-cooldown 4.8%  cut-filter 49.2%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  56  chosen 17.9%  outscored 32.1%  cut-cooldown 3.6%  cut-filter 46.4%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  65  chosen 9.2%  outscored 27.7%  cut-cooldown 10.8%  cut-filter 52.3%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 184  chosen 12.5%  outscored 31.5%  cut-cooldown 6.5%  cut-filter 49.5%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  63  chosen 11.1%  outscored 27.0%  cut-top5 7.9%  cut-cooldown 4.8%  cut-filter 49.2%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  56  chosen 17.9%  outscored 23.2%  cut-top5 8.9%  cut-cooldown 3.6%  cut-filter 46.4%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  65  chosen 9.2%  outscored 15.4%  cut-top5 12.3%  cut-cooldown 10.8%  cut-filter 52.3%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 184  chosen 12.5%  outscored 21.7%  cut-top5 9.8%  cut-cooldown 6.5%  cut-filter 49.5%  absent-nearby 0.0%  absent-world 0.0%
 
 -- M2. where any-master work (master band, any reach) was, per master commit --
-  seed 42   n=  63  chosen 11.1%  outscored 65.1%  cut-cooldown 0.0%  cut-filter 23.8%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  56  chosen 17.9%  outscored 66.1%  cut-cooldown 1.8%  cut-filter 14.3%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  65  chosen 9.2%  outscored 55.4%  cut-cooldown 6.2%  cut-filter 29.2%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 184  chosen 12.5%  outscored 62.0%  cut-cooldown 2.7%  cut-filter 22.8%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  63  chosen 11.1%  outscored 28.6%  cut-top5 36.5%  cut-cooldown 0.0%  cut-filter 23.8%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  56  chosen 17.9%  outscored 23.2%  cut-top5 42.9%  cut-cooldown 1.8%  cut-filter 14.3%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  65  chosen 9.2%  outscored 18.5%  cut-top5 36.9%  cut-cooldown 6.2%  cut-filter 29.2%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 184  chosen 12.5%  outscored 23.4%  cut-top5 38.6%  cut-cooldown 2.7%  cut-filter 22.8%  absent-nearby 0.0%  absent-world 0.0%
 
--- M3. own-master work present and outscored (43): winner vs best own-master --
-  best own-master rank median 4; winner÷it score median 2.18
-  forecast: winner median 0.584, own-master median 0.538
-  window fit: winner median 1.000, own-master median 0.779
-  value/tick ratio (winner÷own) median 3.68; desire ratio median 1.85; travel winner 0.00 vs own 0.36
-  winner content band: {"novice":25,"journeyman":12,"expert":6}
-  the outscored own-master templates: {"encounter.town.judicial_duel":16,"encounter.town.cathedral_vault":5,"encounter.town.granary_riot":6,"encounter.town.forged_charter_inquest":9,"encounter.town.coiners_mint":2,"encounter.town.ducal_nativity":2,"encounter.town.cathedral_loan":3}
+-- M3. own-master work on the board and not chosen (40 of 40 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 1; winner÷it score median 1.12
+  forecast: winner median 0.634, own-master median 0.528
+  window fit: winner median 1.000, own-master median 0.925
+  value/tick ratio (winner÷own) median 4.16; desire ratio median 2.35; travel winner 0.00 vs own 0.36
+  winner content band: {"journeyman":8,"novice":22,"expert":10}
+  the outscored own-master templates: {"encounter.town.cathedral_vault":6,"encounter.town.granary_riot":7,"encounter.town.judicial_duel":16,"encounter.town.forged_charter_inquest":3,"encounter.town.coiners_mint":4,"encounter.town.ducal_nativity":1,"encounter.town.cathedral_loan":2,"encounter.town.restless_ossuary":1}
 
 -- M4. own-master work through the funnel (mean count per master commit) --
-  pool 5.22 → filtered 1.49 → eligible 1.23 → scored 1.23 (n=184)
-  commits with ≥1 own-master entry in pool: 100.0%; in scored: 44.0%
+  pool 5.22 → filtered 1.49 → eligible 1.23 → scored 1.23 → board 0.84 (n=184)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 44.0%; ON THE BOARD (top list): 34.2%
   own-master entries surviving each filter stage (mean per commit): awareness 3.15 → visibility 3.15 → prerequisites 3.15 → reputation 3.15 → outgrowth 3.15 → story-breath 3.15 → threat 3.15 → cap 1.49
   filter cuts by the stage that removed the last own-master entry: {"cap":82,"awareness":9}
   master reaches per master decider: median 1
@@ -173,14 +175,15 @@ ledger sha1 5997ad187fa4, inWindowShare 0.4971, freeChoiceCommits 696
 -- M5. per-template survival of the cap, and the per-reach count it implies --
   own-master templates reaching the cap: 196 over 175 commits (median 1 per commit); surviving it: 100 → q = 0.510
   distinct templates of any band the cap chose among: median 206
-  K = 1 per reach: P(own-master work on the board) ≈ 0.51 (q diluted to 0.510)
-  K = 2 per reach: P(own-master work on the board) ≈ 0.74 (q diluted to 0.491)
-  K = 3 per reach: P(own-master work on the board) ≈ 0.85 (q diluted to 0.473)
-  K = 4 per reach: P(own-master work on the board) ≈ 0.91 (q diluted to 0.457)
-  K = 5 per reach: P(own-master work on the board) ≈ 0.95 (q diluted to 0.442)
-  K = 6 per reach: P(own-master work on the board) ≈ 0.96 (q diluted to 0.427)
-  K = 7 per reach: P(own-master work on the board) ≈ 0.98 (q diluted to 0.414)
-  K = 8 per reach: P(own-master work on the board) ≈ 0.98 (q diluted to 0.401)
+  of commits with own-master work scored, it was also on the board (top list): t = 0.778 (81)
+  K = 1 per reach: P(scored) ≈ 0.51, P(on the board) ≈ 0.40 (q diluted to 0.510; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 0.74, P(on the board) ≈ 0.58 (q diluted to 0.491; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 0.85, P(on the board) ≈ 0.66 (q diluted to 0.473; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 0.91, P(on the board) ≈ 0.71 (q diluted to 0.457; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 0.95, P(on the board) ≈ 0.74 (q diluted to 0.442; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 0.96, P(on the board) ≈ 0.75 (q diluted to 0.427; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 0.98, P(on the board) ≈ 0.76 (q diluted to 0.414; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 0.98, P(on the board) ≈ 0.76 (q diluted to 0.401; t held at the measured value)
 
 ########## PROBE keep-p 0.45 (never shipped): node .cache/master-band-keep.mjs 42,99,7 120 --keep-p 0.45
 
@@ -221,28 +224,28 @@ ledger sha1 73a6fd18c88a, inWindowShare 0.5215, freeChoiceCommits 675
   unknown       0.0%
 
 -- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
-  seed 42   n=  63  chosen 19.0%  outscored 44.4%  cut-cooldown 4.8%  cut-filter 31.7%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  50  chosen 18.0%  outscored 40.0%  cut-cooldown 0.0%  cut-filter 42.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  55  chosen 10.9%  outscored 45.5%  cut-cooldown 14.5%  cut-filter 29.1%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 168  chosen 16.1%  outscored 43.5%  cut-cooldown 6.5%  cut-filter 33.9%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  63  chosen 19.0%  outscored 31.7%  cut-top5 12.7%  cut-cooldown 4.8%  cut-filter 31.7%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  50  chosen 18.0%  outscored 22.0%  cut-top5 18.0%  cut-cooldown 0.0%  cut-filter 42.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  55  chosen 10.9%  outscored 25.5%  cut-top5 20.0%  cut-cooldown 14.5%  cut-filter 29.1%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 168  chosen 16.1%  outscored 26.8%  cut-top5 16.7%  cut-cooldown 6.5%  cut-filter 33.9%  absent-nearby 0.0%  absent-world 0.0%
 
 -- M2. where any-master work (master band, any reach) was, per master commit --
-  seed 42   n=  63  chosen 19.0%  outscored 71.4%  cut-cooldown 0.0%  cut-filter 9.5%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  50  chosen 18.0%  outscored 62.0%  cut-cooldown 0.0%  cut-filter 20.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  55  chosen 10.9%  outscored 63.6%  cut-cooldown 9.1%  cut-filter 16.4%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 168  chosen 16.1%  outscored 66.1%  cut-cooldown 3.0%  cut-filter 14.9%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  63  chosen 19.0%  outscored 36.5%  cut-top5 34.9%  cut-cooldown 0.0%  cut-filter 9.5%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  50  chosen 18.0%  outscored 24.0%  cut-top5 38.0%  cut-cooldown 0.0%  cut-filter 20.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  55  chosen 10.9%  outscored 29.1%  cut-top5 34.5%  cut-cooldown 9.1%  cut-filter 16.4%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 168  chosen 16.1%  outscored 30.4%  cut-top5 35.7%  cut-cooldown 3.0%  cut-filter 14.9%  absent-nearby 0.0%  absent-world 0.0%
 
--- M3. own-master work present and outscored (64): winner vs best own-master --
-  best own-master rank median 4; winner÷it score median 2.35
-  forecast: winner median 0.564, own-master median 0.520
-  window fit: winner median 1.000, own-master median 0.794
-  value/tick ratio (winner÷own) median 3.27; desire ratio median 1.53; travel winner 0.00 vs own 0.38
-  winner content band: {"novice":35,"journeyman":20,"expert":9}
-  the outscored own-master templates: {"encounter.town.judicial_duel":24,"encounter.town.cathedral_vault":11,"encounter.town.granary_riot":9,"encounter.town.forged_charter_inquest":9,"encounter.town.ducal_nativity":4,"encounter.town.coiners_mint":1,"encounter.town.cathedral_loan":4,"encounter.town.restless_ossuary":2}
+-- M3. own-master work on the board and not chosen (45 of 45 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 2; winner÷it score median 1.45
+  forecast: winner median 0.594, own-master median 0.499
+  window fit: winner median 1.000, own-master median 0.853
+  value/tick ratio (winner÷own) median 4.29; desire ratio median 1.69; travel winner 0.00 vs own 0.36
+  winner content band: {"journeyman":12,"novice":26,"expert":7}
+  the outscored own-master templates: {"encounter.town.cathedral_vault":7,"encounter.town.granary_riot":9,"encounter.town.judicial_duel":19,"encounter.town.forged_charter_inquest":3,"encounter.town.coiners_mint":1,"encounter.town.cathedral_loan":3,"encounter.town.restless_ossuary":2,"encounter.town.ducal_nativity":1}
 
 -- M4. own-master work through the funnel (mean count per master commit) --
-  pool 5.88 → filtered 2.00 → eligible 1.79 → scored 1.79 (n=168)
-  commits with ≥1 own-master entry in pool: 100.0%; in scored: 59.5%
+  pool 5.88 → filtered 2.00 → eligible 1.79 → scored 1.79 → board 0.89 (n=168)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 59.5%; ON THE BOARD (top list): 42.9%
   own-master entries surviving each filter stage (mean per commit): awareness 3.42 → visibility 3.42 → prerequisites 3.42 → reputation 3.42 → outgrowth 3.42 → story-breath 3.42 → threat 3.42 → cap 2.00
   filter cuts by the stage that removed the last own-master entry: {"cap":53,"awareness":4}
   master reaches per master decider: median 1
@@ -250,14 +253,15 @@ ledger sha1 73a6fd18c88a, inWindowShare 0.5215, freeChoiceCommits 675
 -- M5. per-template survival of the cap, and the per-reach count it implies --
   own-master templates reaching the cap: 185 over 164 commits (median 1 per commit); surviving it: 124 → q = 0.670
   distinct templates of any band the cap chose among: median 202
-  K = 1 per reach: P(own-master work on the board) ≈ 0.67 (q diluted to 0.670)
-  K = 2 per reach: P(own-master work on the board) ≈ 0.87 (q diluted to 0.645)
-  K = 3 per reach: P(own-master work on the board) ≈ 0.95 (q diluted to 0.621)
-  K = 4 per reach: P(own-master work on the board) ≈ 0.97 (q diluted to 0.599)
-  K = 5 per reach: P(own-master work on the board) ≈ 0.99 (q diluted to 0.579)
-  K = 6 per reach: P(own-master work on the board) ≈ 0.99 (q diluted to 0.559)
-  K = 7 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.542)
-  K = 8 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.525)
+  of commits with own-master work scored, it was also on the board (top list): t = 0.720 (100)
+  K = 1 per reach: P(scored) ≈ 0.67, P(on the board) ≈ 0.48 (q diluted to 0.670; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 0.87, P(on the board) ≈ 0.63 (q diluted to 0.645; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 0.95, P(on the board) ≈ 0.68 (q diluted to 0.621; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 0.97, P(on the board) ≈ 0.70 (q diluted to 0.599; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 0.99, P(on the board) ≈ 0.71 (q diluted to 0.579; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 0.99, P(on the board) ≈ 0.71 (q diluted to 0.559; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.72 (q diluted to 0.542; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.72 (q diluted to 0.525; t held at the measured value)
 
 ########## PROBE keep-p 0.54 (never shipped): node .cache/master-band-keep.mjs 42,99,7 120 --keep-p 0.54
 
@@ -298,28 +302,28 @@ ledger sha1 045c5a80f405, inWindowShare 0.4863, freeChoiceCommits 732
   unknown       0.0%
 
 -- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
-  seed 42   n=  54  chosen 22.2%  outscored 42.6%  cut-cooldown 13.0%  cut-filter 22.2%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  54  chosen 14.8%  outscored 53.7%  cut-cooldown 1.9%  cut-filter 29.6%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  76  chosen 17.1%  outscored 27.6%  cut-cooldown 17.1%  cut-filter 38.2%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 184  chosen 17.9%  outscored 39.7%  cut-cooldown 11.4%  cut-filter 31.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  54  chosen 22.2%  outscored 31.5%  cut-top5 11.1%  cut-cooldown 13.0%  cut-filter 22.2%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  54  chosen 14.8%  outscored 37.0%  cut-top5 16.7%  cut-cooldown 1.9%  cut-filter 29.6%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  76  chosen 17.1%  outscored 19.7%  cut-top5 7.9%  cut-cooldown 17.1%  cut-filter 38.2%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 184  chosen 17.9%  outscored 28.3%  cut-top5 11.4%  cut-cooldown 11.4%  cut-filter 31.0%  absent-nearby 0.0%  absent-world 0.0%
 
 -- M2. where any-master work (master band, any reach) was, per master commit --
-  seed 42   n=  54  chosen 22.2%  outscored 64.8%  cut-cooldown 1.9%  cut-filter 11.1%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  54  chosen 14.8%  outscored 74.1%  cut-cooldown 0.0%  cut-filter 11.1%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  76  chosen 17.1%  outscored 48.7%  cut-cooldown 13.2%  cut-filter 21.1%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 184  chosen 17.9%  outscored 60.9%  cut-cooldown 6.0%  cut-filter 15.2%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  54  chosen 22.2%  outscored 33.3%  cut-top5 31.5%  cut-cooldown 1.9%  cut-filter 11.1%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  54  chosen 14.8%  outscored 38.9%  cut-top5 35.2%  cut-cooldown 0.0%  cut-filter 11.1%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  76  chosen 17.1%  outscored 19.7%  cut-top5 28.9%  cut-cooldown 13.2%  cut-filter 21.1%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 184  chosen 17.9%  outscored 29.3%  cut-top5 31.5%  cut-cooldown 6.0%  cut-filter 15.2%  absent-nearby 0.0%  absent-world 0.0%
 
--- M3. own-master work present and outscored (58): winner vs best own-master --
-  best own-master rank median 3; winner÷it score median 1.81
-  forecast: winner median 0.574, own-master median 0.509
-  window fit: winner median 1.000, own-master median 0.951
-  value/tick ratio (winner÷own) median 5.57; desire ratio median 1.47; travel winner 0.00 vs own 0.46
-  winner content band: {"novice":35,"journeyman":18,"expert":5}
-  the outscored own-master templates: {"encounter.town.judicial_duel":28,"encounter.town.cathedral_vault":4,"encounter.town.granary_riot":12,"encounter.town.forged_charter_inquest":5,"encounter.town.coiners_mint":1,"encounter.town.cathedral_loan":3,"encounter.town.restless_ossuary":4,"encounter.town.ducal_nativity":1}
+-- M3. own-master work on the board and not chosen (52 of 52 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 1; winner÷it score median 1.09
+  forecast: winner median 0.653, own-master median 0.509
+  window fit: winner median 0.969, own-master median 0.965
+  value/tick ratio (winner÷own) median 8.00; desire ratio median 1.55; travel winner 0.00 vs own 0.36
+  winner content band: {"journeyman":15,"novice":30,"expert":7}
+  the outscored own-master templates: {"encounter.town.cathedral_vault":5,"encounter.town.granary_riot":10,"encounter.town.judicial_duel":28,"encounter.town.forged_charter_inquest":2,"encounter.town.coiners_mint":2,"encounter.town.cathedral_loan":2,"encounter.town.restless_ossuary":2,"encounter.town.ducal_nativity":1}
 
 -- M4. own-master work through the funnel (mean count per master commit) --
-  pool 5.55 → filtered 2.04 → eligible 1.63 → scored 1.63 (n=184)
-  commits with ≥1 own-master entry in pool: 100.0%; in scored: 57.6%
+  pool 5.55 → filtered 2.04 → eligible 1.63 → scored 1.63 → board 0.96 (n=184)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 57.6%; ON THE BOARD (top list): 46.2%
   own-master entries surviving each filter stage (mean per commit): awareness 3.20 → visibility 3.20 → prerequisites 3.20 → reputation 3.20 → outgrowth 3.20 → story-breath 3.20 → threat 3.20 → cap 2.04
   filter cuts by the stage that removed the last own-master entry: {"cap":46,"awareness":11}
   master reaches per master decider: median 1
@@ -327,14 +331,15 @@ ledger sha1 045c5a80f405, inWindowShare 0.4863, freeChoiceCommits 732
 -- M5. per-template survival of the cap, and the per-reach count it implies --
   own-master templates reaching the cap: 199 over 173 commits (median 1 per commit); surviving it: 143 → q = 0.719
   distinct templates of any band the cap chose among: median 205
-  K = 1 per reach: P(own-master work on the board) ≈ 0.72 (q diluted to 0.719)
-  K = 2 per reach: P(own-master work on the board) ≈ 0.90 (q diluted to 0.692)
-  K = 3 per reach: P(own-master work on the board) ≈ 0.96 (q diluted to 0.667)
-  K = 4 per reach: P(own-master work on the board) ≈ 0.98 (q diluted to 0.643)
-  K = 5 per reach: P(own-master work on the board) ≈ 0.99 (q diluted to 0.622)
-  K = 6 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.601)
-  K = 7 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.582)
-  K = 8 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.564)
+  of commits with own-master work scored, it was also on the board (top list): t = 0.802 (106)
+  K = 1 per reach: P(scored) ≈ 0.72, P(on the board) ≈ 0.58 (q diluted to 0.719; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 0.90, P(on the board) ≈ 0.73 (q diluted to 0.692; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 0.96, P(on the board) ≈ 0.77 (q diluted to 0.667; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 0.98, P(on the board) ≈ 0.79 (q diluted to 0.643; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 0.99, P(on the board) ≈ 0.80 (q diluted to 0.622; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.80 (q diluted to 0.601; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.80 (q diluted to 0.582; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.80 (q diluted to 0.564; t held at the measured value)
 
 ########## PROBE keep-all (never shipped): node .cache/master-band-keep.mjs 42,99,7 120
 
@@ -375,28 +380,28 @@ ledger sha1 9bd5e97b9ac2, inWindowShare 0.5495, freeChoiceCommits 657
   unknown       0.0%
 
 -- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
-  seed 42   n=  59  chosen 20.3%  outscored 62.7%  cut-cooldown 16.9%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  58  chosen 19.0%  outscored 74.1%  cut-cooldown 6.9%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  72  chosen 22.2%  outscored 34.7%  cut-cooldown 26.4%  cut-filter 16.7%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 189  chosen 20.6%  outscored 55.6%  cut-cooldown 17.5%  cut-filter 6.3%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  59  chosen 20.3%  outscored 37.3%  cut-top5 25.4%  cut-cooldown 16.9%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  58  chosen 19.0%  outscored 55.2%  cut-top5 19.0%  cut-cooldown 6.9%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  72  chosen 22.2%  outscored 16.7%  cut-top5 18.1%  cut-cooldown 26.4%  cut-filter 16.7%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 189  chosen 20.6%  outscored 34.9%  cut-top5 20.6%  cut-cooldown 17.5%  cut-filter 6.3%  absent-nearby 0.0%  absent-world 0.0%
 
 -- M2. where any-master work (master band, any reach) was, per master commit --
-  seed 42   n=  59  chosen 20.3%  outscored 74.6%  cut-cooldown 5.1%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 99   n=  58  chosen 19.0%  outscored 79.3%  cut-cooldown 1.7%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
-  seed 7    n=  72  chosen 22.2%  outscored 55.6%  cut-cooldown 9.7%  cut-filter 12.5%  absent-nearby 0.0%  absent-world 0.0%
-  pooled    n= 189  chosen 20.6%  outscored 68.8%  cut-cooldown 5.8%  cut-filter 4.8%  absent-nearby 0.0%  absent-world 0.0%
+  seed 42   n=  59  chosen 20.3%  outscored 40.7%  cut-top5 33.9%  cut-cooldown 5.1%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  58  chosen 19.0%  outscored 56.9%  cut-top5 22.4%  cut-cooldown 1.7%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  72  chosen 22.2%  outscored 18.1%  cut-top5 37.5%  cut-cooldown 9.7%  cut-filter 12.5%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 189  chosen 20.6%  outscored 37.0%  cut-top5 31.7%  cut-cooldown 5.8%  cut-filter 4.8%  absent-nearby 0.0%  absent-world 0.0%
 
--- M3. own-master work present and outscored (89): winner vs best own-master --
-  best own-master rank median 4; winner÷it score median 2.41
-  forecast: winner median 0.583, own-master median 0.509
-  window fit: winner median 1.000, own-master median 0.844
-  value/tick ratio (winner÷own) median 4.17; desire ratio median 1.60; travel winner 0.00 vs own 0.46
-  winner content band: {"novice":53,"journeyman":20,"expert":16}
-  the outscored own-master templates: {"encounter.town.judicial_duel":43,"encounter.town.cathedral_vault":8,"encounter.town.granary_riot":15,"encounter.town.forged_charter_inquest":8,"encounter.town.coiners_mint":4,"encounter.town.ducal_nativity":2,"encounter.town.cathedral_loan":4,"encounter.town.restless_ossuary":5}
+-- M3. own-master work on the board and not chosen (66 of 66 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 1; winner÷it score median 1.40
+  forecast: winner median 0.604, own-master median 0.509
+  window fit: winner median 1.000, own-master median 0.851
+  value/tick ratio (winner÷own) median 4.38; desire ratio median 2.22; travel winner 0.00 vs own 0.38
+  winner content band: {"journeyman":13,"novice":41,"expert":12}
+  the outscored own-master templates: {"encounter.town.cathedral_vault":5,"encounter.town.granary_riot":13,"encounter.town.judicial_duel":36,"encounter.town.restless_ossuary":1,"encounter.town.forged_charter_inquest":3,"encounter.town.coiners_mint":4,"encounter.town.ducal_nativity":1,"encounter.town.cathedral_loan":3}
 
 -- M4. own-master work through the funnel (mean count per master commit) --
-  pool 5.39 → filtered 3.15 → eligible 2.43 → scored 2.43 (n=189)
-  commits with ≥1 own-master entry in pool: 100.0%; in scored: 76.2%
+  pool 5.39 → filtered 3.15 → eligible 2.43 → scored 2.43 → board 1.30 (n=189)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 76.2%; ON THE BOARD (top list): 55.6%
   own-master entries surviving each filter stage (mean per commit): awareness 3.15 → visibility 3.15 → prerequisites 3.15 → reputation 3.15 → outgrowth 3.15 → story-breath 3.15 → threat 3.15 → cap 3.15
   filter cuts by the stage that removed the last own-master entry: {"awareness":12}
   master reaches per master decider: median 1
@@ -404,11 +409,12 @@ ledger sha1 9bd5e97b9ac2, inWindowShare 0.5495, freeChoiceCommits 657
 -- M5. per-template survival of the cap, and the per-reach count it implies --
   own-master templates reaching the cap: 199 over 177 commits (median 1 per commit); surviving it: 199 → q = 1.000
   distinct templates of any band the cap chose among: median 204
-  K = 1 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 1.000)
-  K = 2 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.962)
-  K = 3 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.927)
-  K = 4 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.895)
-  K = 5 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.864)
-  K = 6 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.836)
-  K = 7 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.810)
-  K = 8 per reach: P(own-master work on the board) ≈ 1.00 (q diluted to 0.785)
+  of commits with own-master work scored, it was also on the board (top list): t = 0.729 (144)
+  K = 1 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 1.000; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.962; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.927; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.895; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.864; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.836; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.810; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.73 (q diluted to 0.785; t held at the measured value)
