@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 02:57 local (00:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 03:55 local (01:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,12 +23,12 @@ Say "veto divine economy", "veto found it", "veto fair fights" or "veto warm pla
 
 ## Queue
 
-**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window. In the last hour, "Dominion" landed in the glossary ([THR-1746](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere), [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250), merged 00:28 UTC) and the divine-economy plan merged ([#2251](https://github.com/christianspliid-ui/threadbare/pull/2251)).
+**4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
 
-- **Being built:** [readable on hover](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2). Its veto window closed at ~02:45 with no veto, and the builder is editing it right now (local worktree `hungry-edison-5417be`, 9 files changed, last edit a minute ago).
+- **Being built, now in review:** [readable on hover](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2). The builder committed and pushed the work ([#2252](https://github.com/christianspliid-ui/threadbare/pull/2252)); it is waiting on its checks and will merge on green.
 
 ## Health
 
-- **The heavy simulation tests are still red on main**, about 16 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (483 worktrees, 319 local branches on disk). Noted for visibility.
-- Everything else is green. The stuck glossary pull request from last hour merged. The live site is current (commits since `8df07f49` touched only docs), scheduled tasks are on time, nothing is waiting to merge. Simulation speed is normal (113 ms per tick, 5% over the weekly median of 108).
+- **The heavy simulation tests are still red on main**, about 17 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
+- **The worktree reaper has 6 worktrees waiting for a decision** (479 worktrees, 317 local branches on disk). Noted for visibility.
+- Everything else is green. The live site is current (commits since `8df07f49` touched only docs), scheduled tasks are on time, one pull request is waiting on checks. Simulation speed is normal (107 ms per tick, 1% under the weekly median of 108).
