@@ -158,7 +158,11 @@ import type { NpcRole } from '../types/npc';
 import type { HexTile } from '../types/index';
 import { getRarityTier } from './rarity';
 import { computeEngagementFit, type EngagementZone } from './engagementWindow';
-import { BRANCHING_QUEST_SKIP_OUTGROWTH } from './encounter/branchingConstants';
+import {
+  BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE,
+  type BranchingQuestWindowExemptScope,
+} from './encounter/branchingConstants';
+import { ENGAGE_VALUE_ODDS_NEUTRAL, ENGAGE_VALUE_ODDS_PIVOT } from '../data/agent-behavior-constants';
 import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
 import {
   createStandingModifierReader,
@@ -551,6 +555,52 @@ export function computeDivineHunchBonus(
   return 0;
 }
 
+// ─── THR-1740: quest window scope + odds-neutral value ──────────
+
+/**
+ * THR-1740 (Decision 1) — does this candidate keep the shipped window scoring (the
+ * too-easy exemption, no odds-neutral scale)? Only branching quests can, and only for
+ * the mortals `scope` names. An unknown scope reads as `'all'` (today's behaviour).
+ */
+export function questKeepsShippedScoring(
+  isQuestEncounter: boolean,
+  isThreaded: boolean,
+  scope: BranchingQuestWindowExemptScope = BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE,
+): boolean {
+  if (!isQuestEncounter) return false;
+  if (scope === 'none') return false;
+  if (scope === 'threaded') return isThreaded;
+  return true;
+}
+
+/**
+ * THR-1740 (Decision 3) — value-per-tick multiplier that stops value growing with the
+ * odds above the window's midpoint: `pivot / F` when `F > pivot`, else 1. Expected
+ * utility already counts the odds once; the window judges them, so they do not earn
+ * value twice. 1 when the window is bypassed (not a free choice), when the candidate
+ * keeps the shipped scoring, when `F` is not finite, or when the pivot is ≤ 0.
+ */
+export function computeOddsNeutralScale(
+  forecast: number,
+  windowBypassed: boolean,
+  keepsShipped: boolean,
+  enabled: boolean = ENGAGE_VALUE_ODDS_NEUTRAL,
+  pivot: number = ENGAGE_VALUE_ODDS_PIVOT,
+): number {
+  if (!enabled || windowBypassed || keepsShipped) return 1;
+  if (!Number.isFinite(forecast) || !Number.isFinite(pivot) || pivot <= 0) return 1;
+  return forecast > pivot ? pivot / forecast : 1;
+}
+
+/** Is the mortal threaded to the ascendant? Fail-soft: a throwing read is `false`. */
+function isThreadedAgent(graph: WorldGraph, agentId: string): boolean {
+  try {
+    return graph.getIncomingEdges(agentId, 'thread').length > 0;
+  } catch {
+    return false;
+  }
+}
+
 // ─── Result Types ───────────────────────────────────────────────
 
 export interface ScoredCandidate {
@@ -573,6 +623,17 @@ export interface ScoredCandidate {
   engagementFit: number;
   /** THR-1582 — where `engagementForecast` sat against the mortal's window. */
   engagementZone: EngagementZone;
+  /**
+   * THR-1740 — the window `computeEngagementFit` used (after courage and setback
+   * shifts); NaN when the window is bypassed. Stamped on the commit so the gauge can
+   * judge the mortal's own window.
+   */
+  engagementWindowLow: number;
+  engagementWindowHigh: number;
+  /** THR-1740 — value-per-tick multiplier above `ENGAGE_VALUE_ODDS_PIVOT` (1 at or below it, when the window is bypassed, or when `questKeepsShipped`). Already inside `valuePerTick`. */
+  oddsNeutralScale: number;
+  /** THR-1740 — a branching quest scored as shipped because of `BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE` (a threaded mortal's quest, at the default). */
+  questKeepsShipped: boolean;
   /**
    * THR-1686 — the `leaning` appointment regime's overrun discount
    * (`APPOINTMENT_OVERRUN_DISCOUNT`), set by the regime block on a candidate that would
@@ -1193,6 +1254,9 @@ export function scoreAndSelect(
   const courageLean = (profile as Partial<Record<ValuePair, number>>)[META_VALUE_PAIR] ?? 0;
   const consecutiveFailures = engagement?.consecutiveFailures ?? 0;
   const windowBypassed = engagement?.bypass === true;
+  // THR-1740 — read once per pass: a threaded mortal's branching quests keep the
+  // shipped window scoring (BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE).
+  const isThreaded = isThreadedAgent(graph, agentId);
 
   // For the motive receipt's `divine` contribution (THR-641): resolve the same
   // profile without the divine value overlay so each candidate can attribute the
@@ -1301,7 +1365,12 @@ export function scoreAndSelect(
     // those invariants (negative ÷ larger cost = higher score), so EU acts as the
     // primary signal where it's meaningful and steps aside where it isn't.
     const euRanking = expectedUtility > 0 ? expectedUtility : expectedReward;
-    const valuePerTick = (euRanking + pushBenefit + resistBenefit) / totalCost;
+    // 6a. Odds-neutral value (THR-1740, Decision 3) — above the window's midpoint the
+    // odds already counted inside expected utility stop earning value a second time;
+    // the window judges them. Free choices only; a threaded mortal's quests excepted.
+    const questKeepsShipped = questKeepsShippedScoring(entry.isQuestEncounter === true, isThreaded);
+    const oddsNeutralScale = computeOddsNeutralScale(engagementForecast, windowBypassed, questKeepsShipped);
+    const valuePerTick = ((euRanking + pushBenefit + resistBenefit) / totalCost) * oddsNeutralScale;
 
     // 7. Axiological score — conviction over the values this encounter is about
     // (THR-1525): |v| on unpinned axes (either pole draws), signed on pinned ones.
@@ -1495,11 +1564,12 @@ export function scoreAndSelect(
     // 17g. The forecast window (THR-1582, S4) — a multiplier, never a replacement:
     // the mortal seeks challenges it forecasts winning about half the time, and
     // every term above still decides which in-window challenge it picks. Branching
-    // quests keep the old outgrowth exemption as `exemptTooEasy`.
+    // quests keep the too-easy exemption only where BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE
+    // says (THR-1740: a threaded mortal's); every other quest faces the window.
     const engagementFitResult = windowBypassed
       ? null
       : computeEngagementFit(engagementForecast, courageLean, consecutiveFailures, {
-        exemptTooEasy: BRANCHING_QUEST_SKIP_OUTGROWTH && entry.isQuestEncounter === true,
+        exemptTooEasy: questKeepsShipped,
       });
     const engagementFit = engagementFitResult?.fit ?? 1;
     const engagementZone: EngagementZone = engagementFitResult?.zone ?? 'in';
@@ -1524,6 +1594,10 @@ export function scoreAndSelect(
       engagementForecast,
       engagementFit,
       engagementZone,
+      engagementWindowLow: engagementFitResult?.windowLow ?? NaN,
+      engagementWindowHigh: engagementFitResult?.windowHigh ?? NaN,
+      oddsNeutralScale,
+      questKeepsShipped,
       pushBenefit,
       resistBenefit,
       travelCost,

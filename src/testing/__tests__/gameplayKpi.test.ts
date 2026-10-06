@@ -309,7 +309,7 @@ describe('THR-1578 engagement gauge in the report', () => {
     const report = computeGameplayKpiReport(makeState(), { eligibilityFunnel: null, engagementLedger: ledger });
     expect(report.engagement?.bands.find(b => b.band === 'journeyman')?.engagements).toBe(1);
     const rows = report.thresholds.filter(t =>
-      ['retry_after_failure_rate', 'max_failure_streak_p95', 'in_window_share'].includes(t.metric));
+      ['retry_after_failure_rate', 'max_failure_streak_p95', 'own_window_share'].includes(t.metric));
     expect(rows).toHaveLength(3);
     expect(rows.every(r => r.advisory === true)).toBe(true);
   });

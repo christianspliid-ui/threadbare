@@ -410,7 +410,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-05 by Claude Code (THR-1730 — a minimised moment waits). **Added** `minimised-step-hold`
+2026-10-06 by Claude Code (THR-1740 — forecast window re-plan). **Extended** 🟢 LIVE
+`engagement-forecast-gates-choice`: a branching quest keeps the too-easy exemption only for a
+mortal threaded to the ascendant (`BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE = 'threaded'`); every
+other quest faces the window like other work. A free choice's value per tick is scaled by
+`ENGAGE_VALUE_ODDS_PIVOT / F` above the window midpoint (`oddsNeutralScale` on the candidate),
+and the candidate carries the window edges it was judged against, which the commit stamp
+records so the gauge judges each mortal's own window (`ownWindowShare` vs `KPI_IN_WINDOW_MIN`
+0.50). Branching reachability (outgrowth exemption, cap reserve, curator lift) preserved.
+Earlier: 2026-10-05 by Claude Code (THR-1730 — a minimised moment waits). **Added** `minimised-step-hold`
 (Attention, Chronicle & Narrative → Encounters & Dilemmas: the player's minimise writes
 `UnifiedAction.playerHold`; Phase 1 of `phaseUnifiedActionProgress` skips a live hold via
 `progressActionsWithPlayerHolds`, and the thread badge reads it as *waiting for you*).

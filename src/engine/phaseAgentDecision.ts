@@ -240,7 +240,9 @@ function buildEngagementDecisionTrace(
         try { proficiency = computeCapability(graph, agentId, c.entry.reachPrimary); } catch { /* fail-soft: NaN */ }
         const diffs = c.entry.stepDifficulties;
         difficulty = diffs.length > 0 ? diffs.reduce((sum, d) => sum + d, 0) / diffs.length : NaN;
-        if (c.entry.isQuestEncounter && e.forecastZone === 'above') exempt = 'too_easy';
+        // THR-1740 — only a quest that actually kept the exemption (a threaded mortal's,
+        // per BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE) is stamped exempt.
+        if (c.questKeepsShipped && e.forecastZone === 'above') exempt = 'too_easy';
       }
     }
     return {
@@ -1766,6 +1768,11 @@ export function phaseAgentDecision(
                     // in-window share is measured against the same number.
                     forecast: sel.engagementForecast,
                     freeChoice: !compulsionOverrode,
+                    // THR-1740: the window the scorer used (courage + setback shifts),
+                    // so the gauge judges the mortal's own window. Absent when bypassed.
+                    ...(Number.isFinite(sel.engagementWindowLow) && Number.isFinite(sel.engagementWindowHigh)
+                      ? { windowLow: sel.engagementWindowLow, windowHigh: sel.engagementWindowHigh }
+                      : {}),
                   });
                 } catch {
                   // Fail-soft: the gauge never blocks a decision; the action resolves as band `unknown`.

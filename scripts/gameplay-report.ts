@@ -192,7 +192,7 @@ function printReport(report: GameplayKpiReport, ascendant?: ReachDomain): void {
       console.log(`      ${mark}${b.band.padEnd(11)} n=${String(b.engagements).padStart(5)}  success:${pct(b.successRate).padStart(6)}  mean_attempted_difficulty:${fix2(b.meanAttemptedDifficulty)}`);
     }
     const trend = e.attemptedDifficultyTrend === null ? 'n/a' : e.attemptedDifficultyTrend.toExponential(2);
-    console.log(`      in_window:${pct(e.inWindowShare)} (of ${e.freeChoiceCommits})  idle_rate:${pct(e.idleRate)} (of ${e.boardDecisions})`);
+    console.log(`      own_window:${pct(e.ownWindowShare)}  in_window(static):${pct(e.inWindowShare)} (of ${e.freeChoiceCommits})  idle_rate:${pct(e.idleRate)} (of ${e.boardDecisions})`);
     console.log(`      retry_after_failure_rate:${pct(e.retryAfterFailureRate)} (of ${e.failedFreeChoice})  max_failure_streak_p95:${e.maxFailureStreakP95}  attempted_difficulty_trend:${trend} (${e.trendMortals} mortals)`);
   }
 

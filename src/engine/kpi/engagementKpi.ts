@@ -9,7 +9,9 @@
  *   level-success invariant (success level across bands, attempted difficulty
  *   rising with proficiency).
  * - **In-window share** — how many of a mortal's own choices it made at a
- *   forecast inside `[ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH]`.
+ *   forecast inside `[ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH]` (the static window),
+ *   and the **own-window share** (THR-1740) — inside the window the mortal actually
+ *   used, shifted by courage and setbacks. The KPI floor judges the own window.
  * - **Idle rate** — the share of agent decisions that reached the board and
  *   ended on the idle path (drift / trivial local / stay).
  * - **The two historical traps** (Christian, 2026-09-24): `retry_after_failure_rate`
@@ -70,6 +72,13 @@ export interface EngagementStamp {
   forecast: number;
   /** False when something other than the mortal's own choice picked the template (a god's compulsion). */
   freeChoice: boolean;
+  /**
+   * THR-1740 — the window the scorer judged this choice against (after courage and
+   * setback shifts). Absent when the window was bypassed; the own-window count then
+   * falls back to the static window.
+   */
+  windowLow?: number;
+  windowHigh?: number;
 }
 
 /** One resolved, stamped engagement. */
@@ -103,6 +112,8 @@ export interface EngagementLedger {
   log: EngagementLogEntry[];
   /** Free-choice commits whose forecast sat inside the window / all free-choice commits. */
   inWindowCommits: number;
+  /** THR-1740 — free-choice commits whose forecast sat inside the mortal's own (shifted) window. */
+  inOwnWindowCommits: number;
   freeChoiceCommits: number;
   /** Agent decisions that reached the board / of those, how many took the idle path. */
   boardDecisions: number;
@@ -122,6 +133,8 @@ export interface EngagementKpiReport {
   bands: EngagementBandReport[];
   /** Share of free-choice commits whose forecast sat inside the engagement window. */
   inWindowShare: number;
+  /** THR-1740 — share of free-choice commits inside the window the mortal actually used (judged against `KPI_IN_WINDOW_MIN`). */
+  ownWindowShare: number;
   freeChoiceCommits: number;
   /** Share of board-reaching decisions that ended on the idle path. */
   idleRate: number;
@@ -154,6 +167,7 @@ export function createEngagementLedger(): EngagementLedger {
     },
     log: [],
     inWindowCommits: 0,
+    inOwnWindowCommits: 0,
     freeChoiceCommits: 0,
     boardDecisions: 0,
     idleDecisions: 0,
@@ -214,6 +228,18 @@ export function isInEngagementWindow(forecast: number): boolean {
   return forecast >= ENGAGE_WINDOW_LOW && forecast <= ENGAGE_WINDOW_HIGH;
 }
 
+/**
+ * THR-1740 — is `forecast` inside the window this stamp was judged against? Uses the
+ * stamped (shifted) edges when both are finite, else the static window.
+ */
+export function isInOwnWindow(forecast: number, windowLow?: number, windowHigh?: number): boolean {
+  if (typeof windowLow === 'number' && typeof windowHigh === 'number'
+    && Number.isFinite(windowLow) && Number.isFinite(windowHigh)) {
+    return forecast >= windowLow && forecast <= windowHigh;
+  }
+  return isInEngagementWindow(forecast);
+}
+
 const SUCCESS_FAMILY = new Set(['critical_success', 'success', 'success_at_cost']);
 
 export function isSuccessFamily(outcome: string | undefined): boolean {
@@ -235,6 +261,9 @@ export function stampEngagementCommit(
   if (full.freeChoice) {
     ledger.freeChoiceCommits++;
     if (Number.isFinite(forecast) && isInEngagementWindow(forecast)) ledger.inWindowCommits++;
+    if (Number.isFinite(forecast) && isInOwnWindow(forecast, full.windowLow, full.windowHigh)) {
+      ledger.inOwnWindowCommits = (ledger.inOwnWindowCommits ?? 0) + 1;
+    }
   }
 }
 
@@ -390,6 +419,7 @@ export function computeEngagementKpiReport(ledger: EngagementLedger): Engagement
   return {
     bands,
     inWindowShare: ledger.freeChoiceCommits > 0 ? ledger.inWindowCommits / ledger.freeChoiceCommits : 0,
+    ownWindowShare: ledger.freeChoiceCommits > 0 ? (ledger.inOwnWindowCommits ?? 0) / ledger.freeChoiceCommits : 0,
     freeChoiceCommits: ledger.freeChoiceCommits,
     idleRate: ledger.boardDecisions > 0 ? ledger.idleDecisions / ledger.boardDecisions : 0,
     boardDecisions: ledger.boardDecisions,

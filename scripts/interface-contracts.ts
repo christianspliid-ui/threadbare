@@ -5379,19 +5379,19 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
     intent:
-      'A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner\'s whole-encounter survival odds, or an undertaking\'s checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate\'s score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins.',
+      'A mortal takes on challenges it forecasts winning about half the time: the engagement forecast `F` (the planner\'s whole-encounter survival odds, or an undertaking\'s checkpoint advance probability) is read against a window (`ENGAGE_WINDOW_LOW`–`ENGAGE_WINDOW_HIGH`, shifted by courage and by consecutive failures) and scales every candidate\'s score by the resulting fit — in-window 1, too easy `ENGAGE_TOO_EASY_FIT`, below the window a ramp to `ENGAGE_REFUSE_BELOW` and 0 under it. A multiplier, never a replacement: desire, ambition and variety still decide which in-window challenge wins. THR-1740: a branching quest is exempt from the too-easy side only for a mortal threaded to the ascendant (`BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE`); above the window midpoint (`ENGAGE_VALUE_ODDS_PIVOT`) a free choice\'s value per tick is scaled by pivot / F, so the odds already inside expected utility do not outbid the window; and the commit stamp carries the window edges used, so the in-window gauge judges each mortal\'s own window.',
     ulTerms: ['Domain Capability', 'Encounter', 'Undertaking'],
     mechanism: {
       kind: 'function',
-      symbols: ['computeEngagementFit', 'computeSetbackShift'],
+      symbols: ['computeEngagementFit', 'computeSetbackShift', 'questKeepsShippedScoring', 'computeOddsNeutralScale', 'isInOwnWindow'],
       module: 'src/engine/engagementWindow.ts',
     },
-    writeSites: ['src/engine/engagementWindow.ts'],
-    readSites: ['src/engine/encounterScoring.ts', 'src/engine/decisionBoard.ts'],
+    writeSites: ['src/engine/engagementWindow.ts', 'src/engine/encounterScoring.ts', 'src/engine/phaseAgentDecision.ts'],
+    readSites: ['src/engine/encounterScoring.ts', 'src/engine/decisionBoard.ts', 'src/engine/kpi/engagementKpi.ts'],
     verifiedLive: {
-      date: '2026-09-26',
+      date: '2026-10-06',
       evidence:
-        'THR-1581. `engagementWindow.test.ts` pins the zone edges, the personality and setback shifts and the too-easy exemption; `decisionBoard.test.ts` pins that between two in-window candidates the higher desire wins and that an in-window candidate beats a wanted too-easy one; the additive-term pins in `encounterScoring`, `appointments`, `intelligenceConsumption`, `locationTraitBonus`, `mark-reveal-liveness` and the relocation test now assert `term × engagementFit`, which fails if the fit stops reaching `finalScore`. On real seeded worlds (`engagementWindow.invariant.test.ts`, seeds 42/99 × 120 ticks, heavy lane) the novice band succeeds within the level band; `getEngagementVerdicts` and the `engagement_decision` trace expose F, fit and zone per candidate.',
+        'THR-1740: `encounterScoring.windowScope.test.ts` pins the quest scope (threaded keeps fit 1 and scale 1; unthreaded takes the too-easy fit and pivot/F; `all` restores today) and the odds-neutral scale; `engagementKpi.test.ts` pins own-window counting; `engagementWindow.invariant.test.ts` (seeds 42/99 × 120, heavy lane) now holds expert and master level success, experts out-attempting journeymen, and own-window share ≥ 0.50. Earlier — THR-1581. `engagementWindow.test.ts` pins the zone edges, the personality and setback shifts and the too-easy exemption; `decisionBoard.test.ts` pins that between two in-window candidates the higher desire wins and that an in-window candidate beats a wanted too-easy one; the additive-term pins in `encounterScoring`, `appointments`, `intelligenceConsumption`, `locationTraitBonus`, `mark-reveal-liveness` and the relocation test now assert `term × engagementFit`, which fails if the fit stops reaching `finalScore`. On real seeded worlds (`engagementWindow.invariant.test.ts`, seeds 42/99 × 120 ticks, heavy lane) the novice band succeeds within the level band; `getEngagementVerdicts` and the `engagement_decision` trace expose F, fit and zone per candidate.',
     },
   },
   // ── Hunts H2 (THR-1560, plan 2026-09-23-hunts § Interface impact) — the rows "hunt

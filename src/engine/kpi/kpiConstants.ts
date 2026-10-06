@@ -121,8 +121,12 @@ export const KPI_FAILURE_STREAK_P95_MAX = 4;
 export const KPI_TREND_MIN_ENGAGEMENTS = 5;
 /** Max share of rolls sitting exactly on a scale floor (measured by `measure:roll-spread`). */
 export const KPI_FLOOR_PINNED_MAX = 0.05;
-/** Min share of free-choice engagements whose forecast was in the engagement window. */
-export const KPI_IN_WINDOW_MIN = 0.60;
+/**
+ * Min share of free-choice engagements whose forecast sat inside the mortal's **own**
+ * window (courage + setback shifts) — "most" (THR-1740, Decision 2; was 0.60 against
+ * the static window, a THR-1575 starting value). Judged on `ownWindowShare`.
+ */
+export const KPI_IN_WINDOW_MIN = 0.50;
 /** Max rise in idle-decision rate against the pre-change baseline (checked by S3/S4). */
 export const KPI_IDLE_RATE_DELTA_MAX = 0.05;
 /** Max mean |planner step P − resolver step P| on the parity sample (S2). */

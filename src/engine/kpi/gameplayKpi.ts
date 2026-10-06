@@ -538,7 +538,9 @@ function buildThresholds(
   if (engagement) {
     rows.push(evalThreshold('retry_after_failure_rate', 'Retry After Failure (advisory)', engagement.retryAfterFailureRate, KPI_RETRY_AFTER_FAILURE_MAX, 'above_is_bad', true));
     rows.push(evalThreshold('max_failure_streak_p95', 'Failure Streak p95 (advisory)', engagement.maxFailureStreakP95, KPI_FAILURE_STREAK_P95_MAX, 'above_is_bad', true));
-    rows.push(evalThreshold('in_window_share', 'In-Window Share (advisory)', engagement.inWindowShare, KPI_IN_WINDOW_MIN, 'below_is_bad', true));
+    // THR-1740 (Decision 2): the floor judges each choice against the mortal's own
+    // window (courage + setback shifts). The static share stays in the report text.
+    rows.push(evalThreshold('own_window_share', 'Own-Window Share (advisory)', engagement.ownWindowShare, KPI_IN_WINDOW_MIN, 'below_is_bad', true));
   }
   return rows;
 }
