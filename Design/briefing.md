@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 17:55 local (15:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 18:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,9 +23,9 @@ Say "veto threading rite", "veto buy your spheres", "veto divine economy" or "ve
 
 ## Queue
 
-**4 jobs ready** (healthy), **none being built**. [Why masters skip master-level work](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master) merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 17:16 and is live. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). No parked or stale jobs.
+**4 jobs ready** (healthy), **none being built**. [Why masters skip master-level work](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master) merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 17:16 and is live; nothing has merged since. The four ready jobs are the design-lane decisions above, each waiting out its veto window; the first opens ~21:15 today ([warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a)). No parked or stale jobs.
 
 ## Health
 
-- **The worktree reaper has 6 worktrees waiting for a decision** (481 worktrees, 316 local branches on disk). Noted for visibility.
-- Everything else is green. **The long simulation tests are green again** on [the masters merge](https://github.com/christianspliid-ui/threadbare/actions/runs/37486092882), after about 7 hours red. The live site serves the latest build, scheduled tasks are on time, and the simulation speed probe reads 116 ms per tick (5% above its weekly median, normal).
+- **The worktree reaper has 6 worktrees waiting for a decision** (482 worktrees, 315 local branches on disk; last sweep 18:40). Noted for visibility.
+- Everything else is green. The long simulation tests stay green on [the masters merge](https://github.com/christianspliid-ui/threadbare/actions/runs/37486092882), no pull requests are waiting to merge, the live site serves the latest build, scheduled tasks are on time, and the simulation speed probe reads 118 ms per tick (5% above its weekly median, normal).
