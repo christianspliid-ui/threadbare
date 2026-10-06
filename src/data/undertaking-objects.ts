@@ -110,7 +110,7 @@ import { grantSpell, onItemAcquired } from '../engine/spellGrant';
 import type { DetectionCrossingRecorder } from '../engine/agentDetection';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
-import { delveRoadOf, isLeadSpent } from '../engine/ruins/delveRoad';
+import { hasFoundPlace, isLeadSpent } from '../engine/ruins/delveRoad';
 import { CLUE_SPENT_LEAD_ENDS_CLIMB } from '../engine/ruins/constants';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
@@ -499,19 +499,17 @@ function maybeMintObservedMark(ctx: ObjectVerbContext, cellId: string, subjectPo
 
 /**
  * THR-1702 — has `actorId` already found `siteId`, a site no delve can ever enter? True
- * when they hold a spent lead on it, or hold no live lead and carry a `knows_of` edge to
- * it stamped `foundTick` while its delve road is `never`. Fail-soft: any read error → false.
+ * when they carry a `knows_of` edge to it stamped `foundTick` (checked first, so a later
+ * rumour on the place cannot restart the climb), or hold a spent lead on it. Fail-soft:
+ * any read error → false.
  */
 function alreadyFoundSite(graph: WorldGraph, actorId: string, siteId: string, tick: number): boolean {
   if (!CLUE_SPENT_LEAD_ENDS_CLIMB) return false;
   try {
+    if (hasFoundPlace(graph, actorId, siteId, tick)) return true;
     const lead = graph.getOutgoingEdges(actorId, 'knows_clue_of')
       .find(e => e.target === siteId && e.properties?.consumed !== true);
-    if (lead) return isLeadSpent(graph, lead, tick);
-    const site = graph.getNode(siteId);
-    if (!site || delveRoadOf(site.properties, tick) !== 'never') return false;
-    return graph.getOutgoingEdges(actorId, 'knows_of')
-      .some(e => e.target === siteId && typeof e.properties?.foundTick === 'number');
+    return lead ? isLeadSpent(graph, lead, tick) : false;
   } catch {
     return false;
   }

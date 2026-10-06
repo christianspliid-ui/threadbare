@@ -635,8 +635,8 @@ export function seedKnowsOf(
 /**
  * THR-1702 — a spent lead's find: the actor now knows the place. Creates
  * `knows_of { fromSurvey: true, convergedTick, foundTick }`, or stamps `foundTick` on an
- * existing `knows_of` without touching its other properties (an existing `foundTick`
- * is kept). `createdId` is the edge's id either way; `knowsOf` says which happened.
+ * existing `knows_of` without touching its other properties; an existing `foundTick` is
+ * kept (`knowsOf: 'kept'`). `createdId` is the edge's id; `knowsOf` says which happened.
  * Fail-soft: refuses rather than throws.
  */
 export function recordPlaceFound(
@@ -644,7 +644,7 @@ export function recordPlaceFound(
   actorId: string,
   targetLocationId: string,
   tick: number,
-): GraphOpResult & { knowsOf?: 'created' | 'stamped' } {
+): GraphOpResult & { knowsOf?: 'created' | 'stamped' | 'kept' } {
   try {
     const actor = graph.getNode(actorId);
     const target = graph.getNode(targetLocationId);
@@ -658,9 +658,11 @@ export function recordPlaceFound(
     const existing = graph.getOutgoingEdges(actorId, 'knows_of')
       .find(e => e.target === targetLocationId);
     if (existing) {
-      if (typeof existing.properties?.foundTick !== 'number') {
-        graph.updateEdge(existing.id, { properties: { foundTick: tick } });
+      if (typeof existing.properties?.foundTick === 'number') {
+        // Already found: nothing new is known, so the caller emits no second find.
+        return { success: true, op: 'record_place_found', createdId: existing.id, knowsOf: 'kept' };
       }
+      graph.updateEdge(existing.id, { properties: { foundTick: tick } });
       return { success: true, op: 'record_place_found', createdId: existing.id, knowsOf: 'stamped' };
     }
     const edgeId = `knows_of_${actorId}_${targetLocationId}_${tick}`;

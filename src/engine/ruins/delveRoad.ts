@@ -43,3 +43,17 @@ export function isLeadSpent(graph: WorldGraph, edge: GraphEdge, tick: number): b
   if (!site || !isLocationNode(site)) return false;
   return delveRoadOf(site.properties, tick) === 'never';
 }
+
+/**
+ * THR-1702 — has `actorId` already found `siteId`, a site no delve can ever enter: a
+ * `knows_of` edge to it stamped `foundTick` while its delve road is `never`. A later lead on
+ * the same place (a rumour, a whisper) must not restart the climb there. Behind
+ * `CLUE_SPENT_LEAD_ENDS_CLIMB`; fail-soft (a missing site is not found).
+ */
+export function hasFoundPlace(graph: WorldGraph, actorId: string, siteId: string, tick: number): boolean {
+  if (!CLUE_SPENT_LEAD_ENDS_CLIMB) return false;
+  const site = graph.getNode(siteId);
+  if (!site || !isLocationNode(site) || delveRoadOf(site.properties, tick) !== 'never') return false;
+  return graph.getOutgoingEdges(actorId, 'knows_of')
+    .some(e => e.target === siteId && typeof e.properties?.foundTick === 'number');
+}

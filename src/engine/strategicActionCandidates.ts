@@ -66,7 +66,7 @@ import { evaluateMotiveGate } from './undertakingMotive';
 import { computeReachShare } from './domainCapability';
 import { isAutonomousDecisionActor } from './decisionTier';
 import { CLUE_LEAD_SURVEY_CANDIDATES_MAX, CLUE_LEAD_SURVEY_PULL_MULT } from './ruins/constants';
-import { isLeadSpent } from './ruins/delveRoad';
+import { hasFoundPlace, isLeadSpent } from './ruins/delveRoad';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -536,15 +536,16 @@ export const LEAD_SURVEY_CELL_ID = 'cell.observe.location';
  * The ruins of an actor's live leads (unconsumed `knows_clue_of`), freshest first —
  * ties broken on edge id (NFP #3) — capped at `CLUE_LEAD_SURVEY_CANDIDATES_MAX`. A
  * lead whose ruin is gone is skipped and left for decay (fail-soft). A *spent* lead
- * (THR-1702: `located` on a site no delve can ever enter) is left out too: its climb is
- * over, so it pulls nobody back. Exported for tests.
+ * (THR-1702: `located` on a site no delve can ever enter), or any lead on such a site the
+ * holder has already found (`knows_of.foundTick`), is left out too: its climb is over, so
+ * it pulls nobody back. Exported for tests.
  */
 export function heldLeadRuinIds(graph: WorldGraph, actorId: string, tick: number): string[] {
   try {
     const seen = new Set<string>();
     return graph.getOutgoingEdges(actorId, 'knows_clue_of')
       .filter(e => e.properties?.consumed !== true && graph.getNode(e.target)?.type === 'location'
-        && !isLeadSpent(graph, e, tick))
+        && !isLeadSpent(graph, e, tick) && !hasFoundPlace(graph, actorId, e.target, tick))
       .sort((a, b) =>
         (Number(b.properties?.discoveredTick ?? 0) - Number(a.properties?.discoveredTick ?? 0))
         || a.id.localeCompare(b.id))

@@ -203,6 +203,32 @@ describe('phaseClueDecay turns a spent lead into a known place', () => {
   });
 });
 
+describe('a later lead on a place already found does not restart the climb', () => {
+  beforeEach(() => { clearTraces(); enableTracing(); });
+
+  it('is not pulled, not refreshed by a survey, and the sweep removes it with no second find', () => {
+    const graph = world();
+    holdLead(graph, WONDER, 'located', 10);
+    phaseClueDecay(stateAt(graph, CLUE_DECAY_CHECK_INTERVAL * 2));
+    expect(traces().filter(t => t.category === 'ruins.lead_found')).toHaveLength(1);
+
+    // A rumour hands the same mortal a fresh lead on the place they already found.
+    const rumour = holdLead(graph, WONDER, 'vague', 30);
+    expect(heldLeadRuinIds(graph, ACTOR, 35)).toEqual([]);
+
+    survey(graph, WONDER, 35);
+    expect(graph.getEdge(rumour)!.properties.precision).toBe('vague');
+    expect(graph.getEdge(rumour)!.properties.discoveredTick).toBe(30);
+    const reader = traces().filter(t => t.category === 'undertaking_reader' && t.reader === 'clue').at(-1);
+    expect(reader?.refused).toBe('already_found');
+
+    phaseClueDecay(stateAt(graph, CLUE_DECAY_CHECK_INTERVAL * 4));
+    expect(graph.getEdge(rumour)).toBeUndefined();
+    expect(traces().filter(t => t.category === 'ruins.lead_found')).toHaveLength(1);
+    expect(collectKnownPlaces(graph, ACTOR)[0].lead).toBe(KNOWN_PLACE_FOUND_LINE);
+  });
+});
+
 describe('the sheet names a found place "found it"', () => {
   it('reads knows_of.foundTick; a live lead on the place still wins', () => {
     const graph = world();

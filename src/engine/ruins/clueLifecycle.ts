@@ -20,7 +20,7 @@ import type { AttentionTier } from '../../types/attention';
 import type { AgentNodeProperties, GraphEdge } from '../../types/graph';
 import { locationClassOf } from '../../data/world-objects';
 import { recordPlaceFound } from '../strategicGraphOps';
-import { isLeadSpent } from './delveRoad';
+import { hasFoundPlace, isLeadSpent } from './delveRoad';
 import type { ClueSource, CluePrecision, KnowsClueOfEdgeProperties } from '../../types/knowledge';
 import { emitTrace } from '../traceBuffer';
 import {
@@ -531,7 +531,8 @@ const CLUE_MAX_AGE: Record<CluePrecision, number> = {
 /**
  * THR-1702 — turn a spent lead into a known place: `recordPlaceFound` creates or stamps
  * the holder's `knows_of.foundTick`, then the lead is removed and `ruins.lead_found`
- * emitted. On a refused write the lead stays, untraced, for the next sweep.
+ * emitted. A lead on a place the holder had already found (`knowsOf: 'kept'`) is removed
+ * with no second find. On a refused write the lead stays, untraced, for the next sweep.
  */
 function settleSpentLead(
   graph: WorldGraph,
@@ -543,6 +544,7 @@ function settleSpentLead(
     const found = recordPlaceFound(graph, edge.source, edge.target, tick);
     if (!found.success) return;
     try { graph.removeEdge(edge.id); } catch { /* already gone */ }
+    if (found.knowsOf === 'kept') return;
     const site = graph.getNode(edge.target);
     const subtype = (site?.properties.locationSubtype ?? site?.properties.locationType) as string | undefined;
     const name = site?.name ?? edge.target;
@@ -552,7 +554,7 @@ function settleSpentLead(
       knowerId: edge.source,
       targetRuinId: edge.target,
       siteClass: locationClassOf(subtype) ?? 'unknown',
-      knowsOf: found.knowsOf ?? 'created',
+      knowsOf: found.knowsOf === 'stamped' ? 'stamped' : 'created',
       heldTicks: tick - (props.discoveredTick ?? tick),
       summary: `${edge.source} found ${name}; it is a known place now`,
     });
@@ -581,7 +583,9 @@ export function phaseClueDecay(state: GameState): Partial<GameState> {
       // its climb — the holder knows the place now. Runs before the pending-visit and age
       // checks so every path to `located` (visit, survey critical, whisper, rumour) ends
       // here. A refused write leaves the lead for the next sweep (NFP #4).
-      if (isLeadSpent(graph, edge, tick)) {
+      // A later lead (any precision) on a never-site the holder already found ends the same
+      // way, so a rumour cannot restart a finished climb.
+      if (isLeadSpent(graph, edge, tick) || hasFoundPlace(graph, edge.source, edge.target, tick)) {
         settleSpentLead(graph, edge, props, tick);
         continue;
       }
