@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 03:55 local (01:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 04:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,10 +25,9 @@ Say "veto divine economy", "veto found it", "veto fair fights" or "veto warm pla
 
 **4 jobs ready** (healthy), **1 being built.** All four ready jobs are the design-lane decisions above, each waiting out its veto window.
 
-- **Being built, now in review:** [readable on hover](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2). The builder committed and pushed the work ([#2252](https://github.com/christianspliid-ui/threadbare/pull/2252)); it is waiting on its checks and will merge on green.
+- **Being built, now in review:** [essence a god earns through its own acts now counts toward attunement](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves) — a small fix the code review caught on last night's hover work. Its pull request ([#2253](https://github.com/christianspliid-ui/threadbare/pull/2253)) is waiting on checks and will merge on green.
 
 ## Health
 
-- **The heavy simulation tests are still red on main**, about 17 hours now ([runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No builder has claimed the fix yet. A builder owes it, not you.
-- **The worktree reaper has 6 worktrees waiting for a decision** (479 worktrees, 317 local branches on disk). Noted for visibility.
-- Everything else is green. The live site is current (commits since `8df07f49` touched only docs), scheduled tasks are on time, one pull request is waiting on checks. Simulation speed is normal (107 ms per tick, 1% under the weekly median of 108).
+- **The worktree reaper has 6 worktrees waiting for a decision** (480 worktrees, 317 local branches on disk). Noted for visibility; it ran at 04:40.
+- Everything else is green. **The heavy simulation tests are passing again** on the latest main ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37401777551)), after ~17 hours red. The live site is serving the latest commit (`c0ac7fd0`, the hover work), scheduled tasks are on time, one pull request is waiting on checks. Simulation speed is normal (107 ms per tick, 1% under the weekly median of 108).
