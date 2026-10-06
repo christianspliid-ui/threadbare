@@ -230,7 +230,7 @@ describe('a later lead on a place already found does not restart the climb', () 
 });
 
 describe('the sheet names a found place "found it"', () => {
-  it('reads knows_of.foundTick; a live lead on the place still wins', () => {
+  it('reads knows_of.foundTick; a later lead on the found place does not demote it', () => {
     const graph = world();
     recordPlaceFound(graph, ACTOR, WONDER, 30);
     expect(collectKnownPlaces(graph, ACTOR)).toEqual([
@@ -239,6 +239,9 @@ describe('the sheet names a found place "found it"', () => {
     expect(KNOWN_PLACE_FOUND_LINE).toBe('found it');
 
     holdLead(graph, WONDER, 'narrowed', 40);
-    expect(collectKnownPlaces(graph, ACTOR)[0].lead).toBe('has a lead on it');
+    expect(collectKnownPlaces(graph, ACTOR)[0].lead).toBe(KNOWN_PLACE_FOUND_LINE);
+    // A lead on a place never found still reads by its precision.
+    holdLead(graph, ELDER, 'narrowed', 40);
+    expect(collectKnownPlaces(graph, ACTOR).find(p => p.id === ELDER)?.lead).toBe('has a lead on it');
   });
 });

@@ -1020,6 +1020,9 @@ export function collectKnownPlaces(
     const node = graph.getNode(edge.target);
     if (!node?.name) continue;
     const precision = edge.properties?.precision;
+    // THR-1702: a place already found stays "found it" — a later lead there is inert and
+    // the next decay sweep removes it, so it must not read as the climb restarting.
+    if (known.get(node.id)?.lead === KNOWN_PLACE_FOUND_LINE) continue;
     const lead = precision === 'located' ? 'knows where it lies'
       : precision === 'narrowed' ? 'has a lead on it'
       : 'has heard of it';
