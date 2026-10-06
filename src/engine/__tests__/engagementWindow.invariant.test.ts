@@ -239,7 +239,11 @@ describe('the level-success invariant (THR-1575)', () => {
   // THR-1740's window re-plan did not separate them either: seeds 42 / 99 read master
   // 0.241 / 0.295 against expert 0.290 / 0.282 — harder on 99, not on 42. Masters still
   // choose master-band content under 9% of the time; that is content volume.
-  // TODO(THR-1742): un-skip when master content can carry the rung.
+  // THR-1742 measured why (audit `Docs/audits/2026-10-06-thr-1742-master-band.md`): own-reach
+  // master work is near every master and passes every gate, then the cap's fair draw keeps it
+  // on 20.5% of master boards (one template per reach, q ≈ 0.215). A probe keeping it on ~76%
+  // separates the rung on 42 / 99 / 7; 44–60% flips on noise.
+  // TODO(THR-1757): un-skip once master work reaches masters' boards (content or cap route).
   it.skip('masters attempt harder content than experts', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
