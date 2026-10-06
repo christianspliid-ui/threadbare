@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-06 19:56 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-06 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-06: sphere scores have a design** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)): the groundwork your Dominion formula waits on. Plan merged via [#2261](https://github.com/christianspliid-ui/threadbare/pull/2261); decided by the design lane with your veto open until ~20:40 Wednesday.
+- **2026-10-06: the power model behind your Dominion ruling now lives in the game's own tools** ([THR-1767](https://linear.app/threadbare/issue/THR-1767)), so every Dominion number is measured on the same scripted run. Merged via [#2260](https://github.com/christianspliid-ui/threadbare/pull/2260).
 - **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)): who writes sphere scores, how fast, and what the formula reads today. Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) at 17:19 UTC (notes only).
 - **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)): the shortlist cut them out by sheer volume. Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 15:16 UTC and live.
 - **2026-10-06: fair fights — quests now face the same odds window as everything else, and sure things stop paying twice** ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) at 13:42 UTC and live.
@@ -36,8 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-06: what you spend and what you risk now reads on hover** ([THR-1713](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2)), a round-2 playtest finding. Merged via [#2252](https://github.com/christianspliid-ui/threadbare/pull/2252) and live.
 - **2026-10-06: "Dominion" is in the glossary** ([THR-1746](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere)), the first piece of your power-progression ruling. Its conflict was cleared by the builder; merged via [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) at 00:28 UTC.
 - **2026-10-05: your Dominion ruling is on record** ([THR-1745](https://linear.app/threadbare/issue/THR-1745)). The plan doc merged via [#2249](https://github.com/christianspliid-ui/threadbare/pull/2249) at 23:19.
-- **2026-10-05: a set-down encounter now waits for you** ([THR-1730](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should)). Unstuck after last hour's cancelled checks; merged via [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) at 23:30 and live.
-- **2026-10-05: the intent judge now checks what the player will read** ([THR-1743](https://linear.app/threadbare/issue/THR-1743/intent-judge-checks-what-the-player-will-read-ui-plans-must-quote)), your filing from this evening. Merged via [#2245](https://github.com/christianspliid-ui/threadbare/pull/2245).
 
 ---
 
