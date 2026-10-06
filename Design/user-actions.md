@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-06 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-06 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)): the shortlist cut them out by sheer volume. Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 15:16 UTC and live.
 - **2026-10-06: fair fights — quests now face the same odds window as everything else, and sure things stop paying twice** ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) at 13:42 UTC and live.
 - **2026-10-06: a found lead now ends the climb** ([THR-1702](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)): a located lead on a site you can never delve becomes a known place. Merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) at 07:57 UTC and live.
 - **2026-10-06: essence a god earns through its own acts now counts toward attunement** ([THR-1752](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves)), caught by code review on the hover work. Merged via [#2253](https://github.com/christianspliid-ui/threadbare/pull/2253) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-05: a set-down encounter now waits for you** ([THR-1730](https://linear.app/threadbare/issue/THR-1730/a-minimised-encounter-step-plays-out-on-its-own-once-time-runs-should)). Unstuck after last hour's cancelled checks; merged via [#2248](https://github.com/christianspliid-ui/threadbare/pull/2248) at 23:30 and live.
 - **2026-10-05: the intent judge now checks what the player will read** ([THR-1743](https://linear.app/threadbare/issue/THR-1743/intent-judge-checks-what-the-player-will-read-ui-plans-must-quote)), your filing from this evening. Merged via [#2245](https://github.com/christianspliid-ui/threadbare/pull/2245).
 - **2026-10-05: encounter summaries now read as player prose, not authoring prompts** ([THR-1739](https://linear.app/threadbare/issue/THR-1739/encounter-summaries-read-like-authoring-prompts-rewrite-designer-voice)), your Granary Riot finding. Its conflict was cleared by the builder; merged via [#2239](https://github.com/christianspliid-ui/threadbare/pull/2239) at 15:53.
-- **2026-10-05: the commit button stays on screen when a five-card hand wraps** ([THR-1732](https://linear.app/threadbare/issue/THR-1732/a-five-card-hand-at-169-doesnt-fit-1080-the-encounter-column-scrolls)). Merged via [#2242](https://github.com/christianspliid-ui/threadbare/pull/2242) at 15:18.
 
 ---
 
