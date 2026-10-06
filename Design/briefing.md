@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-06 05:56 local (03:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-06 06:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,5 +29,5 @@ Say "veto divine economy", "veto found it", "veto fair fights" or "veto warm pla
 
 ## Health
 
-- **The worktree reaper has 6 worktrees waiting for a decision** (478 worktrees, 315 local branches on disk). Noted for visibility; it ran at 05:40.
-- Everything else is green. The live site is serving the latest commit (`5e0bcb60`, the essence fix), scheduled tasks are on time, no pull requests are waiting, CI and the heavy simulation tests are green on main. Simulation speed is normal (106 ms per tick, 2% under the weekly median of 108).
+- **The worktree reaper has 6 worktrees waiting for a decision** (481 worktrees, 314 local branches on disk). Noted for visibility; it ran at 06:40.
+- Everything else is green. The live site is serving the latest commit (`5e0bcb60`, the essence fix), scheduled tasks are on time, no pull requests are waiting, CI and the heavy simulation tests are green on main. Simulation speed is normal (108 ms per tick, right on the weekly median).
