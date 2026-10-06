@@ -140,7 +140,11 @@ export function nextInterruptMoment(
 
 /**
  * Re-tier interrupt moments raised at or after `sinceTick` to badge tier, leaving them
- * unacknowledged so the badge and the arc strip still count them (THR-1744 warm start).
+ * unacknowledged (THR-1744 warm start). Every settled record still appears under "The Arc
+ * So Far" (`getAgentArc` has no age filter); only those inside `MOMENT_BADGE_RETENTION_TICKS`
+ * also badge the thread row. The durable record of an older moment is its chronicle line
+ * (`undertakingCheckpoints.ts`) — by design, so a long warm-up never arrives as a pile of
+ * pop-ups (plan § Start state, step 4.2).
  *
  * Records before `sinceTick`, acknowledged records and badge-tier records are returned
  * unchanged. Returns the same array when nothing changes, so an untouched queue does
