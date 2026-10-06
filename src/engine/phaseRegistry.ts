@@ -270,7 +270,8 @@ export function runRegisteredPhases(
       // phase the counter must see, and which funnel a phase runs through is a
       // migration detail (THR-238) rather than a property of what it does.
       // THR-1713 — and the movement record, filed under this phase's id.
-      s = applyEssenceMovement(s, applyEssenceEarned(s, { ...s, ...delta } as GameState), phase.id, poolBefore);
+      // THR-1752 — both diff against the by-value snapshot, not `s.essencePool`.
+      s = applyEssenceMovement(s, applyEssenceEarned(s, { ...s, ...delta } as GameState, poolBefore), phase.id, poolBefore);
     } catch (err) {
       emitTrace({
         tick: s.tick,
