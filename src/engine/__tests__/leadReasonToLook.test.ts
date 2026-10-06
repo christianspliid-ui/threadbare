@@ -121,7 +121,7 @@ describe('heldLeadRuinIds — freshest first, capped', () => {
       });
       holdLead(graph, `ruin_${i}`, 10 + i);
     }
-    const ids = heldLeadRuinIds(graph, ACTOR);
+    const ids = heldLeadRuinIds(graph, ACTOR, 50);
     expect(ids).toHaveLength(CLUE_LEAD_SURVEY_CANDIDATES_MAX);
     expect(ids[0]).toBe(`ruin_${CLUE_LEAD_SURVEY_CANDIDATES_MAX}`);
   });

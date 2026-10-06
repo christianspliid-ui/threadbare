@@ -57,7 +57,7 @@ const LOCATED: EncounterAftermathChange = {
   stateNoun: THE_RUIN,
   title: 'Knows where it lies',
   causeClause: 'Read the ground and found the way in',
-  detail: '{actor} knows where this ruin lies, and can go down into it.',
+  detail: '{actor} knows where this ruin lies.',
   polarity: 'gain',
   concepts: [THE_RUIN],
 };

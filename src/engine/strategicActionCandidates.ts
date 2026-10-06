@@ -66,6 +66,7 @@ import { evaluateMotiveGate } from './undertakingMotive';
 import { computeReachShare } from './domainCapability';
 import { isAutonomousDecisionActor } from './decisionTier';
 import { CLUE_LEAD_SURVEY_CANDIDATES_MAX, CLUE_LEAD_SURVEY_PULL_MULT } from './ruins/constants';
+import { isLeadSpent } from './ruins/delveRoad';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -226,7 +227,7 @@ export function generateStrategicCandidates(
   // A held lead is a reason to look (THR-1663, seeded things stay alive S2). The
   // ruins of the actor's live leads, freshest first, ride ahead of the survey cell's
   // proximity cap; a survey of one scores `CLUE_LEAD_SURVEY_PULL_MULT` on the board.
-  const leadRuinIds = heldLeadRuinIds(graph, actorId);
+  const leadRuinIds = heldLeadRuinIds(graph, actorId, tick);
   const leadRuinSet = new Set(leadRuinIds);
   /** Lead ruins some walk already proposed a survey of. */
   const leadRuinsProposed = new Set<string>();
@@ -534,13 +535,16 @@ export const LEAD_SURVEY_CELL_ID = 'cell.observe.location';
 /**
  * The ruins of an actor's live leads (unconsumed `knows_clue_of`), freshest first —
  * ties broken on edge id (NFP #3) — capped at `CLUE_LEAD_SURVEY_CANDIDATES_MAX`. A
- * lead whose ruin is gone is skipped and left for decay (fail-soft). Exported for tests.
+ * lead whose ruin is gone is skipped and left for decay (fail-soft). A *spent* lead
+ * (THR-1702: `located` on a site no delve can ever enter) is left out too: its climb is
+ * over, so it pulls nobody back. Exported for tests.
  */
-export function heldLeadRuinIds(graph: WorldGraph, actorId: string): string[] {
+export function heldLeadRuinIds(graph: WorldGraph, actorId: string, tick: number): string[] {
   try {
     const seen = new Set<string>();
     return graph.getOutgoingEdges(actorId, 'knows_clue_of')
-      .filter(e => e.properties?.consumed !== true && graph.getNode(e.target)?.type === 'location')
+      .filter(e => e.properties?.consumed !== true && graph.getNode(e.target)?.type === 'location'
+        && !isLeadSpent(graph, e, tick))
       .sort((a, b) =>
         (Number(b.properties?.discoveredTick ?? 0) - Number(a.properties?.discoveredTick ?? 0))
         || a.id.localeCompare(b.id))

@@ -110,6 +110,8 @@ import { grantSpell, onItemAcquired } from '../engine/spellGrant';
 import type { DetectionCrossingRecorder } from '../engine/agentDetection';
 import { COMPANION_TEMPLATES } from './companion-templates';
 import { mulberry32 } from '../lib/prng';
+import { delveRoadOf, isLeadSpent } from '../engine/ruins/delveRoad';
+import { CLUE_SPENT_LEAD_ENDS_CLIMB } from '../engine/ruins/constants';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
 import { LOCATION_CLASSES, locationClassOf, barePlaceTypeId, POWER_SUBCATEGORIES, CONDITION_SUBCATEGORIES } from './world-objects';
@@ -496,6 +498,26 @@ function maybeMintObservedMark(ctx: ObjectVerbContext, cellId: string, subjectPo
 }
 
 /**
+ * THR-1702 — has `actorId` already found `siteId`, a site no delve can ever enter? True
+ * when they hold a spent lead on it, or hold no live lead and carry a `knows_of` edge to
+ * it stamped `foundTick` while its delve road is `never`. Fail-soft: any read error → false.
+ */
+function alreadyFoundSite(graph: WorldGraph, actorId: string, siteId: string, tick: number): boolean {
+  if (!CLUE_SPENT_LEAD_ENDS_CLIMB) return false;
+  try {
+    const lead = graph.getOutgoingEdges(actorId, 'knows_clue_of')
+      .find(e => e.target === siteId && e.properties?.consumed !== true);
+    if (lead) return isLeadSpent(graph, lead, tick);
+    const site = graph.getNode(siteId);
+    if (!site || delveRoadOf(site.properties, tick) !== 'never') return false;
+    return graph.getOutgoingEdges(actorId, 'knows_of')
+      .some(e => e.target === siteId && typeof e.properties?.foundTick === 'number');
+  } catch {
+    return false;
+  }
+}
+
+/**
  * A clue on a surveyable site, at the precision the band earned. Only a critical
  * success writes `located`, which is the precision the delve admission scan requires —
  * so observe → clue → delve is a climb, not a free door (THR-1399's band order).
@@ -509,6 +531,16 @@ function maybeSpawnSiteClue(ctx: ObjectVerbContext, cellId: string, siteId: stri
       cellId, reader: 'clue', objectId: siteId,
       refused: ctx.outcome ? 'no_band_row' : undefined,
       summary: `${site?.name ?? siteId} gave up no lead`,
+    });
+    return;
+  }
+  // THR-1702: a never-site the surveyor has already found writes nothing — a spent lead
+  // (`located`, no delve road) is not refreshed, and a place turned into a known place
+  // (`knows_of.foundTick`) does not restart the climb.
+  if (alreadyFoundSite(ctx.graph, ctx.actorId, siteId, ctx.tick)) {
+    emitReaderTrace(ctx, {
+      cellId, reader: 'clue', objectId: siteId, refused: 'already_found',
+      summary: `already found ${site?.name ?? siteId}`,
     });
     return;
   }

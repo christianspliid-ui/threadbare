@@ -542,7 +542,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Familiarity edge created when a knows_clue_of clue is consumed at convergence. Properties: fromClue?, convergedTick?.',
+    description: 'Familiarity edge created when a knows_clue_of clue is consumed at convergence. Properties: fromClue?, fromSurvey?, convergedTick?, foundTick? (THR-1702: tick a spent lead on a never-delvable site became this known place; sheet reads "found it").',
   },
   // ── Ruins Layer (THR-153) ──────────────────────────────────────────────────
   holds_place_of_power: {

@@ -55,6 +55,9 @@ export function heldLead(graph: WorldGraph, actorId: string, ruinId: string): Gr
     .find(e => e.target === ruinId && e.properties?.consumed !== true);
 }
 
+/** THR-1702 — a spent lead (`located` on a delve-road-`never` site). Lives in the leaf `delveRoad.ts`. */
+export { isLeadSpent } from './delveRoad';
+
 /** Why the planter's lead gate refused. Carried on the refusal trace. */
 export type LeadVisitRefusal = 'no_lead' | 'not_narrowed' | 'visit_pending';
 

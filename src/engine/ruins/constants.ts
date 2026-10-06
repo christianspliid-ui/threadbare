@@ -125,6 +125,14 @@ export const CLUE_VISIT_PRECISION_BY_OUTCOME: Readonly<Record<UnifiedActionOutco
   critical_failure: 'cold',
 };
 
+/**
+ * THR-1702 kill switch. A `located` lead on a site no delve can ever enter (delve road
+ * `never`: a wonder, a plain worldgen ruin) is *spent*: the lead pass stops pulling it, a
+ * survey stops refreshing it, and the next `phaseClueDecay` sweep turns it into a known
+ * place (`knows_of.foundTick`). `false` restores the pre-THR-1702 behaviour exactly.
+ */
+export const CLUE_SPENT_LEAD_ENDS_CLIMB = true;
+
 /** Whether a lead edge's pending visit still holds at `tick` (stamp set, due + grace not passed). */
 export function isLeadVisitPending(pendingVisitDueTick: unknown, tick: number): boolean {
   return typeof pendingVisitDueTick === 'number' && tick <= pendingVisitDueTick + CLUE_LEAD_VISIT_GRACE_TICKS;

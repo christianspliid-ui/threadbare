@@ -991,12 +991,15 @@ function describeWealthSource(reason: string | undefined): string | undefined {
   }
 }
 
+/** The known-places line for a place a mortal's lead ended at (THR-1702). */
+export const KNOWN_PLACE_FOUND_LINE = 'found it';
+
 /**
  * Places this mortal knows the way to, and the leads they are still following.
  * Read straight from the graph edges the readers write — the row and the world cannot
- * disagree (Law 56). Sorted by name so the list is stable between reads.
+ * disagree (Law 56). Sorted by name so the list is stable between reads. Exported for tests.
  */
-function collectKnownPlaces(
+export function collectKnownPlaces(
   graph: WorldGraph,
   agentId: string,
 ): { id: string; name: string; lead?: string }[] {
@@ -1004,7 +1007,11 @@ function collectKnownPlaces(
 
   for (const edge of graph.getOutgoingEdges(agentId, 'knows_of')) {
     const node = graph.getNode(edge.target);
-    if (node?.name) known.set(node.id, { id: node.id, name: node.name });
+    if (!node?.name) continue;
+    // THR-1702: a place whose lead finished its climb (`knows_of.foundTick`) is found.
+    known.set(node.id, typeof edge.properties?.foundTick === 'number'
+      ? { id: node.id, name: node.name, lead: KNOWN_PLACE_FOUND_LINE }
+      : { id: node.id, name: node.name });
   }
   // A live lead is knowledge too, and it is the more interesting kind: it says the
   // place is half-found rather than merely remembered.

@@ -400,7 +400,8 @@ describe('phaseClueDecay', () => {
   it('preserves fresh clues within their TTL', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'knower', type: 'actor', name: 'Knower', properties: { actorType: 'individual' } });
-    graph.addNode({ id: 'ruin', type: 'location', name: 'Ruin', properties: { ruinMagnitude: 0.1 } });
+    // An elder ruin: a `located` lead on a never-delvable site is settled as found (THR-1702).
+    graph.addNode({ id: 'ruin', type: 'location', name: 'Ruin', properties: { ruinMagnitude: 0.1, locationType: 'elder_ruin' } });
 
     graph.addEdge({
       id: 'fresh-located',
