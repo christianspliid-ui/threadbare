@@ -10,7 +10,9 @@
 //   delvable now / ever / never;
 // - resurveys: `cell.observe.location` undertakings started by a holder whose lead on that
 //   target is already `located`, split by delvable-ever vs never;
-// - visit refusals by reason, visits arranged by site, delves admitted.
+// - visit refusals by reason, visits arranged by site, delves admitted;
+// - leadFound (THR-1702): `ruins.lead_found` by site tag, `foundTwice` = (knower, site) pairs
+//   found more than once (the plan's kill criterion), and survey reader `already_found` refusals.
 import { writeFileSync } from 'fs';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../../../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../../../../src/engine/orchestrator';
@@ -63,6 +65,8 @@ const resurveys: Record<string, number> = {};
 const refusals: Record<string, number> = {};
 const arrangedAt: Record<string, number> = {};
 const counts: Record<string, number> = {};
+const leadFound: Record<string, number> = {};
+const foundPairs: Record<string, number> = {};
 const started = Date.now();
 
 for (let t = 1; t <= TICKS; t++) {
@@ -88,6 +92,12 @@ for (let t = 1; t <= TICKS; t++) {
       if (!tr.refused) inc(arrangedAt, tag(g().getNode(String(tr.locationId ?? '')), t));
     }
     if (c === 'ruins.delve_admitted') inc(counts, 'delve_admitted');
+    if (c === 'ruins.lead_found') {
+      inc(counts, 'lead_found');
+      inc(leadFound, tag(g().getNode(String(tr.targetRuinId ?? '')), t));
+      inc(foundPairs, `${tr.knowerId}>${tr.targetRuinId}`);
+    }
+    if (c === 'undertaking_reader' && tr.refused === 'already_found') inc(counts, 'reader_already_found');
   }
   clearTraces();
 }
@@ -99,6 +109,7 @@ for (const e of g().getEdgesByType('knows_clue_of')) {
   inc(liveLocated, tag(g().getNode(e.target), TICKS));
 }
 
-const result = { seed, ticks: TICKS, sites, located, resurveys, liveLocated, visit: refusals, arrangedAt, counts, wallMs: Date.now() - started };
+const foundTwice = Object.values(foundPairs).filter(n => n > 1).length;
+const result = { seed, ticks: TICKS, sites, located, resurveys, liveLocated, visit: refusals, arrangedAt, counts, leadFound, foundTwice, wallMs: Date.now() - started };
 console.log(JSON.stringify(result));
 if (process.argv[4]) writeFileSync(process.argv[4], JSON.stringify(result, null, 1));

@@ -791,15 +791,15 @@ Code anchors: `src/engine/fights/fightAdvantages.ts` (`readFightAdvantages`), `s
 
 ### Lead
 
-**Aliases:** clue (code word), `knows_clue_of` (edge), has heard of it / has a lead on it / knows where it lies (its three sheet phrasings)
+**Aliases:** clue (code word), `knows_clue_of` (edge), has heard of it / has a lead on it / knows where it lies (its three sheet phrasings), found it (the known-places phrasing once a lead's climb has ended)
 **Also see:** `[[Clue]]`, `[[Delve]]`, `[[Edge]]`
 **Status:** canonical — seated by delegation 2026-09-29 (THR-1662)
 
-What a mortal knows about where a ruin or wonder lies — a `knows_clue_of` edge from the knower to the site, carrying a **precision** with three rungs (`CluePrecision`): *vague* (sheet: "has heard of it"), *narrowed* ("has a lead on it"), *located* ("knows where it lies"). A lead arrives by rumour, research, a map, a god's whisper or an encounter's outcome; a survey of the site leaves one banded by how well it went (`OBSERVE_CLUE_PRECISION_BY_BAND` — only a critical success locates), and a survey of a site the mortal already holds a lead on **sharpens** it a rung instead of refusing (THR-1663). A lead left unworked **goes stale**: `phaseClueDecay` prunes it after a precision-scaled age (`CLUE_MAX_AGE_TICKS_VAGUE` / `_NARROWED` / `_LOCATED`). A lead that goes **cold** because the mortal missed the visit it arranged is THR-1664's, not yet shipped. The climb is *hear → survey → visit → delve*; only a *located* lead admits a [[Delve]].
+What a mortal knows about where a ruin or wonder lies — a `knows_clue_of` edge from the knower to the site, carrying a **precision** with three rungs (`CluePrecision`): *vague* (sheet: "has heard of it"), *narrowed* ("has a lead on it"), *located* ("knows where it lies"). A lead arrives by rumour, research, a map, a god's whisper or an encounter's outcome; a survey of the site leaves one banded by how well it went (`OBSERVE_CLUE_PRECISION_BY_BAND` — only a critical success locates), and a survey of a site the mortal already holds a lead on **sharpens** it a rung instead of refusing (THR-1663). A lead left unworked **goes stale**: `phaseClueDecay` prunes it after a precision-scaled age (`CLUE_MAX_AGE_TICKS_VAGUE` / `_NARROWED` / `_LOCATED`). A **located** lead on a site no delve can ever enter (a wonder, a plain ruin) has nowhere left to climb: `phaseClueDecay` turns it into a known place (`knows_of` with `foundTick`; sheet: "found it") and removes the lead (THR-1702). Code calls such a lead *spent* (`isLeadSpent`); player surfaces never do. A lead that goes **cold** because the mortal missed the visit it arranged is THR-1664's, not yet shipped. The climb is *hear → survey → visit → delve*; only a *located* lead admits a [[Delve]].
 
 Player surfaces say **lead**, never *clue*.
 
-Code anchors: `src/types/knowledge.ts` (`KnowsClueOfEdgeProperties`, `CluePrecision`), `src/engine/ruins/clueLifecycle.ts`, `src/engine/phases/clueDecay.ts`, `src/engine/agentDetail.ts` (sheet phrasing).
+Code anchors: `src/types/knowledge.ts` (`KnowsClueOfEdgeProperties`, `CluePrecision`), `src/engine/ruins/clueLifecycle.ts`, `src/engine/phases/clueDecay.ts`, `src/engine/agentDetail.ts` (sheet phrasing), `src/engine/ruins/leadVisit.ts` (`isLeadSpent`), `src/engine/ruins/delveVariant.ts` (`delveRoadOf`).
 
 ---
 
