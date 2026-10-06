@@ -1378,3 +1378,15 @@ export const SETBACK_WINDOW_SHIFT = 0.05;
 export const SETBACK_WINDOW_SHIFT_MAX = 0.15;
 /** A failed template's cooldown as a multiple of the completion cooldown (trap 1 guard). @range 1–6 */
 export const FAILED_TEMPLATE_COOLDOWN_MULT = 3;
+/**
+ * THR-1740 (Decision 3) — switch for odds-neutral value above the window's midpoint.
+ * Value per tick is built on expected utility, which already weights each outcome by
+ * its odds; without this, a near-certain encounter earns up to ~1.7× the value of an
+ * identical one at the midpoint and outbids the window. On: above
+ * `ENGAGE_VALUE_ODDS_PIVOT`, a free choice's value per tick is scaled by `pivot / F`.
+ * Off restores the pre-THR-1740 score.
+ */
+export const ENGAGE_VALUE_ODDS_NEUTRAL = true;
+/** THR-1740 — forecast above which an encounter's value stops growing with its odds
+ * (the window midpoint). ≤ 0 reads as off. @range 0.50–0.65 */
+export const ENGAGE_VALUE_ODDS_PIVOT = (ENGAGE_WINDOW_LOW + ENGAGE_WINDOW_HIGH) / 2;

@@ -49,6 +49,20 @@ export const BRANCHING_NEARLY_ELIGIBLE_SAMPLE_SIZE = 5;
  *  because they mature narrative threads, not just test skill. */
 export const BRANCHING_QUEST_SKIP_OUTGROWTH = true;
 
+/** Whose branching quests keep the shipped window scoring (THR-1740, Decision 1). */
+export type BranchingQuestWindowExemptScope = 'all' | 'threaded' | 'none';
+
+/**
+ * THR-1740 — whose branching quests keep the shipped scoring in the forecast window:
+ * the too-easy exemption and no odds-neutral value scale. `'all'` is the pre-THR-1740
+ * behaviour; `'threaded'` keeps it only for mortals threaded to the ascendant (whose
+ * stories the player follows — THR-452/465 tuned quest fires for them); `'none'`
+ * makes every quest face the window like other work. Reachability is untouched:
+ * `BRANCHING_QUEST_SKIP_OUTGROWTH`, the cap reserve and the curator lift still apply.
+ * An unknown value reads as `'all'` (fail-soft).
+ */
+export const BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE: BranchingQuestWindowExemptScope = 'threaded';
+
 /** Minimum branching encounters to preserve in the per-agent performance cap stage.
  *  Ensures at least N branching templates survive to scoring even when candidates > MAX_SCORED_CANDIDATES.
  *  Tuned from 1→3 in THR-465 to lift branching fire rate from 0.25–0.5/30t toward ≥1/30t. */

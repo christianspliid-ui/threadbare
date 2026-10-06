@@ -104,7 +104,10 @@ describe('the level-success invariant (THR-1575)', () => {
   // seven seeds (42, 99, 7, 1, 2, 3, 11) pooled expert success went 0.649 → 0.701, on the
   // ceiling — the same drift-to-ceiling the master row showed (THR-1626), and THR-1689's
   // first lead (experts pick work they are too good for). Not tuned to pass.
-  // TODO(THR-1689): re-arm the expert row with the window/scoring answer.
+  //
+  // THR-1740 re-armed the expert row (below) with the window re-plan: quests face the
+  // window for unthreaded mortals and sure things stop paying twice. Measured on the
+  // branch, seeds 42 / 99: expert 0.607 / 0.570 (n 107 / 121), condition unchanged.
   it.each(['journeyman'] as const)('the %s band succeeds level (THR-1627)', (band) => {
     let engagements = 0;
     let successes = 0;
@@ -120,7 +123,7 @@ describe('the level-success invariant (THR-1575)', () => {
     expect(pooled, `${band} pooled over seeds 42 + 99`).toBeLessThanOrEqual(KPI_BAND_SUCCESS_MAX + KPI_BAND_TOLERANCE);
   }, 600_000);
 
-  it.skip('the expert band succeeds level (THR-1627)', () => {
+  it('the expert band succeeds level (THR-1627)', () => {
     let engagements = 0;
     let successes = 0;
     for (const seed of [42, 99]) {
@@ -155,15 +158,19 @@ describe('the level-success invariant (THR-1575)', () => {
   // 0.740 / 0.691 → 0.690 / 0.750; seven-seed mean (42, 99, 7, 1, 2, 3, 11) 0.747 → 0.715.
   // Masters still attempt work far below their window (mean attempted 0.207 → 0.229
   // against authored 0.77), so the content reaches them and they mostly pass it over —
-  // the out-of-window question, not a content gap. TODO(THR-1689): re-arm when the window
-  // or scoring answer lands; the condition is unchanged (inside the range on 42 and 99).
+  // the out-of-window question, not a content gap (THR-1689).
   //
   // Heads-up for whoever flips CAP_FILL_LOCAL_ORDER to 'template_hash' (THR-1687): with
   // the hashed order, expert work reaches masters too and sits below their window —
   // master success measured 0.76 on seed 42 (ceiling 0.70), and 0.59 / 0.66 / 0.58 →
   // 0.76 / 0.76 / 0.74 in the gameplay report. Master-fit content (THR-1688) is the remedy
   // for both the ceiling drift above and the flip's push.
-  it.skip('the master band succeeds level (THR-1681)', () => {
+  //
+  // THR-1740 re-armed it with the window re-plan, condition unchanged. Masters had been
+  // padding their record with near-certain branching quests (THR-1689); with quests facing
+  // the window and value odds-neutral above its midpoint, master success on seeds 42 / 99
+  // reads 0.508 / 0.620 (n 63 / 50).
+  it('the master band succeeds level (THR-1681)', () => {
     for (const seed of [42, 99]) {
       const b = reportFor(seed).bands.find(x => x.band === 'master')!;
       expect(b.covered, `seed ${seed} master coverage (${b.engagements} engagements)`).toBe(true);
@@ -207,9 +214,11 @@ describe('the level-success invariant (THR-1575)', () => {
   // now on 5 of 7. Seed 99's gap was +0.011 before (a knife edge). THR-1689 found experts
   // mostly choosing near-certain branching quests below their window. Its re-plan's probe
   // (quest exemption off) took expert attempted difficulty 0.20–0.23 → 0.28–0.30, which is
-  // what lifts this rung off the edge. TODO(THR-1740): re-arm with the window re-plan,
-  // with the condition unchanged.
-  it.skip('experts attempt harder content than journeymen', () => {
+  // what lifts this rung off the edge.
+  //
+  // THR-1740 re-armed it with the window re-plan, condition unchanged. Seeds 42 / 99:
+  // expert 0.290 / 0.282 against journeyman 0.226 / 0.261.
+  it('experts attempt harder content than journeymen', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
       const journeyman = bandOf(report, 'journeyman');
@@ -227,7 +236,10 @@ describe('the level-success invariant (THR-1575)', () => {
   // 0.216 — harder on 99, not on 42. Over seven seeds masters out-attempt experts on 3
   // (99, 7, 3); means master 0.207 → 0.229, expert 0.218 → 0.226. The content rises the
   // band without separating it, so the clause stays skipped (never tuned to pass).
-  // TODO(THR-1689): un-skip if the out-of-window answer lets masters choose master work.
+  // THR-1740's window re-plan did not separate them either: seeds 42 / 99 read master
+  // 0.241 / 0.295 against expert 0.290 / 0.282 — harder on 99, not on 42. Masters still
+  // choose master-band content under 9% of the time; that is content volume.
+  // TODO(THR-1742): un-skip when master content can carry the rung.
   it.skip('masters attempt harder content than experts', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
@@ -239,12 +251,13 @@ describe('the level-success invariant (THR-1575)', () => {
     }
   }, 600_000);
 
-  // TODO(THR-1689): un-skip when the window question is answered. Fixing the board did
-  // not raise the share (THR-1687: in-window dips 1–2 points once expert content reaches
-  // experts), so the gap is the window or scoring, not what reaches the board.
-  it.skip('most free choices are in-window', () => {
+  // THR-1740 (Decision 2) re-armed this on the mortal's **own** window — the edges the
+  // scorer used after courage and setback shifts — against KPI_IN_WINDOW_MIN 0.50
+  // ("most"; was 0.60 against the static window). Seeds 42 / 99: own 0.557 / 0.555,
+  // static 0.521 / 0.529.
+  it('most free choices are in-window', () => {
     for (const seed of [42, 99]) {
-      expect(reportFor(seed).inWindowShare, `seed ${seed}`).toBeGreaterThanOrEqual(KPI_IN_WINDOW_MIN);
+      expect(reportFor(seed).ownWindowShare, `seed ${seed}`).toBeGreaterThanOrEqual(KPI_IN_WINDOW_MIN);
     }
   }, 600_000);
 });

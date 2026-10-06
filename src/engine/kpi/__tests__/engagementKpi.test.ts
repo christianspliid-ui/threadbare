@@ -21,6 +21,7 @@ import {
   demandedDifficultyOf,
   windowFitBandFor,
   windowFitGap,
+  isInOwnWindow,
   type EngagementLogEntry,
 } from '../engagementKpi';
 import {
@@ -109,6 +110,33 @@ describe('the engagement ledger', () => {
     commit(ledger, 'w3', { forecast: 0.9 });
     commit(ledger, 'w4', { forecast: 0.2 });
     expect(computeEngagementKpiReport(ledger).inWindowShare).toBeCloseTo(0.5, 10);
+  });
+
+  // THR-1740 (Decision 2) — the gauge judges the window the mortal actually used.
+  it('counts a setback-shifted choice as own-window and not as static', () => {
+    const ledger = createEngagementLedger();
+    // A mortal with one setback: its window shifted to [0.45, 0.60]; F 0.47 sits inside it.
+    commit(ledger, 's1', { forecast: 0.47, windowLow: 0.45, windowHigh: 0.60 });
+    const report = computeEngagementKpiReport(ledger);
+    expect(report.ownWindowShare).toBe(1);
+    expect(report.inWindowShare).toBe(0);
+  });
+
+  it('falls back to the static window for a stamp without edges, and judges shifted edges both ways', () => {
+    const ledger = createEngagementLedger();
+    commit(ledger, 'f1', { forecast: 0.58 }); // no edges → static → in
+    commit(ledger, 'f2', { forecast: 0.64, windowLow: 0.45, windowHigh: 0.60 }); // static in, own out
+    commit(ledger, 'f3', { forecast: 0.9 }); // neither
+    commit(ledger, 'f4', { forecast: 0.5, windowLow: NaN, windowHigh: NaN }); // non-finite edges → static → in
+    const report = computeEngagementKpiReport(ledger);
+    expect(report.inWindowShare).toBeCloseTo(3 / 4, 10);
+    expect(report.ownWindowShare).toBeCloseTo(2 / 4, 10);
+    expect(isInOwnWindow(0.47, 0.45, 0.60)).toBe(true);
+    expect(isInOwnWindow(0.47)).toBe(false);
+  });
+
+  it('reads ownWindowShare 0 with no free-choice commits', () => {
+    expect(computeEngagementKpiReport(createEngagementLedger()).ownWindowShare).toBe(0);
   });
 
   it('reads the idle rate off the board decisions', () => {
