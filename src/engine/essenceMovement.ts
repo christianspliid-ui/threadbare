@@ -188,15 +188,36 @@ export function rolledWindows(
 // ─── Seams ───────────────────────────────────────────────────────────
 
 /**
- * The phase-merge seam (called from `runInlinePhase` beside
- * `applyEssenceEarned`). Reference-compares out when the phase left the pool
- * alone. Emits one `essence_movement_roll` trace per sphere whose window
- * closed — never per phase. Fail-soft: cannot throw into the tick loop.
+ * A by-value copy of the pool, taken *before* a phase runs.
+ *
+ * Some phases move essence without returning a new pool: `phaseUnifiedActionProgress`
+ * reassigns `state.essencePool` on the very state object the funnel handed it
+ * (self-casts) and edits it in place (the elder-site reward). After such a phase
+ * `prev.essencePool === next.essencePool` holds although the balance moved, so a
+ * reference compare would file nothing. Twelve numbers per phase is the price of
+ * seeing every mover.
  */
-export function applyEssenceMovement(prev: GameState, next: GameState, phaseId: string): GameState {
-  if (prev.essencePool === next.essencePool) return next;
+export function snapshotEssencePool(pool: EssencePool | undefined): EssencePool | undefined {
+  return pool ? { ...pool } : undefined;
+}
+
+/**
+ * The phase-merge seam (both funnels: `runInlinePhase` and
+ * `runRegisteredPhases`, beside `applyEssenceEarned`). Pass `poolBefore` —
+ * {@link snapshotEssencePool} taken before the phase ran — so an in-place move
+ * is diffed by value; without it the seam falls back to `prev.essencePool`
+ * and reference-compares. Emits one `essence_movement_roll` trace per sphere
+ * whose window closed — never per phase. Fail-soft: cannot throw into the tick loop.
+ */
+export function applyEssenceMovement(
+  prev: GameState,
+  next: GameState,
+  phaseId: string,
+  poolBefore: EssencePool | undefined = prev.essencePool,
+): GameState {
+  if (poolBefore === next.essencePool) return next;
   const recorded = recordEssenceMovement(
-    next.essenceMovement, prev.essencePool, next.essencePool, causeForPhase(phaseId), next.tick,
+    next.essenceMovement, poolBefore, next.essencePool, causeForPhase(phaseId), next.tick,
   );
   if (recorded === next.essenceMovement) return next;
   for (const { sphere, closed } of rolledWindows(next.essenceMovement, recorded)) {

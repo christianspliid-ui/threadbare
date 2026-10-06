@@ -17,6 +17,7 @@ import {
   readEssenceMovement,
   recordEssenceMovement,
   withEssenceSpend,
+  snapshotEssencePool,
 } from '../essenceMovement';
 import { commitPlayerCast, type PreparedPlayerCast } from '../playerCastDispatch';
 import { spendNudgeEssence, spendAuthoredChoiceEssence } from '../../components/Game/encounter-stage/nudgeCommit';
@@ -159,6 +160,24 @@ describe('applyEssenceMovement — the phase-merge seam', () => {
     const s = state();
     const next = { ...s };
     expect(applyEssenceMovement(s, next, 'essence')).toBe(next);
+  });
+
+  it('sees a phase that moves the pool on the state object itself (in place)', () => {
+    // `phaseUnifiedActionProgress` reassigns / edits `state.essencePool` on the
+    // very object the funnel passed in, so prev and next share the new pool.
+    const s = state({ tick: 3 });
+    const before = snapshotEssencePool(s.essencePool);
+    s.essencePool.mind += 4; // in place, the elder-site reward's shape
+    const merged = { ...s };
+    expect(merged.essencePool).toBe(s.essencePool); // premise: a reference compare is blind
+    const next = applyEssenceMovement(s, merged, 'unified_action_progress', before);
+    expect(next.essenceMovement?.mind?.current.byCause).toEqual({ acts: 4 });
+  });
+
+  it('a by-value snapshot of an unmoved pool records nothing and returns next untouched', () => {
+    const s = state();
+    const next = { ...s };
+    expect(applyEssenceMovement(s, next, 'essence', snapshotEssencePool(s.essencePool))).toBe(next);
   });
 
   it('records under the phase cause, and traces once per sphere when a window rolls', () => {
