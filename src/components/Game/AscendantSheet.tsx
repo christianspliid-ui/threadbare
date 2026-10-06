@@ -16,8 +16,9 @@ import type { GameState } from '../../types/gameState';
 import { Modal } from '../shared/Modal';
 import { SphereIcon } from '../shared/SphereIcon';
 import { SectionHeading } from '../shared/SectionHeading';
-import { selectReachRows } from './ascendant-bar/selectors';
-import { REACH_RANK_LABEL, REACH_EMPTY_COPY } from '../../data/ascendant-bar-content';
+import { selectReachRows, selectQuintessenceView } from './ascendant-bar/selectors';
+import { REACH_RANK_LABEL, REACH_EMPTY_COPY, QUINTESSENCE_CONCEPT_LABEL } from '../../data/ascendant-bar-content';
+import { reachTierTooltipId } from '../../data/ascendant-reach-register';
 import { ProseKeyword } from '../ProseKeyword';
 import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
@@ -165,6 +166,7 @@ export function AscendantSheet({
 }: AscendantSheetProps) {
   const primarySphere = archetype.sphereAlignment.primary;
   const secondarySphere = archetype.sphereAlignment.secondary;
+  const quintessence = selectQuintessenceView(gameState);
   const secondaryColor = getSphereColor(secondarySphere);
 
   // Essence pool split into Foundation and Creation, each sorted by amount desc; skip zeros
@@ -295,6 +297,24 @@ export function AscendantSheet({
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {cycleToOrdinal(gameState.cycle)} — {tickToNarrativeAge(gameState.tick)}
               </p>
+              {/* THR-1713 D8 — the identity strip hides the god's quintessence
+                  while it sits at its top word; the sheet always shows it, so the
+                  reading is never unreachable (Law 13 visibility parity). */}
+              <p data-testid="sheet-quintessence" className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                <Tooltip id="ui.ascendant_quintessence">
+                  <span className="underline decoration-dotted cursor-help">{QUINTESSENCE_CONCEPT_LABEL}</span>
+                </Tooltip>
+                {' · '}
+                <Tooltip id={`quintessence.${quintessence.band}`}>
+                  <span
+                    data-testid="sheet-quintessence-word"
+                    className="cursor-help"
+                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+                  >
+                    {quintessence.lexiconWord}
+                  </span>
+                </Tooltip>
+              </p>
             </div>
           </div>
         </div>
@@ -347,7 +367,12 @@ export function AscendantSheet({
 
           {/* Reaches — matches ProwessTab domain cards exactly. Not "Dominion": that word is the god's graded hold on a world object (UL Cosmology, THR-1746). */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '50ms', animationFillMode: 'backwards' }}>
-            <SectionHeading as="h2">Reaches</SectionHeading>
+            {/* THR-1713 D7 — the heading says what Reaches are, and that Spheres are separate. */}
+            <Tooltip id="ui.reaches">
+              <span data-testid="sheet-reaches-heading">
+                <SectionHeading as="h2">Reaches</SectionHeading>
+              </span>
+            </Tooltip>
             <p
               data-testid="sheet-reach-axis-caption"
               className="text-xs mb-2"
@@ -401,13 +426,16 @@ export function AscendantSheet({
                         </span>
                       </Tooltip>
                       <span style={{ color: 'var(--border-medium)' }}>·</span>
-                      <span
-                        data-testid={`sheet-reach-tier-${row.reach}`}
-                        className="text-sm italic"
-                        style={{ color: 'var(--text-secondary)' }}
-                      >
-                        {row.tierWord}
-                      </span>
+                      {/* THR-1713 D7 — the same tier hover the bar's word carries. */}
+                      <Tooltip id={reachTierTooltipId(row.reach, row.tierWord)}>
+                        <span
+                          data-testid={`sheet-reach-tier-${row.reach}`}
+                          className="text-sm italic cursor-help"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          {row.tierWord}
+                        </span>
+                      </Tooltip>
                     </div>
                     <p
                       className="text-xs mt-1"

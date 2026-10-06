@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { ScryState, Title } from '../../../types/scry';
+import { withEssenceSpend } from '../../../engine/essenceMovement';
 import {
   initializeCourt,
   assignAgentToPosition,
@@ -36,7 +37,7 @@ export function useScry({ gameState, setGameState, archetype, scryState, setScry
       if (newPool[primarySphere] >= cost) {
         newPool[primarySphere] -= cost;
       }
-      return { ...prev, essencePool: newPool };
+      return { ...prev, ...withEssenceSpend(prev, newPool, 'other') };
     });
 
     setScryState(prev => assignAgentToPosition(prev, positionId, agentId, title, cost, gameState.tick));

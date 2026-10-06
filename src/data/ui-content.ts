@@ -10,6 +10,7 @@
 import type { TooltipContent } from '../types/tooltip';
 import { buildReachTierTooltips } from './ascendant-reach-register';
 import { REACH_COPY } from './ascendant-bar-content';
+import { NUDGE_CARD_TYPES } from './nudge-card-library';
 
 /**
  * THR-1716 — the first-run Play prompt's caption, shown in the time control's status
@@ -347,7 +348,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.nudge_factors': {
     label: 'The Balance',
-    desc: 'The circumstances weighing on this attempt. Green works in the mortal\'s favor, red against them; unmarked is context without a pull. Factors come from who they are, their state, and the place itself.',
+    desc: 'The circumstances weighing on this attempt, each tagged: helps (green) or hinders (red) the attempt. Untagged is context without a pull. Factors come from who they are, their state, and the place.',
   },
   'ui.nudge_forecast': {
     label: 'Fate\'s Forecast',
@@ -753,30 +754,31 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Holding this open costs dearly every turn. Few gods can carry two at once — deep spending here is thin spending everywhere else.',
   },
 
-  // The odds zone: where the cast stands before the roll.
-  //
-  // The same five words the encounter stage's forecast uses, deliberately — a
-  // nudge *moves* the forecast and a cast *rolls* it, but they are the same
-  // ladder, and one vocabulary is the whole point (Law 9).
+  // The forecast ladder, one word at a time — the dilemma header's pill
+  // (THR-1713 D5). Round 2: no tester could say what "doomed" meant, because the
+  // pill's tooltip listed all five words and explained none. Each entry now says
+  // what *its* word means for the attempt, pre-roll and never a promise (UL
+  // *Forecast tier*), then chains the ladder. Cast cards route to
+  // `ui.forecast.cast.*` below, because a cast never fails outright.
   'ui.forecast.doomed': {
     label: 'Doomed',
-    desc: 'Before the roll, this cast looks all but lost. Fate still rolls it — but you are asking for something the world is set against.',
+    desc: 'As things stand, this attempt will almost surely fail. Your cards can lift it; fate still rolls. See {{ui.nudge_forecast}}.',
   },
   'ui.forecast.perilous': {
     label: 'Perilous',
-    desc: 'Before the roll, this cast looks likely to go badly. The essence is spent either way; what you are buying is the chance.',
+    desc: 'As things stand, this attempt is more likely to fail than succeed. A card or two can turn it. See {{ui.nudge_forecast}}.',
   },
   'ui.forecast.uncertain': {
     label: 'Uncertain',
-    desc: 'Before the roll, this cast could go either way. No amount of reading the card will settle it — that is what the roll is for.',
+    desc: 'As things stand, this attempt could go either way. Your cards tip it; the roll settles it. See {{ui.nudge_forecast}}.',
   },
   'ui.forecast.favorable': {
     label: 'Favorable',
-    desc: 'Before the roll, this cast looks likely to land. Likely is not certain: fate rolls it, and the tail is always live.',
+    desc: 'As things stand, this attempt will likely succeed. Likely is not certain — fate still rolls. See {{ui.nudge_forecast}}.',
   },
   'ui.forecast.fated': {
     label: 'Fated',
-    desc: 'This cast is certain. Some divine workings ask nothing of the world — they simply happen, and the roll is a formality.',
+    desc: 'As things stand, this attempt all but cannot fail. Even so, fate rolls and the ending is its own. See {{ui.nudge_forecast}}.',
   },
 
   // ─── A readable spend (THR-1607, plan B4) ─────────────────────────────────
@@ -817,6 +819,48 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Each ✦ is one measure of essence, drawn from the pool of the sphere beside it. Your pools are listed under Essence on your bar.',
   },
 
+  // The odds row on a nudge card, one entry per pip tier (THR-1713 D4). The ★
+  // a round-2 tester asked about ("Power? Cost?") is the *Fated* odds pip — it
+  // was never a cost, and nothing said so. Words match `nudge-pip-vocabulary.ts`.
+  'ui.card.odds.faint': {
+    label: 'Faint pips',
+    desc: 'How far this card moves the odds: a little. Dots fill as the push grows. This is what you gain — the price is the framed ✦ badge.',
+  },
+  'ui.card.odds.strong': {
+    label: 'Strong pips',
+    desc: 'How far this card moves the odds: a real push. Squares fill as it grows. This is what you gain — the price is the framed ✦ badge.',
+  },
+  'ui.card.odds.potent': {
+    label: 'Potent pips',
+    desc: 'How far this card moves the odds: a heavy push. Diamonds fill as it grows. This is what you gain — the price is the framed ✦ badge.',
+  },
+  'ui.card.odds.fated': {
+    label: 'Fated pips',
+    desc: 'How far this card moves the odds: as far as any card can. Stars fill as it grows. This is what you gain — the price is the framed ✦ badge.',
+  },
+  'ui.card.odds.penalty': {
+    label: 'Penalty',
+    desc: 'A setback that worsens the odds. Each ▼ is a step against the attempt — the cost of a card that gives with one hand and takes with the other.',
+  },
+
+  // The kind tag on a coloured factor line (THR-1713 D6, Law 31). The tag says
+  // which way the line pushes *this attempt*, never whether the fact is good.
+  'ui.nudge_factor.for': {
+    label: 'Helps',
+    desc: 'This works for the attempt succeeding. It says which way it pushes this one try — not whether it is good for you or for the world.',
+  },
+  'ui.nudge_factor.against': {
+    label: 'Hinders',
+    desc: 'This works against the attempt succeeding — not against you, and not a judgement of whether it is good. A hindrance can be welcome news.',
+  },
+
+  // The Reaches heading on the bar and the sheet (THR-1713 D7). Reaches ⟂ Spheres:
+  // one tester read them as the same axis, so the heading says they are not.
+  'ui.reaches': {
+    label: 'Reaches',
+    desc: 'What you do — eight Reaches, from Iron to Star, each named by how far your deeds have gone. Your Spheres are what fuels it; the two are separate.',
+  },
+
   // The essence block on the ascendant bar.
   'ui.essence.row': {
     label: 'Essence',
@@ -855,7 +899,28 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
 
   // Reach tier words — generated from the register so no word can dangle.
   ...buildReachTierTooltips((reach) => REACH_COPY[reach]?.label ?? reach),
+
+  // Card keyword chips — derived from the library's type table so a new type
+  // cannot ship without its hover (THR-1713 D4, Law 12).
+  ...buildCardKeywordTooltips(),
 };
+
+/**
+ * `ui.card.keyword.<typeId>` for every nudge-card type, from the library's own
+ * `effectShape` + `decision` — never invented copy.
+ */
+function buildCardKeywordTooltips(): Record<string, TooltipContent> {
+  const out: Record<string, TooltipContent> = {};
+  for (const type of NUDGE_CARD_TYPES) {
+    const shape = type.effectShape.replace(/\s\+\s/g, ' and ');
+    const decision = /[.?!]$/.test(type.decision) ? type.decision : `${type.decision}.`;
+    out[`ui.card.keyword.${type.id}`] = {
+      label: type.keyword,
+      desc: `${shape}. ${decision}`,
+    };
+  }
+  return out;
+}
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */
 export function getUITooltip(id: string): TooltipContent | null {

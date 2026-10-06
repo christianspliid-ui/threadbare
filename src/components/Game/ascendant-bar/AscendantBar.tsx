@@ -171,6 +171,8 @@ export function AscendantBar({
       {/* 2. Reaches (two permanent domains + depth) */}
       <BarSection
         label="Reaches"
+        // THR-1713 D7 — what Reaches are, and that Spheres are a separate axis.
+        tooltipId="ui.reaches"
         count={reachRows.length}
         open={open.reaches}
         onToggle={() => toggle('reaches')}

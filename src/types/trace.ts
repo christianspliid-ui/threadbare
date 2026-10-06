@@ -45,7 +45,7 @@ import type {
   StoryBeatQueueTrace,
   ThreadStoryComposedTrace,
 } from './attention';
-import type { CourtPosition } from './influence';
+import type { CourtPosition, EssenceMovementCause } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
 import type {
   BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass, UndertakingMomentClass,
@@ -222,6 +222,7 @@ export type TraceCategory =
   | 'nudge_cost_charged'
   | 'nudge_dispatch_failed'
   | 'nudge_attunement_unlock'
+  | 'essence_movement_roll' // THR-1713: a sphere's movement window closed
   // World-shaping aftermath traces (THR-115)
   | 'artifact_spawned'
   | 'omen_emitted'
@@ -741,6 +742,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'nudge_cost_charged',
   'nudge_dispatch_failed',
   'nudge_attunement_unlock',
+  'essence_movement_roll',
   // World-shaping aftermath traces (THR-115)
   'artifact_spawned',
   'omen_emitted',
@@ -4129,6 +4131,21 @@ export interface NudgeAttunementUnlockTrace extends TraceBase {
 }
 
 /**
+ * Trace: one sphere's essence-movement window closed (THR-1713).
+ *
+ * Emitted once per sphere per window roll — never per phase, which would be a
+ * trace storm on the hottest seam in the tick. Carries the closed window's net
+ * movement by cause, so "why did Matter drift 50 → 42?" is one trace away.
+ */
+export interface EssenceMovementRollTrace extends TraceBase {
+  category: 'essence_movement_roll';
+  sphere: SphereName;
+  /** The closed window's start tick. */
+  fromTick: number;
+  byCause: Partial<Record<EssenceMovementCause, number>>;
+}
+
+/**
  * Trace: The Compulsion planted a decision urge on one mortal (THR-886).
  *
  * Carries the bias map rather than a summary number, because "why did this agent
@@ -4615,6 +4632,7 @@ export type TraceEntry =
   | NudgeCostChargedTrace
   | NudgeDispatchFailedTrace
   | NudgeAttunementUnlockTrace
+  | EssenceMovementRollTrace
   | CompulsionPlantedTrace
   | CompulsionDecayedTrace
   | AmbitionProgressTrace

@@ -244,6 +244,7 @@ import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/uni
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
+import { withEssenceSpend } from '../../engine/essenceMovement';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 import { applyBalancedTestAvatar, applySpellStamp, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import { buildEncounterBinderContext } from '../../engine/binding/encounterBinderContext';
@@ -3863,7 +3864,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       return {
         ...prev,
-        essencePool: spend.pool,
+        ...withEssenceSpend(prev, spend.pool, 'spend_nudge'),
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           const matchesActiveAction =
             (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
@@ -4005,7 +4006,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       return {
         ...prev,
-        essencePool: spend.pool,
+        ...withEssenceSpend(prev, spend.pool, 'spend_nudge'),
         cardPlayTally: tally,
         unifiedActions: (prev.unifiedActions ?? []).map(action => {
           if (action.actionId !== phase.actionId) return action;
@@ -4098,7 +4099,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setGameState(prev => {
       const newPool = { ...prev.essencePool };
       newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - essenceSpent);
-      return { ...prev, essencePool: newPool };
+      return { ...prev, ...withEssenceSpend(prev, newPool, 'spend_nudge') };
     });
 
     // Mark notification as resolved
@@ -4115,7 +4116,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setGameState(prev => {
       const newPool = { ...prev.essencePool };
       newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - 1);
-      return { ...prev, essencePool: newPool };
+      return { ...prev, ...withEssenceSpend(prev, newPool, 'spend_nudge') };
     });
   }, [setGameState, archetype.sphereAlignment.primary]);
 
@@ -4356,7 +4357,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         : `meeting.essence_spent: test ${testIndex} not charged — pool short`,
     });
     if (!spend.ok) return;
-    setGameState(prev => ({ ...prev, essencePool: spend.pool }));
+    setGameState(prev => ({ ...prev, ...withEssenceSpend(prev, spend.pool, 'spend_nudge') }));
   }, [gameState.essencePool, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
 
   const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
@@ -5828,7 +5829,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               newPool[s] = (newPool[s] ?? 0) - deduct;
               remaining -= deduct;
             }
-            return { ...prev, essencePool: newPool };
+            return { ...prev, ...withEssenceSpend(prev, newPool, 'other') };
           });
         }}
       />

@@ -187,8 +187,19 @@ export interface NudgeReadingLegendEntry {
  */
 export const NUDGE_READING_LEGEND_ENTRIES: readonly NudgeReadingLegendEntry[] = [
   { id: 'forecast', tooltipId: 'ui.nudge_forecast', label: 'how it looks' },
-  { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'what weighs' },
+  // THR-1713 D6 — the key names the kind tags the lines now carry.
+  { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'helps · hinders' },
 ];
+
+/**
+ * The kind tag before each coloured factor line (THR-1713 D6, Law 31): the
+ * polarity as a word, not hue alone. Which way it pushes *this attempt* — never
+ * whether the fact is good. Neutral lines carry no tag.
+ */
+export const NUDGE_FACTOR_KIND_TAGS: Readonly<Record<'for' | 'against', string>> = {
+  for: 'helps',
+  against: 'hinders',
+};
 
 /**
  * Why a dimmed card cannot be played. Only `essence_unavailable` reaches the

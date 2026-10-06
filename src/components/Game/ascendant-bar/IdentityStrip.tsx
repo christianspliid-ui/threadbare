@@ -89,6 +89,9 @@ interface IdentityStripProps {
 
 export function IdentityStrip({ identity, quintessence, treatment = 'breathe', onOpen }: IdentityStripProps) {
   const { band, lexiconWord } = quintessence;
+  // THR-1713 D8 — the god's quintessence leaves the strip until it moves below
+  // its top word; the sheet keeps it. Absent flag ⇒ shown (legacy views).
+  const showQuintessence = quintessence.showOnStrip !== false;
   const sphereColor = getSphereColor(identity.primarySphere);
   const spec = haloSpec(band, sphereColor);
   const isTranscendent = band === 'transcendent';
@@ -172,6 +175,7 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
           <Tooltip id="ui.ascendant_archetype">
             <span>{identity.archetypeTitle}</span>
           </Tooltip>
+          {showQuintessence && (<>
           <span style={{ color: 'var(--border-medium)' }}>·</span>
           {/* THR-1607: round-1 testers read the bare word ("ABSOLUTE") under the
               god's name as a boast, not a measure. Naming the measure beside its
@@ -196,9 +200,10 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
               {lexiconWord}
             </span>
           </Tooltip>
+          </>)}
         </div>
 
-        {identity.epithet && (
+        {showQuintessence && identity.epithet && (
           // The ladder line ("whole and present") is the band's reading in the
           // sphere's own voice, so it carries the band's registry entry (THR-1607).
           <TooltipSlot style={{ alignSelf: 'flex-start' }}>

@@ -34,6 +34,11 @@ interface TooltipProps {
    * case the auto rule already stands down for on its own.
    */
   focusable?: boolean;
+  /**
+   * Render the trigger wrapper as a block rather than inline-block (THR-1713), so
+   * a whole row can be one hover target at its full width (Law 46).
+   */
+  block?: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -143,6 +148,7 @@ export const Tooltip = React.memo(function Tooltip({
   depth = 0,
   as = 'span',
   focusable,
+  block = false,
 }: TooltipProps) {
   const tooltipId = useId();
   const triggerRef = useRef<HTMLElement | SVGGElement>(null);
@@ -535,7 +541,7 @@ export const Tooltip = React.memo(function Tooltip({
   );
 
   const WrapperTag = as;
-  const wrapperStyle = as === 'g' ? undefined : { display: 'inline-block' as const, cursor: 'inherit' as const };
+  const wrapperStyle = as === 'g' ? undefined : { display: block ? 'block' as const : 'inline-block' as const, cursor: 'inherit' as const };
 
   return (
     <>
@@ -546,6 +552,9 @@ export const Tooltip = React.memo(function Tooltip({
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-describedby={isVisible ? tooltipId : undefined}
+        // THR-1713 — the registry id a trigger carries, readable from the DOM so
+        // a browser check can assert *which* hover a mark has without hovering it.
+        data-tooltip-id={id}
         {...(isFocusable
           ? {
               tabIndex: 0,

@@ -67,6 +67,7 @@ import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
 import { sphereWord } from './formatEssence';
+import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
 // These name the same tokens `EncounterVeil.tsx` and `NudgePhaseShell.tsx` use;
@@ -521,15 +522,16 @@ export function CardFace({
             )}
             {/* THR-1607: the price reads as cost, not tier or power — round-1
                 testers could not tell. Same opt-in as the marks beside it. */}
-            <MaybeTooltip id={model.markTooltips ? 'ui.card.cost' : undefined}>
-              <CostPips
-                cost={model.cost}
-                size={CARD_COST_PIP_PX}
-                framed
-                emphasised={model.costEmphasised ?? false}
-                data-testid={`${p}-cost-${id}`}
-              />
-            </MaybeTooltip>
+            {/* THR-1713 — the pip owns its hover now, so the raw `title` goes
+                when the registry id arrives (Law 17). */}
+            <CostPips
+              cost={model.cost}
+              size={CARD_COST_PIP_PX}
+              framed
+              emphasised={model.costEmphasised ?? false}
+              tooltipId={model.markTooltips ? 'ui.card.cost' : undefined}
+              data-testid={`${p}-cost-${id}`}
+            />
             {model.costSphere && model.cost > 0 && (
               <span
                 data-testid={`${p}-cost-sphere-${id}`}
@@ -685,6 +687,8 @@ export function CardFace({
               value={model.odds.value}
               size={CARD_ODDS_PIP_PX}
               muted={dimmed}
+              // THR-1713 D4 — the ★ is the *Fated odds* pip, not a cost; say so.
+              tierTooltip={model.markTooltips ?? false}
               data-testid={`${p}-odds-${id}`}
             />
           )}
@@ -697,7 +701,7 @@ export function CardFace({
               <span
                 data-testid={`${p}-forecast-${id}`}
                 data-forecast-tier={model.odds.tier}
-                aria-label={`Forecast: ${model.odds.tier}`}
+                aria-label={`Forecast: ${FORECAST_TIER_WORDS[model.odds.tier] ?? model.odds.tier}`}
                 style={{
                   fontSize: 'var(--text-xs)',
                   fontFamily: FONT_DISPLAY,
@@ -706,7 +710,8 @@ export function CardFace({
                   opacity: dimmed ? 0.7 : 1,
                 }}
               >
-                {model.odds.tier}
+                {/* THR-1713 — the display word, never the raw key (Law 14). */}
+                {FORECAST_TIER_WORDS[model.odds.tier] ?? model.odds.tier}
               </span>
             </Tooltip>
           )}
