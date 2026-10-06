@@ -120,9 +120,14 @@ function foldInto(
   tick: number,
 ): EssenceMovementRecord {
   if (!rec) return { current: { fromTick: tick, byCause: { [cause]: delta } } };
-  const rolled = tick - rec.current.fromTick >= ESSENCE_MOVEMENT_WINDOW_TICKS;
-  if (rolled) {
-    return { previous: rec.current, current: { fromTick: tick, byCause: { [cause]: delta } } };
+  const age = tick - rec.current.fromTick;
+  if (age >= ESSENCE_MOVEMENT_WINDOW_TICKS) {
+    const current = { fromTick: tick, byCause: { [cause]: delta } };
+    // A window only rolls when its sphere next moves, so after a long quiet
+    // spell the closing window can be hundreds of ticks old. Kept as
+    // `previous` it would read as "lately" beside the fresh one; past two
+    // windows it is dropped (its roll is still traced — see rolledWindows).
+    return age >= 2 * ESSENCE_MOVEMENT_WINDOW_TICKS ? { current } : { previous: rec.current, current };
   }
   const byCause = { ...rec.current.byCause, [cause]: (rec.current.byCause[cause] ?? 0) + delta };
   return { ...rec, current: { fromTick: rec.current.fromTick, byCause } };
@@ -180,7 +185,9 @@ export function rolledWindows(
   for (const sphere of Object.keys(after) as SphereName[]) {
     const was = before?.[sphere];
     const now = after[sphere];
-    if (was && now && now.previous === was.current) out.push({ sphere, closed: was.current });
+    // A new window opened ⇒ the old current closed, whether it was kept as
+    // `previous` or dropped as too old.
+    if (was && now && now.current.fromTick !== was.current.fromTick) out.push({ sphere, closed: was.current });
   }
   return out;
 }

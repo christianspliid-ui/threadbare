@@ -218,7 +218,7 @@ export const ESSENCE_CAUSE_PHRASES: Record<EssenceMovementCause, { fed: string; 
   places:      { fed: 'your places of power',        drawn: 'your places of power' },
   upkeep:      { fed: 'threads released',            drawn: "your threads' upkeep" },
   sustained:   { fed: 'your sustained workings',     drawn: 'your sustained workings' },
-  premonition: { fed: 'premonition',                 drawn: 'premonition' },
+  premonition: { fed: 'your premonitions',          drawn: 'your premonitions' },
   acts:        { fed: 'your workings resolving',     drawn: 'your workings resolving' },
   ruins:       { fed: 'what the ruins gave up',      drawn: 'the ruins' },
   spend_nudge: { fed: 'a hand returned',             drawn: 'the hands you played' },

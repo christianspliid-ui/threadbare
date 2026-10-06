@@ -1758,7 +1758,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: QUINTESSENCE,
     intent:
-      'An essence row says why it moved (THR-1713). Every phase\'s pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek) files itself through `withEssenceSpend` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row\'s hover ("Ebbing. Drawn by your threads\' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause.',
+      'An essence row says why it moved (THR-1713). Every phase\'s pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row\'s hover ("Ebbing. Drawn by your threads\' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause.',
     ulTerms: ['Essence', 'Sphere'],
     mechanism: {
       kind: 'state-field',

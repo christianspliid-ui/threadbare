@@ -69,6 +69,16 @@ describe('recordEssenceMovement — (a) attribution and rolling', () => {
     expect(rec?.mind?.current).toEqual({ fromTick: ESSENCE_MOVEMENT_WINDOW_TICKS, byCause: { income: 1 } });
   });
 
+  it('drops a closing window older than two windows instead of keeping it as previous', () => {
+    // +40 at tick 0, then a long quiet spell at the cap, then a spend at tick 300.
+    let rec = recordEssenceMovement(undefined, pool(), pool({ mind: 90 }), 'income', 0);
+    rec = recordEssenceMovement(rec, pool(), pool({ mind: 45 }), 'spend_nudge', 3 * ESSENCE_MOVEMENT_WINDOW_TICKS);
+    expect(rec?.mind?.previous).toBeUndefined();
+    const r = readEssenceMovement(rec!.mind, 3 * ESSENCE_MOVEMENT_WINDOW_TICKS + 1);
+    expect(r.trend).toBe('ebbing');
+    expect(r.feeds).toEqual([]);
+  });
+
   it('(c) returns the same reference when no pool moved', () => {
     const rec = recordEssenceMovement(undefined, pool(), pool({ mind: 51 }), 'income', 1);
     const p = pool();
@@ -178,6 +188,16 @@ describe('applyEssenceMovement — the phase-merge seam', () => {
     const s = state();
     const next = { ...s };
     expect(applyEssenceMovement(s, next, 'essence', snapshotEssencePool(s.essencePool))).toBe(next);
+  });
+
+  it('still traces the close of a window dropped as too old', () => {
+    const s0 = state({ tick: 0 });
+    const s1 = applyEssenceMovement(s0, { ...s0, essencePool: pool({ mind: 52 }) }, 'essence');
+    const s2base = { ...s1, tick: 5 * ESSENCE_MOVEMENT_WINDOW_TICKS };
+    applyEssenceMovement(s2base, { ...s2base, essencePool: pool({ mind: 51 }) }, 'influence_maintenance');
+    const rolls = getTraces().filter((t) => t.category === 'essence_movement_roll');
+    expect(rolls).toHaveLength(1);
+    expect(rolls[0]).toMatchObject({ sphere: 'mind', fromTick: 0, byCause: { income: 2 } });
   });
 
   it('records under the phase cause, and traces once per sphere when a window rolls', () => {
