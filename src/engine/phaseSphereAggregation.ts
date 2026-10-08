@@ -19,7 +19,7 @@ import { SPHERE_NAMES } from '../types/index';
 import type { GameState } from '../types/gameState';
 import type { WorldSoulState, SphereAggregate } from '../types/worldSoul';
 import type { SphereAffinity } from '../types/sphereAffinity';
-import { getNodeSphereAffinity } from './sphereAffinity';
+import { getNodeSphereAffinity, computeFactionSphereAggregates } from './sphereAffinity';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity object
@@ -187,6 +187,15 @@ export function computeSphereAggregate(graph: GameState['graph']): SphereAggrega
 }
 
 export function phaseSphereAggregation(state: GameState): Partial<GameState> {
+  // THR-1768 D3: each faction's derived sphereAggregate (rounded mean of its individual
+  // members) first, written only on change. The global aggregate below reads each
+  // faction's own sphereAffinity, not the aggregate, so members are not counted twice.
+  try {
+    computeFactionSphereAggregates(state.graph, state.tick);
+  } catch {
+    // Fail-soft: the global aggregate still runs.
+  }
+
   const aggregate = computeSphereAggregate(state.graph);
   const normalizedWeights = normalizeAggregate(aggregate.totalBySphere);
 

@@ -1405,6 +1405,15 @@ export interface DebugBridge {
     import('./types/influence').EssenceMovementBySphere | { error: string }
   >;
 
+  /**
+   * THR-1768 — sphere bags per node kind (`ascendant`, `individual`, `culture`,
+   * `faction`, `place`, `sublocation`, `other`): total, seeded, unseeded, nodes with a
+   * non-integer score, and the seed route each seeded node takes.
+   */
+  getSphereSeedCensus: () => Promise<
+    | import('./engine/sphereAffinity').SphereSeedCensus
+    | { error: string }
+  >;
   getEssenceSources: () => Promise<
     | {
         sources: Array<{

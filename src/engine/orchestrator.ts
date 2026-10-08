@@ -146,6 +146,7 @@ import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseLocationTraits } from './phaseLocationTraits';
 import { phaseSpherePressure } from './phaseSpherePressure';
+import { backfillSphereAffinity } from './sphereAffinity';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseQuintessence } from './phaseQuintessence';
 import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
@@ -3855,6 +3856,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const r = runInlinePhase('doom_expiry', s, () => phaseDoomExpiry(s));
     s = r.next;
     phaseEventCounts['doom_expiry'] = r.eventDelta;
+  }
+
+  // THR-1768 D2: a second pass of the sphere-bag sweep, for anything minted after the
+  // pressure phase ran this tick (births, mint-queue drains, late place mints), so no
+  // node ends a tick without a bag. Same predicate as the head-of-phase pass; seeds
+  // only missing/null/malformed bags, so it never touches pressure history.
+  try {
+    backfillSphereAffinity(s.graph, s.tiles, s.tick);
+  } catch {
+    // Fail-soft: the next tick's pass catches whatever this one missed.
   }
 
   // TB-086: Bump worldVersion at end of tick — catches all property mutations
