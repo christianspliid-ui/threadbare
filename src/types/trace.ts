@@ -3318,6 +3318,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     leadPull?: number;
     /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
     appointmentDiscount?: number;
+    /** THR-1781 — the pull of the god's live whispers on an encounter (already in `score`). */
+    whisperPull?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;

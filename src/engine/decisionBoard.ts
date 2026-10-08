@@ -230,6 +230,11 @@ export interface BoardEntry {
    * reads — the same dead-multiplier shape `arrivalCommitment` documents.
    */
   readonly appointmentDiscount?: number;
+  /**
+   * THR-1781 — the pull of the god's live whispers (`computeWhisperPull`), already
+   * folded into `score`; absent when no whisper leans toward this encounter.
+   */
+  readonly whisperPull?: number;
 }
 
 export interface BoardResult {
@@ -560,6 +565,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
     // THR-1686 — set by the appointment regime only while `APPOINTMENT_DISCOUNT_ON_BOARD`.
     const appointmentDiscount = candidate.appointmentDiscount;
+    // THR-1781 — a paid whisper leans the board toward matching encounters.
+    const whisperPull = candidate.whisperPull;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
@@ -567,9 +574,10 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
       score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-        * (appointmentDiscount ?? 1),
+        * (appointmentDiscount ?? 1) * (whisperPull ?? 1),
       ...(isGoal ? { arrivalCommitment } : {}),
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
+      ...(whisperPull !== undefined ? { whisperPull } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

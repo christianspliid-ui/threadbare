@@ -197,6 +197,9 @@ export function applyCompulsionChoice(
         ...agentNode.properties,
         compulsionTargetTemplateId: candidate.templateId,
         compulsionTick: tick,
+        // THR-1781 — which instance and what to call it when the steer resolves.
+        compulsionTargetLocationId: candidate.locationId,
+        compulsionTargetName: candidate.encounterName,
       },
     });
   }
@@ -221,7 +224,8 @@ export function applyCompulsionChoice(
     success: true,
     influenceId,
     essenceSpent: candidate.essenceCost,
-    message: `${agentName} is compelled toward ${candidate.encounterName}`,
+    // THR-1781 — names the steer and when it lands; the outcome follows as its own toast.
+    message: `${agentName} is compelled toward ${candidate.encounterName} — at their next free choice`,
   };
 }
 

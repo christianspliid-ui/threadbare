@@ -103,5 +103,10 @@ export interface PremonitionTrace {
   sphereUsed: SphereName | null;
   /** ID of the resulting DivineInfluenceEntry, if any */
   influenceId: string | null;
+  /**
+   * THR-1781 — how a paid compulsion ended at the mortal's next full decision.
+   * Absent on the pay/dismiss traces, which record the choice, not its outcome.
+   */
+  outcome?: 'taken' | 'lapsed_expired' | 'lapsed_unavailable';
   summary: string;
 }

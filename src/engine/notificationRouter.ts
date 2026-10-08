@@ -77,6 +77,7 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type.startsWith('ambition_')) return 'ambitions';
   if (type === 'intervention_effect' || type.startsWith('control_effect_')) return 'divine';
   if (type === 'player_action_receipt') return 'divine'; // THR-727 — sits with divine intervention feedback
+  if (type === 'divine_premonition') return 'divine'; // THR-1781 — a paid steer's outcome
   if (type === 'complication') return 'encounters'; // THR-20: complications route with encounters
   if (type === 'settlement_tier_change' || type === 'economic_chronicle') return 'economy';
   if (type === 'tier_promotion') return 'actions';

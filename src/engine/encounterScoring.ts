@@ -642,6 +642,12 @@ export interface ScoredCandidate {
    * `APPOINTMENT_DISCOUNT_ON_BOARD`). Absent on every other candidate.
    */
   appointmentDiscount?: number;
+  /**
+   * THR-1781 — the pull of the god's live whispers on this candidate
+   * (`computeWhisperPull`), already folded into `finalScore` and read by the live
+   * board. Absent when no whisper leans this way.
+   */
+  whisperPull?: number;
   /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
   pushBenefit: number;
   /** Phase 4: Estimated benefit of resist option, 0 if not applicable */
