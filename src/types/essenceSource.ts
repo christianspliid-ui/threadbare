@@ -64,6 +64,35 @@ export interface EssenceSource {
   desecrated?: boolean;
   /** Tick this source bag was created / migrated (audit + fail-soft). */
   originTick?: number;
+  /**
+   * THR-1747: whether the god paid this source's upkeep (`SOURCE_CONTROL_SUSTAIN`,
+   * from the primary sphere) on the last tick. `false` stalls the land's upward drift
+   * for the next tick; income, tier and control are untouched. Absent reads as `true`.
+   */
+  upkeepCurrent?: boolean;
+}
+
+/**
+ * THR-1747: emitted by `phaseEssenceSources` only on ticks where some source's
+ * paid/unpaid upkeep state flips (mirrors `InfluenceMaintenanceTrace`; never every
+ * tick, never one per source).
+ */
+export interface SourceUpkeepTrace {
+  category: 'source_upkeep';
+  tick: number;
+  /** Controlled sources charged this tick. */
+  sources: number;
+  paidCount: number;
+  unpaidCount: number;
+  /** Hosts that went paid → unpaid this tick. */
+  lapsedIds: string[];
+  /** Hosts that went unpaid → paid this tick. */
+  restoredIds: string[];
+  /** Essence taken from the primary sphere this tick. */
+  essenceSpent: number;
+  /** The primary sphere charged. */
+  sphere: SphereName;
+  summary: string;
 }
 
 // ─── Trace interfaces (NFP #2) ───────────────────────────────────────────────

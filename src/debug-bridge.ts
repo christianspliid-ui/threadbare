@@ -542,6 +542,8 @@ if (import.meta.env.DEV) {
             sanctity: src.sanctity,
             contestedBy: src.contestedBy ?? null,
             desecrated: !!src.desecrated,
+            // THR-1747: absent reads as paid.
+            upkeepCurrent: src.upkeepCurrent !== false,
             sustenance: {
               drift: sustenance.drift,
               affinityScore: sustenance.affinityScore,

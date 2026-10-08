@@ -324,6 +324,22 @@ export type HookBucket = keyof typeof HOOK_LABEL_FALLBACK;
 /** Shown in the chip's tooltip when the attachment node carries no description. */
 export const HOOK_DEF_FALLBACK = 'Nothing is recorded of this yet.';
 
+/**
+ * Covenants copy for a controlled essence source (THR-1747). Sources join the list
+ * as rows without a Release control; their upkeep (`SOURCE_CONTROL_SUSTAIN`, from the
+ * primary sphere) reads in words, never a number.
+ */
+export const COVENANT_SOURCE_COPY = {
+  /** Title for a source not yet flowering. */
+  titleDormant: 'A wellspring you hold',
+  /** Title for a flowering source. */
+  titleFlowering: 'A wellspring in flower',
+  /** Upkeep line when the god paid this tick. */
+  upkeepPaid: 'Costs a little of your essence to keep, and gives back more.',
+  /** Upkeep line when the primary sphere could not cover it. */
+  upkeepUnpaid: 'Unpaid. It will not grow until you can keep it.',
+} as const;
+
 /** Upkeep lines, keyed by whether the covenant costs, earns, or sustains itself. */
 export const COVENANT_UPKEEP_COPY = {
   /** Drains essence each tick. */

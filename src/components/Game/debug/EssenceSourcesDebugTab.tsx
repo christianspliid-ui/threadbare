@@ -66,6 +66,8 @@ interface SourceRow {
   status: SourceStatus;
   contestedBy: string | null;
   desecrated: boolean;
+  /** THR-1747: upkeep paid last tick (controlled sources only; null otherwise). */
+  upkeep: 'paid' | 'unpaid' | null;
   /** Essence-bridge read (THR-618): what the land under the source is doing to it. */
   sustenance: SanctitySustenance;
 }
@@ -126,6 +128,7 @@ export function EssenceSourcesDebugTab({ graph, currentTick }: EssenceSourcesDeb
           status,
           contestedBy: src.contestedBy ?? null,
           desecrated: !!src.desecrated,
+          upkeep: status === 'controlled' ? (src.upkeepCurrent === false ? 'unpaid' : 'paid') : null,
           sustenance: computeSanctitySustenance(graph, host.id, src),
         });
       }
@@ -217,6 +220,11 @@ export function EssenceSourcesDebugTab({ graph, currentTick }: EssenceSourcesDeb
                 <span style={{ color: TIER_COLOR.contested }}>contested by {row.contestedBy}</span>
               )}
               {row.desecrated && <span style={{ color: TIER_COLOR.desecrated }}>desecrated</span>}
+              {row.upkeep && (
+                <span style={{ color: row.upkeep === 'unpaid' ? TIER_COLOR.contested : 'var(--text-tertiary)' }}>
+                  upkeep: {row.upkeep}
+                </span>
+              )}
             </div>
             <div
               style={{

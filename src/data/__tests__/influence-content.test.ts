@@ -23,10 +23,11 @@ describe('influence-content', () => {
 
   it('exports tier maintenance costs', () => {
     expect(TIER_MAINTENANCE[0]).toBe(0);
-    expect(TIER_MAINTENANCE[1]).toBe(0.5);
-    expect(TIER_MAINTENANCE[2]).toBe(1.0);
-    expect(TIER_MAINTENANCE[3]).toBe(2.0);
-    expect(TIER_MAINTENANCE[4]).toBe(4.0);
+    // THR-1747: retuned so a god's base income can keep its threads.
+    expect(TIER_MAINTENANCE[1]).toBe(0.1);
+    expect(TIER_MAINTENANCE[2]).toBe(0.2);
+    expect(TIER_MAINTENANCE[3]).toBe(0.35);
+    expect(TIER_MAINTENANCE[4]).toBe(0.5);
   });
 
   it('exports promotion thresholds', () => {

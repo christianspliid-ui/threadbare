@@ -44,10 +44,16 @@ import {
   MILESTONE_GATHERING_BEAT_ID,
   MILESTONE_EMPTY_ROAD_BEAT_ID,
   MILESTONE_GUTTERING_THREAD_BEAT_ID,
+  WELLSPRING_MILESTONE_BEAT_ID,
+  WELLSPRING_MILESTONE_TICKS_AFTER_BOND,
+  MILESTONE_HELD_GROUND_BEAT_ID,
+  MILESTONE_HELD_GROUND_FLOWERING,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
-import { milestoneChronicleProse } from '../data/ascendant-milestone-beats';
+import { milestoneChronicleProse, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
+import { resolveDoomWokeAtTick } from './doomClock';
+import { allGrantsHeld } from './beatGrantsHeld';
 import { countControlledSources } from './essenceSources';
 import {
   getAllGroups, isGroupThreaded, isAgentGone, getFormerGroupMembers,
@@ -219,6 +225,70 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   // personal moment, so it wins the tick and the milestone re-detects on the next one
   // (it is threshold-based, not edge-based, so waiting loses nothing).
   const firedMilestones: string[] = [...(props.milestoneBeatsFired ?? [])];
+
+  /**
+   * THR-1747: enqueue a grant-bearing milestone, or — when the god already holds every
+   * card it grants (an old save that drew the retired pool beat, a showcase that
+   * pre-grants) — record it fired without offering it (THR-647: never offer a held card).
+   * Returns true when the beat took the pending slot.
+   */
+  const offerOrSkipGrantMilestone = (beatId: string, title: string, detail: Record<string, unknown>, why: string): boolean => {
+    const def = getMilestoneBeatById(beatId);
+    const held = def ? allGrantsHeld(def, state) : false;
+    firedMilestones.push(beatId);
+    node.properties.milestoneBeatsFired = firedMilestones;
+    emitTrace({
+      category: 'ascendant.progression.milestone_enqueued',
+      tick: turn,
+      turn,
+      beatId,
+      ...detail,
+      ...(held ? { skipped: 'all_grants_held' } : {}),
+      summary: held
+        ? `Milestone beat ${beatId} recorded without offering it — every card it grants is already held (${why})`
+        : `Milestone beat enqueued: ${beatId} (${why})`,
+    } as unknown as EmitInput);
+    if (held) return false;
+    pending = {
+      beatId,
+      kind: 'milestone',
+      offeredTurn: turn,
+      boundNodeIds: [ascId],
+      trigger: { kind: 'turn', minTurn: turn },
+    };
+    newChronicle.push({
+      id: `milestone-${beatId}-${turn}`,
+      tier: 'chronicle',
+      title,
+      prose: milestoneChronicleProse(beatId),
+      promptContext: {
+        actors: [ascId],
+        location: '',
+        sphere: primarySphere,
+        mood: 'reverent',
+      },
+      tick: turn,
+    });
+    return true;
+  };
+
+  // THR-1747: the Wellspring milestone — the five source verbs at a fixed moment after the
+  // bond, ahead of the source milestone (which needs sources those verbs win). The bond is
+  // read through `resolveDoomWokeAtTick`, never the raw field: an old save with no
+  // `wokeAtTick` reads as bonded at tick 0 and is still offered the verbs it can no longer
+  // draw from the pool; `null` (the clock still sleeps) never fires. Threshold-based, so a
+  // spine or a pending beat holding the slot only delays it.
+  if (canEnqueue && !pending && !firedMilestones.includes(WELLSPRING_MILESTONE_BEAT_ID)) {
+    const woke = resolveDoomWokeAtTick(state.doomClock);
+    if (woke !== null && turn >= woke + WELLSPRING_MILESTONE_TICKS_AFTER_BOND) {
+      offerOrSkipGrantMilestone(
+        WELLSPRING_MILESTONE_BEAT_ID,
+        'The Wellspring',
+        { bondTick: woke },
+        `${turn - woke} ticks after the bond`,
+      );
+    }
+  }
   if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_SOURCE_BEAT_ID)) {
     const { total, flowering } = countControlledSources(graph, ascId);
     if (total >= MILESTONE_SOURCES_FOR_BEAT || flowering >= MILESTONE_FLOWERING_FOR_BEAT) {
@@ -255,6 +325,21 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         },
         tick: turn,
       });
+    }
+  }
+
+  // THR-1747: the held-ground milestone — MILESTONE_HELD_GROUND_FLOWERING flowering
+  // sources grant the four held-ground income cards that shipped with no grant path.
+  // Same one-per-tick discipline; skipped (not offered) when all four are already held.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_HELD_GROUND_BEAT_ID)) {
+    const { total, flowering } = countControlledSources(graph, ascId);
+    if (flowering >= MILESTONE_HELD_GROUND_FLOWERING) {
+      offerOrSkipGrantMilestone(
+        MILESTONE_HELD_GROUND_BEAT_ID,
+        'Held Ground',
+        { sourceCount: total, floweringCount: flowering },
+        `${flowering} flowering source(s)`,
+      );
     }
   }
 

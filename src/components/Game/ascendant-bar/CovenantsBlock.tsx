@@ -7,6 +7,9 @@
  * rival contests it — and gives the player a Release control that queues a voluntary
  * lapse (consumed by phaseControlEffects, THR-613 §3.4).
  *
+ * THR-1747: controlled essence sources are listed too (`kind: 'source'`) with their
+ * upkeep in words; they carry no Release (`releasable: false`).
+ *
  * Prose-first, no raw floats. The Release button is the only player-mutating control
  * in the ascendant bar; it enqueues via `onRelease` (GameView → pendingControlReleases).
  */
@@ -114,7 +117,7 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
             >
               {row.upkeepLine}
             </span>
-            <button
+            {row.releasable && (<button
               type="button"
               data-testid={`covenant-release-${row.effectId}`}
               title={COVENANT_RELEASE_TITLE}
@@ -135,7 +138,7 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
               }}
             >
               {COVENANT_RELEASE_LABEL}
-            </button>
+            </button>)}
           </div>
         </div>
       ))}

@@ -23,6 +23,7 @@ import {
   sourceTierMultiplier,
   sourceDepthMultiplier,
   SANCTITY_DRAIN_PER_TICK_CONTESTED,
+  SOURCE_CONTROL_SUSTAIN,
 } from '../data/essence-sources';
 
 /** Read the `essenceSource` bag from a node's properties (or undefined). */
@@ -244,8 +245,12 @@ export function recomputeControlledSourceTiers(
 
     // The essence bridge: the land the source stands on nurtures or withers it.
     // A desecrated source is inert — the land's gift redirects with the income.
+    // THR-1747: a source whose upkeep went unpaid last tick (`upkeepCurrent: false`,
+    // written by `chargeSourceUpkeep` after this recompute) gets none of the land's
+    // upward drift this tick — unpaid ground stalls, it never lapses. Withering still lands.
     if (!desecrated) {
-      const { drift } = computeSanctitySustenance(graph, host.id, src);
+      const { drift: rawDrift } = computeSanctitySustenance(graph, host.id, src);
+      const drift = rawDrift > 0 && src.upkeepCurrent === false ? 0 : rawDrift;
       if (drift > 0) econNurtured++;
       else if (drift < 0) econWithered++;
       sanctity = Math.min(1, Math.max(0, sanctity + drift));
@@ -266,6 +271,71 @@ export function recomputeControlledSourceTiers(
   }
 
   return { sourceCount, tierChanges, contestedCount, econNurtured, econWithered };
+}
+
+/** Result of {@link chargeSourceUpkeep} (THR-1747). */
+export interface SourceUpkeepCharge {
+  /** Controlled sources considered this tick. */
+  sources: number;
+  paid: number;
+  unpaid: number;
+  /** Essence taken from the primary sphere. */
+  charged: number;
+  /** Hosts that went paid → unpaid this tick. */
+  lapsedIds: string[];
+  /** Hosts that went unpaid → paid this tick. */
+  restoredIds: string[];
+}
+
+/**
+ * Charge each controlled source's upkeep, `SOURCE_CONTROL_SUSTAIN`, from the god's
+ * primary sphere (THR-1747 — the constant was declared with no consumer, so holding
+ * ground was free and never a choice). Sources are charged in `controls`-edge graph
+ * order; one the pool cannot cover is charged nothing and marked `upkeepCurrent: false`
+ * (it stalls — no upward drift next tick — but is never lapsed, and its income, tier
+ * and control are untouched: the thread rule's analogue). Mutates `pool` in place and
+ * writes `upkeepCurrent` onto each source bag whose state changed.
+ *
+ * Walks the same hosts {@link countControlledSources} counts, so the income readout
+ * (`computeEssenceIncome`) can subtract `SOURCE_CONTROL_SUSTAIN × total` and agree
+ * with the ledger. Fail-soft: no ascendant / primary / pool → zeros, nothing charged.
+ */
+export function chargeSourceUpkeep(
+  graph: WorldGraph,
+  ascendantId: string,
+  primary: SphereName | undefined,
+  pool: Partial<Record<SphereName, number>> | undefined,
+): SourceUpkeepCharge {
+  const out: SourceUpkeepCharge = {
+    sources: 0, paid: 0, unpaid: 0, charged: 0, lapsedIds: [], restoredIds: [],
+  };
+  if (!graph.getNode(ascendantId) || !primary || !pool) return out;
+
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
+    const host = graph.getNode(edge.target);
+    const src = readEssenceSource(host?.properties);
+    if (!host || !src) continue;
+    out.sources++;
+
+    const wasCurrent = src.upkeepCurrent !== false;
+    const available = pool[primary] ?? 0;
+    const canPay = available >= SOURCE_CONTROL_SUSTAIN;
+    if (canPay) {
+      pool[primary] = available - SOURCE_CONTROL_SUSTAIN;
+      out.charged += SOURCE_CONTROL_SUSTAIN;
+      out.paid++;
+      if (!wasCurrent) out.restoredIds.push(host.id);
+    } else {
+      out.unpaid++;
+      if (wasCurrent) out.lapsedIds.push(host.id);
+    }
+    if (canPay !== wasCurrent || src.upkeepCurrent === undefined) {
+      graph.updateNode(host.id, {
+        properties: { ...host.properties, essenceSource: { ...src, upkeepCurrent: canPay } },
+      });
+    }
+  }
+  return out;
 }
 
 /** One location's speaking sustenance source — what the Livelihood clause renders (THR-840). */

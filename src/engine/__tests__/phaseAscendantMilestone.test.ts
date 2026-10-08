@@ -168,8 +168,10 @@ describe('essence-source milestone — fires once per run', () => {
   });
 
   it('does not re-fire once recorded, even with the threshold still met', () => {
+    // One flowering + one dormant: the source threshold is met, but not the THR-1747
+    // held-ground milestone's two-flowering threshold, which would rightly take the slot.
     const state = milestoneState(10, {
-      sources: ['flowering', 'flowering'],
+      sources: ['flowering', 'dormant'],
       milestoneBeatsFired: [MILESTONE_SOURCE_BEAT_ID],
     });
     const result = phaseAscendantProgression(state);

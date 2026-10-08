@@ -32,6 +32,7 @@ import type {
 } from '../types/ascendantBeat';
 import type { AscendantProperties } from '../types/influence';
 import { emitTrace } from './traceBuffer';
+import { allGrantsHeld } from './beatGrantsHeld';
 import type {
   BeatScheduledTrace,
   BeatOfferedTrace,
@@ -301,7 +302,22 @@ function hasUnthreadedTarget(state: GameState): boolean {
  * fail-open posture the plan's §3.8 fallback table takes for the reach gate. Exported
  * for unit testing.
  */
+export { allGrantsHeld };
+
 export function isBeatEligible(beat: BeatDefinition, state: GameState): boolean {
+  // THR-1747: an investment beat retires once every card it grants is held — the pool
+  // re-offered held cards forever (a fake reveal). Checked ahead of the no-eligibility
+  // early return so a beat with no predicate (`the_unveiled_eye`) retires too. Own
+  // try: an error here reads as "not all held", keeping the beat eligible (fail-open).
+  if (beat.kind === 'investment') {
+    let retired = false;
+    try {
+      retired = allGrantsHeld(beat, state);
+    } catch {
+      retired = false;
+    }
+    if (retired) return false;
+  }
   const e = beat.eligibility;
   if (!e || e.kind === 'always') return true;
   try {
