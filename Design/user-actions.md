@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-08 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-08 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Click "Allow" on the frozen builder run
 
-In the Claude app, the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)** (started 06:41 your time) has waited since 07:21 (still open at 13:56) for you to approve one step: updating the daily playtest lane so it can also run warm rounds, the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow. While the box is open the builder cannot start another run, so all 13 ready jobs wait. "Deny" also unfreezes it.
+In the Claude app, the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)** (started 06:41 your time) has waited since 07:21 (still open at 14:56) for you to approve one step: updating the daily playtest lane so it can also run warm rounds, the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow. While the box is open the builder cannot start another run, so all 13 ready jobs wait. "Deny" also unfreezes it.
 
 ### How does your god get new powers: A or B?
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-08: a returning player is no longer greeted by the opening again** ([THR-1782](https://linear.app/threadbare/issue/THR-1782/a-returning-player-is-greeted-by-the-opening-again-after-the-warm-up)). Decided for you by the design lane; veto window open until Friday 14:45.
 - **2026-10-08: every world will draw its doom at even odds, not always the Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Decided for you by the design lane; veto window open until Friday 08:41.
 - **2026-10-08: the 6–8 October silence is explained, no answer needed.** The power log shows the computer asleep from Tuesday 23:23 to Thursday 06:39 ([workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
 - **2026-10-08: the 29–30 September silence is explained, no answer needed.** The computer crashed or lost power; lanes returned ~3½ h after it restarted (same retro).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-06: the power model behind your Dominion ruling now lives in the game's own tools** ([THR-1767](https://linear.app/threadbare/issue/THR-1767)). Merged via [#2260](https://github.com/christianspliid-ui/threadbare/pull/2260).
 - **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)). Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) (notes only).
 - **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)). Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) and live.
-- **2026-10-06: fair fights.** Quests now face the same odds window as everything else ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) and live.
 
 ---
 
