@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omen Market mock</title>
+<!-- THR-1770 prototype mock (design lane, 2026-10-08). Static, never wired. Shape H3: the cadence pool
+     becomes a small market. Lives in the Ascendant Bar's beat slot, not a new screen (Law 1: one place).
+     Prices read as words against what the god has drawn through that sphere (Law 13); sphere tint kept. -->
+<style>
+  :root { --bg:#14121a; --panel:#1f1c27; --ink:#ece6d8; --muted:#a49c8c; --line:#3a3446;
+          --life:#6fae5a; --mind:#7d8fd6; --spirit:#c9a4e0; --entropy:#8a6a52; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg:#f3efe6; --panel:#fffaf0; --ink:#231f1a; --muted:#6c6458; --line:#d9d0bf; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 Georgia, serif; }
+  .frame { max-width:960px; margin:24px auto; padding:0 16px; }
+  .beat { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 22px; }
+  .beat h1 { font-size:20px; margin:0 0 4px; }
+  .beat p.lede { margin:0 0 16px; color:var(--muted); font-style:italic; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; }
+  .card { border:1px solid var(--line); border-left:6px solid var(--tint); border-radius:8px; padding:14px; background:color-mix(in srgb, var(--tint) 9%, var(--panel)); }
+  .card h2 { font-size:16px; margin:0 0 2px; }
+  .card .sphere { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--tint); }
+  .card p { margin:8px 0; }
+  .price { font-size:13px; color:var(--muted); }
+  .price b { color:var(--ink); font-weight:normal; }
+  .actions { display:flex; gap:8px; margin-top:10px; }
+  button { font:inherit; font-size:13px; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer; }
+  button.primary { border-color:var(--tint); background:color-mix(in srgb, var(--tint) 22%, transparent); }
+  button[disabled] { opacity:.45; cursor:not-allowed; }
+  .foot { margin-top:16px; display:flex; justify-content:space-between; color:var(--muted); font-size:13px; }
+  .note { margin-top:28px; font:13px/1.5 system-ui, sans-serif; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="frame">
+  <section class="beat" aria-label="Three omens rise">
+    <h1>Three omens rise</h1>
+    <p class="lede">The world turns toward you. Each sign is a power you could take up, if you have drawn enough through its sphere.</p>
+    <div class="cards">
+      <article class="card" style="--tint:var(--life)">
+        <div class="sphere">Life · Heart</div>
+        <h2>Bestow</h2>
+        <p>Lay a gift of yours on a mortal you hold, and they carry it into their days.</p>
+        <div class="price">Price: <b>within reach</b> — a fair share of what you have drawn through Life</div>
+        <div class="actions"><button class="primary">Take it up</button></div>
+      </article>
+      <article class="card" style="--tint:var(--spirit)">
+        <div class="sphere">Spirit · Stone</div>
+        <h2>Claim the Wild</h2>
+        <p>Mark untamed ground as yours, so it answers when you call on it.</p>
+        <div class="price">Price: <b>a stretch</b> — nearly all you have drawn through Spirit</div>
+        <div class="actions"><button class="primary">Take it up</button></div>
+      </article>
+      <article class="card" style="--tint:var(--entropy)">
+        <div class="sphere">Entropy · Shadow</div>
+        <h2>Bury the Past</h2>
+        <p>Let a place forget what happened there.</p>
+        <div class="price">Price: <b>beyond you yet</b> — you have drawn little through Entropy</div>
+        <div class="actions"><button disabled>Not yet</button></div>
+      </article>
+    </div>
+    <div class="foot"><span>The omens pass when the day turns.</span><button>Let them pass</button></div>
+  </section>
+  <p class="note">Mock for THR-1770 shape H3 (market). Placement: the Ascendant Bar beat slot, replacing a cadence-pool gift beat — no new screen. Prices are a three-word ladder against the god's essence earned in that sphere (Law 13, no numerals); the card's sphere tint is kept. "Let them pass" is the unchosen path; the Codex keeps its three states (Yours / Within reach / Another life). Card names and lines are placeholders, not authored prose.</p>
+</div>
+</body>
+</html>
