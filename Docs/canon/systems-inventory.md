@@ -363,7 +363,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
 | `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
-| `premonition` (2) | `premonitionActions.ts`, `premonitionCompulsion.ts` | — |
+| `premonition` (3) | `premonitionActions.ts`, `premonitionCompulsion.ts`, `premonitionSteer.ts` | `THR-1781` |
 | `profile` (1) | `profileGenerator.ts` | `THR-872` |
 | `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1522`, `THR-1545`, `THR-1656`, `THR-456` |
 | `quest` (1) | `questVisibility.ts` | `TB-061` |
@@ -437,4 +437,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 104 tick phases · 207 engine domains · 648 modules._
+_Counts: 28 registered subsystems (2 dormant) · 104 tick phases · 207 engine domains · 649 modules._
