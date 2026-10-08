@@ -1,13 +1,13 @@
 # Briefing
-**Generated:** 2026-10-08 09:00 local (07:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-08 10:00 local (08:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**The builder is frozen on a yes/no box in the Claude app. Please click "Allow".** Nothing has been built for over two hours because of it.
+**The builder is still frozen on a yes/no box in the Claude app. Please click "Allow".** Nothing has been built for almost three hours because of it.
 
 - **Where:** in the Claude app, open the session called **"Tb opus pickup"**. It started at 06:41 your time and has waited since 07:21 for you to approve one step.
 - **What it is asking:** to update the daily playtest lane's instructions, so it can also start *warm* playtest rounds (testers who arrive a few seasons into a world). That is the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow.
-- **Why it matters:** while that box is open, the builder cannot start another run. **12 jobs are ready and none can move**, including the two worst warm-playtest bugs ([God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers), [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves)).
+- **Why it matters:** while that box is open, the builder cannot start another run. **13 jobs are ready and none can move**, including the two worst warm-playtest bugs ([God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers), [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves)).
 - If you would rather it didn't make that change, click **"Deny"**. Either answer unfreezes it.
 
 ## Also waiting (5)
@@ -29,14 +29,15 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy, but stalled: 13 jobs ready, 1 being built, nothing moving until the box above is answered.**
 
-- **New in the queue:** [every run's doom is Breach](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes), claimable from Friday morning.
 - **Top of the queue (high priority):** the two warm-playtest bugs above, then [sphere scores land where Dominion reads them](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no), [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) and [keeping mortals no longer bankrupts your god](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the).
+- **Doom draw:** [every run's doom is Breach](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes) is in the queue, claimable from Friday morning.
 - **Oldest in the queue:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the), ready 11 days, behind higher-priority work, not blocked.
-- **Being built:** [warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), held by the frozen run above. No pushed branch and no unsaved work folder for it.
+- **Being built:** [warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), held by the frozen run above. Its work is sitting uncommitted in local worktree `determined-margulis-d41841` (one file), idle ~160 min — the run is still alive, so it saves once the box is answered.
 
 ## Health
 
-- **Builder lane stalled:** *"tb-opus-pickup has not run since 2026-10-08T04:41:50.212Z — 2+ hourly slots behind, while keep-work-flowing-cc kept firing. The lane is stalled, not idle."* Cause found: its run has waited on an approval prompt since 05:21 UTC (the ask above).
+- **Builder lane stalled:** *"tb-opus-pickup has not run since 2026-10-08T04:41:50.212Z — 3+ hourly slots behind, while keep-work-flowing-cc kept firing. The lane is stalled, not idle."* Cause: its run has waited on an approval prompt since 05:21 UTC (the ask above).
+- **Worktree cleaner guard:** the frozen run's uncommitted file passes the cleaner's 180-minute idle guard at about 08:20 UTC. If the cleaner removes it, the next builder run recovers it — builder's job, not yours.
 - **Heavy simulation tests still read red, but it's a flaky test, not broken code.** The same commit passed on Wednesday's nightly run; [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) fixes the check. Builder's job, not yours.
 - **The 6–8 October lane silence is explained:** the computer was asleep the whole time.
-- Everything else is green: the live site is current, no pull requests are stuck, Actions are healthy, the worktree cleaner ran, simulation speed is normal (116 ms per tick, 3% under the weekly median).
+- Everything else is green: the live site is current, no pull requests are stuck, Actions are healthy, the worktree cleaner ran, simulation speed is normal (125 ms per tick, 4% over the weekly median).
