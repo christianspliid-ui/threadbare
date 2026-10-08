@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-08 22:05 local (20:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-08 22:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-08: sphere scores now live on every person, place and faction** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)). Merged via [#2270](https://github.com/christianspliid-ui/threadbare/pull/2270); simulation speed unchanged.
 - **2026-10-08: the frozen builder run was released.** The warm playtest job finished ([#2268](https://github.com/christianspliid-ui/threadbare/pull/2268)) and the builder is working through the queue again.
 - **2026-10-08: endings will be readable — one named reputation row per mortal, one odds word per step, a findable seat** ([THR-1784](https://linear.app/threadbare/issue/THR-1784/recurs-after-fix-twice-outcomes-still-cant-be-read-six-identical-bond)). Decided for you by the design lane; veto window open until Friday 20:25.
 - **2026-10-08: a returning player is no longer greeted by the opening again** ([THR-1782](https://linear.app/threadbare/issue/THR-1782/a-returning-player-is-greeted-by-the-opening-again-after-the-warm-up)). Decided for you by the design lane; veto window open until Friday 14:45.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-08: "heavy tests failing for 35 hours" was a flaky test, not broken code.** The same commit passed on Wednesday's nightly run; [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) fixes the check.
 - **2026-10-06: playtesters can now start a few seasons into a world** ([THR-1744](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), part 1). Merged via [#2264](https://github.com/christianspliid-ui/threadbare/pull/2264) and live. The first warm round comes next.
 - **2026-10-06: sphere scores have a design** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)). Plan merged via [#2261](https://github.com/christianspliid-ui/threadbare/pull/2261); the veto window has closed.
-- **2026-10-06: the power model behind your Dominion ruling now lives in the game's own tools** ([THR-1767](https://linear.app/threadbare/issue/THR-1767)). Merged via [#2260](https://github.com/christianspliid-ui/threadbare/pull/2260).
 
 ---
 

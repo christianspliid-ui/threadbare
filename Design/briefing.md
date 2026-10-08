@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-08 22:05 local (20:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-08 22:57 local (20:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**How does your god get new powers: A or B?** The builder is moving again, so this is now the question that unblocks the most.
+**How does your god get new powers: A or B?** This answer unblocks the most work.
 
 - **A: the world gives, by who you are.** Gifts stay free and keep their timing. Each one is drawn to match your god's reaches and spheres.
 - **B: the world offers, you choose and pay.** Every few days three omens rise. You take one up with essence drawn through its sphere, or let them pass. The design lane leans B.
@@ -28,15 +28,16 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy and moving again: 12 jobs ready, 1 being built.** The frozen builder run was released; the warm playtest job finished and its write-up merged ([#2268](https://github.com/christianspliid-ui/threadbare/pull/2268)).
+**Healthy: 10 jobs ready, 1 being built, 1 set aside.** Sphere scores now live on every person, place and faction ([#2270](https://github.com/christianspliid-ui/threadbare/pull/2270), merged 22:47).
 
-- **Being built:** [keeping mortals no longer bankrupts your god](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the). Three commits landed in the last 20 minutes (latest 21:58) in local worktree `elastic-yonath-e2e898`, clean; a checkpoint is already pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1747-divine-economy). No pull request yet.
-- **Top of the queue (high priority):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers), [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves), [sphere scores land where Dominion reads them](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no), [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at).
+- **Being built:** [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves). A checkpoint is pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1777-aftermath-reaction-target); the rest is in local worktree `relaxed-margulis-20ae85`, last saved 22:47.
+- **Set aside, ~37 min:** [keeping mortals no longer bankrupts your god](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the). The work is finished and committed in [pull request #2269](https://github.com/christianspliid-ui/threadbare/pull/2269), but it now clashes with the sphere-scores merge in two generated docs. It is not set to merge, and nothing is lost. The next builder run picks it up.
+- **Top of the queue (high priority):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers), [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at).
 - **Oldest in the queue:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the), ready 11 days, behind higher-priority work, not blocked.
 
 ## Health
 
-- **Heavy simulation tests still read red ("failing on main for 50 hours"), but the code is fine.** The nightly run passed on main's head; [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. The builder's job, not yours.
-- **Simulation speed reading skipped this hour.** It came back 271 ms per tick (vs a 120 median), but nothing in the game changed since the last reading (one docs-only merge) and the builder was running its own tests on the same machine at the time. The reading was not published; next hour re-measures.
+- **[Pull request #2269](https://github.com/christianspliid-ui/threadbare/pull/2269) is stuck.** It has a merge conflict in `interface-map.generated.md` and `systems-inventory.md`, and GitHub has not started its checks. This is the builder's unstick duty, not yours.
+- **Heavy simulation tests still read red ("failing on main for 51 hours"), but the code is fine.** The nightly run passed on main's head. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
 - **The 6–8 October lane silence (31.8 h) is explained:** the computer was asleep the whole time.
-- Everything else is green. The live site is current, no pull requests are stuck, Actions are healthy, all 11 lanes are on schedule, and the worktree cleaner ran at 21:43.
+- Everything else is green. The live site is current (afbe629e), and all 11 lanes are on schedule. Simulation speed is 116 ms per tick, 3% under the weekly median, so the new sphere scores cost nothing. The worktree cleaner ran at 22:40.
