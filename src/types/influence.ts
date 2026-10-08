@@ -187,8 +187,17 @@ export interface SphereAlignment {
  */
 export interface AscendantProperties {
   actorType: 'ascendant';
-  /** Primary and secondary sphere alignment. */
+  /**
+   * Primary and secondary sphere alignment. Since THR-1749 a derived field: the
+   * two largest entries of `spherePoints` (canonical-order tie-break).
+   */
   sphereAlignment: SphereAlignment;
+  /**
+   * The god's bought sphere affinities (UL § Dominion), fixed for the run
+   * (THR-1749). Read through `getSpherePoints` (`engine/spherePoints.ts`), never
+   * directly — its fallback covers nodes without the field.
+   */
+  spherePoints?: Partial<Record<SphereName, number>>;
   /**
    * Creation-time snapshot of the starting pool. **Not the live store** — the
    * player's essence lives in `GameState.essencePool` (THR-1645), which the
@@ -275,6 +284,8 @@ export interface AscendantArchetype {
   title: string;
   description: string;
   sphereAlignment: SphereAlignment;
+  /** Bought sphere points (THR-1749); absent → preset from `sphereAlignment`. */
+  spherePoints?: Partial<Record<SphereName, number>>;
   /** Starting domain affinities (which Reaches this god is good at). */
   startingDomainAffinities: Partial<Record<ReachDomain, number>>;
   /** Personality seed — initial axiological profile. */
