@@ -211,11 +211,14 @@ function holdsFirst(graph: WorldGraph, ascendantId: string): boolean {
 /**
  * D3 — the court position a new thread is written at.
  *
- * `the_first` when the god holds no First, else the card's own position. A
- * First that is merely dormant still holds the slot; only a cleared First
- * (Return) frees it. The Return cooldown that gates the meeting
- * (`firstSlotCooldownUntil`) gates the card the same way, so the two routes to
- * a First agree on when the slot is open.
+ * `the_first` when the god holds no First, else the card's own position. "Holds
+ * a First" is exactly the meeting's own rule (`isFirstBonded`: a thread whose
+ * `courtPosition` is `the_first`), so the two routes always agree on when the
+ * slot is open. That includes the Dormant Thread card, which rewrites a First's
+ * position to `dormant` and so frees the slot for the meeting and the card
+ * alike (pre-existing for the meeting; pinned in `threadingRite.thr1644.test.ts`).
+ * The Return cooldown that gates the meeting (`firstSlotCooldownUntil`) gates the
+ * card the same way.
  */
 export function courtPositionForNewThread(
   graph: WorldGraph,

@@ -191,6 +191,14 @@ describe('THR-1644 S1 (c) — later threads keep the card position and count up'
     expect(courtPositionForNewThread(g, ASC, 'watched', 50)).toEqual({ position: 'the_first', reason: 'no_first' });
   });
 
+  it('a First moved to dormant frees the slot for the meeting and the card alike', () => {
+    const g = makeGraph();
+    threadWithCard(g, 'wren', 5);
+    threadTo(g, 'wren').properties.courtPosition = 'dormant';
+    expect(isMeetTheFirstAvailable(g, ASC, 6)).toBe(true);
+    expect(courtPositionForNewThread(g, ASC, 'watched', 6).position).toBe('the_first');
+  });
+
   it('a thread to the god\'s own herald plays no rite and makes no First', () => {
     const g = makeGraph(['herald']);
     g.addEdge({ id: 'av', source: 'herald', target: ASC, type: 'avatar_of', properties: {} });
