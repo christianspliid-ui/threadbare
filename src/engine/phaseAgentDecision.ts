@@ -1490,7 +1490,12 @@ export function phaseAgentDecision(
             )
           ) {
             const compulsionEvent = buildCompulsionEvent(
-              state, agentId, actor.name, decision.topCandidates, rng,
+              // THR-1781: never offer the encounter the mortal is about to start. By
+              // the time a held steer is spent that encounter is on cooldown, so paying
+              // for it could only lapse — and it is not a steer at all.
+              state, agentId, actor.name,
+              decision.topCandidates.filter(c => c.entry.templateId !== decision.selected?.entry.templateId),
+              rng,
             );
             if (compulsionEvent) {
               newPremonitions.push(compulsionEvent);
