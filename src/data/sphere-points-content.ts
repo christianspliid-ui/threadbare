@@ -55,12 +55,16 @@ export const SPHERE_BUY_LINES: Record<
 /** Level words for 1–3 points in one sphere, read as "a current of Mind". */
 export const SPHERE_LEVEL_WORDS: readonly string[] = ['', 'a trace of', 'a current of', 'a flood of'];
 
-/** Band for the points not yet poured, read as "Left to pour: some". */
-export function sphereLeftToPourWord(remaining: number): string {
-  if (remaining >= 5) return 'all of you';
-  if (remaining >= 3) return 'most of you';
-  if (remaining === 2) return 'some';
-  if (remaining === 1) return 'a little';
+/**
+ * Band for the points not yet poured, read as "Left to pour: some". Banded
+ * against SPHERE_POINT_BUDGET so a retuned budget keeps reading true
+ * (budget 5: 5 → all of you, 4–3 → most of you, 2 → some, 1 → a little, 0 → nothing).
+ */
+export function sphereLeftToPourWord(remaining: number, budget: number = SPHERE_POINT_BUDGET): string {
+  if (remaining >= budget) return 'all of you';
+  if (remaining * 2 > budget) return 'most of you';
+  if (remaining >= 2) return 'some';
+  if (remaining >= 1) return 'a little';
   return 'nothing';
 }
 

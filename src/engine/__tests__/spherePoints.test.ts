@@ -14,6 +14,7 @@ import {
   SPHERE_POINT_BUDGET,
   SPHERE_POINT_CAP,
   UNBOUGHT_SPHERE_INCOME_SHARE,
+  sphereLeftToPourWord,
 } from '../../data/sphere-points-content';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
 import { WorldGraph } from '../graph';
@@ -29,6 +30,18 @@ describe('sphere-points constants (THR-1749)', () => {
 
   it('the twelve floors leave a positive remainder to share', () => {
     expect(SPHERE_NAMES.length * UNBOUGHT_SPHERE_INCOME_SHARE).toBeLessThan(1);
+  });
+});
+
+describe('sphereLeftToPourWord', () => {
+  it('bands the budget of 5 as authored', () => {
+    expect([5, 4, 3, 2, 1, 0].map(r => sphereLeftToPourWord(r))).toEqual(
+      ['all of you', 'most of you', 'most of you', 'some', 'a little', 'nothing']);
+  });
+  it('follows a retuned budget', () => {
+    expect(sphereLeftToPourWord(5, 7)).toBe('most of you');
+    expect(sphereLeftToPourWord(3, 7)).toBe('some');
+    expect(sphereLeftToPourWord(7, 7)).toBe('all of you');
   });
 });
 
