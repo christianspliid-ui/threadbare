@@ -45,6 +45,7 @@ import { hexToPixel } from '../../lib/hexMath';
 import { hexToWorld } from '../../lib/worldPosition';
 import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
 import { avatarGodTitleLine } from '../../data/avatar-framing';
+import { AFTERMATH_REACTION_REFUSAL_COPY } from '../../data/aftermath-reaction-copy';
 import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
@@ -1497,8 +1498,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const openEncounterKey = tieredEncounterState
     ? `${tieredEncounterState.agentId}::${tieredEncounterState.notification?.id ?? tieredEncounterState.template.id}`
     : null;
+  // THR-1777 — why the last aftermath pick did not land, in player words, or
+  // null. Same lifetime as the taken id: it describes the open encounter only.
+  const [aftermathReactionError, setAftermathReactionError] = useState<string | null>(null);
   useEffect(() => {
     setAftermathReactionTakenId(null);
+    setAftermathReactionError(null);
   }, [openEncounterKey]);
 
   // ── Encounter adapter routing: gate duty uses its specialized adapter,
@@ -3497,6 +3502,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     agentId: string,
     reactionId?: string,
     source: 'modal' | 'debug-bridge' | 'receipt-modal' = 'modal',
+    // THR-1777 — the aftermath on screen. Without it the resolver picks the
+    // agent's oldest pending notification, which on any agent holding several
+    // aftermaths is a different encounter whose reactions miss the clicked id.
+    actionId?: string,
   ): {
     success: boolean;
     message: string;
@@ -3504,12 +3513,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     touchedWorld?: boolean;
     touchedStructure?: boolean;
     closeAfterSelection?: boolean;
+    alreadyApplied?: boolean;
   } => {
-    const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId);
+    const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId, { actionId });
     if ('error' in resolvedContext) {
       return {
         success: false,
         message: resolvedContext.error,
+        alreadyApplied: Boolean(resolvedContext.alreadyApplied),
       };
     }
 
@@ -3577,9 +3588,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       ...stateAfterMarks,
       encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification => {
         if (notification.resolved) return notification;
-        const matchesActionId = Boolean(notification.actionId) && notification.actionId === activeAction.actionId;
-        const matchesTemplate = notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
-        if (!matchesActionId && !matchesTemplate) return notification;
+        // THR-1777 — a notification pinned to an action resolves only with that
+        // action; the template match is for older, unpinned notifications. An
+        // agent can hold two aftermaths of one template, and answering the newer
+        // must leave the older pending.
+        const matches = notification.actionId
+          ? notification.actionId === activeAction.actionId
+          : notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
+        if (!matches) return notification;
         return { ...notification, resolved: true };
       }),
     };
@@ -3617,8 +3633,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleEncounterAftermathReaction = useCallback((reactionId: string) => {
     if (!tieredEncounterState) return;
-    const result = applyAftermathReactionForAgent(tieredEncounterState.agentId, reactionId, 'modal');
-    if (!result.success) return;
+    const onScreenActionId = tieredEncounterState.activeActionId ?? tieredEncounterState.notification?.actionId;
+    const result = applyAftermathReactionForAgent(tieredEncounterState.agentId, reactionId, 'modal', onScreenActionId);
+    if (!result.success) {
+      // THR-1777 — never fail silently. The veil says, in plain words, that the
+      // choice did not land; the engine's reason goes to the trace log.
+      setAftermathReactionError(result.alreadyApplied
+        ? AFTERMATH_REACTION_REFUSAL_COPY.alreadyApplied
+        : AFTERMATH_REACTION_REFUSAL_COPY.unavailable);
+      emitTrace({
+        tick: _gameStateRef.current.tick,
+        category: 'aftermath_reaction_refused',
+        agentId: tieredEncounterState.agentId,
+        actionId: onScreenActionId,
+        reactionId,
+        reason: result.message,
+        summary: `aftermath reaction refused: ${result.message}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+      return;
+    }
+    setAftermathReactionError(null);
 
     if (tieredEncounterState.notification?.id) {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
@@ -3700,7 +3734,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleReceiptReaction = useCallback((reactionId: string) => {
     if (!activeReceipt) return;
-    const result = applyAftermathReactionForAgent(gameState.ascendantId, reactionId, 'receipt-modal');
+    const result = applyAftermathReactionForAgent(gameState.ascendantId, reactionId, 'receipt-modal', activeReceipt.actionId);
     if (result.success) {
       emitTrace({
         tick: _gameStateRef.current.tick,
@@ -6038,6 +6072,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             aftermathReactionTakenId={aftermathReactionTakenId}
+            aftermathReactionError={aftermathReactionError}
             // THR-1477 — the veil's name opens the *character sheet*, not the
             // action drawer. `handleAgentSelect` opens ActionDrawer, which sits
             // below the veil's z-index 50 and is therefore invisible while the

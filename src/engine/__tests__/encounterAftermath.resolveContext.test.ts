@@ -331,3 +331,61 @@ describe('resolveAftermathContextForAgent', () => {
     );
   });
 });
+
+// ─── THR-1777: the reaction resolves against the aftermath on screen ──────────
+//
+// Aftermath notifications never time out, so an agent left on "Lives on" (and
+// every warm start) holds several. Unpinned, the resolver took the oldest pending
+// notification's action, the clicked reaction id was not among its reactions, and
+// the player's choice failed as "Unknown aftermath reaction" — silently, in the UI.
+describe('resolveAftermathContextForAgent — pinned to the on-screen action (THR-1777)', () => {
+  function twoPendingAftermaths() {
+    const state = createMinimalState();
+    const older = makeAction('ua-a', 'enc.alpha', 2, [REACTION_A]);
+    const newer = makeAction('ua-b', 'enc.beta', 9, [REACTION_B]);
+    state.unifiedActions = [older, newer];
+    state.encounterNotifications = [
+      makeNotification('ua-a', 'enc.alpha'),
+      makeNotification('ua-b', 'enc.beta'),
+    ];
+    return { state, older, newer };
+  }
+
+  it('unpinned, a reaction of the newer aftermath misses (the defect)', () => {
+    const { state } = twoPendingAftermaths();
+    const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b');
+    expect('error' in result && result.error).toMatch(/Unknown aftermath reaction 'reaction-b'/);
+  });
+
+  it('pinned to B, choosing B\'s reaction resolves B and leaves A pending', () => {
+    const { state, newer } = twoPendingAftermaths();
+    const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b', { actionId: 'ua-b' });
+    expect(result).toEqual({ action: newer, reaction: REACTION_B });
+
+    const runtime = createSimulationRuntime();
+    if ('error' in result) throw new Error(result.error);
+    const applied = applyEncounterAftermathReaction(state, result.action, result.reaction, state.tick, runtime);
+    // Resolving B never touches A's notification; A is still answerable by its own pin.
+    const pendingA = (applied.state.encounterNotifications ?? []).find(n => n.actionId === 'ua-a');
+    expect(pendingA?.resolved).toBe(false);
+    const thenA = resolveAftermathContextForAgent(applied.state, 'actor-1', 'reaction-a', { actionId: 'ua-a' });
+    expect('error' in thenA).toBe(false);
+  });
+
+  it('a pin to an action that is no longer pending is an error naming it, never a fall-through', () => {
+    const { state } = twoPendingAftermaths();
+    const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-a', { actionId: 'ua-gone' });
+    expect(result).toEqual({ error: "The aftermath 'ua-gone' is no longer pending for agent 'actor-1'." });
+  });
+
+  it('a pinned action the tick loop already applied is refused with alreadyApplied', () => {
+    const { state } = twoPendingAftermaths();
+    state.unifiedActions = state.unifiedActions.map(action =>
+      action.actionId === 'ua-b'
+        ? { ...action, autonomousAftermathApplied: true, autonomousAftermathAppliedTick: 10 }
+        : action,
+    );
+    const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b', { actionId: 'ua-b' });
+    expect('error' in result && result.alreadyApplied).toEqual({ tick: 10 });
+  });
+});

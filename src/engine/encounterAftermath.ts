@@ -209,6 +209,14 @@ export interface ResolvedAftermathContext {
   readonly reaction: EncounterAftermathReaction;
 }
 
+export interface ResolveAftermathContextOptions {
+  /**
+   * THR-1777: the aftermath the player is looking at. When set, resolution is
+   * pinned to this action instead of the agent's oldest pending notification.
+   */
+  readonly actionId?: string;
+}
+
 export interface ResolveAftermathContextError {
   readonly error: string;
   /**
@@ -443,11 +451,21 @@ function selectAutonomousDefaultReaction(
  * 1) Prefer unresolved encounter notifications for the agent (actionId match first, then encounterId/templateId)
  * 2) If no notifications exist for the agent, fall back to latest candidate action by startTick
  * 3) If reactionId omitted, pick the profile-aligned reaction (THR-530), else the first authored reaction
+ *
+ * THR-1777: a caller that knows which aftermath is on screen passes its
+ * `actionId`, and resolution is pinned to that action — rules 1 and 2 never run.
+ * Without the pin, an agent holding several unresolved aftermaths (every warm
+ * start does: aftermath notifications never time out) resolved the player's
+ * click against the *oldest* one, whose reactions do not include the clicked
+ * id, and the choice failed as "Unknown aftermath reaction". A pinned action
+ * that is no longer pending is an error naming it — never a silent fall-through
+ * to a different aftermath.
  */
 export function resolveAftermathContextForAgent(
   state: GameState,
   agentId: string,
   reactionId?: string,
+  options: ResolveAftermathContextOptions = {},
 ): ResolvedAftermathContext | ResolveAftermathContextError {
   const candidateActions = state.unifiedActions.filter(
     action => action.actorId === agentId && Boolean(action.aftermathSummary),
@@ -456,25 +474,24 @@ export function resolveAftermathContextForAgent(
     return { error: `No pending aftermath for agent '${agentId}'.` };
   }
 
+  if (options.actionId) {
+    const pinnedAction = candidateActions.find(action => action.actionId === options.actionId);
+    if (!pinnedAction) {
+      return {
+        error: `The aftermath '${options.actionId}' is no longer pending for agent '${agentId}'.`,
+      };
+    }
+    const pinnedRefusal = alreadyAppliedRefusal(pinnedAction, agentId);
+    if (pinnedRefusal) return pinnedRefusal;
+    return pickAftermathReaction(state, agentId, pinnedAction, reactionId);
+  }
+
   const notificationSelectedAction = resolveActionFromNotification(state, candidateActions, agentId);
   if (notificationSelectedAction === undefined) {
     const fallbackAction = sortAftermathCandidates(candidateActions)[0];
     const fallbackRefusal = alreadyAppliedRefusal(fallbackAction, agentId);
     if (fallbackRefusal) return fallbackRefusal;
-    const reactions = fallbackAction.aftermathSummary?.reactions;
-    if (!reactions || reactions.length === 0) {
-      return { error: `Pending aftermath for agent '${agentId}' has no authored reactions.` };
-    }
-    if (reactionId) {
-      const explicitReaction = reactions.find(reaction => reaction.id === reactionId);
-      if (!explicitReaction) {
-        return {
-          error: `Unknown aftermath reaction '${reactionId}' for agent '${agentId}'. Available: ${reactions.map(reaction => reaction.id).join(', ') || 'none'}.`,
-        };
-      }
-      return { action: fallbackAction, reaction: explicitReaction };
-    }
-    return { action: fallbackAction, reaction: selectAutonomousDefaultReaction(state, agentId, reactions) };
+    return pickAftermathReaction(state, agentId, fallbackAction, reactionId);
   }
 
   if (notificationSelectedAction === null) {
@@ -483,8 +500,16 @@ export function resolveAftermathContextForAgent(
 
   const notificationRefusal = alreadyAppliedRefusal(notificationSelectedAction, agentId);
   if (notificationRefusal) return notificationRefusal;
+  return pickAftermathReaction(state, agentId, notificationSelectedAction, reactionId);
+}
 
-  const reactions = notificationSelectedAction.aftermathSummary?.reactions;
+function pickAftermathReaction(
+  state: GameState,
+  agentId: string,
+  action: UnifiedAction,
+  reactionId: string | undefined,
+): ResolvedAftermathContext | ResolveAftermathContextError {
+  const reactions = action.aftermathSummary?.reactions;
   if (!reactions || reactions.length === 0) {
     return { error: `Pending aftermath for agent '${agentId}' has no authored reactions.` };
   }
@@ -495,9 +520,9 @@ export function resolveAftermathContextForAgent(
         error: `Unknown aftermath reaction '${reactionId}' for agent '${agentId}'. Available: ${reactions.map(reaction => reaction.id).join(', ') || 'none'}.`,
       };
     }
-    return { action: notificationSelectedAction, reaction: explicitReaction };
+    return { action, reaction: explicitReaction };
   }
-  return { action: notificationSelectedAction, reaction: selectAutonomousDefaultReaction(state, agentId, reactions) };
+  return { action, reaction: selectAutonomousDefaultReaction(state, agentId, reactions) };
 }
 
 // ─── World-shaping helpers ────────────────────────────────────────────────────
