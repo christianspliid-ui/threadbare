@@ -5879,15 +5879,56 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,
     intent:
-      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention.',
+      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one.',
     ulTerms: ['The First'],
     mechanism: {
       kind: 'edge-prop',
       symbols: ['the_first'],
       module: 'src/engine/meetingEncounter.ts',
     },
-    writeSites: ['src/engine/meetingEncounter.ts'],
+    writeSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRite.ts'],
     readSites: ['src/engine/attentionTier.ts'],
+  },
+  // -- The threading rite S1: one writer, The First is the first (THR-1644) ---
+  // The failure these exist to prevent: "The First" and "the first mortal the god
+  // threads" were two unconnected mechanisms — a player who threaded someone before
+  // the meeting got an ordinary thread and still had the meeting ahead of them —
+  // and every thread after the First was a one-line toast, because the meeting's
+  // outcomes had exactly one writer and it always minted a new mortal.
+  {
+    id: 'thread-write-resolves-first',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveThreadWrite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The resolver writes the position; the executor's thread write is where it
+    // lands on the edge. The `the_first` readers downstream are the
+    // `meeting-bond-writes-the-first` row's, unchanged.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/graphOpExecutor.ts'],
+  },
+  {
+    id: 'rite-applies-outcomes',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting\'s invented soul and for a mortal the card threaded alike.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['applyThreadingRite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The writer is defined once; the meeting (create-then-apply) and the rite
+    // queue (bond without a hand) are the two routes that run it.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRiteQueue.ts'],
   },
   // -- The opening S2: the doom clock waits for The First (THR-1646) --------
   // Audit-on-touch rows for Doom Clock & Journey. The failure these exist to
