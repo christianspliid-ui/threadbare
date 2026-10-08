@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-08 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-08 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Click "Allow" on the frozen builder run
 
-In the Claude app, the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)** (started 06:41 your time) has waited since 07:21 (still open at 15:56) for you to approve one step: updating the daily playtest lane so it can also run warm rounds, the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow. While the box is open the builder cannot start another run, so all 13 ready jobs wait. "Deny" also unfreezes it.
+In the Claude app, the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)** (started 06:41 your time) has waited since 07:21 (still open at 16:55) for you to approve one step: updating the daily playtest lane so it can also run warm rounds, the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow. While the box is open the builder cannot start another run, so all 12 ready jobs wait. "Deny" also unfreezes it.
 
 ### How does your god get new powers: A or B?
 
