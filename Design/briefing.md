@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 00:57 local (22:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 01:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,16 +28,16 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 jobs ready, 2 being built.**
+**Healthy: 8 jobs ready, 4 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **Being built:** [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at). Work is up as [pull request #2272](https://github.com/christianspliid-ui/threadbare/pull/2272), opened 00:55; its checks are running.
-- **Being built:** [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves). All work is committed in [pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) and set to merge, but it clashes in one generated doc (see Health).
-- **Top of the queue (high priority):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers).
-- **Oldest in the queue:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the), ready 11 days, behind higher-priority work, not blocked.
+- **Being built, work up for review:** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) is in [pull request #2273](https://github.com/christianspliid-ui/threadbare/pull/2273) (opened 21 min ago, not yet set to merge). The ticket has no builder on it right now, so the next pickup run finishes it.
+- **Being built, work up for review:** [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) is in [pull request #2272](https://github.com/christianspliid-ui/threadbare/pull/2272) (opened 1 h ago, not yet set to merge). Same: no builder on it right now, so the next pickup run finishes it.
+- **Being built:** [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves). All work is in [pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) and set to merge, but it clashes in one generated doc (see Health).
+- **Being built:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the), claimed since Tuesday.
 
 ## Health
 
-- **[Pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) is stuck.** It has had a merge conflict in `systems-inventory.md` since #2269 merged at 23:53, so GitHub has not started its checks. This is the builder's unstick duty, not yours.
-- **Heavy simulation tests read red ("failing on main for 53 hours"), but it is one slow test, not broken code.** The last two runs on main failed only because `doomIdentityMilestones` ran out of time; the nightly runs pass. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
+- **[Pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) is still stuck (about 2¾ h).** It has a merge conflict in `systems-inventory.md`, so GitHub will not start its checks. This is the builder's unstick duty, not yours.
+- **Heavy simulation tests read red ("failing on main for 54 hours"), but it is one slow test, not broken code.** The last two runs on main failed only because `doomIdentityMilestones` ran out of time; the nightly runs pass. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
 - **The 6–8 October lane silence (31.8 h) is explained:** the computer was asleep the whole time.
-- Everything else is green. The live site is current (84894af3), and all 11 lanes are on schedule. Simulation speed is 108 ms per tick, 10% under the weekly median. The worktree cleaner ran at 00:40.
+- Everything else is green. The live site is current (84894af3), and all 11 lanes are on schedule. Simulation speed is 106 ms per tick, 11% under the weekly median. The worktree cleaner ran at 01:40.
