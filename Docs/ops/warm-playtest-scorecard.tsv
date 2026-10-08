@@ -1,0 +1,4 @@
+round	date	briefVersion	deployedCommit	persona	verdict	metFirst	firstQuitAtAction	neverUnderstood	surprises	actions	minutes	notionalCostUsd	faction	undertaking	ambition	threadHistory	coverageFailure
+1	2026-10-08	1	b20e5003	story	maybe	y		13	9	53	13	3.19	—	—	—	reached	true
+1	2026-10-08	1	b20e5003	veteran	maybe	y		14	8	70	12	3.97	—	reached-empty	reached	reached	false
+1	2026-10-08	1	b20e5003	skimmer	no	y		14	9	55	11	3.28	—	—	—	reached	true
