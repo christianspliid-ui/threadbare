@@ -1506,6 +1506,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setAftermathReactionError(null);
   }, [openEncounterKey]);
 
+  // THR-1777 — the last live copy of the action the veil is showing. The world
+  // ticks on under an open aftermath, and the engine prunes a resolved action
+  // once its notification is trimmed; the player is still looking at it. The
+  // reaction resolver answers this copy when the live action is gone, so the
+  // choice on screen always has something to land on.
+  const onScreenActionRef = useRef<UnifiedAction | null>(null);
+  const onScreenActionId = tieredEncounterState?.activeActionId ?? tieredEncounterState?.notification?.actionId;
+  useEffect(() => {
+    if (!onScreenActionId) { onScreenActionRef.current = null; return; }
+    const live = gameState.unifiedActions.find(action => action.actionId === onScreenActionId);
+    if (live) onScreenActionRef.current = live;
+    else if (onScreenActionRef.current?.actionId !== onScreenActionId) {
+      onScreenActionRef.current = tieredEncounterState?.activeActionSnapshot ?? null;
+    }
+  }, [gameState.unifiedActions, onScreenActionId, tieredEncounterState?.activeActionSnapshot]);
+
   // ── Encounter adapter routing: gate duty uses its specialized adapter,
   // other qualifying unified encounters use the general adapter,
   // legacy encounters fall back to the simple adapter ──
@@ -3506,6 +3522,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // agent's oldest pending notification, which on any agent holding several
     // aftermaths is a different encounter whose reactions miss the clicked id.
     actionId?: string,
+    actionSnapshot?: UnifiedAction,
   ): {
     success: boolean;
     message: string;
@@ -3515,7 +3532,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     closeAfterSelection?: boolean;
     alreadyApplied?: boolean;
   } => {
-    const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId, { actionId });
+    const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId, { actionId, actionSnapshot });
     if ('error' in resolvedContext) {
       return {
         success: false,
@@ -3633,8 +3650,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleEncounterAftermathReaction = useCallback((reactionId: string) => {
     if (!tieredEncounterState) return;
-    const onScreenActionId = tieredEncounterState.activeActionId ?? tieredEncounterState.notification?.actionId;
-    const result = applyAftermathReactionForAgent(tieredEncounterState.agentId, reactionId, 'modal', onScreenActionId);
+    const result = applyAftermathReactionForAgent(
+      tieredEncounterState.agentId,
+      reactionId,
+      'modal',
+      onScreenActionId,
+      onScreenActionRef.current ?? undefined,
+    );
     if (!result.success) {
       // THR-1777 — never fail silently. The veil says, in plain words, that the
       // choice did not land; the engine's reason goes to the trace log.
@@ -3674,7 +3696,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // `applyAftermathReactionForAgent` for its non-modal callers; it no longer
     // decides when the modal closes, because the player does.
     setAftermathReactionTakenId(result.reactionId ?? reactionId);
-  }, [applyAftermathReactionForAgent, gameState.tick, tieredEncounterState]);
+  }, [applyAftermathReactionForAgent, gameState.tick, onScreenActionId, tieredEncounterState]);
 
   // ── Divine Receipt (THR-727) ──
   // The active receipt: an explicitly opened toast-tier receipt, else the oldest

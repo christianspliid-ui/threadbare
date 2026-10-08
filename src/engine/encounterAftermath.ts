@@ -215,6 +215,15 @@ export interface ResolveAftermathContextOptions {
    * pinned to this action instead of the agent's oldest pending notification.
    */
   readonly actionId?: string;
+  /**
+   * THR-1777: the host's last copy of the pinned action. The world keeps
+   * ticking under an open aftermath (a warm start runs hundreds of ticks), and
+   * a resolved action is pruned once its notification is trimmed — the player
+   * is still looking at it. When the live action is gone, the pinned aftermath
+   * is answered from this copy rather than refused. Ignored unless its
+   * `actionId` matches the pin and it belongs to the agent.
+   */
+  readonly actionSnapshot?: UnifiedAction;
 }
 
 export interface ResolveAftermathContextError {
@@ -470,12 +479,16 @@ export function resolveAftermathContextForAgent(
   const candidateActions = state.unifiedActions.filter(
     action => action.actorId === agentId && Boolean(action.aftermathSummary),
   );
-  if (candidateActions.length === 0) {
-    return { error: `No pending aftermath for agent '${agentId}'.` };
-  }
 
   if (options.actionId) {
-    const pinnedAction = candidateActions.find(action => action.actionId === options.actionId);
+    const snapshot = options.actionSnapshot;
+    const pinnedAction = candidateActions.find(action => action.actionId === options.actionId)
+      ?? (snapshot
+        && snapshot.actionId === options.actionId
+        && snapshot.actorId === agentId
+        && snapshot.aftermathSummary
+        ? snapshot
+        : undefined);
     if (!pinnedAction) {
       return {
         error: `The aftermath '${options.actionId}' is no longer pending for agent '${agentId}'.`,
@@ -484,6 +497,10 @@ export function resolveAftermathContextForAgent(
     const pinnedRefusal = alreadyAppliedRefusal(pinnedAction, agentId);
     if (pinnedRefusal) return pinnedRefusal;
     return pickAftermathReaction(state, agentId, pinnedAction, reactionId);
+  }
+
+  if (candidateActions.length === 0) {
+    return { error: `No pending aftermath for agent '${agentId}'.` };
   }
 
   const notificationSelectedAction = resolveActionFromNotification(state, candidateActions, agentId);

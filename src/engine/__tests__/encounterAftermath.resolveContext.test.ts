@@ -378,6 +378,25 @@ describe('resolveAftermathContextForAgent — pinned to the on-screen action (TH
     expect(result).toEqual({ error: "The aftermath 'ua-gone' is no longer pending for agent 'actor-1'." });
   });
 
+  it('a pinned action pruned from the world is answered from the host\'s snapshot', () => {
+    const { state, newer } = twoPendingAftermaths();
+    state.unifiedActions = state.unifiedActions.filter(action => action.actionId !== 'ua-b');
+    const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b', {
+      actionId: 'ua-b',
+      actionSnapshot: newer,
+    });
+    expect(result).toEqual({ action: newer, reaction: REACTION_B });
+  });
+
+  it('a snapshot for a different action, or another agent, is ignored', () => {
+    const { state, newer } = twoPendingAftermaths();
+    state.unifiedActions = state.unifiedActions.filter(action => action.actionId !== 'ua-b');
+    const wrongId = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b', { actionId: 'ua-b', actionSnapshot: { ...newer, actionId: 'ua-x' } });
+    expect('error' in wrongId).toBe(true);
+    const wrongActor = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b', { actionId: 'ua-b', actionSnapshot: { ...newer, actorId: 'actor-2' } });
+    expect('error' in wrongActor).toBe(true);
+  });
+
   it('a pinned action the tick loop already applied is refused with alreadyApplied', () => {
     const { state } = twoPendingAftermaths();
     state.unifiedActions = state.unifiedActions.map(action =>
