@@ -106,7 +106,7 @@ export function RevealBeat({
           </p>
 
           <p style={{ ...lineStyle(6, primaryColor), fontSize: '1.2rem', opacity: phase >= 6 ? 0.85 : 0 }}>
-            {pourWords.pour}{pourWords.stir ? ` ${pourWords.stir}` : ''}
+            {pourWords.pour}{pourWords.stir ? ` ${pourWords.stir}` : ''}{' '}
             Your court is {COURT_LABELS[courtType] ?? courtType}.
           </p>
         </div>

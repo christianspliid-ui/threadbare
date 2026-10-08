@@ -110,9 +110,10 @@ export function SpheresStep({ preset, visible, onConfirm, onChooseAgain }: Spher
                 data-testid={`sphere-pole-${sphere}`}
                 data-active={active ? 'true' : 'false'}
                 style={{
-                  width: '300px',
+                  width: '340px',
+                  // The left pole hugs the track from the left, so its text aligns right.
                   alignItems: align === 'left' ? 'flex-end' : 'flex-start',
-                  textAlign: align,
+                  textAlign: align === 'left' ? 'right' : 'left',
                   opacity: active ? 1 : 0.55,
                   transition: 'opacity 0.4s ease',
                 }}

@@ -40,6 +40,8 @@ You are an **Ascendant** — a mortal who climbed the long ladder, transcended, 
 
 You arrive carrying a remembered identity — a hunger that defines you (Witness, Maker, Sovereign, others), a domain you favour, a sphere that fuels you [IMPL — `AscendantIdentity` in [src/types/remembrance.ts](../../src/types/remembrance.ts)]. That identity is the kind of god this run will discover you to be. It is not a class. It is a starting taste; the world will reveal whether you keep it.
 
+After choosing your hunger and court, you pour yourself into the Creation spheres, five measures in all, never more than three into one and never into both of an opposed pair. Your hunger suggests a split; the two spheres you pour most into are your primary and secondary. Your essence income follows the whole pour, and every sphere, even one you left empty, still trickles in [IMPL — `spherePoints` on the ascendant, `src/engine/spherePoints.ts`, THR-1749].
+
 You see the world from a height. You do not move on the hex map — your avatar does, if you have one, and you can manifest into the world locally, but your primary instrument is influence at a distance [DESIGN — Avatar manifestation in [Docs/plans/2026-03-17-world-state-and-hex-actions-design.md](../plans/2026-03-17-world-state-and-hex-actions-design.md)]. You watch threaded mortals, you spend sphere-typed essence, you make small interventions that shift probabilities, and you live with the outcomes.
 
 You are not omniscient. You are not omnipotent. You are not a chess player and the mortals are not pieces. You are a god — and the question every run asks is *what kind*.
