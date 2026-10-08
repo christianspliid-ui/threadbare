@@ -1,8 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-08 08:00 local (06:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-08 09:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
+
+### Click "Allow" on the frozen builder run
+
+In the Claude app, the session **"Tb opus pickup"** (started 06:41 your time) has waited since 07:21 for you to approve one step: updating the daily playtest lane so it can also run warm rounds, the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow. While the box is open the builder cannot start another run, so all 13 ready jobs wait. "Deny" also unfreezes it.
 
 ### How does your god get new powers: A or B?
 
@@ -34,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-08: every world will draw its doom at even odds, not always the Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Decided for you by the design lane; veto window open until Friday 08:41.
 - **2026-10-08: the 6–8 October silence is explained, no answer needed.** The power log shows the computer asleep from Tuesday 23:23 to Thursday 06:39 ([workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
 - **2026-10-08: the 29–30 September silence is explained, no answer needed.** The computer crashed or lost power; lanes returned ~3½ h after it restarted (same retro).
 - **2026-10-08: "heavy tests failing for 35 hours" was a flaky test, not broken code.** The same commit passed on Wednesday's nightly run; [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) fixes the check.
@@ -43,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)). Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) (notes only).
 - **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)). Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) and live.
 - **2026-10-06: fair fights.** Quests now face the same odds window as everything else ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) and live.
-- **2026-10-06: a found lead now ends the climb** ([THR-1702](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)). Merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) and live.
 
 ---
 
