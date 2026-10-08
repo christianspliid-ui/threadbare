@@ -368,6 +368,17 @@ emits `ruins.lead_found`. The sheet's known places read `foundTick` as "found it
 `isDelvableRuin`, now `delveRoadOf === 'now'` (preserved). Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1768 (2026-10-08), sphere scores land where Dominion reads them** —
+`faction-sphere-aggregate-reaches-battle-aftermath` (LIVE). A faction's sphere scores were never
+derived, so every mortal faction's bag stayed all-zero and a victor's sack pressed `chaos` (the
+first sphere in the reduce). `phaseSphereAggregation` now writes each faction's
+`sphereAggregate` — the rounded mean of its individual members — and `battleAftermath` reads
+own + aggregate through `getFactionSphereScores`; a faction with no sphere presses nothing.
+`place-sphere-reaches-encounter-opening` is **preserved**: same producer field, more places
+seeded (lairs and elder ruins carry `LOCATION_TYPE_BONUS` in their declared sphere; every late-minted
+place is caught by the backfill sweep). Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

@@ -31,6 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
+import type { SpherePressureResolvedTrace, SphereSeededTrace } from './traces/sphere-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -603,6 +604,10 @@ export type TraceCategory =
   // Hunts — a hunter finished tracking a beast (THR-1560).
   // Interface in `src/types/traces/monster-traces.ts`.
   | 'hunt.tracked'
+  // Sphere scores — pressure resolved / bag seeded (THR-1768).
+  // Interfaces in `src/types/traces/sphere-traces.ts`.
+  | 'sphere_pressure'
+  | 'sphere_seeded'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -908,6 +913,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.trigger',
   // Hunts — tracking finished (THR-1560)
   'hunt.tracked',
+  // Sphere scores — pressure resolved / bag seeded (THR-1768)
+  'sphere_pressure',
+  'sphere_seeded',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -4772,6 +4780,9 @@ export type TraceEntry =
   | MonsterDrivenOffTrace
   | FightTriggerTrace
   | HuntTrackCompletedTrace
+  // Sphere scores (THR-1768)
+  | SpherePressureResolvedTrace
+  | SphereSeededTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

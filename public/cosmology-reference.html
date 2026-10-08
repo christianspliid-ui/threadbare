@@ -393,6 +393,7 @@
       <h3>Sphere aggregation into the World-Soul <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>src/engine/phaseSphereAggregation.ts</code> sums every entity's <code>sphereAffinity</code> into the global <code>state.worldSoul.aggregate</code> (weighted: hex-scale locations 1.0, agents 0.2, factions 0.1) and mirrors the normalized form into <code>FundamentState.sphereWeights</code>. This is the sphere-side link from the living world to the World-Soul (twilight page W17).</li>
+        <li><strong>Every node carries a bag (THR-1768).</strong> The god seeds 2&nbsp;/&nbsp;1 in its <code>sphereAlignment</code> primary&nbsp;/&nbsp;secondary; a mortal seeds 2&nbsp;/&nbsp;1 from the venerated spheres of their strongest culture, and a culture from its own; a place seeds from its hex terrain plus <code>LOCATION_SPHERE_TABLE</code>, and a lair or elder ruin adds <code>LOCATION_TYPE_BONUS</code> (2) in its declared sphere. Anything minted after worldgen is caught by <code>backfillSphereAffinity</code> at the head of <code>phaseSpherePressure</code> and again at the end of the tick; it only fills missing bags, never overwrites one. A faction carries a derived <code>sphereAggregate</code> &mdash; the rounded mean of its individual members, recomputed here before the global sum &mdash; and readers take own&nbsp;+&nbsp;aggregate through <code>getFactionSphereScores</code>. Erosion removes whole points only. Inspect with <code>__DEBUG.getSphereSeedCensus()</code>.</li>
       </ul>
 
       <h3>Constants</h3>

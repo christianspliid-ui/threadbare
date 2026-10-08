@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 163 |
+| 🟢 LIVE | 164 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 56 |
-| **Total** | **227** |
+| **Total** | **228** |
 
 ## Contracts by producing subsystem
 
@@ -317,6 +317,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `capability-thresholds-read-the-reach-share` | Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time. | function: `computeReachShare`, `computeReachShares`, `REACH_SHARE_FULL_RAW`, `meetsJoinPrerequisites` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `faction-sphere-aggregate-reaches-battle-aftermath` | A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing. | node-prop: `computeFactionSphereAggregates`, `getFactionSphereScores`, `FactionSphereAggregate` | War, Armies & Battles | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
@@ -1373,6 +1374,18 @@ exit
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
 - **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +5 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
+
+- **Intent:** A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing.
+- **Producer → Consumer:** Spheres & Quintessence → War, Armies & Battles
+- **UL terms:** *Sphere*, *Faction*
+- **Module:** `src/engine/sphereAffinity.ts`
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/phaseSphereAggregation.ts`
+- **Read sites:** `src/engine/battleAftermath.ts`
+- **Other hits:** `src/engine/sphereAffinity.ts`, `src/types/sphereAffinity.ts`
+- **Verdict:** Verified 2026-10-08: THR-1768. `src/engine/__tests__/sphereSeeding.test.ts`: the aggregate is the rounded mean of individual members (4, 2 → 3) and moves when one member's score moves (→ 5), with no write when nothing changed; `getFactionSphereScores` sums own + aggregate and reads all zeros for a faction with neither, which makes the aftermath press nothing instead of `chaos`. On generated medium worlds (seeds 42 and 99) every faction carries a `sphereAggregate` after 6 ticks. Headless seed-42 240-tick re-read: 83 factions, 17 of them non-zero under the chaos/energy god (11 positive, 6 negative), up from 0 of 52.
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
 
@@ -2526,10 +2539,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 113 total — 1 write, 1 read, 111 unclassified
+- **Production hits:** 114 total — 1 write, 1 read, 112 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +106 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +107 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE

@@ -136,10 +136,15 @@ function generate(seed: number): WorldGraph {
  * Re-measured 2026-09-28 for THR-1632: fringe settlements (a culture outside every
  * heartland within 4 hexes, S1d) now carry a culture — 40 → 44 on seed 42, 60 → 81 on
  * seed 99. That plan names this opening line as an intended reader.
+ * Re-measured 2026-10-08 for THR-1768: lairs and elder ruins had no sphere bag at all
+ * (minted after worldgen's seeding loop) and now carry one, with LOCATION_TYPE_BONUS in
+ * their declared sphere, so most of them clear SPHERE_FACT_MIN_SHARE — strong-sphere
+ * 35 → 59 on seed 42, 24 → 70 on seed 99. Culture counts unchanged. That plan names
+ * this opening line's contract as preserved, with more places seeded.
  */
 const REMEASURE: Record<number, { withCulture: number; withStrongSphere: number }> = {
-  42: { withCulture: 44, withStrongSphere: 35 },
-  99: { withCulture: 81, withStrongSphere: 24 },
+  42: { withCulture: 44, withStrongSphere: 59 },
+  99: { withCulture: 81, withStrongSphere: 70 },
 };
 const CENSUS_TOLERANCE = 0.1;
 

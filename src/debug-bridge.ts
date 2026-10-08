@@ -519,6 +519,14 @@ if (import.meta.env.DEV) {
       return state.essenceMovement ?? {};
     },
 
+    // THR-1768 — sphere bags per node kind: total / seeded / unseeded / non-integer / route.
+    getSphereSeedCensus: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { computeSphereSeedCensus } = await import('./engine/sphereAffinity');
+      return computeSphereSeedCensus(state.graph, state.tiles);
+    },
+
     getEssenceSources: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

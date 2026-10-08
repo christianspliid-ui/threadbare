@@ -303,6 +303,7 @@
       <h3>Per-tick sphere aggregate <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>phaseSphereAggregation(state)</code> runs once per tick (<code>orchestrator.ts:3024</code>) and writes <code>state.worldSoul.aggregate</code> — a <code>SphereAggregate</code> of <code>totalBySphere</code> (weighted sum of every entity's sphere scores), the <code>dominantSphere</code>, and <code>entityCount</code>. This is the <strong>only live field of <code>GameState.worldSoul</code></strong>; the Fundament and Resonance layers on the same object are unwired (below).</li>
+        <li>Before the global sum, the same phase writes each faction&rsquo;s <code>sphereAggregate</code> (rounded mean of its individual members&rsquo; scores, written only on change; THR-1768). The global sum still reads each faction&rsquo;s <em>own</em> bag, so members are not counted twice.</li>
       </ul>
 
       <h3>Twilight — the Unmaking <span class="flag impl">IMPL</span> (entry + countdown) · <span class="flag design">DESIGN</span> (weakened play, other triggers)</h3>
