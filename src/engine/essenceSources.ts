@@ -273,6 +273,31 @@ export function recomputeControlledSourceTiers(
   return { sourceCount, tierChanges, contestedCount, econNurtured, econWithered };
 }
 
+/**
+ * The controlled sources that owe upkeep (THR-1747): every `controls` edge into a host
+ * carrying a source bag, **except the home seat**. The seat is a distinct income term
+ * (`ESSENCE_PER_SEAT`, paid whether or not it is consecrated) and `computeSourceIncome`
+ * skips it, so charging it would be a pure drain with nothing to keep. The one walk the
+ * charge, the income readout and the Covenants list all share, so the three agree.
+ */
+export function upkeepChargedSources(
+  graph: WorldGraph,
+  ascendantId: string,
+): Array<{ host: NonNullable<ReturnType<WorldGraph['getNode']>>; src: EssenceSource }> {
+  const node = graph.getNode(ascendantId);
+  if (!node) return [];
+  const homeSeatLocationId = node.properties.homeSeatLocationId as string | undefined;
+  const out: Array<{ host: NonNullable<ReturnType<WorldGraph['getNode']>>; src: EssenceSource }> = [];
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
+    if (edge.target === homeSeatLocationId) continue;
+    const host = graph.getNode(edge.target);
+    const src = readEssenceSource(host?.properties);
+    if (!host || !src) continue;
+    out.push({ host, src });
+  }
+  return out;
+}
+
 /** Result of {@link chargeSourceUpkeep} (THR-1747). */
 export interface SourceUpkeepCharge {
   /** Controlled sources considered this tick. */
@@ -311,10 +336,7 @@ export function chargeSourceUpkeep(
   };
   if (!graph.getNode(ascendantId) || !primary || !pool) return out;
 
-  for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
-    const host = graph.getNode(edge.target);
-    const src = readEssenceSource(host?.properties);
-    if (!host || !src) continue;
+  for (const { host, src } of upkeepChargedSources(graph, ascendantId)) {
     out.sources++;
 
     const wasCurrent = src.upkeepCurrent !== false;

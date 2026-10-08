@@ -19,7 +19,7 @@ import {
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
-import { computeSourceIncome, readEssenceSource, countControlledSources } from './essenceSources';
+import { computeSourceIncome, readEssenceSource, upkeepChargedSources } from './essenceSources';
 import { SOURCE_CONTROL_SUSTAIN } from '../data/essence-sources';
 
 function emptyPool(): EssencePool {
@@ -100,10 +100,10 @@ export function computeEssenceIncome(
     totalMaintenance += tier !== undefined ? (TIER_MAINTENANCE[tier] ?? 0) : 0;
   }
   // THR-1747: source upkeep, charged by phaseEssenceSources from the primary sphere
-  // (chargeSourceUpkeep walks the same hosts countControlledSources counts) — so the
+  // (the same upkeepChargedSources walk chargeSourceUpkeep uses — the home seat excluded) — so the
   // readout and the ledger agree (THR-1652 lesson). Assumes every source is paid; an
   // unpaid source is charged nothing, which the Covenants row says in words.
-  totalMaintenance += countControlledSources(graph, ascendantId).total * SOURCE_CONTROL_SUSTAIN;
+  totalMaintenance += upkeepChargedSources(graph, ascendantId).length * SOURCE_CONTROL_SUSTAIN;
 
   const net = { ...gross };
   net[alignment.primary] = gross[alignment.primary] - totalMaintenance;

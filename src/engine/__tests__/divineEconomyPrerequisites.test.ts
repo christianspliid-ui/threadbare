@@ -291,6 +291,21 @@ describe('source upkeep (THR-1747 E4)', () => {
     expect(srcOf(s).sanctity).toBeLessThanOrEqual(before);
   });
 
+  it('a consecrated home seat owes no upkeep, in the charge and the readout alike (review-gate, THR-1747)', () => {
+    // The seat pays its flat ESSENCE_PER_SEAT whether or not it is consecrated, and
+    // computeSourceIncome skips it — so charging it would be a pure drain.
+    const s = upkeepState(10);
+    s.graph.getNode(ASC)!.properties.homeSeatLocationId = 'loc.src-0';
+    expect(phaseEssenceSources(s).essencePool).toBeUndefined();
+    expect(chargeSourceUpkeep(s.graph, ASC, 'life', { ...s.essencePool }).sources).toBe(0);
+    const withSeat = computeEssenceIncome(s.graph, ASC, []).life;
+    s.graph.getNode(ASC)!.properties.homeSeatLocationId = undefined;
+    const withoutSeat = computeEssenceIncome(s.graph, ASC, []).life;
+    // Unseated, the same source is charged (and also earns as a typed source).
+    expect(chargeSourceUpkeep(s.graph, ASC, 'life', { ...s.essencePool }).sources).toBe(1);
+    expect(withSeat).not.toBeCloseTo(withoutSeat, 6);
+  });
+
   it('chargeSourceUpkeep fails soft with no primary or pool', () => {
     const s = upkeepState(10);
     expect(chargeSourceUpkeep(s.graph, ASC, undefined, s.essencePool).charged).toBe(0);

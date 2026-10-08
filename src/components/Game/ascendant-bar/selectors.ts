@@ -30,7 +30,7 @@ import {
   ESSENCE_DRAWN_LEAD,
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
-import { readEssenceSource } from '../../../engine/essenceSources';
+import { upkeepChargedSources } from '../../../engine/essenceSources';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -482,12 +482,9 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
 
   // THR-1747: controlled essence sources join the list after the controls — the god
   // pays to keep them (`chargeSourceUpkeep`), so they belong among its holdings. Same
-  // host walk as `countControlledSources`. No Release: letting a source go is not a verb.
+  // walk as the charge (`upkeepChargedSources`, home seat excluded). No Release.
   const sourceRows: CovenantRowView[] = [];
-  for (const edge of gameState.graph.getOutgoingEdges(ownerId, 'controls')) {
-    const host = gameState.graph.getNode(edge.target);
-    const src = readEssenceSource(host?.properties);
-    if (!host || !src) continue;
+  for (const { host, src } of upkeepChargedSources(gameState.graph, ownerId)) {
     sourceRows.push({
       effectId: `source-${host.id}`,
       title: src.tier === 'flowering'
