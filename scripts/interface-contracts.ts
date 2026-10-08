@@ -5641,6 +5641,33 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1635 slice 1. Same generated-world leak guard: at a strong-sphere place with no culture (dominant share ≥ `SPHERE_FACT_MIN_SHARE` 0.55), 525 of 528 guarded templates render a sphere line on each of seeds 42 and 99 (248 before THR-1638 authored the other reaches), with no raw token; the census counts strong-sphere Locations within ±10% of the re-measure (35 / 24), and a per-Location × per-reach sweep finds no `culture_cell_unauthored` or `sphere_cell_unauthored` read on either seed (THR-1638). `colorationLineProblems` — also printed on `check:encounter --all`'s warn channel since THR-1638 — holds every line to one sentence of ≤ 28 words, the {actor}/{demonym}/{place} token set, and the sphere-jargon ban. Headless: the 30-tick seed-42 CLI run emits `sphere.life.iron` / `sphere.life.stone` resolutions.",
     },
   },
+  // -- Spheres & Quintessence -> War (THR-1768) ---------------------------------
+  // A faction's sphere scores were never derived: its own bag stayed all-zero (only
+  // monster factions are born non-zero), so a victor's sack pressed `chaos` — the
+  // first sphere in the reduce — for every mortal faction. The derived aggregate is
+  // the rounded mean of its individual members, read as own + aggregate.
+  {
+    id: 'faction-sphere-aggregate-reaches-battle-aftermath',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      "A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing.",
+    ulTerms: ['Sphere', 'Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      // Producer: phaseSphereAggregation writes `sphereAggregate` on each faction node;
+      // consumer: battleAftermath's sphere-pressure builder reads own + aggregate.
+      symbols: ['computeFactionSphereAggregates', 'getFactionSphereScores', 'FactionSphereAggregate'],
+      module: 'src/engine/sphereAffinity.ts',
+    },
+    writeSites: ['src/engine/phaseSphereAggregation.ts'],
+    readSites: ['src/engine/battleAftermath.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-08',
+      evidence:
+        "THR-1768. `src/engine/__tests__/sphereSeeding.test.ts`: the aggregate is the rounded mean of individual members (4, 2 → 3) and moves when one member's score moves (→ 5), with no write when nothing changed; `getFactionSphereScores` sums own + aggregate and reads all zeros for a faction with neither, which makes the aftermath press nothing instead of `chaos`. On generated medium worlds (seeds 42 and 99) every faction carries a `sphereAggregate` after 6 ticks. Headless seed-42 240-tick re-read: 83 factions, 17 of them non-zero under the chaos/energy god (11 positive, 6 negative), up from 0 of 52.",
+    },
+  },
   // -- World Generation -> the world's past (THR-1631 S1) ---------------------
   // Audit-on-touch for worldgen's past pass. What these rows make impossible: worldgen
   // placed dead empires and ~100 of their ruins and said nothing about them, and the
