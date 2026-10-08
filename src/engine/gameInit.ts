@@ -34,8 +34,9 @@ import { createMandateStateWith } from './mandate';
 import { ACTION_TEMPLATES } from '../data/action-template-content';
 import {
   seedHexSphereAffinity,
-  seedAgentSphereAffinity,
+  seedActorSphereAffinity,
   seedLocationSphereAffinity,
+  backfillSphereAffinity,
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
@@ -219,13 +220,15 @@ export function initializeGameState(
     for (const actorNode of actorNodes) {
       const actorType = actorNode.properties.actorType as string | undefined;
       let affinity = createDefaultSphereAffinity();
-      if (actorType === 'individual' || actorType === 'ascendant' || actorType === 'god') {
-        // Use sphereAlignment if available, else default
-        const sphereAlignment = actorNode.properties.sphereAlignment as Record<string, number> | undefined;
-        affinity = seedAgentSphereAffinity(sphereAlignment);
+      if (actorType === 'individual' || actorType === 'ascendant' || actorType === 'god' || actorType === 'culture') {
+        // THR-1768: a mortal seeds from their strongest culture's venerated spheres
+        // (D1), a culture from its own, a god from its sphereAlignment pair (D6).
+        // The old branch read sphereAlignment as numeric weights, which no mortal
+        // carries and the god's {primary, secondary} strings never were — 509/509 zeros.
+        affinity = seedActorSphereAffinity(graph, actorNode).affinity;
       } else {
-        // Factions, cultures, groups: start with defaults
-        // (derived aggregation computed later by phaseSphereAggregation)
+        // Factions, groups: own bag starts at zero; a faction's scores are read as
+        // own + its derived sphereAggregate (phaseSphereAggregation, THR-1768 D3).
         affinity = createDefaultSphereAffinity();
       }
       graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity } });
@@ -309,6 +312,12 @@ export function initializeGameState(
       formDescription: `The mortal vessel of ${archetype.title}`,
     },
   });
+
+  // ── Backfill every bag the loops above could not reach (THR-1768 D2) ────────
+  // The ascendant, its avatar, lairs, elder ruins, loc.start and the past's mints
+  // all arrive after the seeding loops. One sweep catches each of them, before the
+  // starting aggregate below reads the world.
+  backfillSphereAffinity(graph, tiles, 0);
 
   // No initial threads — the ascendant starts alone with no retinue.
   // Threads are established through gameplay (Meet The First, divine actions, etc.)

@@ -24,6 +24,8 @@ import type { GameState } from '../types/gameState';
 import type { GraphNode } from '../types/graph';
 import type { HexTile, SphereName } from '../types/index';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
+import { triangleTotal } from '../types/sphereAffinity';
+import { isValidSphereAffinity, seedPlaceSphereAffinity } from './sphereAffinity';
 import { isWaterTerrain } from './coastline';
 import { seedMonsterFaction } from './monsterFactionSeed';
 import { emitTrace } from './traceBuffer';
@@ -260,10 +262,30 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
 
 // ─── Helper: get a node's accrued score in one sphere ─────────────────────────
 
-function getNodeSphereScore(node: GraphNode, sphere: SphereName): number {
-  const affinity = node.properties.sphereAffinity as
-    { scores?: Record<string, number> } | undefined;
-  return affinity?.scores?.[sphere] ?? 0;
+const NO_TILES: ReadonlyMap<string, string> = new Map();
+
+/**
+ * How deeply a lair has been steeped in its own sphere *since it was born*, in sphere
+ * investment (the triangle scale's cumulative pressure): `triangleTotal(score) +
+ * progress − triangleTotal(seed)`, where `seed` is the score the lair was born with.
+ *
+ * THR-1768: lairs used to be born with no sphere bag, so the escalation pressure built
+ * from 0 and LAIR_REINFESTATION_SPHERE_THRESHOLD (4) was calibrated on that. THR-1768
+ * D4 seeds a lair with its terrain plus LOCATION_TYPE_BONUS in its declared sphere —
+ * usually 4–5 at birth — which would make every cleared lair "steeped". Measuring the
+ * accrual against `triangleTotal(THRESHOLD)` keeps the calibrated asymmetry (a den
+ * cleared while still minor stays cleared) on the new birth seed. The seed is
+ * re-derived, not stored: `seedPlaceSphereAffinity` is pure over the node's terrain
+ * and declared sphere, neither of which clearing changes.
+ */
+export function lairSteepedInvestment(graph: WorldGraph, node: GraphNode): number {
+  const sphere = node.properties.dominantSphere as SphereName;
+  const bag = node.properties.sphereAffinity;
+  if (!isValidSphereAffinity(bag)) return 0;
+  const score = bag.scores[sphere] ?? 0;
+  const progress = bag.progress[sphere] ?? 0;
+  const seed = seedPlaceSphereAffinity(graph, node, NO_TILES).affinity.scores[sphere] ?? 0;
+  return triangleTotal(score) + progress - triangleTotal(seed);
 }
 
 // ─── Helper: spawn a new minor lair at coordinates ───────────────────────────
@@ -563,9 +585,10 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
     // the lair node, not from a hex node: escalation aims its pressure at the lair
     // (`targetEntityId: lairNode.id`), and a generated world has no hex nodes at all,
     // so the old `findHexNode` reading was 0 on every pass in every real world.
-    const sphereScore = getNodeSphereScore(clearedNode, dominantSphere);
-
-    if (sphereScore < LAIR_REINFESTATION_SPHERE_THRESHOLD) continue;
+    // Measured as pressure accrued since the lair's birth seed (THR-1768), against the
+    // investment the calibrated score threshold stands for.
+    const steeped = lairSteepedInvestment(graph, clearedNode);
+    if (steeped < triangleTotal(LAIR_REINFESTATION_SPHERE_THRESHOLD)) continue;
 
     // Check no controlling non-monster faction
     if (hasControllingNonMonsterFaction(state, clearedNode.id)) continue;
@@ -593,7 +616,7 @@ export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntim
 
     emitTrace({
       category: 'faction_ambition',
-      summary: `Cleared lair ${clearedNode.id} reinfested at tick ${tick} (sphere: ${dominantSphere}, score: ${sphereScore})`,
+      summary: `Cleared lair ${clearedNode.id} reinfested at tick ${tick} (sphere: ${dominantSphere}, steeped: ${steeped})`,
       tick,
     } as Parameters<typeof emitTrace>[0]);
   }

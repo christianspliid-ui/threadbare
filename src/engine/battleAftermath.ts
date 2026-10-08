@@ -19,6 +19,7 @@ import { emitTrace } from './traceBuffer';
 import { disbandArmy } from './armyAttrition';
 import { rebindLocatedAt } from './relocationIntent';
 import { resolveToParentLocation } from './sublocationShape';
+import { getFactionSphereScores } from './sphereAffinity';
 import { stampRealmSeat } from './realmSeat';
 import { touchStructure } from './simulationRuntime';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -233,13 +234,13 @@ function buildSpherePressureEvents(
   const factionNode = graph.getNode(victorFactionId);
   if (!factionNode) return events;
 
-  // Find dominant sphere from faction's sphereAffinity
-  const affinity = factionNode.properties.sphereAffinity as { scores?: Record<string, number> } | undefined;
-  if (!affinity?.scores) return events;
-
-  const dominantSphere = Object.entries(affinity.scores).reduce(
+  // Find dominant sphere from the faction's own bag plus its members' aggregate
+  // (THR-1768 D3). A faction with no sphere at all presses nothing — before, an
+  // all-zero faction silently pressed whichever sphere came first (`chaos`).
+  const scores = getFactionSphereScores(factionNode);
+  const dominantSphere = Object.entries(scores).reduce(
     (best, [sphere, score]) => score > best.score ? { sphere, score } : best,
-    { sphere: '', score: -1 },
+    { sphere: '', score: 0 },
   );
 
   if (!dominantSphere.sphere) return events;

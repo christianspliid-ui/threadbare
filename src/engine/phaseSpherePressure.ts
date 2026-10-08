@@ -30,7 +30,8 @@ import {
 } from '../types/sphereAffinity';
 import { SPHERE_ALLIES, SPHERE_OPPOSITES } from './cosmology';
 import type { GameState } from '../types/gameState';
-import { getNodeSphereAffinity } from './sphereAffinity';
+import { getNodeSphereAffinity, backfillSphereAffinity } from './sphereAffinity';
+import { emitTrace } from './traceBuffer';
 import type { QuintessenceEvent } from '../types/quintessence';
 import { QUINTESSENCE_OVERCHANNEL_EROSION } from '../types/quintessence';
 
@@ -65,6 +66,10 @@ export interface SpherePressureTrace {
   progressFilled: number;
   progressRequired: number;
   source: PressureSource;
+  /** Every writer netted into this sphere (itself and its opposite), in event order (THR-1768). */
+  sources: PressureSource[];
+  /** Their `sourceId`s, same order as `sources`. */
+  sourceIds: string[];
 }
 
 // ─── Step 1: Net pressures by sphere ────────────────────────────────
@@ -231,14 +236,22 @@ export function resolveSpherePressure(
   const updatedScores = { ...entity.scores };
   const updatedProgress = { ...entity.progress };
 
-  // Determine source from first pressure (used for trace; best available attribution)
+  // Determine source from first pressure (kept on every trace for older readers)
   const primarySource: PressureSource = pressures[0]?.source ?? 'environmental';
+  // THR-1768: every writer netted into a sphere — the sphere itself and its opposite,
+  // since cancellation folds both into the surviving entry.
+  const writersFor = (sphere: SphereName): { sources: PressureSource[]; sourceIds: string[] } => {
+    const opp = SPHERE_OPPOSITES[sphere];
+    const hits = pressures.filter(p => p.sphere === sphere || p.sphere === opp);
+    return { sources: hits.map(p => p.source), sourceIds: hits.map(p => p.sourceId) };
+  };
 
   for (const sphere of SPHERE_NAMES) {
     const pressure = afterCancellation[sphere];
     if (pressure === 0) continue;
 
     const { isDestructive, targetSphere } = classifyPressureForEntity(sphere, entity);
+    const writers = writersFor(sphere);
 
     if (isDestructive) {
       // ── Destructive: pressure in `sphere` opposes `targetSphere` ──
@@ -253,9 +266,11 @@ export function resolveSpherePressure(
       const threshold = currentScore + allyDefense + agentBuffer;
       const absPressure = Math.abs(pressure);
 
-      if (absPressure > threshold) {
+      // Erosion removes whole points only (THR-1768 D5): scores are permanent integers,
+      // and a sub-point excess has nothing whole to remove — it is absorbed.
+      const erosion = Math.floor(absPressure - threshold);
+      if (erosion > 0) {
         // Erosion
-        const erosion = absPressure - threshold;
         const newScore = Math.max(0, currentScore - erosion);
         updatedScores[targetSphere] = newScore;
         updatedProgress[targetSphere] = 0; // reset progress on erosion
@@ -273,6 +288,7 @@ export function resolveSpherePressure(
           progressFilled: 0,
           progressRequired: triangleCost(newScore + 1),
           source: primarySource,
+          ...writers,
         });
       } else {
         // Absorbed
@@ -289,6 +305,7 @@ export function resolveSpherePressure(
           progressFilled: updatedProgress[targetSphere],
           progressRequired: triangleCost(currentScore + 1),
           source: primarySource,
+          ...writers,
         });
       }
     } else {
@@ -322,6 +339,7 @@ export function resolveSpherePressure(
           progressFilled: newProgress - nextCost,
           progressRequired: triangleCost(currentScore + 2),
           source: primarySource,
+          ...writers,
         });
       } else {
         // Progress only
@@ -338,6 +356,7 @@ export function resolveSpherePressure(
           progressFilled: newProgress,
           progressRequired: nextCost,
           source: primarySource,
+          ...writers,
         });
       }
     }
@@ -368,6 +387,16 @@ export function resolveSpherePressure(
  * Returns {} (empty object) if no pressures to process.
  */
 export function phaseSpherePressure(state: GameState): Partial<GameState> {
+  // THR-1768 D2: seed every bag a mint path left missing / null / malformed, FIRST —
+  // before the fail-soft below could write a zero bag the sweep would then read as
+  // seeded. Runs every tick (one property check per location/actor node). The graph is
+  // mutated in place; runTick bumps worldVersion at the end of the tick.
+  try {
+    backfillSphereAffinity(state.graph, state.tiles, state.tick);
+  } catch {
+    // Fail-soft: a failed sweep costs this tick's seeds only.
+  }
+
   const pressures = state.pendingSpherePressures ?? [];
   if (pressures.length === 0) {
     return {};
@@ -430,6 +459,13 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     // Fill in tick and entityId on traces
     const tickedTraces = traces.map(t => ({ ...t, tick: state.tick, entityId }));
     allTraces.push(...tickedTraces);
+    // THR-1768: built since 2026-03 and dropped; now emitted so writers can be counted.
+    for (const t of tickedTraces) {
+      emitTrace({
+        ...t,
+        summary: `${node.name ?? entityId} ${t.sphere} ${t.outcome} (${t.previousScore}→${t.newScore}) from ${[...new Set(t.sources)].join(', ')}`,
+      });
+    }
 
     // Write updated affinity back to graph
     updatedGraph.updateNode(entityId, {
