@@ -38,8 +38,12 @@ export function whisperMatchesEntry(
 ): boolean {
   const tag = influence.behaviorTag ?? '';
   if (!tag.startsWith(WHISPER_TAG_PREFIX)) return false;
-  if (influence.reachBoost && influence.reachBoost.reach === entry.reachPrimary) return true;
-  if (tag.startsWith('whisper_reach_')) return tag.slice('whisper_reach_'.length) === entry.reachPrimary;
+  // The tag decides, never `reachBoost` alone: a gather-strength whisper also carries
+  // a Gold `reachBoost`, and reading that first would pull a resting mortal toward a
+  // deadly Gold encounter.
+  if (tag.startsWith('whisper_reach_')) {
+    return (influence.reachBoost?.reach ?? tag.slice('whisper_reach_'.length)) === entry.reachPrimary;
+  }
   if (tag.startsWith('whisper_sphere_')) {
     return entry.sphereAffinity !== undefined && tag.slice('whisper_sphere_'.length) === entry.sphereAffinity;
   }

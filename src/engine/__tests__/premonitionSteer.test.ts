@@ -83,6 +83,8 @@ describe('whisper pull (THR-1781)', () => {
     expect(whisperMatchesEntry(whisper('whisper_sphere_force'), entry('iron', 'moderate', 'force'))).toBe(true);
     expect(whisperMatchesEntry(whisper('whisper_sphere_force'), entry('iron', 'moderate', 'matter'))).toBe(false);
     expect(whisperMatchesEntry(whisper('whisper_gather_strength', 'gold'), entry('iron', 'easy'))).toBe(true);
+    // Its Gold reachBoost must not drag a resting mortal into a deadly Gold encounter.
+    expect(whisperMatchesEntry(whisper('whisper_gather_strength', 'gold'), entry('gold', 'deadly'))).toBe(false);
     expect(whisperMatchesEntry(whisper('whisper_gather_courage'), entry('iron', 'deadly'))).toBe(true);
     expect(whisperMatchesEntry(whisper('whisper_gather_courage'), entry('iron', 'easy'))).toBe(false);
     expect(whisperMatchesEntry(whisper('compulsion_target_x', 'iron'), entry('iron', 'moderate'))).toBe(false);
