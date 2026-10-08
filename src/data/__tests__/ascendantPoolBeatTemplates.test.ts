@@ -31,10 +31,20 @@ describe('Ascendant pool-beat content templates (THR-514)', () => {
     }
   });
 
+  // Templates whose pool beat was retired but which stay so old saves' histories still
+  // resolve for display. THR-1747 moved the Wellspring to a milestone. Only grows when a
+  // pool beat leaves the pool on purpose.
+  const RETIRED_POOL_BEAT_TEMPLATE_IDS = new Set(['beat.pool.invest.the_wellspring']);
+
   it('ships exactly one content template per pool beat, ids matching', () => {
-    expect(ASCENDANT_POOL_BEAT_TEMPLATES.length).toBe(ASCENDANT_BEAT_POOL.length);
+    const live = ASCENDANT_POOL_BEAT_TEMPLATES.filter(t => !RETIRED_POOL_BEAT_TEMPLATE_IDS.has(t.id));
+    expect(live.length).toBe(ASCENDANT_BEAT_POOL.length);
+    for (const id of RETIRED_POOL_BEAT_TEMPLATE_IDS) {
+      expect(ASCENDANT_POOL_BEAT_TEMPLATES.some(t => t.id === id), `retired template ${id} must stay for old histories`).toBe(true);
+      expect(ASCENDANT_BEAT_POOL.some(b => b.beatId === id), `retired ${id} is back in the pool`).toBe(false);
+    }
     const beatIds = new Set(ASCENDANT_BEAT_POOL.map(b => b.beatId));
-    for (const t of ASCENDANT_POOL_BEAT_TEMPLATES) {
+    for (const t of live) {
       expect(beatIds.has(t.id), `template ${t.id} has no matching pool beat`).toBe(true);
     }
   });

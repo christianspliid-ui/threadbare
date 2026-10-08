@@ -21,6 +21,7 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates
 import {
   REACH_COPY,
   COVENANT_UPKEEP_COPY,
+  COVENANT_SOURCE_COPY,
   SPHERE_COPY,
   ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW,
   ESSENCE_TREND_WORDS,
@@ -29,6 +30,7 @@ import {
   ESSENCE_DRAWN_LEAD,
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
+import { heldSources } from '../../../engine/essenceSources';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -433,6 +435,10 @@ export interface CovenantRowView {
   upkeepLine: string;
   /** A rival is contesting this covenant (a contestation encounter is live). */
   contested: boolean;
+  /** THR-1747: a sustained control, or a controlled essence source. */
+  kind: 'control' | 'source';
+  /** THR-1747: whether the row offers Release (controls yes, sources no). */
+  releasable: boolean;
 }
 
 /**
@@ -450,7 +456,7 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
   const ownerId = gameState.ascendantId;
   const releasing = new Set(gameState.pendingControlReleases ?? []);
 
-  return effects
+  const controlRows: CovenantRowView[] = effects
     .filter((e) => e.active && e.ownerId === ownerId && !releasing.has(e.effectId))
     .map((e) => {
       const targetNode = e.targetNodeId ? gameState.graph.getNode(e.targetNodeId) : null;
@@ -469,6 +475,32 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
         target,
         upkeepLine,
         contested: !!e.encounterNodeId,
+        kind: 'control' as const,
+        releasable: true,
       };
     });
+
+  // THR-1747: controlled essence sources join the list after the controls — the god
+  // pays to keep them (`chargeSourceUpkeep`), so they belong among its holdings. Same
+  // walk as the charge (`heldSources`, home seat excluded; a desecrated source is listed
+  // but owes nothing, and says so). No Release.
+  const sourceRows: CovenantRowView[] = [];
+  for (const { host, src } of heldSources(gameState.graph, ownerId)) {
+    sourceRows.push({
+      effectId: `source-${host.id}`,
+      title: src.tier === 'flowering'
+        ? COVENANT_SOURCE_COPY.titleFlowering
+        : COVENANT_SOURCE_COPY.titleDormant,
+      target: host.name ?? COVENANT_SOURCE_COPY.titleDormant,
+      upkeepLine: src.desecrated
+        ? COVENANT_SOURCE_COPY.upkeepDesecrated
+        : src.upkeepCurrent === false
+          ? COVENANT_SOURCE_COPY.upkeepUnpaid
+          : COVENANT_SOURCE_COPY.upkeepPaid,
+      contested: !!src.contestedBy,
+      kind: 'source',
+      releasable: false,
+    });
+  }
+  return [...controlRows, ...sourceRows];
 }

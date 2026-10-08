@@ -1425,6 +1425,8 @@ export interface DebugBridge {
           sanctity: number;
           contestedBy: string | null;
           desecrated: boolean;
+          /** THR-1747: whether the god paid this source's upkeep last tick. */
+          upkeepCurrent: boolean;
           sustenance: {
             drift: number;
             affinityScore: number;

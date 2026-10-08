@@ -61,6 +61,32 @@ export const MILESTONE_FLOWERING_FOR_BEAT = 1;
 export const MILESTONE_SOURCE_BEAT_ID = 'beat.milestone.the_wellspring_flows';
 
 /**
+ * The Wellspring milestone beat id (THR-1747). Grants the five source verbs
+ * (find / claim / consecrate / sanctify / defend) at a fixed moment after the bond
+ * instead of by lottery from the cadence pool, where they arrived around tick 170
+ * on average. Deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const WELLSPRING_MILESTONE_BEAT_ID = 'beat.milestone.the_wellspring';
+
+/**
+ * Ticks after the bond with The First before the Wellspring milestone is offered
+ * (THR-1747). Same value as `RIVAL_GRACE_TICKS_AFTER_BOND` — the god learns to hold
+ * ground the moment rivals wake — but named apart so the two can be tuned apart.
+ * The bond tick is read through `resolveDoomWokeAtTick`; it never fires pre-bond.
+ */
+export const WELLSPRING_MILESTONE_TICKS_AFTER_BOND = 48;
+
+/**
+ * Flowering controlled sources that fire the held-ground milestone (THR-1747), which
+ * grants the four held-ground income cards (`hex.tap_source`, `hex.claim_resource`,
+ * `hex.claim_dominion`, `loc.place_of_power`) that no beat granted before.
+ */
+export const MILESTONE_HELD_GROUND_FLOWERING = 2;
+
+/** The held-ground milestone beat id (THR-1747). */
+export const MILESTONE_HELD_GROUND_BEAT_ID = 'beat.milestone.the_held_ground';
+
+/**
  * The company milestone beat id (THR-74). Fires once, the first time a company that
  * carries at least one threaded mortal exists in the world — the moment the bonds the
  * player has been following gather into a band worth naming. Grants `company.bless`.

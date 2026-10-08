@@ -9,7 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../../../engine/graph';
 import { selectCovenantRows } from '../selectors';
-import { COVENANT_UPKEEP_COPY } from '../../../../data/ascendant-bar-content';
+import { COVENANT_UPKEEP_COPY, COVENANT_SOURCE_COPY } from '../../../../data/ascendant-bar-content';
+import type { EssenceSource } from '../../../../types/essenceSource';
 import type { GameState } from '../../../../types/gameState';
 import type { ControlEffect } from '../../../../types/controlEffect';
 
@@ -127,5 +128,60 @@ describe('selectCovenantRows', () => {
   it('returns [] when the god holds no controls', () => {
     const rows = selectCovenantRows(covState({ controlEffects: [] }));
     expect(rows).toEqual([]);
+  });
+});
+
+// THR-1747: controlled essence sources join the Covenants list, after the controls,
+// with their upkeep in words and no Release control.
+describe('selectCovenantRows — essence sources (THR-1747)', () => {
+  function withSource(src: Partial<EssenceSource>, controls = true): GameState {
+    const state = covState({ controlEffects: [makeEffect()] });
+    const bag: EssenceSource = { kind: 'shrine', sanctity: 0, tier: 'dormant', ...src };
+    state.graph.addNode({ id: 'asc-1', type: 'actor', name: 'The God', properties: { actorType: 'ascendant' } });
+    state.graph.addNode({ id: 'loc.spring', type: 'location', name: 'Thornwick Spring', properties: { essenceSource: bag } });
+    if (controls) {
+      state.graph.addEdge({ id: 'e.c', source: 'asc-1', target: 'loc.spring', type: 'controls', properties: {} });
+    }
+    return state;
+  }
+
+  it('lists a held source after the controls, unreleasable, with the paid upkeep line', () => {
+    const rows = selectCovenantRows(withSource({}));
+    expect(rows).toHaveLength(2);
+    expect(rows[0].kind).toBe('control');
+    expect(rows[0].releasable).toBe(true);
+    const src = rows[1];
+    expect(src.kind).toBe('source');
+    expect(src.releasable).toBe(false);
+    expect(src.effectId).toBe('source-loc.spring');
+    expect(src.title).toBe(COVENANT_SOURCE_COPY.titleDormant);
+    expect(src.target).toBe('Thornwick Spring');
+    expect(src.upkeepLine).toBe(COVENANT_SOURCE_COPY.upkeepPaid);
+    expect(src.upkeepLine).not.toMatch(/[0-9]/);
+  });
+
+  it('a flowering source reads as in flower; an unpaid one says so', () => {
+    const rows = selectCovenantRows(withSource({ tier: 'flowering', upkeepCurrent: false }));
+    expect(rows[1].title).toBe(COVENANT_SOURCE_COPY.titleFlowering);
+    expect(rows[1].upkeepLine).toBe(COVENANT_SOURCE_COPY.upkeepUnpaid);
+  });
+
+  it('a desecrated source is listed with the line that says it costs nothing', () => {
+    const rows = selectCovenantRows(withSource({ tier: 'desecrated', desecrated: true }));
+    expect(rows[1].upkeepLine).toBe(COVENANT_SOURCE_COPY.upkeepDesecrated);
+  });
+
+  it('the home seat is not listed as a wellspring', () => {
+    const state = withSource({});
+    state.graph.getNode('asc-1')!.properties.homeSeatLocationId = 'loc.spring';
+    expect(selectCovenantRows(state)).toHaveLength(1);
+  });
+
+  it('a contested source is flagged', () => {
+    expect(selectCovenantRows(withSource({ contestedBy: 'rival-1' }))[1].contested).toBe(true);
+  });
+
+  it('a source the god does not control is not listed', () => {
+    expect(selectCovenantRows(withSource({}, false))).toHaveLength(1);
   });
 });

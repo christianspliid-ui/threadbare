@@ -434,6 +434,8 @@ export type TraceCategory =
   | 'ascendant.progression.deepening_enqueued'
   | 'ascendant.progression.milestone_enqueued'
   | 'ascendant.progression.control_release'
+  // Divine economy — source upkeep charged from the primary sphere (THR-1747)
+  | 'source_upkeep'
   // Notable agendas — living world (THR-630)
   | 'notable.agenda_launched'
   | 'notable.agenda_phase_advanced'
@@ -995,6 +997,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.progression.deepening_enqueued',
   'ascendant.progression.milestone_enqueued',
   'ascendant.progression.control_release',
+  // Divine economy — source upkeep (THR-1747)
+  'source_upkeep',
   // Notable agendas — living world (THR-630)
   'notable.agenda_launched',
   'notable.agenda_phase_advanced',
@@ -4830,6 +4834,8 @@ export type TraceEntry =
   | DeepeningEnqueueTrace
   | MilestoneEnqueueTrace
   | ControlReleaseTrace
+  // Divine economy — source upkeep (THR-1747)
+  | SourceUpkeepTrace
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
   | ReceiptTargetChangesTrace
@@ -5444,8 +5450,37 @@ export interface MilestoneEnqueueTrace extends TraceBase {
   category: 'ascendant.progression.milestone_enqueued';
   turn: number;
   beatId: string;
-  sourceCount: number;
-  floweringCount: number;
+  /** Essence-source reads at enqueue time (source / held-ground milestones). */
+  sourceCount?: number;
+  floweringCount?: number;
+  /** THR-1747: the bond tick the Wellspring milestone counted from. */
+  bondTick?: number;
+  /**
+   * THR-1747: set when the beat was recorded fired without being offered, because
+   * the god already held every card it grants (THR-647: never offer a held card).
+   */
+  skipped?: 'all_grants_held';
+}
+
+/**
+ * Trace: source upkeep (THR-1747). Emitted by `phaseEssenceSources` only on ticks where
+ * some controlled source's paid/unpaid upkeep state flips — mirrors the thread-upkeep
+ * trace; never every tick, never one per source.
+ */
+export interface SourceUpkeepTrace extends TraceBase {
+  category: 'source_upkeep';
+  /** Controlled sources charged this tick. */
+  sources: number;
+  paidCount: number;
+  unpaidCount: number;
+  /** Hosts that went paid → unpaid this tick. */
+  lapsedIds: string[];
+  /** Hosts that went unpaid → paid this tick. */
+  restoredIds: string[];
+  /** Essence taken from the primary sphere this tick. */
+  essenceSpent: number;
+  /** The primary sphere charged. */
+  sphere: SphereName;
 }
 
 /**

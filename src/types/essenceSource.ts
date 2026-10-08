@@ -64,6 +64,12 @@ export interface EssenceSource {
   desecrated?: boolean;
   /** Tick this source bag was created / migrated (audit + fail-soft). */
   originTick?: number;
+  /**
+   * THR-1747: whether the god paid this source's upkeep (`SOURCE_CONTROL_SUSTAIN`,
+   * from the primary sphere) on the last tick. `false` stalls the land's upward drift
+   * for the next tick; income, tier and control are untouched. Absent reads as `true`.
+   */
+  upkeepCurrent?: boolean;
 }
 
 // ─── Trace interfaces (NFP #2) ───────────────────────────────────────────────

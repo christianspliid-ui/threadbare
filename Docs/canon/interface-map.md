@@ -385,7 +385,7 @@ not "fix" ambition display there.
 ## Unaudited subsystems (audit-on-touch)
 
 Contract rows not yet written for: War & Armies (the territorial seam and, since THR-1564, the war news — `war-news-reaches-chronicle` — are covered; the rest audit-on-touch) · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
-Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
+Doom/Journey · Mandate · Essence & Divine Economy (since THR-1747 the source-upkeep seam is covered: `source-upkeep-debits-primary-pool`, producer `phaseEssenceSources` → consumers the essence bar's `computeEssenceIncome` and the Covenants block's `selectCovenantRows`; the rest audit-on-touch) · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·

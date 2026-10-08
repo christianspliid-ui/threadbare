@@ -419,23 +419,11 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     grantsActionIds: ['action.anoint'],
   },
 
-  // — Divine-economy source loop (THR-611 Slice 3): surfaces the find→claim→build→defend
-  //   verbs shipped in Slice 2 (#531). One beat grants the whole loop because the three
-  //   are useless apart — you consecrate a place, THEN deepen it, THEN ward the *same*
-  //   source — mirroring `the_hallowed_place` granting both consecrate variants together.
-  //   `unlockable-generic` (see ASCENDANT_ACTION_BUCKETS): universal, sphere-flavored, not
-  //   two-domain reach-locked. —
-  {
-    beatId: 'beat.pool.invest.the_wellspring',
-    kind: 'investment',
-    trigger: { kind: 'cadence' },
-    eligibility: { kind: 'unthreaded_target' },
-    templateId: 'beat.pool.invest.the_wellspring',
-    grantsActionIds: [
-      'loc.find_source', 'loc.claim_source', // Slice 4: front half — discover + take uncontrolled sources
-      'loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source',
-    ],
-  },
+  // — Divine-economy source loop (THR-611 Slice 3): the five source verbs were granted
+  //   here by `beat.pool.invest.the_wellspring` until THR-1747 moved them to a fixed
+  //   milestone after the bond (`beat.milestone.the_wellspring`, ascendant-milestone-beats.ts)
+  //   — the pool made them a lottery. The pool template stays in
+  //   ascendant-pool-beat-templates.ts so old histories naming the beat still resolve. —
 
   // — The social dark economy (THR-724): the two secrets verbs. Both cards shipped with
   //   THR-30 and were granted by nothing — unreachable by construction under the empty
@@ -546,8 +534,8 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'action.bestow': { bucket: 'unlockable-generic' },
   'action.teach_spell': { bucket: 'unlockable-generic' },
   'action.anoint': { bucket: 'unlockable-generic' },
-  // Divine-economy source-loop verbs (THR-611 Slice 3), granted by
-  // `beat.pool.invest.the_wellspring`: claim/type a source, deepen it, ward it. Universal
+  // Divine-economy source-loop verbs (THR-611 Slice 3), granted by the Wellspring
+  // milestone (`beat.milestone.the_wellspring`, THR-1747; formerly a pool beat): claim/type a source, deepen it, ward it. Universal
   // like consecrate/bestow/anoint — flavored by the ascendant's primary sphere
   // (`consecrate_source` types the host to it) rather than gated on the two-domain reach
   // lock. `reach: 'star'` on these templates is their cosmic-energy axis, not a
@@ -566,6 +554,13 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // source verbs above, `reach: 'gold'` is its cosmic-energy axis, not a `requiresReach`
   // gate: it surfaces for every run once unlocked, which is the point of a *breadth* card.
   'loc.open_markets': { bucket: 'unlockable-generic' },
+  // THR-1747: the four held-ground cards, granted by the held-ground milestone
+  // (`beat.milestone.the_held_ground`) at two flowering sources. They shipped with no
+  // grant path. `reach` is each card's cosmic-energy axis, not a `requiresReach` gate.
+  'hex.tap_source': { bucket: 'unlockable-generic' },
+  'hex.claim_resource': { bucket: 'unlockable-generic' },
+  'hex.claim_dominion': { bucket: 'unlockable-generic' },
+  'loc.place_of_power': { bucket: 'unlockable-generic' },
   // THR-616 P2: the two first divine *economic* verbs, granted alongside
   // open_markets by the same essence-source milestone. Both were shipped but
   // unreachable (no beat granted them, empty THR-501 floor). `reach` is their

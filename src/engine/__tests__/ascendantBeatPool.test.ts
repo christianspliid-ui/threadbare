@@ -14,6 +14,8 @@ import {
   BEAT_KIND_WEIGHTS,
 } from '../../data/ascendant-beat-content';
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { getMilestoneBeatById } from '../../data/ascendant-milestone-beats';
+import { WELLSPRING_MILESTONE_BEAT_ID } from '../../data/player-progression';
 import { isActionRevealed } from '../actionUnlock';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../data/reach-signature-content';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
@@ -173,16 +175,18 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
 
   // THR-611 Slice 3 — verb surfacing. Slice 2 (#531) shipped the source-loop verbs but
   // nothing granted them, so they were unreachable (empty THR-501 starter floor). The
-  // `the_wellspring` investment beat is the surfacing: resolving it unlocks the whole
-  // find→claim→build→defend loop and flips the within-run reveal gate, proving Slices 2
-  // (build/defend verbs) and 4 (find/claim verbs) are now player-reachable.
-  it('the_wellspring beat unlocks the divine-economy source loop verbs (THR-611 Slice 3 + 4)', () => {
+  // Wellspring is the surfacing: resolving it unlocks the whole find→claim→build→defend
+  // loop and flips the within-run reveal gate. THR-1747 moved it from a cadence-pool
+  // lottery (`beat.pool.invest.the_wellspring`) to a milestone at bond + 48 ticks; this
+  // test now drives the milestone, and pins that the pool no longer carries it.
+  it('the Wellspring milestone unlocks the divine-economy source loop verbs (THR-611 Slice 3 + 4, THR-1747)', () => {
     const SOURCE_VERBS = [
       'loc.find_source', 'loc.claim_source',
       'loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source',
     ];
-    const beat = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_wellspring');
-    expect(beat, 'the_wellspring pool beat missing').toBeDefined();
+    expect(ASCENDANT_BEAT_POOL.some(b => b.beatId === 'beat.pool.invest.the_wellspring')).toBe(false);
+    const beat = getMilestoneBeatById(WELLSPRING_MILESTONE_BEAT_ID);
+    expect(beat, 'the Wellspring milestone beat missing').not.toBeNull();
     expect(beat!.grantsActionIds).toEqual(SOURCE_VERBS);
 
     // Drive the real resolve path: a pending offer of the beat, resolved with the same
@@ -190,11 +194,11 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
     const pending: AscendantBeatState = {
       spineCursor: -1,
       pending: {
-        beatId: 'beat.pool.invest.the_wellspring',
-        kind: 'investment',
+        beatId: WELLSPRING_MILESTONE_BEAT_ID,
+        kind: 'milestone',
         offeredTurn: 30,
         boundNodeIds: [],
-        trigger: { kind: 'cadence' },
+        trigger: { kind: 'turn', minTurn: 30 },
       },
       history: [],
       lastBeatTurn: 30,

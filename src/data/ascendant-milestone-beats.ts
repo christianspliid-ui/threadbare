@@ -19,7 +19,8 @@
  * Slice 2's Deepening beats deliberately grant nothing: the only reach-gated cards are the
  * eight signatures, already handed out by the acquisition beats, so re-offering one would
  * lie about a card the god already holds. The milestone does not have that problem. The
- * five source verbs are all granted together by `beat.pool.invest.the_wellspring`, so they
+ * five source verbs are all granted together by the Wellspring (THR-1747: now
+ * `beat.milestone.the_wellspring`; formerly the pool beat), so they
  * are out — but `loc.open_markets` is a shipped, fully-implemented, ascendant-facing,
  * Gold-reach economy card (prosperity up, unrest down; real prose; real cost) that **no
  * beat grants and no starter floor reveals** (the floor is empty since THR-501). It is
@@ -43,6 +44,8 @@ import {
   MILESTONE_GATHERING_BEAT_ID,
   MILESTONE_EMPTY_ROAD_BEAT_ID,
   MILESTONE_GUTTERING_THREAD_BEAT_ID,
+  WELLSPRING_MILESTONE_BEAT_ID,
+  MILESTONE_HELD_GROUND_BEAT_ID,
 } from './player-progression';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
@@ -55,6 +58,21 @@ import type { SpineBeatPresentation } from './ascendant-beat-content';
  * unconditional. `identity.sphere: 'order'` matches the granted card's `sphereAffinity`.
  */
 export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
+  {
+    // THR-1747: the Wellspring milestone. Enqueued by `phaseAscendantProgression` at
+    // bond + WELLSPRING_MILESTONE_TICKS_AFTER_BOND — the five source verbs used to be a
+    // cadence-pool lottery (`beat.pool.invest.the_wellspring`, kept as a template only so
+    // old histories resolve). Grants the whole find→claim→build→defend loop together,
+    // because the verbs are useless apart.
+    beatId: WELLSPRING_MILESTONE_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'star', sphere: 'spirit' },
+    grantsActionIds: [
+      'loc.find_source', 'loc.claim_source',
+      'loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source',
+    ],
+  },
   {
     beatId: MILESTONE_SOURCE_BEAT_ID,
     kind: 'milestone',
@@ -133,6 +151,19 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     identity: { reach: 'heart', sphere: 'spirit' },
     grantsActionIds: ['divine.rekindle_thread'],
   },
+  {
+    // THR-1747: the held-ground milestone. Enqueued by `phaseAscendantProgression` at
+    // MILESTONE_HELD_GROUND_FLOWERING flowering sources. Grants the four held-ground
+    // income cards that shipped with no grant path. `loc.place_of_power` is granted as
+    // it is; making it actually create a place of power is THR-1751.
+    beatId: MILESTONE_HELD_GROUND_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'star', sphere: 'spirit' },
+    grantsActionIds: [
+      'hex.tap_source', 'hex.claim_resource', 'hex.claim_dominion', 'loc.place_of_power',
+    ],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -147,6 +178,20 @@ export function getMilestoneBeatById(beatId: string): BeatDefinition | null {
  * the god's sources have *become* and hands over the market verb as its consequence.
  */
 export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>> = {
+  [WELLSPRING_MILESTONE_BEAT_ID]: {
+    eyebrow: 'The Wellspring',
+    title: 'Ground That Could Feed You',
+    prose:
+      'There is ground in the world that could be made to feed you: places where the devotion of mortals pools instead of draining away. Claimed and named, such a place becomes a source of your own, and it gives you strength of its particular kind, tide after patient tide. A source left untended stays shallow, and one left unguarded can be bled by hands that are not yours. Learn the whole of it now: to find such a place, to claim it and turn it toward you, to deepen what it gives until it flowers, and to hold it fast when something comes to drain it.',
+    cta: 'Receive',
+  },
+  [MILESTONE_HELD_GROUND_BEAT_ID]: {
+    eyebrow: 'Held Ground',
+    title: 'The Land Has Learned Your Shape',
+    prose:
+      'Your wellsprings have flowered, and more than one of them. The land around them has learned your shape: roads bend toward them, and the earth answers when you press on it. A god this rooted can do more than tend. You can sink a claim into the land and hold it as yours, bind a vein of the world\'s wealth to your will, draw a steady siphon from a source, and wake the deep lines under a place until power gathers there.',
+    cta: 'Receive',
+  },
   [MILESTONE_SOURCE_BEAT_ID]: {
     eyebrow: 'A Wellspring',
     title: 'What Your Freeholds Have Become',
@@ -190,6 +235,12 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
  * point, so chronicle ↔ milestone beat stay 1:1.
  */
 export function milestoneChronicleProse(beatId: string): string {
+  if (beatId === WELLSPRING_MILESTONE_BEAT_ID) {
+    return 'You learned where devotion pools in the world, and how to make such ground your own.';
+  }
+  if (beatId === MILESTONE_HELD_GROUND_BEAT_ID) {
+    return 'Your wellsprings flowered and the land learned your shape. You learned to hold ground outright, and to draw on it.';
+  }
   if (beatId === MILESTONE_SOURCE_BEAT_ID) {
     return 'Your wellsprings came into their own. What you had only held, you now draw upon — and the world began to trade on the strength of it.';
   }
