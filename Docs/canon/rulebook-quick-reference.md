@@ -43,7 +43,7 @@ Reaches and Spheres are **orthogonal**. The same Reach at different Sphere align
 
 ## Your Resources
 
-- **Influence Essence** — per-sphere pools. Regenerates from worshippers / places of power / portfolio depth. Spent on actions, sustained on Control.
+- **Influence Essence** — per-sphere pools. Regenerates from worshippers / places of power / portfolio depth. Spent on actions, sustained on Control. **Upkeep**: every thread (by tier, 0.1–0.5) and every controlled essence source (0.15) costs a little of your primary sphere each tick; an unpaid thread stops climbing, an unpaid source stops growing, neither is lost (THR-1747). The source verbs arrive 48 ticks after the bond (the Wellspring); two flowering sources grant the four held-ground cards (Held Ground).
 - **Control slots** — sustained-effect cap, scales with Domain Capability tier [DESIGN — no cap in code; nothing gates how many you hold (THR-936)].
 - **Influence Tiers** — depth of a thread (0–4 in code; five narrative names — Unaware → Curious → Recognized → Devoted → Enthralled — plus 'Aspect' as a separate apex milestone). **The apex is not bought and not chosen by you**: the Apotheosis asks the mortal *sacrifice vs survival*, you lean with cards, and the roll decides whether the frame holds — failing it is the "unmade" ending, not a retry (THR-1086).
 - **Forks are decided by the mortal, never by you** — `decidedBy` reads their standing on the fork's value axis plus the lean of the cards you committed, and taking a fork drifts them toward that pole. A god with no cards in play still gets a decision; only a genuine tie falls to a coin.

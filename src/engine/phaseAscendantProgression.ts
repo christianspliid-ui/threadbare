@@ -232,7 +232,12 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
    * pre-grants) — record it fired without offering it (THR-647: never offer a held card).
    * Returns true when the beat took the pending slot.
    */
-  const offerOrSkipGrantMilestone = (beatId: string, title: string, detail: Record<string, unknown>, why: string): boolean => {
+  const offerOrSkipGrantMilestone = (
+    beatId: string,
+    title: string,
+    detail: { bondTick?: number; sourceCount?: number; floweringCount?: number },
+    why: string,
+  ): boolean => {
     const def = getMilestoneBeatById(beatId);
     const held = def ? allGrantsHeld(def, state) : false;
     firedMilestones.push(beatId);
@@ -243,11 +248,11 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
       turn,
       beatId,
       ...detail,
-      ...(held ? { skipped: 'all_grants_held' } : {}),
+      ...(held ? { skipped: 'all_grants_held' as const } : {}),
       summary: held
         ? `Milestone beat ${beatId} recorded without offering it — every card it grants is already held (${why})`
         : `Milestone beat enqueued: ${beatId} (${why})`,
-    } as unknown as EmitInput);
+    });
     if (held) return false;
     pending = {
       beatId,
@@ -277,8 +282,16 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   // read through `resolveDoomWokeAtTick`, never the raw field: an old save with no
   // `wokeAtTick` reads as bonded at tick 0 and is still offered the verbs it can no longer
   // draw from the pool; `null` (the clock still sleeps) never fires. Threshold-based, so a
-  // spine or a pending beat holding the slot only delays it.
-  if (canEnqueue && !pending && !firedMilestones.includes(WELLSPRING_MILESTONE_BEAT_ID)) {
+  // pending beat holding the slot only delays it.
+  //
+  // Unlike every other milestone it does NOT wait for the onboarding spine to finish.
+  // The spine's five gifts are turn-scheduled out to tick ~145 (`SPINE_TRIGGER_TURNS`),
+  // and gating on `spineCursor === -1` put the Wellspring ~145 ticks after the bond on
+  // seeds 42 / 7 / 1337 — a miss of the plan's "offered by tick 60" predicate (Done-when 3,
+  // whose remedy names the spine as in scope). It takes an empty slot between two spine
+  // gifts instead; the next gift waits for it like it waits for any pending beat.
+  const canEnqueueDuringSpine = !!beats && !beats.pending;
+  if (canEnqueueDuringSpine && !pending && !firedMilestones.includes(WELLSPRING_MILESTONE_BEAT_ID)) {
     const woke = resolveDoomWokeAtTick(state.doomClock);
     if (woke !== null && turn >= woke + WELLSPRING_MILESTONE_TICKS_AFTER_BOND) {
       offerOrSkipGrantMilestone(

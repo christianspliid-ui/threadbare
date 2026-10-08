@@ -18,7 +18,7 @@
  */
 
 import type { GameState } from '../types/gameState';
-import type { EssenceSourcePhaseTrace, SourceUpkeepTrace } from '../types/essenceSource';
+import type { EssenceSourcePhaseTrace } from '../types/essenceSource';
 import type { SphereAlignment } from '../types/influence';
 import { emitTrace } from './traceBuffer';
 import {
@@ -73,7 +73,7 @@ export function phaseEssenceSources(state: GameState): Partial<GameState> {
   const pool = { ...state.essencePool };
   const upkeep = chargeSourceUpkeep(state.graph, state.ascendantId, primary, pool);
   if (upkeep.lapsedIds.length > 0 || upkeep.restoredIds.length > 0) {
-    const trace: SourceUpkeepTrace = {
+    emitTrace({
       category: 'source_upkeep',
       tick: state.tick,
       sources: upkeep.sources,
@@ -88,8 +88,7 @@ export function phaseEssenceSources(state: GameState): Partial<GameState> {
         (upkeep.lapsedIds.length > 0 ? `, ${upkeep.lapsedIds.length} stalled` : '') +
         (upkeep.restoredIds.length > 0 ? `, ${upkeep.restoredIds.length} restored` : '') +
         ` (${primary} −${upkeep.charged.toFixed(2)})`,
-    };
-    emitTrace(trace as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }
   if (upkeep.charged <= 0) return {};
   return { essencePool: pool };

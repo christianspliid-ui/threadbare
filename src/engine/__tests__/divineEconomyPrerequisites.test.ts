@@ -140,6 +140,12 @@ describe('Wellspring milestone (THR-1747 E2)', () => {
     expect(fired(s)).not.toContain(WELLSPRING_MILESTONE_BEAT_ID);
   });
 
+  it('does not wait for the onboarding spine to finish (it takes an empty slot between gifts)', () => {
+    const s = makeState(WELLSPRING_MILESTONE_TICKS_AFTER_BOND, { wokeAtTick: 0 });
+    s.ascendantBeats = { ...s.ascendantBeats!, spineCursor: 2 };
+    expect(phaseAscendantProgression(s).ascendantBeats?.pending?.beatId).toBe(WELLSPRING_MILESTONE_BEAT_ID);
+  });
+
   it('waits for an empty pending slot', () => {
     const s = makeState(60, { wokeAtTick: 0 });
     s.ascendantBeats = {

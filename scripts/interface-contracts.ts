@@ -1597,6 +1597,17 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'source-upkeep-debits-primary-pool',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar\'s income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer.',
+    ulTerms: ['Essence', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['upkeepCurrent', 'SOURCE_CONTROL_SUSTAIN'] },
+    writeSites: ['src/engine/essenceSources.ts'],
+    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/engine/essenceIncome.ts'],
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,

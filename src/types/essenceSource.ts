@@ -72,29 +72,6 @@ export interface EssenceSource {
   upkeepCurrent?: boolean;
 }
 
-/**
- * THR-1747: emitted by `phaseEssenceSources` only on ticks where some source's
- * paid/unpaid upkeep state flips (mirrors `InfluenceMaintenanceTrace`; never every
- * tick, never one per source).
- */
-export interface SourceUpkeepTrace {
-  category: 'source_upkeep';
-  tick: number;
-  /** Controlled sources charged this tick. */
-  sources: number;
-  paidCount: number;
-  unpaidCount: number;
-  /** Hosts that went paid → unpaid this tick. */
-  lapsedIds: string[];
-  /** Hosts that went unpaid → paid this tick. */
-  restoredIds: string[];
-  /** Essence taken from the primary sphere this tick. */
-  essenceSpent: number;
-  /** The primary sphere charged. */
-  sphere: SphereName;
-  summary: string;
-}
-
 // ─── Trace interfaces (NFP #2) ───────────────────────────────────────────────
 
 /**
