@@ -32,7 +32,7 @@
       "engine-bridge": 43,
       "aftermath-only": 4
     },
-    "beatGranted": 31,
+    "beatGranted": 35,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2964,9 +2964,9 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
+      "bucketDeclared": true,
       "description": "Binds a discovered resource deposit to the deity's divine will, establishing a sustained extraction pipeline that generates essence income each tick. The claim is active as long as the binding holds and rivals do not seize control. A resource node under divine claim produces more reliably than unbound deposits.",
       "technicalEffect": "Sustained: `ControlEffect` binding a discovered resource deposit — generates per-tick Matter income at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).",
       "effectSource": "control-spec"
@@ -3543,9 +3543,9 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
+      "bucketDeclared": true,
       "description": "Weaves a sustained siphon into a sphere-aligned source node, drawing essence from the concentrated flow continuously as long as the connection holds. The income generated exceeds the maintenance cost, making the tap a net positive investment that compounds over time. Rivals who discover the siphon may attempt to seize or destroy the source.",
       "technicalEffect": "Sustained: `ControlEffect` siphoning a sphere-aligned source — generates per-tick Spirit income at a smaller per-tick Spirit cost. Persists until it lapses, is usurped (Veil ≥ t2, Spirit-aligned), or destroyed (Iron ≥ t2).",
       "effectSource": "control-spec"
@@ -4263,9 +4263,9 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
+      "bucketDeclared": true,
       "description": "Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity's sphere influence into the earth's foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence.",
       "technicalEffect": "Sustained: spawns a `ControlEffect` that proclaims divine dominion, adding a small per-tick `divineInfluence` mutation at a per-tick Spirit cost. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.",
       "effectSource": "control-spec"
@@ -4931,9 +4931,9 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
+      "bucketDeclared": true,
       "description": "Channels divine essence deep into the ley lines beneath a location, transforming it into a nexus of concentrated magical energy. Practitioners working here find their abilities heightened and their rituals more potent. The awakening draws the attention of those sensitive to such flows of power.",
       "technicalEffect": "On success, raises the target location's `magicalSaturation` by a larger named delta, seeding it toward Place-of-Power status.",
       "effectSource": "template-ops"
