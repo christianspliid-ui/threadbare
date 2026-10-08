@@ -30,7 +30,7 @@ import {
   ESSENCE_DRAWN_LEAD,
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
-import { upkeepChargedSources } from '../../../engine/essenceSources';
+import { heldSources } from '../../../engine/essenceSources';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -482,18 +482,21 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
 
   // THR-1747: controlled essence sources join the list after the controls — the god
   // pays to keep them (`chargeSourceUpkeep`), so they belong among its holdings. Same
-  // walk as the charge (`upkeepChargedSources`, home seat excluded). No Release.
+  // walk as the charge (`heldSources`, home seat excluded; a desecrated source is listed
+  // but owes nothing, and says so). No Release.
   const sourceRows: CovenantRowView[] = [];
-  for (const { host, src } of upkeepChargedSources(gameState.graph, ownerId)) {
+  for (const { host, src } of heldSources(gameState.graph, ownerId)) {
     sourceRows.push({
       effectId: `source-${host.id}`,
       title: src.tier === 'flowering'
         ? COVENANT_SOURCE_COPY.titleFlowering
         : COVENANT_SOURCE_COPY.titleDormant,
       target: host.name ?? COVENANT_SOURCE_COPY.titleDormant,
-      upkeepLine: src.upkeepCurrent === false
-        ? COVENANT_SOURCE_COPY.upkeepUnpaid
-        : COVENANT_SOURCE_COPY.upkeepPaid,
+      upkeepLine: src.desecrated
+        ? COVENANT_SOURCE_COPY.upkeepDesecrated
+        : src.upkeepCurrent === false
+          ? COVENANT_SOURCE_COPY.upkeepUnpaid
+          : COVENANT_SOURCE_COPY.upkeepPaid,
       contested: !!src.contestedBy,
       kind: 'source',
       releasable: false,

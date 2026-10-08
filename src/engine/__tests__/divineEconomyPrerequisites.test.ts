@@ -281,14 +281,18 @@ describe('source upkeep (THR-1747 E4)', () => {
     expect(s.graph.getOutgoingEdges(ASC, 'controls').some(e => e.target === 'loc.src-0')).toBe(true);
   });
 
-  it('an unpaid source gets no upward drift on the next tick', () => {
-    // A source on an economic host whose goods would nurture it — exercised via the
-    // stall rule directly: with upkeepCurrent false, positive drift is dropped.
-    const s = upkeepState(SOURCE_CONTROL_SUSTAIN / 2);
-    phaseEssenceSources(s); // marks unpaid
-    const before = srcOf(s).sanctity;
-    phaseEssenceSources(s); // still unpaid; recompute reads the flag
-    expect(srcOf(s).sanctity).toBeLessThanOrEqual(before);
+  // The stall itself (no upward drift while unpaid) is pinned in sourceUpkeepStall.test.ts,
+  // which fixes the land's drift positive so the guard is what decides.
+
+  it('a desecrated source owes no upkeep — it pays nothing and cannot be released', () => {
+    const s = upkeepState(10);
+    const host = s.graph.getNode('loc.src-0')!;
+    host.properties.essenceSource = { ...(host.properties.essenceSource as EssenceSource), desecrated: true, tier: 'desecrated' };
+    expect(phaseEssenceSources(s).essencePool).toBeUndefined();
+    const readout = computeEssenceIncome(s.graph, ASC, []).life;
+    host.properties.essenceSource = { ...(host.properties.essenceSource as EssenceSource), desecrated: false, tier: 'dormant' };
+    // Restored, it is charged again (and earns again), so the two readouts differ.
+    expect(computeEssenceIncome(s.graph, ASC, []).life).not.toBeCloseTo(readout, 6);
   });
 
   it('a consecrated home seat owes no upkeep, in the charge and the readout alike (review-gate, THR-1747)', () => {

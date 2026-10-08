@@ -338,6 +338,8 @@ export const COVENANT_SOURCE_COPY = {
   upkeepPaid: 'Costs a little of your essence to keep, and gives back more.',
   /** Upkeep line when the primary sphere could not cover it. */
   upkeepUnpaid: 'Unpaid. It will not grow until you can keep it.',
+  /** A desecrated source: it pays nothing, so it is charged nothing. */
+  upkeepDesecrated: 'Desecrated. It gives you nothing now, and asks nothing to keep.',
 } as const;
 
 /** Upkeep lines, keyed by whether the covenant costs, earns, or sustains itself. */

@@ -166,6 +166,17 @@ describe('selectCovenantRows — essence sources (THR-1747)', () => {
     expect(rows[1].upkeepLine).toBe(COVENANT_SOURCE_COPY.upkeepUnpaid);
   });
 
+  it('a desecrated source is listed with the line that says it costs nothing', () => {
+    const rows = selectCovenantRows(withSource({ tier: 'desecrated', desecrated: true }));
+    expect(rows[1].upkeepLine).toBe(COVENANT_SOURCE_COPY.upkeepDesecrated);
+  });
+
+  it('the home seat is not listed as a wellspring', () => {
+    const state = withSource({});
+    state.graph.getNode('asc-1')!.properties.homeSeatLocationId = 'loc.spring';
+    expect(selectCovenantRows(state)).toHaveLength(1);
+  });
+
   it('a contested source is flagged', () => {
     expect(selectCovenantRows(withSource({ contestedBy: 'rival-1' }))[1].contested).toBe(true);
   });

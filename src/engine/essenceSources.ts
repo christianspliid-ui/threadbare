@@ -273,21 +273,19 @@ export function recomputeControlledSourceTiers(
   return { sourceCount, tierChanges, contestedCount, econNurtured, econWithered };
 }
 
+type HeldSource = { host: NonNullable<ReturnType<WorldGraph['getNode']>>; src: EssenceSource };
+
 /**
- * The controlled sources that owe upkeep (THR-1747): every `controls` edge into a host
- * carrying a source bag, **except the home seat**. The seat is a distinct income term
- * (`ESSENCE_PER_SEAT`, paid whether or not it is consecrated) and `computeSourceIncome`
- * skips it, so charging it would be a pure drain with nothing to keep. The one walk the
- * charge, the income readout and the Covenants list all share, so the three agree.
+ * The controlled sources the god holds as ground (THR-1747): every `controls` edge into
+ * a host carrying a source bag, **except the home seat**. The seat is a distinct income
+ * term (`ESSENCE_PER_SEAT`, paid whether or not it is consecrated) and
+ * `computeSourceIncome` skips it. This is what the Covenants list shows.
  */
-export function upkeepChargedSources(
-  graph: WorldGraph,
-  ascendantId: string,
-): Array<{ host: NonNullable<ReturnType<WorldGraph['getNode']>>; src: EssenceSource }> {
+export function heldSources(graph: WorldGraph, ascendantId: string): HeldSource[] {
   const node = graph.getNode(ascendantId);
   if (!node) return [];
   const homeSeatLocationId = node.properties.homeSeatLocationId as string | undefined;
-  const out: Array<{ host: NonNullable<ReturnType<WorldGraph['getNode']>>; src: EssenceSource }> = [];
+  const out: HeldSource[] = [];
   for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
     if (edge.target === homeSeatLocationId) continue;
     const host = graph.getNode(edge.target);
@@ -296,6 +294,16 @@ export function upkeepChargedSources(
     out.push({ host, src });
   }
   return out;
+}
+
+/**
+ * The held sources that owe upkeep (THR-1747): {@link heldSources} minus desecrated ones.
+ * A desecrated source pays nothing (`sourceTierMultiplier` 0) and has no Release, so
+ * charging it would be a pure drain the player cannot shed. The one walk the charge and
+ * the income readout share, so the two agree.
+ */
+export function upkeepChargedSources(graph: WorldGraph, ascendantId: string): HeldSource[] {
+  return heldSources(graph, ascendantId).filter(({ src }) => !src.desecrated);
 }
 
 /** Result of {@link chargeSourceUpkeep} (THR-1747). */
