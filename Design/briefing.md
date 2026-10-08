@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 00:19 local (22:19 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 00:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,15 +28,16 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 jobs ready, 1 being built.** Keeping mortals no longer bankrupts your god: [THR-1747](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the) merged via [#2269](https://github.com/christianspliid-ui/threadbare/pull/2269) at 23:53 and is live.
+**Healthy: 10 jobs ready, 2 being built.**
 
-- **Being built:** [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves). All work is committed in [pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) and set to merge, but the #2269 merge left it clashing in one generated doc (see Health).
-- **Top of the queue (high priority):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers), [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at).
+- **Being built:** [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at). Work is up as [pull request #2272](https://github.com/christianspliid-ui/threadbare/pull/2272), opened 00:55; its checks are running.
+- **Being built:** [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves). All work is committed in [pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) and set to merge, but it clashes in one generated doc (see Health).
+- **Top of the queue (high priority):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers).
 - **Oldest in the queue:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the), ready 11 days, behind higher-priority work, not blocked.
 
 ## Health
 
-- **[Pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) is stuck.** It has a merge conflict in `systems-inventory.md` and GitHub has not started its checks. This is the builder's unstick duty, not yours.
-- **Heavy simulation tests read red ("failing on main for 52 hours"), but it is one slow test, not broken code.** The last two runs on main failed only because `doomIdentityMilestones` ran out of time; the nightly runs pass. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
+- **[Pull request #2271](https://github.com/christianspliid-ui/threadbare/pull/2271) is stuck.** It has had a merge conflict in `systems-inventory.md` since #2269 merged at 23:53, so GitHub has not started its checks. This is the builder's unstick duty, not yours.
+- **Heavy simulation tests read red ("failing on main for 53 hours"), but it is one slow test, not broken code.** The last two runs on main failed only because `doomIdentityMilestones` ran out of time; the nightly runs pass. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
 - **The 6–8 October lane silence (31.8 h) is explained:** the computer was asleep the whole time.
-- Everything else is green. The live site is current (84894af3), and all 11 lanes are on schedule. Simulation speed is 130 ms per tick, 9% over the weekly median, inside the 25% alarm line. The worktree cleaner ran at 00:18.
+- Everything else is green. The live site is current (84894af3), and all 11 lanes are on schedule. Simulation speed is 108 ms per tick, 10% under the weekly median. The worktree cleaner ran at 00:40.
