@@ -1,18 +1,18 @@
 # Briefing
-**Generated:** 2026-10-08 11:57 local (09:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-08 12:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**The builder is still frozen on a yes/no box in the Claude app. Please click "Allow".** It has started no new job for over five hours because of it.
+**The builder is still frozen on a yes/no box in the Claude app. Please click "Allow".** It has started no new job for over six hours because of it.
 
-- **Where:** in the Claude app, open the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)**. It started at 06:41 your time and has waited since 07:21 for you to approve one step. It is still open as of 11:55.
+- **Where:** in the Claude app, open the session **["Tb opus pickup"](claude://claude.ai/epitaxy/local_10e8ed93-4d5c-4076-8787-c086e748971f)**. It started at 06:41 your time and has waited since 07:21 for you to approve one step. It is still open as of 12:55.
 - **What it is asking:** permission to update the daily playtest lane's instructions so it can also start *warm* playtest rounds, where testers arrive a few seasons into a world. That is the last step of [the warm playtest job](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a). It is safe to allow.
 - **Why it matters:** while that box is open, the builder cannot start another run. **13 jobs are ready and none can move.** They include the two worst warm-playtest bugs: [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) and [chapter choices ignore the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves).
 - If you would rather it didn't make that change, click **"Deny"**. Either answer unfreezes it.
 
 ## Also waiting (5)
 
-- **How does your god get new powers: A or B?** A: the world gives powers matched to your god. B: three omens rise every few days and you pay to take one. The lane leans B. [Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). Reply "A" or "B".
+- **How does your god get new powers: A or B?** A: the world gives powers matched to your god. B: three omens rise every few days and you pay to take one. The lane leans B. [Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-08b.md) and [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-08a.md)*
 - **Set the Claude app to open when Windows starts.** Only you can change that setting. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
@@ -32,12 +32,12 @@ Say "veto <title>" to reverse any of these.
 - **Top of the queue (high priority):** the two warm-playtest bugs above, then [sphere scores land where Dominion reads them](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no), [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) and [keeping mortals no longer bankrupts your god](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the).
 - **Doom draw:** [every run's doom is Breach](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes) is in the queue. It can be picked up from Friday morning.
 - **Oldest in the queue:** [threading as character creation](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the) has been ready for 11 days. It sits behind higher-priority work and is not blocked.
-- **Being built:** [warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), held by the frozen run above. Its work is sitting uncommitted in local worktree `determined-margulis-d41841` (one file), idle ~275 min. The run is still alive, so it saves once the box is answered.
+- **Being built:** [warm playtest](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), held by the frozen run above. Its work is sitting uncommitted in local worktree `determined-margulis-d41841` (one file), idle ~335 min. The run is still alive, so it saves once the box is answered.
 
 ## Health
 
-- **Builder lane stalled:** *"tb-opus-pickup has not run since 2026-10-08T04:41:50.212Z — 5+ hourly slots behind, while keep-work-flowing-cc kept firing. The lane is stalled, not idle."* The cause is the approval box above, which has been open since 05:21 UTC.
+- **Builder lane stalled:** *"tb-opus-pickup has not run since 2026-10-08T04:41:50.212Z — 6+ hourly slots behind, while keep-work-flowing-cc kept firing. The lane is stalled, not idle."* The cause is the approval box above, which has been open since 05:21 UTC.
 - **Worktree cleaner guard passed:** the frozen run's uncommitted file has been idle for more than the cleaner's 180-minute guard. The cleaner keeps it while its session is live. If it is ever removed, the next builder run recovers it. That is the builder's job, not yours.
-- **Heavy simulation tests still read red ("failing on main for 40 hours"), but the test is flaky; the code is fine.** The same commit passed on Wednesday's nightly run. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
+- **Heavy simulation tests still read red ("failing on main for 41 hours"), but the test is flaky; the code is fine.** The same commit passed on Wednesday's nightly run. [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) (ready) fixes the check. That is the builder's job, not yours.
 - **The 6–8 October lane silence is explained:** the computer was asleep the whole time.
-- Everything else is green. The live site is current, no pull requests are stuck, Actions are healthy, and simulation speed is normal (118 ms per tick, 2% under the weekly median).
+- Everything else is green. The live site is current, no pull requests are stuck, Actions are healthy, and simulation speed is normal (117 ms per tick, 3% under the weekly median).
