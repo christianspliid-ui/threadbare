@@ -54,7 +54,7 @@ import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
 import { milestoneChronicleProse, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
 import { resolveDoomWokeAtTick } from './doomClock';
 import { allGrantsHeld } from './beatGrantsHeld';
-import { countControlledSources } from './essenceSources';
+import { countControlledSources, heldSources } from './essenceSources';
 import {
   getAllGroups, isGroupThreaded, isAgentGone, getFormerGroupMembers,
 } from './groups/groupQueries';
@@ -344,8 +344,12 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   // THR-1747: the held-ground milestone — MILESTONE_HELD_GROUND_FLOWERING flowering
   // sources grant the four held-ground income cards that shipped with no grant path.
   // Same one-per-tick discipline; skipped (not offered) when all four are already held.
+  // Counts held sources only (heldSources skips the home seat), so the milestone agrees
+  // with the Covenants list and the upkeep charge: a flowering seat is not held ground.
   if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_HELD_GROUND_BEAT_ID)) {
-    const { total, flowering } = countControlledSources(graph, ascId);
+    const held = heldSources(graph, ascId);
+    const total = held.length;
+    const flowering = held.filter(({ src }) => src.tier === 'flowering').length;
     if (flowering >= MILESTONE_HELD_GROUND_FLOWERING) {
       offerOrSkipGrantMilestone(
         MILESTONE_HELD_GROUND_BEAT_ID,

@@ -201,6 +201,13 @@ describe('held-ground milestone (THR-1747 E5)', () => {
     }
   });
 
+  it('does not count a flowering home seat as held ground', () => {
+    const s = makeState(10, { sources: ['flowering', 'flowering'], milestoneBeatsFired: firedBoth });
+    s.graph.getNode(ASC)!.properties.homeSeatLocationId = 'loc.src-0';
+    expect(phaseAscendantProgression(s).ascendantBeats).toBeUndefined();
+    expect(fired(s)).not.toContain(MILESTONE_HELD_GROUND_BEAT_ID);
+  });
+
   it('is skipped (recorded, not offered) when all four are already held', () => {
     const s = makeState(10, { sources: ['flowering', 'flowering'], milestoneBeatsFired: firedBoth, unlocked: HELD_GROUND_CARDS });
     expect(phaseAscendantProgression(s).ascendantBeats).toBeUndefined();
