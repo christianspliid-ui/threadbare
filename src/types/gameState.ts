@@ -67,6 +67,7 @@ export interface ActiveComposition {
   agendaFamily?: string;
 }
 import type { DoomIdentityMatrix } from './doomIdentity';
+import type { PendingThreadingRite } from '../engine/threadingRite';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';
 
 // ─── Game Phase ─────────────────────────────────────────────────
@@ -549,6 +550,12 @@ export interface GameState {
    *  the settlement `pickMeetingLocation` chose, or the avatar's own location on
    *  the fallback path. Unset until the auto-trigger fires. */
   meetingLocationId?: string;
+  /** The threading rite waiting for its surface (THR-1644 S1). Absent or null =
+   *  no pending rite; the thread it belongs to is already written. GameState is
+   *  not persisted today, so a reload simply has no pending rite. */
+  pendingThreadingRite?: PendingThreadingRite | null;
+  /** Rites queued behind the open one, at most `RITE_QUEUE_MAX` (THR-1644 S1). */
+  pendingThreadingRiteQueue?: PendingThreadingRite[];
   /** Monotonic count of the player's own acts — a cast, an avatar move command, a
    *  Follow (THR-1647 S4). Engine pacing counter, never a player-facing word. Read
    *  as 0 when absent (older saves). The beat director spaces spine gifts 1–4 by it. */
