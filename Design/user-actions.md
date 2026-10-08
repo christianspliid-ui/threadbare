@@ -1,32 +1,24 @@
 # User Action Required
 
-**Last updated:** 2026-10-08 06:47 local (04:47 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-08 06:58 local (04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
-### Was the computer off or the app closed from Tuesday ~22:56 to Thursday ~06:40? (lane silence, 6–8 October, ending now)
+### Set the Claude app to open when Windows starts
 
-No lane ran for about 32 hours. The last brief went out on Tuesday 6 October at 22:56, and the next run was this morning, Thursday 8 October, at ~06:40 your time. All of Wednesday was missed, and no pause marker covered it. During the gap, the four design-lane veto windows closed with nobody to read them. Heavy tests also sat red with no builder running.
+[The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
-**If you were away or had the app closed:** nothing to do, just say so. A marker at `~/.claude/threadbare-pause.json` keeps a planned break off your list next time. **If you weren't:** say so, and it becomes a fault to chase.
+### Was the Claude app closed on Thursday 1 Oct afternoon and Friday 2 Oct morning? (lane silence, ended)
 
-### Was the app closed from Thursday ~17:00 to Friday ~13:45? (lane silence, 1–2 October, ended)
+The power log shows the computer **was on**: lanes stopped about 16:30 Thursday, the computer stayed awake until 21:38 when it was shut down or put to sleep, then woke 08:49 Friday. Lanes didn't return until about 13:45. No pause marker covered it.
 
-No lane ran for about 21 hours. The last brief went out on Thursday 1 October at 16:55, and lanes resumed on Friday 2 October at ~13:48 your time. The builder, design and grooming lanes all missed their slots. No pause marker covered it, and it was a weekday.
-
-**If you were away or had the app closed:** nothing to do, just say so. **If you weren't:** say so, and it becomes a fault to chase.
-
-### Were you away from Tuesday evening to Wednesday evening? (lane silence, 29–30 September, ended)
-
-No scheduled lane ran for about 25 hours, from Tuesday 29 September ~19:30 to Wednesday 30 September ~20:20 your time. Nothing merged in that window, and every lane has since resumed on its own. No pause marker covered it, and it was a weekday.
-
-**If you were away or had the app closed:** nothing to do, just say so. **If you weren't:** say so, and it becomes a fault to chase.
+**If the app was closed:** nothing to do, just say so. **If it wasn't:** say so, and it becomes a fault to chase.
 
 ### Were you away from the app on Monday 14 and Tuesday 15 September? (lane silence, all ended)
 
-[The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) read the computer's power log. **The 17 and 18 September stops are explained: the computer was asleep.** But on **14 and 15 September the computer was awake all day, and no lane started at all**. So either the Claude app was closed, or the lanes were switched off.
+[The 09-23 retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-09-23.md) found the computer **awake all day** on 14 and 15 September, with no lane starting. So either the app was closed, or the lanes were switched off.
 
-**If you were away or had the app closed:** nothing to do. **If you weren't:** say so, and it becomes a fault to chase.
+**If the app was closed:** nothing to do. **If it wasn't:** say so, and it becomes a fault to chase.
 
 ### Fog or witness: does a stranger's sheet show what you just watched happen?
 
@@ -34,16 +26,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-06: playtesters can now start a few seasons into a world** ([THR-1744](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), part 1), so later rounds can reach factions, undertakings and ambitions. Merged via [#2264](https://github.com/christianspliid-ui/threadbare/pull/2264) and live. The first warm round comes next.
-- **2026-10-06: sphere scores have a design** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)). This is the groundwork your Dominion formula is waiting on. Plan merged via [#2261](https://github.com/christianspliid-ui/threadbare/pull/2261). The design lane decided it; the veto window has now closed.
-- **2026-10-06: the power model behind your Dominion ruling now lives in the game's own tools** ([THR-1767](https://linear.app/threadbare/issue/THR-1767)), so every Dominion number is measured on the same scripted run. Merged via [#2260](https://github.com/christianspliid-ui/threadbare/pull/2260).
-- **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)): who writes sphere scores, how fast, and what the formula reads today. Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) at 17:19 UTC (notes only).
-- **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)): the shortlist cut them out by sheer volume. Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) at 15:16 UTC and live.
-- **2026-10-06: fair fights.** Quests now face the same odds window as everything else, and sure things stop paying twice ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) at 13:42 UTC and live.
-- **2026-10-06: a found lead now ends the climb** ([THR-1702](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)): a located lead on a site you can never delve becomes a known place. Merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) at 07:57 UTC and live.
-- **2026-10-06: essence a god earns through its own acts now counts toward attunement** ([THR-1752](https://linear.app/threadbare/issue/THR-1752/the-essence-earned-attunement-counter-misses-essence-a-god-act-moves)), caught by code review on the hover work. Merged via [#2253](https://github.com/christianspliid-ui/threadbare/pull/2253) and live.
-- **2026-10-06: what you spend and what you risk now shows on hover** ([THR-1713](https://linear.app/threadbare/issue/THR-1713/recurs-after-fix-the-player-cant-read-what-they-spend-or-risk-round-2)), a round-2 playtest finding. Merged via [#2252](https://github.com/christianspliid-ui/threadbare/pull/2252) and live.
-- **2026-10-06: "Dominion" is in the glossary** ([THR-1746](https://linear.app/threadbare/issue/THR-1746/ul-proposal-dominion-the-graded-match-between-a-world-objects-sphere)), the first piece of your power-progression ruling. The builder cleared its conflict; merged via [#2250](https://github.com/christianspliid-ui/threadbare/pull/2250) at 00:28 UTC.
+- **2026-10-08: the 6–8 October silence is explained, no answer needed.** The power log shows the computer asleep from Tuesday 23:23 to Thursday 06:39 ([workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
+- **2026-10-08: the 29–30 September silence is explained, no answer needed.** The computer crashed or lost power; lanes returned ~3½ h after it restarted (same retro).
+- **2026-10-08: "heavy tests failing for 35 hours" was a flaky test, not broken code.** The same commit passed on Wednesday's nightly run; [THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the) fixes the check.
+- **2026-10-06: playtesters can now start a few seasons into a world** ([THR-1744](https://linear.app/threadbare/issue/THR-1744/warm-playtest-no-knowledge-testers-start-a-few-hundred-ticks-into-a), part 1). Merged via [#2264](https://github.com/christianspliid-ui/threadbare/pull/2264) and live. The first warm round comes next.
+- **2026-10-06: sphere scores have a design** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)). Plan merged via [#2261](https://github.com/christianspliid-ui/threadbare/pull/2261); the veto window has closed.
+- **2026-10-06: the power model behind your Dominion ruling now lives in the game's own tools** ([THR-1767](https://linear.app/threadbare/issue/THR-1767)). Merged via [#2260](https://github.com/christianspliid-ui/threadbare/pull/2260).
+- **2026-10-06: the research behind your Dominion formula is on record** ([THR-1759](https://linear.app/threadbare/issue/THR-1759)). Merged via [#2259](https://github.com/christianspliid-ui/threadbare/pull/2259) (notes only).
+- **2026-10-06: why masters skip master-level work is now measured** ([THR-1742](https://linear.app/threadbare/issue/THR-1742/masters-still-dont-attempt-harder-work-than-experts-they-choose-master)). Merged via [#2258](https://github.com/christianspliid-ui/threadbare/pull/2258) and live.
+- **2026-10-06: fair fights.** Quests now face the same odds window as everything else ([THR-1740](https://linear.app/threadbare/issue/THR-1740/forecast-window-re-plan-branching-quests-win-at-near-certain-odds-the)). Merged via [#2257](https://github.com/christianspliid-ui/threadbare/pull/2257) and live.
+- **2026-10-06: a found lead now ends the climb** ([THR-1702](https://linear.app/threadbare/issue/THR-1702/a-lead-that-reaches-located-on-a-wonder-can-never-become-a-delve-and)). Merged via [#2255](https://github.com/christianspliid-ui/threadbare/pull/2255) and live.
 
 ---
 
