@@ -97,7 +97,7 @@ import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
 import { applyWhisperPull, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
 import { getDivineInfluences } from './interventionEffects';
-import type { PremonitionTrace } from '../types/premonition';
+import type { CompulsionOutcomeTrace } from '../types/trace';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
@@ -1540,26 +1540,22 @@ export function phaseAgentDecision(
           }
           const message = compulsionOutcomeMessage(actor.name, targetName, resolution);
           if (message) {
-            const outcome: PremonitionTrace['outcome'] = resolution.kind === 'taken'
+            const outcome: CompulsionOutcomeTrace['outcome'] = resolution.kind === 'taken'
               ? 'taken'
               : resolution.kind === 'lapsed' && resolution.reason === 'expired'
                 ? 'lapsed_expired'
                 : 'lapsed_unavailable';
-            const outcomeTrace: PremonitionTrace = {
+            emitTrace({
               category: 'divine_premonition',
-              subtype: 'compulsion',
+              subtype: 'compulsion_outcome',
+              tick: state.tick,
               agentId,
               agentName: actor.name,
-              tick: state.tick,
-              options: [compulsionTargetId],
-              playerChoice: compulsionTargetId,
-              essenceCost: 0,
-              sphereUsed: null,
-              influenceId: null,
+              templateId: compulsionTargetId,
               outcome,
+              heldTicks: state.tick - compulsionTick,
               summary: message,
-            };
-            emitTrace(outcomeTrace as unknown as TraceEntry);
+            });
             newEvents.push({
               id: `divine_steer_${agentId}_${state.tick}`,
               tick: state.tick,

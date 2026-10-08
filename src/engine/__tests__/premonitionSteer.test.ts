@@ -15,6 +15,7 @@ import {
   whisperMatchesEntry,
 } from '../premonitionSteer';
 import { scoreUnifiedBoard } from '../decisionBoard';
+import { routeNotifications, eventTypeToCategory } from '../notificationRouter';
 import type { DivineInfluenceEntry } from '../../types/dream';
 import type { ScoredCandidate } from '../encounterScoring';
 import {
@@ -128,6 +129,19 @@ describe('whisper pull (THR-1781)', () => {
     const decision = { rankedCandidates: ranked, topCandidates: ranked, selected: null };
     expect(applyWhisperPull(decision, towardIron, PAID_AT + WHISPER_INFLUENCE_DURATION, 0)).toBe(0);
     expect(decision.rankedCandidates).toBe(ranked);
+  });
+});
+
+describe('steer outcome reaches the player (THR-1781)', () => {
+  it('routes the decision phase\'s outcome event to a toast in the divine category', () => {
+    expect(eventTypeToCategory('divine_premonition')).toBe('divine');
+    const empty = { toasts: [], alerts: [], popupQueue: [], entityNotices: [] } as never;
+    const routed = routeNotifications([{
+      id: 'divine_steer_a_10', tick: 10, type: 'divine_premonition',
+      message: 'Your will holds: Kael turns to Duel.', significance: 0.6,
+      isInterventionBeat: true, actorId: 'a', notification: { channel: 'toast' },
+    }], empty, 1_000);
+    expect(routed.toasts.map(t => t.message)).toEqual(['Your will holds: Kael turns to Duel.']);
   });
 });
 
