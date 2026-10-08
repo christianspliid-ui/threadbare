@@ -3,6 +3,7 @@ import { WorldGraph } from '../graph';
 import {
   applyEncounterAftermathReaction,
   resolveAftermathContextForAgent,
+  resolveNotificationsForAnsweredAction,
 } from '../encounterAftermath';
 import { createSimulationRuntime } from '../simulationRuntime';
 import type { GameState } from '../../types/gameState';
@@ -365,11 +366,29 @@ describe('resolveAftermathContextForAgent — pinned to the on-screen action (TH
     const runtime = createSimulationRuntime();
     if ('error' in result) throw new Error(result.error);
     const applied = applyEncounterAftermathReaction(state, result.action, result.reaction, state.tick, runtime);
-    // Resolving B never touches A's notification; A is still answerable by its own pin.
-    const pendingA = (applied.state.encounterNotifications ?? []).find(n => n.actionId === 'ua-a');
-    expect(pendingA?.resolved).toBe(false);
-    const thenA = resolveAftermathContextForAgent(applied.state, 'actor-1', 'reaction-a', { actionId: 'ua-a' });
+    // The host then discharges the answered action's notifications — B's only.
+    const afterAnswer = {
+      ...applied.state,
+      encounterNotifications: resolveNotificationsForAnsweredAction(applied.state.encounterNotifications ?? [], result.action),
+    };
+    const byAction = new Map((afterAnswer.encounterNotifications ?? []).map(n => [n.actionId, n.resolved]));
+    expect(byAction.get('ua-b')).toBe(true);
+    expect(byAction.get('ua-a')).toBe(false);
+    const thenA = resolveAftermathContextForAgent(afterAnswer, 'actor-1', 'reaction-a', { actionId: 'ua-a' });
     expect('error' in thenA).toBe(false);
+  });
+
+  it('answering one of two same-template aftermaths resolves only its own pinned notification', () => {
+    const notifications = [makeNotification('ua-a', 'enc.alpha'), makeNotification('ua-b', 'enc.alpha')];
+    const answered = makeAction('ua-b', 'enc.alpha', 9, [REACTION_A]);
+    const after = resolveNotificationsForAnsweredAction(notifications, answered);
+    expect(after.map(n => [n.actionId, n.resolved])).toEqual([['ua-a', false], ['ua-b', true]]);
+  });
+
+  it('an unpinned notification still resolves by agent + template (legacy records)', () => {
+    const unpinned = { ...makeNotification('ua-a', 'enc.alpha'), actionId: undefined };
+    const after = resolveNotificationsForAnsweredAction([unpinned], makeAction('ua-z', 'enc.alpha', 1, [REACTION_A]));
+    expect(after[0].resolved).toBe(true);
   });
 
   it('a pin to an action that is no longer pending is an error naming it, never a fall-through', () => {

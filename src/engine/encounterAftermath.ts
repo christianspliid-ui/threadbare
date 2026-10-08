@@ -20,6 +20,7 @@ import {
   ASPECT_CHRONICLE_PROSE,
 } from '../data/aspect-content';
 import type { ChronicleEntry } from '../types/narrative';
+import type { EncounterNotification } from '../types/encounterVisibility';
 import type { SphereName, CreationSphereName } from '../types';
 import { CREATION_SPHERE_NAMES } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -518,6 +519,27 @@ export function resolveAftermathContextForAgent(
   const notificationRefusal = alreadyAppliedRefusal(notificationSelectedAction, agentId);
   if (notificationRefusal) return notificationRefusal;
   return pickAftermathReaction(state, agentId, notificationSelectedAction, reactionId);
+}
+
+/**
+ * Mark resolved the notifications an answered aftermath discharges (THR-1777).
+ *
+ * A notification pinned to an action resolves only with that action; the
+ * agent + template match is for older, unpinned notifications. An agent can
+ * hold two aftermaths of one template, and answering the newer must leave the
+ * older pending — before, the template match resolved both.
+ */
+export function resolveNotificationsForAnsweredAction(
+  notifications: readonly EncounterNotification[],
+  action: Pick<UnifiedAction, 'actionId' | 'actorId' | 'templateId'>,
+): EncounterNotification[] {
+  return notifications.map(notification => {
+    if (notification.resolved) return notification;
+    const matches = notification.actionId
+      ? notification.actionId === action.actionId
+      : notification.agentId === action.actorId && notification.encounterId === action.templateId;
+    return matches ? { ...notification, resolved: true } : notification;
+  });
 }
 
 function pickAftermathReaction(

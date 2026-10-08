@@ -278,6 +278,7 @@ import {
   applyEncounterAftermathReaction,
   AUTO_AFTERMATH_TRACE_CATEGORY,
   resolveAftermathContextForAgent,
+  resolveNotificationsForAnsweredAction,
 } from '../../engine/encounterAftermath';
 import { checkMidEncounterPromotion } from '../../engine/attentionTier';
 import { consumeMatchingMarks } from '../../engine/hiddenMarks';
@@ -3603,18 +3604,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     const committedState = {
       ...stateAfterMarks,
-      encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification => {
-        if (notification.resolved) return notification;
-        // THR-1777 — a notification pinned to an action resolves only with that
-        // action; the template match is for older, unpinned notifications. An
-        // agent can hold two aftermaths of one template, and answering the newer
-        // must leave the older pending.
-        const matches = notification.actionId
-          ? notification.actionId === activeAction.actionId
-          : notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
-        if (!matches) return notification;
-        return { ...notification, resolved: true };
-      }),
+      encounterNotifications: resolveNotificationsForAnsweredAction(
+        stateAfterMarks.encounterNotifications ?? [],
+        activeAction,
+      ),
     };
 
     // Constant-returning updater: a StrictMode double-invoke returns the same object and
@@ -3671,7 +3664,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         reactionId,
         reason: result.message,
         summary: `aftermath reaction refused: ${result.message}`,
-      } as unknown as Parameters<typeof emitTrace>[0]);
+      });
       return;
     }
     setAftermathReactionError(null);
