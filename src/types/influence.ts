@@ -199,6 +199,11 @@ export interface AscendantProperties {
    */
   spherePoints?: Partial<Record<SphereName, number>>;
   /**
+   * Whether `spherePoints` is the player's buy or the preset written by the
+   * creation fallback (THR-1749). Absent on nodes created before it shipped.
+   */
+  spherePointsSource?: 'bought' | 'fallback';
+  /**
    * Creation-time snapshot of the starting pool. **Not the live store** — the
    * player's essence lives in `GameState.essencePool` (THR-1645), which the
    * bar reads and every spend and regen writes. Nothing updates this after

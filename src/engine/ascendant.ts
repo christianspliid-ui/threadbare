@@ -118,12 +118,12 @@ export function generateArchetypes(count: number, seed: number): AscendantArchet
 function resolveBoughtSpheres(
   archetype: AscendantArchetype,
   ascendantId: string,
-): { spherePoints: SpherePoints; sphereAlignment: SphereAlignment } {
+): { spherePoints: SpherePoints; sphereAlignment: SphereAlignment; spherePointsSource: 'bought' | 'fallback' } {
   const bought = archetype.spherePoints;
   const verdict = bought ? validateSpherePoints(bought) : null;
   if (bought && verdict?.ok) {
     const derived = deriveAlignmentFromPoints(bought);
-    return { spherePoints: { ...bought }, sphereAlignment: derived ?? archetype.sphereAlignment };
+    return { spherePoints: { ...bought }, sphereAlignment: derived ?? archetype.sphereAlignment, spherePointsSource: 'bought' };
   }
   const written = presetFromAlignment(archetype.sphereAlignment);
   const reason = verdict && !verdict.ok ? verdict.reason : 'missing';
@@ -136,7 +136,7 @@ function resolveBoughtSpheres(
     written,
     summary: `Sphere points ${reason === 'missing' ? 'missing' : `invalid (${reason})`} — preset from ${archetype.sphereAlignment.primary} / ${archetype.sphereAlignment.secondary}`,
   });
-  return { spherePoints: written, sphereAlignment: archetype.sphereAlignment };
+  return { spherePoints: written, sphereAlignment: archetype.sphereAlignment, spherePointsSource: 'fallback' };
 }
 
 export interface CreateAscendantResult {
@@ -161,12 +161,13 @@ export function createAscendant(
   const avatarId = `avatar.${config.archetype.id}`;
 
   const startingPool: EssencePool = createStartingEssencePool();
-  const { spherePoints, sphereAlignment } = resolveBoughtSpheres(config.archetype, ascendantId);
+  const { spherePoints, sphereAlignment, spherePointsSource } = resolveBoughtSpheres(config.archetype, ascendantId);
 
   const ascendantProperties: AscendantProperties = {
     actorType: 'ascendant',
     sphereAlignment,
     spherePoints,
+    spherePointsSource,
     essencePool: startingPool,
     maxEssence: BASE_MAX_ESSENCE,
     archetypeId: config.archetype.id,

@@ -93,9 +93,18 @@ export function getSpherePoints(props: { spherePoints?: unknown; sphereAlignment
   return {};
 }
 
-/** Whether the vector `getSpherePoints` returns was bought or is the preset fallback. */
-export function getSpherePointsSource(props: { spherePoints?: unknown } | null | undefined): 'bought' | 'fallback' {
-  return props && hasAnyPoints(props.spherePoints) ? 'bought' : 'fallback';
+/**
+ * Whether the vector `getSpherePoints` returns was bought or is the preset
+ * fallback. Reads the `spherePointsSource` stamp `createAscendant` writes (its
+ * fallback path also stores the preset in `spherePoints`, so non-emptiness alone
+ * cannot tell them apart); unstamped nodes fall back to non-emptiness.
+ */
+export function getSpherePointsSource(
+  props: { spherePoints?: unknown; spherePointsSource?: unknown } | null | undefined,
+): 'bought' | 'fallback' {
+  if (!props) return 'fallback';
+  if (props.spherePointsSource === 'bought' || props.spherePointsSource === 'fallback') return props.spherePointsSource;
+  return hasAnyPoints(props.spherePoints) ? 'bought' : 'fallback';
 }
 
 /**

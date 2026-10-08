@@ -187,6 +187,7 @@ describe('createAscendant writes the vector (THR-1749 E3)', () => {
     const props = build(archetype({ spherePoints: { force: 2, matter: 2, life: 1 } }));
     expect(props.spherePoints).toEqual({ force: 2, matter: 2, life: 1 });
     expect(props.sphereAlignment).toEqual({ primary: 'force', secondary: 'matter' });
+    expect(getSpherePointsSource(props)).toBe('bought');
     expect(getTraces().some(t => t.category === 'sphere_points.fallback')).toBe(false);
   });
 
@@ -196,11 +197,14 @@ describe('createAscendant writes the vector (THR-1749 E3)', () => {
     expect(props.sphereAlignment).toEqual({ primary: 'mind', secondary: 'spirit' });
     const trace = getTraces().find(t => t.category === 'sphere_points.fallback');
     expect(trace).toMatchObject({ reason: 'missing' });
+    // The fallback also stores the preset in spherePoints; the stamp still reads it as fallback.
+    expect(getSpherePointsSource(props)).toBe('fallback');
   });
 
   it('an invalid buy falls back with its reason', () => {
     const props = build(archetype({ spherePoints: { force: 3, mind: 2 } }));
     expect(props.spherePoints).toEqual({ mind: 3, spirit: 2 });
     expect(getTraces().find(t => t.category === 'sphere_points.fallback')).toMatchObject({ reason: 'both_poles' });
+    expect(getSpherePointsSource(props)).toBe('fallback');
   });
 });
