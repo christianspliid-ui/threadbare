@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 11:57 local (09:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 12:57 local (10:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,13 +28,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 jobs ready, 2 being built.** Nothing in the ready queue is older than 3 days or blocked.
+**Healthy: 8 jobs ready, 1 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **God's Will does nothing** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)): the fix in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) no longer clashes with main and is now set to merge once checks pass. The ticket still shows no builder on it, which is fine: it closes when the merge lands.
-- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)): built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280). It no longer clashes with main, but it is not set to merge yet (open about 4 h). No work is sitting unsaved on this machine for either ticket.
+- **God’s Will does nothing** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)): the fix in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) is set to merge, but clashes with main again after the rite merged (one generated file). The builder lane clears it. Not yours.
 
 ## Health
 
-- **Heavy simulation tests are red on main's newest commit** (bd0baddf), as on the one before. A follow-up fix is owed. Not yours.
+- [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) has a merge conflict again (about 1 h old, in a generated wiring file). The builder lane’s unstick duty owns it.
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. The live site serves the latest main (bd0baddf), all 11 lanes are on schedule, the worktree cleaner last ran at 11:46, and the simulation runs at normal speed (143 ms/tick, +19% on the weekly median, under the 25% alarm line).
+- Everything else is green. The live site serves the latest main (ccf17216), heavy simulation tests are green again on main, all 11 lanes are on schedule, the worktree cleaner last ran at 12:40, and the simulation runs at normal speed (137 ms/tick, +12% on the weekly median).
