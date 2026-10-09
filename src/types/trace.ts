@@ -104,6 +104,7 @@ export type TraceCategory =
   | 'core_personality'
   | 'reaction_selected'
   | 'player_receipt'
+  | 'aftermath_reaction_refused' // THR-1777: a player's aftermath pick did not land
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
@@ -979,6 +980,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reaction_selected',
   // Divine Receipt — player action resolution feedback (THR-727)
   'player_receipt',
+  // A player's aftermath pick refused by the resolver (THR-1777)
+  'aftermath_reaction_refused',
   'receipt.target_changes', 'beat.gift_placed',
   // Spine gifts wait for the player (THR-1647)
   'beat.spine_deferred',
@@ -4846,6 +4849,7 @@ export type TraceEntry =
   | SourceUpkeepTrace
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
+  | AftermathReactionRefusedTrace
   | ReceiptTargetChangesTrace
   | BeatGiftPlacedTrace
   | SpineDeferredTrace
@@ -5138,6 +5142,20 @@ export interface AmbitionMintedTrace extends TraceBase {
   sampleCulpritAgentIds?: string[];
   /** How many of this tick's grievance mints took a full mortal's secondary want (THR-1383). */
   displacedCount?: number;
+}
+
+/**
+ * Trace: the player picked an aftermath reaction and the resolver refused it
+ * (THR-1777). Before, the veil dropped the refusal silently. Player-scale.
+ */
+export interface AftermathReactionRefusedTrace extends TraceBase {
+  category: 'aftermath_reaction_refused';
+  agentId: string;
+  /** The aftermath the veil was showing, when it carried one. */
+  actionId?: string;
+  reactionId: string;
+  /** The resolver's refusal, verbatim — the veil shows a plain line instead. */
+  reason: string;
 }
 
 /**
