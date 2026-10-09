@@ -21,8 +21,8 @@ On 2026-10-09, five green PRs (#2271, #2272, #2273, #2275, #2277) sat conflicted
 
 **The change** (Christian: harness tweaks ship directly, no ticket):
 
-- **`scripts/wip-gate.ts`, a PreToolUse hook on `mcp__.*__save_issue`.** It refuses a move to In Dev while a non-draft, unheld open PR closes a different ticket.
-  - Allowed: a resume of the PR's own ticket.
+- **`scripts/wip-gate.ts`, a PreToolUse hook on `mcp__.*__save_issue`.** It refuses a claim (a move to In Dev that sets an assignee) while a non-draft, unheld open PR closes a different ticket.
+  - Allowed: a resume of the PR's own ticket, and the THR-1283 park-restore (`assignee: null`). The review gate caught that the first version would have refused the park-restore.
   - Never blocking: PRs idle more than 24 h.
   - Fail-soft when `gh` errors.
   - Every decision is logged to `.claude/logs/wip-gate.log` in the home tree.

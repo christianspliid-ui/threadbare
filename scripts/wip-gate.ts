@@ -29,7 +29,8 @@
  * ## The gate
  *
  * PreToolUse hook on the Linear MCP `save_issue` tool (matcher `mcp__.*__save_issue`).
- * When the call moves an issue to **In Dev**, list the open PRs. If any **blocking** PR
+ * When the call is a **claim** (moves an issue to In Dev *and* sets an assignee — a move with
+ * `assignee: null` is the THR-1283 park-restore and is never gated), list the open PRs. If any **blocking** PR
  * exists, deny (exit 2, reason on stderr). A blocking PR is open, not a draft, carries a
  * line-anchored close line (`Fixes|Closes|Resolves THR-N`, the same predicate as
  * `linear-autoclose.yml`, THR-738) for a ticket other than the one being claimed, has no
@@ -100,6 +101,18 @@ export function movesToInDev(toolInput: Record<string, unknown> | null | undefin
   return s.toLowerCase() === "in dev" || s === IN_DEV_STATE_ID;
 }
 
+/**
+ * True when a `save_issue` input is a **claim**: a move to In Dev that also assigns the
+ * issue. A move to In Dev with `assignee: null` is pull-work's park-restore (THR-1283,
+ * SKILL.md § verified-shipped park), which must never be gated: refusing it leaves a parked
+ * issue in Ready for Dev to be re-offered every run.
+ */
+export function isClaim(toolInput: Record<string, unknown> | null | undefined): boolean {
+  if (!movesToInDev(toolInput)) return false;
+  const assignee = toolInput?.assignee;
+  return typeof assignee === "string" && assignee.trim() !== "";
+}
+
 /** The PRs that make a claim of `claimedId` unsafe right now. */
 export function blockingPrs(prs: readonly OpenPr[], claimedId: string | null, now: Date): OpenPr[] {
   const claimed = claimedId?.toUpperCase() ?? null;
@@ -145,7 +158,7 @@ export function decideWipGate(
 ): WipDecision {
   const claimedId = typeof toolInput?.id === "string" ? toolInput.id.trim() : null;
   if (!claimedId) return { verdict: "allow", reason: "not an update of an existing issue", claimedId, blocking: [] };
-  if (!movesToInDev(toolInput)) return { verdict: "allow", reason: "not a move to In Dev", claimedId, blocking: [] };
+  if (!isClaim(toolInput)) return { verdict: "allow", reason: "not a claim (no move to In Dev with an assignee)", claimedId, blocking: [] };
   const blocking = blockingPrs(prs, claimedId, now);
   if (blocking.length === 0) return { verdict: "allow", reason: "no unmerged ticket PR", claimedId, blocking: [] };
   return { verdict: "deny", reason: renderDenial(claimedId, blocking), claimedId, blocking: blocking.map((p) => p.number) };
@@ -201,7 +214,7 @@ function runHook(): number {
   const cwd = payload.cwd || process.cwd();
   const input = payload.tool_input ?? {};
   // Hot path: most save_issue calls are not claims. Skip the gh call entirely.
-  if (!movesToInDev(input)) return 0;
+  if (!isClaim(input)) return 0;
 
   let prs: OpenPr[];
   try {

@@ -79,8 +79,13 @@ describe("decideWipGate", () => {
     expect(decideWipGate({ id: "THR-1754", description: "x" }, open, NOW).verdict).toBe("allow");
     expect(decideWipGate({ title: "new", team: "Threadbare", state: "In Dev" }, open, NOW).verdict).toBe("allow");
   });
+  it("never gates the THR-1283 park-restore (In Dev with assignee null) or a stateless assign", () => {
+    expect(decideWipGate({ id: "THR-1754", state: "In Dev", assignee: null, priority: 2 }, open, NOW).verdict).toBe("allow");
+    expect(decideWipGate({ id: "THR-1754", state: "In Dev" }, open, NOW).verdict).toBe("allow");
+    expect(decideWipGate({ id: "THR-1754", assignee: "me" }, open, NOW).verdict).toBe("allow");
+  });
   it("allows the claim once nothing is unmerged", () => {
-    expect(decideWipGate({ id: "THR-1754", state: "In Dev" }, [], NOW).verdict).toBe("allow");
+    expect(decideWipGate({ id: "THR-1754", state: "In Dev", assignee: "me" }, [], NOW).verdict).toBe("allow");
   });
 });
 
@@ -102,15 +107,15 @@ describe("hook entry (real script, stdin → exit code)", () => {
 
   const fresh = new Date().toISOString();
   it("exits 2 with the reason on stderr when a ticket PR is unmerged", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
-    const r = run({ id: "THR-9", state: "In Dev" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]);
+    const r = run({ id: "THR-9", state: "In Dev", assignee: "me" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]);
     expect(r.status).toBe(2);
     expect(r.stderr).toContain("PR #7");
   });
   it("exits 0 for a resume of the PR's own ticket", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
-    expect(run({ id: "THR-8", state: "In Dev" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]).status).toBe(0);
+    expect(run({ id: "THR-8", state: "In Dev", assignee: "me" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]).status).toBe(0);
   });
   it("fails soft (exit 0 + warning) when the PR list cannot be read", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
-    const r = run({ id: "THR-9", state: "In Dev" }, "broken");
+    const r = run({ id: "THR-9", state: "In Dev", assignee: "me" }, "broken");
     expect(r.status).toBe(0);
     expect(r.stderr).toContain("ALLOWING fail-soft");
   });
