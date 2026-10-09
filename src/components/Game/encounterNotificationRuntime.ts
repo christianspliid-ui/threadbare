@@ -143,6 +143,39 @@ export function isStepNotificationSupersededByAftermath(
 }
 
 /**
+ * Mark resolved everything an acknowledged aftermath discharges (THR-1778).
+ *
+ * Acknowledge ("Return to the world") used to resolve only the record on
+ * screen. A spent step notification is held back only while its aftermath is
+ * unresolved (`isStepNotificationSupersededByAftermath`), so the moment the
+ * aftermath resolved, the chapter's final step notification became openable
+ * again, the auto-open scan reopened it against the resolved action, and the
+ * player saw the same aftermath a second time.
+ *
+ * Resolves: the acknowledged record itself; every record pinned to the same
+ * action (`actionId`, or `fallbackActionId` — the action the veil was showing —
+ * when the acknowledged record is unpinned); and every *unpinned* record of the
+ * same agent + encounter. A record pinned to a *different* action is never
+ * touched, so an agent holding two aftermaths of one template keeps the other
+ * one pending (the THR-1777 rule `resolveNotificationsForAnsweredAction` keeps).
+ */
+export function resolveNotificationsOnAftermathAcknowledge(
+  notifications: readonly EncounterNotification[],
+  acknowledged: Pick<EncounterNotification, 'id' | 'actionId' | 'agentId' | 'encounterId'>,
+  fallbackActionId?: string,
+): EncounterNotification[] {
+  const actionId = acknowledged.actionId ?? fallbackActionId;
+  return notifications.map(notification => {
+    if (notification.resolved) return notification;
+    const matches = notification.id === acknowledged.id
+      || (notification.actionId
+        ? actionId !== undefined && notification.actionId === actionId
+        : notification.agentId === acknowledged.agentId && notification.encounterId === acknowledged.encounterId);
+    return matches ? { ...notification, resolved: true } : notification;
+  });
+}
+
+/**
  * Drive the one auto-interrupt slot down the notification queue until a surface
  * actually opens (investigated under THR-1005).
  *
