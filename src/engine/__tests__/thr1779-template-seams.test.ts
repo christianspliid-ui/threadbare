@@ -117,19 +117,15 @@ describe('THR-1779 — a work anchored on a named work does not double its noun'
   });
 
   it('never renders "Quarter … Quarter" across many work ids', () => {
-    const doubled: string[] = [];
-    for (let i = 0; i < 200; i++) {
-      const name = generateWorkName({
-        workId: `work-${i}`,
-        kindId: 'found_quarter',
-        reach: 'heart',
-        anchorName: 'The Quarter of Heart of the Barrow',
-        actorName: 'Ilsa',
-        nounOverride: 'Quarter',
-      });
-      if ((name.match(/\bQuarter\b/g) ?? []).length > 1) doubled.push(name);
-    }
-    expect(doubled).toEqual([]);
+    const names = Array.from({ length: 200 }, (_, i) => generateWorkName({
+      workId: `work-${i}`,
+      kindId: 'found_quarter',
+      reach: 'heart',
+      anchorName: 'The Quarter of Heart of the Barrow',
+      actorName: 'Ilsa',
+      nounOverride: 'Quarter',
+    }));
+    expect(names.filter(n => (n.match(/\bQuarter\b/g) ?? []).length > 1)).toEqual([]);
   });
 
   it('an anchor without the noun still names the work after its ground', () => {
