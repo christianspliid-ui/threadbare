@@ -35,6 +35,8 @@ import type { FamiliarityMap } from '../types/familiarity';
 import { getUITooltip } from '../data/ui-content';
 import { getArchetype } from '../data/archetype-content';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
+import { DOOM_ARCHETYPE_DISPLAY_NAMES, DOOM_ARCHETYPE_TOOLTIPS } from '../data/doom-archetype-presentation';
+import type { DoomClockArchetype } from '../types/doomClock';
 import { getCapabilityWord } from '../data/domain-words';
 import { getFamiliarity, getKnowledgeLevel } from './familiarity';
 import { getAgentDetail } from './agentDetail';
@@ -199,6 +201,12 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
         label: 'Doom Clock',
         desc: 'A measure of how close the world draws to the Unmaking. Managed via {{ui.mandate_tracker}}.',
       };
+    }
+
+    // THR-1774: one tooltip per doom archetype — the doom bar sigil's explanation.
+    if (Object.prototype.hasOwnProperty.call(DOOM_ARCHETYPE_TOOLTIPS, suffix)) {
+      const doom = suffix as DoomClockArchetype;
+      return { label: DOOM_ARCHETYPE_DISPLAY_NAMES[doom], desc: DOOM_ARCHETYPE_TOOLTIPS[doom] };
     }
 
     // Otherwise, return null for future mandate/etc lookups

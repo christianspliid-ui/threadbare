@@ -19,6 +19,7 @@ import { TerrainTextureLab } from './components/HexMapV2/lab/TerrainTextureLab';
 import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
+import { parseDoomArchetypeParam, DEV_SHOWCASE_DOOM_ARCHETYPE } from './engine/doomArchetypeSelection';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
@@ -182,6 +183,7 @@ function App() {
         cosmology={cosmology}
         seed={seed}
         mapSize={mapSize}
+        doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
       />
     );
@@ -216,6 +218,10 @@ function App() {
     // THR-1744: `?warm=<ticks>` — honoured only with `?view=game&seeded` (the parser
     // checks and warns); works on the deployed build, which is where warm playtesters play.
     const warmTicks = devFlags.firstUnmet ? 0 : parseWarmStartTicks(window.location.search);
+    // THR-1774: every world draws its doom; the showcase routes pin Breach so their
+    // evidence stays comparable, and a valid `?doom=` overrides on any route.
+    const doomArchetype = parseDoomArchetypeParam(window.location.search)
+      ?? (isDevQuickStart ? DEV_SHOWCASE_DOOM_ARCHETYPE : undefined);
 
     // Allow ?size= URL param to override the hunger-derived map size.
     // Useful for dev testing: ?view=game&seeded&size=medium avoids the large-map stall (THR-162).
@@ -235,6 +241,7 @@ function App() {
         seedTestPackage={isDevQuickStart}
         placeAvatarForMeeting={isDevQuickStart && devFlags.firstUnmet}
         warmTicks={warmTicks}
+        doomArchetype={doomArchetype}
         onExitToTitle={handleExitToTitle}
       />
     );

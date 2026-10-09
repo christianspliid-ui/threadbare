@@ -330,6 +330,8 @@ interface GameViewProps {
   onExitToTitle?: () => void;
   /** THR-1744: `?warm=<ticks>` — advance the seeded world this many ticks before handing over control. 0/absent = off. */
   warmTicks?: number;
+  /** THR-1774: pin the doom (the showcase routes, `?doom=`). Absent → the world draws it. */
+  doomArchetype?: import('../../types/doomClock').DoomClockArchetype;
 }
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
@@ -369,7 +371,7 @@ function matchesTieredEncounterAction(
     && action.templateId === open.notification.encounterId;
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0 }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -412,7 +414,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype });
 
   // THR-1711 (6): the interrupt auto-pause is declared far below (it reads the
   // interrupt registry), but the play toggle and the arrival pause are wired
