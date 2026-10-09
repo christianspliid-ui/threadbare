@@ -231,24 +231,24 @@ function AgendaLine({ row }: { row: NotableAgendaRow }) {
       data-testid="notable-agenda"
       aria-label={`${row.familyLabel}, phase ${row.phaseIndex} of ${row.totalPhases}, ${row.status}`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="truncate" style={{ minWidth: 0 }}>
-          {row.targetName && (
-            <ListRow.Subtitle>
-              {agendaVerb(row)}
-              {row.targetRef ? (
-                <EntityLink id={row.targetRef.id} name={row.targetName} entityRef={row.targetRef} />
-              ) : (
-                row.targetName
-              )}
-            </ListRow.Subtitle>
-          )}
+      {/* The family label rides the progress strip so the target line keeps the full
+          width — beside it, a long place name truncated to "Eyes on …" (THR-1780). */}
+      {row.targetName && (
+        <div className="truncate">
+          <ListRow.Subtitle>
+            {agendaVerb(row)}
+            {row.targetRef ? (
+              <EntityLink id={row.targetRef.id} name={row.targetName} entityRef={row.targetRef} />
+            ) : (
+              row.targetName
+            )}
+          </ListRow.Subtitle>
         </div>
-        <span className="uppercase tracking-wider shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
+      )}
+      <div className="mt-0.5 flex items-center gap-2">
+        <span className="uppercase tracking-wider" style={{ fontSize: '0.6rem', color }}>
           {row.familyLabel}
         </span>
-      </div>
-      <div className="mt-1 flex items-center gap-2">
         <div className="flex gap-1" aria-hidden="true">
           {Array.from({ length: row.totalPhases }).map((_, idx) => (
             <span

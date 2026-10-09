@@ -53,7 +53,16 @@ export function NotablesButton({ gameState }: NotablesButtonProps) {
       onOpenChange={setOpen}
       align="right"
     >
-      <NotablesPanel gameState={gameState} />
+      {/* THR-1780: a name opens its card in a modal; the portalled dropdown sits above the
+          modal layer, so it closes rather than stay lit over the card's backdrop. Every
+          button inside a row is a name link. */}
+      <div
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('[role="listitem"] button')) setOpen(false);
+        }}
+      >
+        <NotablesPanel gameState={gameState} />
+      </div>
     </Dropdown>
   );
 }

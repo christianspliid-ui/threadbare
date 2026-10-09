@@ -4,7 +4,7 @@
  * agenda compositions, rendered through the real component.
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import { WorldGraph } from '../../../engine/graph';
 import { NotablesPanel, buildNotableAgendaRows, buildNotableEntries } from '../NotablesPanel';
 import { NotablesButton } from '../NotablesButton';
@@ -154,6 +154,27 @@ describe('NotablesPanel (THR-630)', () => {
     render(<NotablesPanel gameState={makeState({ activeCompositions: [agendaComp({ sponsorNotableId: 'ghost' })] })} />);
     expect(screen.getByText('ghost')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /ghost/ })).toBeNull();
+  });
+
+  it('opening a name from the dropdown closes the dropdown, so it never sits lit over the card', async () => {
+    const opened: unknown[] = [];
+    const router = {
+      open: (ref: unknown) => opened.push(ref),
+      armHover: () => {},
+      disarmHover: () => {},
+      closeHover: () => {},
+    } as unknown as RefRouter;
+    render(
+      <RefRouterProvider router={router}>
+        <NotablesButton gameState={makeState({ activeCompositions: [agendaComp()] })} />
+      </RefRouterProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '1 notable' }));
+    expect(screen.getByTestId('notables-group-rulers')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Maren Hale — open profile' }));
+    expect(opened).toHaveLength(1);
+    // AnimateMount unmounts after its exit animation's timer.
+    await waitFor(() => expect(screen.queryByTestId('notables-group-rulers')).toBeNull());
   });
 });
 
