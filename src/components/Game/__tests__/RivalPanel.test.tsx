@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { RivalPanel } from '../RivalPanel';
 import type { RivalDefinition, RivalState } from '../../../types/rival';
 
@@ -175,4 +175,19 @@ describe('RivalPanel', () => {
     render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
     expect(screen.getByText(/Rival Gods/)).toBeInTheDocument();
   });
+
+  it('THR-1780: a rival name opens its entry in place, and a second click closes it', () => {
+    render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
+    expect(screen.queryByTestId('rival-detail')).toBeNull();
+    const name = screen.getByRole('button', { name: 'The Iron Tyrant' });
+    expect(name.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(name);
+    expect(name.getAttribute('aria-expanded')).toBe('true');
+    const detail = screen.getByTestId('rival-detail');
+    expect(detail.textContent).toContain('God of Force and Matter, aggressive by temper.');
+    expect(detail.textContent).toMatch(/Toward you: (wary|hostile|aggressive|wrathful)./);
+    fireEvent.click(name);
+    expect(screen.queryByTestId('rival-detail')).toBeNull();
+  });
 });
+

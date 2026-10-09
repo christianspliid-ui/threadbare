@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalIcon } from '../shared/RivalIcon';
 import { Tooltip } from '../shared/Tooltip';
@@ -6,12 +6,33 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
 import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
 
+/** The name reads as a link (the underline `EntityLink` draws) and toggles the rival's entry. */
+const RIVAL_NAME_STYLE = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  margin: 0,
+  cursor: 'pointer',
+  color: 'var(--accent-gold, #d4af37)',
+  textDecoration: 'underline',
+  textUnderlineOffset: '2px',
+  font: 'inherit',
+} as const;
+
 interface RivalPanelProps {
   definitions: RivalDefinition[];
   states: RivalState[];
 }
 
+/** Sphere ids are lower-case in the data; the panel speaks them as names. */
+function sphereWord(sphere: string): string {
+  return sphere.charAt(0).toUpperCase() + sphere.slice(1);
+}
+
 export const RivalPanel = React.memo(function RivalPanel({ definitions, states }: RivalPanelProps) {
+  // THR-1780: a rival god's name opens its entry in place. Rivals are run state, not graph
+  // nodes, so there is no sheet for the ref router to open — the disclosure is the sheet.
+  const [openRivalId, setOpenRivalId] = useState<string | null>(null);
   if (definitions.length === 0) {
     return (
       <p
@@ -60,7 +81,31 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                   )}
                 </ListRow.Leading>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <ListRow.Title>{def.name}</ListRow.Title>
+                  <ListRow.Title>
+                    <button
+                      type="button"
+                      data-testid="rival-name"
+                      aria-expanded={openRivalId === def.id}
+                      aria-controls={`rival-detail-${def.id}`}
+                      onClick={() => setOpenRivalId((cur) => (cur === def.id ? null : def.id))}
+                      style={RIVAL_NAME_STYLE}
+                    >
+                      {def.name}
+                    </button>
+                  </ListRow.Title>
+                  {openRivalId === def.id && (
+                    <div
+                      id={`rival-detail-${def.id}`}
+                      data-testid="rival-detail"
+                      className="mt-1 space-y-0.5"
+                      style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', whiteSpace: 'normal' }}
+                    >
+                      {spheres.length > 0 && (
+                        <p>God of {spheres.map(sphereWord).join(' and ')}, {def.behavior} by temper.</p>
+                      )}
+                      <p>Toward you: {hostilityLabel(hostility)}.</p>
+                    </div>
+                  )}
                   <div
                     className="mt-1 h-1 rounded-full overflow-hidden"
                     style={{ backgroundColor: 'var(--bg-surface)' }}

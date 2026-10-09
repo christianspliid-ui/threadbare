@@ -4,9 +4,12 @@
  * agenda compositions, rendered through the real component.
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import { WorldGraph } from '../../../engine/graph';
-import { NotablesPanel, buildNotableAgendaRows } from '../NotablesPanel';
+import { NotablesPanel, buildNotableAgendaRows, buildNotableEntries } from '../NotablesPanel';
+import { NotablesButton } from '../NotablesButton';
+import { RefRouterProvider } from '../../../contexts/RefRouterContext';
+import type { RefRouter } from '../../../hooks/useRefRouter';
 import { agendaFlags } from '../../../engine/notableAgendas';
 import type { GameState, ActiveComposition } from '../../../types/gameState';
 
@@ -56,8 +59,8 @@ describe('NotablesPanel (THR-630)', () => {
     expect(screen.getByText('Maren Hale')).toBeTruthy();
     expect(screen.getByText('Pressed Claim')).toBeTruthy();
     expect(screen.getByText(/Farwatch/)).toBeTruthy();
-    const row = screen.getByRole('listitem');
-    expect(row.getAttribute('aria-label')).toContain('phase 2 of 4');
+    const agenda = screen.getByTestId('notable-agenda');
+    expect(agenda.getAttribute('aria-label')).toContain('phase 2 of 4');
   });
 
   it('marks contested agendas from world-flags and tug-gated ones from threads', () => {
@@ -94,4 +97,84 @@ describe('NotablesPanel (THR-630)', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].status).toBe('failed');
   });
+
+  // ── THR-1780: one row per notable; the badge counts what the panel shows ──
+
+  function twoNotablesThreeAgendas(): GameState {
+    const state = makeState({
+      activeCompositions: [
+        agendaComp({ compositionId: 'a1', status: 'active' }),
+        agendaComp({ compositionId: 'a2', status: 'completed', agendaFamily: 'claim' }),
+        agendaComp({ compositionId: 'a3', sponsorNotableId: 'n2', status: 'failed' }),
+      ],
+    });
+    state.graph.addNode({ id: 'n2', type: 'actor', name: 'Scorvin', properties: { actorType: 'individual' } });
+    return state;
+  }
+
+  it('lists a notable with two agendas once, with both agendas under the name', () => {
+    render(<NotablesPanel gameState={twoNotablesThreeAgendas()} />);
+    const rows = screen.getAllByRole('listitem');
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]).getAllByTestId('notable-agenda')).toHaveLength(2);
+    expect(screen.getAllByText('Maren Hale')).toHaveLength(1);
+  });
+
+  it('the top-bar badge equals the number of distinct notables the panel shows — terminal agendas included', () => {
+    const state = twoNotablesThreeAgendas();
+    const { container } = render(<NotablesButton gameState={state} />);
+    const button = container.querySelector('button[aria-label]')!;
+    // Only one of the three agendas is active; the old badge read 1 over a list of 2 names.
+    expect(button.getAttribute('aria-label')).toBe('2 notables');
+    expect(buildNotableEntries(state)).toHaveLength(2);
+  });
+
+  it('notable and target names open their cards through the ref router (Law 21)', () => {
+    const opened: unknown[] = [];
+    const router = {
+      open: (ref: unknown) => opened.push(ref),
+      armHover: () => {},
+      disarmHover: () => {},
+      closeHover: () => {},
+    } as unknown as RefRouter;
+    render(
+      <RefRouterProvider router={router}>
+        <NotablesPanel gameState={makeState({ activeCompositions: [agendaComp()] })} />
+      </RefRouterProvider>,
+    );
+    screen.getByRole('button', { name: 'Maren Hale — open profile' }).click();
+    screen.getByRole('button', { name: 'Farwatch — open profile' }).click();
+    expect(opened).toEqual([
+      { kind: 'agent', id: 'n1', name: 'Maren Hale' },
+      { kind: 'location', id: 'loc1', name: 'Farwatch' },
+    ]);
+  });
+
+  it('a sponsor missing from the graph renders as text, never a dead link', () => {
+    render(<NotablesPanel gameState={makeState({ activeCompositions: [agendaComp({ sponsorNotableId: 'ghost' })] })} />);
+    expect(screen.getByText('ghost')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /ghost/ })).toBeNull();
+  });
+
+  it('opening a name from the dropdown closes the dropdown, so it never sits lit over the card', async () => {
+    const opened: unknown[] = [];
+    const router = {
+      open: (ref: unknown) => opened.push(ref),
+      armHover: () => {},
+      disarmHover: () => {},
+      closeHover: () => {},
+    } as unknown as RefRouter;
+    render(
+      <RefRouterProvider router={router}>
+        <NotablesButton gameState={makeState({ activeCompositions: [agendaComp()] })} />
+      </RefRouterProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '1 notable' }));
+    expect(screen.getByTestId('notables-group-rulers')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Maren Hale — open profile' }));
+    expect(opened).toHaveLength(1);
+    // AnimateMount unmounts after its exit animation's timer.
+    await waitFor(() => expect(screen.queryByTestId('notables-group-rulers')).toBeNull());
+  });
 });
+
