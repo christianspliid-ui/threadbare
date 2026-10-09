@@ -1,0 +1,5 @@
+window_start	window_end	ticket_prs_opened	ticket_prs_merged	merges_per_day	docs_prs_merged	open_to_merge_median_min	open_to_merge_p90_min	pct_slow_gt60m	pct_main_catchup	peak_concurrent_ticket_prs	open_prs_now	dirty_prs_now	ci_pr_runs	ci_pr_median_min	ci_pr_p90_min	ci_pr_fail_pct	heavy_main_fail_pct	wip_gate_denials	wip_gate_failsoft	lane_runs	lane_idle_runs	lane_median_run_min	lane_failed_runs	errors
+2026-09-12	2026-09-19	54	54	7.7	4	9	54	3.7	9.3	2			59	8.7	9.8	1.7	1.7	0	0					backfilled 2026-10-09 (now-columns blank)
+2026-09-19	2026-09-26	60	60	8.6	32	9.5	56.3	10	13.3	2			99	7.5	9.6	5.1	55.4	0	0					backfilled 2026-10-09 (now-columns blank)
+2026-09-26	2026-10-03	91	91	13	27	10.6	15.3	5.5	6.6	3			129	9.6	11.4	5.4	65.3	0	0					backfilled 2026-10-09 (now-columns blank)
+2026-10-03	2026-10-10	69	65	9.3	34	17.6	329.9	23.1	33.3	6	4	4	123	10.7	13.2	4.9	68.3	1	0					partial week through 2026-10-09 05:00Z; pickup paused for conflict drain
