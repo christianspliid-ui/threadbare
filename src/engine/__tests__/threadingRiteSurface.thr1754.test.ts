@@ -23,6 +23,7 @@ import {
   isRiteAgentMissing,
   planThreadingRite,
   RITE_BOND_ONLY_TEST,
+  RITE_BOND_TEST,
 } from '../threadingRiteQueue';
 import { resolveBondTest } from '../meetingEncounter';
 import { getRiteSheetLine } from '../agentDetail';
@@ -43,6 +44,7 @@ import {
   riteChronicleMissingLine,
   riteChronicleNoHandLine,
   riteOpeningLine,
+  ritePlaceName,
   riteReceptionLine,
   riteSheetLine,
   riteSubtitle,
@@ -170,6 +172,10 @@ describe('THR-1754 S2 — planning the rite (D2)', () => {
     expect(RITE_BOND_ONLY_TEST.nudges.map(n => n.name)).toEqual(['Still the room', 'Say their name']);
     expect(RITE_BOND_ONLY_TEST.setup).toBe(MEETING_BOND_TEST.setup);
     expect(RITE_BOND_ONLY_TEST.factorLines).toEqual(MEETING_BOND_TEST.factorLines);
+    // The meeting's per-Hunger voice speaks of a first soul; every rite has its own line.
+    expect(RITE_BOND_ONLY_TEST.godVoiceByHunger).toEqual({});
+    expect(RITE_BOND_TEST.godVoiceByHunger).toEqual({});
+    expect(RITE_BOND_TEST.nudges).toEqual(MEETING_BOND_TEST.nudges);
   });
 });
 
@@ -311,5 +317,15 @@ describe('THR-1754 S2 — riteText on the 40 slot-1 meeting tests', () => {
       const setup = t.riteText?.setup ?? t.setup;
       expect(`${t.id}: ${godVoice} ${setup}`).not.toMatch(strangerWording);
     }
+  });
+});
+
+describe('THR-1754 S2 — a coordinate never reaches the player', () => {
+  it('a generated wilderness name reads as plain words in the opening and the test prose', () => {
+    expect(riteOpeningLine('Nesrin', undefined, 'gold', 'Wilderness (30, 22)')).toMatch(/^Your thread finds Nesrin out in the wilderness\. /);
+    expect(riteOpeningLine('Nesrin', 'female', 'gold', 'Hex (4, -2)')).toContain('where she stands');
+    expect(ritePlaceName('Wilderness (30, 22)')).toBe('the wilderness');
+    expect(ritePlaceName('Ketterwell')).toBe('Ketterwell');
+    expect(ritePlaceName('')).toBe('the wilderness');
   });
 });

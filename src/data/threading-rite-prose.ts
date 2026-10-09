@@ -90,9 +90,33 @@ export function riteOpeningLine(
   locationName: string | null | undefined,
 ): string {
   const p = ritePronouns(gender);
-  const where = locationName && locationName.trim() ? `in ${locationName.trim()}` : fill(RITE_WHERE_FALLBACK, name, p, verbExtras(p));
+  const where = riteWhere(locationName) ?? fill(RITE_WHERE_FALLBACK, name, p, verbExtras(p));
   const second = (reach && RITE_OPENING_BY_REACH[reach as ReachDomain]) || RITE_OPENING_FALLBACK;
   return `Your thread finds ${name} ${where}. ${fill(second, name, p, verbExtras(p))}`;
+}
+
+/**
+ * "in Ketterwell". A generated wilderness place is named with its hex
+ * ("Wilderness (30, 22)") — a coordinate never reaches the player (PC-3), so it
+ * reads "out in the wilderness"; any other coordinate-only name falls back.
+ */
+function riteWhere(locationName: string | null | undefined): string | null {
+  const raw = locationName?.trim();
+  if (!raw) return null;
+  if (/^wilderness\b/i.test(raw)) return 'out in the wilderness';
+  if (/\(\s*-?\d+\s*,\s*-?\d+\s*\)/.test(raw)) return null;
+  return `in ${raw}`;
+}
+
+/**
+ * The place word the rite's test prose fills `{agent.location}` with ("Raiders
+ * hit {agent.location}…"): the real name, or "the wilderness" for a generated
+ * coordinate name or none at all.
+ */
+export function ritePlaceName(locationName: string | null | undefined): string {
+  const raw = locationName?.trim();
+  if (!raw || /^wilderness\b/i.test(raw) || /\(\s*-?\d+\s*,\s*-?\d+\s*\)/.test(raw)) return 'the wilderness';
+  return raw;
 }
 
 /** Agreement for the irregular verbs the openings use ("is"/"are", "goes"/"go", "his"/"their"). */
@@ -104,6 +128,13 @@ function verbExtras(p: RitePronouns): Record<string, string> {
     their: p.they === 'she' ? 'her' : p.they === 'he' ? 'his' : 'their',
   };
 }
+
+/**
+ * The bond test's god voice in a rite. The meeting's per-Hunger lines speak of
+ * the *first* soul the god wants to be seen by — false on any later thread — so
+ * every rite reads this one instead.
+ */
+export const RITE_BOND_GOD_VOICE = 'Your thread holds. Now you learn how they take it.';
 
 // ─── The First (D3) ───────────────────────────────────────────────
 

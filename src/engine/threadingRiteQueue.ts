@@ -37,6 +37,7 @@ import {
   RITE_SURFACE_ENABLED,
 } from '../data/threading-rite-constants';
 import {
+  RITE_BOND_GOD_VOICE,
   firstClaimedMessage,
   riteChronicleLine,
   riteChronicleMissingLine,
@@ -368,13 +369,25 @@ export function planThreadingRite(graph: WorldGraph, rite: PendingThreadingRite,
 }
 
 /**
- * The bond-only rite's bond test: the meeting's own bond test, word for word,
- * with its hand cut to the first `RITE_BOND_ONLY_HAND_SIZE` cards ("Still the
+ * The bond-only rite's bond test: the meeting's own bond test, word for word
+ * (bar the god voice), with its hand cut to the first `RITE_BOND_ONLY_HAND_SIZE` cards ("Still the
  * room", "Say their name").
  */
 export const RITE_BOND_ONLY_TEST: BondTest = {
   ...MEETING_BOND_TEST,
+  godVoiceByHunger: {},
+  godVoiceFallback: RITE_BOND_GOD_VOICE,
   nudges: MEETING_BOND_TEST.nudges.slice(0, RITE_BOND_ONLY_HAND_SIZE),
+};
+
+/**
+ * The short and full rites' bond test: the meeting's, word for word, with the
+ * rite's own god voice (the meeting's per-Hunger lines speak of a first soul).
+ */
+export const RITE_BOND_TEST: BondTest = {
+  ...MEETING_BOND_TEST,
+  godVoiceByHunger: {},
+  godVoiceFallback: RITE_BOND_GOD_VOICE,
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────

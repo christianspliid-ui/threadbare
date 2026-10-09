@@ -29,13 +29,13 @@ import { candidateFromAgent } from '../../engine/threadingRite';
 import {
   planThreadingRite,
   RITE_BOND_ONLY_TEST,
+  RITE_BOND_TEST,
   RITE_BOND_SEED_OFFSET,
   type RiteClose,
   type RiteTestPick,
 } from '../../engine/threadingRiteQueue';
 import { resolveBondTest, generateSparkVisions, bindSparkVisionsToCandidate } from '../../engine/meetingEncounter';
 import { selectBondFateLine } from '../../engine/meetingFateLine';
-import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
 import { GOD_GIVEN_TRAITS } from '../../data/meeting-content';
 import {
   RITE_BEGIN_LABEL,
@@ -45,6 +45,7 @@ import {
   RITE_RETURN_LABEL,
   riteFirstLine,
   riteOpeningLine,
+  ritePlaceName,
   riteReceptionLine,
   riteSubtitle,
 } from '../../data/threading-rite-prose';
@@ -126,15 +127,17 @@ export function ThreadingRite({
   const [stage, setStage] = useState<RiteStage>('opening');
   const [outcomes, setOutcomes] = useState<FormativeOutcome[]>([]);
   const [vision, setVision] = useState<SparkVision | null>(null);
+  // Once the bond has rolled, the played result stands: the no-hand exit goes.
+  const [bondRolled, setBondRolled] = useState(false);
 
   // Escape is *Bond without a hand* (plan § Player-facing text: "dismissed by
   // Escape"). The bond-only card's Modal handles its own Escape.
   useEffect(() => {
-    if (plan.shape === 'bond_only') return;
+    if (plan.shape === 'bond_only' || bondRolled) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onBondWithoutHand(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [plan.shape, onBondWithoutHand]);
+  }, [plan.shape, bondRolled, onBondWithoutHand]);
 
   const sparkVisions = useMemo(() => (candidate && becomesFirst
     ? bindSparkVisionsToCandidate(generateSparkVisions(candidate.primaryReach, primarySphere, plan.seed + 2), candidate)
@@ -262,7 +265,7 @@ export function ThreadingRite({
         <FormativeTestBeat
           candidate={candidate}
           tests={tests}
-          locationName={locationName || 'where they stand'}
+          locationName={ritePlaceName(locationName)}
           essencePool={essencePool}
           primarySphere={primarySphere}
           onSpendEssence={onSpendEssence}
@@ -285,7 +288,7 @@ export function ThreadingRite({
           {...(vision ? { vision } : {})}
           hungerId={hungerId}
           primarySphere={primarySphere}
-          bondTest={MEETING_BOND_TEST}
+          bondTest={RITE_BOND_TEST}
           essencePool={essencePool}
           onSpendEssence={onSpendEssence}
           seed={plan.seed + RITE_BOND_SEED_OFFSET}
@@ -297,23 +300,26 @@ export function ThreadingRite({
             </p>
           ) : undefined}
           continueLabel={RITE_RETURN_LABEL}
+          onRevealed={() => setBondRolled(true)}
           onComplete={(_name, bondOutcome) => finish(bondOutcome)}
         />
       )}
 
       {/* D6 — every stage can be waved through. Secondary: the stage's own
           action stays the one primary (Law 1). */}
-      <div className="absolute bottom-6 left-8" style={{ zIndex: 2 }}>
-        <BondWithoutHandButton onClick={onBondWithoutHand} />
-      </div>
+      {!bondRolled && (
+        <div className="absolute bottom-6 left-8" style={{ zIndex: 2 }}>
+          <BondWithoutHandButton onClick={onBondWithoutHand} />
+        </div>
+      )}
     </div>
   );
 }
 
-function BondWithoutHandButton({ onClick, fullWidth = false }: { onClick: () => void; fullWidth?: boolean }) {
+function BondWithoutHandButton({ onClick }: { onClick: () => void }) {
   return (
     <Tooltip label={RITE_BOND_WITHOUT_HAND_LABEL} desc={RITE_BOND_WITHOUT_HAND_TOOLTIP}>
-      <Button variant="secondary" size="md" fullWidth={fullWidth} onClick={onClick} data-testid="threading-rite-without-hand">
+      <Button variant="secondary" size="md" onClick={onClick} data-testid="threading-rite-without-hand">
         {RITE_BOND_WITHOUT_HAND_LABEL}
       </Button>
     </Tooltip>
@@ -389,10 +395,12 @@ function BondOnlyRite({
       </RevealCard.Body>
       {!outcome && (
         <div style={{ width: '100%' }} data-testid="threading-rite-bond-only-hand">
-          <NudgePhaseShell phase={phase} portraitUrl={portraitUrl} agentName={name} onCommit={handleCommit} />
-          <div style={{ marginTop: 'var(--space-3)' }}>
-            <BondWithoutHandButton onClick={onBondWithoutHand} fullWidth />
+          {/* Above the hand, not below it: the card's zones scroll, and the exit
+              must never sit under the fold (Law 33). */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-3)' }}>
+            <BondWithoutHandButton onClick={onBondWithoutHand} />
           </div>
+          <NudgePhaseShell phase={phase} portraitUrl={portraitUrl} agentName={name} onCommit={handleCommit} />
         </div>
       )}
       {outcome && (

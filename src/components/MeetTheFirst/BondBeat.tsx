@@ -43,6 +43,8 @@ interface BondBeatProps {
   revealFooter?: React.ReactNode;
   /** The reveal's continue label. Default: the meeting's. */
   continueLabel?: string;
+  /** Called once the bond has rolled — the rite hides its no-hand exit then (THR-1754). */
+  onRevealed?: (outcome: BondOutcome) => void;
 }
 
 const SCENE_BG = '#0a0a0f';
@@ -73,6 +75,7 @@ export function BondBeat({
   receptionLineFor,
   revealFooter,
   continueLabel,
+  onRevealed,
 }: BondBeatProps) {
   const [stage, setStage] = useState<BondStage>(bondTest ? 'test' : 'bond');
   const [outcome, setOutcome] = useState<BondOutcome | null>(null);
@@ -103,10 +106,12 @@ export function BondBeat({
       if (!bondTest) return;
       const requests = meetingSpendRequests(bondTest, nudgeIds);
       if (requests.length > 0) onSpendEssence?.(BOND_STEP_INDEX, requests);
-      setOutcome(resolveBondTest(bondTest, nudgeIds, seed));
+      const resolved = resolveBondTest(bondTest, nudgeIds, seed);
+      setOutcome(resolved);
       setStage('reveal');
+      onRevealed?.(resolved);
     },
-    [bondTest, seed, onSpendEssence],
+    [bondTest, seed, onSpendEssence, onRevealed],
   );
 
   // Staggered reveal — starts only once the naming stage is reached, so the
