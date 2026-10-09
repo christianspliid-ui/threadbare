@@ -350,7 +350,7 @@ export function AutoToggle({ asking, name, onToggle }: {
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '2px 8px 2px 4px',
           background: hov ? 'var(--bg-hover)' : 'transparent',
-          border: `1px solid ${hov ? 'var(--border-medium)' : 'var(--border-subtle)'}`,
+          border: `1px solid ${hov ? 'var(--border-gold-strong)' : 'var(--border-medium)'}`,
           borderRadius: 999,
           color: asking ? 'var(--text-secondary)' : 'var(--text-muted)',
           fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
