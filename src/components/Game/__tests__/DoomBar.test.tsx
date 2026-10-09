@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { DoomBar } from '../DoomBar';
 import type { DoomClockDefinition, DoomClockState } from '../../../types/doomClock';
 
@@ -82,5 +82,23 @@ describe('DoomBar', () => {
     // Find the inner fill div of ProgressBar (contains width: 25%)
     const progressBar = container.querySelector('div[style*="width: 25%"]');
     expect(progressBar).toBeTruthy();
+  });
+
+  // THR-1774: the sigil's tooltip sits inside the bar's trigger; the innermost trigger
+  // wins, so hovering the sigil never stacks the bar's popup over it.
+  it('hovering the sigil shows only the doom tooltip, not the bar tooltip on top of it', () => {
+    vi.useFakeTimers();
+    try {
+      const definition: DoomClockDefinition = { ...mockDefinition, archetype: 'reckoning' };
+      const { container } = render(<DoomBar definition={definition} state={{ ...mockState, definitionArchetype: 'reckoning' }} />);
+      const sigil = container.querySelector('[data-doom-sigil="reckoning"]')!;
+      act(() => { fireEvent.pointerOver(sigil); });
+      act(() => { vi.advanceTimersByTime(2000); });
+      const tips = Array.from(document.querySelectorAll('[role="tooltip"]')).map(t => t.textContent ?? '');
+      expect(tips).toHaveLength(1);
+      expect(tips[0]).toContain('Past debts coming due');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
