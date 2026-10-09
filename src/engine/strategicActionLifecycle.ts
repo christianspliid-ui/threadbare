@@ -91,7 +91,7 @@ import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
-import { getLocationNodes } from './sublocationShape';
+import { getLocationNodes, isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
@@ -300,11 +300,15 @@ export function resolveAnchorName(
   const candidateIds = [bound?.nodeId, project.targetNodeId, project.originLocationId];
   for (const id of candidateIds) {
     if (!id) continue;
-    const node = graph.getNode(id);
-    // THR-1779 — a christened work is not ground. Anchoring a new quarter on one
-    // named "The Quarter of Heart of the Barrow" produced "The Quarter of Quarter of
-    // Heart of the Barrow"; fall through to the next candidate instead.
-    if (typeof node?.properties?.[CHRISTENED_AT_TICK_PROPERTY] === 'number') continue;
+    const raw = graph.getNode(id);
+    // THR-1779 — a christened *place* (a quarter, a hall — a sublocation) is a work,
+    // not ground. Anchoring a new quarter on one named "The Quarter of Heart of the
+    // Barrow" produced "The Quarter of Quarter of Heart of the Barrow"; name the work
+    // for the location that contains it instead. A christened settlement stays ground:
+    // a quarter raised in a founded Newhold is still "of Newhold".
+    const node = raw && typeof raw.properties?.[CHRISTENED_AT_TICK_PROPERTY] === 'number' && isPlaceNode(raw)
+      ? resolveToParentLocation(graph, raw)
+      : raw;
     const name = node?.name;
     if (typeof name === 'string' && name.trim().length > 0) return name;
   }

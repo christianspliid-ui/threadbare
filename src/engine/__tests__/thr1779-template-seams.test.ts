@@ -30,6 +30,8 @@ import {
   resolveAmbitionPronouns,
   resolveAmbitionProseFor,
 } from '../ambitionProse';
+import { resolveContentEntry } from '../contentEntryResolver';
+import type { ContentRef } from '../../types/contentRef';
 
 /** Every player-facing string an archived chapter carries. */
 function chapterText(rec: ChapterRecord): string[] {
@@ -150,6 +152,18 @@ describe('THR-1779 — a work anchored on a named work does not double its noun'
     graph.updateNode('quarter', { properties: { [CHRISTENED_AT_TICK_PROPERTY]: undefined } });
     expect(resolveAnchorName(state, graph, project)).toBe('The Quarter of Heart of the Barrow');
   });
+
+  it('a christened settlement stays ground — a work raised in it is named for it', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'origin', type: 'location', name: 'Ardenmor', properties: {} });
+    graph.addNode({
+      id: 'newhold', type: 'location', name: 'Newhold',
+      properties: { [CHRISTENED_AT_TICK_PROPERTY]: 12 },
+    });
+    const state = { strategicState: { bindings: [] } } as unknown as GameState;
+    const project = { projectId: 'p2', targetNodeId: 'newhold', originLocationId: 'origin' } as unknown as Parameters<typeof resolveAnchorName>[2];
+    expect(resolveAnchorName(state, graph, project)).toBe('Newhold');
+  });
 });
 
 // ─── 4. Ambition pronouns ────────────────────────────────────────────────────
@@ -195,6 +209,16 @@ describe('THR-1779 — ambition prose follows the agent\'s pronouns', () => {
       .toBe('The divine courses through him. He is vessel and voice. He reads stone.');
     expect(resolveAmbitionPronouns(line, ambitionPronounsFor('')))
       .toBe('The divine courses through them. They are vessel and voice. They read stone.');
+  });
+
+  it('the content card for an ambition reads they/them, with no token', () => {
+    for (const t of AMBITION_TEMPLATES) {
+      const view = resolveContentEntry({ kind: 'ambition_template', id: t.id } as ContentRef);
+      if (!view) continue;
+      expect(`${view.description} ${view.flavour}`).not.toMatch(/\{[^}]*\}/);
+    }
+    const trade = resolveContentEntry({ kind: 'ambition_template', id: 'ambition_dominate_trade' } as ContentRef);
+    expect(trade?.description).toContain('They set their eyes on the trade roads');
   });
 
   it('resolves for the actor in the graph', () => {
