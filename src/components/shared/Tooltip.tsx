@@ -412,6 +412,9 @@ export const Tooltip = React.memo(function Tooltip({
   // (the doom bar's sigil inside the doom bar) hides this one while it is hovered,
   // so the two popups never stack; moving back onto this trigger re-shows it.
   const handlePointerOver = (e: React.PointerEvent) => {
+    // A portaled popup (this one's or a nested one's) bubbles through the React
+    // tree, not the DOM — it is not this trigger's surface, so it decides nothing.
+    if (!triggerRef.current?.contains(e.target as Node)) return;
     let node = e.target as Element | null;
     while (node && node !== triggerRef.current && !TOOLTIP_TRIGGERS.has(node)) node = node.parentElement;
     if (node && node !== triggerRef.current) {

@@ -97,6 +97,12 @@ describe('DoomBar', () => {
       const tips = Array.from(document.querySelectorAll('[role="tooltip"]')).map(t => t.textContent ?? '');
       expect(tips).toHaveLength(1);
       expect(tips[0]).toContain('Past debts coming due');
+      // Moving onto the open popup (portaled, so its events bubble through the React tree
+      // to the bar's trigger) must not bring the bar's tooltip back on top of it.
+      const popup = document.querySelector('[role="tooltip"]')!;
+      act(() => { fireEvent.pointerOver(popup); });
+      act(() => { vi.advanceTimersByTime(2000); });
+      expect(document.querySelectorAll('[role="tooltip"]')).toHaveLength(1);
     } finally {
       vi.useRealTimers();
     }
