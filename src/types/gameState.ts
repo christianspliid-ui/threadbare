@@ -556,6 +556,10 @@ export interface GameState {
   pendingThreadingRite?: PendingThreadingRite | null;
   /** Rites queued behind the open one, at most `RITE_QUEUE_MAX` (THR-1644 S1). */
   pendingThreadingRiteQueue?: PendingThreadingRite[];
+  /** True once a rite surface is mounted for this session (THR-1754): only then
+   *  does the rite drain queue a rite for the player. A headless run (CLI, tests,
+   *  sim harness) has no surface, so its rites resolve at once without a hand. */
+  riteSurfaceMounted?: boolean;
   /** Monotonic count of the player's own acts — a cast, an avatar move command, a
    *  Follow (THR-1647 S4). Engine pacing counter, never a player-facing word. Read
    *  as 0 when absent (older saves). The beat director spaces spine gifts 1–4 by it. */

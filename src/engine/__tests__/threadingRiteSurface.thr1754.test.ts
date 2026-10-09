@@ -132,6 +132,23 @@ describe('THR-1754 S2 — the surface is on', () => {
   });
 });
 
+describe('THR-1754 S2 — only a mounted surface holds a rite', () => {
+  it('a headless run (no surface mounted) resolves the rite at once, no hand', () => {
+    const s = seededWorld();
+    threadWithCard(s.graph, 'hadrel', 10);
+    const headless = drainThreadingRites({ ...s, tick: 10, riteSurfaceMounted: undefined });
+    expect(headless.pendingThreadingRite ?? null).toBeNull();
+    expect(threadTo(headless.graph, 'hadrel').properties.bondReception).toBeDefined();
+  });
+
+  it('a session with the surface mounted queues it for the player', () => {
+    const s = seededWorld();
+    threadWithCard(s.graph, 'hadrel', 10);
+    const mounted = drainThreadingRites({ ...s, tick: 10, riteSurfaceMounted: true });
+    expect(mounted.pendingThreadingRite?.agentId).toBe('hadrel');
+  });
+});
+
 describe('THR-1754 S2 — planning the rite (D2)', () => {
   it('a short rite draws one converted slot-1 test for the primary reach, deterministically', () => {
     const s = threadAndDrain(seededWorld(), 'hadrel', 10);

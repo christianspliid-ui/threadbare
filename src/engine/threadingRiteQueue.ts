@@ -162,7 +162,12 @@ export function queueThreadingRite(
  * Orchestrator phase 2a.15 — drain the markers the tick's thread writes left.
  * Returns the state unchanged (same reference) when nothing was pending.
  */
-export function drainThreadingRites(state: GameState, surfaceEnabled = RITE_SURFACE_ENABLED): GameState {
+export function drainThreadingRites(
+  state: GameState,
+  // A rite waits only where a surface can open it: the switch is on AND this
+  // session mounted one. The CLI and headless runs resolve at once, no hand.
+  surfaceEnabled = RITE_SURFACE_ENABLED && state.riteSurfaceMounted === true,
+): GameState {
   const rites = collectPendingRites(state.graph, state.ascendantId);
   if (rites.length === 0) return state;
   let next: GameState = state;

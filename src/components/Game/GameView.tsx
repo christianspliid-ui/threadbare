@@ -4455,6 +4455,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleRiteComplete = useCallback((close: Extract<RiteClose, { kind: 'played' }>) => closeRite(close), [closeRite]);
   const handleRiteWithoutHand = useCallback(() => closeRite({ kind: 'no_hand', reason: 'dismissed' }), [closeRite]);
 
+  // This session can open a rite, so the drain queues rites for it rather than
+  // resolving them at once (a headless run never sets this).
+  useEffect(() => {
+    setGameState(prev => (prev.riteSurfaceMounted ? prev : { ...prev, riteSurfaceMounted: true }));
+  }, [setGameState]);
+
   // Fail-soft: a mortal who died or vanished before the rite opened gets no rite —
   // the chronicle says the thread reached them too late (plan § Fail-soft).
   const pendingRite = gameState.pendingThreadingRite ?? null;
