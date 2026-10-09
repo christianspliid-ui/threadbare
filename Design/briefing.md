@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 10:57 local (08:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 11:57 local (09:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,13 +30,11 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: 8 jobs ready, 2 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **The builder lane is back on** (last ran 10:51). It had been switched off since about 07:11.
-- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)) is built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280), but it clashes with main and is not set to merge.
-- **Parked, work up for review, no builder on it (about 9½ h):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273). The branch is pushed, not set to merge, and clashes with main.
+- **God's Will does nothing** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)): the fix in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) no longer clashes with main and is now set to merge once checks pass. The ticket still shows no builder on it, which is fine: it closes when the merge lands.
+- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)): built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280). It no longer clashes with main, but it is not set to merge yet (open about 4 h). No work is sitting unsaved on this machine for either ticket.
 
 ## Health
 
-- **Two pull requests clash with main:** [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) (open 9 h) and [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280) (open 3 h). The harness change [#2279](https://github.com/christianspliid-ui/threadbare/pull/2279) merged. The builder lane owes the merges now that it is back on. Not yours.
 - **Heavy simulation tests are red on main's newest commit** (bd0baddf), as on the one before. A follow-up fix is owed. Not yours.
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. The live site serves the latest main (bd0baddf), all 11 lanes are on schedule, the worktree cleaner last ran at 10:40, and the simulation runs at normal speed (128 ms/tick, +6% on the weekly median).
+- Everything else is green. The live site serves the latest main (bd0baddf), all 11 lanes are on schedule, the worktree cleaner last ran at 11:46, and the simulation runs at normal speed (143 ms/tick, +19% on the weekly median, under the 25% alarm line).
