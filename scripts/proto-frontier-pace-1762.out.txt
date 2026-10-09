@@ -1,0 +1,462 @@
+
+=== seed 42: 235 places, 70 with an adjacent place ===
+
+-- showcase {"mind":3,"spirit":2} power 1: start H0 F180 T50 H5 S0; Foreign 180 (130 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   81     0.5   0.8   81     1.3   2.3   81
+   hold 1/tick across the bought vector                           0.4   1.3    7     1.4   3.2    7     3.0   9.4    7
+   hold 0.25/tick vector                                          1.8   5.0    7     5.6  12.5    7    11.7  37.6    7
+   hold 0.1/tick vector                                           4.2  12.5    7    13.9  31.3    7    20.8  38.9   73
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   44     4.0   5.0   44     7.0   8.0   44
+   cast only: 3 every 3 days                                      6.0   9.0   44    12.0  15.0   44    21.0  24.0   44
+   hold 0.1 vector + cast 3 every 3 days                          4.2  12.5    4     6.0  31.3    4     9.0  29.3   24
+   hold 0.1 vector + cast 6 every 3 days                          3.0   4.4    0     5.8   8.1    0     8.6   9.1    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   6.0    0     6.0   9.0    0     9.0  12.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  68.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  46.3    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   6.0    0     7.7  10.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.9    0
+   CLAIM 0.03, no break                                          13.9  41.7    7    27.8  46.3   73    41.7  41.7  126
+   BREAK 4 when opposed /3d + CLAIM 0.03                          6.0   7.7    0    13.9  16.9    2    41.7  44.7   13
+
+-- showcase {"mind":3,"spirit":2} power 1.33: start H0 F155 T72 H8 S0; Foreign 155 (130 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.3   81     0.5   0.5   81     1.3   1.3   81
+   hold 1/tick across the bought vector                           0.4   0.7    7     1.3   2.2    7     4.4   5.8    7
+   hold 0.25/tick vector                                          1.8   2.5    7     5.0   8.3    7    17.6  23.4    7
+   hold 0.1/tick vector                                           4.2   6.3    7    12.5  20.8    7    43.8  58.3    7
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   44     4.0   5.0   44     6.0   7.0   44
+   cast only: 3 every 3 days                                      6.0   9.0   44    12.0  15.0   44    18.0  21.0   44
+   hold 0.1 vector + cast 3 every 3 days                          3.0   6.3    4     6.0  20.8    4     7.2  58.3    4
+   hold 0.1 vector + cast 6 every 3 days                          3.0   4.2    0     5.8   6.0    0     6.3   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.0   8.3    0     9.0   9.2    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.0    0    10.4  13.4    0    21.7  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    16.4  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.0    0     9.3  12.3    0    19.9  21.6    0
+   CLAIM 0.03, no break                                          13.9  20.8    7    27.8  69.5   12    69.5  69.5   81
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    2    30.8  30.8    2
+
+-- shepherd {"life":3,"spirit":2} power 1: start H12 F182 T20 H16 S5; Foreign 182 (117 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   73     0.5   0.8   73     1.3   2.3   73
+   hold 1/tick across the bought vector                           0.3   2.2   15     1.3   5.8   15     2.8  11.5   16
+   hold 0.25/tick vector                                          1.2   8.3   15     5.1  23.4   15    11.2  45.9   16
+   hold 0.1/tick vector                                           2.8  20.8   15    12.5  58.3   15    12.5  37.6   72
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   23     4.0   5.0   23     7.0   8.0   23
+   cast only: 3 every 3 days                                      6.0   9.0   23    12.0  15.0   23    21.0  24.0   23
+   hold 0.1 vector + cast 3 every 3 days                          2.8   9.0    0     9.0  12.5    0    12.0  27.8   11
+   hold 0.1 vector + cast 6 every 3 days                          2.8   4.4    0     5.1   7.0    0     8.6  12.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.0   9.0    0     9.0  12.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                           9.3  69.5   16    13.9  41.8   72    41.7  41.7  117
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   9.3    0    13.9  19.9    0    41.7  44.7   11
+
+-- shepherd {"life":3,"spirit":2} power 1.33: start H12 F175 T18 H22 S8; Foreign 175 (117 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   73     0.3   0.4   73     0.8   1.2   73
+   hold 1/tick across the bought vector                           0.3   2.2   15     0.8   4.4   15     2.0   9.4   15
+   hold 0.25/tick vector                                          1.2   8.3   15     2.8  17.6   15     7.8  37.6   15
+   hold 0.1/tick vector                                           2.8  20.8   15     7.0  43.8   15     8.3  20.8   64
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0   23     4.0   5.0   23     6.0   7.0   23
+   cast only: 3 every 3 days                                      3.0   9.0   23    12.0  15.0   23    18.0  21.0   23
+   hold 0.1 vector + cast 3 every 3 days                          2.8   8.8    0     7.0  12.0    0    10.2  19.5   11
+   hold 0.1 vector + cast 6 every 3 days                          2.8   3.0    0     4.2   7.0    0     6.1   9.1    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.6    0     6.0   6.1    0     8.3   9.2    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.0    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   4.7    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.0    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           9.3  69.5   16    13.9  27.8   64    27.8  64.8   73
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    0    27.8  33.8    0
+
+-- stone {"force":3,"matter":2} power 1: start H0 F130 T34 H71 S0; Foreign 130 (84 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.3   0.3   34     0.5   0.8   34     1.8   1.8   34
+   hold 1/tick across the bought vector                           0.4   2.2    6     0.8   4.4    6     3.0  11.5    6
+   hold 0.25/tick vector                                          1.8   8.3    6     3.4  17.6    6    11.7  45.9    6
+   hold 0.1/tick vector                                           4.2  20.8    6     8.3  43.8    6    29.3  29.3   34
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   22     4.0   5.0   22     7.0   8.0   22
+   cast only: 3 every 3 days                                      6.0   9.0   22    12.0  15.0   22    21.0  24.0   22
+   hold 0.1 vector + cast 3 every 3 days                          3.0   6.3    0     5.1  11.1    0     9.3  29.3    0
+   hold 0.1 vector + cast 6 every 3 days                          3.0   4.4    0     5.1   6.0    0     8.6   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.0   6.2    0     9.0   9.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                          13.9  69.5    6    27.8  46.3   34    41.7  41.7   84
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    0    41.7  46.3    0
+
+-- stone {"force":3,"matter":2} power 1.33: start H0 F129 T27 H66 S13; Foreign 129 (84 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   34     0.5   0.5   34     1.3   1.3   34
+   hold 1/tick across the bought vector                           0.2   1.3    6     0.8   3.2    6     2.1   7.5    6
+   hold 0.25/tick vector                                          0.6   5.0    6     3.4  12.5    6     8.4  30.1    6
+   hold 0.1/tick vector                                           1.4  12.5    6     8.3  31.3    6    20.8  75.0    6
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   22     4.0   5.0   22     6.0   7.0   22
+   cast only: 3 every 3 days                                      6.0   9.0   22    12.0  15.0   22    18.0  21.0   22
+   hold 0.1 vector + cast 3 every 3 days                          1.4   6.0    0     4.2   8.3    0     9.0  20.8    0
+   hold 0.1 vector + cast 6 every 3 days                          1.4   3.0    0     4.2   6.0    0     6.1   6.3    0
+   hold 0.05 vector + cast 6 every 3 days                         2.8   4.2    0     6.0   6.1    0     8.3   9.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          2.3   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           4.7  41.7    6    27.8  27.8   25    69.5  69.5   34
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+
+-- spread {"life":2,"matter":2,"mind":1} power 1: start H0 F104 T110 H21 S0; Foreign 104 (90 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2   85     0.8   1.2   85     2.9   2.9   85
+   hold 1/tick across the bought vector                           0.9  22.9    0     3.2  22.9   42    10.3  10.3   50
+   hold 0.25/tick vector                                          3.3  60.1   12    12.6  12.6   50    40.9  40.9   50
+   hold 0.1/tick vector                                           8.3  62.6   42    31.3  31.3   50    18.8  58.3   77
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   5.0   23     4.0   7.0   23     8.0  11.0   23
+   cast only: 3 every 3 days                                      3.0  15.0   23    12.0  21.0   23    24.0  33.0   23
+   hold 0.1 vector + cast 3 every 3 days                          3.0   9.0   23     8.3  12.3   23    18.0  18.8   23
+   hold 0.1 vector + cast 6 every 3 days                          4.2   9.0    0     6.1  12.1    0    10.2  15.1    0
+   hold 0.05 vector + cast 6 every 3 days                         6.0  10.2    0     7.2  12.2    0    12.2  18.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         13.4  19.4    0    34.3  40.3    0    65.5  68.5   73
+   CLAIM 0.03 + BREAK 6 when opposed /3d                         10.0  13.9    0    23.8  29.8    0    65.5  75.5    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          8.3  11.3    0    18.7  24.7    0    49.9  58.1    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          6.5   9.5    0    13.4  19.4    0    34.3  40.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        7.7  10.7    0    16.9  22.9    0    44.8  52.3    0
+   CLAIM 0.03, no break                                          27.8  27.8   50    20.8  69.5   77    62.5  62.5   90
+   BREAK 4 when opposed /3d + CLAIM 0.03                          7.0  13.9   12    20.8  29.8   12    62.5  75.5   12
+
+-- spread {"life":2,"matter":2,"mind":1} power 1.33: start H0 F63 T95 H77 S0; Foreign 63 (63 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2   58     0.8   0.8   58     2.3   2.3   58
+   hold 1/tick across the bought vector                           8.8  22.9    0    15.0  22.9   23     3.2   3.2   50
+   hold 0.25/tick vector                                         33.4  46.8   12     5.0  86.8   39    12.5  12.5   50
+   hold 0.1/tick vector                                          41.7  87.6   23    12.5  12.5   50    31.3  31.3   50
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               3.0   4.0   23     5.0   6.0   23     9.0  10.0   23
+   cast only: 3 every 3 days                                      9.0  12.0   23    15.0  18.0   23    27.0  30.0   23
+   hold 0.1 vector + cast 3 every 3 days                          6.0   8.1   23    11.1  12.0   23    15.0  15.0   23
+   hold 0.1 vector + cast 6 every 3 days                          5.1   8.1    0     9.0  12.0    0    12.0  14.3    0
+   hold 0.05 vector + cast 6 every 3 days                         7.2  10.2    0     9.1  12.1    0    12.1  15.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         13.4  16.4    0    34.3  37.3    0    65.5  68.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                         10.0  13.0    0    23.8  26.8    0    44.7  47.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          8.3  11.3    0    18.7  21.7    0    34.3  37.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          6.5   9.5    0    13.4  16.4    0    23.8  26.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        7.7  10.7    0    16.9  19.9    0    30.8  33.8    0
+   CLAIM 0.03, no break                                          20.8  20.8   50    41.7  41.7   50    83.4  83.4   62
+   BREAK 4 when opposed /3d + CLAIM 0.03                         10.0  13.0   12    23.8  26.8   12    44.7  47.7   12
+
+=== seed 99: 238 places, 89 with an adjacent place ===
+
+-- showcase {"mind":3,"spirit":2} power 1: start H0 F222 T16 H0 S0; Foreign 222 (144 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   82     0.5   0.8   82     1.3   1.8   82
+   hold 1/tick across the bought vector                           0.4   1.3    5     1.4   3.2    5     3.0   9.4    5
+   hold 0.25/tick vector                                          1.8   5.0    5     5.6  12.5    5    11.7  37.6    5
+   hold 0.1/tick vector                                           4.2  12.5    5    13.9  31.3    5    12.5  29.3   75
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0   74     3.0   5.0   74     6.0   8.0   74
+   cast only: 3 every 3 days                                      3.0   9.0   74     9.0  15.0   74    18.0  24.0   74
+   hold 0.1 vector + cast 3 every 3 days                          4.2  12.5    3     6.0  31.3    3     9.0  29.3   55
+   hold 0.1 vector + cast 6 every 3 days                          3.0   4.4    0     5.1   6.0    0     8.6   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.0   6.2    0     9.0   9.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                          13.9  41.7    5    13.9  46.3   75    41.7  41.7  143
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    3    41.7  44.7    7
+
+-- showcase {"mind":3,"spirit":2} power 1.33: start H0 F201 T37 H0 S0; Foreign 201 (144 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   82     0.4   0.5   82     1.2   1.3   82
+   hold 1/tick across the bought vector                           0.4   0.7    5     0.8   2.2    5     2.1   5.8    5
+   hold 0.25/tick vector                                          1.8   2.5    5     3.4   8.3    5     8.4  23.4    5
+   hold 0.1/tick vector                                           4.2   6.3    5     8.3  20.8    5    20.8  58.3    5
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0   74     3.0   5.0   74     5.0   7.0   74
+   cast only: 3 every 3 days                                      3.0   9.0   74     9.0  15.0   74    15.0  21.0   74
+   hold 0.1 vector + cast 3 every 3 days                          3.0   6.3    3     6.0  20.8    3     9.0  58.3    3
+   hold 0.1 vector + cast 6 every 3 days                          3.0   3.0    0     4.2   6.0    0     6.1   6.3    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   4.2    0     6.0   6.1    0     8.3   9.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                          13.9  20.8    5    27.8  69.5   10    64.8  69.5   82
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    0    13.9  16.9    3    27.8  30.8    3
+
+-- shepherd {"life":3,"spirit":2} power 1: start H5 F180 T35 H14 S4; Foreign 180 (110 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   72     0.5   0.8   72     1.3   1.7   72
+   hold 1/tick across the bought vector                           0.3   1.3   13     1.3   3.2   13     2.8   9.4   14
+   hold 0.25/tick vector                                          0.9   5.0   13     5.1  12.5   13    11.2  37.6   14
+   hold 0.1/tick vector                                           2.1  12.5   13    12.5  31.3   13    12.5  58.3   53
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0    9     3.0   5.0    9     7.0   8.0    9
+   cast only: 3 every 3 days                                      3.0   9.0    9     9.0  15.0    9    21.0  24.0    9
+   hold 0.1 vector + cast 3 every 3 days                          2.8   8.8    0     6.0  12.5    0    11.6  27.8    5
+   hold 0.1 vector + cast 6 every 3 days                          2.8   4.4    0     5.1   7.0    0     7.2  10.2    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.0   9.0    0     9.0  12.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  62.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  41.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  31.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    20.8  20.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  27.8    0
+   CLAIM 0.03, no break                                           7.0  41.7   14    13.9  69.5   53    41.7  41.7  110
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    1    13.9  16.9    1    41.7  41.8    5
+
+-- shepherd {"life":3,"spirit":2} power 1.33: start H5 F172 T33 H23 S5; Foreign 172 (110 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   72     0.3   0.4   72     0.8   1.2   72
+   hold 1/tick across the bought vector                           0.3   0.7   13     0.8   2.2   13     2.0   5.8   13
+   hold 0.25/tick vector                                          0.9   2.5   13     2.8   8.3   13     7.8  23.4   13
+   hold 0.1/tick vector                                           2.1   6.3   13     7.0  20.8   13    19.5  58.3   26
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   2.0    9     3.0   5.0    9     5.0   7.0    9
+   cast only: 3 every 3 days                                      3.0   6.0    9     9.0  15.0    9    15.0  21.0    9
+   hold 0.1 vector + cast 3 every 3 days                          2.8   6.0    0     6.0   9.0    0     9.0  19.5    5
+   hold 0.1 vector + cast 6 every 3 days                          2.8   3.0    0     3.0   6.0    0     6.1   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   4.2    0     5.6   6.0    0     6.2   9.2    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          6.0   7.0    0    19.9  20.8    0    40.8  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   6.0    0    13.9  15.3    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.0    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           7.0  20.8   14    23.2  69.5   26    27.8  64.8   72
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    1    13.9  16.9    1    27.8  30.8    1
+
+-- stone {"force":3,"matter":2} power 1: start H0 F126 T40 H72 S0; Foreign 126 (59 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   21     0.5   0.5   21     1.3   1.8   21
+   hold 1/tick across the bought vector                           0.2   1.3    3     0.4   3.2    3     1.3   9.4    3
+   hold 0.25/tick vector                                          0.6   5.0    3     1.8  12.5    3     5.0  37.6    3
+   hold 0.1/tick vector                                           1.4  12.5    3     4.2  31.3    3    12.5  29.3   21
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   2.0    9     3.0   4.0    9     6.0   7.0    9
+   cast only: 3 every 3 days                                      3.0   6.0    9     9.0  12.0    9    18.0  21.0    9
+   hold 0.1 vector + cast 3 every 3 days                          1.4   4.4    0     3.0   6.0    0     6.3   9.3    0
+   hold 0.1 vector + cast 6 every 3 days                          1.4   4.4    0     3.0   6.0    0     6.0   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         2.8   5.8    0     3.2   6.2    0     6.1   9.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          2.3   5.3    0     7.0  10.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                           4.7  41.7    3    13.9  27.8   21    41.7  41.7   59
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    0    41.7  44.7    0
+
+-- stone {"force":3,"matter":2} power 1.33: start H0 F125 T34 H37 S42; Foreign 125 (59 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.1   21     0.3   0.5   21     0.8   1.3   21
+   hold 1/tick across the bought vector                           0.2   0.7    3     0.4   2.2    3     0.8   5.8    3
+   hold 0.25/tick vector                                          0.6   2.5    3     1.8   8.3    3     3.4  23.4    3
+   hold 0.1/tick vector                                           1.4   6.3    3     4.2  20.8    3     8.3  58.3    3
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   2.0    9     3.0   4.0    9     5.0   6.0    9
+   cast only: 3 every 3 days                                      3.0   6.0    9     9.0  12.0    9    15.0  18.0    9
+   hold 0.1 vector + cast 3 every 3 days                          1.4   3.0    0     3.0   6.0    0     6.0   9.0    0
+   hold 0.1 vector + cast 6 every 3 days                          1.4   3.0    0     3.0   6.0    0     5.6   6.3    0
+   hold 0.05 vector + cast 6 every 3 days                         2.8   4.2    0     3.1   6.1    0     6.0   9.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          2.3   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           4.7  20.8    3    13.9  69.5    3    27.8  69.5   21
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+
+-- spread {"life":2,"matter":2,"mind":1} power 1: start H0 F85 T101 H52 S0; Foreign 85 (76 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2   74     0.8   1.2   74     2.9   2.9   74
+   hold 1/tick across the bought vector                           1.3  15.0    0     2.2  22.9   21     4.4   5.8   42
+   hold 0.25/tick vector                                          2.5  46.8    5     8.3  60.1   33    17.6  23.4   42
+   hold 0.1/tick vector                                           6.3  62.6   21    12.5  20.8   42    43.8  58.3   42
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   5.0   10     5.0   7.0   10     9.0  11.0   10
+   cast only: 3 every 3 days                                      6.0  15.0   10    15.0  21.0   10    27.0  33.0   10
+   hold 0.1 vector + cast 3 every 3 days                          4.2   9.0    9     9.0  12.3    9    14.6  18.0    9
+   hold 0.1 vector + cast 6 every 3 days                          3.0   6.0    0     9.0   9.1    0    12.0  12.1    0
+   hold 0.05 vector + cast 6 every 3 days                         4.2   8.3    0     9.0   9.2    0    12.1  15.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         10.4  16.4    0    31.3  37.3    0    75.9  78.9   62
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          7.0  13.0    0    20.8  26.8    0    65.5  72.5    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          5.3  10.4    0    16.4  21.7    0    49.9  55.1    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.5   7.0    0    13.0  16.4    0    34.3  37.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        4.7   9.3    0    15.3  19.9    0    44.8  49.3    0
+   CLAIM 0.03, no break                                          20.8  83.4   33    41.7  69.5   43    62.5  69.5   74
+   BREAK 4 when opposed /3d + CLAIM 0.03                          7.0  13.0    5    20.8  26.8    6    65.5  72.5    6
+
+-- spread {"life":2,"matter":2,"mind":1} power 1.33: start H0 F76 T55 H107 S0; Foreign 76 (76 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2   74     0.8   0.8   74     1.7   1.7   74
+   hold 1/tick across the bought vector                           1.3  11.7    0     2.5  22.9    9     3.2   3.2   42
+   hold 0.25/tick vector                                          5.0  35.1    5     5.0  60.1   21    12.5  12.5   42
+   hold 0.1/tick vector                                          12.5  87.6    9    12.5  87.6   33    31.3  31.3   42
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   4.0   10     4.0   6.0   10     8.0  10.0   10
+   cast only: 3 every 3 days                                      6.0  12.0   10    12.0  18.0   10    24.0  30.0   10
+   hold 0.1 vector + cast 3 every 3 days                          4.2   8.1    9     8.1  12.0    9    12.5  15.0    9
+   hold 0.1 vector + cast 6 every 3 days                          3.0   6.0    0     8.1   9.0    0    11.3  12.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   7.2    0     9.0   9.1    0    12.0  12.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          3.0  13.4    0    23.8  34.3    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          3.0  10.0    0    16.9  23.8    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.0   8.3    0    13.4  18.7    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   6.5    0    10.0  13.4    0    20.8  23.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.0   7.7    0    12.3  16.9    0    27.8  30.8    0
+   CLAIM 0.03, no break                                          20.8  41.7   33    41.7  41.7   42    83.4  83.4   60
+   BREAK 4 when opposed /3d + CLAIM 0.03                          3.0  10.0    5    16.9  23.8    5    41.7  44.7    6
+
+=== seed 7: 246 places, 89 with an adjacent place ===
+
+-- showcase {"mind":3,"spirit":2} power 1: start H0 F236 T10 H0 S0; Foreign 236 (163 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3  135     0.5   0.5  135     1.3   1.8  135
+   hold 1/tick across the bought vector                           0.4   2.2   14     2.2   5.8   14     3.0  11.5   42
+   hold 0.25/tick vector                                          1.8   8.3   14     8.3  23.4   14    11.7  45.9   42
+   hold 0.1/tick vector                                           4.2  20.8   14    20.8  58.3   14    12.5  58.3  123
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   58     3.0   5.0   58     6.0   8.0   58
+   cast only: 3 every 3 days                                      6.0   9.0   58     9.0  15.0   58    18.0  24.0   58
+   hold 0.1 vector + cast 3 every 3 days                          4.2  20.8    4     6.0  58.3    4     9.0  12.0   57
+   hold 0.1 vector + cast 6 every 3 days                          4.2   6.3    0     6.0   9.0    0     8.6  11.6    0
+   hold 0.05 vector + cast 6 every 3 days                         5.8   8.8    0     6.0   9.0    0     9.1  12.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         10.0  13.0    0    23.8  26.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          7.7  10.7    0    16.9  19.9    0    41.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          6.5   9.5    0    13.4  16.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          5.3   8.3    0    10.0  13.0    0    20.8  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        6.2   9.2    0    12.3  15.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                          13.9  69.5   14    13.9  69.5  123    41.7  41.7  162
+   BREAK 4 when opposed /3d + CLAIM 0.03                          7.7  69.5    0    13.9  16.9   32    41.7  44.7   32
+
+-- showcase {"mind":3,"spirit":2} power 1.33: start H0 F208 T38 H0 S0; Foreign 208 (163 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.1  135     0.3   0.5  135     0.8   1.3  135
+   hold 1/tick across the bought vector                           0.7   2.2   14     2.2   4.4   14     5.8   9.4   14
+   hold 0.25/tick vector                                          2.5   8.3   14     8.3  17.6   14    23.4  37.6   14
+   hold 0.1/tick vector                                           6.3  20.8   14    20.8  43.8   14    43.8  75.0   42
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   3.0   58     4.0   5.0   58     6.0   7.0   58
+   cast only: 3 every 3 days                                      6.0   9.0   58    12.0  15.0   58    18.0  21.0   58
+   hold 0.1 vector + cast 3 every 3 days                          3.0  20.8    4     6.0  43.8    4     9.0  58.3   32
+   hold 0.1 vector + cast 6 every 3 days                          3.0   6.0    0     6.0   7.4    0     6.3   9.1    0
+   hold 0.05 vector + cast 6 every 3 days                         4.2   6.0    0     6.0   9.0    0     9.0  12.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         10.0  10.4    0    23.8  26.8    0    44.7  47.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          7.0   7.0    0    16.9  19.9    0    30.8  33.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          5.3   6.0    0    13.4  15.7    0    23.8  26.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.5   6.0    0    10.0  10.4    0    16.9  19.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        4.7   6.0    0    12.3  13.9    0    21.6  24.6    0
+   CLAIM 0.03, no break                                          20.8  69.5   14    27.8  69.5   85    27.8  69.5  135
+   BREAK 4 when opposed /3d + CLAIM 0.03                          7.0  69.5    0    13.9  16.9   32    30.8  30.8   32
+
+-- shepherd {"life":3,"spirit":2} power 1: start H4 F190 T20 H24 S8; Foreign 190 (113 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   97     0.5   0.8   97     1.3   1.7   97
+   hold 1/tick across the bought vector                           0.3   2.2   24     1.3   5.8   24     2.8  11.5   26
+   hold 0.25/tick vector                                          0.9   8.3   24     5.1  23.4   24    11.2  45.9   26
+   hold 0.1/tick vector                                           2.1  20.8   24    12.5  58.3   24    12.5  29.3   90
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0   15     3.0   5.0   15     7.0   8.0   15
+   cast only: 3 every 3 days                                      3.0   9.0   15     9.0  15.0   15    21.0  24.0   15
+   hold 0.1 vector + cast 3 every 3 days                          3.0   9.0    0     8.8  12.5    0    10.4  15.3   15
+   hold 0.1 vector + cast 6 every 3 days                          3.0   5.8    0     5.1   8.1    0     7.2  12.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   6.0    0     6.0   9.0    0     9.0  12.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    62.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    41.7  44.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    31.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   6.0    0     7.0  10.0    0    20.8  23.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    27.8  30.8    0
+   CLAIM 0.03, no break                                           7.0  69.5   26    13.9  41.8   90    41.7  41.7  113
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    1    13.9  16.9    1    41.7  44.8    1
+
+-- shepherd {"life":3,"spirit":2} power 1.33: start H4 F184 T20 H26 S12; Foreign 184 (113 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.2   97     0.3   0.4   97     0.8   1.2   97
+   hold 1/tick across the bought vector                           0.3   2.2   24     0.8   4.4   24     2.0   9.4   24
+   hold 0.25/tick vector                                          0.9   8.3   24     2.8  17.6   24     7.8  37.6   24
+   hold 0.1/tick vector                                           2.1  20.8   24     7.0  43.8   24     8.3  58.3   57
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               1.0   3.0   15     3.0   5.0   15     5.0   7.0   15
+   cast only: 3 every 3 days                                      3.0   9.0   15     9.0  15.0   15    15.0  21.0   15
+   hold 0.1 vector + cast 3 every 3 days                          2.8   7.4    0     6.3  10.2    0     9.0  15.0   15
+   hold 0.1 vector + cast 6 every 3 days                          2.8   3.0    0     4.2   6.0    0     6.1   9.1    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   4.2    0     6.0   8.6    0     8.3   9.2    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           7.0  69.5   26    13.9  69.5   57    27.8  64.8   97
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    1    13.9  16.9    1    27.8  30.8    1
+
+-- stone {"force":3,"matter":2} power 1: start H0 F110 T56 H52 S28; Foreign 110 (72 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.3   0.3   11     0.5   0.8   11     1.8   1.8   11
+   hold 1/tick across the bought vector                           0.4   1.3    0     0.8   3.2    0     3.0   9.4    0
+   hold 0.25/tick vector                                          1.8   5.0    0     3.4  12.5    0    11.7  37.6    0
+   hold 0.1/tick vector                                           4.2  12.5    0     8.3  31.3    0    29.3  29.3   11
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   2.0   17     4.0   4.0   17     7.0   7.0   17
+   cast only: 3 every 3 days                                      6.0   6.0   17    12.0  12.0   17    21.0  21.0   17
+   hold 0.1 vector + cast 3 every 3 days                          3.0   4.4    0     5.1  13.9    0     9.3  29.3    0
+   hold 0.1 vector + cast 6 every 3 days                          3.0   4.4    0     5.1   6.0    0     9.0   9.0    0
+   hold 0.05 vector + cast 6 every 3 days                         3.0   5.8    0     6.2   6.2    0     9.0   9.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    65.5  65.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.7    0    13.9  16.9    0    44.7  44.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   6.5    0    10.4  13.4    0    34.3  34.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          3.0   5.3    0     7.0  10.0    0    23.2  23.2    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   6.2    0     9.3  12.3    0    30.8  30.8    0
+   CLAIM 0.03, no break                                          13.9  41.7    0    27.8  46.3   11    41.7  41.7   70
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.7    0    13.9  16.9    0    44.7  46.3    0
+
+-- stone {"force":3,"matter":2} power 1.33: start H0 F110 T14 H74 S48; Foreign 110 (72 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.1   0.3   11     0.5   0.5   11     1.3   1.3   11
+   hold 1/tick across the bought vector                           0.2   0.7    0     0.8   2.2    0     2.1   5.8    0
+   hold 0.25/tick vector                                          0.6   2.5    0     3.4   8.3    0     8.4  23.4    0
+   hold 0.1/tick vector                                           1.4   6.3    0     8.3  20.8    0    20.8  58.3    0
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               2.0   2.0   17     4.0   4.0   17     6.0   6.0   17
+   cast only: 3 every 3 days                                      6.0   6.0   17    12.0  12.0   17    18.0  18.0   17
+   hold 0.1 vector + cast 3 every 3 days                          1.4   4.2    0     4.2   8.3    0     9.0  20.8    0
+   hold 0.1 vector + cast 6 every 3 days                          1.4   3.0    0     4.2   6.0    0     6.1   6.3    0
+   hold 0.05 vector + cast 6 every 3 days                         2.8   4.2    0     6.1   6.1    0     8.3   9.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          7.0  10.0    0    20.8  23.8    0    41.7  44.7    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          3.5   5.3    0    10.4  13.4    0    20.8  23.8    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          2.3   3.5    0     7.0  10.0    0    13.9  16.9    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        3.2   4.7    0     9.3  12.3    0    18.6  21.6    0
+   CLAIM 0.03, no break                                           4.7  20.8    0    27.8  69.5    0    69.5  69.5   11
+   BREAK 4 when opposed /3d + CLAIM 0.03                          4.7   7.0    0    13.9  16.9    0    27.8  30.8    0
+
+-- spread {"life":2,"matter":2,"mind":1} power 1: start H0 F111 T108 H27 S0; Foreign 111 (110 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2  101     1.2   1.2  101     3.7   3.7  101
+   hold 1/tick across the bought vector                           6.3  15.0   13     3.2  22.9   49     5.8   9.4   74
+   hold 0.25/tick vector                                         25.1  60.1   17     8.3  12.5   73    23.4  37.6   74
+   hold 0.1/tick vector                                          12.5  62.6   47    20.8  31.3   74    43.8  58.3   83
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               4.0   7.0   19     6.0   9.0   19    10.0  13.0   19
+   cast only: 3 every 3 days                                     12.0  21.0   19    18.0  27.0   19    30.0  39.0   19
+   hold 0.1 vector + cast 3 every 3 days                          9.0  12.3   16    12.0  18.0   18    18.0  31.3   18
+   hold 0.1 vector + cast 6 every 3 days                          6.0   9.3    0     9.0  12.0    0    12.1  15.1    0
+   hold 0.05 vector + cast 6 every 3 days                         8.3  12.0    0     9.2  12.2    0    15.0  18.0    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                         16.4  19.4    0    37.3  40.3    0    75.9  78.9  103
+   CLAIM 0.03 + BREAK 6 when opposed /3d                         13.0  16.0    0    26.8  29.8    0    65.5  72.5    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                         10.4  14.3    0    21.7  24.7    0    49.9  55.1    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          7.0  12.5    0    16.4  19.4    0    34.3  37.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        9.3  13.7    0    19.9  22.9    0    44.8  49.3    0
+   CLAIM 0.03, no break                                          20.8  41.7   73    41.7  69.5   84    62.5  62.5  110
+   BREAK 4 when opposed /3d + CLAIM 0.03                         13.0  16.0    4    26.8  29.8    5    65.5  75.5    5
+
+-- spread {"life":2,"matter":2,"mind":1} power 1.33: start H0 F110 T70 H66 S0; Foreign 110 (110 face an opposing pole)
+   policy                                                       →Touched p50/p90/never   →Held p50/p90/never   →Sovereign p50/p90/never  (days)
+   today: hold 1/tick on primary (CONTROL_PRESSURE_PER_TICK)      0.2   0.2  101     0.8   0.8  101     2.3   2.3  101
+   hold 1/tick across the bought vector                           4.2  11.7   13    15.0  22.9   29     3.2   5.8   74
+   hold 0.25/tick vector                                         16.8  46.8   17    12.5  60.1   47    12.5  23.4   74
+   hold 0.1/tick vector                                          41.7  87.6   29    12.5  31.3   73    31.3  58.3   74
+   cast only: 3 every day (ACTION_PRESSURE_SUCCESS)               3.0   6.0   19     5.0   8.0   19     9.0  12.0   19
+   cast only: 3 every 3 days                                      9.0  18.0   19    15.0  24.0   19    27.0  36.0   19
+   hold 0.1 vector + cast 3 every 3 days                          6.0  12.3   16    11.1  15.0   18    15.0  20.8   18
+   hold 0.1 vector + cast 6 every 3 days                          4.2   9.0    0     8.1  11.1    0    12.0  15.0    0
+   hold 0.05 vector + cast 6 every 3 days                         6.0   9.0    0     9.1  12.1    0    12.1  15.1    0
+   CLAIM 0.02 + BREAK 6 when opposed /3d                          6.0  13.4    0    23.8  34.3    0    62.5  68.5    0
+   CLAIM 0.03 + BREAK 6 when opposed /3d                          6.0  10.0    0    16.9  23.8    0    41.7  47.7    0
+   CLAIM 0.04 + BREAK 6 when opposed /3d                          6.0   9.0    0    13.4  18.7    0    31.3  37.3    0
+   CLAIM 0.06 + BREAK 6 when opposed /3d                          6.0   9.0    0    10.0  13.4    0    20.8  26.8    0
+   CLAIM 0.03 x1.5 adjacency + BREAK 6 /3d                        6.0   9.0    0    12.3  16.9    0    27.8  33.8    0
+   CLAIM 0.03, no break                                          20.8  41.7   73    20.8  41.7   83    62.5  83.4   94
+   BREAK 4 when opposed /3d + CLAIM 0.03                          6.0  13.0    4    16.9  26.8    4    41.7  47.7    5
