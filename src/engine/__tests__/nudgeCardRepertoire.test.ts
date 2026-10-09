@@ -635,71 +635,81 @@ describe('Foundation discovery — elder magic is found, not chosen (THR-1753)',
   const FOUNDATION_SIGNED = ['gambit', 'stumble', 'favor', 'whisper', 'veil', 'undertow'] as const;
   /** A god whose identity is all Creation — the only shape point-buy produces. */
   const CREATION_GOD = { primary: 'mind', secondary: 'life' } as const;
+  const ALL_FOUND = ['chaos', 'order', 'light', 'darkness'] as const;
 
   const heldTypes = (entries: ReturnType<typeof buildRepertoire>) =>
     new Set(entries.map((e) => e.member.typeId));
 
   it('a Creation-only god holds none of the six before any find', () => {
-    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: {} }));
+    const held = heldTypes(buildRepertoire({ ...CREATION_GOD }));
     for (const t of FOUNDATION_SIGNED) expect(held.has(t)).toBe(false);
   });
 
-  it('reads found spheres off the ledger at the 1-essence mark, in Foundation order', () => {
-    expect(discoveredFoundationSpheres(undefined)).toEqual([]);
-    expect(discoveredFoundationSpheres({ chaos: 0.99 })).toEqual([]);
-    expect(
-      discoveredFoundationSpheres({ darkness: 1.25, chaos: 1, mind: 400, light: 0 }),
-    ).toEqual(['chaos', 'darkness']);
+  it('earned essence alone finds nothing — income pays every sphere a floor', () => {
+    const held = heldTypes(
+      buildRepertoire({
+        ...CREATION_GOD,
+        essenceEarnedBySphere: { chaos: 500, order: 500, light: 500, darkness: 500 },
+      }),
+    );
+    for (const t of FOUNDATION_SIGNED) expect(held.has(t)).toBe(false);
   });
 
-  it('one elder-site spread (1.25 per Foundation sphere) opens all six at the secondary tier', () => {
-    const entries = buildRepertoire({
-      ...CREATION_GOD,
-      essenceEarnedBySphere: { chaos: 1.25, order: 1.25, light: 1.25, darkness: 1.25 },
-    });
-    const found = entries.filter((e) => e.source === 'discovery');
+  it('cleans the found list to Foundation spheres, in Foundation order', () => {
+    expect(discoveredFoundationSpheres(undefined)).toEqual([]);
+    expect(discoveredFoundationSpheres(['darkness', 'mind', 'chaos'])).toEqual(['chaos', 'darkness']);
+  });
+
+  it('all four found opens all six types at the secondary tier', () => {
+    const found = buildRepertoire({ ...CREATION_GOD, discovered: ALL_FOUND }).filter(
+      (e) => e.source === 'discovery',
+    );
     const foundTypes = new Set(found.map((e) => e.member.typeId));
     for (const t of FOUNDATION_SIGNED) expect(foundTypes.has(t)).toBe(true);
-    expect(found.length).toBeGreaterThan(0);
     for (const e of found) expect(e.access).toBe('discounted');
   });
 
-  it('opens only the sphere the ruin touched', () => {
-    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { darkness: 2.5 } }));
+  it('opens only the sphere that was found', () => {
+    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, discovered: ['darkness'] }));
     expect(held.has('veil')).toBe(true);
     expect(held.has('undertow')).toBe(true);
     expect(held.has('gambit')).toBe(false);
     expect(held.has('whisper')).toBe(false);
   });
 
+  it('a Creation name in the found list opens nothing', () => {
+    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, discovered: ['force'] }));
+    expect(held.has('heavy_hand')).toBe(false);
+  });
+
   it('does not hand out order’s signature Insurance through the universal core type', () => {
-    const before = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: {} });
+    const before = buildRepertoire({ ...CREATION_GOD });
     expect(before.some((e) => e.member.id === 'card.insurance.signature.order')).toBe(false);
-    const after = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { order: 3 } });
+    const after = buildRepertoire({ ...CREATION_GOD, discovered: ['order'] });
     const sig = after.find((e) => e.member.id === 'card.insurance.signature.order');
     expect(sig?.source).toBe('discovery');
     expect(sig?.access).toBe('discounted');
   });
 
   it('identity outranks discovery: a held sphere stays full and reads as signature', () => {
-    const entries = buildRepertoire({
-      primary: 'darkness',
-      secondary: 'mind',
-      essenceEarnedBySphere: { darkness: 50 },
-    });
+    const entries = buildRepertoire({ primary: 'darkness', secondary: 'mind', discovered: ['darkness'] });
     const veil = entries.find((e) => e.member.id === 'card.veil.signature.darkness');
     expect(veil?.access).toBe('full');
     expect(veil?.source).toBe('signature');
   });
 
-  it('a discovered sphere lets its attunement member deepen once practised', () => {
-    const entries = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { chaos: 20 } });
+  it('a found sphere lets its attunement member deepen once practised', () => {
+    const entries = buildRepertoire({
+      ...CREATION_GOD,
+      discovered: ['chaos'],
+      essenceEarnedBySphere: { chaos: 20 },
+    });
     const attuned = entries.find((e) => e.member.id === 'card.gambit.attunement.chaos');
     expect(attuned?.source).toBe('sphere_attunement');
     expect(attuned?.access).toBe('discounted');
   });
 
-  it('memberAccess / cardTypeAccess honour an explicit discovered list', () => {
+  it('memberAccess / cardTypeAccess honour the found list', () => {
     expect(cardTypeAccess('stumble', { ...CREATION_GOD })).toBe('locked');
     expect(cardTypeAccess('stumble', { ...CREATION_GOD, discovered: ['chaos'] })).toBe('discounted');
     const whisper = { typeId: 'whisper' as const, sphere: 'light' as const };
@@ -708,10 +718,9 @@ describe('Foundation discovery — elder magic is found, not chosen (THR-1753)',
   });
 
   it('every found signature member is dealable (profiled with band fragments)', () => {
-    const found = buildRepertoire({
-      ...CREATION_GOD,
-      essenceEarnedBySphere: { chaos: 2, order: 2, light: 2, darkness: 2 },
-    }).filter((e) => e.source === 'discovery');
+    const found = buildRepertoire({ ...CREATION_GOD, discovered: ALL_FOUND }).filter(
+      (e) => e.source === 'discovery',
+    );
     expect(found.length).toBeGreaterThan(0);
     for (const e of found) {
       expect(PLAY_PROFILES[e.member.id], e.member.id).toBeDefined();

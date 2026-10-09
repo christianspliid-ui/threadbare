@@ -556,6 +556,8 @@ export function buildNudgePhaseModel(
           // reads it as all-zero, so attunement members stay locked rather than
           // falling open on the saves least able to have earned them.
           essenceEarnedBySphere: gameState?.essenceEarnedBySphere,
+          // THR-1753 — Foundation spheres found in ruins open their signed cards.
+          discovered: gameState?.foundationSpheresFound,
         echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
       })
     : undefined;

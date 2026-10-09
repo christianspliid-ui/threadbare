@@ -44,7 +44,6 @@ import {
   DEAL_FAILURE_BAND_OUTCOMES,
   ECHO_CARD_SCAR_DISCOUNT,
   ECHO_CARD_SCAR_PENALTY,
-  FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD,
   SECONDARY_SPHERE_DISCOUNT,
   SPHERE_ATTUNEMENT_THRESHOLDS,
 } from '../data/nudge-constants';
@@ -92,7 +91,8 @@ export interface AscendantSpheres {
   readonly primary?: SphereName;
   readonly secondary?: SphereName;
   /**
-   * Foundation spheres the god has *found* rather than chosen (THR-1753) — see
+   * Foundation spheres the god has *found* rather than chosen (THR-1753) —
+   * `GameState.foundationSpheresFound`, cleaned by
    * {@link discoveredFoundationSpheres}. Each opens its signed cards at
    * `discounted`, the secondary tier, unless identity already grants more.
    */
@@ -100,27 +100,25 @@ export interface AscendantSpheres {
 }
 
 /**
- * Foundation spheres whose signed cards a god has opened by drawing elder
- * essence out of a ruin. THR-1753.
+ * The Foundation spheres a god has found, cleaned for the access check.
+ * THR-1753.
  *
  * Foundation magic is found, not chosen (rulebook §5): Remembrance's point-buy
  * covers Creation spheres only (THR-1749), so without this no god reaches
- * gambit, stumble, favor, whisper, veil or undertow through identity at all.
+ * gambit, stumble, favor, whisper, veil or undertow at all. The finds are
+ * recorded at the elder-grant sites (`GameState.foundationSpheresFound`, via
+ * `recordFoundationFinds`). They are not derived from the lifetime ledger,
+ * because income pays every sphere a floor and would "find" all four with no
+ * ruin involved.
  *
- * Read off the lifetime `essenceEarnedBySphere` ledger rather than a new flag:
- * every elder grant (hidden-site reveal, ruin transformed / consumed /
- * catastrophic) already lands there through the phase-boundary diff, and no
- * other source pays out Foundation essence once income follows the bought
- * Creation vector. Pure over run state, in {@link FOUNDATION_SPHERE_NAMES}
- * order, so the same save always opens the same spheres.
+ * Keeps only real Foundation spheres, in {@link FOUNDATION_SPHERE_NAMES} order,
+ * so a save carrying junk or a Creation name cannot open anything through here.
  */
 export function discoveredFoundationSpheres(
-  earned: EssenceEarnedBySphere | undefined,
+  found: readonly SphereName[] | undefined,
 ): readonly SphereName[] {
-  if (!earned) return [];
-  return FOUNDATION_SPHERE_NAMES.filter(
-    (sphere) => (earned[sphere] ?? 0) >= FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD,
-  );
+  if (!found || found.length === 0) return [];
+  return FOUNDATION_SPHERE_NAMES.filter((sphere) => found.includes(sphere));
 }
 
 /** Types a single sphere signs. Empty for a sphere with no signatures. */
@@ -335,13 +333,10 @@ function sourceFor(
  */
 export function buildRepertoire(context: RepertoireContext): readonly RepertoireEntry[] {
   const entries: RepertoireEntry[] = [];
-  // A caller that already resolved the found spheres passes them; everyone else
-  // gets them derived from the ledger they already hand in, so every surface
-  // (dealer, nudge phase, debug readout) agrees without a new argument.
   const spheres: AscendantSpheres = {
     primary: context.primary,
     secondary: context.secondary,
-    discovered: context.discovered ?? discoveredFoundationSpheres(context.essenceEarnedBySphere),
+    discovered: discoveredFoundationSpheres(context.discovered),
   };
 
   for (const member of NUDGE_CARD_LIBRARY) {

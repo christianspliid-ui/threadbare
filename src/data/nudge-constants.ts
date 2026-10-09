@@ -172,8 +172,10 @@ export const SPHERE_DISCOUNT_MIN_COST = 1;
 export const SECONDARY_SPHERE_DISCOUNT = 1;
 
 /**
- * Lifetime essence a god must earn in a **Foundation** sphere (chaos, order,
- * light, darkness) before that sphere's signed cards open to them. THR-1753.
+ * Essence one **elder grant** must pay into a Foundation sphere (chaos, order,
+ * light, darkness) to *find* it, opening that sphere's signed cards. THR-1753.
+ * Read per grant by `recordFoundationFinds`, never off lifetime earnings:
+ * ordinary income pays every sphere a floor, and that is not a find.
  *
  * Foundation magic is elder magic, found in ruins and never bought at
  * Remembrance (rulebook §5), so a found sphere opens at the *secondary* tier
@@ -182,7 +184,7 @@ export const SECONDARY_SPHERE_DISCOUNT = 1;
  * One, because the smallest elder grant the engine makes is 1.25 in a sphere
  * (`ELDER_SITE_ESSENCE_REWARD` 5 spread across four Foundation spheres, or
  * the catastrophic quarter into one). Any ruin the god draws essence from opens
- * what it touched. Raising this past 1.25 makes a single find insufficient.
+ * what it touched. Raising this past 1.25 makes the smallest finds find nothing.
  */
 export const FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD = 1;
 

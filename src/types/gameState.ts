@@ -248,6 +248,15 @@ export interface GameState {
    */
   essenceEarnedBySphere?: EssenceEarnedBySphere;
   /**
+   * Foundation spheres (chaos, order, light, darkness) the god has *found* by
+   * drawing elder essence out of a ruin or an elder hidden site (THR-1753).
+   * Each opens its signed cards at the secondary tier. Written only at the two
+   * elder-grant sites (`recordFoundationFinds`), never derived from income:
+   * the bought-vector split pays every sphere a small floor, so lifetime
+   * essence cannot tell a find from a trickle. Absent ⇒ nothing found.
+   */
+  foundationSpheresFound?: SphereName[];
+  /**
    * Recent essence movement per sphere, by cause (THR-1713) — the record behind
    * the essence row's trend arrow and "fed by / drawn by" hover. Two rolling
    * windows per sphere, bounded. Written at the same phase-merge seam as

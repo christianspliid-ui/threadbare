@@ -623,6 +623,7 @@ if (import.meta.env.DEV) {
         hunger: toHungerId(identity.hungerId),
         unlockedActionIds: new Set(state.unlockedActionIds ?? []),
         essenceEarnedBySphere: state.essenceEarnedBySphere,
+        discovered: state.foundationSpheresFound,
         echoCards: echoCardsFromDefinitions(state.echoDefinitions ?? []),
       }).map((entry) => ({
         cardId: entry.member.id,

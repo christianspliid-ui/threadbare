@@ -89,7 +89,7 @@ import {
 import { resolveHexActionFull, isHexTargetId, parseHexTargetId } from './hexActionBridge';
 import { buildDiscoveryTickEvent } from './revelationResolver';
 import { composeSurveyPeopleProse, buildSurveyCompletedTickEvent } from './surveyProseComposer';
-import { computeElderEssenceReward } from './elderEssenceReward';
+import { computeElderEssenceReward, recordFoundationFinds } from './elderEssenceReward';
 import { consumeTreasureMapsAtHex } from './treasureMapConsumption';
 import { appendEvent } from './encounterTimeline';
 import type { HexMutation } from '../types/hexMutation';
@@ -3728,6 +3728,9 @@ export function phaseUnifiedActionProgress(
   const spherePressures: SpherePressureEvent[] = [];
   // Digest buffer: accumulate background/invisible action outcomes for Read the Threads.
   const digestBuffer: DigestEntry[] = [...(state.digestBuffer ?? [])];
+  // THR-1753 — Foundation spheres an elder reveal finds this phase.
+  const foundationSpheresFoundBefore = state.foundationSpheresFound;
+  let foundationSpheresFound = foundationSpheresFoundBefore;
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet).
   // THR-1730: a step the player minimised at pause-tier attention waits for them
@@ -3988,6 +3991,12 @@ export function phaseUnifiedActionProgress(
                   state.essencePool[s] += delta;
                 }
               }
+              foundationSpheresFound = recordFoundationFinds(
+                foundationSpheresFound,
+                reward.deltas,
+                state.tick,
+                'hidden_site_reveal',
+              );
               events.push({
                 id: `evt_essence_discovery_${reveal.sublocationId}_${state.tick}`,
                 tick: state.tick,
@@ -4221,5 +4230,6 @@ export function phaseUnifiedActionProgress(
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
+    ...(foundationSpheresFound !== foundationSpheresFoundBefore ? { foundationSpheresFound } : {}),
   };
 }

@@ -466,6 +466,8 @@ export interface DealStateSlice {
   } | null;
   readonly unlockedActionIds?: readonly string[];
   readonly essenceEarnedBySphere?: EssenceEarnedBySphere;
+  /** THR-1753 — Foundation spheres found in ruins; open their signed cards. */
+  readonly foundationSpheresFound?: readonly SphereName[];
   readonly echoDefinitions?: readonly EchoDefinition[];
 }
 
@@ -523,6 +525,7 @@ export function composeDealtStepFromState<T extends Pick<ActionStep, 'nudges' | 
     hunger: toHungerId(identity.hungerId),
     unlockedActionIds: new Set(state?.unlockedActionIds ?? []),
     essenceEarnedBySphere: state?.essenceEarnedBySphere,
+    discovered: state?.foundationSpheresFound,
     echoCards: echoCardsFromDefinitions(state?.echoDefinitions ?? []),
   });
   return composeDealtStep(step, repertoire, {

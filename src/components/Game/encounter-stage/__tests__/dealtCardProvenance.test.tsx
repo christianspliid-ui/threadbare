@@ -191,7 +191,7 @@ describe('THR-1247 · a dealt card on the encounter stage', () => {
     // A Creation-only god who drew darkness essence out of a ruin.
     const finder = {
       ...darknessGod(),
-      essenceEarnedBySphere: { darkness: 1.25 },
+      foundationSpheresFound: ['darkness'],
       ascendantIdentity: {
         sphereAlignment: { primary: 'mind', secondary: 'life' },
         hungerId: 'hunger.witness',
