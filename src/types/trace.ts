@@ -5308,7 +5308,8 @@ export interface BeatArrivalOfferTrace extends TraceBase {
 export interface BeatSettledAsPlayedTrace extends TraceBase {
   category: 'beat.settled_as_played';
   beatId: string;
-  reason: 'first_already_bonded';
+  /** `warm_start`: a no-choice opening gift settled before the warm-up's first tick (THR-1787). */
+  reason: 'first_already_bonded' | 'warm_start';
 }
 
 /**

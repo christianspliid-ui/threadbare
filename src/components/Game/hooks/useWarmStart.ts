@@ -17,6 +17,13 @@
  * followed mortal whatever the mode, so the survivors are re-tiered to unacknowledged
  * badges (`settleUndertakingMomentsAsBadges`) rather than popping at arrival.
  *
+ * The one exception is the no-choice opening gifts (THR-1787): the warm-up has no
+ * player acts, so the one-act spine pacing would leave the whole gift chain waiting
+ * at arrival, which testers read as the tutorial repeating. Before the first chunk
+ * `settleOpening` settles `WARM_START_SETTLED_SPINE_BEATS` as already played. Each
+ * offers a single call to action with no alternative, so nothing is decided for the
+ * player; "A Path Opens", a real choice, still waits.
+ *
  * The orchestration is the pure-ish async `runWarmStart` (injected dependencies, so
  * a test can drive a normal end, a thrown chunk and a twilight stop without a world);
  * the hook only wires it to GameView.
@@ -40,6 +47,17 @@ export const WARM_START_MAX_TICKS = 600;
 export const WARM_START_CHUNK_TICKS = 1;
 /** Decisions that may wait at arrival before the done line flags a pile-up. Never auto-resolved. */
 export const WARM_START_MAX_ARRIVAL_DECISIONS = 1;
+/**
+ * Spine gifts settled as already played before the first warm tick (THR-1787): the seat,
+ * the thing left behind and the first word. Each has one call to action and no
+ * alternative. Beat 4 ("A Path Opens") is a real choice and is never listed. Empty
+ * the array to turn the step off.
+ */
+export const WARM_START_SETTLED_SPINE_BEATS: readonly string[] = [
+  'beat.spine.the_seat',
+  'beat.spine.thing_left_behind',
+  'beat.spine.the_first_word',
+];
 /** Re-tier the warm-up's interrupt-tier undertaking moments to badges at the end. */
 export const WARM_START_SETTLE_MOMENTS = true;
 /**
@@ -108,6 +126,11 @@ export interface WarmStartDeps {
   setSuppressedUntil: (tick: number | null) => void;
   /** Re-tier the warm-up's moments; returns how many changed and how many interrupts remain. */
   settleMoments: (sinceTick: number) => { settled: number; pendingInterrupts: number };
+  /**
+   * Settle the listed spine gifts as already played, in order, before the first chunk
+   * (THR-1787). Returns what settled and the first that did not. Absent → skipped.
+   */
+  settleOpening?: (beatIds: readonly string[]) => { settled: string[]; failedBeatId: string | null };
   onProgress?: (tick: number) => void;
   yieldToBrowser?: () => Promise<void>;
   now?: () => number;
@@ -121,6 +144,10 @@ export interface WarmStartResult {
   firstModeRestored: AttentionMode | null;
   momentsSettled: number;
   pendingInterruptsAtArrival: number;
+  /** Spine beats settled before the first chunk (THR-1787). */
+  openingSettled: string[];
+  /** The first listed gift that did not settle; it is offered normally after arrival. */
+  openingSettleFailed: string | null;
 }
 
 const defaultYield = () => new Promise<void>(resolve => setTimeout(resolve, 0));
@@ -139,6 +166,8 @@ export async function runWarmStart(deps: WarmStartDeps): Promise<WarmStartResult
   let advanced = 0;
   let stoppedEarly: WarmStartResult['stoppedEarly'] = null;
   let previousMode: AttentionMode | null = null;
+  let openingSettled: string[] = [];
+  let openingSettleFailed: string | null = null;
 
   try {
     // Suppression first, using the clamped request, so nothing raised on the first
@@ -146,6 +175,19 @@ export async function runWarmStart(deps: WarmStartDeps): Promise<WarmStartResult
     deps.setSuppressedUntil(deps.startTick + deps.requested + 1);
     previousMode = deps.getFirstMode();
     if (previousMode === 'pause') deps.toggleFirstMode();
+
+    // THR-1787: the no-choice opening gifts settle once, before the first chunk.
+    // Fail-soft: a throw or a refusal leaves the rest to be offered after arrival.
+    if (deps.settleOpening && WARM_START_SETTLED_SPINE_BEATS.length > 0) {
+      try {
+        const opening = deps.settleOpening(WARM_START_SETTLED_SPINE_BEATS);
+        openingSettled = opening.settled;
+        openingSettleFailed = opening.failedBeatId;
+      } catch (err) {
+        openingSettleFailed = WARM_START_SETTLED_SPINE_BEATS[0] ?? null;
+        console.error('[warm-start] settling the opening gifts failed', err);
+      }
+    }
 
     while (advanced < deps.requested) {
       const n = Math.min(chunk, deps.requested - advanced);
@@ -200,6 +242,8 @@ export async function runWarmStart(deps: WarmStartDeps): Promise<WarmStartResult
     firstModeRestored,
     momentsSettled,
     pendingInterruptsAtArrival,
+    openingSettled,
+    openingSettleFailed,
   };
 }
 
@@ -222,6 +266,7 @@ export interface UseWarmStartArgs {
   toggleFirstMode: WarmStartDeps['toggleFirstMode'];
   setSuppressedUntil: WarmStartDeps['setSuppressedUntil'];
   settleMoments: WarmStartDeps['settleMoments'];
+  settleOpening: NonNullable<WarmStartDeps['settleOpening']>;
   /** Interrupt surfaces open once suppression clears — read after the arrival render. */
   getOpenInterrupts: () => string[];
 }
@@ -256,6 +301,7 @@ export function useWarmStart(args: UseWarmStartArgs): UseWarmStartResult {
       toggleFirstMode: () => argsRef.current.toggleFirstMode(),
       setSuppressedUntil: t => argsRef.current.setSuppressedUntil(t),
       settleMoments: since => argsRef.current.settleMoments(since),
+      settleOpening: ids => argsRef.current.settleOpening(ids),
       onProgress: tick => setProgress(p => (p ? { ...p, currentTick: tick } : p)),
     });
     setArrival(result);

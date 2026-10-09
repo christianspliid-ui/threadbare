@@ -234,7 +234,7 @@ import { isAutonomousDecisionActor } from '../../engine/strategicKindReachabilit
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat, settleOpeningSpineBeats } from '../../engine/ascendantBeat';
 import {
   findDeliverySubject,
   prepareDeliveryEncounter,
@@ -4810,6 +4810,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
       const pendingInterrupts = after.filter(r => r.presentation === 'interrupt' && !r.acknowledged).length;
       return { settled, pendingInterrupts };
+    },
+    // THR-1787: the no-choice opening gifts settle before the first warm tick. Seeding
+    // mutates the graph in place, so the world is touched; flushSync commits the patch
+    // so the first chunk's `runTicksSync` reads it from the live ref.
+    settleOpening: ids => {
+      const live = getLiveState();
+      const result = settleOpeningSpineBeats(live, ids, live.tick);
+      if (result.settled.length > 0) {
+        touchWorld(runtime);
+        flushSync(() => { setGameState(prev => ({ ...prev, ...result.patch })); });
+      }
+      return { settled: result.settled, failedBeatId: result.failedBeatId };
     },
     getOpenInterrupts: () => warmOpenInterruptsRef.current,
   });

@@ -592,6 +592,12 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Catching up',
     desc: '{now} — catching up to {target}',
   },
+  // THR-1787: held decisions wait for the player; the Lives-on line alone read as
+  // "everything resolves itself" just before the game asked for a choice.
+  'ui.warm_start.held': {
+    label: 'Choices wait',
+    desc: 'Anything that needs your choice has waited for you.',
+  },
   'ui.attention.thread_too_thin': {
     label: 'Thread too thin',
     desc: 'The thread is too thin for this mortal to stop the world. Strengthen it first.',

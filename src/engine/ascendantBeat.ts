@@ -610,6 +610,9 @@ function firstName(state: GameState): string {
  * stamps are identical — then writes one chronicle line and a
  * `beat.settled_as_played` trace.
  *
+ * Only Beat 0 writes the "thread already holds" line; a later gift settled this way
+ * (the warm start, THR-1787) is announced by its own gift-placement line, if any.
+ *
  * Draws no PRNG. Fail-soft: on any error, or if the beat does not resolve, returns
  * `{}` so the caller offers the beat normally.
  */
@@ -617,6 +620,7 @@ export function settleSpineBeatAsPlayed(
   state: GameState,
   beatId: string,
   turn: number,
+  reason: BeatSettledAsPlayedTrace['reason'] = 'first_already_bonded',
 ): Partial<GameState> {
   const beats = state.ascendantBeats;
   if (!beats || beats.pending !== null) return {};
@@ -625,27 +629,28 @@ export function settleSpineBeatAsPlayed(
     if (!offered) return {};
     const resolution = resolvePendingBeat({ ...state, tick: turn, ascendantBeats: offered.next });
     if (!resolution.resolved) return {};
-    const line = SETTLED_OPENING_CHRONICLE_LINE.replace('{firstName}', firstName(state));
-    const event: TickEvent = {
-      id: `beat_settled_${beatId}_${turn}`,
-      tick: turn,
-      type: 'narrative',
-      message: line,
-      significance: SETTLED_OPENING_SIGNIFICANCE,
-    };
+    const events: TickEvent[] = beatId === OPENING_SPINE_BEAT_ID
+      ? [{
+        id: `beat_settled_${beatId}_${turn}`,
+        tick: turn,
+        type: 'narrative',
+        message: SETTLED_OPENING_CHRONICLE_LINE.replace('{firstName}', firstName(state)),
+        significance: SETTLED_OPENING_SIGNIFICANCE,
+      }]
+      : [];
     const next = resolution.state;
     emitBeatTrace({
       tick: turn,
       category: 'beat.settled_as_played',
       beatId,
-      reason: 'first_already_bonded',
-      summary: `beat.settled_as_played: ${beatId} (first_already_bonded)`,
+      reason,
+      summary: `beat.settled_as_played: ${beatId} (${reason})`,
     });
     return {
       ascendantBeats: next.ascendantBeats,
       unlockedActionIds: next.unlockedActionIds,
-      tickEvents: [...(next.tickEvents ?? []), event],
-      recentEvents: [...(next.recentEvents ?? []), event].slice(-MAX_RECENT_EVENTS),
+      tickEvents: [...(next.tickEvents ?? []), ...events],
+      recentEvents: [...(next.recentEvents ?? []), ...events].slice(-MAX_RECENT_EVENTS),
     };
   } catch (err) {
     emitTrace({
@@ -655,6 +660,67 @@ export function settleSpineBeatAsPlayed(
     });
     return {};
   }
+}
+
+export interface OpeningSettleResult {
+  /** Merge into GameState: beats, unlocks and the events the settles wrote. Empty when nothing settled. */
+  patch: Partial<GameState>;
+  /** Spine beat ids settled, in order (Beat 0 first when it was still at the cursor). */
+  settled: string[];
+  /** The first requested beat that could not be settled, or null. It and later ones are offered normally. */
+  failedBeatId: string | null;
+}
+
+/**
+ * Settle the no-choice opening gifts before the warm-up's first tick (THR-1787).
+ *
+ * The warm start runs with no player acts, so the one-act pacing gate (THR-1647 S4)
+ * would hold the gift chain at its start for seasons and hand it to the player at
+ * arrival, which read as the tutorial repeating. Each beat in `beatIds` offers a
+ * single call to action with no alternative, so settling it decides nothing the
+ * player could have decided differently. Beat 0 is settled first if it is still at
+ * the cursor (The First is bonded), because a spine beat only advances the cursor
+ * when it is the cursor beat.
+ *
+ * Settles strictly in cursor order through {@link settleSpineBeatAsPlayed}; a beat
+ * already behind the cursor is skipped. Stops at the first beat that is not at the
+ * cursor or does not settle, which is then offered normally after arrival
+ * (fail-soft). Requires a bonded First; returns an empty result otherwise.
+ * Draws no PRNG. Seeding mutates `state.graph` in place, so the caller touches the world.
+ */
+export function settleOpeningSpineBeats(
+  state: GameState,
+  beatIds: readonly string[],
+  turn: number = state.tick,
+): OpeningSettleResult {
+  const settled: string[] = [];
+  if (!state.ascendantBeats || !firstIsBonded(state)) {
+    return { patch: {}, settled, failedBeatId: beatIds[0] ?? null };
+  }
+  let working: GameState = state;
+  const patch: Partial<GameState> = {};
+  const settleOne = (beatId: string, reason: BeatSettledAsPlayedTrace['reason']): boolean => {
+    const result = settleSpineBeatAsPlayed(working, beatId, turn, reason);
+    if (!result.ascendantBeats) return false;
+    Object.assign(patch, result);
+    working = { ...working, ...result };
+    settled.push(beatId);
+    return true;
+  };
+
+  const cursorBeatId = () => ASCENDANT_SPINE[working.ascendantBeats?.spineCursor ?? -1]?.beatId;
+  if (cursorBeatId() === OPENING_SPINE_BEAT_ID && !settleOne(OPENING_SPINE_BEAT_ID, 'first_already_bonded')) {
+    return { patch, settled, failedBeatId: beatIds[0] ?? null };
+  }
+  for (const beatId of beatIds) {
+    const spineIdx = ASCENDANT_SPINE.findIndex(b => b.beatId === beatId);
+    const cursor = working.ascendantBeats?.spineCursor ?? -1;
+    if (spineIdx >= 0 && spineIdx < cursor) continue; // already played
+    if (spineIdx !== cursor || !settleOne(beatId, 'warm_start')) {
+      return { patch, settled, failedBeatId: beatId };
+    }
+  }
+  return { patch, settled, failedBeatId: null };
 }
 
 // ─── Spine pacing (THR-1647 S4) ──────────────────────────────────────────────

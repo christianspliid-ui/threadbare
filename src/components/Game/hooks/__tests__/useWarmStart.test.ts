@@ -15,6 +15,7 @@ import {
   runWarmStart,
   WARM_START_CHUNK_TICKS,
   WARM_START_MAX_TICKS,
+  WARM_START_SETTLED_SPINE_BEATS,
   type AttentionMode,
   type WarmStartChunkResult,
   type WarmStartDeps,
@@ -181,5 +182,60 @@ describe('runWarmStart', () => {
     await runWarmStart(deps);
     expect(world.beatResolved).toBe(false);
     expect(Object.keys(deps)).not.toContain('dismissBeats');
+  });
+});
+
+describe('runWarmStart — the opening gifts settle first (THR-1787)', () => {
+  let err: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => { err = vi.spyOn(console, 'error').mockImplementation(() => {}); });
+  afterEach(() => { err.mockRestore(); });
+
+  it('lists the three no-choice gifts and never "A Path Opens"', () => {
+    expect(WARM_START_SETTLED_SPINE_BEATS).toEqual([
+      'beat.spine.the_seat',
+      'beat.spine.thing_left_behind',
+      'beat.spine.the_first_word',
+    ]);
+    expect(WARM_START_SETTLED_SPINE_BEATS).not.toContain('beat.spine.a_path_opens');
+  });
+
+  it('settles once, in order, before the first chunk and under suppression', async () => {
+    const { world, deps } = fakeWorld({ requested: 5 });
+    const calls: Array<{ ids: readonly string[]; tick: number; suppressed: number | null }> = [];
+    const result = await runWarmStart({
+      ...deps,
+      settleOpening: ids => {
+        calls.push({ ids, tick: world.tick, suppressed: world.suppressedUntil });
+        return { settled: ['beat.spine.opening', ...ids], failedBeatId: null };
+      },
+    });
+    expect(calls).toHaveLength(1);
+    expect(calls[0].ids).toEqual(WARM_START_SETTLED_SPINE_BEATS);
+    expect(calls[0].tick).toBe(0);
+    expect(calls[0].suppressed).toBe(6);
+    expect(result.openingSettled).toEqual(['beat.spine.opening', ...WARM_START_SETTLED_SPINE_BEATS]);
+    expect(result.openingSettleFailed).toBeNull();
+    expect(result.advanced).toBe(5);
+  });
+
+  it('a throwing settle is fail-soft: the warm-up still runs and every end step runs', async () => {
+    const { world, deps } = fakeWorld({ requested: 4 });
+    const result = await runWarmStart({
+      ...deps,
+      settleOpening: () => { throw new Error('boom'); },
+    });
+    expect(result.advanced).toBe(4);
+    expect(result.stoppedEarly).toBeNull();
+    expect(result.openingSettled).toEqual([]);
+    expect(result.openingSettleFailed).toBe('beat.spine.the_seat');
+    expect(world.suppressedUntil).toBeNull();
+    expect(world.mode).toBe('pause');
+  });
+
+  it('without a settle dependency the step is skipped', async () => {
+    const { deps } = fakeWorld({ requested: 2 });
+    const result = await runWarmStart(deps);
+    expect(result.openingSettled).toEqual([]);
+    expect(result.openingSettleFailed).toBeNull();
   });
 });
