@@ -62,6 +62,15 @@
           "timeout": 60,
           "statusMessage": "Review gate: checking for a clean review receipt..."
         }]
+      },
+      {
+        "matcher": "mcp__.*__save_issue",
+        "hooks": [{
+          "type": "command",
+          "command": "node --no-warnings --experimental-strip-types scripts/wip-gate.ts hook",
+          "timeout": 30,
+          "statusMessage": "WIP gate: checking for unmerged ticket PRs..."
+        }]
       }
     ],
     "Stop": [

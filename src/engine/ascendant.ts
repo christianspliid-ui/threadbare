@@ -22,6 +22,13 @@ import { REACH_DOMAINS } from '../types/traits';
 import type { WorldGraph } from './graph';
 import { createStartingEssencePool } from './influence';
 import { ARCHETYPE_TITLES } from '../data/ascendant-content';
+import { emitTrace } from './traceBuffer';
+import {
+  deriveAlignmentFromPoints,
+  presetFromAlignment,
+  validateSpherePoints,
+  type SpherePoints,
+} from './spherePoints';
 
 // ─── Seeded PRNG (simple mulberry32) ─────────────────────────────────
 
@@ -103,6 +110,35 @@ export function generateArchetypes(count: number, seed: number): AscendantArchet
 
 // ─── Ascendant Creation ──────────────────────────────────────────────
 
+/**
+ * THR-1749: the archetype's bought vector when it validates (and the pair derived
+ * from it); otherwise the preset built from the archetype's pair, with one
+ * `sphere_points.fallback` trace naming why. Never refuses to create the god.
+ */
+function resolveBoughtSpheres(
+  archetype: AscendantArchetype,
+  ascendantId: string,
+): { spherePoints: SpherePoints; sphereAlignment: SphereAlignment; spherePointsSource: 'bought' | 'fallback' } {
+  const bought = archetype.spherePoints;
+  const verdict = bought ? validateSpherePoints(bought) : null;
+  if (bought && verdict?.ok) {
+    const derived = deriveAlignmentFromPoints(bought);
+    return { spherePoints: { ...bought }, sphereAlignment: derived ?? archetype.sphereAlignment, spherePointsSource: 'bought' };
+  }
+  const written = presetFromAlignment(archetype.sphereAlignment);
+  const reason = verdict && !verdict.ok ? verdict.reason : 'missing';
+  emitTrace({
+    category: 'sphere_points.fallback',
+    tick: 0,
+    ascendantId,
+    reason,
+    fallbackFrom: archetype.sphereAlignment,
+    written,
+    summary: `Sphere points ${reason === 'missing' ? 'missing' : `invalid (${reason})`} — preset from ${archetype.sphereAlignment.primary} / ${archetype.sphereAlignment.secondary}`,
+  });
+  return { spherePoints: written, sphereAlignment: archetype.sphereAlignment, spherePointsSource: 'fallback' };
+}
+
 export interface CreateAscendantResult {
   ascendantId: string;
   avatarId: string;
@@ -125,10 +161,13 @@ export function createAscendant(
   const avatarId = `avatar.${config.archetype.id}`;
 
   const startingPool: EssencePool = createStartingEssencePool();
+  const { spherePoints, sphereAlignment, spherePointsSource } = resolveBoughtSpheres(config.archetype, ascendantId);
 
   const ascendantProperties: AscendantProperties = {
     actorType: 'ascendant',
-    sphereAlignment: config.archetype.sphereAlignment,
+    sphereAlignment,
+    spherePoints,
+    spherePointsSource,
     essencePool: startingPool,
     maxEssence: BASE_MAX_ESSENCE,
     archetypeId: config.archetype.id,

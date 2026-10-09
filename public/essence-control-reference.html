@@ -13,7 +13,7 @@
   Designer-layer sources: src/types/influence.ts (EssencePool, EssenceDistribution,
   SphereAlignment), src/data/influence-content.ts (BASE_ESSENCE_PER_TICK and the
   per-source generation + pool-ceiling constants), src/engine/essenceIncome.ts
-  (per-sphere net income view, the 0.35/0.25/0.40 alignment split),
+  (per-sphere net income view), src/engine/spherePoints.ts (the bought-sphere income split, THR-1749),
   src/engine/phaseControlEffects.ts (the sustained-effect tick engine — drain,
   threshold, and relic-upkeep sustain models + lapse reasons),
   src/engine/controlContestationResolver.ts (usurp/destroy resolution, TB-045),
@@ -237,22 +237,22 @@
         <p>A mortal raised into a living <span class="term">Aspect</span> of you becomes a channel, pouring back extra fuel while they live.</p>
       </div>
     </div>
-    <p>But income does not arrive in a lump — it is <span class="term">poured into your pools along your alignment</span>. The largest share flows to your primary Sphere, a smaller share to your secondary, and the remainder is split thin across the other ten. Your nature decides not just how much you gain but <em>where</em> it lands:</p>
+    <p>But income does not arrive in a lump — it is <span class="term">poured into your pools along the spheres you poured yourself into</span> at Remembrance (five measures over the Creation spheres, THR-1749). Every one of the twelve Spheres keeps a small floor, and the rest follows your pour. A god your hunger shaped — three measures and two — lands almost exactly as below; a god who spread wider gets a thinner primary and more currents. Your nature decides not just how much you gain but <em>where</em> it lands:</p>
     <div class="split">
       <div class="split-col">
-        <div class="pct">35%</div>
+        <div class="pct">≈35%</div>
         <h4>Primary Sphere</h4>
         <p>The bulk of every turn's income.</p>
       </div>
       <div class="split-col secondary">
-        <div class="pct">25%</div>
+        <div class="pct">≈25%</div>
         <h4>Secondary Sphere</h4>
         <p>A strong second current.</p>
       </div>
       <div class="split-col rest">
         <div class="pct">40%</div>
         <h4>The other ten</h4>
-        <p>Split thin — a trickle to each.</p>
+        <p>A floor each — never nothing, even in a Sphere you left empty.</p>
       </div>
     </div>
     <p>Holding threads costs as well as feeds: the upkeep of your deepest bonds is drawn from your <em>primary</em> pool each turn, so a large, deep court quietly taxes the very Sphere you rely on most. (The thread ladder and its upkeep are the <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> page; here we care only that they are a running cost against your fuel.)</p>
@@ -380,7 +380,7 @@
       <h3>Generation &amp; the alignment split <span class="flag impl">IMPL</span></h3>
       <ul>
         <li>Gross per-tick generation sums a fixed set of source terms (<code>computeEssenceIncome</code>, <code>src/engine/essenceIncome.ts</code>; mirrored by <code>computeEssenceGeneration</code> in <code>influence.ts</code>): <code>BASE_ESSENCE_PER_TICK = 1.0</code>, plus <code>ESSENCE_PER_THREAD = 0.1</code> × threads, plus <code>ESSENCE_PER_PLACE_OF_POWER = 0.5</code> per controlled place of power, plus <code>ESSENCE_PER_SEAT = 1.0</code> for the home seat (a named higher-yield place of power identified by <code>homeSeatLocationId</code>, THR-502 — replaces rather than stacks with the ordinary place-of-power term for that location), plus <code>ASPECT_ESSENCE_PER_TICK = 0.3</code> per living (non-mythic-echo) <code>aspect_of</code> conduit (THR-479).</li>
-        <li>The total is then <strong>distributed by Sphere alignment</strong>, not credited flat (<code>distributeByAlignment</code>): <code>primary × 0.35</code>, <code>secondary × 0.25</code>, and the remaining <code>0.40</code> split evenly across the other ten Spheres (<code>perOther = total × 0.40 / 10</code>). These three fractions are the <code>EssenceDistribution</code> shape; identity defaults set primary/secondary from the Ascendant's <code>SphereAlignment</code>.</li>
+        <li>The total is then <strong>distributed by the bought sphere vector</strong>, not credited flat (<code>distributeBySpherePoints</code> in <code>src/engine/spherePoints.ts</code>, THR-1749 — one function shared by the ledger <code>computeEssenceGeneration</code> and the readout <code>computeEssenceIncome</code>): every one of the twelve Spheres gets <code>total × UNBOUGHT_SPHERE_INCOME_SHARE</code> (0.04), and the remaining <code>total × 0.52</code> is shared in proportion to <code>spherePoints</code>. A 3/2 preset lands 0.352 / 0.248 / 0.04; 3/1/1 lands 0.352 / 0.144 / 0.144; 2/2/1 lands 0.248 / 0.248 / 0.144; 2/1/1/1 lands 0.248 / 0.144 ×3. The vector is read through <code>getSpherePoints</code>, whose fallback is the 3/2 preset of the node's <code>sphereAlignment</code> (bare <code>?view=game</code>, older fixtures). <code>sphereAlignment</code> is now derived: the two largest buys, canonical-order tie-break.</li>
         <li>Thread upkeep is netted out of the <em>primary</em> pool: <code>computeEssenceIncome</code> subtracts <code>Σ TIER_MAINTENANCE[tier]</code> across all threads from <code>net[primary]</code>. So a deep court is a standing tax on your primary Sphere specifically. The tick loop charges the same sum in <code>phaseInfluenceMaintenance</code>, which runs between the essence phase and <code>phaseControlEffects</code> (THR-1652). The readout and the actual primary-sphere delta agree, and <code>phaseInfluenceMaintenance.test.ts</code> asserts it.</li>
         <li><strong>Source upkeep</strong> <span class="flag impl">IMPL</span> (THR-1747). Every controlled essence source costs <code>SOURCE_CONTROL_SUSTAIN</code> (0.15) a tick from the primary sphere, charged by <code>chargeSourceUpkeep</code> in <code>phaseEssenceSources</code> (before the essence phase, so the essence-earned counter ignores the debit). A source the pool cannot cover is marked <code>upkeepCurrent: false</code>: it gets none of the land's upward drift the next tick, but its income, tier and control are untouched — it stalls, never lapses. <code>computeEssenceIncome</code> subtracts the same <code>0.15 × controlled sources</code>, so readout and ledger agree (<code>divineEconomyPrerequisites.test.ts</code>). Thread upkeep was retuned in the same change to 0 / 0.1 / 0.2 / 0.35 / 0.5; the ledger is pinned by <code>divineEconomyLedger.test.ts</code>. The Covenants block lists each held source with its upkeep in words and no Release.</li>
         <li>Active Control effects with <code>perTickIncome</code> add per-sphere income on top (not distributed by alignment) — an effect can be a net fuel <em>source</em> (e.g. a "Tap the Source" working, <code>TAP_SOURCE_BASE_INCOME = 0.8</code> vs <code>TAP_SOURCE_SUSTAIN_COST = 0.2</code>).</li>
@@ -436,7 +436,8 @@
           <tr><td>ESSENCE_PER_PLACE_OF_POWER</td><td>0.5</td><td>Per-tick per controlled place of power · <code>src/data/influence-content.ts:23</code></td></tr>
           <tr><td>ESSENCE_PER_SEAT</td><td>1.0</td><td>Per-tick from the home seat (throne) · <code>src/data/influence-content.ts:33</code></td></tr>
           <tr><td>ASPECT_ESSENCE_PER_TICK</td><td>0.3</td><td>Conduit income per living Aspect · <code>src/data/aspect-content.ts:39</code></td></tr>
-          <tr><td>EssenceDistribution</td><td>0.35 / 0.25 / 0.40</td><td>Primary / secondary / rest income split · <code>src/engine/essenceIncome.ts:29</code></td></tr>
+          <tr><td>UNBOUGHT_SPHERE_INCOME_SHARE</td><td>0.04</td><td>Income floor every sphere keeps; the rest follows the bought points · <code>src/data/sphere-points-content.ts</code> (THR-1749; replaced the fixed 0.35 / 0.25 / 0.40 split)</td></tr>
+          <tr><td>SPHERE_POINT_BUDGET / CAP</td><td>5 / 3</td><td>Measures poured at Remembrance / most in one sphere · <code>src/data/sphere-points-content.ts</code></td></tr>
           <tr><td>BASE_MAX_ESSENCE</td><td>50</td><td>Base pool ceiling · <code>src/data/influence-content.ts:36</code></td></tr>
           <tr><td>MAX_ESSENCE_PER_THREAD</td><td>5</td><td>Pool-ceiling added per thread · <code>src/data/influence-content.ts:37</code></td></tr>
           <tr><td>TAP_SOURCE_BASE_INCOME</td><td>0.8</td><td>Income from a Tap-the-Source effect · <code>src/engine/phaseControlEffects.ts:49</code></td></tr>

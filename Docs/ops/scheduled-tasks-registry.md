@@ -27,13 +27,14 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 
 | Slot | Cadence | Task | Cron | Fires | Writes |
 |------|---------|------|------|-------|--------|
-| **:00 / :20 / :40** | Every 20 min | CC pickup (`tb-opus-pickup` — single executor lane; back-to-back since THR-1717) | `*/20 * * * *` | ~:11 / :31 / :51 (jitter ~11 min observed 2026-10-03) | — |
+| **:00 / :20 / :40** | Every 20 min | CC pickup (`tb-opus-pickup` — single executor lane; back-to-back since THR-1717; since 2026-10-09 no fresh claim while a ticket PR is unmerged — `scripts/wip-gate.ts` hook) | `*/20 * * * *` | ~:11 / :31 / :51 (jitter ~11 min observed 2026-10-03) | — |
 | **:25** | Hourly | `tb-orchestrator` (decides what happens next — T1 unblock sweep, T2 design authoring, T3 daily architecture health) | `25 * * * *` | ~:26:16 | `Docs/ops/orchestrator-<date>.md` + Linear `Todo`→`Ready for Dev` promotions |
 | **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`; since THR-1385 also measures engine tick cost and appends the trend row) | `45 * * * *` | ~:53:13 | briefing + user-actions + `Docs/ops/tick-cost-trend.tsv` |
 | **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
 | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
 | **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |
 | **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
+| **Thu 15:17** | Weekly | `tb-cicd-review` (CI/CD flow review — measures the week with `npm run cicd:metrics` + the pickup lane's runs, judges recent harness tweaks against their hypotheses, ships at most two small harness tweaks; `cicd-review` skill, prompt mirror `scheduled-task-prompts/tb-cicd-review.md`) — registered 2026-10-09 in an attended session after the `*/20` cadence went unmeasured for six days; Thursday so the Friday retro can read it | `17 15 * * 4` | ~Thu 15:30 (jitter ~13 min at registration) | `Docs/ops/cicd-review-<date>.md`, `Docs/ops/cicd-metrics.tsv`, `Docs/ops/cicd-tweaks.md` on `ops` + at most one harness PR |
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
 | **02/08/14/20 :14** | 4× daily | `tb-design-lane` (unattended design — decides unreserved wayfinder tickets, closes cleared maps, authors + hands off one plan doc per run; `design-lane` skill) — registered 2026-09-25 by THR-1611 | `14 2,8,14,20 * * *` | ~:17:39 (jitter 219 s at registration) | `Docs/ops/design-lane-<date>.md` + Linear decisions / `Ready for Dev` handoffs + `docs/plan-*` PRs |

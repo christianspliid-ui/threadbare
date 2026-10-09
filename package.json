@@ -54,6 +54,7 @@
     "check:workflows": "node --experimental-strip-types scripts/check-workflow-health.ts",
     "check:actions": "node --experimental-strip-types scripts/check-actions-health.ts",
     "check:armed-prs": "node --experimental-strip-types scripts/check-armed-prs.ts",
+    "cicd:metrics": "node --experimental-strip-types --no-warnings scripts/cicd-metrics.ts",
     "check:task-heartbeat": "node --experimental-strip-types scripts/check-scheduled-task-heartbeat.ts",
     "check:lane-silence": "node --experimental-strip-types scripts/check-lane-silence.ts",
     "check:tick-cost": "node --experimental-strip-types scripts/check-tick-cost.ts",
