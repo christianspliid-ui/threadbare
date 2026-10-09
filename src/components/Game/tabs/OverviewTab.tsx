@@ -13,6 +13,7 @@ import { EntityVisual } from '../../shared/EntityVisual';
 import { resolveTooltip } from '../../../engine/tooltipResolver';
 import type { WorldGraph } from '../../../engine/graph';
 import { getSphereColor } from '../../../data/sphereIcons';
+import { reachDisplayName, reachTooltipId } from '../../../engine/aftermathWords';
 import { getReputationWord } from '../../../data/domain-words';
 import { getWealthTier } from '../../../engine/wealth';
 import { getNotableStandings } from '../../../engine/reputation';
@@ -44,6 +45,20 @@ const PERSONALITY_VICE_COLOR = '#c77b7b';
  * isn't padded with eight flat tracks — only the axes their story actually touched.
  */
 const AXIS_SIGNAL_EPSILON = 0.1;
+
+// ─── The First's mark (THR-1755) ──────────────────────────────────
+
+/**
+ * The mark chip's tooltip: what the mark does, in plain words. The Reach name is
+ * a `{{reach.<key>}}` link so it opens the registry's Reach explanation; a reach
+ * the registry cannot explain is plain text (fail-open, see `reachTooltipId`).
+ */
+function godMarkTooltip(reach: string, reachWork: string): string {
+  const tooltipId = reachTooltipId(reach);
+  const reachWord = tooltipId ? `{{${tooltipId}}}` : reachDisplayName(reach);
+  const work = reachWork ? `: ${reachWork}` : '';
+  return `You marked them when you bound them as your First. They are better at ${reachWord} work${work}.`;
+}
 
 // ─── Company cohesion prose (THR-74) ──────────────────────────────
 
@@ -407,6 +422,31 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
               <Tooltip id="ui.calling">
                 <span className="underline decoration-dotted cursor-help">Called {card.calling.title}</span>
               </Tooltip>
+            </p>
+          )}
+          {/* The First's mark (THR-1755) — the god's blessing in one reach. Read from
+              the has_trait edge (Law 56); the Reach word in the tooltip opens the
+              same Reach explanation the rest of the game uses. */}
+          {card.godMark && (
+            <p className="text-sm flex items-center gap-2 flex-wrap" data-testid="identity-god-mark">
+              <Tooltip
+                label={`${card.godMark.name} — the god's mark`}
+                desc={godMarkTooltip(card.godMark.reach, card.godMark.reachWork)}
+              >
+                <span
+                  className="px-2 py-0.5 rounded text-xs cursor-help"
+                  style={{
+                    color: 'var(--accent-gold)',
+                    border: '1px solid var(--accent-gold)',
+                    fontFamily: 'var(--font-display)',
+                  }}
+                >
+                  {card.godMark.name}
+                </span>
+              </Tooltip>
+              <span style={{ color: 'var(--text-secondary)' }}>
+                The god's mark. {card.godMark.line}
+              </span>
             </p>
           )}
           {/*

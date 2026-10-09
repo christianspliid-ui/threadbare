@@ -627,18 +627,45 @@ export interface GodGivenTraitOption {
   name: string;
   description: string;
   reach: ReachDomain;
+  /**
+   * The First's mark (THR-1644 D5, THR-1755): the sentence the sheet shows after
+   * "<name> — the god's mark." Says what the blessing is in the world's words.
+   */
+  markLine?: string;
+  /**
+   * The work the reach covers, in plain words, for the mark's tooltip: "They are
+   * better at <Reach> work: <reachWork>."
+   */
+  reachWork?: string;
 }
 
 export const GOD_GIVEN_TRAITS: GodGivenTraitOption[] = [
-  // One per reach — divine blessings
-  { id: 'trait.god.iron_will',       name: 'Iron Will',        description: 'An unbreakable resolve in battle',      reach: 'iron' },
-  { id: 'trait.god.golden_tongue',   name: 'Golden Tongue',    description: 'Words that turn enemies into allies',   reach: 'gold' },
-  { id: 'trait.god.shadow_step',     name: 'Shadow Step',      description: 'The ability to pass unseen',            reach: 'shadow' },
-  { id: 'trait.god.veil_sight',      name: 'Veil Sight',       description: 'Perception beyond the mortal veil',     reach: 'veil' },
-  { id: 'trait.god.heartfire',       name: 'Heartfire',        description: 'A presence that commands devotion',     reach: 'heart' },
-  { id: 'trait.god.all_seeing',      name: 'All-Seeing',       description: 'Nothing escapes their gaze',            reach: 'eye' },
-  { id: 'trait.god.stone_blood',     name: 'Stone Blood',      description: 'Endurance beyond mortal limits',        reach: 'stone' },
-  { id: 'trait.god.star_touched',    name: 'Star-Touched',     description: 'A connection to the cosmic order',      reach: 'star' },
+  // One per reach — divine blessings. Each becomes The First's mark when its reach is
+  // the First's spark reach (or primary reach on the card route), THR-1755.
+  { id: 'trait.god.iron_will',       name: 'Iron Will',        description: 'An unbreakable resolve in battle',      reach: 'iron',
+    markLine: 'Their resolve holds where others break.',
+    reachWork: 'fighting, standing guard, holding a line' },
+  { id: 'trait.god.golden_tongue',   name: 'Golden Tongue',    description: 'Words that turn enemies into allies',   reach: 'gold',
+    markLine: 'Their words turn enemies into allies.',
+    reachWork: 'trading, bargaining, striking deals' },
+  { id: 'trait.god.shadow_step',     name: 'Shadow Step',      description: 'The ability to pass unseen',            reach: 'shadow',
+    markLine: 'They pass where no one sees them go.',
+    reachWork: 'sneaking, spying, keeping secrets' },
+  { id: 'trait.god.veil_sight',      name: 'Veil Sight',       description: 'Perception beyond the mortal veil',     reach: 'veil',
+    markLine: 'They see what lies past the veil.',
+    reachWork: 'magic, spells, strange powers' },
+  { id: 'trait.god.heartfire',       name: 'Heartfire',        description: 'A presence that commands devotion',     reach: 'heart',
+    markLine: 'People hold to them without being asked.',
+    reachWork: 'friendship, loyalty, winning hearts' },
+  { id: 'trait.god.all_seeing',      name: 'All-Seeing',       description: 'Nothing escapes their gaze',            reach: 'eye',
+    markLine: 'Nothing escapes their gaze.',
+    reachWork: 'learning, searching, finding the truth' },
+  { id: 'trait.god.stone_blood',     name: 'Stone Blood',      description: 'Endurance beyond mortal limits',        reach: 'stone',
+    markLine: 'What they build does not fall.',
+    reachWork: 'building, fortifying, making things last' },
+  { id: 'trait.god.star_touched',    name: 'Star-Touched',     description: 'A connection to the cosmic order',      reach: 'star',
+    markLine: 'Fate seems to listen when they pray.',
+    reachWork: 'faith, prayer, reading fate' },
 ];
 
 /**

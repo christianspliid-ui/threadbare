@@ -59,6 +59,7 @@ import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 import { computeReachShares } from './domainCapability';
 import { placeSeededCarriedNotices } from './spellGenerator/notice';
+import { grantFirstMark } from './firstMark';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -711,6 +712,10 @@ export function devSeedTheFirst(state: GameState): string {
       beatHistory: [],
     },
   });
+
+  // THR-1755 (D5): the dev First carries the god's mark like a bonded one, so the
+  // seeded route shows the same sheet as the player's path (Heart → Heartfire).
+  grantFirstMark(graph, agentId, 'heart', tick);
 
   state.meetTheFirstAutoTriggered = true;
   // Add familiarity for the new agent — intimate level so attachments/backstory are visible
