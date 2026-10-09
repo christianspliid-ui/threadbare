@@ -1235,15 +1235,15 @@ export function EncounterVeil({
                       how much. Same dismissal as the categories (Law 51). */}
                   <span
                     data-testid="consequence-legend-delta"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textTransform: 'uppercase' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, textTransform: 'uppercase' }}
                   >
-                    <span>
+                    <span style={{ whiteSpace: 'nowrap' }}>
                       <span aria-hidden="true">{DELTA_GAIN_GLYPH}</span> rose
                       {' · '}
                       <span aria-hidden="true">{DELTA_LOSS_GLYPH}</span> fell
                     </span>
                     {CONSEQUENCE_LEGEND_DELTA_ENTRIES.map((entry) => (
-                      <span key={entry.count} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span key={entry.count} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
                         <span aria-hidden="true">{entry.glyphs}</span>
                         <span>{entry.word}</span>
                       </span>
