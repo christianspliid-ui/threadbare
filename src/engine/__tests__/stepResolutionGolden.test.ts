@@ -235,7 +235,10 @@ const MATRIX: readonly Row[] = [
  * only `probability`, `capability` and the bands they decide moved. Re-pinned again
  * by THR-1627 (local scale offset −0.10 → 0): the `roll` column verified unchanged on
  * all 32 rows; the 19 local rows off the probability clamp lost 0.125 of
- * probability (0.10 × ODDS_GAIN), and three of them changed band. Row names
+ * probability (0.10 × ODDS_GAIN), and three of them changed band. Re-pinned by
+ * THR-1775 (god cast constants 6 / 0.5 → 10 / 2.5): only the three `player/*`
+ * rows with a non-zero difficulty moved — capability 0.14679 → 0.310026, and the
+ * regional row's probability 0.05 → 0.162532 — with `roll` and every band unchanged. Row names
  * describe the band each row was chosen to hit before the re-fit.
  */
 type Golden = Record<string, {
@@ -436,21 +439,21 @@ const GOLDEN: Golden = {
   },
   'player/hard/local/s14': {
     outcome: 'success_at_cost', rawOutcome: 'success_at_cost',
-    probability: 0.05, roll: 45, capability: 0.14679,
+    probability: 0.05, roll: 45, capability: 0.310026,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'player/hard/local/s15': {
     outcome: 'success_at_cost', rawOutcome: 'success_at_cost',
-    probability: 0.05, roll: 24, capability: 0.14679,
+    probability: 0.05, roll: 24, capability: 0.310026,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,
   },
   'player/mid/regional/s16': {
     outcome: 'success_at_cost', rawOutcome: 'success_at_cost',
-    probability: 0.05, roll: 64, capability: 0.14679,
+    probability: 0.162532, roll: 64, capability: 0.310026,
     pushAttempted: false, pushCost: 0,
     resistAttempted: false, resistSucceeded: false, resistCost: 0,
     preResistOutcome: undefined, opCount: 1,

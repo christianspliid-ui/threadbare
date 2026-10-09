@@ -11,10 +11,20 @@ import {
   BEAT_KIND_WEIGHTS,
   BEAT_REACH_BIAS_BASE,
   BEAT_REACH_BIAS_SLOPE,
+  BEAT_REACH_AFFINITY_FULL_SCALE,
+  BEAT_REACH_BIAS_CEILING,
+  ASCENDANT_BEAT_POOL,
   BEAT_SPHERE_BIAS_PRIMARY,
   BEAT_SPHERE_BIAS_SECONDARY,
 } from '../../data/ascendant-beat-content';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
+import {
+  ALL_DELIVERY_BEATS,
+  BASE_POOL_FIRST_DRAW_MASS,
+  DELIVERY_BEAT_WEIGHT,
+  DELIVERY_FIRST_DRAW_SHARE,
+  deliveryBeatWeightFor,
+} from '../deliveryBeatAdapter';
 import type { GameState } from '../../types/gameState';
 import type { AscendantBeatState, BeatDefinition } from '../../types/ascendantBeat';
 
@@ -193,7 +203,8 @@ describe('Ascendant Beat identity bias (THR-516)', () => {
   });
 
   it('reach bias scales with the ascendant reach affinity', () => {
-    const state = stateWith(buildGraph({ ascendantProps: { domainAffinities: { veil: 0.5 } } }), emptyBeats());
+    // Raw affinity at half the full scale (THR-1771: affinities are stored raw, 2–5).
+    const state = stateWith(buildGraph({ ascendantProps: { domainAffinities: { veil: BEAT_REACH_AFFINITY_FULL_SCALE / 2 } } }), emptyBeats());
     // base + slope × 0.5
     expect(computeIdentityBias(aligned('veil'), state)).toBeCloseTo(BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * 0.5);
   });
@@ -212,7 +223,7 @@ describe('Ascendant Beat identity bias (THR-516)', () => {
   });
 
   it('reach and sphere combine multiplicatively', () => {
-    const props = { domainAffinities: { veil: 1 }, sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
+    const props = { domainAffinities: { veil: BEAT_REACH_AFFINITY_FULL_SCALE }, sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
     const state = stateWith(buildGraph({ ascendantProps: props }), emptyBeats());
     const expected = (BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * 1) * BEAT_SPHERE_BIAS_PRIMARY;
     expect(computeIdentityBias(aligned('veil', 'mind'), state)).toBeCloseTo(expected);
@@ -228,7 +239,7 @@ describe('Ascendant Beat identity bias (THR-516)', () => {
     const plain: BeatDefinition = { beatId: 'plain', kind: 'investment', trigger: { kind: 'cadence' } };
     const veil: BeatDefinition = { beatId: 'veil', kind: 'investment', trigger: { kind: 'cadence' }, identity: { reach: 'veil' } };
     const pool = [plain, veil];
-    const state = stateWith(buildGraph({ ascendantProps: { domainAffinities: { veil: 1 } } }), emptyBeats());
+    const state = stateWith(buildGraph({ ascendantProps: { domainAffinities: { veil: BEAT_REACH_AFFINITY_FULL_SCALE } } }), emptyBeats());
 
     const tally = (seed: number) => {
       const rng = mulberry32(seed);
@@ -264,5 +275,101 @@ describe('Ascendant Beat identity bias (THR-516)', () => {
     // ~50/50; allow a generous band.
     expect(veilCount).toBeGreaterThan(400);
     expect(veilCount).toBeLessThan(600);
+  });
+});
+
+describe('THR-1771 — identity bias on the raw affinity scale; the delivery share is a named target', () => {
+  // The two reference gods (audit 2026-10-06-thr-1769 § 3): the Shepherd (hunger
+  // `gather`) and the showcase god (`DEV_ASCENDANT_IDENTITY`, hunger.witness).
+  const SHEPHERD = { domainAffinities: { heart: 4, stone: 3, star: 2 }, sphereAlignment: { primary: 'life', secondary: 'spirit' } };
+  const SHOWCASE = { domainAffinities: { eye: 4, veil: 3, shadow: 2 }, sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
+  const godState = (props: Record<string, unknown>) =>
+    stateWith(buildGraph({ ascendantProps: props }), emptyBeats());
+  const reachOnly = (reach: string): BeatDefinition => ({
+    beatId: 'r', kind: 'investment', trigger: { kind: 'cadence' }, identity: { reach: reach as never },
+  });
+
+  it('a raw-affinity-4 reach draws at exactly the documented ceiling (base + slope)', () => {
+    const state = godState({ domainAffinities: { eye: 4 } });
+    expect(BEAT_REACH_AFFINITY_FULL_SCALE).toBe(4);
+    expect(computeIdentityBias(reachOnly('eye'), state)).toBeCloseTo(BEAT_REACH_BIAS_CEILING);
+    expect(BEAT_REACH_BIAS_CEILING).toBe(3);
+  });
+
+  it('a raw 5 from the random generator clamps to the ceiling; raw 2 sits halfway', () => {
+    expect(computeIdentityBias(reachOnly('eye'), godState({ domainAffinities: { eye: 5 } })))
+      .toBeCloseTo(BEAT_REACH_BIAS_CEILING);
+    expect(computeIdentityBias(reachOnly('eye'), godState({ domainAffinities: { eye: 2 } })))
+      .toBeCloseTo(BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * 0.5);
+  });
+
+  it('the showcase god no longer draws the_unveiled_eye on 40% of first draws', () => {
+    const eye = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_unveiled_eye')!;
+    const state = godState(SHOWCASE);
+    const bias = computeIdentityBias(eye, state);
+    expect(bias).toBeCloseTo(BEAT_REACH_BIAS_CEILING * BEAT_SPHERE_BIAS_PRIMARY); // 4.5, was 13.5
+    const pool = [...ASCENDANT_BEAT_POOL, ...ALL_DELIVERY_BEATS];
+    const mass = (b: BeatDefinition) =>
+      (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1) * computeIdentityBias(b, state);
+    const total = pool.reduce((sum, b) => sum + mass(b), 0);
+    expect(mass(eye) / total).toBeLessThan(0.2);
+  });
+
+  it('the delivery share of an unbiased first draw equals DELIVERY_FIRST_DRAW_SHARE', () => {
+    expect(ALL_DELIVERY_BEATS.length).toBeGreaterThan(0);
+    const deliveryMass = ALL_DELIVERY_BEATS.reduce(
+      (sum, b) => sum + (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1), 0);
+    const baseMass = ASCENDANT_BEAT_POOL.reduce(
+      (sum, b) => sum + (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1), 0);
+    expect(baseMass).toBeCloseTo(BASE_POOL_FIRST_DRAW_MASS);
+    expect(deliveryMass / (baseMass + deliveryMass)).toBeCloseTo(DELIVERY_FIRST_DRAW_SHARE, 6);
+    expect(ALL_DELIVERY_BEATS.every(b => b.weight === DELIVERY_BEAT_WEIGHT)).toBe(true);
+  });
+
+  it('the delivery weight self-scales with the catalogue size (share holds at any count)', () => {
+    for (const count of [23, 84, 200]) {
+      const m = count * (BEAT_KIND_WEIGHTS.delivery ?? 1) * deliveryBeatWeightFor(count);
+      expect(m / (BASE_POOL_FIRST_DRAW_MASS + m)).toBeCloseTo(DELIVERY_FIRST_DRAW_SHARE, 6);
+    }
+    expect(deliveryBeatWeightFor(0)).toBe(0); // fail-soft: nothing to weight
+  });
+
+  /**
+   * The THR-1769 Monte Carlo, re-run in draw units (audit § 3 recipe: every predicate
+   * holds, an investment beat retires once drawn — THR-1747 E3 — an introduction retires
+   * one group per draw, a delivery beat dedups, a selection stays). Returns the mean draw
+   * index at which each non-identity investment beat first arrives. Deterministic.
+   */
+  function meanInvestmentArrival(props: Record<string, unknown>, runs: number, seed: number): number {
+    const state = godState(props);
+    const rng = mulberry32(seed);
+    const fullPool = [...ASCENDANT_BEAT_POOL, ...ALL_DELIVERY_BEATS];
+    const tracked = ASCENDANT_BEAT_POOL
+      .filter(b => b.kind === 'investment' && !b.identity)
+      .map(b => b.beatId);
+    const MAX_DRAWS = 400;
+    let sum = 0;
+    let n = 0;
+    for (let r = 0; r < runs; r++) {
+      let pool = fullPool.slice();
+      const arrived = new Map<string, number>();
+      for (let d = 1; d <= MAX_DRAWS && arrived.size < tracked.length; d++) {
+        const pick = drawFromPool(pool, rng, b => computeIdentityBias(b, state));
+        if (!pick) break;
+        if (tracked.includes(pick.beatId) && !arrived.has(pick.beatId)) arrived.set(pick.beatId, d);
+        if (pick.kind !== 'selection') pool = pool.filter(b => b !== pick);
+      }
+      for (const id of tracked) {
+        sum += arrived.get(id) ?? MAX_DRAWS;
+        n++;
+      }
+    }
+    return sum / n;
+  }
+
+  it('Monte Carlo: the showcase god\'s investment beats arrive within 20% of the Shepherd\'s', () => {
+    const shepherd = meanInvestmentArrival(SHEPHERD, 300, 1771);
+    const showcase = meanInvestmentArrival(SHOWCASE, 300, 1771);
+    expect(Math.abs(showcase - shepherd) / shepherd).toBeLessThan(0.2);
   });
 });

@@ -5930,6 +5930,24 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/threadingRite.ts'],
     readSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRiteQueue.ts'],
   },
+  // THR-1755 (THR-1644 S3, D5): The First's mark — one god-given trait in the
+  // spark's (or primary) reach, granted by the rite writer at a the_first bond and
+  // read by capability (as any trait) and by the sheet's mark chip.
+  {
+    id: 'first-mark-raises-reach',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      "The First carries the god's mark: one blessing in their spark's reach, granted at the bond on either route, worth a companion's skill in that reach and shown on their sheet.",
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['grantFirstMark', 'getFirstMarkDisplay'],
+      module: 'src/engine/firstMark.ts',
+    },
+    writeSites: ['src/engine/threadingRite.ts', 'src/engine/gameInit.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
+  },
   // -- The opening S2: the doom clock waits for The First (THR-1646) --------
   // Audit-on-touch rows for Doom Clock & Journey. The failure these exist to
   // prevent: a round-1 cold tester's world ended in Summer Year 1, ten real

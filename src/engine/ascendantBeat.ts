@@ -54,6 +54,7 @@ import {
   BEAT_INIT_LAST_BEAT_TURN,
   BEAT_REACH_BIAS_BASE,
   BEAT_REACH_BIAS_SLOPE,
+  BEAT_REACH_AFFINITY_FULL_SCALE,
   BEAT_SPHERE_BIAS_PRIMARY,
   BEAT_SPHERE_BIAS_SECONDARY,
   BEAT_SPHERE_BIAS_NONE,
@@ -167,8 +168,10 @@ export function computeIdentityBias(beat: BeatDefinition, state: GameState): num
   const props = getAscendantProps(state);
   let mult = 1;
   if (identity.reach) {
-    const affinity = props?.domainAffinities?.[identity.reach] ?? 0;
-    mult *= BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * Math.max(0, affinity);
+    // THR-1771: affinities are stored raw (2–5); normalise to [0..1] before the slope.
+    const raw = props?.domainAffinities?.[identity.reach] ?? 0;
+    const affinity = Math.min(1, Math.max(0, raw / BEAT_REACH_AFFINITY_FULL_SCALE));
+    mult *= BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * affinity;
   }
   if (identity.sphere) {
     const sphere = props?.sphereAlignment;
@@ -216,13 +219,15 @@ export function resolveReachSignatureGrant(
 }
 
 /**
- * True when the ascendant holds an in-domain reach whose reach signature is not yet in
+ * True when the ascendant's primary or secondary reach signature is not yet in
  * `unlockedActionIds` (THR-523). Gates the secondary-signature acquisition beat so it
- * retires from the pool draw once every in-domain signature has been learned. Fail-soft:
+ * retires from the pool draw once both granted signatures are learned. Only ranks 0 and
+ * 1 count (THR-1771): only those two are ever granted (Beat 4 + this beat), so a 3-reach
+ * god's third signature kept the beat eligible forever, drawing an empty grant. Fail-soft:
  * no ascendant / no affinities → false (nothing to acquire, so the beat is ineligible).
  */
 function hasUnacquiredReachSignature(state: GameState): boolean {
-  const ranked = rankAscendantReaches(state);
+  const ranked = rankAscendantReaches(state).slice(0, 2);
   if (ranked.length === 0) return false;
   const unlocked = new Set(state.unlockedActionIds ?? []);
   for (const reach of ranked) {

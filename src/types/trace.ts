@@ -5087,6 +5087,8 @@ export interface RiteAppliedTrace extends TraceBase {
   quintessence?: { before: number; preClamp: number; after: number };
   reception?: string;
   markTraitId?: string;
+  /** THR-1755: a First's bond that granted no mark — the switch is off, or the reach has no god-given trait. */
+  markSkipped?: import('../engine/firstMark').FirstMarkSkip;
   fallbackReason?: import('../engine/threadingRite').RiteFallbackReason;
 }
 
