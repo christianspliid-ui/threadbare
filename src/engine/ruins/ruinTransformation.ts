@@ -27,7 +27,7 @@ import type { EssencePool } from '../../types/influence';
 import type { SimulationRuntime } from '../simulationRuntime';
 import { touchWorld, touchStructure } from '../simulationRuntime';
 import { emitTrace } from '../traceBuffer';
-import { awardElderEssence, type EssenceAwardSource } from '../elderEssenceReward';
+import { awardElderEssence, recordFoundationFinds, type EssenceAwardSource } from '../elderEssenceReward';
 import {
   ELDER_SITE_ESSENCE_REWARD,
 } from '../../data/agent-behavior-constants';
@@ -274,6 +274,13 @@ export function transformRuinConsequence(
       if (delta === undefined) continue;
       essencePool[s] = (essencePool[s] ?? 0) + delta;
     }
+    // THR-1753 — the award applied above may find a Foundation sphere.
+    const foundationSpheresFound = recordFoundationFinds(
+      state.foundationSpheresFound,
+      reward.deltas,
+      tick,
+      row.essenceSource,
+    );
     let essenceCost = 0;
     if (input.emergenceChoice === 'claim' && row.ruinFate === 'transformed') {
       const cost = input.ruinMagnitude * row.essenceCostFactor;
@@ -449,6 +456,7 @@ export function transformRuinConsequence(
       chronicleEntry,
       patch: {
         essencePool,
+        ...(foundationSpheresFound !== state.foundationSpheresFound ? { foundationSpheresFound } : {}),
         pendingEmergenceDecision: undefined,
         chronicleEntries: [...state.chronicleEntries, chronicleEntry],
       },

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 165 |
+| 🟢 LIVE | 166 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 62 |
-| **Total** | **235** |
+| **Total** | **236** |
 
 ## Contracts by producing subsystem
 
@@ -303,6 +303,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `elder-essence-finds-foundation-cards` | Elder magic is found, not chosen: the first time a god draws essence of chaos, order, light or darkness out of a ruin or a hidden site, that sphere's signed cards open in their hand at the secondary tier, because no god can buy a Foundation sphere at Remembrance. | state-field: `foundationSpheresFound` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `found-lead-becomes-known-place` | A `located` lead on a site whose delve road is `never` (a wonder, a plain worldgen ruin) has finished its climb: the next `phaseClueDecay` sweep writes the holder's `knows_of.foundTick` (created, or stamped on an existing edge), removes the lead and emits `ruins.lead_found`. The sheet's known places read `foundTick` as "found it", and the survey reader refuses `already_found` on a found never-site so the climb does not restart. `CLUE_SPENT_LEAD_ENDS_CLIMB = false` restores the old climb. | function: `recordPlaceFound`, `isLeadSpent`, `phaseClueDecay`, `CLUE_SPENT_LEAD_ENDS_CLIMB` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `held-lead-draws-a-survey` | A deciding mortal holding a live lead on a ruin is offered a survey of that ruin ahead of the proximity cap — even under an ambition that does not list the survey — and that survey pulls harder on the board; the survey then sharpens the lead it came from instead of refusing it. Since THR-1686 the board does not judge that survey by the forecast window — it is instant and has no dice — so it takes advance probability 1, fit 1 and zone 'certain' (`CLUE_LEAD_SURVEY_SKIPS_WINDOW`). | edge-prop: `knows_clue_of`, `heldLeadRuinIds`, `sharpenClue`, `leadPull` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `lair-escalation-mints-monster-card` | A lair that grows a named beast gives it a fighting card — its family's Dread, Might, clock and temper — and a legendary lair hardens it, so the beast a hero faces is the beast the den made. | node-prop: `mintMonsterCard`, `hardenMonsterCard`, `monsterState` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -1279,6 +1280,18 @@ exit
 - **Read sites:** `src/engine/fights/fightState.ts`
 - **Other hits:** `src/data/complication-templates.ts`, `src/data/spell-casting-constants.ts`, `src/data/spell-generator-cores.ts`, `src/data/spell-honest-vocabulary.ts`, `src/debug-bridge.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `elder-essence-finds-foundation-cards` — 🟢 LIVE
+
+- **Intent:** Elder magic is found, not chosen: the first time a god draws essence of chaos, order, light or darkness out of a ruin or a hidden site, that sphere's signed cards open in their hand at the secondary tier, because no god can buy a Foundation sphere at Remembrance.
+- **Producer → Consumer:** Ruins, Clues & Delves → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Sphere*, *Essence*
+- **Module:** `src/engine/elderEssenceReward.ts`
+- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
+- **Write sites:** `src/engine/ruins/ruinTransformation.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`
+- **Other hits:** `src/engine/nudgeCardRepertoire.ts`, `src/types/gameState.ts`
+- **Verdict:** Verified 2026-10-09: THR-1753. src/engine/__tests__/foundationDiscovery-seededRun.test.ts (seed 42, small map): transformRuinConsequence on a real elder ruin of the seeded map patches foundationSpheresFound = [chaos, order, light, darkness], emits four ruins.foundation_sphere_found traces, and buildRepertoire then holds gambit, stumble, favor, whisper, veil and undertow; a catastrophic ruin of spirit finds nothing, of darkness finds darkness only; a 60-tick ordinary run with the pool drained earns Foundation essence through income yet finds nothing. dealtCardProvenance.test.tsx renders the dealt face "Darkness found in the ruins."
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
 

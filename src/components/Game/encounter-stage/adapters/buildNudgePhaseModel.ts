@@ -273,6 +273,15 @@ function dealtProvenanceLine(
             suffix: source === 'signature' ? 'signature.' : 'attunement.',
           })
         : assemble({ suffix: 'yours by alignment.' });
+    case 'discovery':
+      // THR-1753 — a Foundation sphere opened by elder magic found in a ruin.
+      return sphere
+        ? assemble({
+            conceptLabel: capitalise(sphere),
+            conceptTooltipId: `sphere.${sphere}`,
+            suffix: 'found in the ruins.',
+          })
+        : assemble({ suffix: 'found in the ruins.' });
     case 'hunger':
       return assemble({ suffix: 'born of your hunger.' });
     case 'milestone':
@@ -547,6 +556,8 @@ export function buildNudgePhaseModel(
           // reads it as all-zero, so attunement members stay locked rather than
           // falling open on the saves least able to have earned them.
           essenceEarnedBySphere: gameState?.essenceEarnedBySphere,
+          // THR-1753 — Foundation spheres found in ruins open their signed cards.
+          discovered: gameState?.foundationSpheresFound,
         echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
       })
     : undefined;

@@ -288,6 +288,7 @@ export type TraceCategory =
   | 'ruins.schema_drift'
   // Ruins layer — transformation traces (THR-153)
   | 'ruins.elder_essence_awarded'
+  | 'ruins.foundation_sphere_found'
   | 'ruins.emergence_orphaned'
   // Ruins layer — quest hook traces (THR-156)
   | 'ruins.quest_hook_issued'
@@ -823,6 +824,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ruins.schema_drift',
   // Transformation traces (THR-153)
   'ruins.elder_essence_awarded',
+  'ruins.foundation_sphere_found',
   'ruins.emergence_orphaned',
   // Quest hook traces (THR-156)
   'ruins.quest_hook_issued',

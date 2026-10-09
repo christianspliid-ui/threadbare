@@ -13,6 +13,7 @@
  *   #3 Determinism: pure function of inputs (mutations to essencePool are caller's job)
  *   #4 Fail-soft: NaN/Infinity clamped, missing sphere → zero delta
  */
+import { FOUNDATION_SPHERE_NAMES } from '../types/index';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
 import type { HiddenSiteRevealResult } from './revelationResolver';
@@ -21,9 +22,12 @@ import {
   ELDER_SITE_ESSENCE_REWARD,
   HIDDEN_SITE_ESSENCE_REWARD,
 } from '../data/agent-behavior-constants';
+import { FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD } from '../data/nudge-constants';
 
-// Foundation spheres that receive elder magic essence
-const FOUNDATION_SPHERES: SphereName[] = ['chaos', 'order', 'light', 'darkness'];
+// Foundation spheres that receive elder magic essence. The shared list, not a
+// private copy: the repertoire reads the same one to decide which spheres a
+// god has *found* (THR-1753), so the two cannot drift apart.
+const FOUNDATION_SPHERES: readonly SphereName[] = FOUNDATION_SPHERE_NAMES;
 
 export interface EssenceRewardResult {
   readonly deltas: Partial<Record<SphereName, number>>;
@@ -124,4 +128,44 @@ export function computeElderEssenceReward(
   } as any);
 
   return result;
+}
+
+/**
+ * Record the Foundation spheres an elder grant just *found* (THR-1753).
+ *
+ * Foundation magic is found, not chosen (rulebook §5): a grant that pays at
+ * least {@link FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD} into chaos, order, light
+ * or darkness finds that sphere, and the repertoire opens its signed cards.
+ * Called at the two sites that *apply* an elder award to the pool — the hidden
+ * site reveal and the ruin transformation — and nowhere else, because ordinary
+ * income pays every sphere a floor and must never count as a find.
+ *
+ * Pure apart from one `ruins.foundation_sphere_found` trace per newly found
+ * sphere. Returns the same reference when nothing new was found, so callers can
+ * skip the state write. Order is first-found, deterministic in the grant order.
+ */
+export function recordFoundationFinds(
+  found: readonly SphereName[] | undefined,
+  deltas: Partial<Record<SphereName, number>>,
+  tick: number,
+  source: EssenceAwardSource,
+): SphereName[] | undefined {
+  let next: SphereName[] | undefined;
+  for (const sphere of FOUNDATION_SPHERES) {
+    const delta = deltas[sphere] ?? 0;
+    // `>=` on NaN is false, so a poisoned award finds nothing.
+    if (!(delta >= FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD)) continue;
+    if ((next ?? found)?.includes(sphere)) continue;
+    next ??= [...(found ?? [])];
+    next.push(sphere);
+    emitTrace({
+      category: 'ruins.foundation_sphere_found',
+      tick,
+      sphere,
+      amount: delta,
+      source,
+      summary: `Found ${sphere}: elder magic drawn via ${source} — its signed cards open`,
+    } as any);
+  }
+  return next ?? (found as SphereName[] | undefined);
 }

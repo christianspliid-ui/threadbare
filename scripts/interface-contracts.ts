@@ -3080,6 +3080,38 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'elder-essence-finds-foundation-cards',
+    producerSystem: RUINS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Elder magic is found, not chosen: the first time a god draws essence of chaos, order, light or darkness out of a ruin or a hidden site, that sphere\'s signed cards open in their hand at the secondary tier, because no god can buy a Foundation sphere at Remembrance.',
+    ulTerms: ['Nudge', 'Sphere', 'Essence'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['foundationSpheresFound'],
+      module: 'src/engine/elderEssenceReward.ts',
+    },
+    // Written by `recordFoundationFinds` at the two sites that apply an elder
+    // award to the pool. Deliberately NOT derived from `essenceEarnedBySphere`:
+    // income pays every sphere a 4% floor, so the lifetime ledger would "find"
+    // all four Foundation spheres with no ruin involved (review gate, THR-1753).
+    // Every RepertoireContext builder passes it as `discovered`.
+    writeSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/ruins/ruinTransformation.ts',
+    ],
+    readSites: [
+      'src/engine/encounters/dealHand.ts',
+      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-09',
+      evidence:
+        'THR-1753. src/engine/__tests__/foundationDiscovery-seededRun.test.ts (seed 42, small map): transformRuinConsequence on a real elder ruin of the seeded map patches foundationSpheresFound = [chaos, order, light, darkness], emits four ruins.foundation_sphere_found traces, and buildRepertoire then holds gambit, stumble, favor, whisper, veil and undertow; a catastrophic ruin of spirit finds nothing, of darkness finds darkness only; a 60-tick ordinary run with the pool drained earns Foundation essence through income yet finds nothing. dealtCardProvenance.test.tsx renders the dealt face "Darkness found in the ruins."',
+    },
+  },
+  {
     id: 'twilight-harvest-preserves-defining-card',
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
