@@ -49,6 +49,9 @@ import {
   BEAT_MIN_GAP,
   SPINE_PLAYER_ACTS_BETWEEN_GIFTS,
   SPINE_IDLE_FALLBACK_TICKS,
+  SETTLED_OPENING_CHRONICLE_LINE,
+  SETTLED_OPENING_FIRST_FALLBACK,
+  SETTLED_OPENING_SIGNIFICANCE,
   isSpineBeatId,
   BEAT_KIND_WEIGHTS,
   BEAT_INIT_LAST_BEAT_TURN,
@@ -548,7 +551,8 @@ export function forceOfferBeatById(
  *
  * Offers only when all hold: beat state exists, the cursor is at 0, nothing is
  * pending, the cursor beat's trigger is satisfied now, and The First is not bonded
- * (pre-bonded dev routes keep today's first-tick offer). Otherwise returns `{}`.
+ * (on a pre-bonded route the Director settles Beat 0 as already played on the
+ * first tick instead — THR-1786). Otherwise returns `{}`.
  * Draws no PRNG — it reuses `forceOfferBeatById`, the Director's spine branch.
  * Fail-soft: any error is traced and returns `{}`.
  */
@@ -574,6 +578,79 @@ export function offerArrivalSpineBeat(state: GameState): Partial<GameState> {
     // Fail-soft: no offer at arrival. The Director still offers Beat 0 on the first
     // tick, and `getOpeningState().arrivalBeatOffered` reads false — the visible
     // signal. (No engine_warning here: that trace's interface is the hex-index one.)
+    return {};
+  }
+}
+
+/** Beat 0, "Reach Down" — the god spinning its first thread to The First. */
+const OPENING_SPINE_BEAT_ID = 'beat.spine.opening';
+
+/** The First's display name: the target of the ascendant's `the_first` thread edge. */
+function firstName(state: GameState): string {
+  const ascendantId = state.ascendantId;
+  if (!ascendantId) return SETTLED_OPENING_FIRST_FALLBACK;
+  const edge = state.graph
+    .getOutgoingEdges(ascendantId, 'thread')
+    .find(e => (e.properties as { courtPosition?: string }).courtPosition === 'the_first');
+  const name = edge ? state.graph.getNode(edge.target)?.name : undefined;
+  return name && name.trim() ? name : SETTLED_OPENING_FIRST_FALLBACK;
+}
+
+/**
+ * Settle a spine beat as already played instead of offering it (THR-1786).
+ *
+ * Beat 0 ("Reach Down") narrates the god threading The First. On every route where
+ * The First is bonded before the Director first runs (`?seeded`, `?spawn=`,
+ * `?testavatar`, the warm start), offering it told the player to bind a mortal it
+ * was already bound to. This offers the beat through {@link forceOfferBeatById} and
+ * resolves it through {@link resolvePendingBeat} — the same writer a clicked beat
+ * uses, so grants, seeding, the `BeatRecord`, cursor advance and the spine-pacing
+ * stamps are identical — then writes one chronicle line and a
+ * `beat.settled_as_played` trace.
+ *
+ * Draws no PRNG. Fail-soft: on any error, or if the beat does not resolve, returns
+ * `{}` so the caller offers the beat normally.
+ */
+export function settleSpineBeatAsPlayed(
+  state: GameState,
+  beatId: string,
+  turn: number,
+): Partial<GameState> {
+  const beats = state.ascendantBeats;
+  if (!beats || beats.pending !== null) return {};
+  try {
+    const offered = forceOfferBeatById(beats, beatId, turn, state);
+    if (!offered) return {};
+    const resolution = resolvePendingBeat({ ...state, tick: turn, ascendantBeats: offered.next });
+    if (!resolution.resolved) return {};
+    const line = SETTLED_OPENING_CHRONICLE_LINE.replace('{firstName}', firstName(state));
+    const event: TickEvent = {
+      id: `beat_settled_${beatId}_${turn}`,
+      tick: turn,
+      type: 'narrative',
+      message: line,
+      significance: SETTLED_OPENING_SIGNIFICANCE,
+    };
+    const next = resolution.state;
+    emitTrace({
+      tick: turn,
+      category: 'beat.settled_as_played',
+      beatId,
+      reason: 'first_already_bonded',
+      summary: `beat.settled_as_played: ${beatId} (first_already_bonded)`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+    return {
+      ascendantBeats: next.ascendantBeats,
+      unlockedActionIds: next.unlockedActionIds,
+      tickEvents: [...(next.tickEvents ?? []), event],
+      recentEvents: [...(next.recentEvents ?? []), event].slice(-MAX_RECENT_EVENTS),
+    };
+  } catch (err) {
+    emitTrace({
+      tick: turn,
+      category: 'engine_warning',
+      summary: `settleSpineBeatAsPlayed error (${beatId}, turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
+    });
     return {};
   }
 }
@@ -675,6 +752,13 @@ export function phaseAscendantBeatDirector(
       const def = ASCENDANT_SPINE[beats.spineCursor];
       const blockedBy = spineGateBlockedBy(state);
       if (blockedBy === null) {
+        // THR-1786: The First is already bonded, so Beat 0 — the god threading The First —
+        // has in effect been played. Settle it in place rather than ask the player again.
+        // Fail-soft: an empty settle falls through to the normal offer.
+        if (def.beatId === OPENING_SPINE_BEAT_ID && firstIsBonded(state)) {
+          const settled = settleSpineBeatAsPlayed(state, def.beatId, turn);
+          if (settled.ascendantBeats) return settled;
+        }
         // Spine beats are not `unintroduced_group`-eligible, so binding is empty — but
         // route through `bindBeatSubject` for one offer path (THR-522).
         return { ascendantBeats: offer(beats, def, def.trigger, turn, 0, bindBeatSubject(def, state), /*advanceSpine*/ true) };

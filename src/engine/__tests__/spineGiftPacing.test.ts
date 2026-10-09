@@ -63,9 +63,17 @@ function stateAt(
   } as unknown as GameState;
 }
 
-/** Offer and resolve Beat 0 ("Reach Down") at `tick`, returning the beats after it. */
+/**
+ * Offer and resolve Beat 0 ("Reach Down") at `tick`, returning the beats after it.
+ * With The First already bonded the Director settles it in place (THR-1786) — the
+ * same resolve writer, so the returned beats are what a clicked beat leaves.
+ */
 function resolveOpening(graph: WorldGraph, tick: number, acts = 0): AscendantBeatState {
   const offered = phaseAscendantBeatDirector(stateAt(graph, tick, createInitialAscendantBeatState(), acts), () => 0.5);
+  if (offered.ascendantBeats?.pending === null) {
+    expect(offered.ascendantBeats.history.map(r => r.beatId)).toEqual([ASCENDANT_SPINE[0].beatId]);
+    return offered.ascendantBeats;
+  }
   expect(offered.ascendantBeats?.pending?.beatId).toBe(ASCENDANT_SPINE[0].beatId);
   const res = resolvePendingBeat(stateAt(graph, tick, offered.ascendantBeats!, acts));
   expect(res.resolved).toBe(true);

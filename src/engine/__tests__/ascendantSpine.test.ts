@@ -132,8 +132,16 @@ describe('Scripted onboarding spine — Beats 0–4 (THR-504)', () => {
     const offeredOrder: string[] = [];
 
     for (let turn = 0; turn <= 16; turn++) {
-      const offer = phaseAscendantBeatDirector(directorState(turn, beats, unlocked, acts), () => 0.5).ascendantBeats;
-      if (offer?.pending) {
+      const out = phaseAscendantBeatDirector(directorState(turn, beats, unlocked, acts), () => 0.5);
+      const offer = out.ascendantBeats;
+      if (offer && !offer.pending && offer.history.length > beats.history.length) {
+        // THR-1786: The First is bonded here, so Beat 0 settles as already played —
+        // resolved in place by the Director, never offered. The player then acts once.
+        beats = offer;
+        offeredOrder.push(offer.history[offer.history.length - 1].beatId);
+        unlocked = out.unlockedActionIds ?? unlocked;
+        acts += 1;
+      } else if (offer?.pending) {
         beats = offer;
         offeredOrder.push(offer.pending.beatId);
         // Resolve immediately (player enters + resolves); selection beats pick the first path.
