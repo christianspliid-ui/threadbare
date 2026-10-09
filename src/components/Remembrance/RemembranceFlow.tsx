@@ -22,6 +22,7 @@ import { OriginBeat } from './OriginBeat';
 import { DriveBeat } from './DriveBeat';
 import { TransformationBeat } from './TransformationBeat';
 import { RevealBeat } from './RevealBeat';
+import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } from '../../engine/spherePoints';
 
 interface RemembranceFlowProps {
   seed: number;
@@ -38,6 +39,7 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
   const [driveFragment, setDriveFragment] = useState<RemembranceFragment | null>(null);
   const [hunger, setHunger] = useState<HungerDefinition | null>(null);
   const [courtType, setCourtType] = useState<string | null>(null);
+  const [spherePoints, setSpherePoints] = useState<SpherePoints | null>(null);
 
   // Filtered content (computed from accumulated state)
   const originFragments = useMemo(() => {
@@ -77,9 +79,11 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
     setBeat('transformation');
   }, []);
 
-  const handleTransformationSelect = useCallback((h: HungerDefinition, court: string) => {
+  const handleTransformationSelect = useCallback((h: HungerDefinition, court: string, points?: SpherePoints) => {
     setHunger(h);
     setCourtType(court);
+    // THR-1749: an older caller without points falls back to the hunger's preset.
+    setSpherePoints(points ?? presetFromAlignment(h.sphereAlignment));
     setBeat('reveal');
   }, []);
 
@@ -99,14 +103,15 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
       hungerName: hunger.name,
       mandateDirection: hunger.mandateDirection,
       courtType: courtType as AscendantIdentity['courtType'],
-      sphereAlignment: hunger.sphereAlignment,
+      sphereAlignment: (spherePoints && deriveAlignmentFromPoints(spherePoints)) ?? hunger.sphereAlignment,
+      spherePoints: spherePoints ?? presetFromAlignment(hunger.sphereAlignment),
       domainAffinities: hunger.domainAffinities,
       personalitySeed,
       ascendantLens: hunger.ascendantLens,
     };
 
     onComplete(identity);
-  }, [originFragment, driveFragment, hunger, courtType, mortalName, seed, onComplete]);
+  }, [originFragment, driveFragment, hunger, courtType, spherePoints, mortalName, seed, onComplete]);
 
   // Render current beat
   switch (beat) {
@@ -132,6 +137,7 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
           hunger={hunger!}
           mortalName={mortalName!}
           courtType={courtType!}
+          spherePoints={spherePoints ?? undefined}
           suggestedDivineName={suggestedDivineName}
           onComplete={handleRevealComplete}
         />

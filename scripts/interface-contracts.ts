@@ -1608,6 +1608,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/engine/essenceIncome.ts'],
   },
   {
+    id: 'sphere-points-split-essence-income',
+    producerSystem: WORLDGEN,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.',
+    ulTerms: ['Essence', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['spherePoints', 'distributeBySpherePoints'] },
+    writeSites: ['src/engine/ascendant.ts'],
+    readSites: ['src/engine/influence.ts', 'src/engine/essenceIncome.ts'],
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,
@@ -5902,15 +5913,74 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,
     intent:
-      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention.',
+      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one.',
     ulTerms: ['The First'],
     mechanism: {
       kind: 'edge-prop',
       symbols: ['the_first'],
       module: 'src/engine/meetingEncounter.ts',
     },
-    writeSites: ['src/engine/meetingEncounter.ts'],
+    writeSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRite.ts'],
     readSites: ['src/engine/attentionTier.ts'],
+  },
+  // -- The threading rite S1: one writer, The First is the first (THR-1644) ---
+  // The failure these exist to prevent: "The First" and "the first mortal the god
+  // threads" were two unconnected mechanisms — a player who threaded someone before
+  // the meeting got an ordinary thread and still had the meeting ahead of them —
+  // and every thread after the First was a one-line toast, because the meeting's
+  // outcomes had exactly one writer and it always minted a new mortal.
+  {
+    id: 'thread-write-resolves-first',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveThreadWrite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The resolver writes the position; the executor's thread write is where it
+    // lands on the edge. The `the_first` readers downstream are the
+    // `meeting-bond-writes-the-first` row's, unchanged.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/graphOpExecutor.ts'],
+  },
+  {
+    id: 'rite-applies-outcomes',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting\'s invented soul and for a mortal the card threaded alike.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['applyThreadingRite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The writer is defined once; the meeting (create-then-apply) and the rite
+    // queue (bond without a hand) are the two routes that run it.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRiteQueue.ts'],
+  },
+  // THR-1755 (THR-1644 S3, D5): The First's mark — one god-given trait in the
+  // spark's (or primary) reach, granted by the rite writer at a the_first bond and
+  // read by capability (as any trait) and by the sheet's mark chip.
+  {
+    id: 'first-mark-raises-reach',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      "The First carries the god's mark: one blessing in their spark's reach, granted at the bond on either route, worth a companion's skill in that reach and shown on their sheet.",
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['grantFirstMark', 'getFirstMarkDisplay'],
+      module: 'src/engine/firstMark.ts',
+    },
+    writeSites: ['src/engine/threadingRite.ts', 'src/engine/gameInit.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
   },
   // -- The opening S2: the doom clock waits for The First (THR-1646) --------
   // Audit-on-touch rows for Doom Clock & Journey. The failure these exist to

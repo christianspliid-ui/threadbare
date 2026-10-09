@@ -362,6 +362,17 @@ export interface DebugResolveBeatResult {
   message: string;
 }
 
+/** Result of `getAscendantSpheres()`. THR-1749 */
+export interface DebugAscendantSpheresResult {
+  /** The bought vector, or the preset built from `sphereAlignment` when the node carries none. */
+  spherePoints: Partial<Record<string, number>>;
+  /** The two largest entries (canonical-order tie-break); null for fewer than two. */
+  derived: { primary: string; secondary: string } | null;
+  /** The `sphereAlignment` stored on the node (written as the derived pair at creation). */
+  stored: { primary: string; secondary: string } | null;
+  source: 'bought' | 'fallback';
+}
+
 /** One reach-signature entry returned by `listSignatures()`. THR-554 */
 export interface DebugSignatureInfo {
   reach: string;
@@ -2114,6 +2125,8 @@ export interface DebugBridge {
     resolveBeat: (chosenActionId?: string) => DebugResolveBeatResult;
   }) => void;
 
+  /** THR-1749 — the god's bought sphere points, derived primary / secondary, and whether bought or fallback. Null before a game is running. */
+  getAscendantSpheres: () => Promise<DebugAscendantSpheresResult | null>;
   /** THR-554 — list the eight reach signatures, their run-unlock status, and the ascendant's primary-sphere multiplier. */
   listSignatures: () => Promise<DebugListSignaturesResult>;
   /** THR-554 — grant a reach signature's unlock + materialize a minimal on-map footprint (engine-backed reaches only). */
@@ -2447,6 +2460,12 @@ export interface DebugBridge {
       readonly reason?: string;
     }
   >;
+  /**
+   * The threading rite (THR-1644 S1): the rite waiting for its surface, the queue
+   * behind it, how many mortals the god has ever threaded, and the god's most
+   * recent rite (shape, ordinal, reception, mark). `null` with no live game.
+   */
+  getThreadingRite: () => Promise<import('./engine/threadingRiteQueue').ThreadingRiteSnapshot | null>;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

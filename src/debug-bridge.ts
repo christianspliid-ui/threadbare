@@ -1017,6 +1017,27 @@ if (import.meta.env.DEV) {
     /** @internal GameView registers its beat bridge here */
     _registerBeatBridge: (cb) => { _beatBridge = cb as BeatBridge; },
 
+    // ── Buy your spheres (THR-1749) ──────────────────────────────────────────
+    /**
+     * The god's sphere identity: the bought vector (or the preset fallback when the
+     * node carries none), the derived primary / secondary, and which of the two it is.
+     */
+    getAscendantSpheres: async () => {
+      const { getSpherePoints, getSpherePointsSource, deriveAlignmentFromPoints } = await import('./engine/spherePoints');
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      if (!state || !graph) return null;
+      const node = graph.getNode(state.ascendantId);
+      if (!node) return null;
+      const spherePoints = getSpherePoints(node.properties);
+      return {
+        spherePoints,
+        derived: deriveAlignmentFromPoints(spherePoints),
+        stored: (node.properties.sphereAlignment as { primary: string; secondary: string } | undefined) ?? null,
+        source: getSpherePointsSource(node.properties),
+      };
+    },
+
     // ── Reach signatures — map signifiers + surfacing (THR-554) ─────────────
     /**
      * List the eight reach signatures with their run-unlock status and the
@@ -2990,6 +3011,15 @@ if (import.meta.env.DEV) {
         hasStakes: Boolean(template?.stakes),
         archived: false,
       };
+    },
+
+    // ── The threading rite (THR-1644 S1) ─────────────────────────────────
+    /** Pending rite, queue, the god's thread count and its last rite. */
+    getThreadingRite: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getThreadingRiteSnapshot } = await import('./engine/threadingRiteQueue');
+      return getThreadingRiteSnapshot(state);
     },
 
     getOutcomePinVerdict: async () => {

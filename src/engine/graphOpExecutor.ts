@@ -54,6 +54,7 @@ import {
   isCompanyNode, isGrouped, isAgentGone, getReunitableMembers, getGroupLeader,
 } from './groups/groupQueries';
 import { getAgentLocationId } from './graphQueries';
+import { completeThreadWrite, resolveThreadWrite } from './threadingRite';
 import { hexDistance } from '../lib/hexMath';
 import {
   BLESS_COMPANY_COHESION_DELTA,
@@ -668,16 +669,29 @@ function executeAddEdge(
 
   const id = `edge_${op.edgeType}_${++opCounter}`;
 
+  // ── The threading rite (THR-1644 S1) ──────────────────────────────────────
+  // A thread from the god to a mortal is a rite-bearing thread: D3 resolves its
+  // court position here (the first mortal threaded becomes The First), the real
+  // tick replaces the template's hard-coded `establishedTick: 0`, and after the
+  // write the thread is counted and a pending-rite marker left for the
+  // orchestrator's rite drain. `null` = not rite-bearing (a place, an artifact,
+  // the god's own herald) → the template's properties are written untouched.
+  const tick = ctx.tick ?? 0;
+  const riteWrite = op.edgeType === 'thread'
+    ? resolveThreadWrite(graph, source, target, { ...(op.properties ?? {}) }, tick)
+    : null;
+
   graph.addEdge({
     id,
     source,
     target,
     type: op.edgeType,
-    properties: op.properties ?? {},
+    properties: riteWrite ? riteWrite.properties : (op.properties ?? {}),
   });
 
   if (op.edgeType === 'thread') {
     hydrateThreadedIndividual(graph, source, target);
+    if (riteWrite) completeThreadWrite(graph, id, source, target, riteWrite, tick);
   }
 
   createdIds[id] = id;

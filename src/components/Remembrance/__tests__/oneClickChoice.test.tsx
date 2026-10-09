@@ -150,9 +150,12 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     expect(screen.getByTestId('court-confirm')).toBeTruthy();
     expect(onSelect).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('court-confirm'));
+    // THR-1749: the spheres buy sits between court and reveal; it opens on the preset.
+    fireEvent.click(screen.getByTestId('spheres-confirm'));
     act(() => { vi.advanceTimersByTime(3000); });
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0]).toBe(hungers[0]);
+    expect(onSelect.mock.calls[0][2]).toEqual({ [hungers[0].sphereAlignment.primary]: 3, [hungers[0].sphereAlignment.secondary]: 2 });
   });
 
   it('"Choose again" on the court step returns to the hunger row', () => {
@@ -165,6 +168,8 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     fireEvent.click(screen.getByTestId(`hunger-${hungers[1].id}`));
     act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
     fireEvent.click(screen.getByTestId('court-confirm'));
+    // THR-1749: the spheres buy sits between court and reveal; it opens on the preset.
+    fireEvent.click(screen.getByTestId('spheres-confirm'));
     act(() => { vi.advanceTimersByTime(3000); });
     expect(onSelect.mock.calls[0][0]).toBe(hungers[1]);
   });

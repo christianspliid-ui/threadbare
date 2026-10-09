@@ -385,7 +385,7 @@ not "fix" ambition display there.
 ## Unaudited subsystems (audit-on-touch)
 
 Contract rows not yet written for: War & Armies (the territorial seam and, since THR-1564, the war news — `war-news-reaches-chronicle` — are covered; the rest audit-on-touch) · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
-Doom/Journey · Mandate · Essence & Divine Economy (since THR-1747 the source-upkeep seam is covered: `source-upkeep-debits-primary-pool`, producer `phaseEssenceSources` → consumers the essence bar's `computeEssenceIncome` and the Covenants block's `selectCovenantRows`; the rest audit-on-touch) · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
+Doom/Journey · Mandate · Essence & Divine Economy (since THR-1747 the source-upkeep seam is covered: `source-upkeep-debits-primary-pool`, producer `phaseEssenceSources` → consumers the essence bar's `computeEssenceIncome` and the Covenants block's `selectCovenantRows`; since THR-1749 the income split is covered too: `sphere-points-split-essence-income`, producer `createAscendant` writing the bought `spherePoints` → consumers `computeEssenceGeneration` and `computeEssenceIncome` through the one shared `distributeBySpherePoints`; the rest audit-on-touch) · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·
@@ -421,7 +421,23 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-06 by Claude Code (THR-1740 — forecast window re-plan). **Extended** 🟢 LIVE
+2026-10-09 by Claude Code (THR-1755 — threading rite S3: The First's mark). **Added**
+`first-mark-raises-reach` (Encounters & Dilemmas → Personality & Emergent Traits:
+`applyThreadingRite` step 5 calls `grantFirstMark` at a `the_first` bond, the dev-seeded First
+takes the same mark in `devSeedTheFirst`, and `getAgentInfoCard` reads it for the sheet chip via
+`getFirstMarkDisplay`). Audit-on-touch: `computeRawScore` reads the mark through the existing
+`has_trait` walk, unchanged.
+Earlier: 2026-10-09 by Claude Code (THR-1644 S1 — the threading rite: one writer, The First is the first).
+**Extended** `meeting-bond-writes-the-first`: the card route (`bind_thread_agent` /
+`_strong`) now writes `the_first` too when the god holds no First, through
+`resolveThreadWrite` in `src/engine/threadingRite.ts` called from `graphOpExecutor`'s thread
+write. **Added** `thread-write-resolves-first` (Encounters & Dilemmas → Attention, Chronicle &
+Narrative: the thread write resolves its court position by D3 and every `the_first` reader
+carries a card-route First with no per-perk change) and `rite-applies-outcomes` (Encounters &
+Dilemmas → Personality & Emergent Traits: `applyThreadingRite` is the one writer of a rite's
+value-pole shift, reach investment, scar and bond reception, for the meeting and the card).
+Audit-on-touch: `isMeetTheFirstAvailable` and `isFirstBonded` read sites unchanged.
+Earlier: 2026-10-06 by Claude Code (THR-1740 — forecast window re-plan). **Extended** 🟢 LIVE
 `engagement-forecast-gates-choice`: a branching quest keeps the too-easy exemption only for a
 mortal threaded to the ascendant (`BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE = 'threaded'`); every
 other quest faces the window like other work. A free choice's value per tick is scaled by

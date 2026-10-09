@@ -100,6 +100,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | Phase | Name | Tags |
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
+| `2a.15` | Threading rite drain | `THR-1644` |
 | `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
 | `3b` | Notable Agendas | `THR-630` |
@@ -123,6 +124,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `1.8` | Composition phase runner — advance phased event recipes tied to doom clock | `THR-225` | orchestrator |
 | `2a` | Progress + resolve existing unified actions | — | orchestrator |
 | `2a.1` | Thread-bind familiarity grant — when a bind_thread_* action resolves | — | orchestrator |
+| `2a.15` | Threading rite drain | `THR-1644` | orchestrator |
 | `2a.4` | Effect Tick — per-agent effect bookkeeping | — | orchestrator |
 | `2a.5` | Encounter Progression — advance active encounters whose current step has elapsed | — | orchestrator |
 | `2a.52` | Effect Shells — process non-step-outcome flip_table triggers | `THR-53` | orchestrator |
@@ -306,6 +308,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
+| `first` (1) | `firstMark.ts` | `THR-1644`, `THR-1755` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
@@ -377,6 +380,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `remembrance` (1) | `remembrance.ts` | — |
 | `reputation` (2) | `reputation.ts`, `reputationWalk.ts` | `THR-1206` |
 | `resolution` (4) | `resolution.ts`, `resolutionModifiers.ts`, `resolutionScaleAdjust.ts`, `resolutionService.ts` | `Phase 2`, `THR-1581`, `THR-1627`, `THR-451`, `THR-571`, `THR-827` |
+| `resolved` (1) | `resolvedActionRetention.ts` | `THR-1777` |
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
@@ -400,7 +404,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
 | `spell` (3) | `spellActivation.ts`, `spellCasting.ts`, `spellGrant.ts` | `THR-1231`, `THR-1571`, `THR-1572`, `THR-1672` |
 | `spellgenerator` (10) | `spellGenerator/casterTradition.ts`, `spellGenerator/describeSpell.ts`, `spellGenerator/generateSpell.ts`, `spellGenerator/libraryRead.ts`, `spellGenerator/notice.ts`, `spellGenerator/readBack.ts`, `spellGenerator/spellLibrary.ts`, `spellGenerator/traditionCatalog.ts`, `spellGenerator/types.ts`, `spellGenerator/validateGeneratedSpell.ts` | `THR-1230`, `THR-1232`, `THR-1572`, `THR-1672` |
-| `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
+| `sphere` (3) | `sphereAffinity.ts`, `spherePoints.ts`, `sphereScaling.ts` | `THR-1749` |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
 | `step` (2) | `stepCast.ts`, `stepResolutionCore.ts` | `THR-1292`, `THR-1670` |
@@ -414,6 +418,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
+| `threading` (2) | `threadingRite.ts`, `threadingRiteQueue.ts` | `THR-1644` |
 | `threat` (1) | `threatRating.ts` | — |
 | `tick` (1) | `tickHealthMonitor.ts` | — |
 | `tier` (1) | `tierPromotion.ts` | — |
@@ -437,4 +442,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 104 tick phases · 207 engine domains · 649 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 654 modules._

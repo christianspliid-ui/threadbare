@@ -52,3 +52,19 @@ export interface SphereSeededTrace extends TraceBase {
   /** Init summary only: `kind:route` → node count. */
   counts?: Record<string, number>;
 }
+
+/** Why a bought sphere vector was rejected (THR-1749). */
+export type SpherePointsInvalidReason = 'foundation_sphere' | 'over_cap' | 'not_whole' | 'wrong_total' | 'both_poles';
+
+/**
+ * Emitted once by `createAscendant` when the archetype's `spherePoints` are missing or
+ * fail validation and the hunger preset is written instead (THR-1749).
+ */
+export interface SpherePointsFallbackTrace extends TraceBase {
+  category: 'sphere_points.fallback';
+  ascendantId: string;
+  reason: 'missing' | SpherePointsInvalidReason;
+  /** The pair the preset came from. */
+  fallbackFrom: { primary: SphereName; secondary: SphereName };
+  written: Partial<Record<SphereName, number>>;
+}

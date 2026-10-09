@@ -100,6 +100,7 @@ import * as agentVisual from '../../data/agent-visual-content';
 import * as gameConfig from '../../data/game-config';
 import * as playerProgression from '../../data/player-progression';
 import * as influence from '../../data/influence-content';
+import * as spherePoints from '../../data/sphere-points-content';
 import { TUNABLE_GROUPS } from './tunableConstants';
 
 // Factions & Military
@@ -933,6 +934,21 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ),
     viewer: 'constants',
     sourceFile: 'src/data/influence-content.ts',
+  },
+  {
+    id: 'sphere-points-constants',
+    label: 'Buy Your Spheres',
+    category: 'Configuration',
+    description: 'Remembrance sphere point-buy: budget, per-sphere cap, hunger preset split, and the per-sphere income floor (THR-1749).',
+    data: constants(
+      ['SPHERE_POINT_BUDGET', spherePoints.SPHERE_POINT_BUDGET, 'Points every god pours into the Creation spheres at Remembrance'],
+      ['SPHERE_POINT_CAP', spherePoints.SPHERE_POINT_CAP, 'Most points in one sphere — forces at least two spheres'],
+      ['HUNGER_PRESET_PRIMARY_POINTS', spherePoints.HUNGER_PRESET_PRIMARY_POINTS, 'First sphere of a hunger preset'],
+      ['HUNGER_PRESET_SECONDARY_POINTS', spherePoints.HUNGER_PRESET_SECONDARY_POINTS, 'Second sphere of a hunger preset'],
+      ['UNBOUGHT_SPHERE_INCOME_SHARE', spherePoints.UNBOUGHT_SPHERE_INCOME_SHARE, 'Income share every sphere keeps regardless of points (never zero)'],
+    ),
+    viewer: 'constants',
+    sourceFile: 'src/data/sphere-points-content.ts',
   },
   {
     id: 'agenda-templates',

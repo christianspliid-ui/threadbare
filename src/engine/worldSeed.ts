@@ -8,6 +8,7 @@
  */
 import { WorldGraph } from './graph';
 import { seedEncounterTraitDefinitions } from './traitDefinitionSeeding';
+import { seedFirstMarkTraits } from './firstMark';
 import { generateRoadEdges } from './roadNetwork';
 import type { CosmologyProfile, SphereName, HexTile, TerrainType, LocationSubtype } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
@@ -688,6 +689,8 @@ export function seedWorld(
   // loop, which the unified-action pipeline never populates — so a lost tavern
   // brawl hit `template_missing` and wounded nobody.
   seedEncounterTraitDefinitions(graph);
+  // THR-1755: the eight god-given marks (one per reach) The First receives at the bond.
+  seedFirstMarkTraits(graph);
 
   const individualIds: string[] = [];
   const factionIds: string[] = [];

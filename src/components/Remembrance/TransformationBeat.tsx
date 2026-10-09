@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { HungerDefinition, RemembranceFragment } from '../../types/remembrance';
 import { selectHungerProse } from '../../engine/remembrance';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -9,14 +9,19 @@ import {
   CHOICE_ATTR,
   TRANSFORMATION_COURT_REVEAL_MS,
 } from './remembranceChoice';
+import { SpheresStep } from './SpheresStep';
+import { describeSpherePour } from './sphereBuy';
+import { REMEMBRANCE_SPHERE_BUY_ENABLED } from '../../data/sphere-points-content';
+import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } from '../../engine/spherePoints';
 
 interface TransformationBeatProps {
   hungers: HungerDefinition[];
   driveFragment: RemembranceFragment;
-  onSelect: (hunger: HungerDefinition, courtType: string) => void;
+  /** THR-1749: `points` is the bought sphere vector (the preset when the buy step is off). */
+  onSelect: (hunger: HungerDefinition, courtType: string, points: SpherePoints) => void;
 }
 
-type TransformationStep = 'hunger' | 'court' | 'sphere-reveal';
+type TransformationStep = 'hunger' | 'court' | 'spheres' | 'sphere-reveal';
 
 export function TransformationBeat({ hungers, driveFragment, onSelect }: TransformationBeatProps) {
   const [step, setStep] = useState<TransformationStep>('hunger');
@@ -25,6 +30,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
   const [hoveredHunger, setHoveredHunger] = useState<string | null>(null);
   const [textVisible, setTextVisible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
+  const [points, setPoints] = useState<SpherePoints | null>(null);
 
   useEffect(() => {
     setTextVisible(false);
@@ -62,18 +68,34 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
     setSelectedCourt(null);
   }, [selectedHunger, step]);
 
-  const handleCourtConfirm = useCallback(() => {
+  const reveal = useCallback((bought: SpherePoints) => {
+    setPoints(bought);
     setStep('sphere-reveal');
     setRevealing(true);
     setTimeout(() => {
       if (selectedHunger && selectedCourt) {
-        onSelect(selectedHunger, selectedCourt);
+        onSelect(selectedHunger, selectedCourt, bought);
       }
     }, 2500);
   }, [selectedHunger, selectedCourt, onSelect]);
 
-  const primaryColor = selectedHunger
-    ? getSphereColor(selectedHunger.sphereAlignment.primary)
+  const preset = useMemo(
+    () => (selectedHunger ? presetFromAlignment(selectedHunger.sphereAlignment) : {}),
+    [selectedHunger],
+  );
+
+  // THR-1749: court's Continue goes to the spheres buy (the kill-switch passes the
+  // hunger's preset straight through to the reveal).
+  const handleCourtConfirm = useCallback(() => {
+    if (REMEMBRANCE_SPHERE_BUY_ENABLED) setStep('spheres');
+    else reveal(preset);
+  }, [reveal, preset]);
+
+  const revealPoints = points ?? preset;
+  const revealAlignment = deriveAlignmentFromPoints(revealPoints) ?? selectedHunger?.sphereAlignment;
+  const revealWords = describeSpherePour(revealPoints);
+  const primaryColor = revealAlignment
+    ? getSphereColor(revealAlignment.primary)
     : '#c9b8f0';
 
 
@@ -343,6 +365,16 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
         </>
       )}
 
+      {/* ── Spheres buy (THR-1749) ── */}
+      {step === 'spheres' && selectedHunger && (
+        <SpheresStep
+          preset={preset}
+          visible={contentVisible}
+          onConfirm={reveal}
+          onChooseAgain={chooseHungerAgain}
+        />
+      )}
+
       {/* ── Sphere reveal ── */}
       {step === 'sphere-reveal' && selectedHunger && (
         <div className="flex flex-col items-center justify-center transition-opacity duration-1500"
@@ -379,8 +411,14 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
             opacity: 0.7,
             letterSpacing: '0.04em',
           }}>
-            {selectedHunger.sphereAlignment.primary} and {selectedHunger.sphereAlignment.secondary} pour through you.
+            {revealWords.pour}
           </p>
+          {revealWords.stir && (
+            <p className="mt-2" data-testid="sphere-reveal-stir"
+               style={{ fontFamily: 'var(--font-prose)', fontStyle: 'italic', fontSize: '1.1rem', color: 'rgba(196,180,155,0.6)' }}>
+              {revealWords.stir}
+            </p>
+          )}
           <p className="mt-4"
              style={{
                fontFamily: 'var(--font-prose)',

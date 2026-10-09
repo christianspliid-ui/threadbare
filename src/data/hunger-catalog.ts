@@ -95,7 +95,8 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
     dilemmaResonanceTags: ['justice', 'vengeance', 'restoration', 'duty', 'oath', 'debt'],
   },
 
-  // ─── force/mind ────────────────────────────────────────────────
+  // ─── force/matter ──────────────────────────────────────────────
+  // THR-1749: was force/mind — opposed poles, which the one-pole rule forbids.
   {
     id: 'reshape',
     name: 'Reshape',
@@ -110,7 +111,7 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
       { courtType: 'high_house', prose: 'Your court is a high house. Vision flows downward from the apex. Every position exists to execute the design, to make the world conform.', isDefault: true },
       { courtType: 'circle', prose: 'Your court is a circle. Every member carries the vision. The transformation spreads from the center outward, a ripple that never stops.', isDefault: false },
     ],
-    sphereAlignment: { primary: 'force', secondary: 'mind' },
+    sphereAlignment: { primary: 'force', secondary: 'matter' },
     domainAffinities: { gold: 4, iron: 3, eye: 2 },
     ascendantLens: {
       perceptionStyle: 'You see potential — what someone could become, what a place could be, the gap between what is and what should be.',
@@ -297,7 +298,8 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
     dilemmaResonanceTags: ['power', 'conquest', 'growth', 'hunger', 'domination', 'territory'],
   },
 
-  // ─── spirit/darkness ───────────────────────────────────────────
+  // ─── spirit/entropy ────────────────────────────────────────────
+  // THR-1749: was spirit/darkness — Foundation spheres are not chosen at chargen (rulebook §5).
   {
     id: 'haunt',
     name: 'Haunt',
@@ -313,7 +315,7 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
       { courtType: 'abyss', prose: 'Your court is an abyss. It exists in the space beneath awareness — in dreams, in the dark between heartbeats. Your followers do not gather; they are visited.', isDefault: true },
       { courtType: 'web', prose: 'Your court is a web. Invisible threads that touch the sleeping, the grieving, the remembering. You pull, and they feel you without knowing why.', isDefault: false },
     ],
-    sphereAlignment: { primary: 'spirit', secondary: 'darkness' },
+    sphereAlignment: { primary: 'spirit', secondary: 'entropy' },
     domainAffinities: { veil: 4, shadow: 3, heart: 2 },
     ascendantLens: {
       perceptionStyle: 'You see the inner world — dreams, fears, unspoken longings, the ghosts people carry without knowing. The surface is irrelevant; you see what haunts them.',
@@ -326,7 +328,8 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
     dilemmaResonanceTags: ['memory', 'grief', 'dreams', 'obsession', 'presence', 'remembrance'],
   },
 
-  // ─── light/order ───────────────────────────────────────────────
+  // ─── mind/energy ───────────────────────────────────────────────
+  // THR-1749: was light/order — Foundation spheres are not chosen at chargen (rulebook §5).
   {
     id: 'illuminate',
     name: 'Illuminate',
@@ -342,7 +345,7 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
       { courtType: 'high_house', prose: 'Your court is a high house. A beacon. Light pours down from the apex, and every level below is bathed in its radiance. There are no shadows in your court.', isDefault: true },
       { courtType: 'circle', prose: 'Your court is a circle. Every member holds a light. Together they banish every shadow. The truth is shared, amplified, inescapable.', isDefault: false },
     ],
-    sphereAlignment: { primary: 'light', secondary: 'order' },
+    sphereAlignment: { primary: 'mind', secondary: 'energy' },
     domainAffinities: { eye: 4, star: 3, gold: 2 },
     ascendantLens: {
       perceptionStyle: 'You see deception — every lie, every hidden motive, every shadow cast by half-truths. You see where light needs to fall.',

@@ -59,6 +59,7 @@ import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 import { computeReachShares } from './domainCapability';
 import { placeSeededCarriedNotices } from './spellGenerator/notice';
+import { grantFirstMark } from './firstMark';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -496,6 +497,8 @@ export function initializeGameStateFromIdentity(
     title: identity.divineName,
     description: `${identity.hungerName} — ${identity.mandateDirection}`,
     sphereAlignment: identity.sphereAlignment,
+    // THR-1749: the bought vector rides through to createAscendant.
+    spherePoints: identity.spherePoints,
     startingDomainAffinities: identity.domainAffinities,
     personalitySeed: identity.personalitySeed,
     flavorText: identity.mandateDirection,
@@ -712,6 +715,10 @@ export function devSeedTheFirst(state: GameState): string {
     },
   });
 
+  // THR-1755 (D5): the dev First carries the god's mark like a bonded one, so the
+  // seeded route shows the same sheet as the player's path (Heart → Heartfire).
+  grantFirstMark(graph, agentId, 'heart', tick);
+
   state.meetTheFirstAutoTriggered = true;
   // Add familiarity for the new agent — intimate level so attachments/backstory are visible
   state.familiarityMap.set(agentId, 0.7);
@@ -881,6 +888,8 @@ export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
   mandateDirection: 'You swore to see the Sun-Oath broken before it could consume what remains of the Thornweaver. You do not know yet how it will break — only that you will be there when it does.',
   courtType: 'web',
   sphereAlignment: { primary: 'mind', secondary: 'spirit' },
+  // THR-1749: the Witness preset, identical to the pair above.
+  spherePoints: { mind: 3, spirit: 2 },
   domainAffinities: { eye: 4, veil: 3, shadow: 2 },
   personalitySeed: {
     mercy_ruthlessness: 0.5,
