@@ -75,14 +75,27 @@ export const BEAT_INIT_LAST_BEAT_TURN = 0;
  * (plan §3.2/§4.2). A beat that declares no `identity` is unbiased (multiplier 1).
  *
  * Reach: multiplier = `BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE × affinity`, where
- * affinity is `domainAffinities[reach]` (∈ [0..1] in practice). At affinity 0 the beat
- * is neither boosted nor penalised; at affinity 1 it draws ×(base+slope) more.
+ * affinity is `domainAffinities[reach]` **normalised to [0..1]** by
+ * {@link BEAT_REACH_AFFINITY_FULL_SCALE} (THR-1771). `domainAffinities` are stored raw —
+ * 2–4 in the hunger catalog, 2–5 from the random archetype generator — so reading them
+ * as [0..1] made an Eye/Mind god draw `the_unveiled_eye` on 40% of all draws. At
+ * affinity 0 the beat is neither boosted nor penalised; at full scale (and above, clamped)
+ * it draws ×{@link BEAT_REACH_BIAS_CEILING} more.
  * Sphere: a flat bonus when the beat's sphere matches the ascendant's primary/secondary.
  */
 /** Floor reach multiplier at zero affinity (no boost, no penalty). */
 export const BEAT_REACH_BIAS_BASE = 1;
-/** Extra reach multiplier per unit of reach affinity (affinity 1 → ×(base+slope)). */
+/** Extra reach multiplier per unit of *normalised* reach affinity (1 → ×(base+slope)). */
 export const BEAT_REACH_BIAS_SLOPE = 2;
+/**
+ * The raw `domainAffinities` value that counts as full affinity (normalised 1) for the
+ * identity bias (THR-1771). 4 is the hunger catalog's top-ranked reach — every hunger
+ * carries 4 / 3 / 2 — so a god's primary reach draws at the ceiling; a raw 5 from the
+ * random generator clamps to it.
+ */
+export const BEAT_REACH_AFFINITY_FULL_SCALE = 4;
+/** The documented reach-multiplier ceiling: full affinity draws ×(base + slope) = ×3. */
+export const BEAT_REACH_BIAS_CEILING = BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE;
 /** Sphere multiplier when the beat's sphere is the ascendant's primary. */
 export const BEAT_SPHERE_BIAS_PRIMARY = 1.5;
 /** Sphere multiplier when the beat's sphere is the ascendant's secondary. */

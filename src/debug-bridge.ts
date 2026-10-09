@@ -3013,6 +3013,15 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // ── The threading rite (THR-1644 S1) ─────────────────────────────────
+    /** Pending rite, queue, the god's thread count and its last rite. */
+    getThreadingRite: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getThreadingRiteSnapshot } = await import('./engine/threadingRiteQueue');
+      return getThreadingRiteSnapshot(state);
+    },
+
     getOutcomePinVerdict: async () => {
       const { getOutcomePinVerdict, getOutcomePin } = await import('./engine/debugOutcomePin');
       const verdict = getOutcomePinVerdict();

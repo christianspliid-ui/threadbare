@@ -42,6 +42,7 @@ import { getAxisByReach, getAxisById } from '../types/axisRegistry';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import { durationLabel } from './aftermathWords';
+import { getFirstMarkDisplay, type FirstMarkDisplay } from './firstMark';
 import { influenceChipNoun, influenceChipHover } from './castTargetChanges';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
 import {
@@ -410,6 +411,12 @@ export interface AgentInfoCardData {
   locationId: string;
   locationName: string;
   primarySphere?: string;
+  /**
+   * The First's mark (THR-1644 D5, THR-1755) — the god's blessing in one reach,
+   * read from the agent's `has_trait` edge to a `god_mark` trait (Law 56: the chip
+   * is state). Ungated: the god knows its own mark. Excluded from `allTraits`.
+   */
+  godMark?: FirstMarkDisplay;
   archetypeId?: string;
   archetypeLabel?: string;
   factionName?: string;
@@ -1472,6 +1479,9 @@ export function getAgentInfoCard(
     gender: agentGender,
   };
 
+  const godMark = getFirstMarkDisplay(graph, agentId);
+  if (godMark) card.godMark = godMark;
+
   // Companions — deliberately ungated (THR-1096 decision 8). Person-knowledge
   // gating does not apply: a mortal's companions belong to the bearer, and the
   // bearer's god sees the people around their own threads. Fail-open by design.
@@ -1775,7 +1785,8 @@ export function getAgentInfoCard(
     // (THR-872) — the character-sheet trait list is the first production reader
     // of the landed field. Descriptors follow the earned traits: what the world
     // has since made of this person reads before how they were first drawn.
-    const genericTraitNames = traitNames.filter(n => !personalityNames.has(n));
+    // The First's mark has its own chip in Identity (THR-1755) — never shown twice.
+    const genericTraitNames = traitNames.filter(n => !personalityNames.has(n) && n !== godMark?.name);
     const displayTraits = [
       ...genericTraitNames,
       ...narrativeDescriptors.filter(d => !genericTraitNames.includes(d)),

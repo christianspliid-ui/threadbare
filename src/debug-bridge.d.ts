@@ -2460,6 +2460,12 @@ export interface DebugBridge {
       readonly reason?: string;
     }
   >;
+  /**
+   * The threading rite (THR-1644 S1): the rite waiting for its surface, the queue
+   * behind it, how many mortals the god has ever threaded, and the god's most
+   * recent rite (shape, ordinal, reception, mark). `null` with no live game.
+   */
+  getThreadingRite: () => Promise<import('./engine/threadingRiteQueue').ThreadingRiteSnapshot | null>;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

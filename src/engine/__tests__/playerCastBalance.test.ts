@@ -35,6 +35,12 @@
  * texture numbers below are re-measured on the re-fitted curve. Finding recorded
  * for the balance pass, not re-tuned here: a fresh god's raw 6–9 sits in the curve's
  * flat low tail, so the affinity spread narrows from 0.168 → 0.354 to 0.128 → 0.152.
+ *
+ * **THR-1775 (2026-10-09) is that balance pass.** The re-fit is a linear rescale of the
+ * raw axis (`y = 5x − 20`), so BASE_RAW 6 → 10 and AFFINITY_WEIGHT 0.5 → 2.5 restore
+ * the THR-766 capabilities exactly (0.168 / 0.231 / 0.354). The texture assertions
+ * below are re-measured on the live resolver at those capabilities, and the card-word
+ * capabilities are now read off a real fresh god rather than hard-coded.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveUncontestedStep } from '../unifiedActionResolution';
@@ -70,8 +76,12 @@ const SEEDS = 400;
  * exercises it, and re-sweeping the whole grid here would only re-run the sibling
  * file's job over the same arithmetic.
  */
-const FRESH_GOD_PRIMARY_CAPABILITY = 0.55;
-const FRESH_GOD_SECONDARY_CAPABILITY = 0.40;
+//
+// THR-1775: these were 0.55 / 0.40 — not a fresh god's at all on any curve. They are
+// now the capabilities the curve test below pins for a real fresh god, so the card
+// words are checked where a new player actually first reads them.
+const FRESH_GOD_PRIMARY_CAPABILITY = 0.354;
+const FRESH_GOD_SECONDARY_CAPABILITY = 0.231;
 
 /** The ascendant's shipped affinity range (THR-503): 2 on a secondary reach, 5 on a primary. */
 const AFFINITY_SECONDARY = 2;
@@ -270,12 +280,12 @@ describe('THR-1000 — the pre-roll reads are seed-invariant', () => {
 
 // ─── Verdict 1 — the fresh-god power curve ──────────────────────────────────
 
-describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.5', () => {
+describe('THR-1775 — fresh-god cast curve: BASE_RAW 10 / AFFINITY_WEIGHT 2.5 on the re-fitted dice', () => {
   it('places a fresh god on the measured capability band, off-domain through primary reach', () => {
     // Pins the verdict. Any change to either constant moves these and forces a
     // deliberate re-measure rather than a silent re-tune.
-    expect(ASCENDANT_CAST_BASE_RAW).toBe(6);
-    expect(ASCENDANT_CAST_AFFINITY_WEIGHT).toBe(0.5);
+    expect(ASCENDANT_CAST_BASE_RAW).toBe(10);
+    expect(ASCENDANT_CAST_AFFINITY_WEIGHT).toBe(2.5);
 
     // Capability is a pre-roll read, so one resolution per cell answers it exactly
     // (THR-1000) — the seed-invariance guard above is what makes that substitution safe.
@@ -283,10 +293,15 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     const secondary = castReadout(0.35, 'local', AFFINITY_SECONDARY).capability;
     const primary = castReadout(0.35, 'local', AFFINITY_PRIMARY).capability;
 
-    // THR-1581: re-measured on the re-fitted curve (was 0.168 / 0.231 / 0.354).
-    expect(offDomain).toBeCloseTo(0.128, 3);
-    expect(secondary).toBeCloseTo(0.137, 3);
-    expect(primary).toBeCloseTo(0.152, 3);
+    // THR-1775: the THR-766 capabilities, restored on the re-fitted curve (THR-1581
+    // had left them at 0.128 / 0.137 / 0.152 — a 0.024 spread across the whole identity).
+    expect(offDomain).toBeCloseTo(0.168, 3);
+    expect(secondary).toBeCloseTo(0.231, 3);
+    expect(primary).toBeCloseTo(0.354, 3);
+
+    // A god's own reaches cast visibly better than off-domain: the primary-reach
+    // capability is double the off-domain one (was 1.19× before THR-1775).
+    expect(primary / offDomain).toBeGreaterThan(2);
 
     // The reach ordering is the whole reason the affinity term exists.
     expect(primary).toBeGreaterThan(secondary);
@@ -306,16 +321,22 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     // THR-1627 re-baseline (local offset −0.10 → 0): a local cast now rolls against
     // the difficulty the slot names, so primary P ≈ 0.15 and at-cost measures 0.838
     // (was 0.75 ceiling). Still dominant-but-not-only; the ceiling rises to 0.90.
+    //
+    // THR-1775 (BASE_RAW 10 / WEIGHT 2.5): primary P = 0.405, at-cost measures 0.600
+    // (0.838 before). The ceiling returns to THR-766's 0.75, so a drift back into the
+    // curve's flat tail trips here instead of passing silently as THR-1581's did.
     expect(d.share('success_at_cost')).toBeGreaterThan(0.55);
-    expect(d.share('success_at_cost')).toBeLessThan(0.90);
+    expect(d.share('success_at_cost')).toBeLessThan(0.75);
 
     // Measured 0.280; 0.195 on the re-fitted dice (THR-1581, primary P ≈ 0.28);
     // 0.100 at local offset 0 (THR-1627) — a clean landing has to stay a real
     // outcome (about one cast in ten for a fresh god), not a rumour.
-    expect(d.share('success')).toBeGreaterThan(0.07);
+    // THR-1775: 0.313 — about one primary-reach cast in three lands clean.
+    expect(d.share('success')).toBeGreaterThan(0.20);
     expect(d.share('success')).toBeLessThan(0.40);
 
-    // Measured 0.030; 0.013 at local offset 0 (THR-1627) — a surge is an event, so it stays scarce.
+    // Measured 0.030; 0.013 at local offset 0 (THR-1627); 0.030 again at THR-1775 —
+    // a surge is an event, so it stays scarce.
     expect(d.share('critical_success')).toBeLessThan(0.08);
     expect(d.share('critical_success')).toBeGreaterThan(0);
 
@@ -332,6 +353,11 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     expect(secondary.share('success_at_cost')).toBeGreaterThan(primary.share('success_at_cost'));
     expect(offDomain.share('success_at_cost')).toBeGreaterThan(secondary.share('success_at_cost'));
     expect(primary.share('success')).toBeGreaterThan(offDomain.share('success'));
+
+    // THR-1775: "visibly better", not merely ordered. Measured 0.313 clean on a primary
+    // reach against 0.107 off-domain (0.100 vs 0.070 before the re-fit) — a god's own
+    // reach lands clean about three times as often as a reach it does not hold.
+    expect(primary.share('success')).toBeGreaterThan(2 * offDomain.share('success'));
   });
 });
 

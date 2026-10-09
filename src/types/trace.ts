@@ -104,6 +104,7 @@ export type TraceCategory =
   | 'core_personality'
   | 'reaction_selected'
   | 'player_receipt'
+  | 'aftermath_reaction_refused' // THR-1777: a player's aftermath pick did not land
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
@@ -400,6 +401,10 @@ export type TraceCategory =
   // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
   | 'meeting.test_resolved'
   | 'meeting.bond_resolved'
+  // The threading rite — one writer; The First is the first (THR-1644 S1)
+  | 'thread.court_position_resolved'
+  | 'rite.queued'
+  | 'rite.applied'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -955,6 +960,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Meet The First resolutions (THR-1714)
   'meeting.test_resolved',
   'meeting.bond_resolved',
+  // The threading rite (THR-1644 S1)
+  'thread.court_position_resolved',
+  'rite.queued',
+  'rite.applied',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -975,6 +984,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reaction_selected',
   // Divine Receipt — player action resolution feedback (THR-727)
   'player_receipt',
+  // A player's aftermath pick refused by the resolver (THR-1777)
+  'aftermath_reaction_refused',
   'receipt.target_changes', 'beat.gift_placed',
   // Spine gifts wait for the player (THR-1647)
   'beat.spine_deferred',
@@ -4843,6 +4854,7 @@ export type TraceEntry =
   | SourceUpkeepTrace
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
+  | AftermathReactionRefusedTrace
   | ReceiptTargetChangesTrace
   | BeatGiftPlacedTrace
   | SpineDeferredTrace
@@ -4859,6 +4871,10 @@ export type TraceEntry =
   // Nudge Model — WS6 Meet The First conversion (THR-868)
   | MeetingTestResolvedTrace
   | MeetingBondResolvedTrace
+  // The threading rite (THR-1644 S1)
+  | ThreadCourtPositionResolvedTrace
+  | RiteQueuedTrace
+  | RiteAppliedTrace
   // Retrofitted from the orphaned-payload set (THR-1065). Each declared a
   // `category` literal and an authored payload, but was never a union member —
   // so `trace.category === '<its literal>'` was a TS2367 "no overlap" error and
@@ -5032,6 +5048,56 @@ export interface MeetingTestResolvedTrace extends TraceBase {
 }
 
 /**
+ * Trace: a thread from the god to a mortal resolved its court position
+ * (THR-1644 S1, D3). One per rite-bearing thread write. `resolvedPosition`
+ * differs from `cardPosition` exactly when the thread made a new First.
+ */
+export interface ThreadCourtPositionResolvedTrace extends TraceBase {
+  category: 'thread.court_position_resolved';
+  ascendantId: string;
+  /** What the template asked for. */
+  cardPosition: import('./influence').CourtPosition;
+  /** What was written — `the_first` when D3 fired. */
+  resolvedPosition: import('./influence').CourtPosition;
+  reason: import('../engine/threadingRite').CourtPositionReason;
+  /** The god's count of threads ever bound, after this one. */
+  threadsBoundCount: number;
+}
+
+/** Trace: a pending threading rite was recorded (THR-1644 S1). */
+export interface RiteQueuedTrace extends TraceBase {
+  category: 'rite.queued';
+  ordinal: number;
+  shape: import('../engine/threadingRite').RiteShape;
+  /** 0 = opens now (or resolves now, with no surface). */
+  queuedBehind: number;
+  /** True → the queue was full and the rite resolved as the bond alone, no hand. */
+  overflowed: boolean;
+}
+
+/**
+ * Trace: the one rite writer ran (THR-1644 S1, D1) — for the meeting and for
+ * every card-route thread. `outcomesPrefolded` marks the meeting, whose test
+ * shifts are already on the node (its `meeting.test_resolved` traces carry them).
+ */
+export interface RiteAppliedTrace extends TraceBase {
+  category: 'rite.applied';
+  shape: import('../engine/threadingRite').RiteShape;
+  viaMeeting: boolean;
+  /** False = bond without a hand, or an engine-side fallback. */
+  handPlayed: boolean;
+  outcomesPrefolded: boolean;
+  poleShifts: Array<{ pair: string; before: number; after: number; scale: number }>;
+  reachInvestment?: { reach: import('./traits').ReachDomain; amount: number };
+  quintessence?: { before: number; preClamp: number; after: number };
+  reception?: string;
+  markTraitId?: string;
+  /** THR-1755: a First's bond that granted no mark — the switch is off, or the reach has no god-given trait. */
+  markSkipped?: import('../engine/firstMark').FirstMarkSkip;
+  fallbackReason?: import('../engine/threadingRite').RiteFallbackReason;
+}
+
+/**
  * Trace: the bond test resolved, closing Meet The First (THR-868).
  *
  * Exactly one per completed meeting. `startingQuintessence` is the post-clamp
@@ -5081,6 +5147,20 @@ export interface AmbitionMintedTrace extends TraceBase {
   sampleCulpritAgentIds?: string[];
   /** How many of this tick's grievance mints took a full mortal's secondary want (THR-1383). */
   displacedCount?: number;
+}
+
+/**
+ * Trace: the player picked an aftermath reaction and the resolver refused it
+ * (THR-1777). Before, the veil dropped the refusal silently. Player-scale.
+ */
+export interface AftermathReactionRefusedTrace extends TraceBase {
+  category: 'aftermath_reaction_refused';
+  agentId: string;
+  /** The aftermath the veil was showing, when it carried one. */
+  actionId?: string;
+  reactionId: string;
+  /** The resolver's refusal, verbatim — the veil shows a plain line instead. */
+  reason: string;
 }
 
 /**
