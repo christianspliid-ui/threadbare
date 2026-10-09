@@ -20,9 +20,16 @@ import { THREAD_CREATION_TEMPLATES } from '../../data/unified-action-templates';
 import { isActionStepBranch } from '../../types/unifiedAction';
 import type { CourtPosition } from '../../types/influence';
 
+/**
+ * The god already holds a First. Since THR-1644 (D3) a thread written while
+ * the god holds none makes that mortal The First — that route is pinned in
+ * `threadingRite.thr1644.test.ts`; this file pins the card's own position.
+ */
 function makeGraph(): WorldGraph {
   const g = new WorldGraph();
   g.addNode({ id: 'asc', type: 'actor', name: 'The Ascendant', properties: { actorType: 'ascendant' } });
+  g.addNode({ id: 'first', type: 'actor', name: 'Ilse', properties: { actorType: 'individual' } });
+  g.addEdge({ id: 'edge_thread_asc_first', source: 'asc', target: 'first', type: 'thread', properties: { courtPosition: 'the_first' } });
   g.addNode({ id: 'mortal', type: 'actor', name: 'Wren', properties: { actorType: 'individual' } });
   return g;
 }

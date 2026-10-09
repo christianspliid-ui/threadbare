@@ -77,6 +77,7 @@ import {
 } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
 import { emitTrace } from './traceBuffer';
+import { applyThreadingRite, noteThreadBound, riteShapeFor } from './threadingRite';
 import { selectBondFateLine, selectFormativeFateLine } from './meetingFateLine';
 import { applyRider, selectActiveRider, totalNudgeCost } from './encounters/nudges';
 import { classifyNetLean, sumHandLean } from './encounters/poleLean';
@@ -1054,12 +1055,33 @@ export function createAgentFromMeeting(
       storyPhase: 'call',
       meetingChoiceRecord: result.meetingChoiceRecord,
       beatHistory: [],
-      // How the mortal received the bond (THR-868). Absent on legacy-path
-      // threads, which is a meaningful distinction — see `MeetingChoiceRecord`.
-      ...(result.bondReception !== undefined
-        ? { bondReception: result.bondReception }
-        : {}),
     },
+  });
+
+  // THR-1644 S1 (D1): create, then apply — the meeting is the first and richest
+  // rite, landed by the same writer as every other. The tests and the spark are
+  // already folded into the node above (`applyMeetingOutcomes`, scale 1), so the
+  // writer skips steps 1–3 and lands the bond reception — absent on legacy-path
+  // threads, which is a meaningful distinction (see `MeetingChoiceRecord`) —
+  // plus the rite's bookkeeping. Pinned by `meetingWriterGolden.thr1644.test.ts`.
+  const ordinal = noteThreadBound(graph, ascendantId);
+  // THR-1755 (D5): The First's mark is the spark's reach. The spark is folded into
+  // the node already, so the writer is told the reach rather than handed a spark.
+  const sparkReach = SPARK_VISION_CATALOG
+    .find(v => v.id === result.meetingChoiceRecord?.sparkVisionId)?.reachInvestment;
+  applyThreadingRite(graph, {
+    agentId,
+    ascendantId,
+    tick,
+    shape: riteShapeFor(ordinal, true),
+    ordinal,
+    viaMeeting: true,
+    ...(sparkReach ? { markReach: sparkReach } : {}),
+    ...(result.bondOutcome ? { bondOutcome: result.bondOutcome } : {}),
+    ...(result.bondReception !== undefined ? { reception: result.bondReception } : {}),
+    handPlayed: (result.bondOutcome?.playedNudgeIds.length ?? 0) > 0
+      || (result.meetingChoiceRecord?.formativeOutcomes ?? []).some(o => o.playedNudgeIds.length > 0),
+    outcomesPrefolded: true,
   });
 
   emitMeetingResolutionTraces(result, agentId, tick);
