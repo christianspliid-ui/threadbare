@@ -1,9 +1,11 @@
 # Briefing
-**Generated:** 2026-10-09 18:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 19:55 local (17:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Set the Claude app to open when Windows starts.** Every recent lane silence began when the computer started or woke and the app did not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+
+The silence check still reports the most recent gap: *"The scheduled lanes went silent for 31.8h (2026-10-06T20:56:43.000Z → 2026-10-08T04:42:41.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time."* The retro traced it to the computer being asleep, so this setting is the fix.
 
 ## Also waiting (3)
 
@@ -22,13 +24,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 jobs ready, 1 being built.** Nothing in the ready queue is older than 2 days or blocked; no parked jobs.
+**Healthy: 6 jobs ready, 1 being built.** Nothing in the ready queue is older than 2 days or blocked; no parked jobs.
 
-- **Template seams in the player's text** ([THR-1779](https://linear.app/threadbare/issue/THR-1779/recurs-after-fix-template-seams-reach-the-player-his-only-kin-claims)) merged via [#2286](https://github.com/christianspliid-ui/threadbare/pull/2286) and is live.
-- **Who holds power** ([THR-1780](https://linear.app/threadbare/issue/THR-1780/who-holds-power-is-a-dead-end-the-notables-badge-counts-active-agendas)) is being built; its pull request [#2288](https://github.com/christianspliid-ui/threadbare/pull/2288) is open and waiting on checks.
+- **A bonded First is asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)) is being built (claimed about 4½ hours ago).
+- **Who holds power** ([THR-1780](https://linear.app/threadbare/issue/THR-1780/who-holds-power-is-a-dead-end-the-notables-badge-counts-active-agendas)) merged via [#2288](https://github.com/christianspliid-ui/threadbare/pull/2288), and **God's Will prices name the sphere they bill** ([THR-1783](https://linear.app/threadbare/issue/THR-1783)) merged via [#2289](https://github.com/christianspliid-ui/threadbare/pull/2289). Both are live.
+- New in the queue: [a ruler's card reads "TRUE_BELIEVER" and repeats thread chips](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each), found in the Notables view that just shipped.
 
 ## Health
 
-- **Heavy simulation tests failed on main's latest commit** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/37957765821)): one test (`doomIdentityMilestones` — "milestone triggered flag persists") timed out at 17 s against a 15 s limit. It passed on the previous main commit, so this reads as a slow CI runner rather than a broken game, but no session has claimed it yet. Executor's job, not yours.
-- The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep) and is covered by the lead ask above, so it is not a separate ask.
-- Everything else is green. Simulation speed is normal (134 ms/tick, 6% above the weekly median). The live site is current, all 11 lanes are on schedule, and the worktree cleaner last ran at 18:40.
+- **Heavy simulation tests are now red on three main commits in a row** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37967284682), on c4e887ed). Two tests time out: `doomIdentityMilestones` ("milestone triggered flag persists", 19 s against a 15 s limit) and `debugTickBatch` ("one aggregate trace per call", over 5 s). Three in a row reads less like a slow runner and more like the simulation getting slower. No session has claimed it. Executor's job, not yours.
+- **Simulation speed drifted:** tick cost 185 ms/tick steady, 47% above the 7-day median (126, 135 rows since 1b12cfd8); top phase agent_decision, 609 agents. Name the merges between 1b12cfd8 and c4e887ed: `git log --oneline --merges 1b12cfd8..c4e887ed`. One sample — the hour before read 134 ms — but it lines up with the timeouts above. Executor's job.
+- Everything else is green. The live site is current (c4e887ed), no pull requests are stuck, all 11 lanes are on schedule, and the worktree cleaner last ran at 19:40.
