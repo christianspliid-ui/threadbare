@@ -145,7 +145,7 @@ export function ThreadingRite({
     else afterTests([]);
   }, [tests.length, afterTests]);
 
-  const finish = useCallback((bondOutcome: BondOutcome | undefined) => {
+  const finish = useCallback((bondOutcome: BondOutcome | undefined, handPlayed = true) => {
     if (!bondOutcome) { onBondWithoutHand(); return; }
     onComplete({
       kind: 'played',
@@ -153,6 +153,7 @@ export function ThreadingRite({
       bondOutcome,
       shape: plan.shape,
       ...(vision ? { spark: { reach: vision.reachInvestment, amount: vision.investmentAmount } } : {}),
+      ...(handPlayed ? {} : { handPlayed: false }),
     });
   }, [outcomes, plan.shape, vision, onComplete, onBondWithoutHand]);
 
@@ -165,7 +166,7 @@ export function ThreadingRite({
   const withoutHand = useMemo<(() => void) | null>(() => {
     if (bondRolled) return null;
     if (stage === 'opening') return onBondWithoutHand;
-    if (stage === 'bond') return () => finish(resolveBondTest(RITE_BOND_TEST, [], plan.seed + RITE_BOND_SEED_OFFSET));
+    if (stage === 'bond') return () => finish(resolveBondTest(RITE_BOND_TEST, [], plan.seed + RITE_BOND_SEED_OFFSET), false);
     return null;
   }, [bondRolled, stage, onBondWithoutHand, finish, plan.seed]);
 

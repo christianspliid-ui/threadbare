@@ -228,6 +228,21 @@ describe('THR-1754 S2 — closing the rite through the one writer', () => {
     expect(applied.at(-1)).toMatchObject({ handPlayed: false, fallbackReason: 'dismissed' });
   });
 
+  it('Bond without a hand at the bond keeps the played tests but says no hand was played', () => {
+    const s = threadAndDrain(seededWorld(), 'hadrel', 10);
+    const plan = planThreadingRite(s.graph, s.pendingThreadingRite!, s.seed);
+    const bondOutcome = resolveBondTest(MEETING_BOND_TEST, [], 7);
+    const formative = { valuePair: plan.tests[0].test.valuePair, shift: 0.2, quintessenceErosion: 0 } as never;
+
+    const closed = closeThreadingRite(s, { kind: 'played', formativeOutcomes: [formative], bondOutcome, shape: 'short', handPlayed: false });
+
+    expect(closed.result?.applied).toBe(true);
+    expect(closed.result?.poleShifts).toHaveLength(1);
+    expect(closed.event?.message).toBe(riteChronicleNoHandLine('Hadrel', bondOutcome.reception));
+    const applied = getTraces().filter(t => t.category === 'rite.applied' && t.agentId === 'hadrel');
+    expect(applied.at(-1)).toMatchObject({ handPlayed: false, fallbackReason: 'dismissed' });
+  });
+
   it('a mortal who died before the rite opened gets no writes and a too-late line', () => {
     const s = threadAndDrain(seededWorld(), 'hadrel', 10);
     s.graph.getNode('hadrel')!.properties.deceased = true;

@@ -211,6 +211,12 @@ export type RiteClose =
       readonly spark?: { readonly reach: ReachDomain; readonly amount: number };
       /** The shape actually played, when the plan degraded it (`planThreadingRite`). */
       readonly shape?: RiteShape;
+      /**
+       * `false` when the player reached the bond and chose *Bond without a hand*:
+       * the tests and spark stand, but the bond rolled with no cards (D6), so the
+       * trace and chronicle must say no hand was played. Absent = played.
+       */
+      readonly handPlayed?: boolean;
     }
   | {
       /** *Bond without a hand* / Escape (`dismissed`), or the mortal is gone (`agent_missing`). */
@@ -245,6 +251,7 @@ export function closeThreadingRite(
   let result: ApplyRiteResult;
   let message: string;
   if (close.kind === 'played') {
+    const handPlayed = close.handPlayed !== false;
     result = applyThreadingRite(state.graph, {
       agentId: pending.agentId,
       ascendantId: pending.ascendantId,
@@ -256,11 +263,14 @@ export function closeThreadingRite(
       bondOutcome: close.bondOutcome,
       ...(close.spark ? { spark: close.spark, markReach: close.spark.reach } : {}),
       shiftScale: RITE_EXISTING_MORTAL_SHIFT_SCALE,
-      handPlayed: true,
+      handPlayed,
+      ...(handPlayed ? {} : { fallbackReason: 'dismissed' as const }),
     });
-    message = result.applied
-      ? riteChronicleLine(name, close.bondOutcome.reception)
-      : riteChronicleMissingLine(name);
+    message = !result.applied
+      ? riteChronicleMissingLine(name)
+      : handPlayed
+        ? riteChronicleLine(name, close.bondOutcome.reception)
+        : riteChronicleNoHandLine(name, close.bondOutcome.reception);
   } else {
     result = resolveRiteWithoutHand(state.graph, pending, close.reason, state.seed);
     message = result.applied && result.reception
