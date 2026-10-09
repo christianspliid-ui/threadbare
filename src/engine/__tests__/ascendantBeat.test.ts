@@ -16,6 +16,7 @@ import type { ReachDomain } from '../../types/traits';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { ALL_DELIVERY_BEATS } from '../deliveryBeatAdapter';
 import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
+import { REACH_SIGNATURE_ID_BY_REACH } from '../../data/reach-signature-content';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
@@ -647,6 +648,24 @@ describe('reach-signature acquisition beats (THR-523)', () => {
       (both as { unlockedActionIds?: readonly string[] }).unlockedActionIds = [
         'invest.iron.warhost', 'invest.gold.patronage_network',
       ];
+      expect(isBeatEligible(beat, both)).toBe(false);
+    });
+
+    it('THR-1771: a 3-reach god retires the beat once primary + secondary are held (the third is never granted)', () => {
+      // The showcase god: eye 4 / veil 3 / shadow 2. Only eye (Beat 4) and veil (this
+      // beat) are ever granted, so shadow's unlearned signature must not keep it alive.
+      const graph = graphWithAscendant({ eye: 4, veil: 3, shadow: 2 });
+      const primaryOnly = directorState(30, undefined, graph);
+      (primaryOnly as { unlockedActionIds?: readonly string[] }).unlockedActionIds = [
+        REACH_SIGNATURE_ID_BY_REACH.eye!,
+      ];
+      expect(isBeatEligible(beat, primaryOnly)).toBe(true);
+
+      const both = directorState(30, undefined, graph);
+      (both as { unlockedActionIds?: readonly string[] }).unlockedActionIds = [
+        REACH_SIGNATURE_ID_BY_REACH.eye!, REACH_SIGNATURE_ID_BY_REACH.veil!,
+      ];
+      expect(REACH_SIGNATURE_ID_BY_REACH.shadow).toBeTruthy(); // shadow has a signature, unheld
       expect(isBeatEligible(beat, both)).toBe(false);
     });
 
