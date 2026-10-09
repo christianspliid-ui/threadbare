@@ -421,7 +421,17 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-06 by Claude Code (THR-1740 — forecast window re-plan). **Extended** 🟢 LIVE
+2026-10-09 by Claude Code (THR-1644 S1 — the threading rite: one writer, The First is the first).
+**Extended** `meeting-bond-writes-the-first`: the card route (`bind_thread_agent` /
+`_strong`) now writes `the_first` too when the god holds no First, through
+`resolveThreadWrite` in `src/engine/threadingRite.ts` called from `graphOpExecutor`'s thread
+write. **Added** `thread-write-resolves-first` (Encounters & Dilemmas → Attention, Chronicle &
+Narrative: the thread write resolves its court position by D3 and every `the_first` reader
+carries a card-route First with no per-perk change) and `rite-applies-outcomes` (Encounters &
+Dilemmas → Personality & Emergent Traits: `applyThreadingRite` is the one writer of a rite's
+value-pole shift, reach investment, scar and bond reception, for the meeting and the card).
+Audit-on-touch: `isMeetTheFirstAvailable` and `isFirstBonded` read sites unchanged.
+Earlier: 2026-10-06 by Claude Code (THR-1740 — forecast window re-plan). **Extended** 🟢 LIVE
 `engagement-forecast-gates-choice`: a branching quest keeps the too-easy exemption only for a
 mortal threaded to the ascendant (`BRANCHING_QUEST_WINDOW_EXEMPT_SCOPE = 'threaded'`); every
 other quest faces the window like other work. A free choice's value per tick is scaled by
