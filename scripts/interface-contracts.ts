@@ -1817,6 +1817,29 @@ export const CONTRACTS: readonly Contract[] = [
     ],
   },
   {
+    id: 'gods-will-premonition-steers-next-decision',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'What the god pays for in God\'s Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper\'s `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter.',
+    ulTerms: ['Agent', 'Encounter'],
+    // The payment writes the held compulsion onto the mortal; the decision reads it,
+    // flags the entry (`compelledTarget`, read by the cap and breath stages) and folds
+    // the whisper pull into the board (`whisperPull`). Pure helpers: premonitionSteer.ts.
+    mechanism: { kind: 'node-prop', symbols: ['compulsionTargetTemplateId', 'whisperPull', 'compelledTarget'] },
+    writeSites: ['src/engine/premonitionActions.ts'],
+    readSites: [
+      'src/engine/phaseAgentDecision.ts',
+      'src/engine/decisionBoard.ts',
+      'src/engine/encounterFilterPipeline.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-09',
+      evidence:
+        'Playwright at 1920×1080 on ?view=game&seeded&size=medium (worktree Vite): forcePremonition(The First, whisper), paid "Seek the path of Gold" → toast "Kael Thornweaver is subtly drawn toward Seek the path of Gold"; after tick(1) the decision_board_comparison trace\'s top three entries were all Gold encounters carrying whisperPull 1.596. premonitionSteer.integration.test.ts (seed 42, generated world): a compulsion paid mid-chapter is held past the old 3-tick window and taken at the next decision (motiveReceipt.templateId = the paid template).',
+    },
+  },
+  {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',

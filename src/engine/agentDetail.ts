@@ -41,6 +41,8 @@ import { getOriginVignetteById } from '../data/origin-vignettes';
 import { getAxisByReach, getAxisById } from '../types/axisRegistry';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
+import { isWhisperHeld } from './premonitionSteer';
+import { WHISPER_HOLD_MAX_TICKS } from '../data/premonition-constants';
 import { durationLabel } from './aftermathWords';
 import { getFirstMarkDisplay, type FirstMarkDisplay } from './firstMark';
 import type { RiteHistoryEntry } from './threadingRite';
@@ -1865,6 +1867,24 @@ export function getAgentInfoCard(
   const activeEffects: ActiveEffect[] = [];
 
   for (const influence of divineInfluences) {
+    // THR-1781: a paid whisper waiting for its first decision has not started
+    // fading — show it at full strength, with the time left in its hold.
+    if (isWhisperHeld(influence, tick)) {
+      const heldRemaining = Math.max(0, influence.tickApplied + WHISPER_HOLD_MAX_TICKS - tick);
+      const heldHover = influenceChipHover(influence, durationLabel(heldRemaining));
+      activeEffects.push({
+        type: influence.interventionType,
+        label: influenceChipNoun(influence.interventionType)
+          ?? INTERVENTION_LABELS[influence.interventionType]
+          ?? influence.interventionType,
+        sphere: influence.sphere,
+        strength: influence.initialStrength,
+        ticksRemaining: heldRemaining,
+        ...(heldHover ? { hover: heldHover } : {}),
+      });
+      continue;
+    }
+    if (influence.awaitingFirstRead === true) continue; // lapsed unread — don't show
     const strength = getCurrentStrength({
       initialStrength: influence.initialStrength,
       decayRate: influence.decayRate,

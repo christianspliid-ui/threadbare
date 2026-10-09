@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { flushSync } from 'react-dom';
-import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
+import { SPHERE_NAMES, type CosmologyProfile, type SphereName } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { resumeMusic as resumeTheme, getMusicVolume, setMusicVolume, isMusicMuted, toggleMusicMute } from '../../audio/MusicChannel';
 import { getBackgroundVolume, setBackgroundVolume, isBackgroundMuted, muteBackground, unmuteBackground } from '../../audio/BackgroundChannel';
@@ -1426,6 +1426,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return ready ?? null;
   }, [gameState.premonitionQueue, gameState.tick]);
 
+  // THR-1781 — a paid steer is confirmed on the spot, naming what was bought; the
+  // outcome of a compulsion follows later as its own toast from the decision phase.
+  const pushSteerToast = useCallback((
+    result: { success: boolean; message: string },
+    sphere: SphereName,
+    agentId: string,
+  ) => {
+    handlePushToast({
+      id: `toast_premonition_steer_${Date.now()}`,
+      message: result.message,
+      sphere,
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + 5000,
+      ...(result.success ? { actorId: agentId } : {}),
+    });
+  }, [handlePushToast, gameState.tick]);
+
   const handleWhisperChoice = useCallback((nudge: WhisperNudge) => {
     if (!activePremonition) return;
     // THR-1713 — the whisper charges the pool in place; diff it by value so the
@@ -1434,6 +1452,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const result = applyWhisperChoice(
       gameState, activePremonition.agentId, activePremonition.agentName, nudge,
     );
+    pushSteerToast(result, nudge.sphere, activePremonition.agentId);
     // Remove from queue
     const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
     setGameState(prev => ({
@@ -1441,7 +1460,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       premonitionQueue: remaining,
       essenceMovement: recordEssenceMovement(prev.essenceMovement, poolBefore, prev.essencePool, 'premonition', prev.tick),
     }));
-  }, [activePremonition, gameState]);
+  }, [activePremonition, gameState, pushSteerToast]);
 
   const handleCompulsionChoice = useCallback((candidate: CompulsionCandidate) => {
     if (!activePremonition) return;
@@ -1449,6 +1468,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const result = applyCompulsionChoice(
       gameState, activePremonition.agentId, activePremonition.agentName, candidate,
     );
+    pushSteerToast(result, candidate.sphere, activePremonition.agentId);
     // Remove from queue
     const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
     setGameState(prev => ({
@@ -1456,7 +1476,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       premonitionQueue: remaining,
       essenceMovement: recordEssenceMovement(prev.essenceMovement, poolBefore, prev.essencePool, 'premonition', prev.tick),
     }));
-  }, [activePremonition, gameState]);
+  }, [activePremonition, gameState, pushSteerToast]);
 
   const handlePremonitionDismiss = useCallback(() => {
     if (!activePremonition) return;

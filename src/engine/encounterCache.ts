@@ -144,6 +144,13 @@ export interface EncounterCacheEntry {
    */
   journeyGoal?: boolean;
   /**
+   * THR-1781 — true on the cache entry a paid God's Will compulsion names, set per
+   * decision by `phaseAgentDecision` on a copy of the shared entry. Survives the story
+   * breath and claims a slot at the cap stage, so the steer the player paid for reaches
+   * the board. Optional and falsy by default.
+   */
+  compelledTarget?: boolean;
+  /**
    * THR-1640 — on a guild **join** entry only: the mortal's fit for that guild, the
    * mean reach share (0–1) over the guild's primary reaches, computed per agent by
    * `generateFactionLifecycleCandidates`. `scoreAndSelect` adds

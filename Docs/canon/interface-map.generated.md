@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 164 |
+| 🟢 LIVE | 165 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 62 |
-| **Total** | **234** |
+| **Total** | **235** |
 
 ## Contracts by producing subsystem
 
@@ -254,6 +254,7 @@ remediation ticket or the build fails.
 | `active-influences-render-on-sheet` | What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen. | node-prop: `divineInfluences`, `activeEffects`, `ActiveEffectChips` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
+| `gods-will-premonition-steers-next-decision` | What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter. | node-prop: `compulsionTargetTemplateId`, `whisperPull`, `compelledTarget` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `source-upkeep-debits-primary-pool` | Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar's income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer. | node-prop: `upkeepCurrent`, `SOURCE_CONTROL_SUSTAIN` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
@@ -499,10 +500,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Appointment*, *Encounter*
 - **Module:** `src/engine/appointments.ts`
-- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/appointments.ts`, `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`
-- **Other hits:** `src/data/movement-content.ts`, `src/engine/encounterScoring.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/movement-content.ts`, `src/engine/encounterScoring.ts`, `src/engine/premonitionSteer.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-10-03: THR-1686. `leadSurveyKeptVisit.test.ts`: the leaning rerank stamps `appointmentDiscount = APPOINTMENT_OVERRUN_DISCOUNT` on an overrunning candidate only, and a board entry carrying it scores exactly valuePerTick × discount and loses to an undiscounted rival it would otherwise beat. Census `readers/lead-survey-arms.ts` (medium, 300 ticks, output/lead-survey-arms-2026-10-03-thr1686.json): the discount reached `decision_board_comparison.boardTop` on 3 decisions on seed 99 and on seeds 1, 2, 3 and 7 (1 · 1 · 3 · 3), and on seeds 42 · 99 · 4 · 8 arms p12 (part 3 off) vs all (on) kept 6 vs 7 visits — the discount does not lower kept visits (the plan’s keep condition).
 
 ### `appointment-pulls-agent-movement` — 🟢 LIVE
@@ -1688,6 +1689,17 @@ exit
 - **Write sites:** `src/data/intention-reading-constants.ts`, `src/engine/intentionReading.ts`, `src/types/agentKnowledge.ts`
 - **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/tabs/ChronicleTab.tsx`, `src/components/Game/tabs/JourneyTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +1 more
 - **Verdict:** Verified 2026-09-07: THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).
+
+### `gods-will-premonition-steers-next-decision` — 🟢 LIVE
+
+- **Intent:** What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter.
+- **Producer → Consumer:** Essence & Divine Economy → Encounters & Dilemmas
+- **UL terms:** *Agent*, *Encounter*
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Write sites:** `src/engine/premonitionActions.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/engine/encounterCache.ts`, `src/engine/encounterScoring.ts`, `src/engine/premonitionSteer.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-10-09: Playwright at 1920×1080 on ?view=game&seeded&size=medium (worktree Vite): forcePremonition(The First, whisper), paid "Seek the path of Gold" → toast "Kael Thornweaver is subtly drawn toward Seek the path of Gold"; after tick(1) the decision_board_comparison trace's top three entries were all Gold encounters carrying whisperPull 1.596. premonitionSteer.integration.test.ts (seed 42, generated world): a compulsion paid mid-chapter is held past the old 3-tick window and taken at the next decision (motiveReceipt.templateId = the paid template).
 
 ### `grievance-opens-hunt-door` — 🔵 UNVERIFIED-OK
 

@@ -95,6 +95,9 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
 import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
+import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
+import { getDivineInfluences } from './interventionEffects';
+import type { CompulsionOutcomeTrace } from '../types/trace';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
@@ -923,6 +926,26 @@ export function phaseAgentDecision(
         }
       }
 
+      // THR-1781: a held compulsion flags its target the same way (on a copy), so the
+      // story breath and the cap keep it for the decision that spends the steer.
+      // Prefer the paid instance; else any instance of the template in reach.
+      const compelledId = actor.properties?.compulsionTargetTemplateId as string | undefined;
+      if (compelledId) {
+        const compelledLoc = actor.properties?.compulsionTargetLocationId as string | undefined;
+        let idx = -1;
+        for (let i = 0; i < mergedEntries.length; i++) {
+          const e = mergedEntries[i];
+          if (e.templateId !== compelledId) continue;
+          if (idx < 0) idx = i;
+          if (e.locationId === compelledLoc) { idx = i; break; }
+        }
+        if (idx >= 0) {
+          const flagged = mergedEntries.slice();
+          flagged[idx] = { ...mergedEntries[idx], compelledTarget: true };
+          mergedEntries = flagged;
+        }
+      }
+
       // Run filter pipeline (hex-distance awareness with edge hex bonus)
       const filterResult = runFilterPipeline(
         mergedEntries,
@@ -1014,6 +1037,47 @@ export function phaseAgentDecision(
 
       // Emit scoring trace
       emitTrace(decision.trace as TraceEntry);
+
+      // ── THR-1781: a paid whisper leans the decision ──────────────────
+      // Whispers write `whisper_*` influences; until now nothing read them. The
+      // pull rides on each matching candidate as `whisperPull` (the live board
+      // multiplies it in) and scales `finalScore` for the legacy pick.
+      // A whisper is held until this, the mortal's next full decision: its pull
+      // runs from here, and one that waited past WHISPER_HOLD_MAX_TICKS lapses
+      // with a toast rather than fading unseen. Entries are mutated in place (the
+      // node's own array), so a later `...actor.properties` spread keeps them.
+      try {
+        const whisperInfluences = getDivineInfluences(graph, agentId);
+        const held = anchorHeldWhispers(whisperInfluences, state.tick);
+        if (runtime && (held.anchored > 0 || held.lapsed.length > 0)) touchWorld(runtime);
+        for (const lapsed of held.lapsed) {
+          const message = whisperLapseMessage(actor.name);
+          emitTrace({
+            category: 'divine_premonition',
+            subtype: 'whisper_outcome',
+            tick: state.tick,
+            agentId,
+            agentName: actor.name,
+            behaviorTag: lapsed.behaviorTag ?? '',
+            outcome: 'lapsed_expired',
+            heldTicks: state.tick - lapsed.tickApplied,
+            summary: message,
+          });
+          newEvents.push({
+            id: `divine_whisper_lapse_${agentId}_${lapsed.id}`,
+            tick: state.tick,
+            type: 'divine_premonition',
+            message,
+            significance: 0.5,
+            isInterventionBeat: true,
+            actorId: agentId,
+            notification: { channel: 'toast' },
+          });
+        }
+        applyWhisperPull(decision, whisperInfluences, state.tick, IDLE_SCORE_THRESHOLD);
+      } catch {
+        // Fail-soft: the whisper is a lean, never a reason to drop the decision.
+      }
 
       // ── THR-1639: a journey keeps its goal on arrival ─────────────────
       // A finished journey (empty queue) that still names the encounter it was
@@ -1349,6 +1413,7 @@ export function phaseAgentDecision(
               ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
+              ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
             })),
             agreement,
             boardFamily,
@@ -1455,8 +1520,18 @@ export function phaseAgentDecision(
               compulsionActor, state.tick, state.premonitionQueue ?? [], newPremonitions,
             )
           ) {
+            // THR-1781: never offer the encounter the mortal is about to start. By
+            // the time a held steer is spent that encounter is on cooldown, so paying
+            // for it could only lapse — and it is not a steer at all. This check runs
+            // before the Compulsion Override below, so the encounter about to start is
+            // the board's pick *or* the held steer the override is about to take.
+            const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
             const compulsionEvent = buildCompulsionEvent(
-              state, agentId, actor.name, decision.topCandidates, rng,
+              state, agentId, actor.name,
+              decision.topCandidates.filter(c =>
+                c.entry.templateId !== decision.selected?.entry.templateId
+                && c.entry.templateId !== heldTargetId),
+              rng,
             );
             if (compulsionEvent) {
               newPremonitions.push(compulsionEvent);
@@ -1478,26 +1553,76 @@ export function phaseAgentDecision(
       }
 
       // ── Compulsion Override ────────────────────────────────────────
-      // If the player previously chose a compulsion target, override the selection.
+      // THR-1781: a paid compulsion is held on the mortal until this, its next full
+      // decision — the mortal is usually mid-chapter when the player pays, and the old
+      // three-tick window spent itself while the chapter ran. It is taken from the
+      // board's five, or pulled up from the full ranked list; otherwise it lapses
+      // with a reason. Either way the player hears how it ended.
+      //
+      // A god's compulsion overrides the decision family too: an undertaking or an
+      // idle board would otherwise swallow the steer the player paid for.
       const compulsionTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
-      const compulsionTick = (actor.properties?.compulsionTick as number | undefined) ?? 0;
       // THR-1578: a god's compulsion is not the mortal's free choice — the
       // engagement gauge keeps it out of the per-band success invariant.
       let compulsionOverrode = false;
-      if (decision.selected && compulsionTargetId && (state.tick - compulsionTick) <= 3) {
-        // Find the compulsion target in candidates
-        const compulsionCandidate = decision.topCandidates.find(
-          c => c.entry.templateId === compulsionTargetId,
-        );
-        if (compulsionCandidate) {
-          decision.selected = compulsionCandidate;
-          compulsionOverrode = true;
+      if (compulsionTargetId) {
+        try {
+          const compulsionTick = (actor.properties?.compulsionTick as number | undefined) ?? state.tick;
+          const targetLocationId = actor.properties?.compulsionTargetLocationId as string | undefined;
+          const targetName = (actor.properties?.compulsionTargetName as string | undefined) ?? compulsionTargetId;
+          const resolution = resolveCompulsion(
+            decision, compulsionTargetId, targetLocationId, compulsionTick, state.tick,
+          );
+          if (resolution.kind === 'taken') {
+            decision.selected = resolution.candidate;
+            compulsionOverrode = true;
+            strategicWinner = null;
+            decisionFamily = 'encounter';
+          }
+          const message = compulsionOutcomeMessage(actor.name, targetName, resolution);
+          if (message) {
+            const outcome: CompulsionOutcomeTrace['outcome'] = resolution.kind === 'taken'
+              ? 'taken'
+              : resolution.kind === 'lapsed' && resolution.reason === 'expired'
+                ? 'lapsed_expired'
+                : 'lapsed_unavailable';
+            emitTrace({
+              category: 'divine_premonition',
+              subtype: 'compulsion_outcome',
+              tick: state.tick,
+              agentId,
+              agentName: actor.name,
+              templateId: compulsionTargetId,
+              outcome,
+              heldTicks: state.tick - compulsionTick,
+              summary: message,
+            });
+            newEvents.push({
+              id: `divine_steer_${agentId}_${state.tick}`,
+              tick: state.tick,
+              type: 'divine_premonition',
+              message,
+              significance: 0.6,
+              isInterventionBeat: true,
+              actorId: agentId,
+              notification: { channel: 'toast' },
+            });
+          }
+        } catch {
+          // Fail-soft: a broken steer never blocks the decision.
         }
-        // Clear the compulsion target — direct property write, not spread.
+        // Clear the held compulsion — direct property write, not spread. Clear the
+        // loop's `actor` snapshot too: a same-tick `updateNode` (appointment regime,
+        // residence arrival) replaces the node object, and later writes in this
+        // iteration spread `...actor.properties` back — which would restore the
+        // steer and, within its 72-tick hold, resolve it a second time.
         const freshForClear = graph.getNode(agentId);
-        if (freshForClear) {
-          freshForClear.properties.compulsionTargetTemplateId = undefined;
-          freshForClear.properties.compulsionTick = undefined;
+        for (const handle of [freshForClear, actor]) {
+          if (!handle) continue;
+          handle.properties.compulsionTargetTemplateId = undefined;
+          handle.properties.compulsionTick = undefined;
+          handle.properties.compulsionTargetLocationId = undefined;
+          handle.properties.compulsionTargetName = undefined;
         }
       }
 

@@ -118,6 +118,10 @@ export function applyWhisperChoice(
       break;
   }
 
+  // THR-1781: a board-pulling whisper waits for the mortal's next full decision
+  // (`anchorHeldWhispers`); ambition drift is read by ambitionTick, not the board.
+  if (nudge.category !== 'ambition_drift') influence.awaitingFirstRead = true;
+
   addDivineInfluence(graph, agentId, influence);
 
   // Emit trace
@@ -197,6 +201,9 @@ export function applyCompulsionChoice(
         ...agentNode.properties,
         compulsionTargetTemplateId: candidate.templateId,
         compulsionTick: tick,
+        // THR-1781 — which instance and what to call it when the steer resolves.
+        compulsionTargetLocationId: candidate.locationId,
+        compulsionTargetName: candidate.encounterName,
       },
     });
   }
@@ -221,7 +228,8 @@ export function applyCompulsionChoice(
     success: true,
     influenceId,
     essenceSpent: candidate.essenceCost,
-    message: `${agentName} is compelled toward ${candidate.encounterName}`,
+    // THR-1781 — names the steer and when it lands; the outcome follows as its own toast.
+    message: `${agentName} is compelled toward ${candidate.encounterName} — at their next free choice`,
   };
 }
 

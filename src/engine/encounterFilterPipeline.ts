@@ -634,7 +634,9 @@ export function filterByStoryBreath(
   // arrival sent The First 12 turns back the way she came — seed 42 went quiet
   // for 37 turns, past FIRST_ENCOUNTER_MAX_GAP_TICKS. The breath governs new
   // choices, not a walk already made.
-  return entries.filter(entry => entry.journeyGoal === true || isRoutineTemplate(entry.templateId));
+  // THR-1781: so does the encounter the god paid to compel — a will, not a whim.
+  return entries.filter(entry => entry.journeyGoal === true || entry.compelledTarget === true
+    || isRoutineTemplate(entry.templateId));
 }
 
 // ─── Stage 4: Threat tolerance ──────────────────────────────────
@@ -900,6 +902,22 @@ export function capWithDiversity(
       reservedKeys.add(key);
       needed--;
     }
+  }
+
+  // Phase 1e-bis: preserve the encounter a paid compulsion names (THR-1781).
+  //
+  // The popup is built from a board ten ticks old and the steer is spent at the next
+  // full decision, often after a chapter and a walk; the cap re-cuts ~1,700 eligible
+  // entries to 40 by position, and cut the paid target on the first measured run, so
+  // the steer lapsed as "unavailable" with the encounter still there. At most one
+  // entry is flagged. Scoring still runs; the compulsion override picks it.
+  for (const entry of entries) {
+    if (!entry.compelledTarget) continue;
+    const key = `${entry.templateId}:${entry.locationId}`;
+    if (reservedKeys.has(key)) break;
+    reserved.push(entry);
+    reservedKeys.add(key);
+    break;
   }
 
   // Phase 1f: preserve up to ANOMALY_SITE_CAP_RESERVE anomaly-place entries (THR-1641).

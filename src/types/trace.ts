@@ -3336,6 +3336,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     leadPull?: number;
     /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
     appointmentDiscount?: number;
+    /** THR-1781 — the pull of the god's live whispers on an encounter (already in `score`). */
+    whisperPull?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
@@ -4909,7 +4911,42 @@ export type TraceEntry =
   | MentorshipLessonTrace
   | MentorshipGraduatedTrace
   | MentorshipSurpassedTrace
-  | MentorshipSeveredTrace;
+  | MentorshipSeveredTrace
+  | CompulsionOutcomeTrace
+  | WhisperOutcomeTrace;
+
+/**
+ * Trace: a paid God's Will compulsion resolved at the mortal's next full decision
+ * (THR-1781) — taken, or lapsed with its reason. Emitted by `phaseAgentDecision`.
+ * The pay and dismiss moments are `PremonitionTrace` (src/types/premonition.ts).
+ */
+export interface CompulsionOutcomeTrace extends TraceBase {
+  category: 'divine_premonition';
+  subtype: 'compulsion_outcome';
+  agentId: string;
+  agentName: string;
+  /** The template the player paid to compel. */
+  templateId: string;
+  outcome: 'taken' | 'lapsed_expired' | 'lapsed_unavailable';
+  /** Ticks between the payment and this decision. */
+  heldTicks: number;
+}
+
+/**
+ * Trace: a paid whisper lapsed unread — the mortal reached no full decision within
+ * WHISPER_HOLD_MAX_TICKS of the payment (THR-1781). Emitted by `phaseAgentDecision`.
+ */
+export interface WhisperOutcomeTrace extends TraceBase {
+  category: 'divine_premonition';
+  subtype: 'whisper_outcome';
+  agentId: string;
+  agentName: string;
+  /** The whisper's `whisper_*` behavior tag. */
+  behaviorTag: string;
+  outcome: 'lapsed_expired';
+  /** Ticks between the payment and this decision. */
+  heldTicks: number;
+}
 
 /**
  * `Omit` that distributes over a union instead of collapsing it (THR-1065).

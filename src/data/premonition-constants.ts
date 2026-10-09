@@ -32,6 +32,15 @@ export const WHISPER_INFLUENCE_STRENGTH = 0.15;
  * @range 0.003–0.015 */
 export const WHISPER_INFLUENCE_DECAY_RATE = 0.006;
 
+/** THR-1781 — how hard a live Whisper pulls on the decision board. A matching
+ * encounter's board score is multiplied by `1 + WHISPER_PULL_SCALE × strength`,
+ * where strength is the influence's current decayed strength (WHISPER_INFLUENCE_STRENGTH
+ * at the click, easing by WHISPER_INFLUENCE_DECAY_RATE, and 0 once
+ * WHISPER_INFLUENCE_DURATION has passed). At the defaults a fresh
+ * whisper is a ×1.6 lean — felt, not forced; a Compulsion is the forced steer.
+ * @range 2–8 */
+export const WHISPER_PULL_SCALE = 4;
+
 /** Minimum nudge options per Whisper modal.
  * @range 2–3 */
 export const WHISPER_NUDGE_COUNT_MIN = 2;
@@ -63,6 +72,21 @@ export const COMPULSION_SCORE_BOOST = 5.0;
 /** Number of top candidates shown in Compulsion modal.
  * @range 3–5 */
 export const COMPULSION_CANDIDATE_COUNT = 4;
+
+/** THR-1781 — how long a paid Compulsion waits for the mortal's next real decision.
+ * The mortal is often mid-chapter when the player pays (the popup shows
+ * PREMONITION_DISPLAY_DELAY_TICKS after the decision it was built from), so the
+ * steer holds across the chapter and is spent at the next full decision. Past this
+ * many ticks it lapses, and the player is told. 72 ticks = 6 game days.
+ * @range 24–144 */
+export const COMPULSION_HOLD_MAX_TICKS = 72;
+
+/** THR-1781 — how long a paid Whisper waits for the mortal's next real decision.
+ * Its WHISPER_INFLUENCE_DURATION pull starts at that decision, not at the click, so
+ * a mortal mid-chapter still feels it. Past this many ticks unread it lapses and the
+ * player is told. Matches COMPULSION_HOLD_MAX_TICKS.
+ * @range 24–144 */
+export const WHISPER_HOLD_MAX_TICKS = 72;
 
 /** Ticks after a Compulsion is offered before the same agent may be offered another.
  * Counted from the tick the event is emitted, so it covers all three endings —
