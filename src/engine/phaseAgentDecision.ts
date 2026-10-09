@@ -1580,13 +1580,18 @@ export function phaseAgentDecision(
         } catch {
           // Fail-soft: a broken steer never blocks the decision.
         }
-        // Clear the held compulsion — direct property write, not spread.
+        // Clear the held compulsion — direct property write, not spread. Clear the
+        // loop's `actor` snapshot too: a same-tick `updateNode` (appointment regime,
+        // residence arrival) replaces the node object, and later writes in this
+        // iteration spread `...actor.properties` back — which would restore the
+        // steer and, within its 72-tick hold, resolve it a second time.
         const freshForClear = graph.getNode(agentId);
-        if (freshForClear) {
-          freshForClear.properties.compulsionTargetTemplateId = undefined;
-          freshForClear.properties.compulsionTick = undefined;
-          freshForClear.properties.compulsionTargetLocationId = undefined;
-          freshForClear.properties.compulsionTargetName = undefined;
+        for (const handle of [freshForClear, actor]) {
+          if (!handle) continue;
+          handle.properties.compulsionTargetTemplateId = undefined;
+          handle.properties.compulsionTick = undefined;
+          handle.properties.compulsionTargetLocationId = undefined;
+          handle.properties.compulsionTargetName = undefined;
         }
       }
 

@@ -183,4 +183,14 @@ describe('held compulsion (THR-1781)', () => {
     const r = resolveCompulsion(decision, 'enc.duel', 'loc_there', PAID_AT, PAID_AT + 1);
     expect(r.kind === 'taken' && r.candidate).toBe(there);
   });
+
+  it('pulls the paid instance up from the ranked list before taking the template elsewhere', () => {
+    const here = candidate('enc.duel', 'iron', 0.9);
+    const there = candidate('enc.duel', 'iron', 0.3, { locationId: 'loc_there' });
+    const decision = { rankedCandidates: [here, there], topCandidates: [here] };
+    const r = resolveCompulsion(decision, 'enc.duel', 'loc_there', PAID_AT, PAID_AT + 1);
+    expect(r).toMatchObject({ kind: 'taken', pulledFromRanked: true });
+    expect(r.kind === 'taken' && r.candidate).toBe(there);
+    expect(decision.topCandidates).toContain(there);
+  });
 });

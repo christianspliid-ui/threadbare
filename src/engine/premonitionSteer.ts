@@ -137,18 +137,26 @@ export function resolveCompulsion(
 ): CompulsionResolution {
   if (!targetTemplateId) return { kind: 'none' };
   if (tick - compulsionTick > COMPULSION_HOLD_MAX_TICKS) return { kind: 'lapsed', reason: 'expired' };
-  const find = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
-    (targetLocationId
+  const exact = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
+    targetLocationId
       ? list.find(c => c.entry.templateId === targetTemplateId && c.entry.locationId === targetLocationId)
-      : undefined)
-    ?? list.find(c => c.entry.templateId === targetTemplateId);
-  const onTop = find(decision.topCandidates);
-  if (onTop) return { kind: 'taken', candidate: onTop, pulledFromRanked: false };
-  const ranked = find(decision.rankedCandidates);
-  if (ranked) {
-    decision.topCandidates = [...decision.topCandidates, ranked];
-    return { kind: 'taken', candidate: ranked, pulledFromRanked: true };
-  }
+      : undefined;
+  const anyPlace = (list: readonly ScoredCandidate[]): ScoredCandidate | undefined =>
+    list.find(c => c.entry.templateId === targetTemplateId);
+  // The paid instance first — on the board, then pulled up from the ranked list —
+  // and only then the same template at another place.
+  const take = (candidate: ScoredCandidate, fromRanked: boolean): CompulsionResolution => {
+    if (fromRanked) decision.topCandidates = [...decision.topCandidates, candidate];
+    return { kind: 'taken', candidate, pulledFromRanked: fromRanked };
+  };
+  const exactTop = exact(decision.topCandidates);
+  if (exactTop) return take(exactTop, false);
+  const exactRanked = exact(decision.rankedCandidates);
+  if (exactRanked) return take(exactRanked, true);
+  const looseTop = anyPlace(decision.topCandidates);
+  if (looseTop) return take(looseTop, false);
+  const looseRanked = anyPlace(decision.rankedCandidates);
+  if (looseRanked) return take(looseRanked, true);
   return { kind: 'lapsed', reason: 'unavailable' };
 }
 
