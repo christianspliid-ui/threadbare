@@ -28,6 +28,12 @@ export interface InterruptSnapshot {
   /** `meetingState !== null` — the flow mounts only with an ascendant identity too. */
   meetingPending: boolean;
   hasAscendantIdentity: boolean;
+  /**
+   * A threading rite is pending (`GameState.pendingThreadingRite`, THR-1754) and
+   * the rite can mount (it needs the god's identity for the bond's voice).
+   * Optional: absent = false.
+   */
+  threadingRitePending?: boolean;
   premonitionPending: boolean;
   vignettePending: boolean;
   storyBeatPending: boolean;
@@ -65,6 +71,14 @@ export interface InterruptSurface {
  */
 const YIELDING_SURFACE_IDS = new Set(['MomentCard', 'EventPopup']);
 
+/**
+ * The Rite of the Thread waits its turn too (THR-1754): a thread can land in the
+ * same tick an encounter or a beat opens, and the rite must never render under
+ * them. It renders once every other blocking surface is closed — and, once
+ * rendering, it holds the moment card and the popup behind it like any other.
+ */
+const THREADING_RITE_ID = 'ThreadingRite';
+
 /** Every surface that stops the world, in render-priority order. */
 export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   // The warm start holds the slot while it advances the world, so nothing else opens
@@ -72,6 +86,10 @@ export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   { id: 'WarmStartOverlay', tier: 'interrupt', isOpen: s => s.warmStartRunning === true },
   { id: 'EncounterVeil', tier: 'interrupt', isOpen: s => s.encounterOpen },
   { id: 'MeetTheFirstFlow', tier: 'interrupt', isOpen: s => s.meetingPending && s.hasAscendantIdentity },
+  // The Rite of the Thread (THR-1754): every thread the god binds plays one. Its
+  // `isOpen` is the wish; `resolveInterrupts` holds it behind every other blocking
+  // surface (the meeting, the first and richest rite of all, included).
+  { id: THREADING_RITE_ID, tier: 'interrupt', isOpen: s => s.threadingRitePending === true },
   { id: 'PremonitionModal', tier: 'interrupt', isOpen: s => s.premonitionPending && !s.interruptsSuppressed },
   { id: 'JourneyVignetteModal', tier: 'interrupt', isOpen: s => s.vignettePending && !s.interruptsSuppressed },
   { id: 'StoryBeatModal', tier: 'interrupt', isOpen: s => s.storyBeatPending && !s.interruptsSuppressed },
@@ -132,13 +150,17 @@ export function resolveInterrupts(
   const open: string[] = [];
   let momentWish = false;
   let popupWish = false;
+  let riteWish = false;
   for (const surface of surfaces) {
     const wish = safeIsOpen(surface, snapshot);
     if (!wish) continue;
     if (surface.id === 'MomentCard') momentWish = true;
     else if (surface.id === 'EventPopup') popupWish = true;
+    else if (surface.id === THREADING_RITE_ID) riteWish = true;
     else if (!YIELDING_SURFACE_IDS.has(surface.id)) open.push(surface.id);
   }
+  const riteMayRender = riteWish && open.length === 0;
+  if (riteMayRender) open.push(THREADING_RITE_ID);
   const blockingOpen = open.length > 0;
   const momentMayRender = momentWish && !blockingOpen;
   const popupMayRender = popupWish && !blockingOpen && !momentWish;

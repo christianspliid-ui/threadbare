@@ -205,6 +205,9 @@ import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../e
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { bondFirstFromMeeting } from './meetingBond';
+import { ThreadingRite } from '../ThreadingRite/ThreadingRite';
+import { closeThreadingRite, isRiteAgentMissing, type RiteClose } from '../../engine/threadingRiteQueue';
+import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { resolveInterrupts } from './interruptRegistry';
@@ -4457,7 +4460,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             id: `evt_meet_first_${prev.tick}_${Date.now()}`,
             tick: prev.tick,
             type: 'narrative' as const,
-            message: `The thread of fate is woven. ${result.name} has been claimed as The First.`,
+            message: firstClaimedMessage(result.name),
             significance: 1.0,
             sphere: archetype.sphereAlignment.primary,
           },
@@ -4471,6 +4474,51 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // once all interrupt surfaces are closed.
     setMeetingState(null);
   }, []);
+
+  // ── The Rite of the Thread (THR-1754) ──
+  // The engine queued the rite when the thread was written; the surface gathers
+  // the hand and `closeThreadingRite` lands it through the one writer, then
+  // promotes the next queued rite. The rite writes the graph in place (poles,
+  // reception, the First's mark), so it touches the runtime itself (THR-1704).
+  //
+  // The graph write runs here, never inside the state updater: React may run an
+  // updater twice (StrictMode), and the writer must land a rite exactly once.
+  const closedRiteKeyRef = useRef<string | null>(null);
+  const closeRite = useCallback((close: RiteClose) => {
+    const open = _gameStateRef.current.pendingThreadingRite;
+    if (!open) return;
+    // A second click before the state lands must not close the same rite twice.
+    const key = `${open.agentId}_${open.tick}`;
+    if (closedRiteKeyRef.current === key) return;
+    closedRiteKeyRef.current = key;
+    const closed = closeThreadingRite(_gameStateRef.current, close);
+    if (!closed.result) return;
+    touchStructure(runtime);
+    setGameState(prev => ({
+      ...prev,
+      pendingThreadingRite: closed.pendingThreadingRite,
+      pendingThreadingRiteQueue: closed.pendingThreadingRiteQueue,
+      recentEvents: closed.event ? [...prev.recentEvents.slice(-99), closed.event] : prev.recentEvents,
+    }));
+  }, [setGameState, runtime]);
+  const handleRiteComplete = useCallback((close: Extract<RiteClose, { kind: 'played' }>) => closeRite(close), [closeRite]);
+  const handleRiteWithoutHand = useCallback(() => closeRite({ kind: 'no_hand', reason: 'dismissed' }), [closeRite]);
+
+  // This session can open a rite, so the drain queues rites for it rather than
+  // resolving them at once (a headless run never sets this).
+  useEffect(() => {
+    setGameState(prev => (prev.riteSurfaceMounted ? prev : { ...prev, riteSurfaceMounted: true }));
+  }, [setGameState]);
+
+  // Fail-soft: a mortal who died or vanished before the rite opened gets no rite —
+  // the chronicle says the thread reached them too late (plan § Fail-soft).
+  const pendingRite = gameState.pendingThreadingRite ?? null;
+  useEffect(() => {
+    if (pendingRite && isRiteAgentMissing(gameState.graph, pendingRite)) {
+      closeRite({ kind: 'no_hand', reason: 'agent_missing' });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRite, gameState.tick]);
 
   // ── Meet The First as action card slot ──
   const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
@@ -4801,6 +4849,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     encounterOpen: tieredEncounterState !== null,
     meetingPending: meetingState !== null,
     hasAscendantIdentity: !!ascendantIdentity,
+    threadingRitePending: pendingRite !== null && !isRiteAgentMissing(gameState.graph, pendingRite),
     premonitionPending: activePremonition !== null,
     vignettePending: activeVignette !== null,
     storyBeatPending: !!activeStoryBeatId && !!activeStoryBeatTemplate,
@@ -6189,6 +6238,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onSpendEssence={handleMeetingSpendEssence}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
+        />
+      )}
+
+      {/* The Rite of the Thread — every thread the god binds (THR-1754). Keyed on
+          the rite so the next queued rite mounts fresh. */}
+      {pendingRite && interruptResolution.open.includes('ThreadingRite') && (
+        <ThreadingRite
+          key={`${pendingRite.agentId}_${pendingRite.tick}`}
+          graph={gameState.graph}
+          rite={pendingRite}
+          worldSeed={gameState.seed}
+          primarySphere={archetype.sphereAlignment.primary}
+          hungerId={(ascendantIdentity?.hungerId ?? '') as import('../../types/hunger').StoredHungerId}
+          essencePool={gameState.essencePool}
+          onSpendEssence={handleMeetingSpendEssence}
+          onComplete={handleRiteComplete}
+          onBondWithoutHand={handleRiteWithoutHand}
         />
       )}
 

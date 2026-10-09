@@ -20,13 +20,35 @@
  */
 
 import type { WorldGraph } from './graph';
-import type { GameState } from '../types/gameState';
-import { resolveBondTest } from './meetingEncounter';
+import type { GameState, TickEvent } from '../types/gameState';
+import type { BondOutcome, BondTest, DilemmaInstance, FormativeOutcome, FormativeTest } from '../types/meetingEncounter';
+import type { ReachDomain } from '../types/traits';
+import { REACH_VALUE_PAIR } from '../types/agent';
+import type { BondReception } from '../data/meeting-nudge-constants';
+import { resolveBondTest, selectDilemmasScored } from './meetingEncounter';
 import { MEETING_BOND_TEST } from '../data/meeting-bond-test';
-import { RITE_QUEUE_MAX, RITE_SURFACE_ENABLED } from '../data/threading-rite-constants';
+import { ENRICHED_DILEMMA_LIBRARY } from '../data/meeting-dilemma-library';
+import {
+  RITE_BOND_ONLY_HAND_SIZE,
+  RITE_EXISTING_MORTAL_SHIFT_SCALE,
+  RITE_FULL_TEST_COUNT_CARD_ROUTE,
+  RITE_QUEUE_MAX,
+  RITE_SHORT_TEST_COUNT,
+  RITE_SURFACE_ENABLED,
+} from '../data/threading-rite-constants';
+import {
+  RITE_BOND_GOD_VOICE,
+  firstClaimedMessage,
+  riteChronicleLine,
+  riteChronicleMissingLine,
+  riteChronicleNoHandLine,
+  riteChronicleOverflowLine,
+} from '../data/threading-rite-prose';
 import {
   applyThreadingRite,
+  candidateFromAgent,
   threadsBoundCount,
+  type RiteShape,
   type ApplyRiteResult,
   type LastRiteRecord,
   type PendingThreadingRite,
@@ -140,28 +162,278 @@ export function queueThreadingRite(
  * Orchestrator phase 2a.15 — drain the markers the tick's thread writes left.
  * Returns the state unchanged (same reference) when nothing was pending.
  */
-export function drainThreadingRites(state: GameState, surfaceEnabled = RITE_SURFACE_ENABLED): GameState {
+export function drainThreadingRites(
+  state: GameState,
+  // A rite waits only where a surface can open it: the switch is on AND this
+  // session mounted one. The CLI and headless runs resolve at once, no hand.
+  surfaceEnabled = RITE_SURFACE_ENABLED && state.riteSurfaceMounted === true,
+): GameState {
   const rites = collectPendingRites(state.graph, state.ascendantId);
   if (rites.length === 0) return state;
   let next: GameState = state;
+  const events: TickEvent[] = [];
   for (const rite of rites) {
+    const pending = next.pendingThreadingRite ?? null;
+    const queued = next.pendingThreadingRiteQueue ?? [];
+    // Mirrors `queueThreadingRite`'s branches: these two resolve on the spot,
+    // so the chronicle has to say so — the player never saw a rite for them.
+    const resolvedNow = !surfaceEnabled || (pending !== null && queued.length >= RITE_QUEUE_MAX);
     next = { ...next, ...queueThreadingRite(next, rite, surfaceEnabled) };
+    const name = agentName(next.graph, rite.agentId);
+    // D3 — the card route names a First: the meeting's own event, word for word.
+    if (rite.shape === 'full_no_sensing') {
+      events.push(riteChronicleEvent(rite, firstClaimedMessage(name), 'first', 1.0));
+    }
+    if (resolvedNow) {
+      const reception = receptionOf(next.graph, next.ascendantId, rite.agentId);
+      if (reception) {
+        const message = surfaceEnabled
+          ? riteChronicleOverflowLine(name, reception)
+          : riteChronicleNoHandLine(name, reception);
+        events.push(riteChronicleEvent(rite, message, 'auto'));
+      }
+    }
   }
-  return next;
+  if (events.length === 0) return next;
+  return { ...next, recentEvents: [...(next.recentEvents ?? []).slice(-(100 - events.length)), ...events] };
+}
+
+// ─── Closing a rite (S2 — THR-1754) ───────────────────────────────
+
+/** How the open rite ended. */
+export type RiteClose =
+  | {
+      /** The player played it through: tests (maybe none), then the bond hand. */
+      readonly kind: 'played';
+      readonly formativeOutcomes: readonly FormativeOutcome[];
+      readonly bondOutcome: BondOutcome;
+      /** The spark the player chose — a card-route First's rite only. */
+      readonly spark?: { readonly reach: ReachDomain; readonly amount: number };
+      /** The shape actually played, when the plan degraded it (`planThreadingRite`). */
+      readonly shape?: RiteShape;
+      /**
+       * `false` when the player reached the bond and chose *Bond without a hand*:
+       * the tests and spark stand, but the bond rolled with no cards (D6), so the
+       * trace and chronicle must say no hand was played. Absent = played.
+       */
+      readonly handPlayed?: boolean;
+    }
+  | {
+      /** *Bond without a hand* / Escape (`dismissed`), or the mortal is gone (`agent_missing`). */
+      readonly kind: 'no_hand';
+      readonly reason: 'dismissed' | 'agent_missing';
+    };
+
+export interface RiteCloseResult extends Pick<GameState, 'pendingThreadingRite' | 'pendingThreadingRiteQueue'> {
+  /** What the one writer did; `null` when nothing was pending. */
+  readonly result: ApplyRiteResult | null;
+  /** The rite's one chronicle line (PC-5: one fact told once); `null` when nothing was pending. */
+  readonly event: TickEvent | null;
+}
+
+/**
+ * Close the open rite and promote the next queued one. Every path lands through
+ * the one writer (D1): a played rite with the hand's outcomes at
+ * `RITE_EXISTING_MORTAL_SHIFT_SCALE`, a waved-through one with the seeded no-hand
+ * bond. A no-op when nothing is pending.
+ */
+export function closeThreadingRite(
+  state: Pick<GameState, 'graph' | 'seed' | 'pendingThreadingRite' | 'pendingThreadingRiteQueue'>,
+  close: RiteClose,
+): RiteCloseResult {
+  const pending = state.pendingThreadingRite ?? null;
+  const queue = state.pendingThreadingRiteQueue ?? [];
+  if (pending === null) {
+    return { pendingThreadingRite: null, pendingThreadingRiteQueue: [...queue], result: null, event: null };
+  }
+
+  const name = agentName(state.graph, pending.agentId);
+  let result: ApplyRiteResult;
+  let message: string;
+  if (close.kind === 'played') {
+    const handPlayed = close.handPlayed !== false;
+    result = applyThreadingRite(state.graph, {
+      agentId: pending.agentId,
+      ascendantId: pending.ascendantId,
+      tick: pending.tick,
+      shape: close.shape ?? pending.shape,
+      ordinal: pending.ordinal,
+      viaMeeting: false,
+      formativeOutcomes: close.formativeOutcomes,
+      bondOutcome: close.bondOutcome,
+      ...(close.spark ? { spark: close.spark, markReach: close.spark.reach } : {}),
+      shiftScale: RITE_EXISTING_MORTAL_SHIFT_SCALE,
+      handPlayed,
+      ...(handPlayed ? {} : { fallbackReason: 'dismissed' as const }),
+    });
+    message = !result.applied
+      ? riteChronicleMissingLine(name)
+      : handPlayed
+        ? riteChronicleLine(name, close.bondOutcome.reception)
+        : riteChronicleNoHandLine(name, close.bondOutcome.reception);
+  } else {
+    result = resolveRiteWithoutHand(state.graph, pending, close.reason, state.seed);
+    message = result.applied && result.reception
+      ? riteChronicleNoHandLine(name, result.reception)
+      : riteChronicleMissingLine(name);
+  }
+
+  const [nextUp = null, ...rest] = queue;
+  return {
+    pendingThreadingRite: nextUp,
+    pendingThreadingRiteQueue: rest,
+    result,
+    event: riteChronicleEvent(pending, message, 'close'),
+  };
 }
 
 /**
  * Dismiss the open rite (D6 — the player waved it through, or the surface
  * closed): resolve it without a hand and promote the next queued rite.
- * A no-op when nothing is pending.
+ * A no-op when nothing is pending. `closeThreadingRite` is the same path with
+ * the chronicle line attached.
  */
 export function dismissThreadingRite(state: GameState): Pick<GameState, 'pendingThreadingRite' | 'pendingThreadingRiteQueue'> {
-  const pending = state.pendingThreadingRite ?? null;
-  const queue = state.pendingThreadingRiteQueue ?? [];
-  if (pending === null) return { pendingThreadingRite: null, pendingThreadingRiteQueue: queue };
-  resolveRiteWithoutHand(state.graph, pending, 'dismissed', state.seed);
-  const [nextUp = null, ...rest] = queue;
-  return { pendingThreadingRite: nextUp, pendingThreadingRiteQueue: rest };
+  const { pendingThreadingRite, pendingThreadingRiteQueue } = closeThreadingRite(state, { kind: 'no_hand', reason: 'dismissed' });
+  return { pendingThreadingRite, pendingThreadingRiteQueue };
+}
+
+/** True when the pending rite's mortal is dead or gone — the surface resolves it as `agent_missing`. */
+export function isRiteAgentMissing(graph: WorldGraph, rite: PendingThreadingRite): boolean {
+  const props = graph.getNode(rite.agentId)?.properties;
+  return !props || props.deceased === true || props.status === 'dead';
+}
+
+// ─── Planning the rite on screen (S2) ─────────────────────────────
+
+/** A converted meeting test the rite plays, in the shape `FormativeTestBeat` takes. */
+export interface RiteTestPick {
+  readonly instance: DilemmaInstance;
+  readonly test: FormativeTest;
+}
+
+export interface RitePlan {
+  /** The shape the surface plays — `short` degrades to `bond_only` when no test fits. */
+  readonly shape: RiteShape;
+  readonly tests: readonly RiteTestPick[];
+  /** True when the short rite found no test for the mortal's primary reach. */
+  readonly degraded: boolean;
+  /** Base seed for the rite's rolls: tests `seed + i`, the bond `seed + RITE_BOND_SEED_OFFSET`. */
+  readonly seed: number;
+}
+
+/** The bond's offset from the rite seed — past any test index. */
+export const RITE_BOND_SEED_OFFSET = 16;
+
+/**
+ * Plan what the rite plays (D2, plan § Resolution logic). Deterministic: the
+ * draw runs on the rite's own seed, so a reload replays the same tests.
+ *
+ * - `short`: one converted test drawn with the meeting's slot-1 predicate (the
+ *   mortal's primary reach's value pair). None → degrades to `bond_only`, traced.
+ * - `full_no_sensing`: up to `RITE_FULL_TEST_COUNT_CARD_ROUTE` converted tests.
+ * - `bond_only` / `full_meeting`: no tests here.
+ */
+export function planThreadingRite(graph: WorldGraph, rite: PendingThreadingRite, worldSeed: number): RitePlan {
+  const seed = riteSeed(worldSeed, rite.agentId, rite.tick);
+  if (rite.shape !== 'short' && rite.shape !== 'full_no_sensing') {
+    return { shape: rite.shape, tests: [], degraded: false, seed };
+  }
+  const candidate = candidateFromAgent(graph, rite.agentId);
+  let converted: RiteTestPick[] = [];
+  if (candidate) {
+    const locationId = graph.getOutgoingEdges(rite.agentId, 'located_at')[0]?.target;
+    const subtype = (locationId ? graph.getNode(locationId)?.properties.locationSubtype : undefined) as string | undefined;
+    try {
+      const { dilemmas } = selectDilemmasScored(
+        [...ENRICHED_DILEMMA_LIBRARY],
+        candidate.primaryReach,
+        candidate.secondaryReach,
+        candidate.sphere,
+        candidate.archetypeId,
+        subtype ?? 'village',
+        seed + 1,
+      );
+      converted = dilemmas
+        .filter((d): d is DilemmaInstance & { test: FormativeTest } => d.test != null)
+        .map(instance => ({ instance, test: instance.test }));
+    } catch {
+      converted = []; // fail-soft: the rite degrades, it never blocks the bond
+    }
+  }
+
+  if (rite.shape === 'full_no_sensing') {
+    return { shape: rite.shape, tests: converted.slice(0, RITE_FULL_TEST_COUNT_CARD_ROUTE), degraded: false, seed };
+  }
+
+  const pair = candidate ? REACH_VALUE_PAIR[candidate.primaryReach] : undefined;
+  const slotOne = converted.filter(c => c.instance.category === 'axiological' && c.test.valuePair === pair);
+  if (slotOne.length === 0) {
+    emitTrace({
+      category: 'rite.degraded',
+      tick: rite.tick,
+      agentId: rite.agentId,
+      summary: `rite short for ${rite.agentId} degraded to bond_only — no converted test for ${candidate?.primaryReach ?? 'an unknown reach'}`,
+      from: 'short',
+      to: 'bond_only',
+      primaryReach: candidate?.primaryReach ?? null,
+    });
+    return { shape: 'bond_only', tests: [], degraded: true, seed };
+  }
+  return { shape: 'short', tests: slotOne.slice(0, RITE_SHORT_TEST_COUNT), degraded: false, seed };
+}
+
+/**
+ * The bond-only rite's bond test: the meeting's own bond test, word for word
+ * (bar the god voice), with its hand cut to the first `RITE_BOND_ONLY_HAND_SIZE` cards ("Still the
+ * room", "Say their name").
+ */
+export const RITE_BOND_ONLY_TEST: BondTest = {
+  ...MEETING_BOND_TEST,
+  godVoiceByHunger: {},
+  godVoiceFallback: RITE_BOND_GOD_VOICE,
+  nudges: MEETING_BOND_TEST.nudges.slice(0, RITE_BOND_ONLY_HAND_SIZE),
+};
+
+/**
+ * The short and full rites' bond test: the meeting's, word for word, with the
+ * rite's own god voice (the meeting's per-Hunger lines speak of a first soul).
+ */
+export const RITE_BOND_TEST: BondTest = {
+  ...MEETING_BOND_TEST,
+  godVoiceByHunger: {},
+  godVoiceFallback: RITE_BOND_GOD_VOICE,
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────
+
+function agentName(graph: WorldGraph, agentId: string): string {
+  return graph.getNode(agentId)?.name ?? agentId;
+}
+
+function receptionOf(graph: WorldGraph, ascendantId: string, agentId: string): BondReception | undefined {
+  const edge = graph.getOutgoingEdges(ascendantId, 'thread').find(e => e.target === agentId);
+  return edge?.properties.bondReception as BondReception | undefined;
+}
+
+function riteChronicleEvent(rite: PendingThreadingRite, message: string, kind: string, significance = 0.7): TickEvent {
+  return {
+    id: `evt_rite_${kind}_${rite.agentId}_${rite.tick}`,
+    tick: rite.tick,
+    type: 'narrative',
+    message,
+    significance,
+    actorId: rite.agentId,
+  };
+}
+
+/** One thread row for inspection — the DebugPanel's thread fields, through the bridge. */
+export interface RiteThreadRow {
+  readonly agentId: string;
+  readonly name: string;
+  readonly courtPosition: string | null;
+  readonly riteShape: RiteShape | null;
+  readonly bondReception: BondReception | null;
 }
 
 /** What `window.__DEBUG.getThreadingRite()` returns. */
@@ -170,6 +442,8 @@ export interface ThreadingRiteSnapshot {
   readonly queue: readonly PendingThreadingRite[];
   readonly threadsBoundCount: number;
   readonly lastRite: LastRiteRecord | null;
+  /** Every thread from the god, with its rite shape and bond reception (S2). */
+  readonly threads: readonly RiteThreadRow[];
 }
 
 /** Inspect the rite state. Absent GameState fields read as "no pending rite". */
@@ -177,10 +451,18 @@ export function getThreadingRiteSnapshot(
   state: Pick<GameState, 'graph' | 'ascendantId' | 'pendingThreadingRite' | 'pendingThreadingRiteQueue'>,
 ): ThreadingRiteSnapshot {
   const lastRite = state.graph.getNode(state.ascendantId)?.properties.lastRite as LastRiteRecord | undefined;
+  const threads: RiteThreadRow[] = state.graph.getOutgoingEdges(state.ascendantId, 'thread').map(e => ({
+    agentId: e.target,
+    name: agentName(state.graph, e.target),
+    courtPosition: (e.properties.courtPosition as string | undefined) ?? null,
+    riteShape: (e.properties.riteShape as RiteShape | undefined) ?? null,
+    bondReception: (e.properties.bondReception as BondReception | undefined) ?? null,
+  }));
   return {
     pending: state.pendingThreadingRite ?? null,
     queue: [...(state.pendingThreadingRiteQueue ?? [])],
     threadsBoundCount: threadsBoundCount(state.graph, state.ascendantId),
     lastRite: lastRite ?? null,
+    threads,
   };
 }

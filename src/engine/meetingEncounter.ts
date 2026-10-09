@@ -561,7 +561,7 @@ export function selectDilemmasScored(
   // pickers score on `resonance.emotionalRegister`, and with it dropped every
   // scene tied at 0 and the backdrop fell back to the test index.
   const dilemmas = selected.map(t => {
-    const { test, resonance } = t as Partial<EnrichedDilemmaTemplate>;
+    const { test, resonance, riteText } = t as Partial<EnrichedDilemmaTemplate>;
     return {
       templateId: t.id,
       category: t.category,
@@ -570,6 +570,7 @@ export function selectDilemmasScored(
       choices: t.choices,
       ...(test ? { test } : {}),
       ...(resonance ? { resonance } : {}),
+      ...(riteText ? { riteText } : {}),
     };
   });
 
