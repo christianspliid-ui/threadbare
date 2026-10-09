@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: a bonded First is no longer asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)). Merged via [#2290](https://github.com/christianspliid-ui/threadbare/pull/2290) and live.
+- **2026-10-09: your turf can be lost to neglect, rival gods and doom, but never your seat** ([THR-1763](https://linear.app/threadbare/issue/THR-1763/the-opposing-dominion-as-a-force-who-pushes-back-how-fast-turf-erodes)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: God's Will prices now name the sphere they bill** ([THR-1783](https://linear.app/threadbare/issue/THR-1783)). Merged via [#2289](https://github.com/christianspliid-ui/threadbare/pull/2289) and live.
 - **2026-10-09: "Who holds power" now opens the person you click** ([THR-1780](https://linear.app/threadbare/issue/THR-1780/who-holds-power-is-a-dead-end-the-notables-badge-counts-active-agendas)). Merged via [#2288](https://github.com/christianspliid-ui/threadbare/pull/2288) and live.
 - **2026-10-09: template seams no longer reach the player's text** ([THR-1779](https://linear.app/threadbare/issue/THR-1779/recurs-after-fix-template-seams-reach-the-player-his-only-kin-claims)). Merged via [#2286](https://github.com/christianspliid-ui/threadbare/pull/2286) and live.
@@ -34,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: every world now draws its doom from all seven archetypes, not just Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Merged via [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and live.
 - **2026-10-09: your turf grows in two moves, Shift then Claim** ([THR-1762](https://linear.app/threadbare/issue/THR-1762/how-the-frontier-moves-which-verbs-push-dominion-outward-what-they)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: elder magic can now be found in ruins** ([THR-1753](https://linear.app/threadbare/issue/THR-1753/foundation-signed-cards-lose-their-only-identity-route-once-spheres)). Merged via [#2282](https://github.com/christianspliid-ui/threadbare/pull/2282) and live.
-- **2026-10-09: God’s Will now changes the world when you pay for it** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)). Merged via [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) and live.
-- **2026-10-09: the threading rite now plays on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)). Merged via [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280) and live.
 
 ---
 
