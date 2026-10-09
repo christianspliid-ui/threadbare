@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 12:57 local (10:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 13:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,12 +28,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 jobs ready, 1 being built.** Nothing in the ready queue is older than 3 days or blocked.
+**Healthy: 7 jobs ready, 1 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **God’s Will does nothing** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)): the fix in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) is set to merge, but clashes with main again after the rite merged (one generated file). The builder lane clears it. Not yours.
+- **Elder magic gets a ruin-discovery path** ([THR-1753](https://linear.app/threadbare/issue/THR-1753/foundation-signed-cards-lose-their-only-identity-route-once-spheres)) is being built; the builder touched it at 13:52. Not yours.
+- **God's Will now does something** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)): the fix merged in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) and is live. No pull requests are waiting.
 
 ## Health
 
-- [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) has a merge conflict again (about 1 h old, in a generated wiring file). The builder lane’s unstick duty owns it.
+- **Heavy simulation tests went red again on main** ([run on the latest main](https://github.com/christianspliid-ui/threadbare/actions/runs/37924278689)). The same commit before it passed once and failed once, so this looks flaky rather than a new break. The builder lane owns the follow-up. Not yours.
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. The live site serves the latest main (ccf17216), heavy simulation tests are green again on main, all 11 lanes are on schedule, the worktree cleaner last ran at 12:40, and the simulation runs at normal speed (137 ms/tick, +12% on the weekly median).
+- Everything else is green. The live site serves the latest main (de881c96), all 11 lanes are on schedule, the worktree cleaner last ran at 13:40, and the simulation runs at normal speed (126 ms/tick, +2% on the weekly median).

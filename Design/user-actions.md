@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 12:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: God’s Will now changes the world when you pay for it** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)). Merged via [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) and live.
 - **2026-10-09: the threading rite now plays on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)). Merged via [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280) and live.
 - **2026-10-09: you can buy your spheres at the start of a run** ([THR-1749](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at)). Merged via [#2272](https://github.com/christianspliid-ui/threadbare/pull/2272) and live.
 - **2026-10-09: your turf now changes what things cost and pay** ([THR-1761](https://linear.app/threadbare/issue/THR-1761/what-the-band-buys-cost-effect-strength-thread-yield-and-source-income)). Decided for you by the design lane; say "veto" in chat to reverse.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: the threading rite's engine half shipped** ([THR-1644](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the)). Merged via [#2274](https://github.com/christianspliid-ui/threadbare/pull/2274); the rite on screen and The First's mark come next.
 - **2026-10-08: keeping mortals no longer bankrupts your god** ([THR-1747](https://linear.app/threadbare/issue/THR-1747/divine-economy-shared-prerequisites-thread-upkeep-a-god-can-keep-the)). Merged via [#2269](https://github.com/christianspliid-ui/threadbare/pull/2269) and live.
 - **2026-10-08: sphere scores now live on every person, place and faction** ([THR-1768](https://linear.app/threadbare/issue/THR-1768/sphere-scores-never-land-where-dominion-must-read-them-the-god-has-no)). Merged via [#2270](https://github.com/christianspliid-ui/threadbare/pull/2270); simulation speed unchanged.
-- **2026-10-08: the frozen builder run was released.** The warm playtest job finished ([#2268](https://github.com/christianspliid-ui/threadbare/pull/2268)) and the builder is working through the queue again.
 
 ---
 
