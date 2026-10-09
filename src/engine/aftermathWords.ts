@@ -711,9 +711,20 @@ export function traitGrantedSentence(args: {
  * Personal reputation. `flavour` distinguishes the three producers that all move
  * the same quantity — the authored shift, the branch checkpoint's judgement, and
  * the residual the snapshot diff catches — without any of them printing a delta.
+ *
+ * THR-1789 — the noun is the mortal's name plus `reputation`, the word the
+ * character sheet heads this same `reputationScore` with. It read `world
+ * standing` (THR-1136), and warm round 1 asked "bonds with whom?" of six rows
+ * that were all one mortal's own reputation: there is no counterparty, so the
+ * honest noun names whose it is. With `actorId` the noun links to that mortal,
+ * so a click opens the sheet that shows the word (Law 17). Faction standing
+ * (`factionStandingSentence`) is untouched. `raw` rides along so the producer
+ * can fold an encounter's reputation movements into one net change before it
+ * bands (THR-1467's pattern).
  */
 export function reputationSentence(args: {
   readonly actorName: string;
+  readonly actorId?: string;
   readonly delta: number;
   readonly flavour: 'authored' | 'branch' | 'residual';
 }): DerivedChange {
@@ -722,26 +733,28 @@ export function reputationSentence(args: {
   const tail = args.flavour === 'branch'
     ? ' as the checkpoint\'s judgement landed'
     : '';
-  // THR-1033 — `ui.standing` is the id the registry actually holds. This read
-  // `ui.reputation`, which has never existed in `ui-content.ts`, so every
-  // STANDING chip in the game carried an unresolvable tooltip.
-  //
-  // THR-1136 — the noun names its *scope*. It read a bare `standing`, which is
-  // the same word faction standing uses, so on an ending carrying both the two
-  // chips rendered as `BOND · STANDING` twice with nothing saying whose regard
-  // was moving. `factionStandingSentence` already solves its half by putting the
-  // faction's name in the noun; this is the other half — the regard of the world
-  // at large, which is exactly what the tally is *not* (see §5 of THR-1136).
-  // Deliberately the ticket's own phrase rather than a coined term, so no new UL
-  // entry is minted for a display word the glossary already covers under
-  // `standing`.
-  const noun: EncounterAftermathConceptRef = { text: 'world standing', tooltipId: 'ui.standing' };
+  const text = `${args.actorName}'s reputation`;
+  // THR-1033 / THR-1789 — `ui.reputation` is registered with `ui.standing`'s
+  // copy under the sheet's heading word, so the hover says what the sheet says.
+  const noun: EncounterAftermathConceptRef = args.actorId
+    ? {
+      text,
+      tooltipId: 'ui.reputation',
+      entityId: args.actorId,
+      visualKind: 'agent',
+      visualName: args.actorName,
+    }
+    : { text, tooltipId: 'ui.reputation' };
   return {
-    detail: `${args.actorName}'s standing in the world ${verb} ${word}${tail}.`,
+    detail: `${text} ${verb} ${word}${tail}.`,
     concepts: [noun],
     stateNoun: noun,
     direction: args.delta >= 0 ? 'gain' : 'loss',
-    magnitude: { ladder: 'reputation', band: magnitudeBandIndex(args.delta, REPUTATION_MAGNITUDE_BANDS) },
+    magnitude: {
+      ladder: 'reputation',
+      band: magnitudeBandIndex(args.delta, REPUTATION_MAGNITUDE_BANDS),
+      raw: args.delta,
+    },
     storyWeight: 'incidental',
   };
 }

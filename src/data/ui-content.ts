@@ -420,6 +420,13 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Standing',
     desc: 'How the world reads a mortal — the sum of what they have been seen to do. Standing opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
   },
+  // THR-1789 — the aftermath's personal reputation chip. Same copy as
+  // `ui.standing`, under the heading word the character sheet uses for the
+  // same `reputationScore`, so the chip's hover and the sheet agree.
+  'ui.reputation': {
+    label: 'Reputation',
+    desc: 'How the world reads a mortal — the sum of what they have been seen to do. Reputation opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
+  },
   // THR-1550 — the lair block names the beast that holds the den.
   'ui.lair_monster': {
     label: 'The Lair\'s Monster',

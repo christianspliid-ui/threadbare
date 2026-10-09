@@ -229,7 +229,9 @@ describe('concept tooltip ids (THR-1033)', () => {
 
   it('tooltipResolves agrees with the resolver on both answers', () => {
     expect(tooltipResolves('ui.standing')).toBe(true);
-    expect(tooltipResolves('ui.reputation')).toBe(false);
+    // THR-1789 registered `ui.reputation`, the id that once shipped dangling.
+    expect(tooltipResolves('ui.reputation')).toBe(true);
+    expect(tooltipResolves('ui.no_such_concept')).toBe(false);
     expect(tooltipResolves(undefined)).toBe(false);
     // Context-bearing prefix with no context — the same null Tooltip itself gets.
     expect(tooltipResolves('agent.whoever')).toBe(false);

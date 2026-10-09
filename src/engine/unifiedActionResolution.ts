@@ -29,6 +29,11 @@ import type {
 import type { ActionStep, ActionStepOutcomeMetadata, StepCastRecord } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import {
+  foldActorReputation,
+  reputationFoldId,
+  stepReputationParts,
+} from './reputationAftermathFold';
+import {
   type DerivedChange,
   factionStandingSentence,
   gateStateSentence,
@@ -2718,43 +2723,9 @@ export function executeStepResult(
     });
   }
 
-  // Add explicit authored reputation shifts before we collapse to the final snapshot.
-  if (Math.abs(metadataReputationDelta) > 0.0001) {
-    const sentence = reputationSentence({
-      actorName,
-      delta: metadataReputationDelta,
-      flavour: 'authored',
-    });
-    aftermathChanges.push({
-      id: `${action.actionId}:step:${action.currentStep}:reputation:authored`,
-      kind: 'reputation',
-      title: 'Your standing shifted',
-      detail: sentence.detail,
-      concepts: sentence.concepts,
-      ...derivedFields(sentence),
-      polarity: metadataReputationDelta > 0 ? 'gain' : 'loss',
-      actorId: action.actorId,
-      actorName,
-    });
-  }
-  if (Math.abs(branchConsequence.reputationDelta) > 0.0001) {
-    const sentence = reputationSentence({
-      actorName,
-      delta: branchConsequence.reputationDelta,
-      flavour: 'branch',
-    });
-    aftermathChanges.push({
-      id: `${action.actionId}:step:${action.currentStep}:reputation:branch`,
-      kind: 'reputation',
-      title: 'The checkpoint judged the intervention',
-      detail: sentence.detail,
-      concepts: sentence.concepts,
-      ...derivedFields(sentence),
-      polarity: branchConsequence.reputationDelta > 0 ? 'gain' : 'loss',
-      actorId: action.actorId,
-      actorName,
-    });
-  }
+  // THR-1789 — the authored and branch reputation shifts no longer push their
+  // own rows here. They fold with the snapshot residual into one net row per
+  // mortal after the final snapshot, below.
 
   // Emit trace
   emitTrace({
@@ -2883,23 +2854,51 @@ export function executeStepResult(
 
   const finalSnapshot = snapshotEncounterResolutionContext(state, action);
   const reputationDelta = finalSnapshot.reputationScore - beforeSnapshot.reputationScore;
-  if (Math.abs(reputationDelta) > 0.0001 && Math.abs(reputationDelta - metadataReputationDelta - branchConsequence.reputationDelta) > 0.0001) {
-    const sentence = reputationSentence({
-      actorName: currentActorName,
-      delta: reputationDelta,
-      flavour: 'residual',
-    });
-    aftermathChanges.push({
-      id: `${action.actionId}:step:${action.currentStep}:reputation`,
-      kind: 'reputation',
-      title: 'Personal reputation shifted',
-      detail: sentence.detail,
-      concepts: sentence.concepts,
-      ...derivedFields(sentence),
-      polarity: reputationDelta > 0 ? 'gain' : 'loss',
+  // THR-1789 — one reputation row per mortal, carrying the encounter's net.
+  // The step's three producers (authored, branch, residual) sum to the
+  // measured movement. The residual is what the other two do not explain, so
+  // nothing is counted twice. The step then folds into the row earlier steps
+  // left, under one stable id, as capability growth does (THR-1467). A net
+  // that cancels to nothing removes the row.
+  const reputationParts = stepReputationParts({
+    authored: metadataReputationDelta,
+    branch: branchConsequence.reputationDelta,
+    total: reputationDelta,
+  });
+  let supersededReputationIds: readonly string[] = [];
+  if (reputationParts.net !== 0) {
+    const fold = foldActorReputation({
+      prior: action.aftermathChanges,
+      actionId: action.actionId,
       actorId: action.actorId,
-      actorName: currentActorName,
+      stepNet: reputationParts.net,
     });
+    supersededReputationIds = fold.supersededIds;
+    if (fold.net !== 0) {
+      // The checkpoint's clause is true only when its judgement is the whole
+      // movement the row reports.
+      const branchOnly = !fold.hadPrior
+        && reputationParts.branch !== 0
+        && reputationParts.authored === 0
+        && reputationParts.residual === 0;
+      const sentence = reputationSentence({
+        actorName: currentActorName,
+        actorId: action.actorId,
+        delta: fold.net,
+        flavour: branchOnly ? 'branch' : 'authored',
+      });
+      aftermathChanges.push({
+        id: reputationFoldId(action.actionId, action.actorId),
+        kind: 'reputation',
+        title: 'Reputation shifted',
+        detail: sentence.detail,
+        concepts: sentence.concepts,
+        ...derivedFields(sentence),
+        polarity: fold.net > 0 ? 'gain' : 'loss',
+        actorId: action.actorId,
+        actorName: currentActorName,
+      });
+    }
   }
 
   for (const [factionId, afterMembership] of finalSnapshot.factionMemberships.entries()) {
@@ -2981,7 +2980,9 @@ export function executeStepResult(
     }
   }
 
-  finalAction = appendAftermathChanges(finalAction, aftermathChanges, supersededGrowthIds);
+  finalAction = appendAftermathChanges(
+    finalAction, aftermathChanges, [...supersededGrowthIds, ...supersededReputationIds],
+  );
   finalAction = withResolvedAftermathSummary(
     finalAction, action, template, currentActorName, consequence.narrativeTag,
   );

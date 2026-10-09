@@ -3,7 +3,12 @@ import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
 import { Tooltip } from '../shared/Tooltip';
-import { DeltaCluster } from '../shared/DeltaCluster';
+import {
+  DeltaCluster,
+  DELTA_CLUSTER_MAX,
+  DELTA_GAIN_GLYPH,
+  DELTA_LOSS_GLYPH,
+} from '../shared/DeltaCluster';
 import { ReachIcon, REACH_TO_SPHERE } from '../icons';
 import {
   CONSEQUENCE_CATEGORY_GLYPHS,
@@ -11,6 +16,7 @@ import {
   CONSEQUENCE_CATEGORY_ORDER,
   CONSEQUENCE_CATEGORY_TOOLTIP_IDS,
   CONSEQUENCE_LEGEND_STORE_KEY,
+  deltaClusterLegendWord,
 } from './encounter-stage/adapters/buildAftermathConsequences';
 import type {
   EncounterStageModel,
@@ -190,6 +196,18 @@ const CONSEQUENCE_LEGEND_ENTRIES: readonly {
   // drifts in one of them.
   tooltipId: CONSEQUENCE_CATEGORY_TOOLTIP_IDS[category],
 }));
+
+/**
+ * THR-1789 — the legend also teaches the magnitude cluster. Warm round 1 asked
+ * "▲ / ▲▲ / ▲▲▲ … on what scale?", because the size words lived only in the
+ * cluster's hover. Each size word comes from `DELTA_CLUSTER_WORDS` (Law 27).
+ */
+const CONSEQUENCE_LEGEND_DELTA_ENTRIES: readonly { count: number; glyphs: string; word: string }[] =
+  Array.from({ length: DELTA_CLUSTER_MAX }, (_, i) => ({
+    count: i + 1,
+    glyphs: DELTA_GAIN_GLYPH.repeat(i + 1),
+    word: deltaClusterLegendWord(i + 1),
+  }));
 
 /**
  * A reach state-noun draws the shared reach glyph — but only where one exists.
@@ -1213,6 +1231,24 @@ export function EncounterVeil({
                       </span>
                     </Tooltip>
                   ))}
+                  {/* THR-1789 — the cluster's scale, said once: which way, then
+                      how much. Same dismissal as the categories (Law 51). */}
+                  <span
+                    data-testid="consequence-legend-delta"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textTransform: 'uppercase' }}
+                  >
+                    <span>
+                      <span aria-hidden="true">{DELTA_GAIN_GLYPH}</span> rose
+                      {' · '}
+                      <span aria-hidden="true">{DELTA_LOSS_GLYPH}</span> fell
+                    </span>
+                    {CONSEQUENCE_LEGEND_DELTA_ENTRIES.map((entry) => (
+                      <span key={entry.count} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span aria-hidden="true">{entry.glyphs}</span>
+                        <span>{entry.word}</span>
+                      </span>
+                    ))}
+                  </span>
                   <button
                     className="focus-ring"
                     type="button"

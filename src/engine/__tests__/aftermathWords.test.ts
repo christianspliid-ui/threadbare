@@ -155,18 +155,18 @@ describe('derived sentences name their concepts', () => {
 
   it('reputation states direction and weight, never the delta', () => {
     expect(reputationSentence({ actorName: 'Vara', delta: 0.05, flavour: 'authored' }).detail)
-      .toBe("Vara's standing in the world rose noticeably.");
+      .toBe("Vara's reputation rose noticeably.");
     expect(reputationSentence({ actorName: 'Vara', delta: -0.05, flavour: 'branch' }).detail)
-      .toBe("Vara's standing in the world fell noticeably as the checkpoint's judgement landed.");
+      .toBe("Vara's reputation fell noticeably as the checkpoint's judgement landed.");
   });
 
-  // THR-1136 §3b — personal standing names its scope, in both halves of the
-  // chip. It read a bare "standing", which is the same word faction standing
+  // THR-1136 §3b, re-worded by THR-1789 — personal reputation names its scope
+  // (whose it is) in both halves of the chip. It read a bare "standing", which is the same word faction standing
   // uses, so an ending carrying both drew `BOND · STANDING` twice with nothing
   // saying whose regard had moved. Falsified against the faction builder below,
   // which must keep naming the faction rather than the world.
-  it('personal standing names the world as its scope, distinguishing it from faction standing', () => {
-    const personal = reputationSentence({ actorName: 'Vara', delta: 0.2, flavour: 'authored' });
+  it('personal reputation names the mortal as its scope, distinguishing it from faction standing', () => {
+    const personal = reputationSentence({ actorName: 'Vara', actorId: 'agent.vara', delta: 0.2, flavour: 'authored' });
     const faction = factionStandingSentence({
       actorName: 'Vara',
       factionId: 'faction-mason-guild',
@@ -175,9 +175,16 @@ describe('derived sentences name their concepts', () => {
       beforeRole: 'member',
       afterRole: 'member',
     });
-    expect(personal.stateNoun).toEqual({ text: 'world standing', tooltipId: 'ui.standing' });
+    // THR-1789 — the sheet's word, the mortal's name, a link to that mortal.
+    expect(personal.stateNoun).toEqual({
+      text: "Vara's reputation",
+      tooltipId: 'ui.reputation',
+      entityId: 'agent.vara',
+      visualKind: 'agent',
+      visualName: 'Vara',
+    });
     expect(personal.stateNoun!.text).not.toBe(faction.stateNoun!.text);
-    expect(personal.detail).toContain('in the world');
+    expect(personal.detail).toContain(personal.stateNoun!.text);
   });
 
   it('faction standing carries the faction as a linkable entity with a tile', () => {
@@ -358,7 +365,7 @@ describe('every derived builder returns the structure it spent on the sentence',
 
   it('bands each ladder against its own rungs', () => {
     expect(reputationSentence({ actorName: 'Vara', delta: 0.5, flavour: 'authored' }).magnitude)
-      .toEqual({ ladder: 'reputation', band: REPUTATION_MAGNITUDE_BANDS.length - 1 });
+      .toEqual({ ladder: 'reputation', band: REPUTATION_MAGNITUDE_BANDS.length - 1, raw: 0.5 });
   });
 
   it('omits magnitude where the change genuinely has no scale', () => {

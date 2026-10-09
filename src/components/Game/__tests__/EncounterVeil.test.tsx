@@ -10,7 +10,9 @@ import {
 import { buildSimpleEncounterStageModel } from '../encounter-stage/adapters/buildSimpleEncounterStageModel';
 import {
   CONSEQUENCE_LEGEND_STORE_KEY,
+  DELTA_CLUSTER_WORDS,
   buildAftermathConsequences,
+  deltaClusterLegendWord,
 } from '../encounter-stage/adapters/buildAftermathConsequences';
 import type { ChipSentenceLinker } from '../encounter-stage/adapters/buildAftermathConsequences';
 import { SLICE_GRATEFUL_KIN } from '../../../data/encounters/vertical-slice';
@@ -1343,6 +1345,18 @@ describe('aftermath mode', () => {
     }
   });
 
+  it('THR-1789: the legend teaches the ▲ cluster with the three size words from DELTA_CLUSTER_WORDS', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} />);
+    const entry = within(screen.getByTestId('consequence-legend')).getByTestId('consequence-legend-delta');
+    for (const count of [1, 2, 3]) {
+      expect(within(entry).getByText(deltaClusterLegendWord(count))).toBeInTheDocument();
+      expect(DELTA_CLUSTER_WORDS[count]).toContain(deltaClusterLegendWord(count));
+    }
+    expect(entry.textContent).toContain('▲▲▲');
+    expect(entry.textContent).toContain('rose');
+    expect(entry.textContent).toContain('fell');
+  });
+
   // THR-1082 — the compact row. These assert the *surface*, not the adapter:
   // that the veil actually draws a tag and a cluster and withholds the sentence
   // for incidental drift, which is the change Christian's ruling asked for.
@@ -1509,8 +1523,9 @@ describe('aftermath mode', () => {
     });
 
     it('LAW 21: an unresolvable concept id renders as plain prose, not a dead underline', () => {
-      // `ui.reputation` is the exact id that shipped dangling.
-      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.reputation')} />);
+      // `ui.reputation` shipped dangling once (THR-1033); THR-1789 registered it,
+      // so the dead id here is one no registry entry will ever hold.
+      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.no_such_concept')} />);
       const word = screen.getByText('standing', { selector: 'span' });
       // Not focusable, and not styled as though hovering it would explain it.
       expect(word).not.toHaveAttribute('tabindex');
@@ -1518,7 +1533,7 @@ describe('aftermath mode', () => {
     });
 
     it('the word itself survives either way — fail-open never drops content', () => {
-      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.reputation')} />);
+      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.no_such_concept')} />);
       expect(screen.getByText(/rose sharply/)).toBeInTheDocument();
       expect(screen.getByText('standing', { selector: 'span' })).toBeInTheDocument();
     });
