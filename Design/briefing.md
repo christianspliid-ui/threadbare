@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 08:55 local (06:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 - **A: the world gives, by who you are.** Gifts stay free and keep their timing. Each one is drawn to match your god's reaches and spheres.
 - **B: the world offers, you choose and pay.** Every few days three omens rise. You take one up with essence drawn through its sphere, or let them pass. The design lane leans B.
 
-[Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-09b.md)*
+[Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-09c.md)*
 
 ## Also waiting (4)
 
@@ -24,20 +24,20 @@
 - [Outcomes still can't be read](https://linear.app/threadbare/issue/THR-1784/recurs-after-fix-twice-outcomes-still-cant-be-read-six-identical-bond) — an ending shows one named reputation row per mortal instead of six identical "World Standing" rows; the ▲ scale gets a legend; a chapter step shows one odds word; Star's "Fated" becomes "Charted"; your god's seat always lands in a town, with a "Seat: <town>" jump. Building waits until 20:25 Friday. *To veto, say:* **"keep the word standing"**, **"let me choose where the seat goes"** or **"keep Fated for Star"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-08d.md)*
 - [A returning player is greeted by the opening again](https://linear.app/threadbare/issue/THR-1782/a-returning-player-is-greeted-by-the-opening-again-after-the-warm-up) — a warm world arrives with the opening already played; only "A Path Opens" waits for you. Building waits until 14:45 Friday. *To veto, say:* **"let warm testers play the opening gifts"** or **"give returning players a while-you-were-away screen"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-08c.md)*
 
-Say "veto <title>" to reverse any of these. (The doom draw for [THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes) passed its veto window at 08:41 and now stands.)
+Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 jobs ready, 3 being built.** Nothing in the ready queue is older than 3 days or blocked.
+**Healthy: 7 jobs ready, 2 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **Shipped since last hour:** [chapter choices now take the click](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves) ([#2271](https://github.com/christianspliid-ui/threadbare/pull/2271)), [the god's cast odds](https://linear.app/threadbare/issue/THR-1775/the-gods-cast-odds-verdict-thr-766-was-measured-on-the-retired-dice) ([#2277](https://github.com/christianspliid-ui/threadbare/pull/2277)) and [the cadence pool's bias](https://linear.app/threadbare/issue/THR-1771/the-cadence-pools-identity-bias-reads-raw-reach-affinities-2-5-as-if) ([#2275](https://github.com/christianspliid-ui/threadbare/pull/2275)) all merged and are live. The design write-up for [what the band buys](https://linear.app/threadbare/issue/THR-1761/what-the-band-buys-cost-effect-strength-thread-yield-and-source-income) landed too ([#2281](https://github.com/christianspliid-ui/threadbare/pull/2281)).
+- **Shipped since last hour:** [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) merged ([#2272](https://github.com/christianspliid-ui/threadbare/pull/2272)) and is live.
 - **The builder lane is still switched off** (since about 07:11). It was turned off during the attended session working on the merge pile-up. No action from you unless you did not mean to switch it off.
-- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)) is built and set to merge in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280), but it now clashes with main.
-- **Work up for review, no builder on it (parked since last night):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) (about 7½ h) and [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) in [#2272](https://github.com/christianspliid-ui/threadbare/pull/2272) (about 8 h). Both branches are pushed, neither is set to merge, and both clash with main.
+- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)) is built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280), but it clashes with main and is no longer set to merge.
+- **Parked, work up for review, no builder on it (about 8½ h):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273). The branch is pushed, not set to merge, and clashes with main.
 
 ## Health
 
-- **Four pull requests clash with main:** [#2272](https://github.com/christianspliid-ui/threadbare/pull/2272), [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273), [#2279](https://github.com/christianspliid-ui/threadbare/pull/2279) (a harness change) and [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280). GitHub starts no checks on #2279 and #2280 until they are brought up to date. With the builder lane off, nothing is unsticking them. A session owes the merges. Not yours.
-- **Simulation got slower:** tick cost 159 ms/tick steady, 32% above the 7-day median (120, 128 rows since 7d53560b); top phase agent_decision, 602 agents. Name the merges between 7d53560b and 6f5dfea1: `git log --oneline --merges 7d53560b..6f5dfea1`. Last hour read 131. One reading may be machine noise; a builder owes a look if it holds. Not yours.
+- **Three pull requests clash with main:** [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273), [#2279](https://github.com/christianspliid-ui/threadbare/pull/2279) (a harness change) and [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280). GitHub has started no checks on #2279 at all; a fresh push will start them. With the builder lane off, nothing is unsticking these. A session owes the merges. Not yours.
+- **Heavy simulation tests are red on main's newest commit** (1a7e9180, the buy-your-spheres merge). A follow-up fix is owed. Not yours.
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. Main's checks pass, including the heavy simulation tests that were red last hour. The live site serves the latest main (6f5dfea1), the other 10 lanes are on schedule, and the worktree cleaner last ran at 08:40.
+- Everything else is green. The live site serves the latest main (1a7e9180), the other 10 lanes are on schedule, the worktree cleaner last ran at 09:49, and the simulation is back to normal speed (136 ms/tick, within range of the weekly median).
