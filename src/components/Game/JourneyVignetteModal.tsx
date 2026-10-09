@@ -10,6 +10,7 @@ import { Modal } from '../shared/Modal';
 import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
 import { formatPhaseName } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
+import { JOURNEY_STAGE_LABELS } from '../../data/ui-content';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -233,7 +234,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
         }}>
-          <span>Beat {vignette.beatIndex + 1} — {phaseName}</span>
+          <span data-testid="journey-stage">{JOURNEY_STAGE_LABELS[vignette.phase] ?? phaseName}</span>
           <span>{vignette.agentName}</span>
         </div>
       </Modal.Footer>

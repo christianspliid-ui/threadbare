@@ -8,6 +8,7 @@
  */
 
 import type { TooltipContent } from '../types/tooltip';
+import type { CampbellianPhase } from '../types/influence';
 import { buildReachTierTooltips } from './ascendant-reach-register';
 import { REACH_COPY } from './ascendant-bar-content';
 import { NUDGE_CARD_TYPES } from './nudge-card-library';
@@ -18,6 +19,19 @@ import { NUDGE_CARD_TYPES } from './nudge-card-library';
  * control (Law 42).
  */
 export const FIRST_RUN_PROMPT_CAPTION = 'Time is still. Press Play or Space to let the world move.';
+
+/**
+ * THR-1788 — the stage of a threaded mortal's story, as the journey vignette footer names it.
+ * A word with its article, never the engine's beat index (Law 13): "Beat 1" read as a tutorial
+ * step. Not "chapter" — in the glossary a Chapter is an encounter's readable record.
+ */
+export const JOURNEY_STAGE_LABELS: Record<CampbellianPhase, string> = {
+  call: 'The Call',
+  road_of_trials: 'The Road of Trials',
+  crisis: 'The Crisis',
+  ordeal: 'The Ordeal',
+  return: 'The Return',
+};
 
 /** THR-1716 — the remembrance's undo while a chosen picture holds before the flow moves on. */
 export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
