@@ -1,16 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
-
-### How does your god get new powers: A or B?
-
-The design lane prototyped your "can powers be bought?" question ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)) and narrowed it to two options.
-- **A: the world gives, by who you are.** Gifts stay free and keep their timing. Each one is drawn to match your god's reaches and spheres.
-- **B: the world offers, you choose and pay.** Every few days three omens rise. You take one up with essence you drew through its sphere, or you let them pass. The lane leans B.
-
-[Prototype write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B".
 
 ### Set the Claude app to open when Windows starts
 
@@ -34,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: you chose B: the world offers powers, you choose and pay** ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)). Your words: *"i go with B, and i would like a tier/progression system of actions, aswell as an assessment of which should be generic."* The tiers and generic set are now [THR-1794](https://linear.app/threadbare/issue/THR-1794/god-card-tiers-and-the-generic-set-a-progression-ladder-for-every-god).
+- **2026-10-09: "Return to the world" now resolves the whole chapter** ([THR-1778](https://linear.app/threadbare/issue/THR-1778/return-to-the-world-bounces-back-closing-an-aftermath-resolves-only)). Merged via [#2285](https://github.com/christianspliid-ui/threadbare/pull/2285) and live.
 - **2026-10-09: every world now draws its doom from all seven archetypes, not just Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Merged via [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and live.
 - **2026-10-09: your turf grows in two moves, Shift then Claim** ([THR-1762](https://linear.app/threadbare/issue/THR-1762/how-the-frontier-moves-which-verbs-push-dominion-outward-what-they)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: elder magic can now be found in ruins** ([THR-1753](https://linear.app/threadbare/issue/THR-1753/foundation-signed-cards-lose-their-only-identity-route-once-spheres)). Merged via [#2282](https://github.com/christianspliid-ui/threadbare/pull/2282) and live.
@@ -42,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: you can buy your spheres at the start of a run** ([THR-1749](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at)). Merged via [#2272](https://github.com/christianspliid-ui/threadbare/pull/2272) and live.
 - **2026-10-09: your turf now changes what things cost and pay** ([THR-1761](https://linear.app/threadbare/issue/THR-1761/what-the-band-buys-cost-effect-strength-thread-yield-and-source-income)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: chapter choices take the click, the god's cast odds and the cadence pool's bias are fixed** ([THR-1777](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves), [THR-1775](https://linear.app/threadbare/issue/THR-1775/the-gods-cast-odds-verdict-thr-766-was-measured-on-the-retired-dice), [THR-1771](https://linear.app/threadbare/issue/THR-1771/the-cadence-pools-identity-bias-reads-raw-reach-affinities-2-5-as-if)). Merged via [#2271](https://github.com/christianspliid-ui/threadbare/pull/2271), [#2277](https://github.com/christianspliid-ui/threadbare/pull/2277), [#2275](https://github.com/christianspliid-ui/threadbare/pull/2275) and live.
-- **2026-10-09: The First now carries your god’s mark** ([THR-1755](https://linear.app/threadbare/issue/THR-1755/threading-rite-s3-the-firsts-mark-one-god-given-blessing-in-their)). Merged via [#2278](https://github.com/christianspliid-ui/threadbare/pull/2278) and live.
-- **2026-10-09: no world starts hostile to your god; hostile ground arrives during the run** ([THR-1760](https://linear.app/threadbare/issue/THR-1760/the-formula-settled-normalisation-the-gods-power-factor-and-the-five)). Decided for you by the design lane; say "veto" in chat to reverse.
 
 ---
 

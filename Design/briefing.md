@@ -1,18 +1,14 @@
 # Briefing
-**Generated:** 2026-10-09 15:57 local (13:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 16:55 local (14:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**How does your god get new powers: A or B?** This answer unblocks the most work.
+**Set the Claude app to open when Windows starts.** Every recent lane silence began when the computer started or woke and the app did not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-- **A: the world gives, by who you are.** Gifts stay free and keep their timing. Each one is drawn to match your god's reaches and spheres.
-- **B: the world offers, you choose and pay.** Every few days three omens rise. You take one up with essence drawn through its sphere, or let them pass. The design lane leans B.
+Your "B" on how gods get new powers is recorded ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)). Your request for tiers and a generic set is now its own design ticket, [THR-1794](https://linear.app/threadbare/issue/THR-1794/god-card-tiers-and-the-generic-set-a-progression-ladder-for-every-god). The design lane will pick it up. Nothing more is needed from you on it.
 
-[Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-09e.md)*
+## Also waiting (3)
 
-## Also waiting (4)
-
-- **Set the Claude app to open when Windows starts.** Only you can change that setting. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
@@ -28,14 +24,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 jobs ready, 1 being built.** Nothing in the ready queue is older than 3 days or blocked. The orchestrator promoted two warm-playtest fixes this hour ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as), [THR-1788](https://linear.app/threadbare/issue/THR-1788/the-firsts-story-moments-are-footed-beat-1-call-an-internal-index-that)).
+**Healthy: 6 jobs ready, 1 being built.** Nothing in the ready queue is older than 4 days or blocked.
 
-- **"Return to the world" bounces back** ([THR-1778](https://linear.app/threadbare/issue/THR-1778/return-to-the-world-bounces-back-closing-an-aftermath-resolves-only)) is being built; its branch is pushed and its worktree was touched at 15:51. Not yours.
-- **Every world now draws its doom from all seven archetypes** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)) merged in [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and is live. No pull requests are waiting.
+- **Template seams in the player's text** ([THR-1779](https://linear.app/threadbare/issue/THR-1779/recurs-after-fix-template-seams-reach-the-player-his-only-kin-claims)) is being built; its branch is pushed and its worktree was active at 16:46. Not yours.
+- **"Return to the world" now resolves the whole chapter** ([THR-1778](https://linear.app/threadbare/issue/THR-1778/return-to-the-world-bounces-back-closing-an-aftermath-resolves-only)) merged in [#2285](https://github.com/christianspliid-ui/threadbare/pull/2285) and is live. No pull requests are waiting.
 
 ## Health
 
-- **Heavy simulation tests have failed on the last three main runs** ([latest failure, 30b072e2](https://github.com/christianspliid-ui/threadbare/actions/runs/37931222964)); a run on the new head (b72c3c1d) is in progress. Already in the impediment log; the builder lane owns the fix. Not yours.
-- **Simulation speed:** tick cost 228 ms/tick steady, 83% above the 7-day median (124, 134 rows since 7d53560b); top phase agent_decision, 609 agents. Name the merges between 7d53560b and b72c3c1d: git log --oneline --merges 7d53560b..b72c3c1d. *One hour earlier it was 108 ms/tick, and warm-up tripled too (380 vs 94 ms), so machine load from a concurrent build is a likely cause; next hour's row will tell. Builder's job, not yours.*
+- **Simulation speed:** tick cost 164 ms/tick steady, 31% above the 7-day median (125, 135 rows since 7d53560b); top phase agent_decision, 609 agents. Name the merges between 7d53560b and 9f85a553: git log --oneline --merges 7d53560b..9f85a553. *Down from 228 last hour, so part of that spike was machine load; still past the drift line. Builder's job, not yours.*
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. The live site serves the latest main (b72c3c1d), all 11 lanes are on schedule, and the worktree cleaner last ran at 15:40.
+- Everything else is green. Heavy simulation tests pass again on main's head ([9f85a553](https://github.com/christianspliid-ui/threadbare/actions/runs/37945168010)), the live site serves it, all 11 lanes are on schedule, and the worktree cleaner last ran at 16:40.
