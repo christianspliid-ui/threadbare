@@ -34,6 +34,23 @@ function nextInfluenceId(tick: number): string {
   return `di_premonition_${tick}_${influenceCounter++}`;
 }
 
+// ─── Essence spend (THR-1783) ────────────────────────────────────
+
+/**
+ * The pool after a premonition spend, as a new object — never mutates `pool`.
+ * Callers apply it inside their state update (`setGameState(prev => …)`), so the
+ * spend lands on the pool React holds rather than on a stale render snapshot.
+ * Fail-soft: an unaffordable or non-positive cost returns `pool` unchanged.
+ */
+export function spendPremonitionEssence(
+  pool: EssencePool,
+  sphere: SphereName,
+  cost: number,
+): EssencePool {
+  if (!(cost > 0) || (pool[sphere] ?? 0) < cost) return pool;
+  return { ...pool, [sphere]: pool[sphere] - cost };
+}
+
 // ─── Apply Whisper Choice ───────────────────────────────────────
 
 export interface WhisperResult {
@@ -56,8 +73,8 @@ export function applyWhisperChoice(
     return { success: false, influenceId: null, essenceSpent: 0, message: 'Not enough essence' };
   }
 
-  // Deduct essence
-  essencePool[nudge.sphere] -= nudge.essenceCost;
+  // THR-1783: the pool is React state — the caller deducts through
+  // `spendPremonitionEssence` inside its state update; nothing here mutates it.
 
   // Determine intervention type for the influence entry
   const interventionType: InterventionType = nudge.category === 'ambition_drift'
@@ -170,8 +187,7 @@ export function applyCompulsionChoice(
     return { success: false, influenceId: null, essenceSpent: 0, message: 'Not enough essence' };
   }
 
-  // Deduct essence
-  essencePool[candidate.sphere] -= candidate.essenceCost;
+  // THR-1783: deducted by the caller via `spendPremonitionEssence`, as above.
 
   const influenceId = nextInfluenceId(tick);
 

@@ -168,7 +168,7 @@ import { JourneyVignetteModal } from './JourneyVignetteModal';
 import { PremonitionModal } from './PremonitionModal';
 import { StoryBeatModal } from './StoryBeatModal';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
-import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
+import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition, spendPremonitionEssence } from '../../engine/premonitionActions';
 // THR-1414 — the forcePremonition debug lever.
 import { buildWhisperPremonition } from '../../engine/phaseDivinePremonition';
 import { FORCE_COMPULSION_FLAG } from '../../engine/premonitionCompulsion';
@@ -254,7 +254,7 @@ import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/uni
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
-import { withEssenceSpend, snapshotEssencePool, recordEssenceMovement } from '../../engine/essenceMovement';
+import { withEssenceSpend, recordEssenceMovement } from '../../engine/essenceMovement';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 import { applyBalancedTestAvatar, applySpellStamp, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import { buildEncounterBinderContext } from '../../engine/binding/encounterBinderContext';
@@ -1449,36 +1449,45 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleWhisperChoice = useCallback((nudge: WhisperNudge) => {
     if (!activePremonition) return;
-    // THR-1713 — the whisper charges the pool in place; diff it by value so the
-    // spend reaches the essence row's movement record.
-    const poolBefore = snapshotEssencePool(gameState.essencePool);
     const result = applyWhisperChoice(
       gameState, activePremonition.agentId, activePremonition.agentName, nudge,
     );
     pushSteerToast(result, nudge.sphere, activePremonition.agentId);
     // Remove from queue
     const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
-    setGameState(prev => ({
-      ...prev,
-      premonitionQueue: remaining,
-      essenceMovement: recordEssenceMovement(prev.essenceMovement, poolBefore, prev.essencePool, 'premonition', prev.tick),
-    }));
+    // THR-1783 — the spend lands inside the state update, not on the render's pool.
+    setGameState(prev => {
+      const essencePool = result.success
+        ? spendPremonitionEssence(prev.essencePool, nudge.sphere, result.essenceSpent)
+        : prev.essencePool;
+      return {
+        ...prev,
+        premonitionQueue: remaining,
+        essencePool,
+        essenceMovement: recordEssenceMovement(prev.essenceMovement, prev.essencePool, essencePool, 'premonition', prev.tick),
+      };
+    });
   }, [activePremonition, gameState, pushSteerToast]);
 
   const handleCompulsionChoice = useCallback((candidate: CompulsionCandidate) => {
     if (!activePremonition) return;
-    const poolBefore = snapshotEssencePool(gameState.essencePool); // THR-1713, as above
     const result = applyCompulsionChoice(
       gameState, activePremonition.agentId, activePremonition.agentName, candidate,
     );
     pushSteerToast(result, candidate.sphere, activePremonition.agentId);
     // Remove from queue
     const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
-    setGameState(prev => ({
-      ...prev,
-      premonitionQueue: remaining,
-      essenceMovement: recordEssenceMovement(prev.essenceMovement, poolBefore, prev.essencePool, 'premonition', prev.tick),
-    }));
+    setGameState(prev => {
+      const essencePool = result.success
+        ? spendPremonitionEssence(prev.essencePool, candidate.sphere, result.essenceSpent)
+        : prev.essencePool; // THR-1783, as above
+      return {
+        ...prev,
+        premonitionQueue: remaining,
+        essencePool,
+        essenceMovement: recordEssenceMovement(prev.essenceMovement, prev.essencePool, essencePool, 'premonition', prev.tick),
+      };
+    });
   }, [activePremonition, gameState, pushSteerToast]);
 
   const handlePremonitionDismiss = useCallback(() => {
