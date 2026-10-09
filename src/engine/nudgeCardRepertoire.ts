@@ -25,6 +25,7 @@
  * Plan: `Docs/plans/2026-07-30-nudge-card-repertoire.md`
  */
 
+import { FOUNDATION_SPHERE_NAMES } from '../types/index';
 import type { SphereName } from '../types/index';
 import type { HungerId } from '../types/hunger';
 import type { EchoDefinition } from '../types/echo';
@@ -43,6 +44,7 @@ import {
   DEAL_FAILURE_BAND_OUTCOMES,
   ECHO_CARD_SCAR_DISCOUNT,
   ECHO_CARD_SCAR_PENALTY,
+  FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD,
   SECONDARY_SPHERE_DISCOUNT,
   SPHERE_ATTUNEMENT_THRESHOLDS,
 } from '../data/nudge-constants';
@@ -70,7 +72,8 @@ export function resetRepertoireWarnings(): void {
  * How freely a god may play a card type.
  *
  * `full` — universal core, or signed by the primary sphere. Authored price.
- * `discounted` — signed by the secondary sphere. {@link SECONDARY_SPHERE_DISCOUNT} off.
+ * `discounted` — signed by the secondary sphere, or by a Foundation sphere the god
+ *   found in a ruin (THR-1753). {@link SECONDARY_SPHERE_DISCOUNT} off.
  * `locked` — signed only by spheres this god does not hold. Not dealt at all.
  */
 export type CardAccess = 'full' | 'discounted' | 'locked';
@@ -88,6 +91,36 @@ export type HeldCardAccess = Exclude<CardAccess, 'locked'>;
 export interface AscendantSpheres {
   readonly primary?: SphereName;
   readonly secondary?: SphereName;
+  /**
+   * Foundation spheres the god has *found* rather than chosen (THR-1753) — see
+   * {@link discoveredFoundationSpheres}. Each opens its signed cards at
+   * `discounted`, the secondary tier, unless identity already grants more.
+   */
+  readonly discovered?: readonly SphereName[];
+}
+
+/**
+ * Foundation spheres whose signed cards a god has opened by drawing elder
+ * essence out of a ruin. THR-1753.
+ *
+ * Foundation magic is found, not chosen (rulebook §5): Remembrance's point-buy
+ * covers Creation spheres only (THR-1749), so without this no god reaches
+ * gambit, stumble, favor, whisper, veil or undertow through identity at all.
+ *
+ * Read off the lifetime `essenceEarnedBySphere` ledger rather than a new flag:
+ * every elder grant (hidden-site reveal, ruin transformed / consumed /
+ * catastrophic) already lands there through the phase-boundary diff, and no
+ * other source pays out Foundation essence once income follows the bought
+ * Creation vector. Pure over run state, in {@link FOUNDATION_SPHERE_NAMES}
+ * order, so the same save always opens the same spheres.
+ */
+export function discoveredFoundationSpheres(
+  earned: EssenceEarnedBySphere | undefined,
+): readonly SphereName[] {
+  if (!earned) return [];
+  return FOUNDATION_SPHERE_NAMES.filter(
+    (sphere) => (earned[sphere] ?? 0) >= FOUNDATION_DISCOVERY_ESSENCE_THRESHOLD,
+  );
 }
 
 /** Types a single sphere signs. Empty for a sphere with no signatures. */
@@ -114,6 +147,7 @@ export function cardTypeAccess(
   if (UNIVERSAL_CORE_TYPES.includes(typeId)) return 'full';
   if (signatureTypesFor(spheres.primary).includes(typeId)) return 'full';
   if (signatureTypesFor(spheres.secondary).includes(typeId)) return 'discounted';
+  if (spheres.discovered?.some((s) => signatureTypesFor(s).includes(typeId))) return 'discounted';
   return 'locked';
 }
 
@@ -140,6 +174,7 @@ export function memberAccess(
   if (member.sphere === undefined) return cardTypeAccess(member.typeId, spheres);
   if (member.sphere === spheres.primary) return 'full';
   if (member.sphere === spheres.secondary) return 'discounted';
+  if (spheres.discovered?.includes(member.sphere)) return 'discounted';
   return 'locked';
 }
 
@@ -255,6 +290,8 @@ export interface RepertoireEntry {
     | 'milestone'
     | 'god_trait'
     | 'sphere_attunement'
+    /** A Foundation sphere's signature, opened by finding its elder magic (THR-1753). */
+    | 'discovery'
     | 'echo';
   /** Forecast penalty this card carries (scarred echo cards only). */
   readonly forecastPenalty?: number;
@@ -262,7 +299,10 @@ export interface RepertoireEntry {
   readonly costRelief?: number;
 }
 
-function sourceFor(member: NudgeCardMember): RepertoireEntry['source'] {
+function sourceFor(
+  member: NudgeCardMember,
+  spheres: AscendantSpheres,
+): RepertoireEntry['source'] {
   if (member.hunger !== undefined) return 'hunger';
   const kind = member.unlock?.kind ?? 'starting';
   if (kind === 'milestone') return 'milestone';
@@ -272,7 +312,18 @@ function sourceFor(member: NudgeCardMember): RepertoireEntry['source'] {
   // provenance a surface wants to explain is *how it was earned*, not that it
   // happens to be sphere-signed.
   if (kind === 'sphere_attunement') return 'sphere_attunement';
-  return member.sphere !== undefined ? 'signature' : 'core';
+  if (member.sphere === undefined) return 'core';
+  // Held only because a ruin opened its sphere — identity would have locked it.
+  // Asked after primary/secondary so a god who also holds the sphere by choice
+  // reads it as their signature, the stronger claim.
+  if (
+    member.sphere !== spheres.primary &&
+    member.sphere !== spheres.secondary &&
+    spheres.discovered?.includes(member.sphere)
+  ) {
+    return 'discovery';
+  }
+  return 'signature';
 }
 
 /**
@@ -284,12 +335,20 @@ function sourceFor(member: NudgeCardMember): RepertoireEntry['source'] {
  */
 export function buildRepertoire(context: RepertoireContext): readonly RepertoireEntry[] {
   const entries: RepertoireEntry[] = [];
+  // A caller that already resolved the found spheres passes them; everyone else
+  // gets them derived from the ledger they already hand in, so every surface
+  // (dealer, nudge phase, debug readout) agrees without a new argument.
+  const spheres: AscendantSpheres = {
+    primary: context.primary,
+    secondary: context.secondary,
+    discovered: context.discovered ?? discoveredFoundationSpheres(context.essenceEarnedBySphere),
+  };
 
   for (const member of NUDGE_CARD_LIBRARY) {
-    const access = memberAccess(member, context);
+    const access = memberAccess(member, spheres);
     if (access === 'locked') continue;
     if (!isMemberUnlocked(member, context)) continue;
-    entries.push({ member, access, source: sourceFor(member) });
+    entries.push({ member, access, source: sourceFor(member, spheres) });
   }
 
   // Echo cards append last and bypass access entirely — including the locked

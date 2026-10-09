@@ -230,6 +230,7 @@ const EARNED_SOURCES: ReadonlySet<RepertoireEntry['source']> = new Set([
   'milestone',
   'god_trait',
   'sphere_attunement',
+  'discovery',
   'hunger',
   'echo',
 ]);

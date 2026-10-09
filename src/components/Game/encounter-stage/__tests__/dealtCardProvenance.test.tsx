@@ -187,6 +187,29 @@ describe('THR-1247 · a dealt card on the encounter stage', () => {
     ).toMatch(/Darkness signature/u);
   });
 
+  it('says a found Foundation card came from the ruins (THR-1753)', () => {
+    // A Creation-only god who drew darkness essence out of a ruin.
+    const finder = {
+      ...darknessGod(),
+      essenceEarnedBySphere: { darkness: 1.25 },
+      ascendantIdentity: {
+        sphereAlignment: { primary: 'mind', secondary: 'life' },
+        hungerId: 'hunger.witness',
+      },
+    } as unknown as GameState;
+    const phase = phaseFor({ count: 4, tags: ['shadow'] }, finder);
+    const found = phase.cards.find(
+      (c) =>
+        c.libraryCardId === 'card.veil.signature.darkness' ||
+        c.libraryCardId === 'card.undertow.signature.darkness',
+    );
+    expect(found, 'no found darkness card was dealt to the finder').toBeDefined();
+    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
+    const line = screen.getByTestId(`nudge-card-provenance-${found!.id}`).textContent ?? '';
+    expect(line).toMatch(/Darkness found in the ruins/u);
+    expect(line).not.toMatch(/\d/u);
+  });
+
   it('leaves an authored card with no provenance line at all', () => {
     // The absence arm. A surface that labelled every card would pass every
     // assertion above while relabelling the entire shipped corpus.

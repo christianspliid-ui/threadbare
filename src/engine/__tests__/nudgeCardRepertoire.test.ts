@@ -30,6 +30,7 @@ import {
   buildCardEcho,
   buildRepertoire,
   cardTypeAccess,
+  discoveredFoundationSpheres,
   echoCardsFromDefinitions,
   isMemberUnlocked,
   memberAccess,
@@ -624,5 +625,97 @@ describe('echo card carry', () => {
     expect(echoCardsFromDefinitions(defs)).toEqual([
       { cardId: 'card.boost.core', scarred: true },
     ]);
+  });
+});
+
+// ─── Foundation discovery (THR-1753) ─────────────────────────────────
+
+describe('Foundation discovery — elder magic is found, not chosen (THR-1753)', () => {
+  /** The six Foundation-signed types, written out so the test is not the table. */
+  const FOUNDATION_SIGNED = ['gambit', 'stumble', 'favor', 'whisper', 'veil', 'undertow'] as const;
+  /** A god whose identity is all Creation — the only shape point-buy produces. */
+  const CREATION_GOD = { primary: 'mind', secondary: 'life' } as const;
+
+  const heldTypes = (entries: ReturnType<typeof buildRepertoire>) =>
+    new Set(entries.map((e) => e.member.typeId));
+
+  it('a Creation-only god holds none of the six before any find', () => {
+    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: {} }));
+    for (const t of FOUNDATION_SIGNED) expect(held.has(t)).toBe(false);
+  });
+
+  it('reads found spheres off the ledger at the 1-essence mark, in Foundation order', () => {
+    expect(discoveredFoundationSpheres(undefined)).toEqual([]);
+    expect(discoveredFoundationSpheres({ chaos: 0.99 })).toEqual([]);
+    expect(
+      discoveredFoundationSpheres({ darkness: 1.25, chaos: 1, mind: 400, light: 0 }),
+    ).toEqual(['chaos', 'darkness']);
+  });
+
+  it('one elder-site spread (1.25 per Foundation sphere) opens all six at the secondary tier', () => {
+    const entries = buildRepertoire({
+      ...CREATION_GOD,
+      essenceEarnedBySphere: { chaos: 1.25, order: 1.25, light: 1.25, darkness: 1.25 },
+    });
+    const found = entries.filter((e) => e.source === 'discovery');
+    const foundTypes = new Set(found.map((e) => e.member.typeId));
+    for (const t of FOUNDATION_SIGNED) expect(foundTypes.has(t)).toBe(true);
+    expect(found.length).toBeGreaterThan(0);
+    for (const e of found) expect(e.access).toBe('discounted');
+  });
+
+  it('opens only the sphere the ruin touched', () => {
+    const held = heldTypes(buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { darkness: 2.5 } }));
+    expect(held.has('veil')).toBe(true);
+    expect(held.has('undertow')).toBe(true);
+    expect(held.has('gambit')).toBe(false);
+    expect(held.has('whisper')).toBe(false);
+  });
+
+  it('does not hand out order’s signature Insurance through the universal core type', () => {
+    const before = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: {} });
+    expect(before.some((e) => e.member.id === 'card.insurance.signature.order')).toBe(false);
+    const after = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { order: 3 } });
+    const sig = after.find((e) => e.member.id === 'card.insurance.signature.order');
+    expect(sig?.source).toBe('discovery');
+    expect(sig?.access).toBe('discounted');
+  });
+
+  it('identity outranks discovery: a held sphere stays full and reads as signature', () => {
+    const entries = buildRepertoire({
+      primary: 'darkness',
+      secondary: 'mind',
+      essenceEarnedBySphere: { darkness: 50 },
+    });
+    const veil = entries.find((e) => e.member.id === 'card.veil.signature.darkness');
+    expect(veil?.access).toBe('full');
+    expect(veil?.source).toBe('signature');
+  });
+
+  it('a discovered sphere lets its attunement member deepen once practised', () => {
+    const entries = buildRepertoire({ ...CREATION_GOD, essenceEarnedBySphere: { chaos: 20 } });
+    const attuned = entries.find((e) => e.member.id === 'card.gambit.attunement.chaos');
+    expect(attuned?.source).toBe('sphere_attunement');
+    expect(attuned?.access).toBe('discounted');
+  });
+
+  it('memberAccess / cardTypeAccess honour an explicit discovered list', () => {
+    expect(cardTypeAccess('stumble', { ...CREATION_GOD })).toBe('locked');
+    expect(cardTypeAccess('stumble', { ...CREATION_GOD, discovered: ['chaos'] })).toBe('discounted');
+    const whisper = { typeId: 'whisper' as const, sphere: 'light' as const };
+    expect(memberAccess(whisper, { ...CREATION_GOD, discovered: ['light'] })).toBe('discounted');
+    expect(memberAccess(whisper, { ...CREATION_GOD, discovered: ['darkness'] })).toBe('locked');
+  });
+
+  it('every found signature member is dealable (profiled with band fragments)', () => {
+    const found = buildRepertoire({
+      ...CREATION_GOD,
+      essenceEarnedBySphere: { chaos: 2, order: 2, light: 2, darkness: 2 },
+    }).filter((e) => e.source === 'discovery');
+    expect(found.length).toBeGreaterThan(0);
+    for (const e of found) {
+      expect(PLAY_PROFILES[e.member.id], e.member.id).toBeDefined();
+      expect(Object.keys(BAND_FRAGMENTS[e.member.id] ?? {}).length, e.member.id).toBeGreaterThan(0);
+    }
   });
 });

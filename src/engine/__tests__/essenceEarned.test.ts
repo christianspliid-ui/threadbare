@@ -216,9 +216,16 @@ describe('attunement deepens, it does not re-key', () => {
     // THR-870's pivot stays parked: the sphere identity is still the door.
     // Falsification arm — if `memberAccess` stopped running before the unlock,
     // these ids would appear and this assertion is the only thing that notices.
+    //
+    // `discovered: []` pins the door shut on purpose. Since THR-1753 earning
+    // Foundation essence *finds* that sphere, which is a second door, and every
+    // attunement member today is Foundation-signed. Without the override this
+    // arm would be testing discovery, not attunement; discovery has its own
+    // tests in nudgeCardRepertoire.test.ts.
     const held = buildRepertoire({
       primary: 'order',
       secondary: 'matter',
+      discovered: [],
       essenceEarnedBySphere: ATTUNED_TO_EVERYTHING,
     }).map((e) => e.member.id);
 

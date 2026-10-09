@@ -1323,6 +1323,7 @@ export interface DebugBridge {
             | 'milestone'
             | 'god_trait'
             | 'sphere_attunement'
+            | 'discovery'
             | 'echo';
           unlockKind: 'starting' | 'milestone' | 'god_trait' | 'sphere_attunement';
         }>;
