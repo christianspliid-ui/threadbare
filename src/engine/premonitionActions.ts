@@ -118,6 +118,10 @@ export function applyWhisperChoice(
       break;
   }
 
+  // THR-1781: a board-pulling whisper waits for the mortal's next full decision
+  // (`anchorHeldWhispers`); ambition drift is read by ambitionTick, not the board.
+  if (nudge.category !== 'ambition_drift') influence.awaitingFirstRead = true;
+
   addDivineInfluence(graph, agentId, influence);
 
   // Emit trace

@@ -4908,7 +4908,8 @@ export type TraceEntry =
   | MentorshipGraduatedTrace
   | MentorshipSurpassedTrace
   | MentorshipSeveredTrace
-  | CompulsionOutcomeTrace;
+  | CompulsionOutcomeTrace
+  | WhisperOutcomeTrace;
 
 /**
  * Trace: a paid God's Will compulsion resolved at the mortal's next full decision
@@ -4923,6 +4924,22 @@ export interface CompulsionOutcomeTrace extends TraceBase {
   /** The template the player paid to compel. */
   templateId: string;
   outcome: 'taken' | 'lapsed_expired' | 'lapsed_unavailable';
+  /** Ticks between the payment and this decision. */
+  heldTicks: number;
+}
+
+/**
+ * Trace: a paid whisper lapsed unread — the mortal reached no full decision within
+ * WHISPER_HOLD_MAX_TICKS of the payment (THR-1781). Emitted by `phaseAgentDecision`.
+ */
+export interface WhisperOutcomeTrace extends TraceBase {
+  category: 'divine_premonition';
+  subtype: 'whisper_outcome';
+  agentId: string;
+  agentName: string;
+  /** The whisper's `whisper_*` behavior tag. */
+  behaviorTag: string;
+  outcome: 'lapsed_expired';
   /** Ticks between the payment and this decision. */
   heldTicks: number;
 }

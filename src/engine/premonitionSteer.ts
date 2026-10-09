@@ -21,7 +21,7 @@ import type { DivineInfluenceEntry } from '../types/dream';
 import type { EncounterCacheEntry } from './encounterCache';
 import type { ScoredCandidate } from './encounterScoring';
 import { getCurrentStrength } from './decayCurve';
-import { WHISPER_PULL_SCALE, COMPULSION_HOLD_MAX_TICKS } from '../data/premonition-constants';
+import { WHISPER_PULL_SCALE, COMPULSION_HOLD_MAX_TICKS, WHISPER_HOLD_MAX_TICKS } from '../data/premonition-constants';
 
 // ─── Whisper pull ───────────────────────────────────────────────
 
@@ -73,6 +73,43 @@ export function computeWhisperPull(
 export function hasLiveWhisper(influences: readonly DivineInfluenceEntry[], tick: number): boolean {
   return influences.some(i => (i.behaviorTag ?? '').startsWith(WHISPER_TAG_PREFIX)
     && getCurrentStrength(i, tick) > 0);
+}
+
+/** True while a paid whisper still waits for its first full decision, inside its hold. */
+export function isWhisperHeld(influence: DivineInfluenceEntry, tick: number): boolean {
+  return influence.awaitingFirstRead === true
+    && (influence.behaviorTag ?? '').startsWith(WHISPER_TAG_PREFIX)
+    && tick - influence.tickApplied <= WHISPER_HOLD_MAX_TICKS;
+}
+
+/**
+ * Start held whispers' clocks at this full decision, in place. A held whisper inside
+ * WHISPER_HOLD_MAX_TICKS is re-stamped to `tick` (its pull runs from now); one past
+ * the hold lapses unread. Both lose `awaitingFirstRead`, so each resolves once.
+ * Returns the lapsed entries — the caller tells the player.
+ */
+export function anchorHeldWhispers(
+  influences: readonly DivineInfluenceEntry[],
+  tick: number,
+): { anchored: number; lapsed: DivineInfluenceEntry[] } {
+  let anchored = 0;
+  const lapsed: DivineInfluenceEntry[] = [];
+  for (const influence of influences) {
+    if (influence.awaitingFirstRead !== true) continue;
+    if (isWhisperHeld(influence, tick)) {
+      influence.tickApplied = tick;
+      anchored++;
+    } else {
+      lapsed.push(influence);
+    }
+    delete influence.awaitingFirstRead;
+  }
+  return { anchored, lapsed };
+}
+
+/** The player-facing line for a whisper that lapsed before the mortal heard it. */
+export function whisperLapseMessage(agentName: string): string {
+  return `Your whisper fades: ${agentName} never came free to hear it.`;
 }
 
 interface DecisionLists {

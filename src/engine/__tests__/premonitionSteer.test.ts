@@ -13,6 +13,9 @@ import {
   resolveCompulsion,
   compulsionOutcomeMessage,
   whisperMatchesEntry,
+  anchorHeldWhispers,
+  isWhisperHeld,
+  whisperLapseMessage,
 } from '../premonitionSteer';
 import { scoreUnifiedBoard } from '../decisionBoard';
 import { routeNotifications, eventTypeToCategory } from '../notificationRouter';
@@ -24,6 +27,7 @@ import {
   WHISPER_INFLUENCE_DECAY_RATE,
   WHISPER_PULL_SCALE,
   COMPULSION_HOLD_MAX_TICKS,
+  WHISPER_HOLD_MAX_TICKS,
 } from '../../data/premonition-constants';
 
 const PAID_AT = 100;
@@ -192,5 +196,47 @@ describe('held compulsion (THR-1781)', () => {
     expect(r).toMatchObject({ kind: 'taken', pulledFromRanked: true });
     expect(r.kind === 'taken' && r.candidate).toBe(there);
     expect(decision.topCandidates).toContain(there);
+  });
+});
+
+describe('held whisper (THR-1781)', () => {
+  const held = (tag: string, reach?: string): DivineInfluenceEntry => ({ ...whisper(tag, reach), awaitingFirstRead: true });
+  const goldEntry = { reachPrimary: 'gold', sphereAffinity: undefined, threatRating: 'moderate' } as never;
+
+  it('starts its pull at the first full decision, not the click — a busy mortal still feels it', () => {
+    const w = held('whisper_reach_gold', 'gold');
+    const decisionAt = PAID_AT + WHISPER_INFLUENCE_DURATION + 10; // the old pull is long gone
+    expect(computeWhisperPull([{ ...w, awaitingFirstRead: undefined }], goldEntry, decisionAt)).toBe(1);
+    const r = anchorHeldWhispers([w], decisionAt);
+    expect(r).toEqual({ anchored: 1, lapsed: [] });
+    expect(w.tickApplied).toBe(decisionAt);
+    expect(w.awaitingFirstRead).toBeUndefined();
+    expect(computeWhisperPull([w], goldEntry, decisionAt)).toBeCloseTo(1 + WHISPER_PULL_SCALE * WHISPER_INFLUENCE_STRENGTH);
+  });
+
+  it('lapses unread past the hold, once, with a player-facing line', () => {
+    const w = held('whisper_reach_gold', 'gold');
+    const late = PAID_AT + WHISPER_HOLD_MAX_TICKS + 1;
+    expect(isWhisperHeld(w, late)).toBe(false);
+    const r = anchorHeldWhispers([w], late);
+    expect(r.anchored).toBe(0);
+    expect(r.lapsed).toEqual([w]);
+    expect(w.tickApplied).toBe(PAID_AT);
+    expect(anchorHeldWhispers([w], late + 1).lapsed).toHaveLength(0);
+    expect(whisperLapseMessage('Aria')).toContain('Aria');
+  });
+
+  it('anchors only once — a second decision does not restart the clock', () => {
+    const w = held('whisper_gather_courage');
+    anchorHeldWhispers([w], PAID_AT + 5);
+    anchorHeldWhispers([w], PAID_AT + 20);
+    expect(w.tickApplied).toBe(PAID_AT + 5);
+  });
+
+  it('leaves non-whisper and already-read influences alone', () => {
+    const plain = whisper('whisper_reach_gold', 'gold');
+    const r = anchorHeldWhispers([plain], PAID_AT + 50);
+    expect(r).toEqual({ anchored: 0, lapsed: [] });
+    expect(plain.tickApplied).toBe(PAID_AT);
   });
 });

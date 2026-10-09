@@ -127,6 +127,12 @@ export interface DivineInfluenceEntry {
   strategyOverride?: string;
   // Agenda reference
   agendaId?: string;
+  /**
+   * THR-1781: a paid whisper that has not yet reached a full decision. Its decay
+   * clock starts at that decision (`anchorHeldWhispers` re-stamps `tickApplied`),
+   * not at the click — a mortal mid-chapter would otherwise never feel it.
+   */
+  awaitingFirstRead?: boolean;
 }
 
 // ─── Constants ───────────────────────────────────────────────────

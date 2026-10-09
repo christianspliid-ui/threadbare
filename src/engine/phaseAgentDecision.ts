@@ -95,7 +95,7 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
 import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
-import { applyWhisperPull, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
+import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
 import { getDivineInfluences } from './interventionEffects';
 import type { CompulsionOutcomeTrace } from '../types/trace';
 import type { PremonitionEvent } from '../types/premonition';
@@ -1042,8 +1042,39 @@ export function phaseAgentDecision(
       // Whispers write `whisper_*` influences; until now nothing read them. The
       // pull rides on each matching candidate as `whisperPull` (the live board
       // multiplies it in) and scales `finalScore` for the legacy pick.
+      // A whisper is held until this, the mortal's next full decision: its pull
+      // runs from here, and one that waited past WHISPER_HOLD_MAX_TICKS lapses
+      // with a toast rather than fading unseen. Entries are mutated in place (the
+      // node's own array), so a later `...actor.properties` spread keeps them.
       try {
-        applyWhisperPull(decision, getDivineInfluences(graph, agentId), state.tick, IDLE_SCORE_THRESHOLD);
+        const whisperInfluences = getDivineInfluences(graph, agentId);
+        const held = anchorHeldWhispers(whisperInfluences, state.tick);
+        if (runtime && (held.anchored > 0 || held.lapsed.length > 0)) touchWorld(runtime);
+        for (const lapsed of held.lapsed) {
+          const message = whisperLapseMessage(actor.name);
+          emitTrace({
+            category: 'divine_premonition',
+            subtype: 'whisper_outcome',
+            tick: state.tick,
+            agentId,
+            agentName: actor.name,
+            behaviorTag: lapsed.behaviorTag ?? '',
+            outcome: 'lapsed_expired',
+            heldTicks: state.tick - lapsed.tickApplied,
+            summary: message,
+          });
+          newEvents.push({
+            id: `divine_whisper_lapse_${agentId}_${lapsed.id}`,
+            tick: state.tick,
+            type: 'divine_premonition',
+            message,
+            significance: 0.5,
+            isInterventionBeat: true,
+            actorId: agentId,
+            notification: { channel: 'toast' },
+          });
+        }
+        applyWhisperPull(decision, whisperInfluences, state.tick, IDLE_SCORE_THRESHOLD);
       } catch {
         // Fail-soft: the whisper is a lean, never a reason to drop the decision.
       }

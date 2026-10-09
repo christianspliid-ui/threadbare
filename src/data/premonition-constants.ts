@@ -81,6 +81,13 @@ export const COMPULSION_CANDIDATE_COUNT = 4;
  * @range 24–144 */
 export const COMPULSION_HOLD_MAX_TICKS = 72;
 
+/** THR-1781 — how long a paid Whisper waits for the mortal's next real decision.
+ * Its WHISPER_INFLUENCE_DURATION pull starts at that decision, not at the click, so
+ * a mortal mid-chapter still feels it. Past this many ticks unread it lapses and the
+ * player is told. Matches COMPULSION_HOLD_MAX_TICKS.
+ * @range 24–144 */
+export const WHISPER_HOLD_MAX_TICKS = 72;
+
 /** Ticks after a Compulsion is offered before the same agent may be offered another.
  * Counted from the tick the event is emitted, so it covers all three endings —
  * chosen, dismissed, expired. 24 ticks = 2 game days at 12 ticks/day.
