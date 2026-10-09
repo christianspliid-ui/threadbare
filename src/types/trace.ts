@@ -108,6 +108,7 @@ export type TraceCategory =
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
+  | 'beat.settled_as_played' // THR-1786: Beat 0 settled silently for an already-bonded First
   | 'clock.first_run' // THR-1716: the clock ran for the first time this session
   | 'rarity_graduation'
   | 'rarity_importance'
@@ -999,6 +1000,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.spine_deferred',
   // The arrival hands the player into the first beat (THR-1716)
   'beat.arrival_offer',
+  // A bonded First's opening beat settles as already played (THR-1786)
+  'beat.settled_as_played',
   'clock.first_run',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
@@ -4870,6 +4873,7 @@ export type TraceEntry =
   | BeatGiftPlacedTrace
   | SpineDeferredTrace
   | BeatArrivalOfferTrace
+  | BeatSettledAsPlayedTrace
   | ClockFirstRunTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
@@ -5293,6 +5297,18 @@ export interface SpineDeferredTrace extends TraceBase {
 export interface BeatArrivalOfferTrace extends TraceBase {
   category: 'beat.arrival_offer';
   beatId: string;
+}
+
+/**
+ * Trace: a spine beat settled as already played instead of being offered
+ * (THR-1786). Beat 0 narrates the god threading The First; on a route where The
+ * First is already bonded, the Director resolves it in place (grants, record,
+ * cursor) and writes one chronicle line rather than asking the player again.
+ */
+export interface BeatSettledAsPlayedTrace extends TraceBase {
+  category: 'beat.settled_as_played';
+  beatId: string;
+  reason: 'first_already_bonded';
 }
 
 /**

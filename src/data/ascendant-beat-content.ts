@@ -52,6 +52,17 @@ export const SPINE_PLAYER_ACTS_BETWEEN_GIFTS = 1;
  * starved of the opening (THR-1647 S4).
  */
 export const SPINE_IDLE_FALLBACK_TICKS = 36;
+/**
+ * The chronicle line written when Beat 0 settles as already played because The
+ * First is bonded before the Director first runs (THR-1786). `{firstName}` is
+ * The First's name; a nameless First falls back to {@link SETTLED_OPENING_FIRST_FALLBACK}.
+ */
+export const SETTLED_OPENING_CHRONICLE_LINE =
+  'Your thread to {firstName} already holds. You can bind and watch other mortals now.';
+/** Stand-in name for a First whose node carries no name (fail-soft). */
+export const SETTLED_OPENING_FIRST_FALLBACK = 'The First';
+/** Settled-opening line significance — at/above the 0.8 chronicle threshold, so it is recorded; no toast. */
+export const SETTLED_OPENING_SIGNIFICANCE = 0.85;
 /** Pool-draw mix weights by beat kind. */
 export const BEAT_KIND_WEIGHTS: Partial<Record<BeatKind, number>> = {
   introduction: 3,
