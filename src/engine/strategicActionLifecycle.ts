@@ -271,6 +271,12 @@ function nounForCreatedNode(created: { properties?: Record<string, unknown> }): 
     .join(' ');
 }
 
+/**
+ * THR-1779 — node property stamped on a work when it is christened (the tick it was
+ * named). Read by {@link resolveAnchorName}: a christened work is never a naming anchor.
+ */
+export const CHRISTENED_AT_TICK_PROPERTY = 'christenedAtTick';
+
 /** The founder's culture foundation, for the "people" half of a work's name. */
 function foundationOfActor(graph: WorldGraph, actorId: string): string | undefined {
   const belongsTo = graph.getOutgoingEdges(actorId, 'belongs_to')[0];
@@ -284,7 +290,7 @@ function foundationOfActor(graph: WorldGraph, actorId: string): string | undefin
  * after. Prefers a *bound* location (the binder knows what the undertaking actually
  * touched), then the target, then the origin.
  */
-function resolveAnchorName(
+export function resolveAnchorName(
   state: GameState,
   graph: WorldGraph,
   project: StrategicProjectRuntime,
@@ -294,7 +300,12 @@ function resolveAnchorName(
   const candidateIds = [bound?.nodeId, project.targetNodeId, project.originLocationId];
   for (const id of candidateIds) {
     if (!id) continue;
-    const name = graph.getNode(id)?.name;
+    const node = graph.getNode(id);
+    // THR-1779 — a christened work is not ground. Anchoring a new quarter on one
+    // named "The Quarter of Heart of the Barrow" produced "The Quarter of Quarter of
+    // Heart of the Barrow"; fall through to the next candidate instead.
+    if (typeof node?.properties?.[CHRISTENED_AT_TICK_PROPERTY] === 'number') continue;
+    const name = node?.name;
     if (typeof name === 'string' && name.trim().length > 0) return name;
   }
   return undefined;
@@ -368,7 +379,9 @@ function christenCompletedWork(
   });
 
   try {
-    graph.updateNode(createdId, { name });
+    // THR-1779 — stamp the christening so a later undertaking never anchors its own
+    // name on this work (`resolveAnchorName`).
+    graph.updateNode(createdId, { name, properties: { [CHRISTENED_AT_TICK_PROPERTY]: tick } });
   } catch {
     // `updateNode` throws on a missing node. The op said it created one, so this is
     // a race we do not expect — but a naming failure must never take down the tick.

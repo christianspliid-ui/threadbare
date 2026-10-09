@@ -6,6 +6,7 @@
  * of empty ambition slots every AMBITION_REEVAL_INTERVAL ticks.
  */
 import { bondBasisMatches } from '../data/bond-basis';
+import { resolveAmbitionProseFor } from './ambitionProse';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { ActiveAmbition, AmbitionPriority } from '../types/ambition';
 import type { ReachDomain } from '../types/traits';
@@ -803,9 +804,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           if (callingChange?.event) newEvents.push(callingChange.event);
         }
 
-        const prose = result.status === 'completed'
+        // THR-1779 — ambition prose authors pronoun tokens; fill them for this actor.
+        const prose = resolveAmbitionProseFor(result.status === 'completed'
           ? template.completionProse[0] ?? `${actor.name} completed: ${template.displayName}`
-          : template.abandonmentProse[0] ?? `${actor.name} abandoned: ${template.displayName}`;
+          : template.abandonmentProse[0] ?? `${actor.name} abandoned: ${template.displayName}`,
+          graph, actor.id);
 
         newEvents.push({
           id: nextAmbitionEventId(tick),
@@ -843,8 +846,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
         for (const milestoneId of result.newMilestones) {
           const milestone = template.milestones.find(m => m.id === milestoneId);
-          const prose = milestone?.prose[0]
-            ?? `${actor.name} progressed toward: ${template.displayName}`;
+          const prose = resolveAmbitionProseFor(milestone?.prose[0]
+            ?? `${actor.name} progressed toward: ${template.displayName}`, graph, actor.id);
 
           newEvents.push({
             id: nextAmbitionEventId(tick),
@@ -1092,8 +1095,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             if (spentSpotlightPull(reevalAssignment)) actorPullSpent = true;
 
             const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
-            const prose = template?.selectionProse[0]
-              ?? `${actor.name} takes up a new ambition: ${assignment.templateId}`;
+            const prose = resolveAmbitionProseFor(template?.selectionProse[0]
+              ?? `${actor.name} takes up a new ambition: ${assignment.templateId}`, graph, actor.id);
 
             // A new drive is the calling's most volatile input (THR-1299 slice 5).
             {

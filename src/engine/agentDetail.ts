@@ -10,6 +10,7 @@
 
 import { buildDeadPastLine, type PastLine } from './worldPastWords';
 import type { WorldGraph } from './graph';
+import { resolveAmbitionProseFor } from './ambitionProse';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { CoreProfile } from '../types/coreRegistry';
 import { getAgentAttachments, type AttachmentSummary, type AttachmentFullEntry } from './agentAttachments';
@@ -1286,7 +1287,10 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
       reachAffinity: { ...template.reachAffinity },
       ...(mintedByLabel && { mintedByLabel }),
       ...(grievance && { grievance }),
-      ...(template.selectionProse?.[0] && { flavorText: template.selectionProse[0] }),
+      // THR-1779 — the line authors pronoun tokens; fill them for this mortal.
+      ...(template.selectionProse?.[0] && {
+        flavorText: resolveAmbitionProseFor(template.selectionProse[0], graph, agentId),
+      }),
     });
   }
 
