@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: the warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)). Merged via [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292) and live.
+- **2026-10-09: The First's story moments name their stage in words, not "Beat 1 — Call"** (THR-1788). Merged via [#2293](https://github.com/christianspliid-ui/threadbare/pull/2293) and live.
 - **2026-10-09: a bonded First is no longer asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)). Merged via [#2290](https://github.com/christianspliid-ui/threadbare/pull/2290) and live.
 - **2026-10-09: your turf can be lost to neglect, rival gods and doom, but never your seat** ([THR-1763](https://linear.app/threadbare/issue/THR-1763/the-opposing-dominion-as-a-force-who-pushes-back-how-fast-turf-erodes)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: God's Will prices now name the sphere they bill** ([THR-1783](https://linear.app/threadbare/issue/THR-1783)). Merged via [#2289](https://github.com/christianspliid-ui/threadbare/pull/2289) and live.
@@ -34,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: you chose B: the world offers powers, you choose and pay** ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)). Your words: *"i go with B, and i would like a tier/progression system of actions, aswell as an assessment of which should be generic."* The tiers and generic set are now [THR-1794](https://linear.app/threadbare/issue/THR-1794/god-card-tiers-and-the-generic-set-a-progression-ladder-for-every-god).
 - **2026-10-09: "Return to the world" now resolves the whole chapter** ([THR-1778](https://linear.app/threadbare/issue/THR-1778/return-to-the-world-bounces-back-closing-an-aftermath-resolves-only)). Merged via [#2285](https://github.com/christianspliid-ui/threadbare/pull/2285) and live.
 - **2026-10-09: every world now draws its doom from all seven archetypes, not just Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Merged via [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and live.
-- **2026-10-09: your turf grows in two moves, Shift then Claim** ([THR-1762](https://linear.app/threadbare/issue/THR-1762/how-the-frontier-moves-which-verbs-push-dominion-outward-what-they)). Decided for you by the design lane; say "veto" in chat to reverse.
-- **2026-10-09: elder magic can now be found in ruins** ([THR-1753](https://linear.app/threadbare/issue/THR-1753/foundation-signed-cards-lose-their-only-identity-route-once-spheres)). Merged via [#2282](https://github.com/christianspliid-ui/threadbare/pull/2282) and live.
 
 ---
 

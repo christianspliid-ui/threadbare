@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 20:55 local (18:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 21:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,10 +26,11 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: 8 jobs ready, 1 being built.** Nothing in the ready queue is older than 4 days or blocked; no parked jobs.
 
-- **The warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)) is being built (claimed 25 minutes ago); its fix [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292) is waiting on checks and will merge on green.
-- **A bonded First is no longer asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)) merged via [#2290](https://github.com/christianspliid-ui/threadbare/pull/2290) and is live.
+- **An ending shows one reputation row per mortal, named** ([THR-1789](https://linear.app/threadbare/issue/THR-1789/an-ending-shows-one-reputation-row-per-mortal-named-fold-the-per-step)) is being built; its fix [#2294](https://github.com/christianspliid-ui/threadbare/pull/2294) is waiting on checks and will merge on green.
+- **The warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)) merged via [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292), and **The First's story moments name their stage in words** (THR-1788) merged via [#2293](https://github.com/christianspliid-ui/threadbare/pull/2293). Both are live.
+- Newly queued by the orchestrator: **the god's seat is named and findable** ([THR-1792](https://linear.app/threadbare/issue/THR-1792/the-gods-seat-is-named-and-findable-a-seat-line-on-the-gods-bar-that)) and a **sphere-opposites bug in cultural tension** ([THR-1798](https://linear.app/threadbare/issue/THR-1798/culturalgravitys-private-opposition-map-contradicts-sphere-opposites)).
 
 ## Health
 
-- **Heavy simulation tests are red on four main commits in a row** ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37972597184), on 312f0cbf). Last hour's slow-simulation reading did not repeat — tick cost is back at the usual 126 ms/tick — so this looks like the tests themselves timing out, not the game getting slower. No session has claimed it. Executor's job, not yours.
-- Everything else is green. The live site is current (312f0cbf; later commits were docs only), no pull requests are stuck, all 11 lanes are on schedule, and the worktree cleaner last ran at 20:40.
+- **Heavy simulation tests are red on every main commit since 312f0cbf**, six in a row now ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/37980703455), on f808f53a). Tick cost is normal (124 ms/tick, 2% under the weekly median), so this is the tests, not the game getting slower. No session has claimed it. Executor's job, not yours.
+- Everything else is green. The live site is current (f808f53a), no pull requests are stuck, all 11 lanes are on schedule, and the worktree cleaner last ran at 21:40.
