@@ -31,6 +31,7 @@
  */
 
 import { CONTENT_OBJECT_KINDS } from '../data/content-objects';
+import { AMBITION_DEFAULT_PRONOUNS, resolveAmbitionPronouns } from './ambitionProse';
 import {
   effectiveTags,
   entriesOfKind,
@@ -76,6 +77,15 @@ const GAME_WORD: Readonly<Record<string, string>> = Object.fromEntries(
 );
 
 /** An entry's top-level fields, as an untyped bag. Twelve shapes, one accessor. */
+/** THR-1779 — fill ambition pronoun tokens with they/them in a string or string list. */
+function unnamedAmbitionProse(value: unknown): unknown {
+  if (typeof value === 'string') return resolveAmbitionPronouns(value, AMBITION_DEFAULT_PRONOUNS);
+  if (Array.isArray(value)) {
+    return value.map(v => (typeof v === 'string' ? resolveAmbitionPronouns(v, AMBITION_DEFAULT_PRONOUNS) : v));
+  }
+  return value;
+}
+
 function bag(entry: ContentCatalogEntry): Record<string, unknown> {
   return entry as unknown as Record<string, unknown>;
 }
@@ -182,10 +192,12 @@ export const CONTENT_PROSE_ADAPTERS: Readonly<Record<ContentObjectKindId, ProseA
     flavour: bag(e).joinSentence,
   }),
 
+  // THR-1779 — ambition prose authors pronoun tokens; a content card speaks of no one
+  // mortal in particular, so it reads they/them (as the Codex does).
   ambition_template: (e) => ({
     name: bag(e).displayName,
-    description: bag(e).selectionProse,
-    flavour: bag(e).completionProse,
+    description: unnamedAmbitionProse(bag(e).selectionProse),
+    flavour: unnamedAmbitionProse(bag(e).completionProse),
   }),
 
   omen_template: (e) => ({

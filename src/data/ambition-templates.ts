@@ -167,7 +167,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'trade_gold_mastery',
         condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.875 },
-        prose: ['Coin flows where she wills it.'],
+        prose: ['Coin flows where {they} will{s} it.'],
       },
     ],
     completion: { requires: 2, of: 3 },
@@ -179,19 +179,19 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'She set her eyes on the trade roads, and the trade roads noticed.',
-      'Every coin that changed hands whispered a name back to him.',
+      '{They} set {their} eyes on the trade roads, and the trade roads noticed.',
+      'Every coin that changed hands whispered a name back to {them}.',
     ],
     milestoneProse: {
       trade_bonds: ['New partners. New leverage.'],
       trade_location: ['The market square bears a single seal.'],
-      trade_gold_mastery: ['Gold answers to gold, and hers answers loudest.'],
+      trade_gold_mastery: ['Gold answers to gold, and {theirs} answers loudest.'],
     },
     completionProse: [
-      'The region trades by her leave. Caravans know no other route.',
+      'The region trades by {their} leave. Caravans know no other route.',
     ],
     abandonmentProse: [
-      'The markets forgot her name between one season and the next.',
+      'The markets forgot {their} name between one season and the next.',
     ],
   },
 
@@ -285,25 +285,25 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'conquer_iron',
         condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.875 },
-        prose: ['His blade arm speaks for him in every hall.'],
+        prose: ['{Their} blade arm speaks for {them} in every hall.'],
       },
     ],
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_reach_below', reach: 'iron', threshold: 0.15 },
-        prose: ['The sword arm failed. Territory requires strength he no longer has.'],
+        prose: ['The sword arm failed. Territory required strength {they} no longer had.'],
       },
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'He looked at the map and saw only what was not yet his.',
+      '{They} looked at the map and saw only what was not yet {theirs}.',
       'The land stretched wide and undefended. An invitation.',
     ],
     milestoneProse: {
       conquer_followers: ['A warband gathers at the fire.'],
-      conquer_hold: ['The fortress gates close behind him. His gates now.'],
-      conquer_iron: ['They say his name before drawing steel.'],
+      conquer_hold: ['The fortress gates close behind {them}. {Their} gates now.'],
+      conquer_iron: ['They say {their} name before drawing steel.'],
     },
     completionProse: [
       'The territory bent its knee. New borders, drawn in old blood.',
@@ -452,7 +452,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'arcane_veil_high',
         condition: { type: 'agent_reach_above', reach: 'veil', threshold: 1 },
-        prose: ['The world thinned. She could see through its seams.'],
+        prose: ['The world thinned. {They} could see through its seams.'],
       },
       {
         id: 'arcane_mentor',
@@ -474,8 +474,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'She pressed her palm to the world and felt it press back.',
-      'The old texts whispered of a threshold. He meant to cross it.',
+      '{They} pressed {their} palm to the world and felt it press back.',
+      'The old texts whispered of a threshold. {They} meant to cross it.',
     ],
     milestoneProse: {
       arcane_veil_high: ['The veil parts like curtain-cloth.'],
@@ -562,7 +562,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'dynasty_alliances',
         condition: { type: 'agent_has_bonds', minCount: 3, basis: 'alliance' },
-        prose: ['Three houses now bind their word to hers.'],
+        prose: ['Three houses now bind their word to {theirs}.'],
       },
     ],
     completion: { requires: 2, of: 3 },
@@ -577,8 +577,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'She planted a name in the earth and dared it to grow.',
-      'Not for himself. For the ones who would carry the name after.',
+      '{They} planted a name in the earth and dared it to grow.',
+      'Not for {themselves}. For the ones who would carry the name after.',
     ],
     milestoneProse: {
       dynasty_heir: ['Blood calls to blood across the years.'],
@@ -586,7 +586,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       dynasty_alliances: ['Alliances woven like thread through a loom.'],
     },
     completionProse: [
-      'The dynasty breathes. Her name will outlast the century.',
+      'The dynasty breathes. {Their} name will outlast the century.',
     ],
     abandonmentProse: [
       'The line guttered out. No heir, no seat, no name remembered.',
@@ -774,13 +774,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'Something was buried here once, on purpose. She meant to know what.',
+      'Something was buried here once, on purpose. {They} meant to know what.',
       'The past does not stay buried. It only waits for the right question.',
     ],
     milestoneProse: {
       secrets_ruin: ['Dust and dead languages. A promising start.'],
       secrets_eye: ['Seeing clearly now — too clearly, perhaps.'],
-      secrets_trait: ['The secret sits inside him like a second heartbeat.'],
+      secrets_trait: ['The secret sits inside {them} like a second heartbeat.'],
       secrets_kept_word: ['A promise kept, and a door that stays open because of it.'],
     },
     completionProse: [
@@ -839,7 +839,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'faith_flock',
         condition: { type: 'agent_has_bonds', minCount: 5, basis: 'faith' },
-        prose: ['Five souls who kneel when she speaks the words.'],
+        prose: ['Five souls who kneel when {they} speak{s} the words.'],
       },
       {
         id: 'faith_shrine',
@@ -849,7 +849,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'faith_star',
         condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.875 },
-        prose: ['The divine light pours through him like water through cloth.'],
+        prose: ['The divine light pours through {them} like water through cloth.'],
       },
     ],
     completion: { requires: 2, of: 3 },
@@ -861,13 +861,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'The word burned in her mouth. It demanded to be spoken.',
-      'He carried a truth too large for one chest. It needed more vessels.',
+      'The word burned in {their} mouth. It demanded to be spoken.',
+      '{They} carried a truth too large for one chest. It needed more vessels.',
     ],
     milestoneProse: {
       faith_flock: ['The congregation grows, candle by candle.'],
       faith_shrine: ['Sacred ground, consecrated in whisper and salt.'],
-      faith_star: ['The divine courses through him. He is vessel and voice.'],
+      faith_star: ['The divine courses through {them}. {They} {is} vessel and voice.'],
     },
     completionProse: [
       'The faith took root. Where there was one voice, now a chorus.',
@@ -929,7 +929,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'work_stone',
         condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.875 },
-        prose: ['He reads the grain of stone the way others read faces.'],
+        prose: ['{They} read{s} the grain of stone the way others read faces.'],
       },
     ],
     completion: { requires: 2, of: 3 },
@@ -942,12 +942,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     abandonmentCooldown: 50,
     selectionProse: [
       'Something that would stand when everything else had fallen. That was the promise.',
-      'She drew the plans on dirt and saw a monument.',
+      '{They} drew the plans on dirt and saw a monument.',
     ],
     milestoneProse: {
       work_labor: ['A workforce assembles. Purpose written on calloused hands.'],
       work_site: ['The site is claimed. Construction begins.'],
-      work_stone: ['Stone obeys her. The great work rises.'],
+      work_stone: ['Stone obeys {them}. The great work rises.'],
     },
     completionProse: [
       'The great work stands complete. It will outlast its maker, as intended.',
@@ -974,41 +974,41 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       {
         id: 'healer_bonds',
         condition: { type: 'agent_has_bonds', minCount: 4, basis: 'gratitude' },
-        prose: ['Four lives owed. The debt is theirs, not hers.'],
+        prose: ['Four lives owed. The debt runs to {them}, not from {them}.'],
       },
       {
         id: 'healer_flesh',
         condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.875 },
-        prose: ['She reads the body like a map — every vein a road, every bruise a story.'],
+        prose: ['{They} read{s} the body like a map — every vein a road, every bruise a story.'],
       },
       {
         id: 'healer_trait',
         condition: { type: 'agent_has_trait', trait: 'trait.mastery.anointed' },
-        prose: ['They brought the dying child. She brought it back.'],
+        prose: ['The dying child was carried in. {They} brought it back.'],
       },
     ],
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_reach_below', reach: 'gold', threshold: 0.1 },
-        prose: ['Physician, heal thyself. She could not.'],
+        prose: ['Physician, heal thyself. {They} could not.'],
       },
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'Every wound was a question. She intended to learn every answer.',
-      'He pressed his hands to the fevered skin and felt the sickness retreat.',
+      'Every wound was a question. {They} intended to learn every answer.',
+      '{They} pressed {their} hands to the fevered skin and felt the sickness retreat.',
     ],
     milestoneProse: {
       healer_bonds: ['The grateful remember. The healed return with others.'],
-      healer_flesh: ['The body has no secrets from her now.'],
+      healer_flesh: ['The body has no secrets from {them} now.'],
       healer_trait: ['Miracle — or mastery pushed past what anyone thought possible.'],
     },
     completionProse: [
-      'The greatest healer. They speak her name in sick-rooms like a prayer.',
+      'The greatest healer. People speak {their} name in sick-rooms like a prayer.',
     ],
     abandonmentProse: [
-      'The healing hands stilled. Some wounds, it turned out, were her own.',
+      'The healing hands stilled. Some wounds, it turned out, were {their} own.',
     ],
   },
 
@@ -1257,8 +1257,8 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'Betrayal has a taste. He would make the traitor swallow it.',
-      'The wound was still fresh when she began to plan.',
+      'Betrayal has a taste. {They} would make the traitor swallow it.',
+      'The wound was still fresh when {they} began to plan.',
     ],
     milestoneProse: {
       revenge_track: ['Found. Only a matter of time now.'],
@@ -1270,7 +1270,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       'Revenge, taken. Whether it brought peace — that was another question.',
     ],
     abandonmentProse: [
-      'The vengeance went cold. The betrayer walked free, and eventually so did she.',
+      'The vengeance went cold. The betrayer walked free, and eventually so did {they}.',
     ],
   },
 
@@ -1357,7 +1357,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'The homeland burned behind him. He swore he would see it rebuilt.',
+      'The homeland burned behind {them}. {They} swore {they} would see it rebuilt.',
       'Exile sharpens the memory of home into something like a blade.',
     ],
     milestoneProse: {
@@ -1440,7 +1440,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     abandonmentCooldown: 30,
     selectionProse: [
       'The bond-partner fell. The world narrowed to a single purpose.',
-      'Grief wore the shape of a blade. She meant to use it.',
+      'Grief wore the shape of a blade. {They} meant to use it.',
     ],
     milestoneProse: {
       avenge_culprit: ['A name. A face. A direction to walk.'],
@@ -1489,7 +1489,7 @@ const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
       {
         id: 'destiny_trial',
         condition: { type: 'agent_has_trait', trait: 'destiny_tested' },
-        prose: ['The trial came. She did not break.'],
+        prose: ['The trial came. {They} did not break.'],
       },
       {
         id: 'destiny_fulfilled',
@@ -1501,12 +1501,12 @@ const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
     abandonmentTriggers: [
       {
         condition: { type: 'agent_has_trait', trait: 'destiny_rejected' },
-        prose: ['She turned her back on what was written. The stars went silent.'],
+        prose: ['{They} turned {their} back on what was written. The stars went silent.'],
       },
     ],
     abandonmentCooldown: 50,
     selectionProse: [
-      'The stars named her. She did not ask to be named.',
+      'The stars named {them}. {They} did not ask to be named.',
       'Destiny arrived like weather — unavoidable, impersonal, absolute.',
     ],
     milestoneProse: {
@@ -1515,7 +1515,7 @@ const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
       destiny_fulfilled: ['What was foretold has come to pass.'],
     },
     completionProse: [
-      'The destiny fulfilled. Whether it was hers or the world\'s remains unclear.',
+      'The destiny fulfilled. Whether it was {theirs} or the world\'s remains unclear.',
     ],
     abandonmentProse: [
       'The destiny hung in the air, unclaimed. The stars found another.',

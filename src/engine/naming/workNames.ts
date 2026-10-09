@@ -207,7 +207,13 @@ export function generateWorkName(ctx: WorkNameContext): string {
   const root = phoneticRoot ?? lexicalRoot;
 
   const actorPossessive = ctx.actorName ? possessive(ctx.actorName) : undefined;
-  const anchor = ctx.anchorName ? bareName(ctx.anchorName) : undefined;
+  const bareAnchor = ctx.anchorName ? bareName(ctx.anchorName) : undefined;
+  // THR-1779 — an anchor that already says the noun is itself a work of this kind
+  // ("Quarter of Heart of the Barrow"), and every anchored pattern stacks the noun
+  // twice: "The Quarter of Quarter of Heart of the Barrow". Drop the anchor rather
+  // than the noun — the flavored and possessive patterns still name the work. The
+  // filter runs after every draw, so the PRNG sequence is unchanged (NFP #3).
+  const anchor = bareAnchor && !anchorRepeatsNoun(bareAnchor, noun) ? bareAnchor : undefined;
 
   const rendered: string[] = [
     ...(anchor ? renderPatterns(WORK_NAME_PATTERNS.anchored, { root, noun, anchor, actor: actorPossessive }) : []),
@@ -264,6 +270,17 @@ export function generateFailureScarName(scarId: string, actorName: string | unde
 // ─────────────────────────────────────────────────────────────────────────────
 // Internals
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * True when the anchor already contains the noun as a whole word (case-insensitive),
+ * so an anchored pattern would say it twice. Exported for the THR-1779 tests.
+ */
+export function anchorRepeatsNoun(anchor: string, noun: string): boolean {
+  const trimmed = noun.trim();
+  if (trimmed.length === 0) return false;
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^\\p{L}])${escaped}($|[^\\p{L}])`, 'iu').test(anchor);
+}
 
 interface PatternParts {
   root: string | undefined;

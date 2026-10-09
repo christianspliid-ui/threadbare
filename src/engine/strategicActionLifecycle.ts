@@ -91,7 +91,7 @@ import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
-import { getLocationNodes } from './sublocationShape';
+import { getLocationNodes, isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
@@ -271,6 +271,12 @@ function nounForCreatedNode(created: { properties?: Record<string, unknown> }): 
     .join(' ');
 }
 
+/**
+ * THR-1779 — node property stamped on a work when it is christened (the tick it was
+ * named). Read by {@link resolveAnchorName}: a christened work is never a naming anchor.
+ */
+export const CHRISTENED_AT_TICK_PROPERTY = 'christenedAtTick';
+
 /** The founder's culture foundation, for the "people" half of a work's name. */
 function foundationOfActor(graph: WorldGraph, actorId: string): string | undefined {
   const belongsTo = graph.getOutgoingEdges(actorId, 'belongs_to')[0];
@@ -284,7 +290,7 @@ function foundationOfActor(graph: WorldGraph, actorId: string): string | undefin
  * after. Prefers a *bound* location (the binder knows what the undertaking actually
  * touched), then the target, then the origin.
  */
-function resolveAnchorName(
+export function resolveAnchorName(
   state: GameState,
   graph: WorldGraph,
   project: StrategicProjectRuntime,
@@ -294,7 +300,16 @@ function resolveAnchorName(
   const candidateIds = [bound?.nodeId, project.targetNodeId, project.originLocationId];
   for (const id of candidateIds) {
     if (!id) continue;
-    const name = graph.getNode(id)?.name;
+    const raw = graph.getNode(id);
+    // THR-1779 — a christened *place* (a quarter, a hall — a sublocation) is a work,
+    // not ground. Anchoring a new quarter on one named "The Quarter of Heart of the
+    // Barrow" produced "The Quarter of Quarter of Heart of the Barrow"; name the work
+    // for the location that contains it instead. A christened settlement stays ground:
+    // a quarter raised in a founded Newhold is still "of Newhold".
+    const node = raw && typeof raw.properties?.[CHRISTENED_AT_TICK_PROPERTY] === 'number' && isPlaceNode(raw)
+      ? resolveToParentLocation(graph, raw)
+      : raw;
+    const name = node?.name;
     if (typeof name === 'string' && name.trim().length > 0) return name;
   }
   return undefined;
@@ -368,7 +383,9 @@ function christenCompletedWork(
   });
 
   try {
-    graph.updateNode(createdId, { name });
+    // THR-1779 — stamp the christening so a later undertaking never anchors its own
+    // name on this work (`resolveAnchorName`).
+    graph.updateNode(createdId, { name, properties: { [CHRISTENED_AT_TICK_PROPERTY]: tick } });
   } catch {
     // `updateNode` throws on a missing node. The op said it created one, so this is
     // a race we do not expect — but a naming failure must never take down the tick.

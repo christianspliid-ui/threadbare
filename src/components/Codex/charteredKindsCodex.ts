@@ -43,6 +43,7 @@
  */
 
 import type { CodexEntry } from './codexRegistry';
+import { AMBITION_DEFAULT_PRONOUNS, resolveAmbitionPronouns } from '../../engine/ambitionProse';
 import { conceptRow, contributionConcepts, sphereConcept, type CodexDetail } from './codexConcepts';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS, clampRarityTier } from '../../types/rarity';
 import type { RarityTier } from '../../types/rarity';
@@ -386,7 +387,11 @@ export function buildAmbitionCodexEntries(): CodexEntry[] {
   return ALL_AMBITION_TEMPLATES.map(template => {
     const tier = ambitionTier(template);
     const categoryWord = AMBITION_CATEGORY_WORDS[template.category];
-    const marks = template.milestones.map(m => m.prose[0]).filter(Boolean);
+    // THR-1779 — ambition prose authors pronoun tokens; the Codex speaks of no one
+    // mortal in particular, so it reads they/them.
+    const unnamed = (text: string | undefined): string | undefined =>
+      text === undefined ? undefined : resolveAmbitionPronouns(text, AMBITION_DEFAULT_PRONOUNS);
+    const marks = template.milestones.map(m => unnamed(m.prose[0])).filter(Boolean);
     return {
       id: template.id,
       name: template.displayName,
@@ -399,8 +404,8 @@ export function buildAmbitionCodexEntries(): CodexEntry[] {
       subtitle: `${categoryWord} · ${RARITY_TIER_NAMES[tier]}`,
       // The prose a mortal's taking-it-up is narrated with — the game's own voice for
       // the want, rather than a description written about it from outside.
-      summary: template.selectionProse[0] ?? '',
-      flavorText: template.selectionProse[1],
+      summary: unnamed(template.selectionProse[0]) ?? '',
+      flavorText: unnamed(template.selectionProse[1]),
       // Sphere keys are stored lower-case and must not reach a chip that way (Law 14) —
       // the same resolution the Codex's own `SPHERE_DISPLAY` does for every other section.
       tags: [categoryWord, ...template.sphereAffinities.map(sphereWord)],

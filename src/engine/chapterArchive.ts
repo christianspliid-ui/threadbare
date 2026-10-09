@@ -37,6 +37,7 @@ import type {
 import {
   afterimageForOutcome,
   isActionStepBranch,
+  type EncounterAftermathSummary,
   type UnifiedAction,
   type UnifiedActionTemplate,
 } from '../types/unifiedAction';
@@ -179,6 +180,13 @@ export function buildChapterRecord(
       state,
       state.tick,
       {
+        // THR-1779 — the scene's other party and its cast, threaded exactly as the
+        // live stage threads them (`buildUnifiedEncounterStageModel`). Without the
+        // bundle and bindings `ctx.cast` was undefined and every `{cast:*}` slot
+        // stripped to empty, which is how "His only kin, , claims" reached the ledger.
+        targetId: action.targetId,
+        supportBundle: template.supportBundle,
+        supportBindings: action.supportBindings,
         // THR-1635 — the chapter snapshots step prose "as the player read it", so it
         // threads what the live renderers thread: the template's fragment tables (the
         // `{frag:*}` slots, including the opening envelope) and its reach (the
@@ -206,11 +214,55 @@ export function buildChapterRecord(
     const rawStakesLine = rememberedStakesLine(action, template, graph, actorName);
     const stakesLine = rawStakesLine ? enrichProse(rawStakesLine, ctx) : undefined;
 
-    return { ...base, ...(stakesLine ? { stakesLine } : {}), openingProse, steps };
+    // THR-1779 — the aftermath overview and change lines are stored as authored, so
+    // they carried literal `{location}` / `{actor}` / `{cast:*}` tokens into the
+    // ledger. Enrich them here, with the chapter's own context, as the live
+    // aftermath does (`buildUnifiedEncounterStageModel`), so the ledger never
+    // re-enriches on render.
+    const aftermath = enrichAftermath(action.aftermathSummary, ctx);
+
+    return {
+      ...base,
+      ...(aftermath
+        ? { aftermathProse: aftermath.overview, aftermathSummary: aftermath }
+        : {}),
+      ...(stakesLine ? { stakesLine } : {}),
+      openingProse,
+      steps,
+    };
   } catch {
     // Fail-soft: a malformed template/context must not block resolution or lose the chapter.
     return { ...base, openingProse: FADED_STEP_PROSE, steps: [] };
   }
+}
+
+/**
+ * THR-1779 — the aftermath summary as the player read it: overview, and every
+ * change's title and detail, run through `enrichProse`. Returns `undefined` for
+ * an action with no summary. Fail-soft per field: a line that fails to enrich
+ * keeps its authored text rather than losing the chapter.
+ */
+function enrichAftermath(
+  summary: EncounterAftermathSummary | undefined,
+  ctx: ReturnType<typeof gatherNarrativeContext>,
+): EncounterAftermathSummary | undefined {
+  if (!summary) return undefined;
+  const enrich = (text: string): string => {
+    try {
+      return enrichProse(text, ctx);
+    } catch {
+      return text;
+    }
+  };
+  return {
+    ...summary,
+    overview: enrich(summary.overview),
+    changes: summary.changes.map(change => ({
+      ...change,
+      title: enrich(change.title),
+      detail: enrich(change.detail),
+    })),
+  };
 }
 
 function buildStepRecord(
