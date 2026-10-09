@@ -173,6 +173,7 @@ import { phaseMandate, resetMandateCounter } from './phaseMandate';
 export { phaseMandate } from './phaseMandate';
 import { resetInfluenceCounter } from './interventionEffects';
 import { resetMeetingCounter } from './meetingEncounter';
+import { drainThreadingRites } from './threadingRiteQueue';
 import { phaseJourneyBeat, getJourneyPhase } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { CURATION_PHASE_MULTIPLIERS } from './encounter/branchingConstants';
@@ -3034,6 +3035,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     if (famMap !== s.familiarityMap) {
       s = { ...s, familiarityMap: famMap };
     }
+  });
+
+  // Phase 2a.15: Threading rite drain (THR-1644 S1) — a thread the god wrote this
+  // tick left a pending-rite marker on its edge (the executor holds no GameState).
+  // Queue it for the rite surface, or — while none exists, or when the queue is
+  // full — resolve it as Bond without a hand. The thread is already written.
+  timeInlinePhase('threading_rite_drain', s, () => {
+    s = drainThreadingRites(s);
   });
 
   // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking,

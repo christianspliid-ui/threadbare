@@ -400,6 +400,10 @@ export type TraceCategory =
   // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
   | 'meeting.test_resolved'
   | 'meeting.bond_resolved'
+  // The threading rite — one writer; The First is the first (THR-1644 S1)
+  | 'thread.court_position_resolved'
+  | 'rite.queued'
+  | 'rite.applied'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -951,6 +955,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Meet The First resolutions (THR-1714)
   'meeting.test_resolved',
   'meeting.bond_resolved',
+  // The threading rite (THR-1644 S1)
+  'thread.court_position_resolved',
+  'rite.queued',
+  'rite.applied',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -4854,6 +4862,10 @@ export type TraceEntry =
   // Nudge Model — WS6 Meet The First conversion (THR-868)
   | MeetingTestResolvedTrace
   | MeetingBondResolvedTrace
+  // The threading rite (THR-1644 S1)
+  | ThreadCourtPositionResolvedTrace
+  | RiteQueuedTrace
+  | RiteAppliedTrace
   // Retrofitted from the orphaned-payload set (THR-1065). Each declared a
   // `category` literal and an authored payload, but was never a union member —
   // so `trace.category === '<its literal>'` was a TS2367 "no overlap" error and
@@ -5024,6 +5036,56 @@ export interface MeetingTestResolvedTrace extends TraceBase {
    * `.noforecast` suffixed when the outcome predates the forecast fields.
    */
   fateLineKey: string;
+}
+
+/**
+ * Trace: a thread from the god to a mortal resolved its court position
+ * (THR-1644 S1, D3). One per rite-bearing thread write. `resolvedPosition`
+ * differs from `cardPosition` exactly when the thread made a new First.
+ */
+export interface ThreadCourtPositionResolvedTrace extends TraceBase {
+  category: 'thread.court_position_resolved';
+  ascendantId: string;
+  /** What the template asked for. */
+  cardPosition: import('./influence').CourtPosition;
+  /** What was written — `the_first` when D3 fired. */
+  resolvedPosition: import('./influence').CourtPosition;
+  reason: import('../engine/threadingRite').CourtPositionReason;
+  /** The god's count of threads ever bound, after this one. */
+  threadsBoundCount: number;
+}
+
+/** Trace: a pending threading rite was recorded (THR-1644 S1). */
+export interface RiteQueuedTrace extends TraceBase {
+  category: 'rite.queued';
+  ordinal: number;
+  shape: import('../engine/threadingRite').RiteShape;
+  /** 0 = opens now (or resolves now, with no surface). */
+  queuedBehind: number;
+  /** True → the queue was full and the rite resolved as the bond alone, no hand. */
+  overflowed: boolean;
+}
+
+/**
+ * Trace: the one rite writer ran (THR-1644 S1, D1) — for the meeting and for
+ * every card-route thread. `outcomesPrefolded` marks the meeting, whose test
+ * shifts are already on the node (its `meeting.test_resolved` traces carry them).
+ */
+export interface RiteAppliedTrace extends TraceBase {
+  category: 'rite.applied';
+  shape: import('../engine/threadingRite').RiteShape;
+  viaMeeting: boolean;
+  /** False = bond without a hand, or an engine-side fallback. */
+  handPlayed: boolean;
+  outcomesPrefolded: boolean;
+  poleShifts: Array<{ pair: string; before: number; after: number; scale: number }>;
+  reachInvestment?: { reach: import('./traits').ReachDomain; amount: number };
+  quintessence?: { before: number; preClamp: number; after: number };
+  reception?: string;
+  markTraitId?: string;
+  /** THR-1755: a First's bond that granted no mark — the switch is off, or the reach has no god-given trait. */
+  markSkipped?: import('../engine/firstMark').FirstMarkSkip;
+  fallbackReason?: import('../engine/threadingRite').RiteFallbackReason;
 }
 
 /**
