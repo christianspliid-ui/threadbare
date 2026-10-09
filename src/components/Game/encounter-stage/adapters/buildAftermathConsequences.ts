@@ -205,6 +205,16 @@ export const DELTA_CLUSTER_WORDS: Record<number, string> = {
 };
 
 /**
+ * THR-1789 — the cluster's size word as the consequence legend teaches it:
+ * `slight`, `clear`, `great`. Derived from `DELTA_CLUSTER_WORDS`, so the legend
+ * and the cluster's hover read one source (Law 27) rather than two copies.
+ */
+export function deltaClusterLegendWord(count: number): string {
+  const words = DELTA_CLUSTER_WORDS[count] ?? DELTA_CLUSTER_WORDS[1];
+  return words.replace(/^an?\s+/, '').replace(/\s+amount$/, '');
+}
+
+/**
  * Fold a wire chip kind into its story category.
  *
  * The six display kinds were mechanical buckets; these four are what the change

@@ -13,7 +13,10 @@ import {
   categoryForKind,
   classifyChangeKind,
   CONSEQUENCE_KIND_LABELS,
+  DELTA_CLUSTER_WORDS,
+  deltaClusterLegendWord,
 } from '../buildAftermathConsequences';
+import { reputationSentence } from '../../../../../engine/aftermathWords';
 import { DELTA_CLUSTER_MAX } from '../../../../shared/DeltaCluster';
 import type {
   EncounterAftermathChange,
@@ -1389,5 +1392,41 @@ describe('a reputation noun about a person names the person, not the town (THR-1
       resolveAnchor: () => 'actor.inspector.12',
     })[0];
     expect(chip.nounLabel).toBe('REPUTATION WITH ARDENMOR');
+  });
+});
+
+// THR-1789 — the personal reputation chip names whose reputation it is, in the
+// sheet's word, and links to that mortal. Built from the real producer so the
+// test follows the words rather than a copy of them.
+describe('buildAftermathConsequences — personal reputation (THR-1789)', () => {
+  it('the noun carries the mortal\'s name and "reputation", and links to the mortal', () => {
+    const sentence = reputationSentence({ actorName: 'Kael', actorId: 'agent.kael', delta: 0.2, flavour: 'authored' });
+    const [chip] = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        id: 'ua_1:reputation:agent.kael',
+        detail: sentence.detail,
+        concepts: sentence.concepts,
+        stateNoun: sentence.stateNoun,
+        direction: sentence.direction,
+        magnitude: sentence.magnitude,
+        storyWeight: sentence.storyWeight,
+      })],
+      ...passthrough,
+    });
+    expect(chip.nounLabel?.toLowerCase()).toContain('kael');
+    expect(chip.nounLabel?.toLowerCase()).toContain('reputation');
+    expect(chip.nounLabel?.toLowerCase()).not.toContain('standing');
+    expect(chip.nounEntityId).toBe('agent.kael');
+  });
+
+  it('the legend word for each cluster size is read from DELTA_CLUSTER_WORDS', () => {
+    expect(deltaClusterLegendWord(1)).toBe('slight');
+    expect(deltaClusterLegendWord(2)).toBe('clear');
+    expect(deltaClusterLegendWord(3)).toBe('great');
+    for (const count of [1, 2, 3]) {
+      expect(DELTA_CLUSTER_WORDS[count]).toContain(deltaClusterLegendWord(count));
+    }
   });
 });

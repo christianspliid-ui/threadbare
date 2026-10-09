@@ -378,7 +378,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `rekindle` (1) | `rekindleThread.ts` | `THR-605`, `THR-773` |
 | `relocation` (1) | `relocationIntent.ts` | `THR-1141`, `THR-1142`, `THR-74` |
 | `remembrance` (1) | `remembrance.ts` | — |
-| `reputation` (2) | `reputation.ts`, `reputationWalk.ts` | `THR-1206` |
+| `reputation` (3) | `reputation.ts`, `reputationAftermathFold.ts`, `reputationWalk.ts` | `THR-1206`, `THR-1467`, `THR-1789` |
 | `resolution` (4) | `resolution.ts`, `resolutionModifiers.ts`, `resolutionScaleAdjust.ts`, `resolutionService.ts` | `Phase 2`, `THR-1581`, `THR-1627`, `THR-451`, `THR-571`, `THR-827` |
 | `resolved` (1) | `resolvedActionRetention.ts` | `THR-1777` |
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
@@ -442,4 +442,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 656 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 657 modules._
