@@ -100,6 +100,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | Phase | Name | Tags |
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
+| `2a.15` | Threading rite drain | `THR-1644` |
 | `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
 | `3b` | Notable Agendas | `THR-630` |
@@ -123,6 +124,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `1.8` | Composition phase runner — advance phased event recipes tied to doom clock | `THR-225` | orchestrator |
 | `2a` | Progress + resolve existing unified actions | — | orchestrator |
 | `2a.1` | Thread-bind familiarity grant — when a bind_thread_* action resolves | — | orchestrator |
+| `2a.15` | Threading rite drain | `THR-1644` | orchestrator |
 | `2a.4` | Effect Tick — per-agent effect bookkeeping | — | orchestrator |
 | `2a.5` | Encounter Progression — advance active encounters whose current step has elapsed | — | orchestrator |
 | `2a.52` | Effect Shells — process non-step-outcome flip_table triggers | `THR-53` | orchestrator |
@@ -414,6 +416,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
+| `threading` (2) | `threadingRite.ts`, `threadingRiteQueue.ts` | `THR-1644` |
 | `threat` (1) | `threatRating.ts` | — |
 | `tick` (1) | `tickHealthMonitor.ts` | — |
 | `tier` (1) | `tierPromotion.ts` | — |
@@ -437,4 +440,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 104 tick phases · 207 engine domains · 648 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 208 engine domains · 650 modules._
