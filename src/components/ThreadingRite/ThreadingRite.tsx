@@ -130,14 +130,6 @@ export function ThreadingRite({
   // Once the bond has rolled, the played result stands: the no-hand exit goes.
   const [bondRolled, setBondRolled] = useState(false);
 
-  // Escape is *Bond without a hand* (plan § Player-facing text: "dismissed by
-  // Escape"). The bond-only card's Modal handles its own Escape.
-  useEffect(() => {
-    if (plan.shape === 'bond_only' || bondRolled) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onBondWithoutHand(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [plan.shape, bondRolled, onBondWithoutHand]);
 
   const sparkVisions = useMemo(() => (candidate && becomesFirst
     ? bindSparkVisionsToCandidate(generateSparkVisions(candidate.primaryReach, primarySphere, plan.seed + 2), candidate)
@@ -163,6 +155,28 @@ export function ThreadingRite({
       ...(vision ? { spark: { reach: vision.reachInvestment, amount: vision.investmentAmount } } : {}),
     });
   }, [outcomes, plan.shape, vision, onComplete, onBondWithoutHand]);
+
+  // D6 — *Bond without a hand*. Before anything is played it waves the whole rite
+  // through (the engine's seeded no-hand bond). At the bond it rolls the bond with
+  // no cards and keeps what the player already played and paid for — the tests'
+  // pole shifts and the chosen spark — rather than discarding them. During the
+  // tests and the spark pick it is absent: each test offers "Stay silent", and a
+  // spark must be chosen.
+  const withoutHand = useMemo<(() => void) | null>(() => {
+    if (bondRolled) return null;
+    if (stage === 'opening') return onBondWithoutHand;
+    if (stage === 'bond') return () => finish(resolveBondTest(RITE_BOND_TEST, [], plan.seed + RITE_BOND_SEED_OFFSET));
+    return null;
+  }, [bondRolled, stage, onBondWithoutHand, finish, plan.seed]);
+
+  // Escape is *Bond without a hand* wherever the button is (plan § Player-facing
+  // text: "dismissed by Escape"). The bond-only card's Modal handles its own Escape.
+  useEffect(() => {
+    if (plan.shape === 'bond_only' || !withoutHand) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') withoutHand(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [plan.shape, withoutHand]);
 
   if (plan.shape === 'bond_only' || !candidate) {
     return (
@@ -307,9 +321,9 @@ export function ThreadingRite({
 
       {/* D6 — every stage can be waved through. Secondary: the stage's own
           action stays the one primary (Law 1). */}
-      {!bondRolled && (
+      {withoutHand && (
         <div className="absolute bottom-6 left-8" style={{ zIndex: 2 }}>
-          <BondWithoutHandButton onClick={onBondWithoutHand} />
+          <BondWithoutHandButton onClick={withoutHand} />
         </div>
       )}
     </div>
