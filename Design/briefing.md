@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-09 09:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-09 10:57 local (08:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 - **A: the world gives, by who you are.** Gifts stay free and keep their timing. Each one is drawn to match your god's reaches and spheres.
 - **B: the world offers, you choose and pay.** Every few days three omens rise. You take one up with essence drawn through its sphere, or let them pass. The design lane leans B.
 
-[Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-09c.md)*
+[Ticket](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the) · [write-up](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-god-card-buy-system-prototype.md) · [what B looks like](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-08-thr-1770-buy-mock/market-mock.html). [How gods grow across runs](https://linear.app/threadbare/issue/THR-1773/how-a-players-gods-grow-across-runs-what-a-second-fifth-and-twentieth) waits on it. Reply "A" or "B". *— also from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-09d.md)*
 
 ## Also waiting (4)
 
@@ -28,16 +28,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 jobs ready, 2 being built.** Nothing in the ready queue is older than 3 days or blocked.
+**Healthy: 8 jobs ready, 2 being built.** Nothing in the ready queue is older than 3 days or blocked.
 
-- **Shipped since last hour:** [buy your spheres](https://linear.app/threadbare/issue/THR-1749/buy-your-spheres-point-buy-across-the-eight-creation-spheres-at) merged ([#2272](https://github.com/christianspliid-ui/threadbare/pull/2272)) and is live.
-- **The builder lane is still switched off** (since about 07:11). It was turned off during the attended session working on the merge pile-up. No action from you unless you did not mean to switch it off.
-- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)) is built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280), but it clashes with main and is no longer set to merge.
-- **Parked, work up for review, no builder on it (about 8½ h):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273). The branch is pushed, not set to merge, and clashes with main.
+- **The builder lane is back on** (last ran 10:51). It had been switched off since about 07:11.
+- **The rite on screen** ([THR-1754](https://linear.app/threadbare/issue/THR-1754/threading-rite-s2-the-rite-on-screen-every-thread-opens-a-short-rite)) is built in [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280), but it clashes with main and is not set to merge.
+- **Parked, work up for review, no builder on it (about 9½ h):** [God's Will does nothing](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers) in [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273). The branch is pushed, not set to merge, and clashes with main.
 
 ## Health
 
-- **Three pull requests clash with main:** [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273), [#2279](https://github.com/christianspliid-ui/threadbare/pull/2279) (a harness change) and [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280). GitHub has started no checks on #2279 at all; a fresh push will start them. With the builder lane off, nothing is unsticking these. A session owes the merges. Not yours.
-- **Heavy simulation tests are red on main's newest commit** (1a7e9180, the buy-your-spheres merge). A follow-up fix is owed. Not yours.
+- **Two pull requests clash with main:** [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) (open 9 h) and [#2280](https://github.com/christianspliid-ui/threadbare/pull/2280) (open 3 h). The harness change [#2279](https://github.com/christianspliid-ui/threadbare/pull/2279) merged. The builder lane owes the merges now that it is back on. Not yours.
+- **Heavy simulation tests are red on main's newest commit** (bd0baddf), as on the one before. A follow-up fix is owed. Not yours.
 - The 6–8 October lane silence is still flagged by the silence check, but it is already explained (the computer was asleep), so it is not an ask.
-- Everything else is green. The live site serves the latest main (1a7e9180), the other 10 lanes are on schedule, the worktree cleaner last ran at 09:49, and the simulation is back to normal speed (136 ms/tick, within range of the weekly median).
+- Everything else is green. The live site serves the latest main (bd0baddf), all 11 lanes are on schedule, the worktree cleaner last ran at 10:40, and the simulation runs at normal speed (128 ms/tick, +6% on the weekly median).
