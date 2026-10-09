@@ -28,6 +28,7 @@ import type { ClockFirstRunTrace } from '../../../types/trace';
 /** What started the clock the first time this session (THR-1716) — `clock.first_run`'s `source`. */
 export type ClockFirstRunSource = ClockFirstRunTrace['source'];
 import type { DebugTickBatchResult } from '../../../engine/debugTickBatch';
+import type { DoomClockArchetype } from '../../../types/doomClock';
 
 interface UseSimulationParams {
   archetype: AscendantArchetype;
@@ -52,6 +53,8 @@ interface UseSimulationParams {
    * the beat stays closed even with The First unbonded (THR-874).
    */
   placeAvatarForMeeting?: boolean;
+  /** THR-1774: pin the doom (the showcase routes, `?doom=`). Absent → the world draws it. */
+  doomArchetype?: DoomClockArchetype;
 }
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
@@ -67,6 +70,7 @@ export function useSimulation({
   seedFirst,
   seedTestPackage,
   placeAvatarForMeeting,
+  doomArchetype,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
   const { cols: COLS, rows: ROWS } = MAP_SIZE_PRESETS[mapSize];
@@ -75,8 +79,8 @@ export function useSimulation({
   const initial = useMemo(
     () => {
       const result = ascendantIdentity
-        ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize)
-        : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS);
+        ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize, doomArchetype)
+        : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS, doomArchetype);
       // Dev pre-seeding: the two actions are independently switchable (THR-874).
       // `?view=game&firstunmet` seeds the test package but leaves The First unbonded
       // so the Meet-The-First beat stays reachable.
@@ -92,7 +96,7 @@ export function useSimulation({
       }
       return { ...result, arrivalBeatOffered: false };
     },
-    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting]
+    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype]
   );
 
   const [gameState, setGameState] = useState<GameState>(initial.state);

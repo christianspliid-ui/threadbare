@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { DoomBar } from '../DoomBar';
 import type { DoomClockDefinition, DoomClockState } from '../../../types/doomClock';
 
@@ -28,11 +28,14 @@ describe('DoomBar', () => {
     tickModifier: 1.0,
   };
 
-  it('renders archetype icon (SVG sphere icon for breach)', () => {
+  // THR-1774: the sigil follows the doom's own cards. Breach presses no sphere, so it
+  // shows its glyph; Reckoning's cards press Mind, so it shows the Mind sphere icon.
+  it('renders the glyph for a doom that presses no sphere (breach)', () => {
     const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
-    // breach maps to 'order' sphere — renders an SVG icon
-    const svg = container.querySelector('svg');
-    expect(svg).toBeTruthy();
+    const sigil = container.querySelector('[data-doom-sigil="breach"]');
+    expect(sigil?.textContent).toBe('◈');
+    expect(sigil?.querySelector('svg')).toBeNull();
+    expect(sigil?.closest('[data-tooltip-id="doom.breach"]')).toBeTruthy();
   });
 
   it('renders current stage name (without Stage N: prefix)', () => {
@@ -56,13 +59,14 @@ describe('DoomBar', () => {
     expect(screen.getByText('UNMADE')).toBeInTheDocument();
   });
 
-  it('renders SVG sphere icon for breach (not Unicode glyph)', () => {
-    // breach maps to 'order' sphere — the SVG stroke color uses the order sphere color (#fbbf24)
-    const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
-    const svg = container.querySelector('svg');
-    expect(svg).toBeTruthy();
-    // No raw Unicode glyph should appear for breach
-    expect(container.textContent).not.toContain('◈');
+  it('renders the sphere icon for a doom whose cards press one (reckoning → mind)', () => {
+    const definition: DoomClockDefinition = { ...mockDefinition, archetype: 'reckoning' };
+    const { container } = render(<DoomBar definition={definition} state={{ ...mockState, definitionArchetype: 'reckoning' }} />);
+    const sigil = container.querySelector('[data-doom-sigil="reckoning"]');
+    expect(sigil?.querySelector('svg')).toBeTruthy();
+    expect(sigil?.innerHTML).toContain('sphere-mind');
+    expect(sigil?.getAttribute('aria-label')).toBe('Reckoning');
+    expect(sigil?.textContent).not.toContain('⚔');
   });
 
   it('renders correct stage name at different progress levels', () => {
@@ -78,5 +82,29 @@ describe('DoomBar', () => {
     // Find the inner fill div of ProgressBar (contains width: 25%)
     const progressBar = container.querySelector('div[style*="width: 25%"]');
     expect(progressBar).toBeTruthy();
+  });
+
+  // THR-1774: the sigil's tooltip sits inside the bar's trigger; the innermost trigger
+  // wins, so hovering the sigil never stacks the bar's popup over it.
+  it('hovering the sigil shows only the doom tooltip, not the bar tooltip on top of it', () => {
+    vi.useFakeTimers();
+    try {
+      const definition: DoomClockDefinition = { ...mockDefinition, archetype: 'reckoning' };
+      const { container } = render(<DoomBar definition={definition} state={{ ...mockState, definitionArchetype: 'reckoning' }} />);
+      const sigil = container.querySelector('[data-doom-sigil="reckoning"]')!;
+      act(() => { fireEvent.pointerOver(sigil); });
+      act(() => { vi.advanceTimersByTime(2000); });
+      const tips = Array.from(document.querySelectorAll('[role="tooltip"]')).map(t => t.textContent ?? '');
+      expect(tips).toHaveLength(1);
+      expect(tips[0]).toContain('Past debts coming due');
+      // Moving onto the open popup (portaled, so its events bubble through the React tree
+      // to the bar's trigger) must not bring the bar's tooltip back on top of it.
+      const popup = document.querySelector('[role="tooltip"]')!;
+      act(() => { fireEvent.pointerOver(popup); });
+      act(() => { vi.advanceTimersByTime(2000); });
+      expect(document.querySelectorAll('[role="tooltip"]')).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

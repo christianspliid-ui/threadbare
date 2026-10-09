@@ -66,3 +66,18 @@ export function fractalNoise(
 
   return total / maxAmplitude;
 }
+
+/**
+ * Deterministic 32-bit string hash (`h = h * 31 + charCode`, start 0).
+ *
+ * The same algorithm as `hashString` in `src/engine/factionAmbitions.ts`, kept
+ * here so dependency-free callers (world creation — THR-1774's doom draw) can key
+ * a PRNG on a string without importing that module's army/faction graph.
+ */
+export function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return hash;
+}

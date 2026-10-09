@@ -2928,6 +2928,8 @@ if (import.meta.env.DEV) {
         doomWokeAtTick: resolveDoomWokeAtTick(state.doomClock),
         doomFloorMetAtTick: doomFloorMetAtTick(state.doomClock),
         doomCurrentTick: state.doomClock?.currentTick ?? 0,
+        // THR-1774: which doom this world drew (or was pinned to).
+        doomArchetype: state.doomDefinition.archetype,
         // THR-1647 (S4): the spine gifts wait for the player.
         playerActCount: state.playerActCount ?? 0,
         nextSpineBeat: beats && beats.spineCursor >= 0 && beats.spineCursor < ASCENDANT_SPINE.length

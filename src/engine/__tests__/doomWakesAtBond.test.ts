@@ -162,9 +162,15 @@ describe('THR-1646 — the doom clock waits for The First', () => {
     expect(wakeTraces).toHaveLength(1);
     expect(wakeTraces[0].tick).toBe(wakeTick);
 
-    const line = (partial.tickEvents ?? []).find(e => e.message === DOOM_WAKES_LINES.breach);
+    // THR-1774: the authored line, then one sentence that names the doom.
+    const wakeMessage = `${DOOM_WAKES_LINES.breach} The Age of the Breach has begun.`;
+    const line = (partial.tickEvents ?? []).find(e => e.message === wakeMessage);
     expect(line).toBeDefined();
     expect(line?.notification?.channel).toBe('toast');
+    // …and the Chronicle keeps it after the toast is gone.
+    const chronicled = (partial.chronicleEntries ?? []).filter(e => e.prose === wakeMessage);
+    expect(chronicled).toHaveLength(1);
+    expect(chronicled[0].title).toBe('The Age of the Breach');
 
     // The wake is once: the next tick advances without a second wake.
     s = { ...s, ...partial, tick: s.tick + 1, tickEvents: [] };
@@ -286,6 +292,28 @@ describe('THR-1646 — the doom clock waits for The First', () => {
     expect(next.tick).toBe(0);
     expect(next.doomClock.wokeAtTick).toBe(0);
     expect(next.doomClock.currentTick).toBe(0);
+  });
+
+  it('names the doom by its display name in stage escalations, never the raw key (THR-1774)', () => {
+    for (const archetype of ['breach', 'reckoning'] as const) {
+      resetEventCounter();
+      let s = { ...makeState(), doomDefinition: generateDoomClock(archetype, TOTAL_TICKS, 42), doomClock: createDoomClockState(archetype, TOTAL_TICKS) };
+      bondTheFirst(s);
+      const escalations: string[] = [];
+      for (let i = 0; i < TOTAL_TICKS && escalations.length === 0; i++) {
+        s = { ...s, tickEvents: [] };
+        const partial = phaseDoom(s);
+        for (const e of partial.tickEvents ?? []) {
+          if (e.type === 'doom_escalation') escalations.push(e.message, e.notification?.popup?.body ?? '');
+        }
+        s = { ...s, ...partial, tick: s.tick + 1 };
+      }
+      expect(escalations.length).toBeGreaterThan(0);
+      const name = archetype === 'breach' ? 'Breach' : 'Reckoning';
+      expect(escalations[0]).toMatch(new RegExp(`^The ${name} intensifies — `));
+      // Case-sensitive: the display name is capitalised, the raw key is not.
+      for (const text of escalations) expect(text).not.toMatch(new RegExp(`\\b${archetype}\\b`));
+    }
   });
 
   it('authors one wake line per doom archetype', () => {

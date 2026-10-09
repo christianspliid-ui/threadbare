@@ -58,6 +58,9 @@ const TOOLTIP_DESC_COLOR = 'var(--text-secondary)';
 const TOOLTIP_LINK_COLOR = 'var(--accent-gold)';
 const TOOLTIP_ARROW_SIZE = 6;
 
+/** Every mounted trigger wrapper — how a trigger recognises a nested one (THR-1774). */
+const TOOLTIP_TRIGGERS = new WeakSet<Element>();
+
 /** Minimum distance (px) between any tooltip edge and the viewport edge. */
 const VIEWPORT_MARGIN = 8;
 
@@ -171,6 +174,7 @@ export const Tooltip = React.memo(function Tooltip({
 
   const showTimerRef = useRef<NodeJS.Timeout>();
   const hideTimerRef = useRef<NodeJS.Timeout>();
+  const hiddenByNestedRef = useRef(false);
 
   const resolvedContent: TooltipContent | null = id
     ? resolveTooltip(id)
@@ -395,8 +399,34 @@ export const Tooltip = React.memo(function Tooltip({
     }, TOOLTIP_FADE_OUT);
   };
 
-  const handlePointerEnter = () => showTooltip();
-  const handlePointerLeave = () => hideTooltip();
+  // React dispatches `pointerover` before the emulated `pointerenter`, so a pointer
+  // arriving straight onto a nested trigger has already marked this one hidden.
+  const handlePointerEnter = () => {
+    if (!hiddenByNestedRef.current) showTooltip();
+  };
+  const handlePointerLeave = () => {
+    hiddenByNestedRef.current = false;
+    hideTooltip();
+  };
+  // Innermost trigger wins (THR-1774): a Tooltip nested inside this one's trigger
+  // (the doom bar's sigil inside the doom bar) hides this one while it is hovered,
+  // so the two popups never stack; moving back onto this trigger re-shows it.
+  const handlePointerOver = (e: React.PointerEvent) => {
+    // A portaled popup (this one's or a nested one's) bubbles through the React
+    // tree, not the DOM — it is not this trigger's surface, so it decides nothing.
+    if (!triggerRef.current?.contains(e.target as Node)) return;
+    let node = e.target as Element | null;
+    while (node && node !== triggerRef.current && !TOOLTIP_TRIGGERS.has(node)) node = node.parentElement;
+    if (node && node !== triggerRef.current) {
+      if (!hiddenByNestedRef.current) {
+        hiddenByNestedRef.current = true;
+        hideTooltip();
+      }
+    } else if (hiddenByNestedRef.current) {
+      hiddenByNestedRef.current = false;
+      showTooltip();
+    }
+  };
   const handleFocus = () => showTooltip();
   const handleBlur = () => hideTooltip();
 
@@ -418,6 +448,13 @@ export const Tooltip = React.memo(function Tooltip({
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    TOOLTIP_TRIGGERS.add(el);
+    return () => { TOOLTIP_TRIGGERS.delete(el); };
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -556,6 +593,7 @@ export const Tooltip = React.memo(function Tooltip({
         ref={triggerRef as any}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
+        onPointerOver={handlePointerOver}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-describedby={isVisible ? tooltipId : undefined}

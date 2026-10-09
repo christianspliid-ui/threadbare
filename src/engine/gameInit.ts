@@ -43,6 +43,8 @@ import { seedMonsterLairs } from './lairSeeding';
 import { seedElderRuins } from './ruins/elderRuinSeeding';
 import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
+import { selectDoomArchetype, DOOM_ARCHETYPE_FALLBACK } from './doomArchetypeSelection';
+import { emitTrace } from './traceBuffer';
 import { seedAllRarityTiers } from './raritySeeding';
 import { seedLatentEssenceSources } from './essenceSourceSeeding';
 import { seedWorldPast, formatWorldPastSummary } from './worldPast';
@@ -332,8 +334,21 @@ export function initializeGameState(
   const rivalDefs = generateRivals(cosmology, seed);
   const rivalStates = rivalDefs.map(r => createRivalState(r.id));
 
-  // Generate doom clock (doomArchetype param pins the archetype for testing; defaults to 'breach')
-  const resolvedDoomArchetype = doomArchetype ?? 'breach';
+  // Generate doom clock. THR-1774: every world draws its doom from the seed and the
+  // god's hunger (`archetype.id` IS the stored hunger id on the remembrance path);
+  // an explicit `doomArchetype` (tests, the showcase pin, `?doom=`) always wins.
+  const doomDraw = doomArchetype === undefined ? selectDoomArchetype(seed, archetype.id) : null;
+  const resolvedDoomArchetype: DoomClockArchetype = doomArchetype ?? doomDraw?.archetype ?? DOOM_ARCHETYPE_FALLBACK;
+  emitTrace({
+    category: 'doom.archetype_drawn',
+    tick: 0,
+    archetype: resolvedDoomArchetype,
+    source: doomDraw ? doomDraw.source : 'override',
+    identityKey: archetype.id,
+    seed,
+    ...(doomDraw ? { roll: doomDraw.roll } : {}),
+    summary: `doom.archetype_drawn: ${resolvedDoomArchetype} (${doomDraw ? doomDraw.source : 'override'}, ${archetype.id}, seed ${seed})`,
+  });
   const doomDef = generateDoomClock(resolvedDoomArchetype, DEFAULT_DOOM_TICKS, seed);
   const doomState = createDoomClockState(resolvedDoomArchetype, DEFAULT_DOOM_TICKS);
 
@@ -473,6 +488,7 @@ export function initializeGameState(
  * @param seed - PRNG seed for deterministic world generation
  * @param cosmologyOverride - Optional cosmology override (skips derivation from identity)
  * @param mapSizeOverride - Optional map size override (skips hunger-based derivation)
+ * @param doomArchetypeOverride - Optional doom pin (THR-1774: showcase routes, `?doom=`); absent → drawn
  * @returns The same shape as `initializeGameState`
  */
 export function initializeGameStateFromIdentity(
@@ -480,6 +496,7 @@ export function initializeGameStateFromIdentity(
   seed: number,
   cosmologyOverride?: CosmologyProfile,
   mapSizeOverride?: MapSizePreset,
+  doomArchetypeOverride?: DoomClockArchetype,
 ): ReturnType<typeof initializeGameState> {
   const cosmology = cosmologyOverride ?? deriveCosmologyFromIdentity({
     sphereAlignment: identity.sphereAlignment,
@@ -511,6 +528,7 @@ export function initializeGameStateFromIdentity(
     seed,
     cols,
     rows,
+    doomArchetypeOverride,
   );
 
   // Stamp the full identity onto game state so remembrance-only fields

@@ -291,7 +291,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `divine` (1) | `divineAttention.ts` | — |
 | `division` (1) | `divisionRule.ts` | `THR-1398`, `THR-1403` |
 | `domain` (1) | `domainCapability.ts` | `TB-056`, `THR-1580`, `THR-1581` |
-| `doom` (2) | `doomClock.ts`, `doomIdentityMilestones.ts` | — |
+| `doom` (3) | `doomArchetypeSelection.ts`, `doomClock.ts`, `doomIdentityMilestones.ts` | `THR-1774` |
 | `dream` (1) | `dream.ts` | — |
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
@@ -442,4 +442,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 654 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 655 modules._

@@ -410,6 +410,8 @@ export type TraceCategory =
   | 'rite.degraded'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
+  // Which doom the world drew at its making (THR-1774)
+  | 'doom.archetype_drawn'
   | 'doom.expiry_held'
   | 'rival.grace_hold'
   | 'action.unlock.granted'
@@ -971,6 +973,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'rite.degraded',
   // The opening (THR-1646 S2)
   'doom.wake',
+  'doom.archetype_drawn',
   'doom.expiry_held',
   'rival.grace_hold',
   'action.unlock.granted',
@@ -4839,6 +4842,7 @@ export type TraceEntry =
   | MeetingLocationPickedTrace
   | MeetingEssenceSpentTrace
   | DoomWakeTrace
+  | DoomArchetypeDrawnTrace
   | DoomExpiryHeldTrace
   | RivalGraceHoldTrace
   | ActionUnlockGrantedTrace
@@ -5471,6 +5475,22 @@ export interface MeetingEssenceSpentTrace extends TraceBase {
   primarySphere: string;
   spent: number;
   ok: boolean;
+}
+
+/**
+ * Trace: which doom the world drew at its making (THR-1774). Emitted once by
+ * `initializeGameState` (tick 0) — dropped harmlessly when tracing is off;
+ * `getOpeningState().doomArchetype` is the inspection path that always answers.
+ */
+export interface DoomArchetypeDrawnTrace extends TraceBase {
+  category: 'doom.archetype_drawn';
+  archetype: string;
+  /** `override` = an explicit argument (tests, the showcase pin, `?doom=`). */
+  source: 'draw' | 'override' | 'fallback';
+  identityKey: string;
+  seed: number;
+  /** The uniform roll, present when the doom was drawn. */
+  roll?: number;
 }
 
 /**

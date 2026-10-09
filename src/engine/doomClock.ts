@@ -590,6 +590,25 @@ const DOOM_CARD_BLUEPRINTS: Record<
   ],
 };
 
+/**
+ * The spheres an archetype's doom cards explicitly press — every authored
+ * `sphere:` across its five stages, deduplicated (THR-1774). Only pressure cards
+ * carry one; a systemic doom (Breach, Sundering, Failing) returns `[]`. Read by
+ * the consistency test that holds `DOOM_ARCHETYPE_SPHERE` (the doom bar sigil)
+ * equal to what the cards do.
+ */
+export function getDoomCardSpheres(archetype: DoomClockArchetype): SphereName[] {
+  const stages = DOOM_CARD_BLUEPRINTS[archetype];
+  if (!stages) return [];
+  const spheres = new Set<SphereName>();
+  for (const entry of stages) {
+    for (const blueprint of Array.isArray(entry) ? entry : [entry]) {
+      if (blueprint.sphere) spheres.add(blueprint.sphere);
+    }
+  }
+  return [...spheres];
+}
+
 function blueprintToEvent(
   archetype: DoomClockArchetype,
   stage: number,

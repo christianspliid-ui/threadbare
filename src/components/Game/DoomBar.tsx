@@ -4,32 +4,18 @@ import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { SphereIcon } from '../icons';
-import type { SphereName } from '../../types/index';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
+import {
+  DOOM_ARCHETYPE_SPHERE,
+  doomArchetypeDisplayName,
+  doomArchetypeGlyph,
+} from '../../data/doom-archetype-presentation';
 
 interface DoomBarProps {
   definition: DoomClockDefinition;
   state: DoomClockState;
   journeyLabel?: string;
 }
-
-/**
- * Archetypes that map cleanly to a sphere symbol.
- * Archetypes without a sphere equivalent fall back to Unicode glyphs.
- */
-const DOOM_ARCHETYPE_SPHERE: Record<string, SphereName> = {
-  breach: 'order',       // ◈ → order (systematic breakdown of structure)
-  convergence: 'matter', // ⬡ → matter (crystalline lattice convergence)
-  changing: 'life',      // ∿ → life (organic, shifting)
-  ascension: 'force',    // ✦ → force (directional impact / ascent)
-};
-
-/** Fallback Unicode glyphs for archetypes without a sphere mapping */
-const DOOM_ARCHETYPE_GLYPHS: Record<string, string> = {
-  sundering: '⚡',
-  failing: '◇',
-  reckoning: '⚔',
-};
 
 function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState): string {
   if (state.expired) return 'The doom has landed';
@@ -46,8 +32,11 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
   const stageName = currentStageDef?.name ?? 'Unknown';
+  // THR-1774: the sigil is the sphere the doom's own cards press (one table, held
+  // equal to the cards by test); a doom that presses none shows its glyph.
   const archetypeSphere = DOOM_ARCHETYPE_SPHERE[definition.archetype];
-  const fallbackGlyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
+  const fallbackGlyph = doomArchetypeGlyph(definition.archetype);
+  const doomName = doomArchetypeDisplayName(definition.archetype);
   const nextStageHint = getNextStageHint(definition, state);
   const journeyHint = journeyLabel ? `The First: ${journeyLabel}` : 'The First awaits';
 
@@ -77,16 +66,20 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
   return (
     <Tooltip
       id="ui.doom_bar"
-      label={`${definition.archetype} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
+      label={`${doomName} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
     >
       <div className="topbar-tier min-w-0" style={{ minWidth: '170px' }}>
         <span className="topbar-section-label">Doom</span>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            {archetypeSphere
-              ? <SphereIcon sphere={archetypeSphere} size={14} />
-              : <span style={{ fontSize: 'var(--text-sm)', color, fontWeight: 700 }}>{fallbackGlyph}</span>
-            }
+            <Tooltip id={`doom.${definition.archetype}`}>
+              <span className="inline-flex items-center" data-doom-sigil={definition.archetype} aria-label={doomName}>
+                {archetypeSphere
+                  ? <SphereIcon sphere={archetypeSphere} size={14} />
+                  : <span style={{ fontSize: 'var(--text-sm)', color, fontWeight: 700 }}>{fallbackGlyph}</span>
+                }
+              </span>
+            </Tooltip>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               {stageName}
             </span>

@@ -11,6 +11,8 @@ import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
 import { isFirstBonded } from './meetingEncounter';
 import { DOOM_WAKES_FALLBACK_LINE, DOOM_WAKES_LINES } from '../data/doom-wake-lines';
+import { DOOM_ARCHETYPE_SPHERE, doomArchetypeDisplayName, doomWakeNamingSentence } from '../data/doom-archetype-presentation';
+import type { ChronicleEntry } from '../types/narrative';
 import { evaluateIdentityMilestones } from './doomIdentityMilestones';
 import { processEffectEvent, applyEffectEventResult, shouldExecuteReactive } from './effects/effectEvents';
 import { applyExecutionResult } from './effects/effectEventDispatch';
@@ -313,18 +315,36 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   // not put the doom back to sleep.
   let doomClockIn = state.doomClock;
   const wakeEvents: TickEvent[] = [];
+  const wakeChronicle: ChronicleEntry[] = [];
   if (doomClockIn.wokeAtTick === null) {
     if (!isFirstBonded(state.graph, state.ascendantId)) return {};
     doomClockIn = { ...doomClockIn, wokeAtTick: state.tick };
     const archetype = state.doomDefinition.archetype;
     const line = DOOM_WAKES_LINES[archetype] ?? DOOM_WAKES_FALLBACK_LINE;
+    const wakeMessage = `${line} ${doomWakeNamingSentence(archetype)}`;
     wakeEvents.push({
       id: nextEventId(state.tick),
       tick: state.tick,
       type: 'narrative',
-      message: line,
+      // THR-1774: the authored line evokes; one appended sentence names the doom.
+      message: wakeMessage,
       significance: 0.8,
       notification: { channel: 'toast' },
+    });
+    // THR-1774: the toast is gone in seconds — the Chronicle keeps the naming, so the
+    // player can scroll back to the moment the doom woke.
+    wakeChronicle.push({
+      id: `chronicle_doom_wake_${state.cycle ?? 1}`,
+      tier: 'chronicle',
+      title: `The Age of the ${doomArchetypeDisplayName(archetype)}`,
+      prose: wakeMessage,
+      promptContext: {
+        actors: [],
+        location: 'the world',
+        sphere: DOOM_ARCHETYPE_SPHERE[archetype] ?? 'entropy',
+        mood: 'ominous',
+      },
+      tick: state.tick,
     });
     emitTrace({
       category: 'doom.wake',
@@ -375,12 +395,13 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       const stageDef = state.doomDefinition.stages[stage - 1];
       const stageName = stageDef?.name ?? `Stage ${stage}`;
       const stageCards = stageDef?.events ?? [];
+      const doomName = doomArchetypeDisplayName(state.doomDefinition.archetype);
 
       events.push({
         id: nextEventId(state.tick),
         tick: state.tick,
         type: 'doom_escalation',
-        message: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
+        message: `The ${doomName} intensifies — ${stageName}`,
         significance: 0.9,
         notification: {
           channel: 'popup',
@@ -388,7 +409,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
             title: stageName,
             body: stageCards.length > 0
               ? stageCards.map((card) => card.title ?? card.description).join(' • ')
-              : `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
+              : `The ${doomName} intensifies — ${stageName}`,
           },
         },
       });
@@ -429,6 +450,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
         resolvedEvents,
       },
       tickEvents: [...state.tickEvents, ...events],
+      ...(wakeChronicle.length > 0 ? { chronicleEntries: [...(state.chronicleEntries ?? []), ...wakeChronicle] } : {}),
       pendingSpherePressures: pressures,
       prosperityShocks,
       pendingHexMutations: hexMutations,
@@ -442,6 +464,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       resolvedEvents,
     },
     tickEvents: [...state.tickEvents, ...events],
+    ...(wakeChronicle.length > 0 ? { chronicleEntries: [...(state.chronicleEntries ?? []), ...wakeChronicle] } : {}),
     pendingSpherePressures: pressures,
     prosperityShocks,
     pendingHexMutations: hexMutations,

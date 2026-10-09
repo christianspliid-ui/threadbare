@@ -2276,6 +2276,8 @@ export interface DebugBridge {
       doomWokeAtTick: number | null;
       doomFloorMetAtTick: number | null;
       doomCurrentTick: number;
+      /** THR-1774 — the doom this world drew at its making, or was pinned to (`?seeded` / `?firstunmet` → `breach`; `?doom=`). */
+      doomArchetype: import('./types/doomClock').DoomClockArchetype;
       playerActCount: number;
       nextSpineBeat: string | null;
       spineGateBlockedBy: 'min_turn' | 'first_not_bonded' | 'min_gap' | 'awaiting_player_act' | null;
