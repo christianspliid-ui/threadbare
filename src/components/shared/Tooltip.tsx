@@ -397,6 +397,17 @@ export const Tooltip = React.memo(function Tooltip({
 
   const handlePointerEnter = () => showTooltip();
   const handlePointerLeave = () => hideTooltip();
+  // Innermost trigger wins (THR-1774): a Tooltip nested inside this one's trigger
+  // (the doom bar's sigil inside the doom bar) hides this one while it is hovered,
+  // so the two popups never stack; moving back onto this trigger re-shows it.
+  const handlePointerOver = (e: React.PointerEvent) => {
+    const nearest = (e.target as Element | null)?.closest?.('[data-tooltip-trigger]');
+    if (nearest && nearest !== triggerRef.current) {
+      if (isVisible || showTimerRef.current) hideTooltip();
+      return;
+    }
+    if (hideTimerRef.current || (!isVisible && !showTimerRef.current)) showTooltip();
+  };
   const handleFocus = () => showTooltip();
   const handleBlur = () => hideTooltip();
 
@@ -556,9 +567,11 @@ export const Tooltip = React.memo(function Tooltip({
         ref={triggerRef as any}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
+        onPointerOver={handlePointerOver}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-describedby={isVisible ? tooltipId : undefined}
+        data-tooltip-trigger=""
         // THR-1713 — the registry id a trigger carries, readable from the DOM so
         // a browser check can assert *which* hover a mark has without hovering it.
         data-tooltip-id={id}

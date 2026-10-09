@@ -28,11 +28,14 @@ describe('DoomBar', () => {
     tickModifier: 1.0,
   };
 
-  it('renders archetype icon (SVG sphere icon for breach)', () => {
+  // THR-1774: the sigil follows the doom's own cards. Breach presses no sphere, so it
+  // shows its glyph; Reckoning's cards press Mind, so it shows the Mind sphere icon.
+  it('renders the glyph for a doom that presses no sphere (breach)', () => {
     const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
-    // breach maps to 'order' sphere — renders an SVG icon
-    const svg = container.querySelector('svg');
-    expect(svg).toBeTruthy();
+    const sigil = container.querySelector('[data-doom-sigil="breach"]');
+    expect(sigil?.textContent).toBe('◈');
+    expect(sigil?.querySelector('svg')).toBeNull();
+    expect(sigil?.closest('[data-tooltip-id="doom.breach"]')).toBeTruthy();
   });
 
   it('renders current stage name (without Stage N: prefix)', () => {
@@ -56,13 +59,14 @@ describe('DoomBar', () => {
     expect(screen.getByText('UNMADE')).toBeInTheDocument();
   });
 
-  it('renders SVG sphere icon for breach (not Unicode glyph)', () => {
-    // breach maps to 'order' sphere — the SVG stroke color uses the order sphere color (#fbbf24)
-    const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
-    const svg = container.querySelector('svg');
-    expect(svg).toBeTruthy();
-    // No raw Unicode glyph should appear for breach
-    expect(container.textContent).not.toContain('◈');
+  it('renders the sphere icon for a doom whose cards press one (reckoning → mind)', () => {
+    const definition: DoomClockDefinition = { ...mockDefinition, archetype: 'reckoning' };
+    const { container } = render(<DoomBar definition={definition} state={{ ...mockState, definitionArchetype: 'reckoning' }} />);
+    const sigil = container.querySelector('[data-doom-sigil="reckoning"]');
+    expect(sigil?.querySelector('svg')).toBeTruthy();
+    expect(sigil?.innerHTML).toContain('sphere-mind');
+    expect(sigil?.getAttribute('aria-label')).toBe('Reckoning');
+    expect(sigil?.textContent).not.toContain('⚔');
   });
 
   it('renders correct stage name at different progress levels', () => {

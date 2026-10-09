@@ -37,7 +37,7 @@ describe('doom archetype presentation (THR-1774)', () => {
   it.each(DOOM_CLOCK_ARCHETYPES)('%s: doom.<archetype> resolves, ≤ 200 characters (Law 18)', (archetype) => {
     const resolved = resolveTooltip(`doom.${archetype}`);
     expect(resolved?.label).toBe(DOOM_ARCHETYPE_DISPLAY_NAMES[archetype]);
-    expect(resolved?.desc.length).toBeLessThanOrEqual(200);
+    expect(resolved?.desc?.length ?? 0).toBeLessThanOrEqual(200);
   });
 
   it('the wake sentence names the doom with the volume title\'s words', () => {

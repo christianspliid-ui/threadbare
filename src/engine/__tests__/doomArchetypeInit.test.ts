@@ -29,7 +29,7 @@ describe('initializeGameState draws the doom (THR-1774)', () => {
       const expected = selectDoomArchetype(SEED, archetype.id).archetype;
       expect(state.doomDefinition.archetype).toBe(expected);
       expect(state.doomClock.definitionArchetype).toBe(expected);
-      expect(state.doomIdentityMatrix.archetype).toBe(expected);
+      expect(state.doomIdentityMatrix?.archetype).toBe(expected);
       const trace = getTraces().find(t => t.category === 'doom.archetype_drawn');
       expect(trace).toMatchObject({ archetype: expected, source: 'draw', identityKey: archetype.id, seed: SEED });
     } finally {
