@@ -569,6 +569,13 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Lives on',
     desc: "{name}'s moments resolve on their own; you can read them afterwards.",
   },
+  // THR-1783: the toggle's tooltip appends this so the control says it is one.
+  // Kept apart from the mode copy because the warm-start overlay reuses
+  // `ui.attention.lives_on`, and the overlay is not clickable.
+  'ui.attention.switch_hint': {
+    label: 'Click to switch',
+    desc: 'Click to switch to {other}.',
+  },
   // ─── Warm start (THR-1744) ────────────────────────────────────
   // The `?warm=<ticks>` overlay. `{now}` / `{target}` are season words from the
   // one calendar conversion (Law 13 — never a tick count). The overlay's First

@@ -19,7 +19,7 @@ import type { SphereName } from '../../types';
 import type { WorldGraph } from '../../engine/graph';
 import { resolveTooltip, type TooltipResolverContext } from '../../engine/tooltipResolver';
 import { SPHERE_COLORS, QUINTESSENCE_COLOR } from '../../data/premonition-constants';
-import { formatEssence } from '../shared/formatEssence';
+import { formatEssence, sphereWord } from '../shared/formatEssence';
 import { sphereTint } from '../shared/sphereTint';
 
 // ─── Props ──────────────────────────────────────────────────────
@@ -102,6 +102,17 @@ function canAfford(essencePool: EssencePool, sphere: SphereName, cost: number): 
   return (essencePool[sphere] ?? 0) >= cost;
 }
 
+/**
+ * The option's price, naming the pool it bills — `3 Force essence` (THR-1783).
+ * Colour alone was the only cue; each option charges its own sphere, and the
+ * gather-strength whisper still bills its nudge sphere, so the word always shows.
+ */
+export function premonitionCostLabel(cost: number, sphere: SphereName | undefined): string {
+  return sphere
+    ? `${formatEssence(cost)} ${sphereWord(sphere)} essence`
+    : `${formatEssence(cost)} essence`;
+}
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -138,8 +149,8 @@ function WhisperOptionRow({
         <span className="text-sm" style={{ color: sphereTint(color, 'text') }}>
           {nudge.prose}
         </span>
-        <span className="text-xs ml-2 whitespace-nowrap" style={{ color }}>
-          {formatEssence(nudge.essenceCost)} essence
+        <span className="text-xs ml-2 whitespace-nowrap" style={{ color }} data-testid="premonition-option-cost">
+          {premonitionCostLabel(nudge.essenceCost, nudge.sphere)}
         </span>
       </div>
       {/* Law 45: was `opacity-50` over the gradient (~2.9:1). The flavour line
@@ -187,8 +198,8 @@ function CompulsionOptionRow({
           {capitalize(candidate.encounterType)}
           {candidate.hexDistance > 0 ? ` · ${candidate.hexDistance} hex away` : ''}
         </span>
-        <span className="text-xs whitespace-nowrap" style={{ color }}>
-          {formatEssence(candidate.essenceCost)} essence
+        <span className="text-xs whitespace-nowrap" style={{ color }} data-testid="premonition-option-cost">
+          {premonitionCostLabel(candidate.essenceCost, candidate.sphere)}
         </span>
       </div>
     </button>

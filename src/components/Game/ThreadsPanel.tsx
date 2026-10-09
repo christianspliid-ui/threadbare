@@ -284,11 +284,20 @@ function fillName(text: string | undefined, name: string): string {
   return (text ?? '').replace(/{name}/g, name);
 }
 
+/** Switch track geometry (THR-1783, NFP #1) — a knob that slides is what says "control", not "status". */
+const ATTENTION_SWITCH_TRACK_W = 22;
+const ATTENTION_SWITCH_TRACK_H = 12;
+const ATTENTION_SWITCH_KNOB = 8;
+
 /**
  * The attention toggle (THR-1715 U1). Reads the true mode after every click:
  * **Asks you** (pause — her important moments stop the world) or **Lives on**
  * (auto — her moments resolve on their own). Copy comes from the tooltip
  * registry (Law 17); a refused click shakes and shows its reason (Law 47).
+ *
+ * THR-1783: warm playtesters (3/3) read the old dot-plus-label as a status and
+ * flipped it by accident. It now wears a switch — a bordered pill with a sliding
+ * knob — and says so to assistive tech (`role="switch"`, checked = Asks you).
  */
 export function AutoToggle({ asking, name, onToggle }: {
   asking: boolean;
@@ -300,18 +309,25 @@ export function AutoToggle({ asking, name, onToggle }: {
   const [shakeKey, setShakeKey] = useState(0);
   const entry = resolveTooltip(asking ? 'ui.attention.asks' : 'ui.attention.lives_on');
   const label = entry?.label ?? (asking ? 'Asks you' : 'Lives on');
+  const otherLabel = resolveTooltip(asking ? 'ui.attention.lives_on' : 'ui.attention.asks')?.label
+    ?? (asking ? 'Lives on' : 'Asks you');
+  const switchHint = (resolveTooltip('ui.attention.switch_hint')?.desc ?? '').replace(/{other}/g, otherLabel);
   const refusalEntry = refusal
     ? resolveTooltip(ATTENTION_REFUSAL_TOOLTIP[refusal] ?? 'ui.attention.thread_too_thin')
     : null;
   return (
     <Tooltip
       label={refusalEntry?.label ?? label}
-      desc={refusalEntry ? refusalEntry.desc : fillName(entry?.desc, name)}
+      desc={refusalEntry
+        ? refusalEntry.desc
+        : [fillName(entry?.desc, name), switchHint].filter(Boolean).join(' ')}
       focusable={false}
     >
       <button
         key={shakeKey}
         type="button"
+        role="switch"
+        aria-checked={asking}
         data-testid="attention-toggle"
         data-attention-mode={asking ? 'pause' : 'auto_resolve'}
         className={refusal ? 'anim-shake-no' : undefined}
@@ -334,18 +350,32 @@ export function AutoToggle({ asking, name, onToggle }: {
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '2px 8px 2px 4px',
           background: hov ? 'var(--bg-hover)' : 'transparent',
-          border: '1px solid transparent', borderRadius: 4,
+          border: `1px solid ${hov ? 'var(--border-gold-strong)' : 'var(--border-medium)'}`,
+          borderRadius: 999,
           color: asking ? 'var(--text-secondary)' : 'var(--text-muted)',
           fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
           cursor: 'pointer',
           flexShrink: 0,
         }}
       >
-        <span aria-hidden style={{
-          width: 6, height: 6, borderRadius: '50%',
+        <span aria-hidden data-testid="attention-toggle-track" style={{
+          position: 'relative', flexShrink: 0,
+          width: ATTENTION_SWITCH_TRACK_W, height: ATTENTION_SWITCH_TRACK_H,
+          borderRadius: ATTENTION_SWITCH_TRACK_H / 2,
           background: asking ? 'var(--accent-gold-dim)' : 'transparent',
           border: `1px solid ${asking ? 'var(--accent-gold-dim)' : 'currentColor'}`,
-        }} />
+          boxSizing: 'border-box',
+        }}>
+          <span style={{
+            position: 'absolute', top: '50%',
+            left: asking ? ATTENTION_SWITCH_TRACK_W - ATTENTION_SWITCH_KNOB - 3 : 1,
+            width: ATTENTION_SWITCH_KNOB, height: ATTENTION_SWITCH_KNOB,
+            marginTop: -ATTENTION_SWITCH_KNOB / 2,
+            borderRadius: '50%',
+            background: asking ? 'var(--bg-deep)' : 'currentColor',
+            transition: 'left 120ms ease-out',
+          }} />
+        </span>
         {label}
       </button>
     </Tooltip>
