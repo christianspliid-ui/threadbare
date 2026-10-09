@@ -138,7 +138,7 @@ export const DOMAIN_TIER_WORD_FORMS: Record<string, DomainTierWordForm> = {
   clumsy: 'adjective', handy: 'adjective', skilled: 'adjective',
   masterwork: 'a', monumental: 'adjective',
   // star
-  lost: 'adjective', guided: 'adjective', fated: 'adjective',
+  lost: 'adjective', guided: 'adjective', charted: 'adjective',
   destined: 'adjective', cosmic: 'adjective',
 };
 
