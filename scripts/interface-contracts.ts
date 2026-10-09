@@ -5964,6 +5964,39 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/threadingRite.ts'],
     readSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRiteQueue.ts'],
   },
+  // THR-1754 (THR-1644 S2): the rite on screen. The drain's pending rite is the
+  // surface's whole input; the surface gathers the hand and closes the rite back
+  // through the one writer, which also leaves the history the sheet reads.
+  {
+    id: 'pending-rite-opens-surface',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Every mortal the god threads with the Agent Thread card gets a rite on screen with their real face, shaped by how many the god has threaded, and it waits until nothing else is open.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['drainThreadingRites', 'closeThreadingRite', 'planThreadingRite'],
+      module: 'src/engine/threadingRiteQueue.ts',
+    },
+    writeSites: ['src/engine/threadingRiteQueue.ts'],
+    readSites: ['src/components/Game/GameView.tsx', 'src/components/ThreadingRite/ThreadingRite.tsx'],
+  },
+  {
+    id: 'rite-history-feeds-sheet',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      "A mortal's sheet remembers when and how they took the god's thread — \"Bound in spring, Year 1 — took your thread in doubt.\" — in the same reception word the rite showed.",
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['applyThreadingRite', 'getRiteSheetLine'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
+  },
   // THR-1755 (THR-1644 S3, D5): The First's mark — one god-given trait in the
   // spark's (or primary) reach, granted by the rite writer at a the_first bond and
   // read by capability (as any trait) and by the sheet's mark chip.

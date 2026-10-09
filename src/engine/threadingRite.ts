@@ -41,7 +41,8 @@ import type {
 import type { BondReception } from '../data/meeting-nudge-constants';
 import { MEETING_QUINTESSENCE_FLOOR } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
-import { RITE_SHORT_MAX_ORDINAL } from '../data/threading-rite-constants';
+import { RITE_SHORT_MAX_ORDINAL, RITE_SURFACE_ENABLED } from '../data/threading-rite-constants';
+import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { emitTrace } from './traceBuffer';
 import { grantFirstMark, type FirstMarkSkip } from './firstMark';
 
@@ -134,6 +135,13 @@ export interface ApplyRiteResult {
   readonly markTraitId?: string;
   /** Why a First got no mark (D5): the switch is off, or the reach has no god-given trait. */
   readonly markSkipped?: FirstMarkSkip;
+}
+
+/** One rite a mortal took part in (individual property `riteHistory`), oldest first. */
+export interface RiteHistoryEntry {
+  readonly tick: number;
+  readonly shape: RiteShape;
+  readonly reception: BondReception;
 }
 
 /** The god's most recent rite (ascendant property `lastRite`), inspect-only. */
@@ -333,6 +341,31 @@ export function completeThreadWrite(
   return marker;
 }
 
+/** The cards whose thread write bears a rite (the Agent Thread pair). */
+export const RITE_BEARING_THREAD_TEMPLATE_IDS: ReadonlySet<string> = new Set([
+  'bind_thread_agent',
+  'bind_thread_agent_strong',
+]);
+
+/**
+ * True when casting `templateId` on `targetId` will open a rite (S2): the card is
+ * an Agent Thread, the rite surface is on, the target is a rite-bearing mortal
+ * (`resolveThreadWrite`'s own test), and the god does not already hold a thread
+ * to them. The cast path reads it to suppress the generic cast receipt — the
+ * rite tells the fact once (PC-5).
+ */
+export function castOpensRite(
+  graph: WorldGraph,
+  ascendantId: string,
+  templateId: string,
+  targetId: string,
+  surfaceEnabled = RITE_SURFACE_ENABLED,
+): boolean {
+  if (!surfaceEnabled || !RITE_BEARING_THREAD_TEMPLATE_IDS.has(templateId)) return false;
+  if (findThreadEdge(graph, ascendantId, targetId)) return false;
+  return resolveThreadWrite(graph, ascendantId, targetId, {}, 0) !== null;
+}
+
 // ─── The one writer (D1) ──────────────────────────────────────────
 
 function findThreadEdge(graph: WorldGraph, ascendantId: string, agentId: string): GraphEdge | undefined {
@@ -423,8 +456,13 @@ export function applyThreadingRite(graph: WorldGraph, input: ApplyRiteInput): Ap
     markSkipped = grant.skipped;
   }
 
-  // The node's `riteHistory` (the sheet's "Bound in spring…" line) lands with its
-  // reader in S2 (THR-1754) — a history nothing reads would be a write into nothing.
+  // The node's `riteHistory` — the sheet's "Bound in spring, Year 1 — took your
+  // thread in doubt." line reads its newest entry (S2, THR-1754). Inspect-only.
+  if (reception !== undefined) {
+    const prior = Array.isArray(props.riteHistory) ? (props.riteHistory as RiteHistoryEntry[]) : [];
+    const entry: RiteHistoryEntry = { tick: input.tick, shape: input.shape, reception };
+    props.riteHistory = [...prior, entry];
+  }
 
   // Inspect-only: the god's most recent rite, read by `__DEBUG.getThreadingRite()`.
   const ascendant = graph.getNode(input.ascendantId);
@@ -523,7 +561,9 @@ export function candidateFromAgent(graph: WorldGraph, agentId: string): Narrativ
     sphere: (p.sphere as SphereName | undefined) ?? 'spirit',
     vignetteText: '',
     epithet: '',
-    imageAssetPath: String(p.portraitAssetPath ?? ''),
+    // The sheet's own resolver: a bespoke portrait, else the archetype portrait —
+    // so the rite shows the same face the agent sheet does (PC-6).
+    imageAssetPath: getAgentPortraitUrlFromProperties(p) ?? '',
     placeholderGradient: ADAPTER_FALLBACK_GRADIENT,
     ...(gender ? { gender } : {}),
     axiologicalSeed: { ...((p.axiologicalProfile as AxiologicalProfile | undefined) ?? {}) } as AxiologicalProfile,

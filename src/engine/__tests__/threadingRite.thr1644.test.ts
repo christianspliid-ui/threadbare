@@ -304,7 +304,7 @@ describe('THR-1644 S1 — the pending rite', () => {
 
   it('absent GameState fields read as no pending rite', () => {
     const snap = getThreadingRiteSnapshot(makeState(makeGraph()));
-    expect(snap).toEqual({ pending: null, queue: [], threadsBoundCount: 0, lastRite: null });
+    expect(snap).toEqual({ pending: null, queue: [], threadsBoundCount: 0, lastRite: null, threads: [] });
   });
 
   it('a mortal gone before the rite gets no writes, and the miss is traced', () => {

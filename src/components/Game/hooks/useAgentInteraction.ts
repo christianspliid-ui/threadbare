@@ -17,6 +17,7 @@ import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
 import { buildCastReceipt } from './castReceipt';
+import { castOpensRite } from '../../../engine/threadingRite';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { teachSpellPreview } from '../../../engine/ascendantExpression';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
@@ -393,9 +394,13 @@ export function useAgentInteraction({
             ? null
             : targetNode?.name;
           const toastMessage = buildCastReceipt(template, receiptTargetName).message;
+          // THR-1754 — an Agent Thread on a mortal opens the Rite of the Thread, which
+          // tells the fact itself (and writes its own chronicle line). The generic
+          // receipt would tell it twice (PC-5: one fact told once).
+          const opensRite = castOpensRite(gameState.graph, gameState.ascendantId, templateId, capturedAgentId);
 
           // Push toast (optimistic, dispatch-time feedback)
-          if (onPushToast) {
+          if (onPushToast && !opensRite) {
             const newToast: ToastItem = {
               id: `toast_action_${Date.now()}`,
               message: toastMessage,
@@ -412,14 +417,16 @@ export function useAgentInteraction({
             onParticleBurst(capturedHexCol, capturedHexRow, getSphereColor(capturedSphere));
           }
 
-          setGameState(prev => commitPlayerCast(prev, {
-            cast,
-            event: {
-              idPrefix: 'evt_action',
-              message: toastMessage + cast.buffParenthetical,
-              isInterventionBeat: true,
-            },
-          }));
+          setGameState(prev => commitPlayerCast(prev, opensRite
+            ? { cast }
+            : {
+                cast,
+                event: {
+                  idPrefix: 'evt_action',
+                  message: toastMessage + cast.buffParenthetical,
+                  isInterventionBeat: true,
+                },
+              }));
 
           setPlayingCardId(null);
           setDrawerOpen(false);

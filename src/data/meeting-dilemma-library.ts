@@ -95,6 +95,9 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     // god can actually lean, not a memory being recounted.
     setup: 'Raiders hit {agent.location} before dawn and are driven off by midmorning. They leave one of their own behind: a young man with a spear wound through the thigh, propped against the outer wall, asking for water. {agent.name} led the counter-charge and is still holding the blade. Two of the militia are dead. The rest of the settlement is standing in the yard, waiting to see what {agent.name} does.',
     godVoice: 'This one is deciding what they are, and they do not know you are here. Lean, if you mean to.',
+    // THR-1754 — in the threading rite the mortal has just felt the thread, so
+    // "they do not know you are here" would be false there. The meeting line stands.
+    riteText: { godVoice: 'This one is deciding what they are, and they can feel you watching. Lean, if you mean to.' },
     choices: [
       {
         id: 'ax-iron-01-a',

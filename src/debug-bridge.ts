@@ -3021,6 +3021,36 @@ if (import.meta.env.DEV) {
       const { getThreadingRiteSnapshot } = await import('./engine/threadingRiteQueue');
       return getThreadingRiteSnapshot(state);
     },
+    /**
+     * THR-1754 — thread a mortal through the real card path (`bind_thread_agent`,
+     * the player-cast pipeline at list price) and advance the world until its rite
+     * is pending, so the `ThreadingRite` surface opens. Ticks one at a time, at
+     * most `maxTicks`; the card's roll can fail, which the result reports.
+     */
+    openThreadingRite: async (agentId: string, maxTicks = 8) => {
+      const fired = _actionBridge?.fireAction(agentId, 'bind_thread_agent')
+        ?? { success: false, message: 'Game not loaded' };
+      if (!fired.success) return { opened: false, ticks: 0, message: fired.message, snapshot: null };
+      const { getThreadingRiteSnapshot } = await import('./engine/threadingRiteQueue');
+      // The cast lands through a React state update — let it commit before ticking.
+      await new Promise(resolve => setTimeout(resolve, 80));
+      for (let i = 1; i <= Math.max(1, Math.floor(maxTicks)); i++) {
+        _tickBridge?.(1);
+        await new Promise(resolve => setTimeout(resolve, 80));
+        const state = _gameStateProvider?.();
+        const snapshot = state ? getThreadingRiteSnapshot(state) : null;
+        if (snapshot?.pending || snapshot?.queue.length) {
+          return { opened: true, ticks: i, message: fired.message, snapshot };
+        }
+      }
+      const state = _gameStateProvider?.();
+      return {
+        opened: false,
+        ticks: maxTicks,
+        message: `${fired.message} — no rite pending after ${maxTicks} ticks (the thread may have failed its roll)`,
+        snapshot: state ? getThreadingRiteSnapshot(state) : null,
+      };
+    },
 
     getOutcomePinVerdict: async () => {
       const { getOutcomePinVerdict, getOutcomePin } = await import('./engine/debugOutcomePin');

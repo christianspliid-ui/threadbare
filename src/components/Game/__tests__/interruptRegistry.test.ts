@@ -57,6 +57,22 @@ describe('interruptRegistry', () => {
     expect(r.anyOpen).toBe(true);
   });
 
+  it('a pending threading rite stops the world, waits behind the meeting, and holds the moment card (THR-1754)', () => {
+    const rite = resolveInterrupts(snap({ threadingRitePending: true, momentPending: true, popupQueued: true }));
+    expect(rite.open).toEqual(['ThreadingRite']);
+    expect(rite.momentMayRender).toBe(false);
+    expect(rite.popupMayRender).toBe(false);
+    const behindMeeting = resolveInterrupts(snap({ threadingRitePending: true, meetingPending: true }));
+    expect(behindMeeting.open).toEqual(['MeetTheFirstFlow']);
+    // A thread can land in the tick an encounter or a beat opens: the rite never
+    // renders under them, and the world stays stopped while it waits.
+    const behindOthers = resolveInterrupts(snap({ threadingRitePending: true, encounterOpen: true, ascendantBeatEntered: true }));
+    expect(behindOthers.open).toEqual(['EncounterVeil', 'AscendantBeatModal']);
+    expect(behindOthers.anyOpen).toBe(true);
+    // An absent field is closed — old snapshot builders keep working.
+    expect(resolveInterrupts(snap({})).open).not.toContain('ThreadingRite');
+  });
+
   it('nothing open → the clock is free', () => {
     const r = resolveInterrupts(closed);
     expect(r.anyOpen).toBe(false);

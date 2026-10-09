@@ -421,7 +421,14 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-09 by Claude Code (THR-1755 — threading rite S3: The First's mark). **Added**
+2026-10-09 by Claude Code (THR-1754 — threading rite S2: the rite on screen). **Added**
+`pending-rite-opens-surface` (Encounters & Dilemmas → Attention, Chronicle & Narrative: the
+drain's `pendingThreadingRite` is the `ThreadingRite` surface's input, `planThreadingRite` picks its
+tests, `closeThreadingRite` lands the hand through `applyThreadingRite` and writes one chronicle
+line) and `rite-history-feeds-sheet` (`applyThreadingRite` appends the node's `riteHistory`;
+`getRiteSheetLine` reads its newest entry for the sheet). Audit-on-touch: `rite-applies-outcomes`
+unchanged in shape — the surface is a third caller of the same writer.
+Earlier: 2026-10-09 by Claude Code (THR-1755 — threading rite S3: The First's mark). **Added**
 `first-mark-raises-reach` (Encounters & Dilemmas → Personality & Emergent Traits:
 `applyThreadingRite` step 5 calls `grantFirstMark` at a `the_first` bond, the dev-seeded First
 takes the same mark in `devSeedTheFirst`, and `getAgentInfoCard` reads it for the sheet chip via
