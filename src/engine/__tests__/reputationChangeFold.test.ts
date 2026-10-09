@@ -127,6 +127,13 @@ describe('THR-1789 — reputation folds to one row per mortal', () => {
     expect(reputationRows(action)).toHaveLength(0);
   });
 
+  it('a mortal at the ceiling gets no row for a rise the score could not take', () => {
+    const state = createMinimalGameState();
+    state.graph.getNode('actor-1')!.properties.reputationScore = 1;
+    const { action } = runAllSteps(makeTemplate([0.05, 0.05, 0.05]), state);
+    expect(reputationRows(action)).toHaveLength(0);
+  });
+
   it('a step with no movement keeps the earlier row', () => {
     const { action } = runAllSteps(makeTemplate([0.08, 0]), createMinimalGameState());
     const rows = reputationRows(action);
@@ -141,6 +148,13 @@ describe('THR-1789 — the fold arithmetic', () => {
     expect(parts.residual).toBeCloseTo(0.03, 6);
     // The row reports the measured movement once, never 0.10 + 0.07.
     expect(parts.net).toBeCloseTo(0.10, 6);
+  });
+
+  it('a shift the clamp swallowed reports nothing — the net is what the score did', () => {
+    // A mortal at the ceiling: +0.05 authored, the score cannot move.
+    const parts = stepReputationParts({ authored: 0.05, branch: 0, total: 0 });
+    expect(parts.residual).toBeCloseTo(-0.05, 6);
+    expect(parts.net).toBeCloseTo(0, 6);
   });
 
   it('no residual when authored and branch explain the total', () => {

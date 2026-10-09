@@ -30,6 +30,10 @@ export function reputationFoldId(actionId: string, actorId: string): string {
  * `total` is the snapshot diff, which already contains the authored and branch
  * shifts. So the residual is what is left after them, never the total itself.
  * A part under the epsilon is zero, as the producers' own guards always were.
+ *
+ * The parts always sum to the measured `total` (Law 56). A shift the score's
+ * [0, 1] clamp swallowed is cancelled by a negative residual. So a mortal
+ * already at the ceiling gets no "rose" row for a rise the sheet never shows.
  */
 export function stepReputationParts(args: {
   readonly authored: number;
@@ -38,12 +42,10 @@ export function stepReputationParts(args: {
 }): { authored: number; branch: number; residual: number; net: number } {
   const authored = Math.abs(args.authored) > REPUTATION_FOLD_EPSILON ? args.authored : 0;
   const branch = Math.abs(args.branch) > REPUTATION_FOLD_EPSILON ? args.branch : 0;
-  const unexplained = args.total - args.authored - args.branch;
-  const residual = Math.abs(args.total) > REPUTATION_FOLD_EPSILON
-    && Math.abs(unexplained) > REPUTATION_FOLD_EPSILON
-    ? unexplained
-    : 0;
-  return { authored, branch, residual, net: authored + branch + residual };
+  const unexplained = args.total - authored - branch;
+  const residual = Math.abs(unexplained) > REPUTATION_FOLD_EPSILON ? unexplained : 0;
+  const net = authored + branch + residual;
+  return { authored, branch, residual, net: Math.abs(net) > REPUTATION_FOLD_EPSILON ? net : 0 };
 }
 
 /**
