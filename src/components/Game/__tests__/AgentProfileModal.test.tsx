@@ -61,7 +61,7 @@ const intimateCard: AgentInfoCardData = {
     { domain: 'heart', word: 'Beloved', tier: 3 },
     { domain: 'eye', word: 'Perceptive', tier: 1 },
     { domain: 'stone', word: 'Skilled', tier: 1 },
-    { domain: 'star', word: 'Fated', tier: 1 },
+    { domain: 'star', word: 'Charted', tier: 1 },
   ],
   cooperationStrategy: 'tit-for-tat',
   reputationWord: 'esteemed',

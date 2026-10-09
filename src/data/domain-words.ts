@@ -40,7 +40,9 @@ export const DOMAIN_WORD_SCALES: Record<ReachDomain, [string, string, string, st
   stone: ['Clumsy', 'Handy', 'Skilled', 'Masterwork', 'Monumental'],
 
   // Star: fate and navigation
-  star: ['Lost', 'Guided', 'Fated', 'Destined', 'Cosmic'],
+  // Tier 2 is 'Charted', not 'Fated' (THR-1790): 'Fated' is the forecast tier's
+  // top rung, and both words sit in the same nudge-stage header.
+  star: ['Lost', 'Guided', 'Charted', 'Destined', 'Cosmic'],
   // Flesh removed (TB-075 Phase 1, 2026-03-28). See Docs/canon/cosmology.md for Quintessence canon.
 };
 
@@ -136,7 +138,7 @@ export const DOMAIN_TIER_WORD_FORMS: Record<string, DomainTierWordForm> = {
   clumsy: 'adjective', handy: 'adjective', skilled: 'adjective',
   masterwork: 'a', monumental: 'adjective',
   // star
-  lost: 'adjective', guided: 'adjective', fated: 'adjective',
+  lost: 'adjective', guided: 'adjective', charted: 'adjective',
   destined: 'adjective', cosmic: 'adjective',
 };
 

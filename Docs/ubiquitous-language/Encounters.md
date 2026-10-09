@@ -615,6 +615,8 @@ The five-word odds reading shown to the player **before** a roll: *doomed · per
 
 **Pre-roll, and that is the whole distinction from the two outcome vocabularies it is mistaken for.** A Forecast tier is what the odds *look like*; `StepOutcome` and `EncounterOutcomeBand` are what actually *happened*. They are different types over different domains and never interconvert — a `favorable` forecast that resolves `failure` is an ordinary event, not an inconsistency. Reading a forecast word as an outcome word is the recurring error this entry exists to stop.
 
+**Its five words belong to no other ladder (THR-1790, seated by delegation 2026-10-09).** The nudge-stage header prints the mortal's skill word for the step's reach two pills from the forecast word, so a skill word that is also an odds word reads as a second odds reading. Star's skill ladder is therefore *Lost · Guided · **Charted** · Destined · Cosmic* — "Fated" was its third rung until warm round 1 showed testers "FATED / FAVORABLE" on one moment. "Fated" stays the forecast's top rung and the ★ odds-pip tier. A test in `src/data/__tests__/domain-words.test.ts` holds the rule for every reach.
+
 **It is reused, not re-derived, wherever a system needs "how did this look going in".** The `[[Motive Receipt]]`'s `expectation` field is a Forecast tier computed from `completionProb`, which is why the receipt can say what an agent expected rather than only what befell them.
 
 Code anchors: `src/types/resolution.ts` (`ForecastTier`, alongside `OutcomeType` so the contrast is visible at the definition), `src/types/foreshadowing.ts` (`MotiveReceipt.expectation`).

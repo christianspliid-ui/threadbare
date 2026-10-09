@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { FORECAST_TIER_WORDS } from '../nudge-stage-content';
 import {
   DOMAIN_WORD_SCALES,
   getDomainWord,
@@ -88,8 +89,22 @@ describe('DOMAIN_WORD_SCALES', () => {
 
   it('has correct words for star (Lost → Cosmic)', () => {
     expect(DOMAIN_WORD_SCALES.star).toEqual([
-      'Lost', 'Guided', 'Fated', 'Destined', 'Cosmic',
+      'Lost', 'Guided', 'Charted', 'Destined', 'Cosmic',
     ]);
+  });
+
+  // THR-1790: the nudge-stage header shows a skill word and a forecast word
+  // side by side, so no skill word may also be an odds word ("Star · FATED"
+  // beside "FAVORABLE" read as two odds readings to 3/3 warm testers).
+  it('shares no word with the forecast tier ladder', () => {
+    const forecastWords = new Set(
+      Object.values(FORECAST_TIER_WORDS).map((w) => w.toLowerCase()),
+    );
+    for (const domain of REACH_DOMAINS) {
+      for (const word of DOMAIN_WORD_SCALES[domain]) {
+        expect(forecastWords.has(word.toLowerCase()), `${domain}: ${word}`).toBe(false);
+      }
+    }
   });
 
   // flesh reach removed in TB-075 Phase 1 — no flesh scale test needed
