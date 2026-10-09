@@ -1208,6 +1208,8 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
       ['SECONDARY_REACH_PRACTICE_MULT', playerProgression.SECONDARY_REACH_PRACTICE_MULT, 'Secondary reach accrues slower — identity lead axis'],
       ['DEEPENING_BEAT_MAX_PER_TICK', playerProgression.DEEPENING_BEAT_MAX_PER_TICK, 'Max Deepening beats enqueued per tick (dedup cap)'],
       ['MILESTONE_SOURCES_FOR_BEAT', playerProgression.MILESTONE_SOURCES_FOR_BEAT, 'Controlled essence sources that fire a breadth beat (Slice 2, coordinate THR-611)'],
+      ['WELLSPRING_MILESTONE_TICKS_AFTER_BOND', playerProgression.WELLSPRING_MILESTONE_TICKS_AFTER_BOND, 'Ticks after the bond before the Wellspring milestone offers the five source verbs (THR-1747)'],
+      ['MILESTONE_HELD_GROUND_FLOWERING', playerProgression.MILESTONE_HELD_GROUND_FLOWERING, 'Flowering sources that fire the held-ground milestone — the four held-ground income cards (THR-1747)'],
     ),
     viewer: 'constants',
     sourceFile: 'src/data/player-progression.ts',

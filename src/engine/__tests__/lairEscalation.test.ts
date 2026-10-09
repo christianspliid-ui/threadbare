@@ -22,6 +22,20 @@ import {
 import type { GameState } from '../../types/gameState';
 import type { HexTile } from '../../types/index';
 import type { SpherePressureEvent } from '../../types/sphereAffinity';
+import { LOCATION_TYPE_BONUS, triangleTotal } from '../../types/sphereAffinity';
+
+/**
+ * The lowest score at which a fixture lair counts as steeped. THR-1768: the gate reads
+ * sphere investment accrued since the lair's birth seed, and a terrain-less fixture
+ * lair's seed is LOCATION_TYPE_BONUS alone (its declared sphere), so the bar sits
+ * above the raw threshold by that seed.
+ */
+const STEEPED_SCORE = (() => {
+  const bar = triangleTotal(LAIR_REINFESTATION_SPHERE_THRESHOLD) + triangleTotal(LOCATION_TYPE_BONUS);
+  let s = 0;
+  while (triangleTotal(s) < bar) s++;
+  return s;
+})();
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import type { GraphNode } from '../../types/graph';
 
@@ -459,7 +473,7 @@ describe('phaseLairEscalation — cleared lair reinfestation', () => {
       dominantSphere: 'force',
       hexCol: 5,
       hexRow: 5,
-      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD,
+      sphereScore: STEEPED_SCORE,
     });
 
     const state = makeMinimalState({
@@ -487,7 +501,7 @@ describe('phaseLairEscalation — cleared lair reinfestation', () => {
       dominantSphere: 'force',
       hexCol: 3,
       hexRow: 3,
-      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD - 1,
+      sphereScore: STEEPED_SCORE - 1,
     });
 
     const state = makeMinimalState({
@@ -901,7 +915,7 @@ describe('phaseLairEscalation — lair naming', () => {
       dominantSphere: 'force',
       hexCol: 5,
       hexRow: 5,
-      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD,
+      sphereScore: STEEPED_SCORE,
     });
     graph.updateNode('cleared_named', { name: 'The Choking Snare' });
 

@@ -519,6 +519,14 @@ if (import.meta.env.DEV) {
       return state.essenceMovement ?? {};
     },
 
+    // THR-1768 — sphere bags per node kind: total / seeded / unseeded / non-integer / route.
+    getSphereSeedCensus: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { computeSphereSeedCensus } = await import('./engine/sphereAffinity');
+      return computeSphereSeedCensus(state.graph, state.tiles);
+    },
+
     getEssenceSources: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
@@ -542,6 +550,8 @@ if (import.meta.env.DEV) {
             sanctity: src.sanctity,
             contestedBy: src.contestedBy ?? null,
             desecrated: !!src.desecrated,
+            // THR-1747: absent reads as paid.
+            upkeepCurrent: src.upkeepCurrent !== false,
             sustenance: {
               drift: sustenance.drift,
               affinityScore: sustenance.affinityScore,
@@ -2980,6 +2990,15 @@ if (import.meta.env.DEV) {
         hasStakes: Boolean(template?.stakes),
         archived: false,
       };
+    },
+
+    // ── The threading rite (THR-1644 S1) ─────────────────────────────────
+    /** Pending rite, queue, the god's thread count and its last rite. */
+    getThreadingRite: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getThreadingRiteSnapshot } = await import('./engine/threadingRiteQueue');
+      return getThreadingRiteSnapshot(state);
     },
 
     getOutcomePinVerdict: async () => {

@@ -1597,6 +1597,17 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'source-upkeep-debits-primary-pool',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar\'s income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer.',
+    ulTerms: ['Essence', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['upkeepCurrent', 'SOURCE_CONTROL_SUSTAIN'] },
+    writeSites: ['src/engine/essenceSources.ts'],
+    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/engine/essenceIncome.ts'],
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,
@@ -5641,6 +5652,33 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1635 slice 1. Same generated-world leak guard: at a strong-sphere place with no culture (dominant share ≥ `SPHERE_FACT_MIN_SHARE` 0.55), 525 of 528 guarded templates render a sphere line on each of seeds 42 and 99 (248 before THR-1638 authored the other reaches), with no raw token; the census counts strong-sphere Locations within ±10% of the re-measure (35 / 24), and a per-Location × per-reach sweep finds no `culture_cell_unauthored` or `sphere_cell_unauthored` read on either seed (THR-1638). `colorationLineProblems` — also printed on `check:encounter --all`'s warn channel since THR-1638 — holds every line to one sentence of ≤ 28 words, the {actor}/{demonym}/{place} token set, and the sphere-jargon ban. Headless: the 30-tick seed-42 CLI run emits `sphere.life.iron` / `sphere.life.stone` resolutions.",
     },
   },
+  // -- Spheres & Quintessence -> War (THR-1768) ---------------------------------
+  // A faction's sphere scores were never derived: its own bag stayed all-zero (only
+  // monster factions are born non-zero), so a victor's sack pressed `chaos` — the
+  // first sphere in the reduce — for every mortal faction. The derived aggregate is
+  // the rounded mean of its individual members, read as own + aggregate.
+  {
+    id: 'faction-sphere-aggregate-reaches-battle-aftermath',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      "A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing.",
+    ulTerms: ['Sphere', 'Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      // Producer: phaseSphereAggregation writes `sphereAggregate` on each faction node;
+      // consumer: battleAftermath's sphere-pressure builder reads own + aggregate.
+      symbols: ['computeFactionSphereAggregates', 'getFactionSphereScores', 'FactionSphereAggregate'],
+      module: 'src/engine/sphereAffinity.ts',
+    },
+    writeSites: ['src/engine/phaseSphereAggregation.ts'],
+    readSites: ['src/engine/battleAftermath.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-08',
+      evidence:
+        "THR-1768. `src/engine/__tests__/sphereSeeding.test.ts`: the aggregate is the rounded mean of individual members (4, 2 → 3) and moves when one member's score moves (→ 5), with no write when nothing changed; `getFactionSphereScores` sums own + aggregate and reads all zeros for a faction with neither, which makes the aftermath press nothing instead of `chaos`. On generated medium worlds (seeds 42 and 99) every faction carries a `sphereAggregate` after 6 ticks. Headless seed-42 240-tick re-read: 83 factions, 17 of them non-zero under the chaos/energy god (11 positive, 6 negative), up from 0 of 52.",
+    },
+  },
   // -- World Generation -> the world's past (THR-1631 S1) ---------------------
   // Audit-on-touch for worldgen's past pass. What these rows make impossible: worldgen
   // placed dead empires and ~100 of their ruins and said nothing about them, and the
@@ -5841,15 +5879,56 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,
     intent:
-      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention.',
+      'Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player\'s First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one.',
     ulTerms: ['The First'],
     mechanism: {
       kind: 'edge-prop',
       symbols: ['the_first'],
       module: 'src/engine/meetingEncounter.ts',
     },
-    writeSites: ['src/engine/meetingEncounter.ts'],
+    writeSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRite.ts'],
     readSites: ['src/engine/attentionTier.ts'],
+  },
+  // -- The threading rite S1: one writer, The First is the first (THR-1644) ---
+  // The failure these exist to prevent: "The First" and "the first mortal the god
+  // threads" were two unconnected mechanisms — a player who threaded someone before
+  // the meeting got an ordinary thread and still had the meeting ahead of them —
+  // and every thread after the First was a one-line toast, because the meeting's
+  // outcomes had exactly one writer and it always minted a new mortal.
+  {
+    id: 'thread-write-resolves-first',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveThreadWrite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The resolver writes the position; the executor's thread write is where it
+    // lands on the edge. The `the_first` readers downstream are the
+    // `meeting-bond-writes-the-first` row's, unchanged.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/graphOpExecutor.ts'],
+  },
+  {
+    id: 'rite-applies-outcomes',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting\'s invented soul and for a mortal the card threaded alike.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['applyThreadingRite'],
+      module: 'src/engine/threadingRite.ts',
+    },
+    // The writer is defined once; the meeting (create-then-apply) and the rite
+    // queue (bond without a hand) are the two routes that run it.
+    writeSites: ['src/engine/threadingRite.ts'],
+    readSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRiteQueue.ts'],
   },
   // -- The opening S2: the doom clock waits for The First (THR-1646) --------
   // Audit-on-touch rows for Doom Clock & Journey. The failure these exist to

@@ -30,7 +30,9 @@ import {
   LAIR_ESCALATION_INTERVAL,
   LAIR_REINFESTATION_MIN_TICKS,
   LAIR_REINFESTATION_SPHERE_THRESHOLD,
+  lairSteepedInvestment,
 } from '../lairEscalation';
+import { triangleTotal } from '../../types/sphereAffinity';
 import type { GameState } from '../../types/gameState';
 import type { GraphNode } from '../../types/graph';
 
@@ -57,12 +59,17 @@ function lairsOfSubtype(state: GameState, subtype: string): GraphNode[] {
     .filter(n => n.properties.locationSubtype === subtype);
 }
 
+/**
+ * How steeped a lair is, read through the engine's own gate measure: sphere investment
+ * accrued since the lair's birth seed (THR-1768 gave lairs a seed of terrain + the
+ * declared-sphere bonus, so the raw score no longer starts at 0).
+ */
+let graphForScore: GameState['graph'] | undefined;
 function sphereScoreOf(node: GraphNode): number {
-  const sphere = node.properties.dominantSphere as string;
-  const affinity = node.properties.sphereAffinity as
-    { scores?: Record<string, number> } | undefined;
-  return affinity?.scores?.[sphere] ?? 0;
+  return graphForScore ? lairSteepedInvestment(graphForScore, node) : 0;
 }
+/** The investment the calibrated score threshold stands for. */
+const STEEPED_THRESHOLD = triangleTotal(LAIR_REINFESTATION_SPHERE_THRESHOLD);
 
 /** A cleared lair as it stood the moment the run ended, before the reinfestation pass. */
 interface ClearedSnapshot {
@@ -113,6 +120,7 @@ beforeAll(() => {
     state = runTick(state, [], runtime);
   }
 
+  graphForScore = state.graph;
   clearedSnapshots = lairsOfSubtype(state, 'cleared_lair').map(n => ({
     id: n.id,
     name: n.name as string,
@@ -134,7 +142,7 @@ beforeAll(() => {
   // (which already advances past `LAIR_REINFESTATION_MIN_TICKS`) sees it as eligible on
   // exactly the same terms as an organic clearing.
   const organicEligible = clearedSnapshots.some(
-    l => l.sphereScore >= LAIR_REINFESTATION_SPHERE_THRESHOLD && !l.held,
+    l => l.sphereScore >= STEEPED_THRESHOLD && !l.held,
   );
   if (!organicEligible) {
     // The engine's own eligibility reads "no controlling *non-monster* faction": an
@@ -150,7 +158,7 @@ beforeAll(() => {
     const candidate = lairsOfSubtype(state, 'lair')
       .filter(n => !heldByMortals(n.id))
       .sort((a, b) => sphereScoreOf(b) - sphereScoreOf(a))[0];
-    if (candidate && sphereScoreOf(candidate) >= LAIR_REINFESTATION_SPHERE_THRESHOLD) {
+    if (candidate && sphereScoreOf(candidate) >= STEEPED_THRESHOLD) {
       clearLair(state, candidate, undefined);
       const cleared = state.graph.getNode(candidate.id)!;
       constructedSteeped = { id: cleared.id, sphereScore: sphereScoreOf(cleared) };
@@ -223,7 +231,7 @@ describe('lair clearing — a generated world clears lairs', () => {
 describe('lair reinfestation — reachable from a cleared lair on a generated world', () => {
   it('reinfests cleared lairs that were still steeped when they fell', () => {
     const eligible = clearedSnapshots.filter(
-      l => l.sphereScore >= LAIR_REINFESTATION_SPHERE_THRESHOLD && !l.held,
+      l => l.sphereScore >= STEEPED_THRESHOLD && !l.held,
     );
 
     // Not a vacuity guard any more, but still loud: the set is organic when the run
@@ -250,7 +258,7 @@ describe('lair reinfestation — reachable from a cleared lair on a generated wo
 
   it('leaves a barely-steeped lair cleared', () => {
     const shallow = clearedSnapshots.filter(
-      l => l.sphereScore < LAIR_REINFESTATION_SPHERE_THRESHOLD,
+      l => l.sphereScore < STEEPED_THRESHOLD,
     );
     expect(shallow.length).toBeGreaterThan(0);
 

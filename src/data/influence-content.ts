@@ -56,13 +56,22 @@ export const TIER_NAMES: Record<InfluenceTier, string> = {
  */
 export const AVATAR_TIER_LABEL = 'Your mortal shape';
 
-/** Maintenance cost per tick per tier. */
+/**
+ * Maintenance cost per tick per tier, charged from the god's primary sphere.
+ *
+ * THR-1747: retuned from 0.5 / 1 / 2 / 4, under which one Devoted thread (1.0 a
+ * tick) out-spent the ~0.73 a tick of primary income and emptied the pool by
+ * tick 240 with no casts. At these values base + seat income keeps one thread
+ * all the way to Aspect (+0.235 net) or two at tier 3 (+0.07); two at tier 4
+ * need held ground (a consecrated source) to stay paid — the Dominion loop in
+ * miniature. Ledger: Docs/plans/2026-10-06-thr-1747-divine-economy-shared-prerequisites.md § E1.
+ */
 export const TIER_MAINTENANCE: Record<InfluenceTier, number> = {
   0: 0,
-  1: 0.5,
-  2: 1.0,
-  3: 2.0,
-  4: 4.0,
+  1: 0.1,
+  2: 0.2,
+  3: 0.35,
+  4: 0.5,
 };
 
 /** Ticks of maintained influence needed to promote to each tier. */

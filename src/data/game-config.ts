@@ -27,7 +27,9 @@ import type { OmenCategory } from '../types/omen';
  *   Medium ~80–120  ticks  (balanced, allows planning)
  *   Long   ~150–200 ticks  (epic scope, multiple escalation cycles)
  *
- * Current default: 1080 — three in-world years at 12 ticks a day (THR-1646).
+ * Current default: 1080 — three in-world years on the season calendar
+ * (`TICKS_PER_SEASON` 90, four seasons a year) (THR-1646). The attention clock
+ * (`TICKS_PER_DAY` 12) is a separate pacing unit; do not convert between them (THR-1747).
  * It was 200, which ended a round-1 cold tester's world in Summer Year 1 about
  * ten real minutes in. At the observed ~3 s/tick, 1080 ticks is ~54 real minutes.
  * The clock only counts from the bond with The First (`DoomClockState.wokeAtTick`).

@@ -31,6 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
+import type { SpherePressureResolvedTrace, SphereSeededTrace } from './traces/sphere-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -400,6 +401,10 @@ export type TraceCategory =
   // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
   | 'meeting.test_resolved'
   | 'meeting.bond_resolved'
+  // The threading rite — one writer; The First is the first (THR-1644 S1)
+  | 'thread.court_position_resolved'
+  | 'rite.queued'
+  | 'rite.applied'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -434,6 +439,8 @@ export type TraceCategory =
   | 'ascendant.progression.deepening_enqueued'
   | 'ascendant.progression.milestone_enqueued'
   | 'ascendant.progression.control_release'
+  // Divine economy — source upkeep charged from the primary sphere (THR-1747)
+  | 'source_upkeep'
   // Notable agendas — living world (THR-630)
   | 'notable.agenda_launched'
   | 'notable.agenda_phase_advanced'
@@ -602,6 +609,10 @@ export type TraceCategory =
   // Hunts — a hunter finished tracking a beast (THR-1560).
   // Interface in `src/types/traces/monster-traces.ts`.
   | 'hunt.tracked'
+  // Sphere scores — pressure resolved / bag seeded (THR-1768).
+  // Interfaces in `src/types/traces/sphere-traces.ts`.
+  | 'sphere_pressure'
+  | 'sphere_seeded'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -907,6 +918,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'fight.trigger',
   // Hunts — tracking finished (THR-1560)
   'hunt.tracked',
+  // Sphere scores — pressure resolved / bag seeded (THR-1768)
+  'sphere_pressure',
+  'sphere_seeded',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -942,6 +956,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Meet The First resolutions (THR-1714)
   'meeting.test_resolved',
   'meeting.bond_resolved',
+  // The threading rite (THR-1644 S1)
+  'thread.court_position_resolved',
+  'rite.queued',
+  'rite.applied',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -990,6 +1008,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.progression.deepening_enqueued',
   'ascendant.progression.milestone_enqueued',
   'ascendant.progression.control_release',
+  // Divine economy — source upkeep (THR-1747)
+  'source_upkeep',
   // Notable agendas — living world (THR-630)
   'notable.agenda_launched',
   'notable.agenda_phase_advanced',
@@ -4771,6 +4791,9 @@ export type TraceEntry =
   | MonsterDrivenOffTrace
   | FightTriggerTrace
   | HuntTrackCompletedTrace
+  // Sphere scores (THR-1768)
+  | SpherePressureResolvedTrace
+  | SphereSeededTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)
@@ -4822,6 +4845,8 @@ export type TraceEntry =
   | DeepeningEnqueueTrace
   | MilestoneEnqueueTrace
   | ControlReleaseTrace
+  // Divine economy — source upkeep (THR-1747)
+  | SourceUpkeepTrace
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
   | AftermathReactionRefusedTrace
@@ -4841,6 +4866,10 @@ export type TraceEntry =
   // Nudge Model — WS6 Meet The First conversion (THR-868)
   | MeetingTestResolvedTrace
   | MeetingBondResolvedTrace
+  // The threading rite (THR-1644 S1)
+  | ThreadCourtPositionResolvedTrace
+  | RiteQueuedTrace
+  | RiteAppliedTrace
   // Retrofitted from the orphaned-payload set (THR-1065). Each declared a
   // `category` literal and an authored payload, but was never a union member —
   // so `trace.category === '<its literal>'` was a TS2367 "no overlap" error and
@@ -5011,6 +5040,54 @@ export interface MeetingTestResolvedTrace extends TraceBase {
    * `.noforecast` suffixed when the outcome predates the forecast fields.
    */
   fateLineKey: string;
+}
+
+/**
+ * Trace: a thread from the god to a mortal resolved its court position
+ * (THR-1644 S1, D3). One per rite-bearing thread write. `resolvedPosition`
+ * differs from `cardPosition` exactly when the thread made a new First.
+ */
+export interface ThreadCourtPositionResolvedTrace extends TraceBase {
+  category: 'thread.court_position_resolved';
+  ascendantId: string;
+  /** What the template asked for. */
+  cardPosition: import('./influence').CourtPosition;
+  /** What was written — `the_first` when D3 fired. */
+  resolvedPosition: import('./influence').CourtPosition;
+  reason: import('../engine/threadingRite').CourtPositionReason;
+  /** The god's count of threads ever bound, after this one. */
+  threadsBoundCount: number;
+}
+
+/** Trace: a pending threading rite was recorded (THR-1644 S1). */
+export interface RiteQueuedTrace extends TraceBase {
+  category: 'rite.queued';
+  ordinal: number;
+  shape: import('../engine/threadingRite').RiteShape;
+  /** 0 = opens now (or resolves now, with no surface). */
+  queuedBehind: number;
+  /** True → the queue was full and the rite resolved as the bond alone, no hand. */
+  overflowed: boolean;
+}
+
+/**
+ * Trace: the one rite writer ran (THR-1644 S1, D1) — for the meeting and for
+ * every card-route thread. `outcomesPrefolded` marks the meeting, whose test
+ * shifts are already on the node (its `meeting.test_resolved` traces carry them).
+ */
+export interface RiteAppliedTrace extends TraceBase {
+  category: 'rite.applied';
+  shape: import('../engine/threadingRite').RiteShape;
+  viaMeeting: boolean;
+  /** False = bond without a hand, or an engine-side fallback. */
+  handPlayed: boolean;
+  outcomesPrefolded: boolean;
+  poleShifts: Array<{ pair: string; before: number; after: number; scale: number }>;
+  reachInvestment?: { reach: import('./traits').ReachDomain; amount: number };
+  quintessence?: { before: number; preClamp: number; after: number };
+  reception?: string;
+  markTraitId?: string;
+  fallbackReason?: import('../engine/threadingRite').RiteFallbackReason;
 }
 
 /**
@@ -5451,8 +5528,37 @@ export interface MilestoneEnqueueTrace extends TraceBase {
   category: 'ascendant.progression.milestone_enqueued';
   turn: number;
   beatId: string;
-  sourceCount: number;
-  floweringCount: number;
+  /** Essence-source reads at enqueue time (source / held-ground milestones). */
+  sourceCount?: number;
+  floweringCount?: number;
+  /** THR-1747: the bond tick the Wellspring milestone counted from. */
+  bondTick?: number;
+  /**
+   * THR-1747: set when the beat was recorded fired without being offered, because
+   * the god already held every card it grants (THR-647: never offer a held card).
+   */
+  skipped?: 'all_grants_held';
+}
+
+/**
+ * Trace: source upkeep (THR-1747). Emitted by `phaseEssenceSources` only on ticks where
+ * some controlled source's paid/unpaid upkeep state flips — mirrors the thread-upkeep
+ * trace; never every tick, never one per source.
+ */
+export interface SourceUpkeepTrace extends TraceBase {
+  category: 'source_upkeep';
+  /** Controlled sources charged this tick. */
+  sources: number;
+  paidCount: number;
+  unpaidCount: number;
+  /** Hosts that went paid → unpaid this tick. */
+  lapsedIds: string[];
+  /** Hosts that went unpaid → paid this tick. */
+  restoredIds: string[];
+  /** Essence taken from the primary sphere this tick. */
+  essenceSpent: number;
+  /** The primary sphere charged. */
+  sphere: SphereName;
 }
 
 /**

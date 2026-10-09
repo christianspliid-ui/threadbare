@@ -1405,6 +1405,15 @@ export interface DebugBridge {
     import('./types/influence').EssenceMovementBySphere | { error: string }
   >;
 
+  /**
+   * THR-1768 — sphere bags per node kind (`ascendant`, `individual`, `culture`,
+   * `faction`, `place`, `sublocation`, `other`): total, seeded, unseeded, nodes with a
+   * non-integer score, and the seed route each seeded node takes.
+   */
+  getSphereSeedCensus: () => Promise<
+    | import('./engine/sphereAffinity').SphereSeedCensus
+    | { error: string }
+  >;
   getEssenceSources: () => Promise<
     | {
         sources: Array<{
@@ -1416,6 +1425,8 @@ export interface DebugBridge {
           sanctity: number;
           contestedBy: string | null;
           desecrated: boolean;
+          /** THR-1747: whether the god paid this source's upkeep last tick. */
+          upkeepCurrent: boolean;
           sustenance: {
             drift: number;
             affinityScore: number;
@@ -2436,6 +2447,12 @@ export interface DebugBridge {
       readonly reason?: string;
     }
   >;
+  /**
+   * The threading rite (THR-1644 S1): the rite waiting for its surface, the queue
+   * behind it, how many mortals the god has ever threaded, and the god's most
+   * recent rite (shape, ordinal, reception, mark). `null` with no live game.
+   */
+  getThreadingRite: () => Promise<import('./engine/threadingRiteQueue').ThreadingRiteSnapshot | null>;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

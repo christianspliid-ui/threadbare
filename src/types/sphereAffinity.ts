@@ -80,8 +80,35 @@ export const AGENT_PRESENCE_RATIO = 1.0;
 export const ARCHETYPE_SPHERE_BONUS_PRIMARY = 2;
 /** Bonus to secondary sphere score when seeding an agent from archetype */
 export const ARCHETYPE_SPHERE_BONUS_SECONDARY = 1;
-/** Bonus to the location's thematic sphere (e.g., Force for a forge) */
+/**
+ * Bonus in a place's own declared sphere — a lair's `dominantSphere`, an elder ruin's
+ * `sphereAlignment` string (THR-1768 D4; dead until then).
+ */
 export const LOCATION_TYPE_BONUS = 2;
+
+/**
+ * Fewer valid individual members than this → the faction's aggregate is all zeros
+ * (THR-1768 D3).
+ */
+export const FACTION_SPHERE_AGGREGATE_MIN_MEMBERS = 1;
+
+/**
+ * World init emits one summary `sphere_seeded` trace instead of one per node (~1,500 on
+ * a medium world would flood the ring buffer). Mid-run seeds always trace per node.
+ */
+export const SPHERE_SEED_TRACE_SUMMARY_ONLY_AT_INIT = true;
+
+/**
+ * A faction's derived sphere scores: the rounded mean of its individual members' scores
+ * (THR-1768 D3). Recomputed by `phaseSphereAggregation`; never a pressure target. The
+ * faction's own `sphereAffinity` (monster-faction birth seed, pressure landings) is kept
+ * beside it — read both through `getFactionSphereScores`.
+ */
+export interface FactionSphereAggregate {
+  scores: Record<SphereName, number>;
+  memberCount: number;
+  computedTick: number;
+}
 
 // ─── Triangle Math ────────────────────────────────────────────────
 

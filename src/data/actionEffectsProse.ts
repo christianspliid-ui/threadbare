@@ -185,6 +185,16 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Walks unseen beside a settlement\'s wagons, so every road that feeds it runs safer and fuller.',
   'loc.sour_mine':
     'Closes the hand of the land beneath a settlement, and its diggings pinch to nothing.',
+
+  // — Held ground: the four cards of the held-ground milestone (THR-1747) —
+  'hex.tap_source':
+    'Draws a steady siphon of spirit from a source on the land, and it gives back more than it takes.',
+  'hex.claim_resource':
+    'Binds a vein of the world\'s wealth to your will, so it feeds you matter for as long as you hold it.',
+  'hex.claim_dominion':
+    'Sinks a claim into the land and holds it as yours, deepening your sway there while it lasts.',
+  'loc.place_of_power':
+    'Wakes the deep lines under a place, and the magic gathering there grows thick.',
 };
 
 // ─── Composed fallback ───────────────────────────────────────────────────────

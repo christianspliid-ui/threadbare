@@ -19,10 +19,12 @@
 
 import type { GameState } from '../types/gameState';
 import type { EssenceSourcePhaseTrace } from '../types/essenceSource';
+import type { SphereAlignment } from '../types/influence';
 import { emitTrace } from './traceBuffer';
 import {
   migrateControlledPlacesOfPower,
   recomputeControlledSourceTiers,
+  chargeSourceUpkeep,
 } from './essenceSources';
 
 export function phaseEssenceSources(state: GameState): Partial<GameState> {
@@ -60,6 +62,34 @@ export function phaseEssenceSources(state: GameState): Partial<GameState> {
     emitTrace(trace as unknown as Parameters<typeof emitTrace>[0]);
   }
 
-  // Graph is mutated in place; no GameState field changes in this slice.
-  return {};
+  // THR-1747: source upkeep. Charged after the recompute, so the nurture step above
+  // read the *previous* tick's `upkeepCurrent` — an unpaid source misses exactly one
+  // tick of upward drift per unpaid tick. Runs before phaseEssence, so the debit is a
+  // spend the essence-earned counter ignores (essenceEarned.ts banks net positive
+  // movement per phase only).
+  const alignment = ascNode.properties.sphereAlignment as SphereAlignment | undefined;
+  const primary = alignment?.primary;
+  if (sourceCount === 0 || !primary || !state.essencePool) return {};
+  const pool = { ...state.essencePool };
+  const upkeep = chargeSourceUpkeep(state.graph, state.ascendantId, primary, pool);
+  if (upkeep.lapsedIds.length > 0 || upkeep.restoredIds.length > 0) {
+    emitTrace({
+      category: 'source_upkeep',
+      tick: state.tick,
+      sources: upkeep.sources,
+      paidCount: upkeep.paid,
+      unpaidCount: upkeep.unpaid,
+      lapsedIds: upkeep.lapsedIds,
+      restoredIds: upkeep.restoredIds,
+      essenceSpent: upkeep.charged,
+      sphere: primary,
+      summary:
+        `source upkeep: ${upkeep.paid} paid, ${upkeep.unpaid} unpaid` +
+        (upkeep.lapsedIds.length > 0 ? `, ${upkeep.lapsedIds.length} stalled` : '') +
+        (upkeep.restoredIds.length > 0 ? `, ${upkeep.restoredIds.length} restored` : '') +
+        ` (${primary} −${upkeep.charged.toFixed(2)})`,
+    });
+  }
+  if (upkeep.charged <= 0) return {};
+  return { essencePool: pool };
 }

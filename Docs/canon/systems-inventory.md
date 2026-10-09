@@ -24,7 +24,6 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 |---|---|---|---|
 | Diagnostics & Incident Capture | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | THR-1134. The tick-end health validator and crash log, the incident flight recorder on `SimulationRuntime`, and the bundle assembler behind Settings → Trouble → Save a snapshot. **Expect a DORMANT badge on a healthy headless run, and read it as good news:** two of its three activity signals (`tick_health`, `tick_crash`) only fire when something has gone wrong, and the third (`incident_bundle`) only when a person presses the button — neither happens in the inventory's 120-tick sweep. The collector itself runs every tick in every session, production included. |
 | Companies & Group Travel | company, companies, group, party, band, fellowship, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
-| Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
 ## Subsystem registry
 
@@ -60,7 +59,7 @@ names like `TB-073`) a premise might use.
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow`, `spell`, `caster` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor`, `npc`, `binding` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
-| **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
+| **Spheres & Quintessence** | 🟢 ACTIVE | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 | **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
 - **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614. **Do not design a green-field war system** — extend or tune this one.
@@ -101,6 +100,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | Phase | Name | Tags |
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
+| `2a.15` | Threading rite drain | `THR-1644` |
 | `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
 | `3b` | Notable Agendas | `THR-630` |
@@ -124,6 +124,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `1.8` | Composition phase runner — advance phased event recipes tied to doom clock | `THR-225` | orchestrator |
 | `2a` | Progress + resolve existing unified actions | — | orchestrator |
 | `2a.1` | Thread-bind familiarity grant — when a bind_thread_* action resolves | — | orchestrator |
+| `2a.15` | Threading rite drain | `THR-1644` | orchestrator |
 | `2a.4` | Effect Tick — per-agent effect bookkeeping | — | orchestrator |
 | `2a.5` | Encounter Progression — advance active encounters whose current step has elapsed | — | orchestrator |
 | `2a.52` | Effect Shells — process non-step-outcome flip_table triggers | `THR-53` | orchestrator |
@@ -248,6 +249,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `backstory` (2) | `backstoryGenerator.ts`, `backstoryResolvers.ts` | — |
 | `balance` (4) | `balanceEvaluator.ts`, `balanceSummary.ts`, `balanceTargets.ts`, `balanceTelemetry.ts` | `Phase 1` |
 | `battle` (4) | `battleAftermath.ts`, `battleRecord.ts`, `battleResolution.ts`, `battleSpotlights.ts` | `Phase 3`, `Phase 4`, `Phase 5`, `TB-073`, `THR-1528` |
+| `beat` (1) | `beatGrantsHeld.ts` | `THR-1747` |
 | `binding` (9) | `binding/applyBinding.ts`, `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/creationEffects.ts`, `binding/encounterBinderContext.ts`, `binding/mintInhabitant.ts`, `binding/remoteAnchor.ts`, `binding/roleCensus.ts`, `binding/undertakingBindPass.ts` | `THR-1289`, `THR-1290`, `THR-1292`, `THR-1296`, `THR-1305` |
 | `broken` (1) | `brokenState.ts` | `THR-773` |
 | `callback` (1) | `callbackEligibility.ts` | — |
@@ -415,6 +417,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `temporal` (1) | `temporal.ts` | `THR-1452` |
 | `terrain` (1) | `terrain.ts` | — |
 | `thread` (1) | `threadDigest.ts` | — |
+| `threading` (2) | `threadingRite.ts`, `threadingRiteQueue.ts` | `THR-1644` |
 | `threat` (1) | `threatRating.ts` | — |
 | `tick` (1) | `tickHealthMonitor.ts` | — |
 | `tier` (1) | `tierPromotion.ts` | — |
@@ -438,4 +441,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (3 dormant) · 104 tick phases · 207 engine domains · 648 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 209 engine domains · 651 modules._

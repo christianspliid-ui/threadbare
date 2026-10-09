@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 163 |
+| 🟢 LIVE | 164 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 55 |
-| **Total** | **226** |
+| 🔵 UNVERIFIED-OK | 58 |
+| **Total** | **230** |
 
 ## Contracts by producing subsystem
 
@@ -215,7 +215,7 @@ remediation ticket or the build fails.
 | `first-bond-wakes-doom` | The Unmaking starts counting when you first reach down: the doom clock does not move until The First is bonded, and the tick it wakes is recorded as the start of the run. | function: `isFirstBonded` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `journey-keeps-encounter-target` | A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. The goal is the encounter *here* (THR-1674): a copy of the template in another town never carries the commitment. | node-prop: `targetEncounterId`, `motivationPull`, `journeyGoal`, `JOURNEY_GOAL_CAP_RESERVE`, `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER` | Movement & Colocation | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
-| `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent`, `plantAppointmentPromise` | Secrets & Favors | 🟢 LIVE | — |
@@ -232,12 +232,14 @@ remediation ticket or the build fails.
 | `requires-hold-gates-town-keeper-content` | A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss. | module-export: `requiresHold`, `filterByPrerequisites`, `standingFor`, `groundRealmOf` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `resolved-actions-feed-band-kpi` | Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen. | function: `stampEngagementCommit`, `recordEngagementResolution`, `recordBoardDecision`, `recordIdleDecision`, `computeEngagementKpiReport` | Diagnostics & Incident Capture | 🟢 LIVE | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `rite-applies-outcomes` | Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting's invented soul and for a mortal the card threaded alike. | function: `applyThreadingRite` | Personality & Emergent Traits | 🔵 UNVERIFIED-OK | — |
 | `routine-flag-keeps-daily-life-off-notifications-and-ledger` | Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger's default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer's quit point returns: "14 chapters by herself in seconds". | function: `isRoutineTemplate`, `isRoutineChapter` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seed-only-sequels-never-drawn` | A sequel whose opening assumes its parent — a promise made, a family met, a word broken — is marked `drawable: false` on its template, and the decision board never offers it: only its planter (a seed, an appointment's kept or missed branch, a trigger, a debug spawn) starts it (THR-1526). The encounter cache build skips it at all four appends (`isDrawable`), the divine-vision delivery beats refuse it (`isDeliverableBranchingEncounter`), and the deprecated array-scored path carries the same one-line gate. Seed resolution never reads the flag, so a named sequel still resolves, and the template keeps its catalog membership and its envelope because the seed query and `eligibleAt` read both. Before this contract the Full Moon Reckoning fired from the board and told mortals who had given no word that they had broken it (THR-1524's firing census: the Reckoning 1 and the Swindler Found 16 board firings on seed 42 over 200 ticks, their parents 0). | function: `isDrawable`, `isDeliverableBranchingEncounter`, `drawable` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `shortlist-reaches-every-template` | Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. What the mortal can start on its own hex is offered first, so a fair fill does not strand it away from the work where it stands. | function: `capWithDiversity`, `runFilterPipeline`, `CAP_FILL_ROTATE`, `CAP_FILL_LOCAL_SLOTS`, `capCutTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `spotlight-mortal-joins-guild` | A spotlight mortal who chooses a guild join and resolves it in a success band becomes a member of that guild — the unified-action resolution writes the `member_of` edge every faction reader counts, so the deciding mortals the player watches belong to the guilds whose content they are offered. | edge-prop: `processResolvedFactionLifecycleAction`, `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
+| `thread-write-resolves-first` | Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change. | function: `resolveThreadWrite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
 | `wheel-slot-card-face` | A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row's rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line. | function: `actionCardModel`, `CardFaceModel` | Essence & Divine Economy | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Undertakings | 🟢 LIVE | — |
@@ -249,6 +251,7 @@ remediation ticket or the build fails.
 | `active-influences-render-on-sheet` | What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen. | node-prop: `divineInfluences`, `activeEffects`, `ActiveEffectChips` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
+| `source-upkeep-debits-primary-pool` | Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar's income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer. | node-prop: `upkeepCurrent`, `SOURCE_CONTROL_SUSTAIN` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
 
@@ -316,6 +319,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `capability-thresholds-read-the-reach-share` | Every capability requirement — who can take up an ambition, when its milestones are met, when it is abandoned, whether a spell can be cast, whether a guild opens its door — reads one number on the scale its author wrote it on, so the capable take up great works and milestones take time. | function: `computeReachShare`, `computeReachShares`, `REACH_SHARE_FULL_RAW`, `meetsJoinPrerequisites` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `faction-sphere-aggregate-reaches-battle-aftermath` | A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing. | node-prop: `computeFactionSphereAggregates`, `getFactionSphereScores`, `FactionSphereAggregate` | War, Armies & Battles | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
@@ -1154,10 +1158,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/doomClock.ts`
-- **Production hits:** 9 total — 2 write, 1 read, 6 unclassified
+- **Production hits:** 10 total — 2 write, 1 read, 7 unclassified
 - **Write sites:** `src/engine/doomClock.ts`, `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/game-config.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/phaseOmenAgenda.ts`, `src/types/doomClock.ts` +1 more
+- **Other hits:** `src/data/game-config.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/phaseOmenAgenda.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-progress-paces-first-journey` — 🔵 UNVERIFIED-OK
@@ -1166,10 +1170,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 42 total — 1 write, 1 read, 40 unclassified
+- **Production hits:** 43 total — 1 write, 1 read, 41 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +35 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +36 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -1356,10 +1360,10 @@ exit
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 47 total — 1 write, 2 read, 44 unclassified
+- **Production hits:** 48 total — 1 write, 2 read, 45 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/components/Game/ascendant-bar/AscendantBar.tsx`, `src/components/Game/ascendant-bar/selectors.ts`
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +39 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +40 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `faction-ambitions-drive-action` — 🟢 LIVE
@@ -1372,6 +1376,18 @@ exit
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
 - **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts` +5 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
+
+- **Intent:** A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing.
+- **Producer → Consumer:** Spheres & Quintessence → War, Armies & Battles
+- **UL terms:** *Sphere*, *Faction*
+- **Module:** `src/engine/sphereAffinity.ts`
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/phaseSphereAggregation.ts`
+- **Read sites:** `src/engine/battleAftermath.ts`
+- **Other hits:** `src/engine/sphereAffinity.ts`, `src/types/sphereAffinity.ts`
+- **Verdict:** Verified 2026-10-08: THR-1768. `src/engine/__tests__/sphereSeeding.test.ts`: the aggregate is the rounded mean of individual members (4, 2 → 3) and moves when one member's score moves (→ 5), with no write when nothing changed; `getFactionSphereScores` sums own + aggregate and reads all zeros for a faction with neither, which makes the aftermath press nothing instead of `chaos`. On generated medium worlds (seeds 42 and 99) every faction carries a `sphereAggregate` after 6 ticks. Headless seed-42 240-tick re-read: 83 factions, 17 of them non-zero under the chaos/energy god (11 positive, 6 negative), up from 0 of 52.
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
 
@@ -1593,10 +1609,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
 - **UL terms:** *The First*, *Doom Clock*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`
 - **Read sites:** `src/engine/phaseDoom.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/debug-bridge.ts`
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/debug-bridge.ts`, `src/engine/threadingRite.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `found-lead-becomes-known-place` — 🟢 LIVE
@@ -1617,10 +1633,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 61 total — 2 write, 3 read, 56 unclassified
+- **Production hits:** 63 total — 2 write, 3 read, 58 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +51 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +53 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -1699,10 +1715,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 77 total — 1 write, 2 read, 74 unclassified
+- **Production hits:** 78 total — 1 write, 2 read, 75 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +69 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +70 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -1955,14 +1971,14 @@ exit
 
 ### `meeting-bond-writes-the-first` — 🔵 UNVERIFIED-OK
 
-- **Intent:** Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention.
+- **Intent:** Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 35 total — 1 write, 1 read, 33 unclassified
-- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Production hits:** 37 total — 2 write, 1 read, 34 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +28 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +29 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
@@ -2062,10 +2078,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 52 total — 5 write, 3 read, 44 unclassified
+- **Production hits:** 53 total — 5 write, 3 read, 45 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +39 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +40 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2371,6 +2387,17 @@ exit
 - **Other hits:** `src/data/group-constants.ts`, `src/data/undertaking-objects.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting's invented soul and for a mortal the card threaded alike.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *The First*
+- **Module:** `src/engine/threadingRite.ts`
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/threadingRite.ts`
+- **Read sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRiteQueue.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `routine-flag-keeps-daily-life-off-notifications-and-ledger` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Daily life: a raw encounter authored `threatRating: "trivial"` is a chore. It still happens and archives, but it never raises an encounter notification, never fills the Chapter Ledger's default view or badge (the Daily-life chip lists it), and is the only thing a pause-mode mortal starts during her story breath. Without it the skimmer's quit point returns: "14 chapters by herself in seconds".
@@ -2456,10 +2483,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 47 total — 1 write, 4 read, 42 unclassified
+- **Production hits:** 48 total — 1 write, 4 read, 43 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +37 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +38 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
@@ -2525,10 +2552,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 113 total — 1 write, 1 read, 111 unclassified
+- **Production hits:** 114 total — 1 write, 1 read, 112 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +106 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +107 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -2565,6 +2592,17 @@ exit
 - **Read sites:** `src/engine/phaseAgentDecision.ts`
 - **Other hits:** `src/data/agent-behavior-constants.ts`, `src/engine/encounter/branchingCurator.ts`, `src/engine/encounterCache.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-28: Docs/audits/2026-09-25-living-world-data/readers/reach.ts 42,99 200 (medium), old fill → rotation with CAP_FILL_LOCAL_SLOTS 30, same tree (main @ 1ad1b776): cap-first-gate templates 75 · 63 → 16 · 15, drawable templates fired 127 → 164, total firings 1,552 → 1,855, top-10 share 0.269 → 0.236. Rotation alone gave 12 · 4 / 117 / 676 / 0.284: it spent the free slots on other hexes, so start_local decisions fell 549 → 225 on seed 42. readers/attended.ts 42,99 150: The First's longest gap between encounters 25 · 30 (ceiling 30). Pinned by the capWithDiversity fair-fill and own-hex tests in encounterFilterPipeline.test.ts.
+
+### `source-upkeep-debits-primary-pool` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar's income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer.
+- **Producer → Consumer:** Essence & Divine Economy → Spheres & Quintessence
+- **UL terms:** *Essence*, *Sphere*
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Write sites:** `src/engine/essenceSources.ts`
+- **Read sites:** `src/components/Game/ascendant-bar/selectors.ts`, `src/engine/essenceIncome.ts`
+- **Other hits:** `src/components/Game/debug/EssenceSourcesDebugTab.tsx`, `src/data/ascendant-bar-content.ts`, `src/data/essence-sources.ts`, `src/debug-bridge.ts`, `src/engine/phaseEssenceSources.ts` +1 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `spell-cast-applies-effects` — 🟢 LIVE
 
@@ -2674,6 +2712,17 @@ exit
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +105 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
+### `thread-write-resolves-first` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *The First*
+- **Module:** `src/engine/threadingRite.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/threadingRite.ts`
+- **Read sites:** `src/engine/graphOpExecutor.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
 
 - **Intent:** When the world looks wrong, the engine has already written down what it caught — so the player can hand that record to someone who can read it, instead of describing a screenshot.
@@ -2760,10 +2809,10 @@ exit
 - **Intent:** Finishing a long work raises the mortal’s capability in the Reach that work leaned on — which the raw-score walk, the tier words and the calling all read, so a mortal who finishes enough of one kind of work can have the world rename what it calls them.
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **Module:** `src/engine/undertakingCapabilityGrowth.ts`
-- **Production hits:** 61 total — 2 write, 2 read, 57 unclassified
+- **Production hits:** 62 total — 2 write, 2 read, 58 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCapabilityGrowth.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +52 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +53 more
 - **Verdict:** Verified 2026-09-08: THR-1440. `growCapabilityOnCompletion` is the one writer of `domainCapabilities` in the undertaking lifecycle, called from the project completion terminal in `advanceStrategicProjects` and nowhere else — the failure and abandonment terminals build their rows through `buildFailureHistory` and pay nothing, and the instant terminal deliberately pays nothing either (an instant cell has no checkpoints, so it cannot fail and was measured as a no-risk farm: with it paying, the starvation contract’s zeroed hero never idled at all even at 60 ticks, because `observe × area` targets its own hex and one free watch lifts Eye off zero and widens awareness). The read side is `computeRawScore`, which starts from the node’s `domainCapabilities[domain]` before any trait/artifact walk, so a grown Reach moves the tier and the calling on the same tick — the write is placed before the calling recompute for exactly that reason. Non-vacuous by falsification and by a control arm: neutering the writer reddens 4 of 11 assertions in `undertakingCapabilityGrowth.test.ts`, and re-running the live measurement with it disabled drops carriers-risen from 12 · 10 to **0 · 0** on seeds 42 · 99, which is also the proof that nothing else writes the field during a run. Live population (small world, 150 ticks, one seed per process): 22 · 28 rider-paying completions against 66 · 61 total, 0 · 0 on non-completed terminals, 7 · 4 carriers rising on their leading Reach. Tier crossings are honestly small — 31 vs 29 and 41 vs 41 against the control arm, so the rider’s own contribution is +2 and 0; the constants are the named lever.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
@@ -2968,9 +3017,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 105 total — 2 write, 3 read, 100 unclassified
+- **Production hits:** 107 total — 2 write, 3 read, 102 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +95 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +97 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 
