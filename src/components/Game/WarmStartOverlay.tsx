@@ -31,6 +31,10 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
     .replace('{target}', formatWarmSeason(progress.targetTick, ticksPerSeason));
   const livesOn = resolveTooltip('ui.attention.lives_on')?.desc;
   const firstLine = firstName && livesOn ? livesOn.replace(/{name}/g, firstName) : null;
+  // THR-1787: the Lives-on line is true of The First's moments, but the player is then
+  // asked to decide things — say that those waited.
+  const heldLine = resolveTooltip('ui.warm_start.held')?.desc
+    ?? 'Anything that needs your choice has waited for you.';
 
   return (
     <div
@@ -56,6 +60,9 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
         {firstLine && (
           <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{firstLine}</p>
         )}
+        <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-held">
+          {heldLine}
+        </p>
       </div>
     </div>
   );
