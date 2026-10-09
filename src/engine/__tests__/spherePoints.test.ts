@@ -93,7 +93,7 @@ describe('getSpherePoints', () => {
   });
 
   it('falls back to the preset from the pair', () => {
-    const props = { sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
+    const props: { sphereAlignment: unknown; spherePoints?: unknown } = { sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
     expect(getSpherePoints(props)).toEqual({ mind: 3, spirit: 2 });
     expect(getSpherePointsSource(props)).toBe('fallback');
   });
