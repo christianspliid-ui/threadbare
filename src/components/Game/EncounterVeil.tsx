@@ -77,6 +77,12 @@ export interface EncounterVeilProps {
    */
   aftermathReactionTakenId?: string | null;
   /**
+   * THR-1777 — why the last aftermath pick did not land, in player words. The
+   * host used to drop a failed pick silently, so a click did nothing and said
+   * nothing (Law 21). Rendered under the reactions while set.
+   */
+  aftermathReactionError?: string | null;
+  /**
    * THR-636 — clicking the character chip opens the agent's detail surface.
    * THR-1477 — that surface is the *character sheet*, opened above this veil,
    * not the action drawer (which renders below it and so read as a dead click).
@@ -400,6 +406,7 @@ export function EncounterVeil({
   onAcknowledgeAftermath,
   onAftermathReaction,
   aftermathReactionTakenId,
+  aftermathReactionError,
   onSelectAgent,
   onSelectEntity,
   onShowOnMap,
@@ -1447,6 +1454,22 @@ export function EncounterVeil({
                 </button>
                 );
               })}
+              {aftermathReactionError && !aftermathReactionTakenId && (
+                <div
+                  role="status"
+                  data-testid="aftermath-reaction-error"
+                  style={{
+                    fontFamily: FONT_PROSE,
+                    fontStyle: 'italic',
+                    fontSize: 'var(--text-xs)',
+                    lineHeight: 1.75,
+                    color: TEXT_WHISPER,
+                    marginTop: 4,
+                  }}
+                >
+                  {aftermathReactionError}
+                </div>
+              )}
             </div>
           )}
 

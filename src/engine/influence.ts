@@ -23,6 +23,7 @@ import type { ControlEffect } from '../types/controlEffect';
 import { assignTrait } from './traits';
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 import { computeSourceIncome, readEssenceSource } from './essenceSources';
+import { distributeBySpherePoints, getSpherePoints } from './spherePoints';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
@@ -76,27 +77,9 @@ export function generateEssence(pool: EssencePool, generation: EssenceGeneration
 
 // ─── Generation Computation ──────────────────────────────────────────
 
-/**
- * Distribute a total essence amount across spheres based on alignment.
- * Primary sphere: 35%, Secondary: 25%, remaining 6 split the rest (≈6.67% each).
- */
-function distributeByAlignment(total: number, alignment: SphereAlignment): EssenceGeneration {
-  const gen = createEmptyEssencePool();
-  const primaryShare = total * 0.35;
-  const secondaryShare = total * 0.25;
-  const remainingShare = total * 0.40;
-  const otherSpheres = SPHERE_NAMES.filter(
-    (s) => s !== alignment.primary && s !== alignment.secondary
-  );
-  const perOther = remainingShare / otherSpheres.length;
-
-  gen[alignment.primary] = primaryShare;
-  gen[alignment.secondary] = secondaryShare;
-  for (const s of otherSpheres) {
-    gen[s] = perOther;
-  }
-  return gen;
-}
+// The essence split by bought sphere points (THR-1749) lives in ./spherePoints
+// (`distributeBySpherePoints`), shared with the essenceIncome readout so the
+// ledger and the readout can never disagree.
 
 /**
  * Compute per-tick essence generation for an Ascendant based on graph state.
@@ -160,7 +143,8 @@ export function computeEssenceGeneration(
     }
   }
 
-  const gen = distributeByAlignment(totalRate, alignment);
+  // THR-1749: split by the bought sphere vector (preset fallback from the pair).
+  const gen: EssenceGeneration = distributeBySpherePoints(totalRate, getSpherePoints(node.properties));
 
   // 3c. Typed essence-source income (THR-611). Routed to each source's own
   //     sphereAffinity (not alignment-distributed), tier- and DR-scaled. Untyped

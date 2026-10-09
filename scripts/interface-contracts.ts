@@ -1608,6 +1608,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/engine/essenceIncome.ts'],
   },
   {
+    id: 'sphere-points-split-essence-income',
+    producerSystem: WORLDGEN,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.',
+    ulTerms: ['Essence', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['spherePoints', 'distributeBySpherePoints'] },
+    writeSites: ['src/engine/ascendant.ts'],
+    readSites: ['src/engine/influence.ts', 'src/engine/essenceIncome.ts'],
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,

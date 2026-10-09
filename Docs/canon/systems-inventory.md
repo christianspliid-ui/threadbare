@@ -380,6 +380,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `remembrance` (1) | `remembrance.ts` | — |
 | `reputation` (2) | `reputation.ts`, `reputationWalk.ts` | `THR-1206` |
 | `resolution` (4) | `resolution.ts`, `resolutionModifiers.ts`, `resolutionScaleAdjust.ts`, `resolutionService.ts` | `Phase 2`, `THR-1581`, `THR-1627`, `THR-451`, `THR-571`, `THR-827` |
+| `resolved` (1) | `resolvedActionRetention.ts` | `THR-1777` |
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
@@ -403,7 +404,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | — |
 | `spell` (3) | `spellActivation.ts`, `spellCasting.ts`, `spellGrant.ts` | `THR-1231`, `THR-1571`, `THR-1572`, `THR-1672` |
 | `spellgenerator` (10) | `spellGenerator/casterTradition.ts`, `spellGenerator/describeSpell.ts`, `spellGenerator/generateSpell.ts`, `spellGenerator/libraryRead.ts`, `spellGenerator/notice.ts`, `spellGenerator/readBack.ts`, `spellGenerator/spellLibrary.ts`, `spellGenerator/traditionCatalog.ts`, `spellGenerator/types.ts`, `spellGenerator/validateGeneratedSpell.ts` | `THR-1230`, `THR-1232`, `THR-1572`, `THR-1672` |
-| `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
+| `sphere` (3) | `sphereAffinity.ts`, `spherePoints.ts`, `sphereScaling.ts` | `THR-1749` |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
 | `stealth` (1) | `stealth.ts` | — |
 | `step` (2) | `stepCast.ts`, `stepResolutionCore.ts` | `THR-1292`, `THR-1670` |
@@ -441,4 +442,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 209 engine domains · 651 modules._
+_Counts: 28 registered subsystems (2 dormant) · 105 tick phases · 210 engine domains · 653 modules._

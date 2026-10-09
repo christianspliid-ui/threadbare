@@ -45,26 +45,53 @@ import { prepareEncounterSupportBundle, type EncounterBinderContext } from './en
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { mulberry32 } from '../lib/prng';
+import { ASCENDANT_BEAT_POOL, BEAT_KIND_WEIGHTS } from '../data/ascendant-beat-content';
 
 /** Stable prefix for every delivery beat id. A beat id is `${PREFIX}${templateId}`. */
 export const DELIVERY_BEAT_ID_PREFIX = 'beat.delivery.';
 
 /**
- * Per-beat draw weight for delivery beats (multiplies `BEAT_KIND_WEIGHTS.delivery`
- * in `drawFromPool`). NFP #1 — tunable.
- *
- * The base pool (intro/invest/select) carries a total weighted mass of ~44. With
- * ~23 delivery beats at kind-weight 2, a per-beat weight of 1 would give delivery a
- * mass of ~46 — over half of all natural draws, swamping the "occasional divine
- * vision" intent. Normalising each delivery beat down to {@link DELIVERY_BEAT_WEIGHT}
- * keeps the whole delivery group at ~10% of cadence draws (23 × 2 × 0.1 ≈ 4.6 of
- * ~48.6). Raise it to make divine visions more frequent; lower it to make them rarer.
- *
- * (Per-beat *eligibility* and identity biasing at draw time is a larger Director
- * change deferred to TODO(THR-516); until then the only live filter is dedup against
- * already-delivered beats — see {@link eligibleDeliveryBeats}.)
+ * Target share of an unbiased first cadence draw that lands on *some* delivery beat
+ * (a divine vision). NFP #1 — the tuning knob: raise it for more frequent visions,
+ * lower it for rarer. THR-1771: the share used to be a by-product of a hand-set
+ * per-beat weight and the delivery count, so it drifted (the comment said ~23 beats
+ * and ~10%; the catalogue grew to 84 and ~20%). 0.2 keeps today's measured share.
  */
-export const DELIVERY_BEAT_WEIGHT = 0.1;
+export const DELIVERY_FIRST_DRAW_SHARE = 0.2;
+
+/**
+ * Unbiased draw mass of the static base pool (intro/invest/select): Σ kind weight ×
+ * per-beat weight over `ASCENDANT_BEAT_POOL`, every beat eligible and identity bias 1.
+ */
+export const BASE_POOL_FIRST_DRAW_MASS = ASCENDANT_BEAT_POOL.reduce(
+  (sum, b) => sum + (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1),
+  0,
+);
+
+/**
+ * Per-beat draw weight for delivery beats (multiplies `BEAT_KIND_WEIGHTS.delivery`
+ * in `drawFromPool`), derived — never hand-set — so the whole delivery group carries
+ * {@link DELIVERY_FIRST_DRAW_SHARE} of an unbiased first draw however many deliverable
+ * branching encounters the catalogue holds:
+ * `share × baseMass / ((1 − share) × count × kindWeight)`. Fail-soft: an empty
+ * catalogue (count 0) yields 0 — there is nothing to weight.
+ */
+export function deliveryBeatWeightFor(deliverableCount: number): number {
+  const kindWeight = BEAT_KIND_WEIGHTS.delivery ?? 1;
+  if (deliverableCount <= 0 || kindWeight <= 0 || DELIVERY_FIRST_DRAW_SHARE >= 1) return 0;
+  return (DELIVERY_FIRST_DRAW_SHARE * BASE_POOL_FIRST_DRAW_MASS)
+    / ((1 - DELIVERY_FIRST_DRAW_SHARE) * deliverableCount * kindWeight);
+}
+
+const DELIVERABLE_BRANCHING_TEMPLATES = LOCATION_BRANCHING_ENCOUNTER_TEMPLATES
+  .filter(isDeliverableBranchingEncounter);
+
+/**
+ * The live per-beat delivery weight (see {@link deliveryBeatWeightFor}). Per-beat
+ * eligibility beyond dedup — binding The First (THR-1650) — still withholds beats at
+ * draw time, so the realised share is at most the target.
+ */
+export const DELIVERY_BEAT_WEIGHT = deliveryBeatWeightFor(DELIVERABLE_BRANCHING_TEMPLATES.length);
 
 /** The delivery beat id that wraps a given source template. */
 export function deliveryBeatIdFor(templateId: string): string {
@@ -110,8 +137,7 @@ export function branchingEncounterToDeliveryBeat(template: UnifiedActionTemplate
  * Every delivery beat the adapter can produce, one per deliverable branching
  * encounter. Built once at module load from the registered branching catalogue.
  */
-export const ALL_DELIVERY_BEATS: readonly BeatDefinition[] = LOCATION_BRANCHING_ENCOUNTER_TEMPLATES
-  .filter(isDeliverableBranchingEncounter)
+export const ALL_DELIVERY_BEATS: readonly BeatDefinition[] = DELIVERABLE_BRANCHING_TEMPLATES
   .map(branchingEncounterToDeliveryBeat);
 
 /** Look up a delivery beat by its id (for force-offer paths). */

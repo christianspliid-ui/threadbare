@@ -183,6 +183,7 @@ import {
   emitChapterArchivedTrace,
   isEncounterAction,
 } from './chapterArchive';
+import { pruneResolvedActions } from './resolvedActionRetention';
 import { recordStoryChapterEnd } from './attentionCadence';
 import { stampStakesContexts } from './encounters/stakesLine';
 import { getUnifiedTemplateById as getStakesTemplateById } from '../data/unified-action-templates';
@@ -320,10 +321,7 @@ export function getEncounterCacheManager(): EncounterCacheManager | null {
 /** Trim encounterNotifications older than this many ticks */
 const NOTIFICATION_RETENTION_TICKS = 50;
 
-/** Prune resolved unifiedActions older than this many ticks.
- *  Cooldowns are 5–15 ticks; 20 gives headroom without unbounded growth.
- *  Was 100 — caused O(agents × actions) quadratic tick cost at scale. */
-const RESOLVED_ACTION_RETENTION_TICKS = 20;
+// RESOLVED_ACTION_RETENTION_TICKS + the prune moved to resolvedActionRetention.ts (THR-1777).
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -4043,11 +4041,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         // fail-soft: a join that cannot be recorded must not stop the tick
       }
     }
+    // THR-1777: an action whose aftermath is still unanswered survives the prune.
     s = {
       ...s,
-      unifiedActions: s.unifiedActions.filter(a =>
-        !a.resolved || a.completedAtTick == null || s.tick - a.completedAtTick < RESOLVED_ACTION_RETENTION_TICKS,
-      ),
+      unifiedActions: pruneResolvedActions(s.unifiedActions, s.encounterNotifications, s.tick),
     };
   }
 

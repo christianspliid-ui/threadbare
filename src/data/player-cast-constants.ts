@@ -37,7 +37,8 @@ export const PLAYER_CAST_PUSH_ENABLED: boolean = false;
 
 /**
  * The ascendant's innate divine aptitude, on the raw score the capability sigmoid
- * consumes (midpoint 10, k 0.4).
+ * consumes (midpoint 30, k 0.08 since THR-1581; the history below was measured on
+ * the pre-refit midpoint 10, k 0.4 — see the THR-1775 re-verdict at the end).
  *
  * Measured during THR-728 implementation: the ascendant node carries no term the
  * raw score walks. Mortals carry `domainCapabilities` of 10–40 (`generateDomainCapabilities`);
@@ -74,11 +75,26 @@ export const PLAYER_CAST_PUSH_ENABLED: boolean = false;
  * a run. Raising it to 10 puts a fresh god at 50% success-at-cost / 41% clean,
  * spending most of the Deepening arc before the first cast. Pinned by
  * `playerCastBalance.test.ts`, which goes red on any change to either constant.
+ *
+ * **THR-1775 re-verdict (2026-10-09): 6 / 0.5 → 10 / 2.5.** Everything above this
+ * paragraph was measured on the **pre-refit** sigmoid (midpoint 10, k 0.4). THR-1581
+ * re-fitted the dice to midpoint 30, k 0.08, and on that curve 6 / 0.5 put a fresh
+ * god at capability 0.128 off-domain / 0.137 secondary / 0.152 primary — the curve's
+ * flat low tail, where a god's own reaches cast barely better than any other. The
+ * re-fit is a linear rescale of the raw axis (`0.4·(x − 10) = 0.08·(y − 30)`, so
+ * `y = 5x − 20`), which maps base 6 → 10 and weight 0.5 → 2.5 and restores the
+ * capabilities THR-766 signed off exactly: 0.168 / 0.231 / 0.354. The outcome
+ * texture on the live resolver (local offset 0 since THR-1627, scale floors retired
+ * by THR-1581) is re-measured in `playerCastBalance.test.ts`.
+ *
+ * Known consequence, owned by THR-1580 rather than this constant: `reachPractice`
+ * (≈ 0.4 raw per action) now walks a raw axis five times wider, so the Deepening
+ * arc moves the dice five times more slowly than THR-613 tuned it to.
  */
-export const ASCENDANT_CAST_BASE_RAW = 6;
+export const ASCENDANT_CAST_BASE_RAW = 10;
 
 /** Weight converting a reach affinity (2–5) into raw-score points for a cast. */
-export const ASCENDANT_CAST_AFFINITY_WEIGHT = 0.5;
+export const ASCENDANT_CAST_AFFINITY_WEIGHT = 2.5;
 
 /**
  * Raw-score bonus for a player cast in a given reach. Fail-soft: an ascendant with

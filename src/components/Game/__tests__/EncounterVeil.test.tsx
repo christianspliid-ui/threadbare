@@ -1698,6 +1698,26 @@ describe('aftermath mode', () => {
     expect(onAcknowledgeAftermath).toHaveBeenCalled();
   });
 
+  it('says in words when a pick did not land, and keeps the choices live (THR-1777)', () => {
+    const { rerender } = render(
+      <EncounterVeil {...defaultProps} model={reactionModel(twoReactions)} />,
+    );
+    // Control arm: no refusal, no line.
+    expect(screen.queryByTestId('aftermath-reaction-error')).not.toBeInTheDocument();
+
+    rerender(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        aftermathReactionError="This choice could not take hold."
+      />,
+    );
+    const line = screen.getByTestId('aftermath-reaction-error');
+    expect(line).toHaveTextContent('This choice could not take hold.');
+    expect(line).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('aftermath-reaction-label-slice.bridge.walk_on').closest('button')).not.toBeDisabled();
+  });
+
   it('FAIL-SOFT: a reaction with no authored intent still renders its label', () => {
     render(<EncounterVeil {...defaultProps} model={reactionModel([{ id: 'r1', label: 'Move on' }])} />);
     expect(screen.getByTestId('aftermath-reaction-label-r1')).toHaveTextContent('Move on');

@@ -73,7 +73,14 @@ export interface AscendantIdentity {
   hungerName: string;
   mandateDirection: string;
   courtType: 'high_house' | 'circle' | 'web' | 'abyss';
+  /** The two largest bought spheres (derived from `spherePoints` when present, THR-1749). */
   sphereAlignment: SphereAlignment;
+  /**
+   * The god's bought sphere points (THR-1749) — five points over the Creation
+   * spheres, poured at Remembrance. Absent on older identities: the preset from
+   * `sphereAlignment` stands in (`getSpherePoints`).
+   */
+  spherePoints?: Partial<Record<SphereName, number>>;
   domainAffinities: Partial<Record<ReachDomain, number>>;
   personalitySeed: AxiologicalProfile;
   ascendantLens: {

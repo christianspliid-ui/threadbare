@@ -497,6 +497,8 @@ export function initializeGameStateFromIdentity(
     title: identity.divineName,
     description: `${identity.hungerName} — ${identity.mandateDirection}`,
     sphereAlignment: identity.sphereAlignment,
+    // THR-1749: the bought vector rides through to createAscendant.
+    spherePoints: identity.spherePoints,
     startingDomainAffinities: identity.domainAffinities,
     personalitySeed: identity.personalitySeed,
     flavorText: identity.mandateDirection,
@@ -886,6 +888,8 @@ export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
   mandateDirection: 'You swore to see the Sun-Oath broken before it could consume what remains of the Thornweaver. You do not know yet how it will break — only that you will be there when it does.',
   courtType: 'web',
   sphereAlignment: { primary: 'mind', secondary: 'spirit' },
+  // THR-1749: the Witness preset, identical to the pair above.
+  spherePoints: { mind: 3, spirit: 2 },
   domainAffinities: { eye: 4, veil: 3, shadow: 2 },
   personalitySeed: {
     mercy_ruthlessness: 0.5,

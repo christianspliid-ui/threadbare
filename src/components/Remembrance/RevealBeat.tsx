@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { RemembranceFragment, HungerDefinition } from '../../types/remembrance';
 import { getSphereColor } from '../../data/sphereIcons';
+import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } from '../../engine/spherePoints';
+import { describeSpherePour } from './sphereBuy';
 
 interface RevealBeatProps {
   originFragment: RemembranceFragment;
@@ -8,6 +10,8 @@ interface RevealBeatProps {
   hunger: HungerDefinition;
   mortalName: string;
   courtType: string;
+  /** THR-1749: the bought sphere vector; absent → the hunger's preset. */
+  spherePoints?: SpherePoints;
   suggestedDivineName: string;
   onComplete: (divineName: string) => void;
 }
@@ -25,6 +29,7 @@ export function RevealBeat({
   hunger,
   mortalName,
   courtType,
+  spherePoints,
   suggestedDivineName,
   onComplete,
 }: RevealBeatProps) {
@@ -43,7 +48,10 @@ export function RevealBeat({
     onComplete(name);
   }, [divineName, suggestedDivineName, onComplete]);
 
-  const primaryColor = getSphereColor(hunger.sphereAlignment.primary);
+  const points = spherePoints ?? presetFromAlignment(hunger.sphereAlignment);
+  const derived = deriveAlignmentFromPoints(points) ?? hunger.sphereAlignment;
+  const pourWords = describeSpherePour(points);
+  const primaryColor = getSphereColor(derived.primary);
 
   const lineStyle = (idx: number, color: string) => ({
     fontFamily: 'var(--font-prose)' as const,
@@ -98,7 +106,7 @@ export function RevealBeat({
           </p>
 
           <p style={{ ...lineStyle(6, primaryColor), fontSize: '1.2rem', opacity: phase >= 6 ? 0.85 : 0 }}>
-            {hunger.sphereAlignment.primary} and {hunger.sphereAlignment.secondary} pour through you.
+            {pourWords.pour}{pourWords.stir ? ` ${pourWords.stir}` : ''}{' '}
             Your court is {COURT_LABELS[courtType] ?? courtType}.
           </p>
         </div>
