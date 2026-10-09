@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-04
+last_validated_against: 2026-10-09
 ---
 
 # Pull Work
@@ -283,6 +283,8 @@ If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, 
 **Count in-flight implementations, not open claims (THR-927 — supersedes THR-938's flat subtraction).** The gate protects an invariant about *concurrent implementation*: one thing being built at a time. A claim whose PR is already open and carries its close keyword is **discharged** — the building is finished, and the merge fires with no session present, by design after this run ends. Counting it as work-in-progress red-exits the *next* run on a leak that does not exist. That is not hypothetical; it is how the rule was found (`tb-opus-pickup`, 2026-07-31 ~19:00Z, impediment #365: THR-925 and THR-926 both sat `In Dev`, both shipped by the single armed PR #1191, and the documented response to a count above 1 is "surface and stop").
 
 **A `DIRTY` PR does not discharge (2026-08-28 retro; impediment #765).** "The merge fires with no session present" is true for a PR waiting on checks and **false for a conflicted one** — GitHub does not build a conflicted PR, so not one check runs, auto-merge can never fire, and every surface reads healthy. Measured 2026-08-25: PR #1618 (High-priority content, armed 13:28Z) sat `DIRTY` for ~4.5 hours with `gh pr checks` showing only passing Vercel entries, while the WIP gate counted it as shipped. When resolving claims to PRs, also read `mergeStateStatus` (the same `gh pr list` call takes it in `--json`; re-query `UNKNOWN` 2–3 times per the Step 0.8 rule): a claim carried by a **`DIRTY`** PR is **undischarged — route it to Step 1.7 resume as your own claim** and resolve the conflict per the conflicted-PR closeout, which converts a silent indefinite stall into a normal pickup.
+
+**No fresh claim while any ticket PR is unmerged. A hook enforces this (2026-10-09, `scripts/wip-gate.ts`).** "Discharged" answers whether a claim is a *leak*. It does not mean a new branch is *safe*. A PR that is armed and waiting on checks is not dirty when you look, but it becomes dirty the moment you branch beside it. Every ticket PR appends the same ledgers (`Docs/changelog.md`, `Docs/project-history.md`) and regenerates the same artifacts (systems inventory, interface map, `public/*-reference.html`), and GitHub's mergeability ignores the `merge=union` driver. Under the `*/20` cron (THR-1717) the next run started before the last PR merged, so code PRs needing a main catch-up rose from 10 % to 33 % and four green PRs sat `DIRTY` at once on 2026-10-09. The PreToolUse hook on `save_issue` now refuses any move to `In Dev` while a non-draft, unheld open PR closes a *different* ticket (idle > 24 h exempt; resume of the PR's own ticket allowed; fail-soft on `gh` errors). **When it refuses:** if a named PR is `DIRTY`, red, or an unarmed review-gate park, unstick it per Step 0.8 and end the run. If it is armed and waiting on checks, end the run cleanly with `[pull-work] Step 1.5: WIP gate — PR #<N> unmerged, waiting; no claim.` Do not retry the claim, and do not route around the hook by claiming under another state. The next run (≤ 20 min) claims on a main that holds the merge. Decisions are logged to `.claude/logs/wip-gate.log` in the home tree.
 
 Resolve each `In Dev` claim assigned to you to the open PR that closes it, then count only the claims that resolve to nothing:
 
@@ -1007,13 +1009,16 @@ Roughly a dozen Ready-for-Dev tickets at any time are docs/process-only: CLAUDE.
 |---|---|---|
 | `DOCS_ONLY_LABEL` | `docs-only` | Linear label marking drain-eligible tickets |
 | `DRAIN_MAX_TICKETS` | 3 | Tickets drained per run. Bounds context/wall-clock so a drain never ends mid-ticket; raise only if runs finish with headroom to spare |
+| `DRAIN_MERGE_WAIT_MAX_MIN` | 5 | Max wait for a drained docs PR to merge before the next drain claim (the WIP-until-merged hook refuses a claim beside an unmerged ticket PR) |
 
 ### When the drain runs
 
 Run it in either of two places:
 
-- **After the primary ticket's PR is armed** and the worktree cleaned (the normal case), or
+- **After the primary ticket's PR has merged** and the worktree is cleaned, or
 - **Immediately**, when Step 1 found no claimable code ticket — a docs drain is the run's whole output rather than an "exit clean, no ready work".
+
+**The WIP-until-merged hook gates drain claims too (2026-10-09, Step 1.5).** A drain claim made while the primary code PR is still waiting on its ~13 min CI is refused. When that happens, end the run: the drain is not worth a race. After you arm each drained docs PR, wait for *that* PR to merge before claiming the next one, with `gh pr checks <N> --watch --interval 20` bounded to `DRAIN_MERGE_WAIT_MAX_MIN` (5). Docs PRs merge in about a minute. This bounded wait is a sanctioned exception to "don't poll CI" (THR-675): it is what makes the next claim legal. A docs PR that hasn't merged by then ends the drain.
 
 ### Merge-yield gate — RETIRED (THR-920 → THR-983)
 
@@ -1034,7 +1039,7 @@ For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never
 3. Implement, then close out on the **docs-only track** of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) (authoritative since THR-1336): `check:generated-freshness` (run last), `lint:plan-doc -- --staged`, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
 4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
 
-One In Dev at a time: finish a ticket's ship before claiming the next. Step 1.5's in-flight count is what keeps the resulting armed-but-unmerged claims from reading as a leak next run — each one resolves to its own open PR, so all of them are discharged and none of them gate.
+One In Dev at a time: finish a ticket's ship, **and let its PR merge**, before claiming the next. Step 1.5's in-flight count is what keeps the resulting armed-but-unmerged claims from reading as a leak next run — each one resolves to its own open PR, so all of them are discharged and none of them gate.
 
 ### Mis-tag guard — run at every drained ticket's closeout (THR-917)
 
