@@ -138,9 +138,16 @@ export const RITE_BOND_GOD_VOICE = 'Your thread holds. Now you learn how they ta
 
 // ─── The First (D3) ───────────────────────────────────────────────
 
-/** The card route's First line — shown in the rite when the thread names a new First. */
-export function riteFirstLine(name: string): string {
-  return `No mortal has carried your thread before. ${name} is your First.`;
+/**
+ * The card route's First line — shown in the rite when the thread names a new First.
+ * A First can be named on a later thread (the old First went dormant, or the slot
+ * reopened after a Return), so only the god's first thread may claim nobody has
+ * carried it before.
+ */
+export function riteFirstLine(name: string, ordinal: number = 1): string {
+  return ordinal <= 1
+    ? `No mortal has carried your thread before. ${name} is your First.`
+    : `Others have carried your thread. ${name} is your First now.`;
 }
 
 /**

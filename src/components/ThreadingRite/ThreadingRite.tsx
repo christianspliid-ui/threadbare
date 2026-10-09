@@ -248,7 +248,7 @@ export function ThreadingRite({
             </p>
             {becomesFirst && (
               <p data-testid="threading-rite-first-line" style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: '1rem', color: 'var(--veil-gold-text)', lineHeight: 1.6, marginTop: 12 }}>
-                {riteFirstLine(name)}
+                {riteFirstLine(name, rite.ordinal)}
               </p>
             )}
             <button

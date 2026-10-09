@@ -95,6 +95,13 @@ describe('THR-1754 — ThreadingRite', () => {
       .toBe('No mortal has carried your thread before. Hadrel Vosk is your First.');
   });
 
+  it('a First named on a later thread never claims the thread was uncarried', () => {
+    renderRite('full_no_sensing', 3);
+    expect(screen.getByText('Your third thread')).toBeTruthy();
+    expect(screen.getByTestId('threading-rite-first-line').textContent)
+      .toBe('Others have carried your thread. Hadrel Vosk is your First now.');
+  });
+
   it('the fourth thread is the bond-only card with a two-card hand', () => {
     const { onBondWithoutHand } = renderRite('bond_only', 4);
     expect(screen.queryByTestId('threading-rite')).toBeNull();
