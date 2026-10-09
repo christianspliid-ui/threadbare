@@ -13,6 +13,7 @@
  *   #3 Determinism: pure function of inputs (mutations to essencePool are caller's job)
  *   #4 Fail-soft: NaN/Infinity clamped, missing sphere → zero delta
  */
+import { FOUNDATION_SPHERE_NAMES } from '../types/index';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
 import type { HiddenSiteRevealResult } from './revelationResolver';
@@ -22,8 +23,10 @@ import {
   HIDDEN_SITE_ESSENCE_REWARD,
 } from '../data/agent-behavior-constants';
 
-// Foundation spheres that receive elder magic essence
-const FOUNDATION_SPHERES: SphereName[] = ['chaos', 'order', 'light', 'darkness'];
+// Foundation spheres that receive elder magic essence. The shared list, not a
+// private copy: the repertoire reads the same one to decide which spheres a
+// god has *found* (THR-1753), so the two cannot drift apart.
+const FOUNDATION_SPHERES: readonly SphereName[] = FOUNDATION_SPHERE_NAMES;
 
 export interface EssenceRewardResult {
   readonly deltas: Partial<Record<SphereName, number>>;
