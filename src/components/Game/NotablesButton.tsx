@@ -4,7 +4,7 @@
  */
 import { useState, useMemo } from 'react';
 import type { GameState } from '../../types/gameState';
-import { NotablesPanel } from './NotablesPanel';
+import { NotablesPanel, countShownNotables } from './NotablesPanel';
 import { IconButton } from '../shared/IconButton';
 import { Dropdown } from '../shared/Dropdown';
 
@@ -15,12 +15,13 @@ interface NotablesButtonProps {
 export function NotablesButton({ gameState }: NotablesButtonProps) {
   const [open, setOpen] = useState(false);
 
-  const activeCount = useMemo(
-    () =>
-      (gameState.activeCompositions ?? []).filter(
-        (c) => c.sponsorNotableId && c.agendaFamily && c.status === 'active',
-      ).length,
-    [gameState.activeCompositions],
+  // THR-1780: the badge counts the notables the panel lists — it used to count active
+  // agendas only, so it read 2 over a list of 19. Keyed on `tick` because the graph and
+  // the compositions array are mutated in place; their identity never changes.
+  const notableCount = useMemo(
+    () => countShownNotables(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState.activeCompositions, gameState.tick],
   );
 
   return (
@@ -29,9 +30,9 @@ export function NotablesButton({ gameState }: NotablesButtonProps) {
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           <IconButton
             icon={<span>♛</span>}
-            badge={activeCount > 0 ? activeCount : undefined}
+            badge={notableCount > 0 ? notableCount : undefined}
             active={open}
-            aria-label={`${activeCount} active notable agenda${activeCount !== 1 ? 's' : ''}`}
+            aria-label={`${notableCount} notable${notableCount !== 1 ? 's' : ''}`}
             onClick={() => setOpen(o => !o)}
           />
           {/* THR-1604: the word is part of the chip. Players click the label, not the
