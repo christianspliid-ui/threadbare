@@ -1489,12 +1489,17 @@ export function phaseAgentDecision(
               compulsionActor, state.tick, state.premonitionQueue ?? [], newPremonitions,
             )
           ) {
+            // THR-1781: never offer the encounter the mortal is about to start. By
+            // the time a held steer is spent that encounter is on cooldown, so paying
+            // for it could only lapse — and it is not a steer at all. This check runs
+            // before the Compulsion Override below, so the encounter about to start is
+            // the board's pick *or* the held steer the override is about to take.
+            const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
             const compulsionEvent = buildCompulsionEvent(
-              // THR-1781: never offer the encounter the mortal is about to start. By
-              // the time a held steer is spent that encounter is on cooldown, so paying
-              // for it could only lapse — and it is not a steer at all.
               state, agentId, actor.name,
-              decision.topCandidates.filter(c => c.entry.templateId !== decision.selected?.entry.templateId),
+              decision.topCandidates.filter(c =>
+                c.entry.templateId !== decision.selected?.entry.templateId
+                && c.entry.templateId !== heldTargetId),
               rng,
             );
             if (compulsionEvent) {

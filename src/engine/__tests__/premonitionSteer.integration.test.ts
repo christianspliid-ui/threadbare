@@ -106,5 +106,12 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     expect(receipt?.templateId).toBe(paid!.templateId);
     // The player hears it: an outcome event reached the tick log.
     expect(state.tickEvents.some(e => e.type === 'divine_premonition' && e.actorId === FIRST_ID)).toBe(true);
+    // A compulsion offered at the decision that spends the steer never names the
+    // encounter the steer just started — paying for it again could only lapse.
+    const offeredAtSpend = (state.premonitionQueue ?? [])
+      .filter(p => p.type === 'compulsion' && p.agentId === FIRST_ID && p.tick === outcome!.tick);
+    for (const p of offeredAtSpend) {
+      expect((p.compulsionCandidates ?? []).map(c => c.templateId)).not.toContain(paid!.templateId);
+    }
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });
