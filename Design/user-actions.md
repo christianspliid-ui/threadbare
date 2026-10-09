@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 07:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: your turf now changes what things cost and pay** ([THR-1761](https://linear.app/threadbare/issue/THR-1761/what-the-band-buys-cost-effect-strength-thread-yield-and-source-income)). Decided for you by the design lane; say "veto" in chat to reverse.
+- **2026-10-09: chapter choices take the click, the god's cast odds and the cadence pool's bias are fixed** ([THR-1777](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves), [THR-1775](https://linear.app/threadbare/issue/THR-1775/the-gods-cast-odds-verdict-thr-766-was-measured-on-the-retired-dice), [THR-1771](https://linear.app/threadbare/issue/THR-1771/the-cadence-pools-identity-bias-reads-raw-reach-affinities-2-5-as-if)). Merged via [#2271](https://github.com/christianspliid-ui/threadbare/pull/2271), [#2277](https://github.com/christianspliid-ui/threadbare/pull/2277), [#2275](https://github.com/christianspliid-ui/threadbare/pull/2275) and live.
 - **2026-10-09: The First now carries your god’s mark** ([THR-1755](https://linear.app/threadbare/issue/THR-1755/threading-rite-s3-the-firsts-mark-one-god-given-blessing-in-their)). Merged via [#2278](https://github.com/christianspliid-ui/threadbare/pull/2278) and live.
 - **2026-10-09: no world starts hostile to your god; hostile ground arrives during the run** ([THR-1760](https://linear.app/threadbare/issue/THR-1760/the-formula-settled-normalisation-the-gods-power-factor-and-the-five)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: the threading rite's engine half shipped** ([THR-1644](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the)). Merged via [#2274](https://github.com/christianspliid-ui/threadbare/pull/2274); the rite on screen and The First's mark come next.
@@ -42,8 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-08: the frozen builder run was released.** The warm playtest job finished ([#2268](https://github.com/christianspliid-ui/threadbare/pull/2268)) and the builder is working through the queue again.
 - **2026-10-08: endings will be readable — one named reputation row per mortal, one odds word per step, a findable seat** ([THR-1784](https://linear.app/threadbare/issue/THR-1784/recurs-after-fix-twice-outcomes-still-cant-be-read-six-identical-bond)). Decided for you by the design lane; veto window open until Friday 20:25.
 - **2026-10-08: a returning player is no longer greeted by the opening again** ([THR-1782](https://linear.app/threadbare/issue/THR-1782/a-returning-player-is-greeted-by-the-opening-again-after-the-warm-up)). Decided for you by the design lane; veto window open until Friday 14:45.
-- **2026-10-08: every world will draw its doom at even odds, not always the Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Decided for you by the design lane; veto window open until Friday 08:41.
-- **2026-10-08: the 6–8 October silence is explained, no answer needed.** The power log shows the computer asleep from Tuesday 23:23 to Thursday 06:39 ([workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)).
 
 ---
 
