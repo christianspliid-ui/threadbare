@@ -2656,6 +2656,14 @@ export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> 
     const updated: DivineInfluenceEntry[] = [];
 
     for (const influence of influences) {
+      // THR-1781: a paid whisper not yet read by a full decision is kept — its clock
+      // starts at that decision (`anchorHeldWhispers`), which also reports the lapse
+      // when the wait outran WHISPER_HOLD_MAX_TICKS. Dropping it here would let it
+      // vanish unread and unannounced.
+      if (influence.awaitingFirstRead === true) {
+        updated.push(influence);
+        continue;
+      }
       const strength = getCurrentStrength(influence, state.tick);
 
       // Emit trace for expired influences

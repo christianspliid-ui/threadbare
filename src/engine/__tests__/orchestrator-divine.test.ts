@@ -77,6 +77,31 @@ describe('phaseDivineInfluenceDecay', () => {
     expect(updatedInfluences).toHaveLength(1);
   });
 
+  it('keeps a paid whisper past its duration until a full decision reads it (THR-1781)', () => {
+    const { state } = initializeGameState(testArchetype, 'Test Avatar', testCosmology, 42);
+    const actor = state.graph.getNodesByType('actor').find(a => a.properties?.actorType === 'individual');
+    expect(actor).toBeDefined();
+    const held: DivineInfluenceEntry = {
+      id: 'test_whisper_held',
+      interventionType: 'omen',
+      sphere: 'force',
+      tickApplied: state.tick - 40, // past a whisper's 25-tick duration
+      initialStrength: 0.15,
+      decayRate: 0.006,
+      minimumStrength: 0,
+      maxDuration: 25,
+      behaviorTag: 'whisper_reach_iron',
+      awaitingFirstRead: true,
+    };
+    actor!.properties.divineInfluences = [held];
+    phaseDivineInfluenceDecay(state);
+    expect(actor!.properties.divineInfluences as DivineInfluenceEntry[]).toEqual([held]);
+    // Once read (the flag cleared) it decays like any influence.
+    delete held.awaitingFirstRead;
+    phaseDivineInfluenceDecay(state);
+    expect(actor!.properties.divineInfluences as DivineInfluenceEntry[]).toHaveLength(0);
+  });
+
   it('removes expired influences (elapsed >= maxDuration)', () => {
     const { state } = initializeGameState(testArchetype, 'Test Avatar', testCosmology, 42);
 
