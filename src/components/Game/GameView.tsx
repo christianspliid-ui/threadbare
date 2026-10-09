@@ -193,6 +193,7 @@ import {
   buildActiveEncounterDisplayFromUnifiedAction,
   isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
+  resolveNotificationsOnAftermathAcknowledge,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
@@ -3528,12 +3529,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState?.notification?.id) {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
       setInterruptSuppressedUntilTick(gameState.tick + 1);
+      // THR-1778: resolve every record this aftermath discharges, not only the one
+      // on screen — a leftover step notification otherwise re-opens the aftermath.
       setGameState(prev => ({
         ...prev,
-        encounterNotifications: (prev.encounterNotifications ?? []).map(notification =>
-          notification.id === tieredEncounterState.notification.id
-            ? { ...notification, resolved: true }
-            : notification,
+        encounterNotifications: resolveNotificationsOnAftermathAcknowledge(
+          prev.encounterNotifications ?? [],
+          tieredEncounterState.notification,
+          tieredEncounterState.activeActionId,
         ),
       }));
     }

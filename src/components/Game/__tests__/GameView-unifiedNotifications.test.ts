@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
+  resolveNotificationsOnAftermathAcknowledge,
   runEncounterAutoOpenScan,
   selectEncounterRuntimeForNotification,
   shouldAutoOpenEncounterNotification,
@@ -362,5 +363,53 @@ describe('spent final-step notification vs its own aftermath (THR-1005)', () => 
 
     expect(opened).toBe('n_aftermath');
     expect(attempts).toEqual(['n_step0', 'n_step1', 'n_step2', 'n_aftermath']);
+  });
+});
+
+describe('"Return to the world" resolves the whole chapter, not one record (THR-1778)', () => {
+  const resolvedAction = { actionId: 'ua_1', resolved: true } as any;
+  const frozenCurrentStep = 2;
+  const queueAtResolution = () => [
+    { id: 'n_step0', kind: 'encounter', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_1', stepIndex: 0, resolved: false, autoResolveTick: null },
+    { id: 'n_step2', kind: 'encounter', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_1', stepIndex: 2, resolved: false, autoResolveTick: null },
+    { id: 'n_aftermath', kind: 'aftermath', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_1', stepIndex: 2, resolved: false, autoResolveTick: null },
+  ] as any[];
+  // The opener as GameView runs it: THR-664 stepIndex decline, THR-1005 supersession.
+  const openerOver = (queue: any[]) => (notif: any) => {
+    if (notif.stepIndex !== undefined && notif.stepIndex !== frozenCurrentStep) return false;
+    if (isStepNotificationSupersededByAftermath(notif, resolvedAction, queue)) return false;
+    return true;
+  };
+
+  it('reproduces the bounce: resolving only the aftermath re-opens the final step', () => {
+    const queue = queueAtResolution().map(n => n.id === 'n_aftermath' ? { ...n, resolved: true } : n);
+    expect(runEncounterAutoOpenScan(queue, null, openerOver(queue))).toBe('n_step2');
+  });
+
+  it('acknowledging the aftermath leaves no openable notification for that action', () => {
+    const queue = resolveNotificationsOnAftermathAcknowledge(queueAtResolution(), queueAtResolution()[2]);
+    expect(queue.every(n => n.resolved)).toBe(true);
+    expect(runEncounterAutoOpenScan(queue, null, openerOver(queue))).toBeNull();
+  });
+
+  it('leaves another action of the same template pending (THR-1777 rule)', () => {
+    const queue = [
+      ...queueAtResolution(),
+      { id: 'n_other', kind: 'aftermath', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_2', stepIndex: 0, resolved: false, autoResolveTick: null },
+    ] as any[];
+    const after = resolveNotificationsOnAftermathAcknowledge(queue, queue[2]);
+    expect(after.find(n => n.id === 'n_other')?.resolved).toBe(false);
+  });
+
+  it('an unpinned acknowledged record uses the veil action id, and agent + encounter for unpinned peers', () => {
+    const queue = [
+      { id: 'n_legacy', kind: 'encounter', agentId: 'a1', encounterId: 'tpl', resolved: false, autoResolveTick: null },
+      { id: 'n_pinned', kind: 'encounter', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_1', resolved: false, autoResolveTick: null },
+      { id: 'n_ack', kind: 'aftermath', agentId: 'a1', encounterId: 'tpl', resolved: false, autoResolveTick: null },
+      { id: 'n_elsewhere', kind: 'encounter', agentId: 'a2', encounterId: 'tpl', resolved: false, autoResolveTick: null },
+      { id: 'n_otherAction', kind: 'encounter', agentId: 'a1', encounterId: 'tpl', actionId: 'ua_2', resolved: false, autoResolveTick: null },
+    ] as any[];
+    const after = resolveNotificationsOnAftermathAcknowledge(queue, queue[2], 'ua_1');
+    expect(after.filter(n => n.resolved).map(n => n.id)).toEqual(['n_legacy', 'n_pinned', 'n_ack']);
   });
 });
