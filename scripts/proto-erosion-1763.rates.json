@@ -1,0 +1,1673 @@
+{
+ "pooledFromHeld": {
+  "decay r=0.005": {
+   "dropDaysP50": 46.42,
+   "neverShare": 0,
+   "foreignDaysP50": 83.25
+  },
+  "decay+opp r=0.005": {
+   "dropDaysP50": 20.25,
+   "neverShare": 0,
+   "foreignDaysP50": 55.33
+  },
+  "decay r=0.01": {
+   "dropDaysP50": 23.25,
+   "neverShare": 0,
+   "foreignDaysP50": 41.67
+  },
+  "decay+opp r=0.01": {
+   "dropDaysP50": 10.17,
+   "neverShare": 0,
+   "foreignDaysP50": 27.67
+  },
+  "decay r=0.02": {
+   "dropDaysP50": 11.67,
+   "neverShare": 0,
+   "foreignDaysP50": 20.83
+  },
+  "decay+opp r=0.02": {
+   "dropDaysP50": 5.08,
+   "neverShare": 0,
+   "foreignDaysP50": 13.83
+  },
+  "burst m=3 every 0.375d": {
+   "dropDaysP50": 0.75,
+   "neverShare": 0.65,
+   "foreignDaysP50": 1.17
+  },
+  "burst m=3 every 0.75d": {
+   "dropDaysP50": 1.5,
+   "neverShare": 0.65,
+   "foreignDaysP50": 2.25
+  },
+  "burst m=3 every 1.5d": {
+   "dropDaysP50": 3,
+   "neverShare": 0.65,
+   "foreignDaysP50": 4.5
+  },
+  "burst m=3 every 3d": {
+   "dropDaysP50": 6,
+   "neverShare": 0.65,
+   "foreignDaysP50": 9
+  },
+  "burst m=3 every 5d": {
+   "dropDaysP50": 10,
+   "neverShare": 0.65,
+   "foreignDaysP50": 15
+  },
+  "burst m=3 every 6d": {
+   "dropDaysP50": 12,
+   "neverShare": 0.65,
+   "foreignDaysP50": 18
+  },
+  "burst m=3 every 10d": {
+   "dropDaysP50": 20,
+   "neverShare": 0.65,
+   "foreignDaysP50": 30
+  },
+  "burst m=3 every 20d": {
+   "dropDaysP50": 40,
+   "neverShare": 0.65,
+   "foreignDaysP50": 60
+  },
+  "burst m=4 every 0.375d": {
+   "dropDaysP50": 0.42,
+   "neverShare": 0,
+   "foreignDaysP50": 1.17
+  },
+  "burst m=4 every 0.75d": {
+   "dropDaysP50": 0.75,
+   "neverShare": 0,
+   "foreignDaysP50": 2.25
+  },
+  "burst m=4 every 1.5d": {
+   "dropDaysP50": 1.5,
+   "neverShare": 0,
+   "foreignDaysP50": 4.5
+  },
+  "burst m=4 every 3d": {
+   "dropDaysP50": 3,
+   "neverShare": 0,
+   "foreignDaysP50": 9
+  },
+  "burst m=4 every 5d": {
+   "dropDaysP50": 5,
+   "neverShare": 0,
+   "foreignDaysP50": 15
+  },
+  "burst m=4 every 6d": {
+   "dropDaysP50": 6,
+   "neverShare": 0,
+   "foreignDaysP50": 18
+  },
+  "burst m=4 every 10d": {
+   "dropDaysP50": 10,
+   "neverShare": 0,
+   "foreignDaysP50": 30
+  },
+  "burst m=4 every 20d": {
+   "dropDaysP50": 20,
+   "neverShare": 0,
+   "foreignDaysP50": 60
+  },
+  "burst m=6 every 0.375d": {
+   "dropDaysP50": 0.42,
+   "neverShare": 0,
+   "foreignDaysP50": 0.75
+  },
+  "burst m=6 every 0.75d": {
+   "dropDaysP50": 0.75,
+   "neverShare": 0,
+   "foreignDaysP50": 1.5
+  },
+  "burst m=6 every 1.5d": {
+   "dropDaysP50": 1.5,
+   "neverShare": 0,
+   "foreignDaysP50": 3
+  },
+  "burst m=6 every 3d": {
+   "dropDaysP50": 3,
+   "neverShare": 0,
+   "foreignDaysP50": 6
+  },
+  "burst m=6 every 5d": {
+   "dropDaysP50": 5,
+   "neverShare": 0,
+   "foreignDaysP50": 10
+  },
+  "burst m=6 every 6d": {
+   "dropDaysP50": 6,
+   "neverShare": 0,
+   "foreignDaysP50": 12
+  },
+  "burst m=6 every 10d": {
+   "dropDaysP50": 10,
+   "neverShare": 0,
+   "foreignDaysP50": 20
+  },
+  "burst m=6 every 20d": {
+   "dropDaysP50": 20,
+   "neverShare": 0,
+   "foreignDaysP50": 40
+  },
+  "doom (shipped)": {
+   "dropDaysP50": 36,
+   "neverShare": 0.566,
+   "foreignDaysP50": 36
+  }
+ },
+ "doomBandsLostBy90": {
+  "p50": 0,
+  "mean": 0.7645474137931034
+ },
+ "perGod": {
+  "Held": {
+   "showcase": {
+    "decay r=0.005": {
+     "dropP50": 44.583333333333336,
+     "dropNever": 0,
+     "foreignP50": 77.91666666666667,
+     "n": 638
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 20.25,
+     "dropNever": 0,
+     "foreignP50": 55.333333333333336,
+     "n": 638
+    },
+    "decay r=0.01": {
+     "dropP50": 22.333333333333332,
+     "dropNever": 0,
+     "foreignP50": 39,
+     "n": 638
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 10.166666666666666,
+     "dropNever": 0,
+     "foreignP50": 27.666666666666668,
+     "n": 638
+    },
+    "decay r=0.02": {
+     "dropP50": 11.166666666666666,
+     "dropNever": 0,
+     "foreignP50": 19.5,
+     "n": 638
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 5.083333333333333,
+     "dropNever": 0,
+     "foreignP50": 13.833333333333334,
+     "n": 638
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 3d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 6d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 10d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 20d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 1.1666666666666667,
+     "n": 638
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 2.25,
+     "n": 638
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 4.5,
+     "n": 638
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 9,
+     "n": 638
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 15,
+     "n": 638
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 18,
+     "n": 638
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 30,
+     "n": 638
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 60,
+     "n": 638
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 0.75,
+     "n": 638
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 638
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 638
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 638
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 10,
+     "n": 638
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 638
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 638
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 638
+    },
+    "doom (shipped)": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    }
+   },
+   "shepherd": {
+    "decay r=0.005": {
+     "dropP50": 46.416666666666664,
+     "dropNever": 0,
+     "foreignP50": 83.25,
+     "n": 552
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 20.25,
+     "dropNever": 0,
+     "foreignP50": 59.75,
+     "n": 552
+    },
+    "decay r=0.01": {
+     "dropP50": 23.25,
+     "dropNever": 0,
+     "foreignP50": 41.666666666666664,
+     "n": 552
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 10.166666666666666,
+     "dropNever": 0,
+     "foreignP50": 29.916666666666668,
+     "n": 552
+    },
+    "decay r=0.02": {
+     "dropP50": 11.666666666666666,
+     "dropNever": 0,
+     "foreignP50": 20.833333333333332,
+     "n": 552
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 5.083333333333333,
+     "dropNever": 0,
+     "foreignP50": 14.916666666666666,
+     "n": 552
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 14,
+     "foreignP50": 1.1666666666666667,
+     "n": 552
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 14,
+     "foreignP50": 2.25,
+     "n": 552
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 14,
+     "foreignP50": 4.5,
+     "n": 552
+    },
+    "burst m=3 every 3d": {
+     "dropP50": 3,
+     "dropNever": 14,
+     "foreignP50": 9,
+     "n": 552
+    },
+    "burst m=3 every 5d": {
+     "dropP50": 5,
+     "dropNever": 14,
+     "foreignP50": 15,
+     "n": 552
+    },
+    "burst m=3 every 6d": {
+     "dropP50": 6,
+     "dropNever": 14,
+     "foreignP50": 18,
+     "n": 552
+    },
+    "burst m=3 every 10d": {
+     "dropP50": 10,
+     "dropNever": 14,
+     "foreignP50": 30,
+     "n": 552
+    },
+    "burst m=3 every 20d": {
+     "dropP50": 20,
+     "dropNever": 14,
+     "foreignP50": 60,
+     "n": 552
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 0.75,
+     "n": 552
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 552
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 552
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 552
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 10,
+     "n": 552
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 552
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 552
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 552
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 0.75,
+     "n": 552
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 552
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 552
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 552
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 10,
+     "n": 552
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 552
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 552
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 552
+    },
+    "doom (shipped)": {
+     "dropP50": 18,
+     "dropNever": 0,
+     "foreignP50": 36,
+     "n": 552
+    }
+   },
+   "stone": {
+    "decay r=0.005": {
+     "dropP50": 46.416666666666664,
+     "dropNever": 0,
+     "foreignP50": 83.25,
+     "n": 366
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 20.25,
+     "dropNever": 0,
+     "foreignP50": 55.333333333333336,
+     "n": 366
+    },
+    "decay r=0.01": {
+     "dropP50": 23.25,
+     "dropNever": 0,
+     "foreignP50": 41.666666666666664,
+     "n": 366
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 10.166666666666666,
+     "dropNever": 0,
+     "foreignP50": 27.666666666666668,
+     "n": 366
+    },
+    "decay r=0.02": {
+     "dropP50": 11.666666666666666,
+     "dropNever": 0,
+     "foreignP50": 20.833333333333332,
+     "n": 366
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 5.083333333333333,
+     "dropNever": 0,
+     "foreignP50": 13.833333333333334,
+     "n": 366
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 3d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 6d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 10d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 20d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 1.1666666666666667,
+     "n": 366
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 2.25,
+     "n": 366
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 4.5,
+     "n": 366
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 9,
+     "n": 366
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 15,
+     "n": 366
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 18,
+     "n": 366
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 30,
+     "n": 366
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 60,
+     "n": 366
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 0.75,
+     "n": 366
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 366
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 366
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 366
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 10,
+     "n": 366
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 366
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 366
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 366
+    },
+    "doom (shipped)": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    }
+   },
+   "spread": {
+    "decay r=0.005": {
+     "dropP50": 51.25,
+     "dropNever": 0,
+     "foreignP50": 87,
+     "n": 300
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 16.666666666666668,
+     "dropNever": 0,
+     "foreignP50": 54.833333333333336,
+     "n": 300
+    },
+    "decay r=0.01": {
+     "dropP50": 25.666666666666668,
+     "dropNever": 0,
+     "foreignP50": 43.5,
+     "n": 300
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 8.333333333333334,
+     "dropNever": 0,
+     "foreignP50": 27.416666666666668,
+     "n": 300
+    },
+    "decay r=0.02": {
+     "dropP50": 12.833333333333334,
+     "dropNever": 0,
+     "foreignP50": 21.75,
+     "n": 300
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 4.166666666666667,
+     "dropNever": 0,
+     "foreignP50": 13.75,
+     "n": 300
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": 0.75,
+     "dropNever": 189,
+     "foreignP50": 3,
+     "n": 300
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": 1.5,
+     "dropNever": 189,
+     "foreignP50": 6,
+     "n": 300
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": 3,
+     "dropNever": 189,
+     "foreignP50": 12,
+     "n": 300
+    },
+    "burst m=3 every 3d": {
+     "dropP50": 6,
+     "dropNever": 189,
+     "foreignP50": 24,
+     "n": 300
+    },
+    "burst m=3 every 5d": {
+     "dropP50": 10,
+     "dropNever": 189,
+     "foreignP50": 40,
+     "n": 300
+    },
+    "burst m=3 every 6d": {
+     "dropP50": 12,
+     "dropNever": 189,
+     "foreignP50": 48,
+     "n": 300
+    },
+    "burst m=3 every 10d": {
+     "dropP50": 20,
+     "dropNever": 189,
+     "foreignP50": 80,
+     "n": 300
+    },
+    "burst m=3 every 20d": {
+     "dropP50": 40,
+     "dropNever": 189,
+     "foreignP50": 80,
+     "n": 300
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 1.1666666666666667,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 300
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 2.25,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 300
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 4.5,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 300
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 9,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 300
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 15,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 300
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 18,
+     "dropNever": 0,
+     "foreignP50": 24,
+     "n": 300
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 30,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 300
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 60,
+     "dropNever": 0,
+     "foreignP50": 80,
+     "n": 300
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 0.75,
+     "n": 300
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 300
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 300
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 300
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 10,
+     "n": 300
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 12,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 300
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 300
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 40,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 300
+    },
+    "doom (shipped)": {
+     "dropP50": 54,
+     "dropNever": 47,
+     "foreignP50": 72,
+     "n": 300
+    }
+   }
+  },
+  "Sovereign": {
+   "showcase": {
+    "decay r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 638
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 638
+    },
+    "decay r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 86.5,
+     "n": 638
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 78.16666666666667,
+     "n": 638
+    },
+    "decay r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 43.25,
+     "n": 638
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 39.75,
+     "n": 638
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 3d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 6d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 10d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=3 every 20d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 3d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 5d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 6d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 10d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=4 every 20d": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 638
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 638
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 638
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 638
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 638
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 12,
+     "dropNever": 0,
+     "foreignP50": 24,
+     "n": 638
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 638
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 40,
+     "dropNever": 0,
+     "foreignP50": 80,
+     "n": 638
+    },
+    "doom (shipped)": {
+     "dropP50": null,
+     "dropNever": 638,
+     "foreignP50": null,
+     "n": 638
+    }
+   },
+   "shepherd": {
+    "decay r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 552
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 552
+    },
+    "decay r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 86.5,
+     "n": 552
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 58.583333333333336,
+     "n": 552
+    },
+    "decay r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 46,
+     "n": 552
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 40.333333333333336,
+     "n": 552
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 3d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 5d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 6d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 10d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=3 every 20d": {
+     "dropP50": null,
+     "dropNever": 552,
+     "foreignP50": null,
+     "n": 552
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 0.75,
+     "dropNever": 41,
+     "foreignP50": 1.5,
+     "n": 552
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 1.5,
+     "dropNever": 41,
+     "foreignP50": 3,
+     "n": 552
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 3,
+     "dropNever": 41,
+     "foreignP50": 6,
+     "n": 552
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 6,
+     "dropNever": 41,
+     "foreignP50": 12,
+     "n": 552
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 10,
+     "dropNever": 41,
+     "foreignP50": 20,
+     "n": 552
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 12,
+     "dropNever": 41,
+     "foreignP50": 24,
+     "n": 552
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 20,
+     "dropNever": 41,
+     "foreignP50": 40,
+     "n": 552
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 40,
+     "dropNever": 41,
+     "foreignP50": 80,
+     "n": 552
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 1.1666666666666667,
+     "n": 552
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 2.25,
+     "n": 552
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 4.5,
+     "n": 552
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 9,
+     "n": 552
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 15,
+     "n": 552
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 18,
+     "n": 552
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 30,
+     "n": 552
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 60,
+     "n": 552
+    },
+    "doom (shipped)": {
+     "dropP50": 18,
+     "dropNever": 530,
+     "foreignP50": 72,
+     "n": 552
+    }
+   },
+   "stone": {
+    "decay r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 366
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 33.75,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 366
+    },
+    "decay r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 86.5,
+     "n": 366
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 16.916666666666668,
+     "dropNever": 0,
+     "foreignP50": 80.66666666666667,
+     "n": 366
+    },
+    "decay r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 46,
+     "n": 366
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 8.5,
+     "dropNever": 0,
+     "foreignP50": 40.333333333333336,
+     "n": 366
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 3d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 6d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 10d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=3 every 20d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 3d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 5d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 6d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 10d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=4 every 20d": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 366
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 366
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 366
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 366
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 366
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 12,
+     "dropNever": 0,
+     "foreignP50": 24,
+     "n": 366
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 366
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 40,
+     "dropNever": 0,
+     "foreignP50": 80,
+     "n": 366
+    },
+    "doom (shipped)": {
+     "dropP50": null,
+     "dropNever": 366,
+     "foreignP50": null,
+     "n": 366
+    }
+   },
+   "spread": {
+    "decay r=0.005": {
+     "dropP50": 33.666666666666664,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 300
+    },
+    "decay+opp r=0.005": {
+     "dropP50": 24.166666666666668,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 300
+    },
+    "decay r=0.01": {
+     "dropP50": 16.833333333333332,
+     "dropNever": 0,
+     "foreignP50": 87.08333333333333,
+     "n": 300
+    },
+    "decay+opp r=0.01": {
+     "dropP50": 12.083333333333334,
+     "dropNever": 0,
+     "foreignP50": 70.5,
+     "n": 300
+    },
+    "decay r=0.02": {
+     "dropP50": 8.416666666666666,
+     "dropNever": 0,
+     "foreignP50": 43.583333333333336,
+     "n": 300
+    },
+    "decay+opp r=0.02": {
+     "dropP50": 6.083333333333333,
+     "dropNever": 0,
+     "foreignP50": 35.25,
+     "n": 300
+    },
+    "burst m=3 every 0.375d": {
+     "dropP50": 1.5,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 0.75d": {
+     "dropP50": 3,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 1.5d": {
+     "dropP50": 6,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 3d": {
+     "dropP50": 12,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 5d": {
+     "dropP50": 20,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 6d": {
+     "dropP50": 24,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 10d": {
+     "dropP50": 40,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=3 every 20d": {
+     "dropP50": 80,
+     "dropNever": 107,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=4 every 0.375d": {
+     "dropP50": 1.1666666666666667,
+     "dropNever": 0,
+     "foreignP50": 2.6666666666666665,
+     "n": 300
+    },
+    "burst m=4 every 0.75d": {
+     "dropP50": 2.25,
+     "dropNever": 0,
+     "foreignP50": 5.25,
+     "n": 300
+    },
+    "burst m=4 every 1.5d": {
+     "dropP50": 4.5,
+     "dropNever": 0,
+     "foreignP50": 10.5,
+     "n": 300
+    },
+    "burst m=4 every 3d": {
+     "dropP50": 9,
+     "dropNever": 0,
+     "foreignP50": 21,
+     "n": 300
+    },
+    "burst m=4 every 5d": {
+     "dropP50": 15,
+     "dropNever": 0,
+     "foreignP50": 35,
+     "n": 300
+    },
+    "burst m=4 every 6d": {
+     "dropP50": 18,
+     "dropNever": 0,
+     "foreignP50": 42,
+     "n": 300
+    },
+    "burst m=4 every 10d": {
+     "dropP50": 30,
+     "dropNever": 0,
+     "foreignP50": 70,
+     "n": 300
+    },
+    "burst m=4 every 20d": {
+     "dropP50": 60,
+     "dropNever": 0,
+     "foreignP50": null,
+     "n": 300
+    },
+    "burst m=6 every 0.375d": {
+     "dropP50": 0.4166666666666667,
+     "dropNever": 0,
+     "foreignP50": 1.5,
+     "n": 300
+    },
+    "burst m=6 every 0.75d": {
+     "dropP50": 0.75,
+     "dropNever": 0,
+     "foreignP50": 3,
+     "n": 300
+    },
+    "burst m=6 every 1.5d": {
+     "dropP50": 1.5,
+     "dropNever": 0,
+     "foreignP50": 6,
+     "n": 300
+    },
+    "burst m=6 every 3d": {
+     "dropP50": 3,
+     "dropNever": 0,
+     "foreignP50": 12,
+     "n": 300
+    },
+    "burst m=6 every 5d": {
+     "dropP50": 5,
+     "dropNever": 0,
+     "foreignP50": 20,
+     "n": 300
+    },
+    "burst m=6 every 6d": {
+     "dropP50": 6,
+     "dropNever": 0,
+     "foreignP50": 24,
+     "n": 300
+    },
+    "burst m=6 every 10d": {
+     "dropP50": 10,
+     "dropNever": 0,
+     "foreignP50": 40,
+     "n": 300
+    },
+    "burst m=6 every 20d": {
+     "dropP50": 20,
+     "dropNever": 0,
+     "foreignP50": 80,
+     "n": 300
+    },
+    "doom (shipped)": {
+     "dropP50": 18,
+     "dropNever": 265,
+     "foreignP50": null,
+     "n": 300
+    }
+   }
+  }
+ }
+}

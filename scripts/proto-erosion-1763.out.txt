@@ -1,0 +1,371 @@
+# THR-1763 erosion shapes on the real consumer (resolveSpherePressure)
+seeds 42,99,7, power 1, every tick-0 Foreign place; build = Claim 0.03 vector + Shift 6 while opposed /3d; erosion window 90 days
+  seed 42: doom breach, thresholds 0.2/0.4/0.6/0.8/1; crossings at days 18/36/54/72 carry entropy 4 | entropy 4 | entropy 4 | entropy 4
+  seed 99: doom breach, thresholds 0.2/0.4/0.6/0.8/1; crossings at days 18/36/54/72 carry entropy 4 | entropy 4 | entropy 4 | entropy 4
+  seed 7: doom breach, thresholds 0.2/0.4/0.6/0.8/1; crossings at days 18/36/54/72 carry entropy 4 | entropy 4 | entropy 4 | entropy 4
+
+## Build (chosen THR-1762 policy)
+  showcase  Foreign places 638; reach Held 638 (p50  13.9 d); reach Sovereign 638 (p50  41.7 d)
+            typical Held snapshot scores: mind2 spirit2 ×452; mind3 spirit2 ×186
+            typical Sovereign snapshot scores: mind4 spirit3 ×602; mind3 spirit3 ×36
+  shepherd  Foreign places 552; reach Held 552 (p50  13.9 d); reach Sovereign 552 (p50  41.7 d)
+            typical Held snapshot scores: life2 spirit2 ×322; life3 spirit2 ×230
+            typical Sovereign snapshot scores: life4 spirit3 ×530; life3 spirit3 ×22
+  stone     Foreign places 366; reach Held 366 (p50  13.9 d); reach Sovereign 366 (p50  41.7 d)
+            typical Held snapshot scores: force2 matter2 ×212; force3 matter2 ×154
+            typical Sovereign snapshot scores: force4 matter3 ×364; force3 matter3 ×2
+  spread    Foreign places 300; reach Held 300 (p50  26.8 d); reach Sovereign 300 (p50  65.5 d)
+            typical Held snapshot scores: life3 matter3 mind2 ×169; life3 matter2 mind2 ×49; life2 matter3 mind1 ×32
+            typical Sovereign snapshot scores: life4 matter4 mind2 ×134; life4 matter4 mind3 ×104; life3 matter4 mind2 ×32
+
+## A. Untended: days to lose one band / to fall to Foreign (p50 p90 never-in-90d), and one Claim 0.03 continuing: keeps its band at day 90 / ever falls to Foreign
+   decay rows: the claim columns apply decay EVEN WITH the Claim present (by the rule, a carrier stops decay — then a Claim holds 100% by construction).
+
+### showcase from Held (n=638)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 44.6  49.9    0    77.9  88.7   57 |       100%            0%     Held
+   decay+opp r=0.005             20.3  49.9    0    55.3  83.3    0 |        96%            1%     Held
+   decay r=0.01                  22.3  25.0    0    39.0  44.3   42 |       100%            0%     Held
+   decay+opp r=0.01              10.2  25.0    0    27.7  41.7    0 |        53%           42%     Foreign
+   decay r=0.02                  11.2  12.5    0    19.5  22.2   42 |        13%            0%     Touched
+   decay+opp r=0.02               5.1  12.5    0    13.8  20.8    0 |        12%           47%     Foreign
+   burst m=3 every 0.375d          —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 0.75d           —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 1.5d            —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 3d              —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 5d              —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 6d              —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 10d             —     —   638      —     —   638 |       100%            0%     Held
+   burst m=3 every 20d             —     —   638      —     —   638 |       100%            0%     Held
+   burst m=4 every 0.375d         0.4   1.2    0     1.2   1.2    0 |       100%            0%     Held
+   burst m=4 every 0.75d          0.8   2.3    0     2.3   2.3    0 |       100%            0%     Held
+   burst m=4 every 1.5d           1.5   4.5    0     4.5   4.5    0 |       100%            0%     Held
+   burst m=4 every 3d             3.0   9.0    0     9.0   9.0    0 |       100%            0%     Held
+   burst m=4 every 5d             5.0  15.0    0    15.0  15.0    0 |       100%            0%     Held
+   burst m=4 every 6d             6.0  18.0    0    18.0  18.0    0 |       100%            0%     Held
+   burst m=4 every 10d           10.0  30.0    0    30.0  30.0    0 |       100%            0%     Held
+   burst m=4 every 20d           20.0  60.0    0    60.0  60.0    0 |       100%            0%     Held
+   burst m=6 every 0.375d         0.4   0.4    0     0.8   1.2    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          0.8   0.8    0     1.5   2.3    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           1.5   1.5    0     3.0   4.5    0 |         0%          100%     Hostile
+   burst m=6 every 3d             3.0   3.0    0     6.0   9.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d             5.0   5.0    0    10.0  15.0    0 |         0%          100%     Foreign
+   burst m=6 every 6d             6.0   6.0    0    12.0  18.0    0 |         0%          100%     Foreign
+   burst m=6 every 10d           10.0  10.0    0    20.0  30.0    0 |         0%          100%     Foreign
+   burst m=6 every 20d           20.0  20.0    0    40.0  60.0    0 |       100%            0%     Held
+   doom (shipped)                  —     —   638      —     —   638 |       100%            0%     Held
+
+### shepherd from Held (n=552)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 46.4  49.9    0    83.3  88.7  202 |       100%            0%     Held
+   decay+opp r=0.005             20.3  49.9    0    59.8  83.3    0 |        91%            9%     Touched
+   decay r=0.01                  23.3  25.0    0    41.7  44.3  202 |       100%            0%     Held
+   decay+opp r=0.01              10.2  25.0    0    29.9  41.7    0 |        56%           39%     Foreign
+   decay r=0.02                  11.7  12.5    0    20.8  22.2  202 |         7%            0%     Touched
+   decay+opp r=0.02               5.1  12.5    0    14.9  20.8    0 |         4%           44%     Foreign
+   burst m=3 every 0.375d         0.4   1.5   14     1.2   1.2  230 |       100%            0%     Held
+   burst m=3 every 0.75d          0.8   3.0   14     2.3   2.3  230 |       100%            0%     Held
+   burst m=3 every 1.5d           1.5   6.0   14     4.5   4.5  230 |       100%            0%     Held
+   burst m=3 every 3d             3.0  12.0   14     9.0   9.0  230 |       100%            0%     Held
+   burst m=3 every 5d             5.0  20.0   14    15.0  15.0  230 |       100%            0%     Held
+   burst m=3 every 6d             6.0  24.0   14    18.0  18.0  230 |       100%            0%     Held
+   burst m=3 every 10d           10.0  40.0   14    30.0  30.0  230 |       100%            0%     Held
+   burst m=3 every 20d           20.0  80.0   14    60.0  60.0  230 |       100%            0%     Held
+   burst m=4 every 0.375d         0.4   0.8    0     0.8   1.2    0 |        76%           24%     Hostile
+   burst m=4 every 0.75d          0.8   1.5    0     1.5   2.3    0 |        77%           23%     Hostile
+   burst m=4 every 1.5d           1.5   3.0    0     3.0   4.5    0 |        77%           23%     Hostile
+   burst m=4 every 3d             3.0   6.0    0     6.0   9.0    0 |        92%            8%     Touched
+   burst m=4 every 5d             5.0  10.0    0    10.0  15.0    0 |       100%            0%     Touched
+   burst m=4 every 6d             6.0  12.0    0    12.0  18.0    0 |       100%            0%     Held
+   burst m=4 every 10d           10.0  20.0    0    20.0  30.0    0 |       100%            0%     Held
+   burst m=4 every 20d           20.0  40.0    0    40.0  60.0    0 |       100%            0%     Held
+   burst m=6 every 0.375d         0.4   0.4    0     0.8   0.8    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          0.8   0.8    0     1.5   1.5    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           1.5   1.5    0     3.0   3.0    0 |         0%          100%     Hostile
+   burst m=6 every 3d             3.0   3.0    0     6.0   6.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d             5.0   5.0    0    10.0  10.0    0 |         0%          100%     Foreign
+   burst m=6 every 6d             6.0   6.0    0    12.0  12.0    0 |         0%          100%     Foreign
+   burst m=6 every 10d           10.0  10.0    0    20.0  20.0    0 |         7%           93%     Foreign
+   burst m=6 every 20d           20.0  20.0    0    40.0  40.0    0 |       100%            0%     Touched
+   doom (shipped)                18.0  36.0    0    36.0  54.0    0 |       100%            0%     Held
+
+### stone from Held (n=366)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 46.4  49.9    0    83.3  88.7    2 |       100%            0%     Held
+   decay+opp r=0.005             20.3  49.9    0    55.3  83.3    0 |        98%            1%     Held
+   decay r=0.01                  23.3  25.0    0    41.7  44.3    2 |       100%            0%     Held
+   decay+opp r=0.01              10.2  25.0    0    27.7  41.7    0 |        82%           18%     Foreign
+   decay r=0.02                  11.7  12.5    0    20.8  22.2    2 |         1%            0%     Touched
+   decay+opp r=0.02               5.1  12.5    0    13.8  20.8    0 |         1%           18%     Foreign
+   burst m=3 every 0.375d          —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 0.75d           —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 1.5d            —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 3d              —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 5d              —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 6d              —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 10d             —     —   366      —     —   366 |       100%            0%     Held
+   burst m=3 every 20d             —     —   366      —     —   366 |       100%            0%     Held
+   burst m=4 every 0.375d         0.4   1.2    0     1.2   1.2    0 |       100%            0%     Held
+   burst m=4 every 0.75d          0.8   2.3    0     2.3   2.3    0 |       100%            0%     Held
+   burst m=4 every 1.5d           1.5   4.5    0     4.5   4.5    0 |       100%            0%     Held
+   burst m=4 every 3d             3.0   9.0    0     9.0   9.0    0 |       100%            0%     Held
+   burst m=4 every 5d             5.0  15.0    0    15.0  15.0    0 |       100%            0%     Held
+   burst m=4 every 6d             6.0  18.0    0    18.0  18.0    0 |       100%            0%     Held
+   burst m=4 every 10d           10.0  30.0    0    30.0  30.0    0 |       100%            0%     Held
+   burst m=4 every 20d           20.0  60.0    0    60.0  60.0    0 |       100%            0%     Held
+   burst m=6 every 0.375d         0.4   0.4    0     0.8   1.2    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          0.8   0.8    0     1.5   2.3    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           1.5   1.5    0     3.0   4.5    0 |         0%          100%     Hostile
+   burst m=6 every 3d             3.0   3.0    0     6.0   9.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d             5.0   5.0    0    10.0  15.0    0 |         0%          100%     Foreign
+   burst m=6 every 6d             6.0   6.0    0    12.0  18.0    0 |         0%          100%     Foreign
+   burst m=6 every 10d           10.0  10.0    0    20.0  30.0    0 |         0%          100%     Foreign
+   burst m=6 every 20d           20.0  20.0    0    40.0  60.0    0 |       100%            0%     Held
+   doom (shipped)                  —     —   366      —     —   366 |       100%            0%     Held
+
+### spread from Held (n=300)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 51.3  54.8    0    87.0  88.2   75 |       100%            0%     Held
+   decay+opp r=0.005             16.7  29.8    0    54.8  83.4    0 |        36%            0%     Touched
+   decay r=0.01                  25.7  27.4    0    43.5  44.1   69 |       100%            0%     Held
+   decay+opp r=0.01               8.3  14.9    0    27.4  41.8    0 |        12%           56%     Foreign
+   decay r=0.02                  12.8  13.8    0    21.8  22.1   69 |         0%           77%     Foreign
+   decay+opp r=0.02               4.2   7.5    0    13.8  20.9    0 |         0%          100%     Foreign
+   burst m=3 every 0.375d         0.8   1.2  189     3.0   3.4  189 |       100%            0%     Held
+   burst m=3 every 0.75d          1.5   2.3  189     6.0   6.8  189 |       100%            0%     Held
+   burst m=3 every 1.5d           3.0   4.5  189    12.0  13.5  189 |       100%            0%     Held
+   burst m=3 every 3d             6.0   9.0  189    24.0  27.0  189 |       100%            0%     Held
+   burst m=3 every 5d            10.0  15.0  189    40.0  45.0  189 |       100%            0%     Held
+   burst m=3 every 6d            12.0  18.0  189    48.0  54.0  189 |       100%            0%     Held
+   burst m=3 every 10d           20.0  30.0  189    80.0  90.0  189 |       100%            0%     Held
+   burst m=3 every 20d           40.0  60.0  189    80.0  80.0  297 |       100%            0%     Held
+   burst m=4 every 0.375d         1.2   1.2    0     1.5   3.0    0 |        63%           37%     Hostile
+   burst m=4 every 0.75d          2.3   2.3    0     3.0   6.0    0 |        63%           37%     Hostile
+   burst m=4 every 1.5d           4.5   4.5    0     6.0  12.0    0 |        63%           37%     Hostile
+   burst m=4 every 3d             9.0   9.0    0    12.0  24.0    0 |        79%           21%     Hostile
+   burst m=4 every 5d            15.0  15.0    0    20.0  40.0    0 |        79%           12%     Foreign
+   burst m=4 every 6d            18.0  18.0    0    24.0  48.0    0 |        88%           10%     Touched
+   burst m=4 every 10d           30.0  30.0    0    40.0  80.0    0 |       100%            0%     Held
+   burst m=4 every 20d           60.0  60.0    0    80.0  80.0   47 |       100%            0%     Held
+   burst m=6 every 0.375d         0.8   0.8    0     0.8   1.2    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          1.5   1.5    0     1.5   2.3    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           3.0   3.0    0     3.0   4.5    0 |         0%          100%     Hostile
+   burst m=6 every 3d             6.0   6.0    0     6.0   9.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d            10.0  10.0    0    10.0  15.0    0 |         0%           94%     Foreign
+   burst m=6 every 6d            12.0  12.0    0    12.0  18.0    0 |         0%           93%     Foreign
+   burst m=6 every 10d           20.0  20.0    0    20.0  30.0    0 |        17%            0%     Touched
+   burst m=6 every 20d           40.0  40.0    0    40.0  60.0    0 |       100%            0%     Held
+   doom (shipped)                54.0  54.0   47    72.0  72.0  238 |       100%            0%     Held
+
+### showcase from Sovereign (n=638)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 33.8  44.6    0      —     —   638 |       100%            0%     Sovereign
+   decay+opp r=0.005             33.8  44.6    0      —     —   638 |        96%            0%     Held
+   decay r=0.01                  16.9  22.3    0    86.5  86.5  313 |       100%            0%     Sovereign
+   decay+opp r=0.01              16.9  22.3    0    78.2  80.7  127 |        51%            1%     Touched
+   decay r=0.02                   8.5  11.2    0    43.3  48.7   42 |         0%            0%     Held
+   decay+opp r=0.02               8.5  11.2    0    39.8  46.0    0 |         0%           47%     Foreign
+   burst m=3 every 0.375d          —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 0.75d           —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 1.5d            —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 3d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 5d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 6d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 10d             —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=3 every 20d             —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 0.375d          —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 0.75d           —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 1.5d            —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 3d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 5d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 6d              —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 10d             —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=4 every 20d             —     —   638      —     —   638 |       100%            0%     Sovereign
+   burst m=6 every 0.375d         0.8   0.8    0     1.5   1.5    0 |        94%            6%     Sovereign
+   burst m=6 every 0.75d          1.5   1.5    0     3.0   3.0    0 |       100%            0%     Sovereign
+   burst m=6 every 1.5d           3.0   3.0    0     6.0   6.0    0 |       100%            0%     Sovereign
+   burst m=6 every 3d             6.0   6.0    0    12.0  12.0    0 |       100%            0%     Sovereign
+   burst m=6 every 5d            10.0  10.0    0    20.0  20.0    0 |       100%            0%     Sovereign
+   burst m=6 every 6d            12.0  12.0    0    24.0  24.0    0 |       100%            0%     Sovereign
+   burst m=6 every 10d           20.0  20.0    0    40.0  40.0    0 |       100%            0%     Sovereign
+   burst m=6 every 20d           40.0  40.0    0    80.0  80.0    0 |       100%            0%     Sovereign
+   doom (shipped)                  —     —   638      —     —   638 |       100%            0%     Sovereign
+
+### shepherd from Sovereign (n=552)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 33.8  50.8    0      —     —   552 |       100%            0%     Sovereign
+   decay+opp r=0.005             33.8  50.1    0      —     —   552 |        71%            0%     Held
+   decay r=0.01                  16.9  25.4    0    86.5  86.5  438 |       100%            0%     Sovereign
+   decay+opp r=0.01              16.9  25.0    0    58.6  83.8  191 |        53%           10%     Touched
+   decay r=0.02                   8.5  12.8    0    46.0  48.7  202 |         0%            0%     Held
+   decay+opp r=0.02               8.5  12.5    0    40.3  46.0    0 |         0%           44%     Foreign
+   burst m=3 every 0.375d          —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 0.75d           —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 1.5d            —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 3d              —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 5d              —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 6d              —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 10d             —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=3 every 20d             —     —   552      —     —   552 |       100%            0%     Sovereign
+   burst m=4 every 0.375d         0.8   0.8   41     1.5   1.5  530 |       100%            0%     Sovereign
+   burst m=4 every 0.75d          1.5   1.5   41     3.0   3.0  530 |       100%            0%     Sovereign
+   burst m=4 every 1.5d           3.0   3.0   41     6.0   6.0  530 |       100%            0%     Sovereign
+   burst m=4 every 3d             6.0   6.0   41    12.0  12.0  530 |       100%            0%     Sovereign
+   burst m=4 every 5d            10.0  10.0   41    20.0  20.0  530 |       100%            0%     Sovereign
+   burst m=4 every 6d            12.0  12.0   41    24.0  24.0  530 |       100%            0%     Sovereign
+   burst m=4 every 10d           20.0  20.0   41    40.0  40.0  530 |       100%            0%     Sovereign
+   burst m=4 every 20d           40.0  40.0   41    80.0  80.0  530 |       100%            0%     Sovereign
+   burst m=6 every 0.375d         0.4   0.4    0     1.2   1.2    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          0.8   0.8    0     2.3   2.3    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           1.5   1.5    0     4.5   4.5    0 |         0%          100%     Hostile
+   burst m=6 every 3d             3.0   3.0    0     9.0   9.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d             5.0   5.0    0    15.0  15.0    0 |         0%           71%     Foreign
+   burst m=6 every 6d             6.0   6.0    0    18.0  18.0    0 |         0%           63%     Foreign
+   burst m=6 every 10d           10.0  10.0    0    30.0  30.0    0 |        87%            8%     Held
+   burst m=6 every 20d           20.0  20.0    0    60.0  60.0    0 |       100%            0%     Sovereign
+   doom (shipped)                18.0  18.0  530    72.0  72.0  530 |       100%            0%     Sovereign
+
+### stone from Sovereign (n=366)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 33.8  44.6    0      —     —   366 |       100%            0%     Sovereign
+   decay+opp r=0.005             33.8  44.6    0      —     —   366 |        98%            0%     Sovereign
+   decay r=0.01                  16.9  22.3    0    86.5  86.5  305 |       100%            0%     Sovereign
+   decay+opp r=0.01              16.9  22.3    0    80.7  80.7  149 |        82%            1%     Held
+   decay r=0.02                   8.5  11.2    0    46.0  48.7    2 |         0%            0%     Held
+   decay+opp r=0.02               8.5  11.2    0    40.3  46.0    0 |         0%           18%     Foreign
+   burst m=3 every 0.375d          —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 0.75d           —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 1.5d            —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 3d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 5d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 6d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 10d             —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=3 every 20d             —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 0.375d          —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 0.75d           —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 1.5d            —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 3d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 5d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 6d              —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 10d             —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=4 every 20d             —     —   366      —     —   366 |       100%            0%     Sovereign
+   burst m=6 every 0.375d         0.8   0.8    0     1.5   1.5    0 |        99%            1%     Sovereign
+   burst m=6 every 0.75d          1.5   1.5    0     3.0   3.0    0 |        99%            1%     Sovereign
+   burst m=6 every 1.5d           3.0   3.0    0     6.0   6.0    0 |        99%            1%     Sovereign
+   burst m=6 every 3d             6.0   6.0    0    12.0  12.0    0 |        99%            1%     Sovereign
+   burst m=6 every 5d            10.0  10.0    0    20.0  20.0    0 |       100%            0%     Sovereign
+   burst m=6 every 6d            12.0  12.0    0    24.0  24.0    0 |       100%            0%     Sovereign
+   burst m=6 every 10d           20.0  20.0    0    40.0  40.0    0 |       100%            0%     Sovereign
+   burst m=6 every 20d           40.0  40.0    0    80.0  80.0    0 |       100%            0%     Sovereign
+   doom (shipped)                  —     —   366      —     —   366 |       100%            0%     Sovereign
+
+### spread from Sovereign (n=300)
+   shape                        lose 1 band p50/p90/never   →Foreign p50/p90/never | Claim: keeps band  ever Foreign  min band p10
+   decay r=0.005                 33.7  33.8    0      —     —   300 |       100%            0%     Sovereign
+   decay+opp r=0.005             24.2  33.7    0      —     —   300 |        25%            0%     Held
+   decay r=0.01                  16.8  16.9    0    87.1  88.3   71 |       100%            0%     Sovereign
+   decay+opp r=0.01              12.1  16.8    0    70.5  83.5    0 |         9%           55%     Foreign
+   decay r=0.02                   8.4   8.5    0    43.6  44.2   69 |         0%            1%     Touched
+   decay+opp r=0.02               6.1   8.4    0    35.3  41.8    0 |         0%           87%     Foreign
+   burst m=3 every 0.375d         1.5   1.5  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 0.75d          3.0   3.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 1.5d           6.0   6.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 3d            12.0  12.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 5d            20.0  20.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 6d            24.0  24.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 10d           40.0  40.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=3 every 20d           80.0  80.0  107      —     —   300 |       100%            0%     Sovereign
+   burst m=4 every 0.375d         1.2   1.5    0     2.7   3.8  238 |       100%            0%     Held
+   burst m=4 every 0.75d          2.3   3.0    0     5.3   7.5  238 |       100%            0%     Held
+   burst m=4 every 1.5d           4.5   6.0    0    10.5  15.0  238 |       100%            0%     Held
+   burst m=4 every 3d             9.0  12.0    0    21.0  30.0  238 |       100%            0%     Held
+   burst m=4 every 5d            15.0  20.0    0    35.0  50.0  238 |       100%            0%     Held
+   burst m=4 every 6d            18.0  24.0    0    42.0  60.0  238 |       100%            0%     Sovereign
+   burst m=4 every 10d           30.0  40.0    0    70.0  70.0  265 |       100%            0%     Sovereign
+   burst m=4 every 20d           60.0  80.0    0      —     —   300 |       100%            0%     Sovereign
+   burst m=6 every 0.375d         0.4   0.8    0     1.5   1.9    0 |         0%          100%     Hostile
+   burst m=6 every 0.75d          0.8   1.5    0     3.0   3.8    0 |         0%          100%     Hostile
+   burst m=6 every 1.5d           1.5   3.0    0     6.0   7.5    0 |         0%          100%     Hostile
+   burst m=6 every 3d             3.0   6.0    0    12.0  15.0    0 |         0%          100%     Hostile
+   burst m=6 every 5d             5.0  10.0    0    20.0  25.0    0 |         0%            9%     Touched
+   burst m=6 every 6d             6.0  12.0    0    24.0  30.0    0 |         0%           41%     Foreign
+   burst m=6 every 10d           10.0  20.0    0    40.0  50.0   15 |        99%            0%     Held
+   burst m=6 every 20d           20.0  40.0    0    80.0  80.0  149 |       100%            0%     Held
+   doom (shipped)                18.0  18.0  265      —     —   300 |       100%            0%     Sovereign
+
+## Pooled over the four gods (feeds the economy proxy): untended days to lose one band from Held, p50 (never-in-90d share)
+   decay r=0.005                46.42 d (0% never)   →Foreign 83.25 d
+   decay+opp r=0.005            20.25 d (0% never)   →Foreign 55.33 d
+   decay r=0.01                 23.25 d (0% never)   →Foreign 41.67 d
+   decay+opp r=0.01             10.17 d (0% never)   →Foreign 27.67 d
+   decay r=0.02                 11.67 d (0% never)   →Foreign 20.83 d
+   decay+opp r=0.02             5.08 d (0% never)   →Foreign 13.83 d
+   burst m=3 every 0.375d       0.75 d (65% never)   →Foreign 1.17 d
+   burst m=3 every 0.75d        1.5 d (65% never)   →Foreign 2.25 d
+   burst m=3 every 1.5d         3 d (65% never)   →Foreign 4.5 d
+   burst m=3 every 3d           6 d (65% never)   →Foreign 9 d
+   burst m=3 every 5d           10 d (65% never)   →Foreign 15 d
+   burst m=3 every 6d           12 d (65% never)   →Foreign 18 d
+   burst m=3 every 10d          20 d (65% never)   →Foreign 30 d
+   burst m=3 every 20d          40 d (65% never)   →Foreign 60 d
+   burst m=4 every 0.375d       0.42 d (0% never)   →Foreign 1.17 d
+   burst m=4 every 0.75d        0.75 d (0% never)   →Foreign 2.25 d
+   burst m=4 every 1.5d         1.5 d (0% never)   →Foreign 4.5 d
+   burst m=4 every 3d           3 d (0% never)   →Foreign 9 d
+   burst m=4 every 5d           5 d (0% never)   →Foreign 15 d
+   burst m=4 every 6d           6 d (0% never)   →Foreign 18 d
+   burst m=4 every 10d          10 d (0% never)   →Foreign 30 d
+   burst m=4 every 20d          20 d (0% never)   →Foreign 60 d
+   burst m=6 every 0.375d       0.42 d (0% never)   →Foreign 0.75 d
+   burst m=6 every 0.75d        0.75 d (0% never)   →Foreign 1.5 d
+   burst m=6 every 1.5d         1.5 d (0% never)   →Foreign 3 d
+   burst m=6 every 3d           3 d (0% never)   →Foreign 6 d
+   burst m=6 every 5d           5 d (0% never)   →Foreign 10 d
+   burst m=6 every 6d           6 d (0% never)   →Foreign 12 d
+   burst m=6 every 10d          10 d (0% never)   →Foreign 20 d
+   burst m=6 every 20d          20 d (0% never)   →Foreign 40 d
+   doom (shipped)               36 d (57% never)   →Foreign 36 d
+   doom: bands lost by day 90 from Held, untended — p50 0, p90 2, mean 0.76
+
+## Shape 3 — sink grows with the god: H/N bursts a day on the 3 most-held places (each hit every 3N/H days). Pooled over gods, from Held.
+   m  N   H   per-place interval  untended lose-1-band p50  claim keeps band  claim ever Foreign
+   4   5   5    3.000 d             3.0 d                  94%               6%
+   4   5  10    1.500 d             1.5 d                  87%              13%
+   4   5  20    0.750 d             0.8 d                  87%              13%
+   4   5  40    0.375 d             0.4 d                  87%              13%
+   4  10   5    6.000 d             6.0 d                  98%               2%
+   4  10  10    3.000 d             3.0 d                  94%               6%
+   4  10  20    1.500 d             1.5 d                  87%              13%
+   4  10  40    0.750 d             0.8 d                  87%              13%
+   6   5   5    3.000 d             3.0 d                   0%             100%
+   6   5  10    1.500 d             1.5 d                   0%             100%
+   6   5  20    0.750 d             0.8 d                   0%             100%
+   6   5  40    0.375 d             0.4 d                   0%             100%
+   6  10   5    6.000 d             6.0 d                   0%              99%
+   6  10  10    3.000 d             3.0 d                   0%             100%
+   6  10  20    1.500 d             1.5 d                   0%             100%
+   6  10  40    0.750 d             0.8 d                   0%             100%
+   (uniform targeting instead of the top 3: every held place is hit every N days whatever H is — the shape-2 row for k = N.)
+
+## C. Last held place — a god with only its seat (free standing Claim 0.03), seat already Held. Ever below Touched in 90 days?
+   shape                          places ever Foreign-or-worse   min band p10 / p50     → answer
+   decay+opp r=0.02                906 / 1856 ( 49%)          Foreign / Touched   → YES (rule: the seat is a carrier, so decay never applies — row shows decay forced on)
+   burst m=3 every 5d                0 / 1856 (  0%)          Held / Held   → no
+   burst m=3 every 10d               0 / 1856 (  0%)          Held / Held   → no
+   burst m=3 every 20d               0 / 1856 (  0%)          Held / Held   → no
+   burst m=4 every 5d               35 / 1856 (  2%)          Touched / Held   → YES
+   burst m=4 every 10d               0 / 1856 (  0%)          Held / Held   → no
+   burst m=4 every 20d               0 / 1856 (  0%)          Held / Held   → no
+   burst m=6 every 5d             1838 / 1856 ( 99%)          Foreign / Foreign   → YES
+   burst m=6 every 10d            1515 / 1856 ( 82%)          Foreign / Foreign   → YES
+   burst m=6 every 20d               0 / 1856 (  0%)          Held / Held   → no
+   burst m=4 every 0.375d          242 / 1856 ( 13%)          Foreign / Held   → YES
+   burst m=4 every 0.75d           240 / 1856 ( 13%)          Foreign / Held   → YES
+   burst m=4 every 1.5d            240 / 1856 ( 13%)          Foreign / Held   → YES
+   burst m=4 every 3d              105 / 1856 (  6%)          Touched / Held   → YES
+   burst m=6 every 0.375d         1856 / 1856 (100%)          Hostile / Hostile   → YES
+   burst m=6 every 0.75d          1856 / 1856 (100%)          Hostile / Hostile   → YES
+   burst m=6 every 1.5d           1856 / 1856 (100%)          Hostile / Hostile   → YES
+   burst m=6 every 3d             1856 / 1856 (100%)          Hostile / Hostile   → YES
+   doom (shipped)                    0 / 1856 (  0%)          Held / Held   → no
+   Shape 3 with only the seat: H = 1, so N/1 bursts a day all land on the seat — every N days = the shape-2 row for k = N (5 or 10).

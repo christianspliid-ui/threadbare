@@ -1,0 +1,192 @@
+# THR-1763 economy under the measured opposition shapes (T4 and T4-soft), three gods
+# columns: income/tick d10/30/60/90 · primary pool d10/30/60/90 (* = pinned: pool < 1, or upkeep went unpaid in the 5 days before) · ticks upkeep unpaid (of 1080) · min pool after d10 · bands at d90 (threads | sources)
+
+## growing (1 band / 14 d, no erosion — the THR-1762 baseline) — T4
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## growing (1 band / 14 d, no erosion — the THR-1762 baseline) — T4-soft
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## 1761 harsh pressed (every holding −1 band / 20 d from day 30) — T4
+  shepherd  income 3.2 / 4.8 / 4.9 / 5.0    pool 31 / 61 / 1* / 2*      unpaid  215  min   0.0  d90 xxxxx|xxxx  PINNED
+  thin      income 3.1 / 2.9 / 4.0 / 4.4    pool 26 / 38 / 1* / 2*      unpaid  293  min   0.0  d90 xxxx|xxxx  PINNED
+  rich      income 3.1 / 4.3 / 5.5 / 5.0    pool 28 / 57 / 0* / 2*      unpaid  149  min   0.0  d90 xxxxx|xxxx  PINNED
+
+## 1761 harsh pressed (every holding −1 band / 20 d from day 30) — T4-soft
+  shepherd  income 3.2 / 5.0 / 6.7 / 7.4    pool 31 / 61 / 1 / 9        unpaid    0  min   0.2  d90 xxxxxF|xxxx
+  thin      income 3.1 / 4.1 / 6.2 / 6.6    pool 26 / 38 / 1 / 11       unpaid    0  min   0.2  d90 xxxxx|xxxx
+  rich      income 3.1 / 4.8 / 6.8 / 7.5    pool 28 / 57 / 1* / 13      unpaid    0  min   0.3  d90 xxxxxx|xxxx  PINNED
+
+## shape 1 decay+opp r=0.005 (untended sources relax to tick-0 band) — T4 (L = 20.3 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 1 decay+opp r=0.005 (untended sources relax to tick-0 band) — T4-soft (L = 20.3 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 1 decay+opp r=0.01 (untended sources relax to tick-0 band) — T4 (L = 10.2 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 1 decay+opp r=0.01 (untended sources relax to tick-0 band) — T4-soft (L = 10.2 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 1 decay+opp r=0.02 (untended sources relax to tick-0 band) — T4 (L = 5.1 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 1 decay+opp r=0.02 (untended sources relax to tick-0 band) — T4-soft (L = 5.1 d per band)
+  shepherd  income 3.2 / 5.9 / 9.9 / 12.0   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|TFFF
+  thin      income 3.1 / 5.4 / 9.6 / 11.7   pool 26 / 54 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|FFFF
+  rich      income 3.1 / 5.6 / 9.8 / 12.0   pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|TTTT
+
+## shape 2 burst m=3 every 5d on the top holding — T4 (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=3 every 5d on the top holding — T4-soft (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=3 every 10d on the top holding — T4 (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=3 every 10d on the top holding — T4-soft (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=3 every 20d on the top holding — T4 (L = 40.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=3 every 20d on the top holding — T4-soft (L = 40.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=4 every 5d on the top holding — T4 (L = 5.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.4 / 13.0  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|HSSH
+  thin      income 3.1 / 5.5 / 9.8 / 13.1   pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.3 / 12.9  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HHSS
+
+## shape 2 burst m=4 every 5d on the top holding — T4-soft (L = 5.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.4 / 13.0  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|HSSH
+  thin      income 3.1 / 5.5 / 9.8 / 13.1   pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.3 / 12.9  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HHSS
+
+## shape 2 burst m=4 every 10d on the top holding — T4 (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=4 every 10d on the top holding — T4-soft (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=4 every 20d on the top holding — T4 (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=4 every 20d on the top holding — T4-soft (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=6 every 5d on the top holding — T4 (L = 5.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.4 / 13.0  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|HSSH
+  thin      income 3.1 / 5.5 / 9.8 / 13.1   pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.3 / 12.9  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HHSS
+
+## shape 2 burst m=6 every 5d on the top holding — T4-soft (L = 5.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.4 / 13.0  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|HSSH
+  thin      income 3.1 / 5.5 / 9.8 / 13.1   pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.3 / 12.9  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HHSS
+
+## shape 2 burst m=6 every 10d on the top holding — T4 (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=6 every 10d on the top holding — T4-soft (L = 10.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.1 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.1  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|HSSS
+
+## shape 2 burst m=6 every 20d on the top holding — T4 (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 2 burst m=6 every 20d on the top holding — T4-soft (L = 20.0 d per band)
+  shepherd  income 3.2 / 6.0 / 10.6 / 13.2  pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSSSSS|SSSH
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 3 sink m=4 N=5 (H/N bursts a day on the top 3) — T4
+  shepherd  income 3.2 / 6.0 / 9.3 / 11.0   pool 31 / 63 / 61 / 73      unpaid    0  min  29.1  d90 TTTHTH|TTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.0   pool 26 / 63 / 59 / 73      unpaid    0  min  11.5  d90 TTHTTH|TTTH
+  rich      income 3.1 / 5.7 / 9.5 / 11.0   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 TTTHHH|TTTT
+
+## shape 3 sink m=4 N=5 (H/N bursts a day on the top 3) — T4-soft
+  shepherd  income 3.2 / 6.0 / 9.3 / 11.0   pool 31 / 63 / 61 / 73      unpaid    0  min  29.1  d90 TTTHTH|TTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.0   pool 26 / 63 / 59 / 73      unpaid    0  min  11.5  d90 TTHTTH|TTTH
+  rich      income 3.1 / 5.7 / 9.5 / 11.0   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 TTTHHH|TTTT
+
+## shape 3 sink m=4 N=10 (H/N bursts a day on the top 3) — T4
+  shepherd  income 3.2 / 6.0 / 9.7 / 11.7   pool 31 / 63 / 60 / 73      unpaid    0  min  29.1  d90 THSHHS|HTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.8   pool 26 / 63 / 59 / 74      unpaid    0  min  11.5  d90 HHHHSH|HHTH
+  rich      income 3.1 / 5.7 / 9.4 / 11.7   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 THHSSH|THHT
+
+## shape 3 sink m=4 N=10 (H/N bursts a day on the top 3) — T4-soft
+  shepherd  income 3.2 / 6.0 / 9.7 / 11.7   pool 31 / 63 / 60 / 73      unpaid    0  min  29.1  d90 THSHHS|HTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.8   pool 26 / 63 / 59 / 74      unpaid    0  min  11.5  d90 HHHHSH|HHTH
+  rich      income 3.1 / 5.7 / 9.4 / 11.7   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 THHSSH|THHT
+
+## shape 3 sink m=6 N=5 (H/N bursts a day on the top 3) — T4
+  shepherd  income 3.2 / 6.0 / 9.3 / 11.0   pool 31 / 63 / 61 / 73      unpaid    0  min  29.1  d90 TTTHTH|TTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.0   pool 26 / 63 / 59 / 73      unpaid    0  min  11.5  d90 TTHTTH|TTTH
+  rich      income 3.1 / 5.7 / 9.5 / 11.0   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 TTTHHH|TTTT
+
+## shape 3 sink m=6 N=5 (H/N bursts a day on the top 3) — T4-soft
+  shepherd  income 3.2 / 6.0 / 9.3 / 11.0   pool 31 / 63 / 61 / 73      unpaid    0  min  29.1  d90 TTTHTH|TTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.0   pool 26 / 63 / 59 / 73      unpaid    0  min  11.5  d90 TTHTTH|TTTH
+  rich      income 3.1 / 5.7 / 9.5 / 11.0   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 TTTHHH|TTTT
+
+## shape 3 sink m=6 N=10 (H/N bursts a day on the top 3) — T4
+  shepherd  income 3.2 / 6.0 / 9.7 / 11.7   pool 31 / 63 / 60 / 73      unpaid    0  min  29.1  d90 THSHHS|HTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.8   pool 26 / 63 / 59 / 74      unpaid    0  min  11.5  d90 HHHHSH|HHTH
+  rich      income 3.1 / 5.7 / 9.4 / 11.7   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 THHSSH|THHT
+
+## shape 3 sink m=6 N=10 (H/N bursts a day on the top 3) — T4-soft
+  shepherd  income 3.2 / 6.0 / 9.7 / 11.7   pool 31 / 63 / 60 / 73      unpaid    0  min  29.1  d90 THSHHS|HTTH
+  thin      income 3.1 / 5.5 / 9.3 / 11.8   pool 26 / 63 / 59 / 74      unpaid    0  min  11.5  d90 HHHHSH|HHTH
+  rich      income 3.1 / 5.7 / 9.4 / 11.7   pool 28 / 63 / 59 / 73      unpaid    0  min  18.5  d90 THHSSH|THHT
+
+## shape 4 doom as shipped (crossings d18/36/54/72) — T4
+  shepherd  income 3.2 / 5.6 / 9.4 / 11.7   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSHHHH|HTTT
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
+
+## shape 4 doom as shipped (crossings d18/36/54/72) — T4-soft
+  shepherd  income 3.2 / 5.6 / 9.4 / 11.7   pool 31 / 63 / 61 / 74      unpaid    0  min  29.1  d90 SSHHHH|HTTT
+  thin      income 3.1 / 5.5 / 10.3 / 13.1  pool 26 / 63 / 60 / 74      unpaid    0  min  11.5  d90 SSSSSH|SSSH
+  rich      income 3.1 / 5.7 / 10.6 / 13.2  pool 28 / 63 / 60 / 74      unpaid    0  min  18.5  d90 SSSSSH|SSSS
