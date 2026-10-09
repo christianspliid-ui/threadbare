@@ -28,6 +28,12 @@ export interface InterruptSnapshot {
   /** `meetingState !== null` — the flow mounts only with an ascendant identity too. */
   meetingPending: boolean;
   hasAscendantIdentity: boolean;
+  /**
+   * A threading rite is pending (`GameState.pendingThreadingRite`, THR-1754) and
+   * the rite can mount (it needs the god's identity for the bond's voice).
+   * Optional: absent = false.
+   */
+  threadingRitePending?: boolean;
   premonitionPending: boolean;
   vignettePending: boolean;
   storyBeatPending: boolean;
@@ -72,6 +78,9 @@ export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   { id: 'WarmStartOverlay', tier: 'interrupt', isOpen: s => s.warmStartRunning === true },
   { id: 'EncounterVeil', tier: 'interrupt', isOpen: s => s.encounterOpen },
   { id: 'MeetTheFirstFlow', tier: 'interrupt', isOpen: s => s.meetingPending && s.hasAscendantIdentity },
+  // The Rite of the Thread (THR-1754): every thread the god binds plays one. It waits
+  // behind the meeting, which is the first and richest rite of all.
+  { id: 'ThreadingRite', tier: 'interrupt', isOpen: s => s.threadingRitePending === true && !(s.meetingPending && s.hasAscendantIdentity) },
   { id: 'PremonitionModal', tier: 'interrupt', isOpen: s => s.premonitionPending && !s.interruptsSuppressed },
   { id: 'JourneyVignetteModal', tier: 'interrupt', isOpen: s => s.vignettePending && !s.interruptsSuppressed },
   { id: 'StoryBeatModal', tier: 'interrupt', isOpen: s => s.storyBeatPending && !s.interruptsSuppressed },

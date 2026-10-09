@@ -2453,6 +2453,18 @@ export interface DebugBridge {
    * recent rite (shape, ordinal, reception, mark). `null` with no live game.
    */
   getThreadingRite: () => Promise<import('./engine/threadingRiteQueue').ThreadingRiteSnapshot | null>;
+  /**
+   * THR-1754 — thread `agentId` through the real Agent Thread card path and tick
+   * (one at a time, at most `maxTicks`, default 8) until its rite is pending, so
+   * the `ThreadingRite` surface opens. `opened: false` when the card failed or no
+   * rite came due; `snapshot` is `getThreadingRite()` at the end.
+   */
+  openThreadingRite: (agentId: string, maxTicks?: number) => Promise<{
+    readonly opened: boolean;
+    readonly ticks: number;
+    readonly message: string;
+    readonly snapshot: import('./engine/threadingRiteQueue').ThreadingRiteSnapshot | null;
+  }>;
   getOutcomePinVerdict: () => Promise<
     | null
     | { readonly templateId: string; readonly band: string; readonly status: 'pending' }

@@ -43,6 +43,9 @@ import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import { durationLabel } from './aftermathWords';
 import { getFirstMarkDisplay, type FirstMarkDisplay } from './firstMark';
+import type { RiteHistoryEntry } from './threadingRite';
+import { deriveSeasonAndYear } from '../types/temporal';
+import { riteSheetLine } from '../data/threading-rite-prose';
 import { influenceChipNoun, influenceChipHover } from './castTargetChanges';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
 import {
@@ -417,6 +420,12 @@ export interface AgentInfoCardData {
    * is state). Ungated: the god knows its own mark. Excluded from `allTraits`.
    */
   godMark?: FirstMarkDisplay;
+  /**
+   * The rite line (THR-1754): "Bound in spring, Year 1 — took your thread in
+   * doubt." from the newest entry of the node's `riteHistory`. Ungated like the
+   * mark: the god remembers its own rite.
+   */
+  riteLine?: string;
   archetypeId?: string;
   archetypeLabel?: string;
   factionName?: string;
@@ -1482,6 +1491,9 @@ export function getAgentInfoCard(
   const godMark = getFirstMarkDisplay(graph, agentId);
   if (godMark) card.godMark = godMark;
 
+  const riteLine = getRiteSheetLine(graph, agentId);
+  if (riteLine) card.riteLine = riteLine;
+
   // Companions — deliberately ungated (THR-1096 decision 8). Person-knowledge
   // gating does not apply: a mortal's companions belong to the bearer, and the
   // bearer's god sees the people around their own threads. Fail-open by design.
@@ -2024,4 +2036,17 @@ export function summarizeActiveUndertakings(
     });
   }
   return summaries.length > 0 ? summaries : undefined;
+}
+
+/**
+ * The sheet's rite line (THR-1754): the newest `riteHistory` entry, in the
+ * calendar's words. Undefined for a mortal who never took part in a rite.
+ */
+export function getRiteSheetLine(graph: WorldGraph, agentId: string): string | undefined {
+  const history = graph.getNode(agentId)?.properties.riteHistory;
+  if (!Array.isArray(history) || history.length === 0) return undefined;
+  const last = history[history.length - 1] as Partial<RiteHistoryEntry> | undefined;
+  if (!last || typeof last.tick !== 'number') return undefined;
+  const { season, year } = deriveSeasonAndYear(last.tick);
+  return riteSheetLine(season, year, last.reception);
 }

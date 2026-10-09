@@ -449,6 +449,13 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
               </span>
             </p>
           )}
+          {/* The rite line (THR-1754) — when and how they took the god's thread, from
+              the node's riteHistory; the reception word matches the rite's result. */}
+          {card.riteLine && (
+            <p className="text-sm italic" data-testid="identity-rite-line" style={{ color: 'var(--text-secondary)' }}>
+              {card.riteLine}
+            </p>
+          )}
           {/*
             The intention — what they are up to, never what they could do (THR-1404,
             THR-1433). Present only when the one mind-reading rule opened the door

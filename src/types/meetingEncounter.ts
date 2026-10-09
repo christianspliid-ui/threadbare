@@ -412,6 +412,8 @@ export interface DilemmaInstance {
    * converted path silently unreachable.
    */
   test?: FormativeTest;
+  /** Rite-only line variants, carried through the mapper like `test` (THR-1754). */
+  riteText?: DilemmaRiteText;
   /**
    * The source template's resonance tags, when it carries them (THR-1712).
    *
@@ -626,6 +628,20 @@ export interface EnrichedDilemmaTemplate extends DilemmaTemplate {
   // reversible — no flag day, mirroring the WS5 migration.
   /** Present once this template has been converted to a formative test. */
   test?: FormativeTest;
+
+  /**
+   * Threading-rite variant lines (THR-1754). The rite plays a meeting test on a
+   * mortal the god has just threaded, who can feel the thread; a line that
+   * assumes a stranger who does not know the god is there gets a rite variant
+   * here rather than an edit of the meeting text.
+   */
+  riteText?: DilemmaRiteText;
+}
+
+/** Rite-only replacements for a meeting test line (THR-1754). Absent field = the meeting line stands. */
+export interface DilemmaRiteText {
+  readonly godVoice?: string;
+  readonly setup?: string;
 }
 
 // ─── Formative & Bond Tests (THR-868, WS6) ───────────────────────────

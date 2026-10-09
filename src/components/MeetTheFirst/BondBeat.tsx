@@ -14,7 +14,11 @@ import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants
 
 interface BondBeatProps {
   candidate: NarrativeCandidate;
-  vision: SparkVision;
+  /**
+   * The spark vision the naming stage shows. Absent in the threading rite's
+   * no-vision mode (THR-1754), which ends at the reveal and never reaches naming.
+   */
+  vision?: SparkVision;
   hungerId: StoredHungerId;
   primarySphere: SphereName;
   /**
@@ -27,6 +31,18 @@ interface BondBeatProps {
   /** THR-1706 — charge the bond test's hand; see `FormativeTestBeat.onSpendEssence`. */
   onSpendEssence?: (testIndex: number, requests: NudgeSpendRequest[]) => void;
   onComplete: (editedName: string | undefined, bondOutcome?: BondOutcome) => void;
+  /**
+   * THR-1754 — the threading rite's mode: the beat ends at fate's answer. The
+   * reveal's continue calls `onComplete(undefined, outcome)`; there is no naming
+   * stage, because the mortal already has a name and a life.
+   */
+  skipNaming?: boolean;
+  /** Replaces the reception's authored prose on the reveal (the rite's own result line). */
+  receptionLineFor?: (outcome: BondOutcome) => string;
+  /** Rendered under the reception on the reveal (the rite's First and mark lines). */
+  revealFooter?: React.ReactNode;
+  /** The reveal's continue label. Default: the meeting's. */
+  continueLabel?: string;
 }
 
 const SCENE_BG = '#0a0a0f';
@@ -53,6 +69,10 @@ export function BondBeat({
   seed = 0,
   onSpendEssence,
   onComplete,
+  skipNaming = false,
+  receptionLineFor,
+  revealFooter,
+  continueLabel,
 }: BondBeatProps) {
   const [stage, setStage] = useState<BondStage>(bondTest ? 'test' : 'bond');
   const [outcome, setOutcome] = useState<BondOutcome | null>(null);
@@ -206,12 +226,13 @@ export function BondBeat({
               marginBottom: '4vh',
             }}
           >
-            {outcome.prose}
+            {receptionLineFor ? receptionLineFor(outcome) : outcome.prose}
           </p>
+          {revealFooter}
           <button
             type="button"
             data-testid="bond-reveal-continue"
-            onClick={() => setStage('bond')}
+            onClick={() => (skipNaming ? onComplete(undefined, outcome) : setStage('bond'))}
             style={{
               padding: '10px 22px',
               borderRadius: 8,
@@ -224,12 +245,16 @@ export function BondBeat({
               cursor: 'pointer',
             }}
           >
-            {MEETING_FATE_REVEAL_CONTINUE}
+            {continueLabel ?? MEETING_FATE_REVEAL_CONTINUE}
           </button>
         </div>
       </div>
     );
   }
+
+  // No-vision mode has no naming stage to fall into (fail-soft: a missing vision
+  // never renders an empty portrait).
+  if (!vision) return null;
 
   const lineStyle = (minPhase: number): React.CSSProperties => ({
     opacity: phase >= minPhase ? 1 : 0,

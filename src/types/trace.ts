@@ -404,6 +404,8 @@ export type TraceCategory =
   | 'thread.court_position_resolved'
   | 'rite.queued'
   | 'rite.applied'
+  // The rite on screen (THR-1754 S2)
+  | 'rite.degraded'
   // The opening — the doom clock waits for The First (THR-1646 S2)
   | 'doom.wake'
   | 'doom.expiry_held'
@@ -959,6 +961,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'thread.court_position_resolved',
   'rite.queued',
   'rite.applied',
+  'rite.degraded',
   // The opening (THR-1646 S2)
   'doom.wake',
   'doom.expiry_held',
@@ -4865,6 +4868,7 @@ export type TraceEntry =
   // The threading rite (THR-1644 S1)
   | ThreadCourtPositionResolvedTrace
   | RiteQueuedTrace
+  | RiteDegradedTrace
   | RiteAppliedTrace
   // Retrofitted from the orphaned-payload set (THR-1065). Each declared a
   // `category` literal and an authored payload, but was never a union member —
@@ -5064,6 +5068,17 @@ export interface RiteQueuedTrace extends TraceBase {
   queuedBehind: number;
   /** True → the queue was full and the rite resolved as the bond alone, no hand. */
   overflowed: boolean;
+}
+
+/**
+ * Trace: a short rite found no converted test for the mortal's primary reach and
+ * plays the bond alone (THR-1754 S2, plan § Fail-soft).
+ */
+export interface RiteDegradedTrace extends TraceBase {
+  category: 'rite.degraded';
+  from: import('../engine/threadingRite').RiteShape;
+  to: import('../engine/threadingRite').RiteShape;
+  primaryReach: import('./traits').ReachDomain | null;
 }
 
 /**

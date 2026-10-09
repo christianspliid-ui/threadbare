@@ -30,11 +30,26 @@ export const RITE_QUEUE_MAX = 3;
 /**
  * S1 → S2 switch. While no rite surface exists to open a pending rite, the
  * engine resolves each one at once as *Bond without a hand* (D6): the bond
- * rolls on its seeded stream with no cards and the reception lands. S2 turns
- * this on when the `ThreadingRite` modal ships, so a pending rite waits for the
- * player instead.
+ * rolls on its seeded stream with no cards and the reception lands. On since
+ * S2 (THR-1754): the `ThreadingRite` modal opens the pending rite, so it waits
+ * for the player instead. Off again turns the rite back into an instant,
+ * no-hand bond everywhere without touching the surface.
  */
-export const RITE_SURFACE_ENABLED = false;
+export const RITE_SURFACE_ENABLED = true;
+
+// ─── The rite on screen (S2 — THR-1754) ───────────────────────────
+
+/** Formative tests in a card-route First's rite (the meeting keeps its own 2–3). */
+export const RITE_FULL_TEST_COUNT_CARD_ROUTE = 2;
+
+/** Formative tests in the short rite (threads 2..`RITE_SHORT_MAX_ORDINAL`). */
+export const RITE_SHORT_TEST_COUNT = 1;
+
+/**
+ * Cards offered in the bond-only rite — the first N of the meeting's own bond
+ * hand (`BOND_NUDGES`: "Still the room", then "Say their name").
+ */
+export const RITE_BOND_ONLY_HAND_SIZE = 2;
 
 // ─── The First's mark (D5, S3 — THR-1755) ─────────────────────────
 
