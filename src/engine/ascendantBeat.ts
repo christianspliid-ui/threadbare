@@ -40,6 +40,7 @@ import type {
   BeatResolvedTrace,
   SpineDeferredTrace,
   BeatArrivalOfferTrace,
+  BeatSettledAsPlayedTrace,
 } from '../types/trace';
 import {
   ASCENDANT_SPINE,
@@ -91,7 +92,8 @@ function emitBeatTrace(
     | Omit<BeatSkippedTrace, 'id' | 'timestamp'>
     | Omit<BeatResolvedTrace, 'id' | 'timestamp'>
     | Omit<SpineDeferredTrace, 'id' | 'timestamp'>
-    | Omit<BeatArrivalOfferTrace, 'id' | 'timestamp'>,
+    | Omit<BeatArrivalOfferTrace, 'id' | 'timestamp'>
+    | Omit<BeatSettledAsPlayedTrace, 'id' | 'timestamp'>,
 ): void {
   emitTrace(entry as unknown as Parameters<typeof emitTrace>[0]);
 }
@@ -632,13 +634,13 @@ export function settleSpineBeatAsPlayed(
       significance: SETTLED_OPENING_SIGNIFICANCE,
     };
     const next = resolution.state;
-    emitTrace({
+    emitBeatTrace({
       tick: turn,
       category: 'beat.settled_as_played',
       beatId,
       reason: 'first_already_bonded',
       summary: `beat.settled_as_played: ${beatId} (first_already_bonded)`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
     return {
       ascendantBeats: next.ascendantBeats,
       unlockedActionIds: next.unlockedActionIds,
