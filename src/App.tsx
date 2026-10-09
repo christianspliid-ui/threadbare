@@ -195,6 +195,7 @@ function App() {
       title: gamePhase.identity.divineName,
       description: gamePhase.identity.mandateDirection,
       sphereAlignment: gamePhase.identity.sphereAlignment,
+      spherePoints: gamePhase.identity.spherePoints,
       startingDomainAffinities: gamePhase.identity.domainAffinities,
       personalitySeed: gamePhase.identity.personalitySeed,
       flavorText: gamePhase.identity.mandateDirection,

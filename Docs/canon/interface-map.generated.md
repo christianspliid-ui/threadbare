@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 59 |
-| **Total** | **231** |
+| 🔵 UNVERIFIED-OK | 60 |
+| **Total** | **232** |
 
 ## Contracts by producing subsystem
 
@@ -365,6 +365,7 @@ remediation ticket or the build fails.
 | `seeded-spell-holders` | Every caster starts the world knowing and wielding a spell of their tradition, and the spells they carry are read by the systems that act on spells. | function: `seedSpellKnowing`, `collectAttachmentEffects` | Effects & Conditions | 🟢 LIVE | — |
 | `seeded-ties-never-graduate` | A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count. | edge-prop: `worldgen` | Agent Lifecycle | 🟢 LIVE | — |
 | `spell-template-resolves-from-graph` | A generated spell's template lives on its definition node, and every site that needs a spell's template reads it through one resolver — authored first, then the node. No module-level registry outlives the world that minted it. | function: `resolveSpellTemplate`, `spellDefinitionNode` | Effects & Conditions | 🟢 LIVE | — |
+| `sphere-points-split-essence-income` | The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree. | node-prop: `spherePoints`, `distributeBySpherePoints` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `world-past-mints-ambitions` | The past gives the living reasons (THR-1657, S3): a fallen commander's kin — the losing Realm's highest-standing protagonist with a free slot, tied `kin` both ways — inherits a `seek_revenge` grievance against the winning Realm's current leader through `resolveGrievanceDisposition`'s succession, and the protagonist nearest a wonder with a finder comes to chase it. Deciders only, no spotlight pull, so the t0 decider headcount is unchanged; every source that mints nothing is named with its reason in `world_past_seeded.ambitions`. | function: `mintPastAmbitions`, `assignAmbitionToActor`, `resolveGrievanceDisposition` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `readWorldPastForPlayer`, `getPlacePast` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -2576,10 +2577,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 384 total — 1 write, 1 read, 382 unclassified
+- **Production hits:** 385 total — 1 write, 1 read, 383 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +377 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +378 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -2652,6 +2653,17 @@ exit
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildStepCastModel.ts`, `src/data/undertaking-objects.ts`, `src/engine/debugEncounterTools.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/stepCast.ts` +1 more
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/contentQuery.ts`, `src/engine/effects/effectSuppression.ts`, `src/engine/spellGenerator/readBack.ts`, `src/engine/spellGrant.ts`
 - **Verdict:** Verified 2026-10-03: THR-1572. The nine former getSpellTemplate production sites read resolveSpellTemplate(graph, id); authored ids resolve exactly as before. Live read: spellLibrary.test.ts › a generated deliberate spell casts through use × Power — success lands its condition, failure writes nothing (both arms); stepCast.wieldedDeliberateSpells offers generated spells to the step cast, and ?spell=<generated id> stamps one on @hero through applySpellStamp.
+
+### `sphere-points-split-essence-income` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.
+- **Producer → Consumer:** World Generation, Terrain & Places → Essence & Divine Economy
+- **UL terms:** *Essence*, *Sphere*
+- **Production hits:** 16 total — 1 write, 2 read, 13 unclassified
+- **Write sites:** `src/engine/ascendant.ts`
+- **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
+- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +8 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE
 

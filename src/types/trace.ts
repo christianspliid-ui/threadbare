@@ -31,7 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
-import type { SpherePressureResolvedTrace, SphereSeededTrace } from './traces/sphere-traces';
+import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -613,6 +613,8 @@ export type TraceCategory =
   // Interfaces in `src/types/traces/sphere-traces.ts`.
   | 'sphere_pressure'
   | 'sphere_seeded'
+  // Buy your spheres — the bought vector was missing or invalid, preset used (THR-1749)
+  | 'sphere_points.fallback'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -921,6 +923,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Sphere scores — pressure resolved / bag seeded (THR-1768)
   'sphere_pressure',
   'sphere_seeded',
+  // Buy your spheres — preset fallback (THR-1749)
+  'sphere_points.fallback',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -4794,6 +4798,7 @@ export type TraceEntry =
   // Sphere scores (THR-1768)
   | SpherePressureResolvedTrace
   | SphereSeededTrace
+  | SpherePointsFallbackTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

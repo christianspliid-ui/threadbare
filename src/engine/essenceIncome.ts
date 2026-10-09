@@ -21,26 +21,10 @@ import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
 import { computeSourceIncome, readEssenceSource, upkeepChargedSources } from './essenceSources';
 import { SOURCE_CONTROL_SUSTAIN } from '../data/essence-sources';
+import { distributeBySpherePoints, getSpherePoints } from './spherePoints';
 
 function emptyPool(): EssencePool {
   return Object.fromEntries(SPHERE_NAMES.map(s => [s, 0])) as EssencePool;
-}
-
-function distributeByAlignment(total: number, alignment: SphereAlignment): EssencePool {
-  const gen = emptyPool();
-  const primaryShare = total * 0.35;
-  const secondaryShare = total * 0.25;
-  const otherSpheres = SPHERE_NAMES.filter(
-    (s: SphereName) => s !== alignment.primary && s !== alignment.secondary
-  );
-  const perOther = (total * 0.40) / otherSpheres.length;
-
-  gen[alignment.primary] = primaryShare;
-  gen[alignment.secondary] = secondaryShare;
-  for (const s of otherSpheres) {
-    gen[s] = perOther;
-  }
-  return gen;
 }
 
 /**
@@ -91,7 +75,8 @@ export function computeEssenceIncome(
     }
   }
 
-  const gross = distributeByAlignment(totalRate, alignment);
+  // THR-1749: the same split the ledger uses (influence.ts computeEssenceGeneration).
+  const gross: EssencePool = distributeBySpherePoints(totalRate, getSpherePoints(node.properties));
 
   // Maintenance cost (deducted from primary sphere)
   let totalMaintenance = 0;
