@@ -199,6 +199,22 @@ describe('THR-1644 S1 (c) — later threads keep the card position and count up'
     expect(courtPositionForNewThread(g, ASC, 'watched', 6).position).toBe('the_first');
   });
 
+  it('a dead mortal still in the graph is never made The First', () => {
+    const g = makeGraph();
+    g.getNode('wren')!.properties.status = 'dead';
+    threadWithCard(g, 'wren', 5);
+    expect(threadTo(g, 'wren').properties.courtPosition).toBe('watched');
+    expect(isFirstBonded(g, ASC)).toBe(false);
+  });
+
+  it('the god\'s herald does not count toward the ordinal', () => {
+    const g = makeGraph(['herald', 'wren']);
+    g.addEdge({ id: 'av', source: 'herald', target: ASC, type: 'avatar_of', properties: {} });
+    g.addEdge({ id: 'th', source: ASC, target: 'herald', type: 'thread', properties: {} });
+    threadWithCard(g, 'wren', 5);
+    expect(threadsBoundCount(g, ASC)).toBe(1);
+  });
+
   it('a thread to the god\'s own herald plays no rite and makes no First', () => {
     const g = makeGraph(['herald']);
     g.addEdge({ id: 'av', source: 'herald', target: ASC, type: 'avatar_of', properties: {} });
@@ -211,7 +227,7 @@ describe('THR-1644 S1 (c) — later threads keep the card position and count up'
 });
 
 describe('THR-1644 S1 (d) — Bond without a hand is seeded', () => {
-  function threadAndDismiss(): { reception: unknown; history: unknown } {
+  function threadAndDismiss(): { reception: unknown; lastRite: unknown } {
     resetOpCounter();
     const g = makeGraph();
     threadWithCard(g, 'wren', 5);
@@ -225,7 +241,7 @@ describe('THR-1644 S1 (d) — Bond without a hand is seeded', () => {
     expect(state.pendingThreadingRite?.agentId).toBe('hadrel');
     return {
       reception: threadTo(g, 'wren').properties.bondReception,
-      history: g.getNode('wren')!.properties.riteHistory,
+      lastRite: g.getNode(ASC)!.properties.lastRite,
     };
   }
 
@@ -297,7 +313,7 @@ describe('THR-1644 S1 — the pending rite', () => {
     g.getNode('wren')!.properties.status = 'dead';
     drainThreadingRites(makeState(g), false);
     expect(threadTo(g, 'wren').properties.bondReception).toBeUndefined();
-    expect(g.getNode('wren')!.properties.riteHistory).toBeUndefined();
+    expect(g.getNode(ASC)!.properties.lastRite).toBeUndefined();
     const applied = getTraces().find(t => t.category === 'rite.applied');
     if (applied?.category !== 'rite.applied') throw new Error('no rite.applied');
     expect(applied.fallbackReason).toBe('agent_missing');

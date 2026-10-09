@@ -8,9 +8,10 @@
  * (origin/main 84894af3) for seeds 42 / 99 / 2 through the real generators and
  * resolvers, and the refactor is held to it.
  *
- * The rite adds inspect-only bookkeeping that did not exist before — the node's
- * `riteHistory`, the thread's `riteShape`, the ascendant's `threadsBoundCount`.
- * Those are stripped before comparison: they are new, not changed.
+ * The rite adds inspect-only bookkeeping that did not exist before — the
+ * thread's `riteShape`, and on the ascendant (not snapshotted) `threadsBoundCount`
+ * and `lastRite`. `riteHistory` is stripped too, ahead of S2 adding it to the
+ * node. They are new, not changed.
  */
 
 import { describe, it, expect } from 'vitest';

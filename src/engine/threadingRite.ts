@@ -126,13 +126,6 @@ export interface ApplyRiteResult {
   readonly markTraitId?: string;
 }
 
-/** One line of the node's rite history — read by the sheet's "bound on" line (S2). */
-export interface RiteHistoryEntry {
-  readonly tick: number;
-  readonly shape: RiteShape;
-  readonly reception?: BondReception;
-}
-
 /** The god's most recent rite (ascendant property `lastRite`), inspect-only. */
 export interface LastRiteRecord {
   readonly agentId: string;
@@ -145,13 +138,15 @@ export interface LastRiteRecord {
 
 // ─── Counting and shape (D2) ──────────────────────────────────────
 
-function isThreadToIndividual(graph: WorldGraph, edge: GraphEdge): boolean {
-  return graph.getNode(edge.target)?.properties.actorType === 'individual';
+/** A thread that bears a rite: to an individual who is not the god's own avatar or herald. */
+function isRiteBearingThread(graph: WorldGraph, edge: GraphEdge): boolean {
+  return graph.getNode(edge.target)?.properties.actorType === 'individual'
+    && !isAvatarOf(graph, edge.target, edge.source);
 }
 
-/** Live `thread` edges from the god to individuals — the fallback count. */
+/** Live rite-bearing `thread` edges from the god — the fallback count. */
 function liveIndividualThreadCount(graph: WorldGraph, ascendantId: string): number {
-  return graph.getOutgoingEdges(ascendantId, 'thread').filter(e => isThreadToIndividual(graph, e)).length;
+  return graph.getOutgoingEdges(ascendantId, 'thread').filter(e => isRiteBearingThread(graph, e)).length;
 }
 
 /**
@@ -234,6 +229,11 @@ export function courtPositionForNewThread(
   return { position: 'the_first', reason: 'no_first' };
 }
 
+/** Dead by either marker the lifecycle writes (`groupQueries.isAgentGone`'s test). */
+function isGone(props: Record<string, unknown>): boolean {
+  return props.deceased === true || props.status === 'dead';
+}
+
 /** The avatar (and an avatar-class herald) is never a rite target. */
 function isAvatarOf(graph: WorldGraph, nodeId: string, ascendantId: string): boolean {
   return graph.getOutgoingEdges(nodeId, 'avatar_of').some(e => e.target === ascendantId);
@@ -265,7 +265,11 @@ export function resolveThreadWrite(
   tick: number,
 ): ThreadWriteResolution | null {
   if (graph.getNode(ascendantId)?.properties.actorType !== 'ascendant') return null;
-  if (graph.getNode(agentId)?.properties.actorType !== 'individual') return null;
+  const target = graph.getNode(agentId);
+  if (target?.properties.actorType !== 'individual') return null;
+  // A dead mortal still in the graph is no rite target, and never a First:
+  // crowning a corpse would retire the meeting and wake the doom for nobody.
+  if (isGone(target.properties)) return null;
   if (isAvatarOf(graph, agentId, ascendantId)) return null;
 
   const cardPosition = (templateProperties.courtPosition as CourtPosition | undefined) ?? 'watched';
@@ -348,8 +352,8 @@ function applyFirstMark(
  *    mortal already below the floor is never raised by it);
  * 4. bond reception onto the thread edge;
  * 5. The First's mark (S3 — a no-op hook in S1);
- * then the rite's bookkeeping: `riteShape` on the edge, a `riteHistory` line on
- * the node, and one `rite.applied` trace.
+ * then the rite's bookkeeping: `riteShape` on the edge, `lastRite` on the
+ * ascendant, and one `rite.applied` trace.
  *
  * Steps 1–3 are skipped when `outcomesPrefolded` (the meeting already folded
  * them into the node it wrote). The writer holds no runtime, so it cannot call
@@ -358,8 +362,7 @@ function applyFirstMark(
  */
 export function applyThreadingRite(graph: WorldGraph, input: ApplyRiteInput): ApplyRiteResult {
   const node = graph.getNode(input.agentId);
-  const gone = !node || node.properties.deceased === true || node.properties.status === 'dead';
-  if (gone) {
+  if (!node || isGone(node.properties)) {
     const missed: ApplyRiteResult = { applied: false, poleShifts: [], reception: input.bondOutcome?.reception ?? input.reception };
     emitRiteApplied(input, missed, 'agent_missing');
     return missed;
@@ -420,11 +423,8 @@ export function applyThreadingRite(graph: WorldGraph, input: ApplyRiteInput): Ap
     markTraitId = applyFirstMark(graph, input.agentId, reach, input.tick);
   }
 
-  const history = Array.isArray(props.riteHistory) ? (props.riteHistory as RiteHistoryEntry[]) : [];
-  props.riteHistory = [
-    ...history,
-    { tick: input.tick, shape: input.shape, ...(reception !== undefined ? { reception } : {}) },
-  ];
+  // The node's `riteHistory` (the sheet's "Bound in spring…" line) lands with its
+  // reader in S2 (THR-1754) — a history nothing reads would be a write into nothing.
 
   // Inspect-only: the god's most recent rite, read by `__DEBUG.getThreadingRite()`.
   const ascendant = graph.getNode(input.ascendantId);
