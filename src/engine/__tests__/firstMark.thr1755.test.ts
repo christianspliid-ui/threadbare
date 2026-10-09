@@ -12,6 +12,7 @@ import { WorldGraph } from '../graph';
 import { executeGraphOps, resetOpCounter } from '../graphOpExecutor';
 import { resetEventCounter } from '../orchestrator';
 import { computeRawScore } from '../domainCapability';
+import { graphContentCatalogs } from '../contentQuery';
 import { drainThreadingRites } from '../threadingRiteQueue';
 import { applyThreadingRite } from '../threadingRite';
 import {
@@ -94,7 +95,7 @@ describe('THR-1755 — the eight mark definitions', () => {
       const id = markIdFor(reach);
       expect(id, reach).toBeDefined();
       const def = FIRST_MARK_TRAIT_DEFINITIONS.find(n => n.id === id)!;
-      expect(def.properties.subcategory).toBe('bestowed');
+      expect(def.properties.subcategory).toBe('destiny');
       expect(def.properties.visibility).toBe('public');
       expect(def.properties.tags).toContain(FIRST_MARK_TAG);
       expect(def.properties.domainContributions).toEqual({ [reach]: FIRST_MARK_REACH_CONTRIBUTION });
@@ -112,6 +113,23 @@ describe('THR-1755 — the eight mark definitions', () => {
     const g = new WorldGraph();
     expect(seedFirstMarkTraits(g)).toBe(8);
     expect(seedFirstMarkTraits(g)).toBe(0);
+  });
+});
+
+describe('THR-1755 — the mark is never loot', () => {
+  it('a seeded world offers no mark as a Power candidate', () => {
+    const g = new WorldGraph();
+    seedFirstMarkTraits(g);
+    const powers = graphContentCatalogs(g).candidates('power_template').map(c => c.id);
+    for (const t of GOD_GIVEN_TRAITS) expect(powers, t.id).not.toContain(t.id);
+  });
+
+  it('a tag-only copy of a mark neither blocks the grant nor counts as held', () => {
+    const g = makeGraph('heart');
+    g.addNode({ id: 'copy.stone', type: 'trait', name: 'Stone Blood', properties: { subcategory: 'bestowed', tags: [FIRST_MARK_TAG], domainContributions: {} } });
+    g.addEdge({ id: 'e.copy', source: 'wren', target: 'copy.stone', type: 'has_trait', properties: { level: 1 } });
+    expect(heldMarkId(g, 'wren')).toBeUndefined();
+    expect(grantFirstMark(g, 'wren', 'heart', 5).markId).toBe('trait.god.heartfire');
   });
 });
 
@@ -133,7 +151,7 @@ describe('THR-1755 — grantFirstMark', () => {
     const g = makeGraph('veil');
     expect(g.getNode('trait.god.veil_sight')).toBeUndefined();
     expect(grantFirstMark(g, 'wren', 'veil', 5).markId).toBe('trait.god.veil_sight');
-    expect(g.getNode('trait.god.veil_sight')?.properties.subcategory).toBe('bestowed');
+    expect(g.getNode('trait.god.veil_sight')?.properties.subcategory).toBe('destiny');
   });
 
   it('a First carries exactly one mark — a second grant keeps the first', () => {

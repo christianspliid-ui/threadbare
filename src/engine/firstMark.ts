@@ -3,7 +3,7 @@
  *
  * Plan: `Docs/plans/2026-10-06-thr-1644-threading-ceremony.md` § Engine step 5.
  *
- * At the bond, The First gains one visible `bestowed` trait: the `GOD_GIVEN_TRAITS`
+ * At the bond, The First gains one visible `destiny` trait: the `GOD_GIVEN_TRAITS`
  * entry for their spark's reach (the meeting) or their primary reach (the card
  * route). It is worth one companion's skill in that reach — `computeRawScore`
  * sums its `domainContributions` like any trait — so the First succeeds more often
@@ -47,7 +47,11 @@ export function markIdFor(reach: ReachDomain | string | undefined): string | und
 /** Build one mark definition node from its `GOD_GIVEN_TRAITS` entry. */
 function markDefinitionNode(entry: GodGivenTraitOption): GraphNode {
   const properties: TraitDefinitionProperties = {
-    subcategory: 'bestowed',
+    // `destiny`, not `bestowed` (the plan's word): every `bestowed` trait node is
+    // a Power candidate the reward pool deals as loot (`contentQuery` GRAPH_BACKED
+    // power_template) and the sheet lists as a Bestowed Power. The mark is neither —
+    // the god gives it to its First alone. `destiny` has no other producer.
+    subcategory: 'destiny',
     description: entry.description,
     importance: FIRST_MARK_IMPORTANCE,
     maxLevel: 1,
@@ -82,11 +86,16 @@ export function seedFirstMarkTraits(graph: WorldGraph): number {
   return added;
 }
 
-/** The mark trait id an agent already carries, if any. */
+const MARK_IDS: ReadonlySet<string> = new Set(GOD_GIVEN_TRAITS.map(t => t.id));
+
+/**
+ * The mark trait id an agent already carries, if any. Matches the eight canonical
+ * ids only — never a tag — so a copy of a mark minted under another id can neither
+ * block the real grant nor stand in for it on the sheet.
+ */
 export function heldMarkId(graph: WorldGraph, agentId: string): string | undefined {
   for (const edge of graph.getOutgoingEdges(agentId, 'has_trait')) {
-    const tags = graph.getNode(edge.target)?.properties.tags;
-    if (Array.isArray(tags) && tags.includes(FIRST_MARK_TAG)) return edge.target;
+    if (MARK_IDS.has(edge.target)) return edge.target;
   }
   return undefined;
 }
