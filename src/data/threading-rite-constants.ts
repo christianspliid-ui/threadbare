@@ -35,3 +35,18 @@ export const RITE_QUEUE_MAX = 3;
  * player instead.
  */
 export const RITE_SURFACE_ENABLED = false;
+
+// ─── The First's mark (D5, S3 — THR-1755) ─────────────────────────
+
+/**
+ * Raw capability the mark adds in its reach — the scale of one companion's
+ * `domainContributions` (`companion-templates.ts`: a Wayfarer is `stone: 2`).
+ * Summed by `computeRawScore` like any trait, × the edge level (always 1).
+ */
+export const FIRST_MARK_REACH_CONTRIBUTION = 2;
+
+/** Trait importance of a mark (feeds NPC importance; harmless on a threaded mortal). */
+export const FIRST_MARK_IMPORTANCE = 0.8;
+
+/** Turns D5 off without touching the rite: no mark is granted while false. */
+export const FIRST_MARK_ENABLED = true;

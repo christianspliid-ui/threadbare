@@ -43,6 +43,7 @@ import { MEETING_QUINTESSENCE_FLOOR } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
 import { RITE_SHORT_MAX_ORDINAL } from '../data/threading-rite-constants';
 import { emitTrace } from './traceBuffer';
+import { grantFirstMark, type FirstMarkSkip } from './firstMark';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -95,6 +96,13 @@ export interface ApplyRiteInput {
   readonly bondOutcome?: BondOutcome;
   /** A reception already decided without a bond outcome in hand (the meeting's folded result). `bondOutcome` wins. */
   readonly reception?: BondReception;
+  /**
+   * The reach The First's mark is granted in (D5), when it is known without a
+   * `spark` — the meeting, whose spark is already folded into the node, passes its
+   * vision's reach here. Precedence: `markReach`, then `spark.reach`, then the
+   * node's `primaryReach`, then its highest reach.
+   */
+  readonly markReach?: ReachDomain;
   /** The spark's reach investment (full shapes only), in the meeting's 0–1 units. */
   readonly spark?: { readonly reach: ReachDomain; readonly amount: number };
   /** Pole-shift scale: 1 for a soul the meeting invented, `RITE_EXISTING_MORTAL_SHIFT_SCALE` otherwise. */
@@ -124,6 +132,8 @@ export interface ApplyRiteResult {
   readonly quintessence?: { readonly before: number; readonly preClamp: number; readonly after: number };
   readonly reception?: BondReception;
   readonly markTraitId?: string;
+  /** Why a First got no mark (D5): the switch is off, or the reach has no god-given trait. */
+  readonly markSkipped?: FirstMarkSkip;
 }
 
 /** The god's most recent rite (ascendant property `lastRite`), inspect-only. */
@@ -330,19 +340,6 @@ function findThreadEdge(graph: WorldGraph, ascendantId: string, agentId: string)
 }
 
 /**
- * The First's mark (D5) — ships in S3 (THR-1755). The hook is here so the
- * writer's step order is fixed now and S3 fills one function.
- */
-function applyFirstMark(
-  _graph: WorldGraph,
-  _agentId: string,
-  _reach: ReachDomain | undefined,
-  _tick: number,
-): string | undefined {
-  return undefined;
-}
-
-/**
  * D1 — apply a rite's outcomes to an EXISTING individual.
  *
  * Steps, each skipped when its outcome is absent:
@@ -351,7 +348,7 @@ function applyFirstMark(
  * 3. scar: quintessence − erosion, floored at `MEETING_QUINTESSENCE_FLOOR` (a
  *    mortal already below the floor is never raised by it);
  * 4. bond reception onto the thread edge;
- * 5. The First's mark (S3 — a no-op hook in S1);
+ * 5. The First's mark (S3), when the thread's court position is `the_first`;
  * then the rite's bookkeeping: `riteShape` on the edge, `lastRite` on the
  * ascendant, and one `rite.applied` trace.
  *
@@ -416,11 +413,14 @@ export function applyThreadingRite(graph: WorldGraph, input: ApplyRiteInput): Ap
     edge.properties.riteShape = input.shape;
   }
 
-  // Step 5 — The First's mark (S3).
+  // Step 5 — The First's mark (D5, S3 THR-1755).
   let markTraitId: string | undefined;
+  let markSkipped: FirstMarkSkip | undefined;
   if (edge && (edge.properties.courtPosition as string | undefined) === 'the_first') {
-    const reach = input.spark?.reach ?? (props.primaryReach as ReachDomain | undefined);
-    markTraitId = applyFirstMark(graph, input.agentId, reach, input.tick);
+    const reach = input.markReach ?? input.spark?.reach ?? markReachFromNode(props);
+    const grant = grantFirstMark(graph, input.agentId, reach, input.tick);
+    markTraitId = grant.markId;
+    markSkipped = grant.skipped;
   }
 
   // The node's `riteHistory` (the sheet's "Bound in spring…" line) lands with its
@@ -440,9 +440,28 @@ export function applyThreadingRite(graph: WorldGraph, input: ApplyRiteInput): Ap
     ascendant.properties.lastRite = lastRite;
   }
 
-  const result: ApplyRiteResult = { applied: true, poleShifts, reachInvestment, quintessence, reception, markTraitId };
+  const result: ApplyRiteResult = { applied: true, poleShifts, reachInvestment, quintessence, reception, markTraitId, markSkipped };
   emitRiteApplied(input, result, input.fallbackReason);
   return result;
+}
+
+/**
+ * The mark's reach for a mortal with no spark in hand: their `primaryReach`,
+ * else their highest `domainCapabilities` reach (ties broken by `REACH_DOMAINS`
+ * order, so the pick is deterministic). Undefined when the node has neither.
+ */
+function markReachFromNode(props: Record<string, unknown>): ReachDomain | undefined {
+  const primary = props.primaryReach as ReachDomain | undefined;
+  if (primary && (REACH_DOMAINS as readonly string[]).includes(primary)) return primary;
+  const caps = props.domainCapabilities as Record<string, number> | undefined;
+  if (!caps) return undefined;
+  let best: ReachDomain | undefined;
+  let bestValue = -Infinity;
+  for (const r of REACH_DOMAINS) {
+    const v = caps[r];
+    if (typeof v === 'number' && v > bestValue) { best = r; bestValue = v; }
+  }
+  return best;
 }
 
 function emitRiteApplied(
@@ -466,6 +485,7 @@ function emitRiteApplied(
     ...(result.quintessence ? { quintessence: { ...result.quintessence } } : {}),
     ...(result.reception ? { reception: result.reception } : {}),
     ...(result.markTraitId ? { markTraitId: result.markTraitId } : {}),
+    ...(result.markSkipped ? { markSkipped: result.markSkipped } : {}),
     ...(fallbackReason ? { fallbackReason } : {}),
   });
 }

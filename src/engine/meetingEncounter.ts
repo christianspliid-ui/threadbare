@@ -1065,6 +1065,10 @@ export function createAgentFromMeeting(
   // threads, which is a meaningful distinction (see `MeetingChoiceRecord`) —
   // plus the rite's bookkeeping. Pinned by `meetingWriterGolden.thr1644.test.ts`.
   const ordinal = noteThreadBound(graph, ascendantId);
+  // THR-1755 (D5): The First's mark is the spark's reach. The spark is folded into
+  // the node already, so the writer is told the reach rather than handed a spark.
+  const sparkReach = SPARK_VISION_CATALOG
+    .find(v => v.id === result.meetingChoiceRecord?.sparkVisionId)?.reachInvestment;
   applyThreadingRite(graph, {
     agentId,
     ascendantId,
@@ -1072,6 +1076,7 @@ export function createAgentFromMeeting(
     shape: riteShapeFor(ordinal, true),
     ordinal,
     viaMeeting: true,
+    ...(sparkReach ? { markReach: sparkReach } : {}),
     ...(result.bondOutcome ? { bondOutcome: result.bondOutcome } : {}),
     ...(result.bondReception !== undefined ? { reception: result.bondReception } : {}),
     handPlayed: (result.bondOutcome?.playedNudgeIds.length ?? 0) > 0

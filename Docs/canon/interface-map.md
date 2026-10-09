@@ -421,7 +421,13 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-09 by Claude Code (THR-1644 S1 — the threading rite: one writer, The First is the first).
+2026-10-09 by Claude Code (THR-1755 — threading rite S3: The First's mark). **Added**
+`first-mark-raises-reach` (Encounters & Dilemmas → Personality & Emergent Traits:
+`applyThreadingRite` step 5 calls `grantFirstMark` at a `the_first` bond, the dev-seeded First
+takes the same mark in `devSeedTheFirst`, and `getAgentInfoCard` reads it for the sheet chip via
+`getFirstMarkDisplay`). Audit-on-touch: `computeRawScore` reads the mark through the existing
+`has_trait` walk, unchanged.
+Earlier: 2026-10-09 by Claude Code (THR-1644 S1 — the threading rite: one writer, The First is the first).
 **Extended** `meeting-bond-writes-the-first`: the card route (`bind_thread_agent` /
 `_strong`) now writes `the_first` too when the god holds no First, through
 `resolveThreadWrite` in `src/engine/threadingRite.ts` called from `graphOpExecutor`'s thread
