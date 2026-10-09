@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-09 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: every world now draws its doom from all seven archetypes, not just Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Merged via [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and live.
 - **2026-10-09: your turf grows in two moves, Shift then Claim** ([THR-1762](https://linear.app/threadbare/issue/THR-1762/how-the-frontier-moves-which-verbs-push-dominion-outward-what-they)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: elder magic can now be found in ruins** ([THR-1753](https://linear.app/threadbare/issue/THR-1753/foundation-signed-cards-lose-their-only-identity-route-once-spheres)). Merged via [#2282](https://github.com/christianspliid-ui/threadbare/pull/2282) and live.
 - **2026-10-09: God’s Will now changes the world when you pay for it** ([THR-1781](https://linear.app/threadbare/issue/THR-1781/gods-will-takes-the-essence-and-changes-nothing-a-whispers)). Merged via [#2273](https://github.com/christianspliid-ui/threadbare/pull/2273) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: chapter choices take the click, the god's cast odds and the cadence pool's bias are fixed** ([THR-1777](https://linear.app/threadbare/issue/THR-1777/the-players-chapter-choice-does-nothing-an-aftermath-reaction-resolves), [THR-1775](https://linear.app/threadbare/issue/THR-1775/the-gods-cast-odds-verdict-thr-766-was-measured-on-the-retired-dice), [THR-1771](https://linear.app/threadbare/issue/THR-1771/the-cadence-pools-identity-bias-reads-raw-reach-affinities-2-5-as-if)). Merged via [#2271](https://github.com/christianspliid-ui/threadbare/pull/2271), [#2277](https://github.com/christianspliid-ui/threadbare/pull/2277), [#2275](https://github.com/christianspliid-ui/threadbare/pull/2275) and live.
 - **2026-10-09: The First now carries your god’s mark** ([THR-1755](https://linear.app/threadbare/issue/THR-1755/threading-rite-s3-the-firsts-mark-one-god-given-blessing-in-their)). Merged via [#2278](https://github.com/christianspliid-ui/threadbare/pull/2278) and live.
 - **2026-10-09: no world starts hostile to your god; hostile ground arrives during the run** ([THR-1760](https://linear.app/threadbare/issue/THR-1760/the-formula-settled-normalisation-the-gods-power-factor-and-the-five)). Decided for you by the design lane; say "veto" in chat to reverse.
-- **2026-10-09: the threading rite's engine half shipped** ([THR-1644](https://linear.app/threadbare/issue/THR-1644/threading-as-character-creation-every-thread-plays-a-ceremony-the)). Merged via [#2274](https://github.com/christianspliid-ui/threadbare/pull/2274); the rite on screen and The First's mark come next.
 
 ---
 
