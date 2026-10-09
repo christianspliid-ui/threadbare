@@ -59,6 +59,7 @@ describe("blockingPrs", () => {
       pr({ number: 1, body: "Fixes THR-1", isDraft: true }),
       pr({ number: 2, body: "Hold: waiting on art\nFixes THR-2" }),
       pr({ number: 3, body: "docs(plan): no closer" }),
+      pr({ number: 5, body: "**Hold:** waiting on art\nFixes THR-5" }),
       pr({ number: 4, body: "Fixes THR-4", updatedAt: stale }),
     ];
     expect(blockingPrs(prs, "THR-9", NOW)).toEqual([]);
@@ -83,6 +84,14 @@ describe("decideWipGate", () => {
     expect(decideWipGate({ id: "THR-1754", state: "In Dev", assignee: null, priority: 2 }, open, NOW).verdict).toBe("allow");
     expect(decideWipGate({ id: "THR-1754", state: "In Dev" }, open, NOW).verdict).toBe("allow");
     expect(decideWipGate({ id: "THR-1754", assignee: "me" }, open, NOW).verdict).toBe("allow");
+  });
+  it("allows a Step 0.8 hand-off claim of a ticket whose own PR is open, even beside other stuck PRs", () => {
+    const stuck = [
+      pr({ number: 1, body: "Fixes THR-1", mergeStateStatus: "DIRTY" }),
+      pr({ number: 2, body: "Fixes THR-2", mergeStateStatus: "DIRTY" }),
+    ];
+    expect(decideWipGate({ id: "THR-1", state: "In Dev", assignee: "me" }, stuck, NOW).verdict).toBe("allow");
+    expect(decideWipGate({ id: "THR-3", state: "In Dev", assignee: "me" }, stuck, NOW).verdict).toBe("deny");
   });
   it("allows the claim once nothing is unmerged", () => {
     expect(decideWipGate({ id: "THR-1754", state: "In Dev", assignee: "me" }, [], NOW).verdict).toBe("allow");

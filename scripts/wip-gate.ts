@@ -57,6 +57,9 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+// The canonical hold predicate, shared with Step 0.8's probe. A PR that probe calls
+// `held` must never block claims here, or the lane waits on a PR nobody will touch.
+import { parseHoldMarker } from "./check-armed-prs.ts";
 
 /** Linear's `In Dev` workflow state on the Threadbare team. */
 export const IN_DEV_STATE_ID = "8d662f3d-8c8f-4e3b-b7d9-8c3de7f42f19";
@@ -84,7 +87,6 @@ export type WipDecision = {
 };
 
 const CLOSE_LINE = /^(?:Fixes|Closes|Resolves) (THR-\d+)\s*$/gim;
-const HOLD_LINE = /^Hold:/im;
 
 /** Ticket ids a PR body closes, by the line-anchored autoclose predicate (THR-738). */
 export function closedIds(body: string): string[] {
@@ -122,7 +124,7 @@ export function blockingPrs(prs: readonly OpenPr[], claimedId: string | null, no
     const ids = closedIds(pr.body);
     if (ids.length === 0) return false;
     if (claimed && ids.includes(claimed)) return false;
-    if (HOLD_LINE.test(pr.body ?? "")) return false;
+    if (parseHoldMarker(pr.body)) return false;
     const updated = Date.parse(pr.updatedAt);
     if (Number.isFinite(updated) && now.getTime() - updated > staleMs) return false;
     return true;
@@ -159,6 +161,11 @@ export function decideWipGate(
   const claimedId = typeof toolInput?.id === "string" ? toolInput.id.trim() : null;
   if (!claimedId) return { verdict: "allow", reason: "not an update of an existing issue", claimedId, blocking: [] };
   if (!isClaim(toolInput)) return { verdict: "allow", reason: "not a claim (no move to In Dev with an assignee)", claimedId, blocking: [] };
+  // A claim of a ticket that already has its own open PR cuts no new branch: it is a
+  // resume, or Step 0.8 handing an unsettleable conflict to the resume path. Other open
+  // PRs must not block it. That hand-off happens precisely when several PRs are stuck.
+  const ownPr = prs.find((pr) => closedIds(pr.body).includes(claimedId.toUpperCase()));
+  if (ownPr) return { verdict: "allow", reason: `resume of ${claimedId} (its PR #${ownPr.number} is open)`, claimedId, blocking: [] };
   const blocking = blockingPrs(prs, claimedId, now);
   if (blocking.length === 0) return { verdict: "allow", reason: "no unmerged ticket PR", claimedId, blocking: [] };
   return { verdict: "deny", reason: renderDenial(claimedId, blocking), claimedId, blocking: blocking.map((p) => p.number) };

@@ -80,7 +80,8 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 export function quantile(values: readonly number[], q: number): number | null {
   if (values.length === 0) return null;
   const s = [...values].sort((x, y) => x - y);
-  return s[Math.min(s.length - 1, Math.floor(q * s.length))];
+  // Nearest-rank: the ceil(q·n)-th value, 1-based.
+  return s[Math.min(s.length - 1, Math.max(0, Math.ceil(q * s.length) - 1))];
 }
 
 const pct = (part: number, whole: number): number | null => (whole === 0 ? null : round1((100 * part) / whole));

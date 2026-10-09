@@ -77,7 +77,7 @@ describe("computeMetrics", () => {
     expect(m.docs_prs_merged).toBe(1);
   });
   it("measures flow time, the slow share and the catch-up share", () => {
-    expect(m.open_to_merge_median_min).toBe(180);
+    expect(m.open_to_merge_median_min).toBe(10); // nearest-rank: ceil(0.5·2) = 1st of [10, 180]
     expect(m.pct_slow_gt60m).toBe(50);
     expect(m.pct_main_catchup).toBe(33.3);
     expect(m.peak_concurrent_ticket_prs).toBe(2);
