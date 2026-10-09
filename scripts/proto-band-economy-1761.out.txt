@@ -1,0 +1,741 @@
+
+# Turf scenario: static
+
+## T0 no band (main after THR-1747, flat 0.1 thread yield)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | TT|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | TTTT|TF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 1.00 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | FFFF|FF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | FFFFFF|FFF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | FFFF|TT | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | FFFFFF|TTT | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+## T1 the 2026-10-05 sketch (sources Held+ only; per-tier yield Held+ only)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 0 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 2.2 | 0.0 | -0.7 | 0 | 2 (4) | 4 (0) | 22 | TT|TFFF | 0.99 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | TT|TFFF | 0.99 |
+| 90 | 2.8 | 0.0 | -0.6 | 0 | 2 (4) | 4 (0) | 23 | TT|TFFF | 0.99 |
+
+Last new card: day 50
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.2 | 0.0 | -0.5 | 1 | 2 (3) | 4 (0) | 22 | FF|FFFF | 1.00 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | FF|FFFF | 1.00 |
+| 90 | 2.8 | 0.0 | -0.6 | 2 | 2 (4) | 4 (0) | 23 | FF|FFFF | 1.00 |
+
+Last new card: day 50
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 2.2 | 0.0 | -0.5 | 1 | 2 (3) | 4 (0) | 22 | FF|TTTT | 1.00 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | FF|TTTT | 1.00 |
+| 90 | 2.8 | 0.0 | -0.6 | 2 | 2 (4) | 4 (0) | 23 | FF|TTTT | 1.00 |
+
+Last new card: day 50
+
+## T2 graded (cost 1.5/1/0.9/0.8/0.75; yield and source ×0/0.5/1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 5.0 | 1.2 | 0.8 | 37 | 4 (4) | 2 (1) | 22 | TTTT|TF | 0.99 |
+| 60 | 7.8 | 1.7 | 1.0 | 60 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 0.99 |
+| 90 | 9.1 | 2.0 | 0.9 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 0.99 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.2 | 0.7 | 0.4 | 1 | 2 (4) | 2 (1) | 22 | FF|FF | 1.00 |
+| 60 | 4.4 | 1.2 | 0.9 | 10 | 2 (4) | 3 (3) | 27 | FF|FFF | 1.00 |
+| 90 | 5.5 | 1.5 | 0.0 | 21 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 50
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 4.2 | 1.4 | 0.8 | 19 | 4 (4) | 2 (1) | 22 | FFFF|TT | 1.00 |
+| 60 | 7.1 | 2.4 | 1.3 | 69 | 5 (4) | 3 (3) | 27 | FFFFF|TTT | 1.00 |
+| 90 | 8.3 | 3.0 | 1.2 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+## T3 steep (cost 2/1/0.85/0.7/0.6; yield and source ×0/0.5/1/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 44 | 2 (3) | 1 (0) | 15 | TT|T | 0.84 |
+| 30 | 5.0 | 1.2 | 0.8 | 62 | 4 (4) | 2 (1) | 22 | TTTT|TF | 0.84 |
+| 60 | 7.8 | 1.7 | 1.0 | 60 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 0.84 |
+| 90 | 9.1 | 2.0 | 0.9 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 0.85 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.2 | 0.7 | 0.4 | 1 | 2 (4) | 2 (1) | 22 | FF|FF | 1.00 |
+| 60 | 4.4 | 1.2 | 0.9 | 10 | 2 (4) | 3 (3) | 27 | FF|FFF | 1.00 |
+| 90 | 5.5 | 1.5 | 0.0 | 21 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 50
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 0.99 |
+| 30 | 4.2 | 1.4 | 0.8 | 19 | 4 (4) | 2 (1) | 22 | FFFF|TT | 0.99 |
+| 60 | 7.1 | 2.4 | 1.3 | 69 | 5 (4) | 3 (3) | 27 | FFFFF|TTT | 1.00 |
+| 90 | 8.3 | 3.0 | 1.2 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+## T4 par at Foreign (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 0.9 | 31 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 5.5 | 1.5 | 1.2 | 61 | 4 (4) | 2 (1) | 22 | TTTT|TF | 0.99 |
+| 60 | 8.9 | 2.5 | 2.0 | 60 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 0.99 |
+| 90 | 10.5 | 3.1 | 2.1 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 0.99 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 5.2 | 1.4 | 1.0 | 43 | 4 (4) | 2 (1) | 22 | FFFF|FF | 1.00 |
+| 60 | 8.5 | 2.4 | 1.8 | 59 | 6 (4) | 3 (3) | 27 | FFFFFF|FFF | 1.00 |
+| 90 | 10.1 | 3.0 | 1.8 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.6 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 5.3 | 1.5 | 1.2 | 61 | 4 (4) | 2 (1) | 22 | FFFF|TT | 1.00 |
+| 60 | 8.7 | 2.7 | 2.0 | 59 | 6 (4) | 3 (3) | 27 | FFFFFF|TTT | 1.00 |
+| 90 | 10.3 | 3.2 | 2.1 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+## T5 par at Foreign, steeper (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.25/1.5/2; source ×0/1/1.25/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.4 | 0.6 | 1.0 | 36 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 5.9 | 1.7 | 1.4 | 61 | 4 (4) | 2 (1) | 22 | TTTT|TF | 0.99 |
+| 60 | 9.5 | 2.7 | 2.3 | 60 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 0.99 |
+| 90 | 11.2 | 3.2 | 2.4 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 0.99 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 5.2 | 1.4 | 1.0 | 43 | 4 (4) | 2 (1) | 22 | FFFF|FF | 1.00 |
+| 60 | 8.5 | 2.4 | 1.8 | 59 | 6 (4) | 3 (3) | 27 | FFFFFF|FFF | 1.00 |
+| 90 | 10.1 | 3.0 | 1.8 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 1.0 | 30 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 5.6 | 1.8 | 1.4 | 61 | 4 (4) | 2 (1) | 22 | FFFF|TT | 1.00 |
+| 60 | 9.1 | 3.1 | 2.4 | 59 | 6 (4) | 3 (3) | 27 | FFFFFF|TTT | 1.00 |
+| 90 | 10.8 | 3.7 | 2.6 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+## T6 par at Foreign, flat 0.1 yield kept (cost 1.5/1/0.9/0.8/0.75; yield 0.1 ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 21 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 3.6 | 1.3 | 0.4 | 3 | 3 (4) | 3 (0) | 22 | TTT|TFF | 0.99 |
+| 60 | 6.0 | 2.5 | 1.1 | 34 | 6 (4) | 3 (3) | 27 | TTTTTT|TFF | 0.99 |
+| 90 | 7.2 | 3.1 | 0.9 | 73 | 6 (4) | 4 (4) | 27 | TTTTTT|TFFF | 0.99 |
+
+Last new card: day 47
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | FFFF|FF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | FFFFFF|FFF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|FFFF | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 3.9 | 1.5 | 0.8 | 19 | 4 (4) | 2 (1) | 22 | FFFF|TT | 1.00 |
+| 60 | 6.4 | 2.7 | 1.2 | 59 | 6 (4) | 3 (3) | 27 | FFFFFF|TTT | 1.00 |
+| 90 | 7.3 | 3.2 | 1.1 | 73 | 6 (4) | 4 (4) | 27 | FFFFFF|TTTT | 1.00 |
+
+Last new card: day 40
+
+# Turf scenario: growing
+
+## T0 no band (main after THR-1747, flat 0.1 thread yield)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | TT|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | HHTT|HF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | SSHHTT|STF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 1.00 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | TTFF|TF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | SHTTFF|HTF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | SSSSHT|SSHT | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | TTFF|HT | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | SHTTFF|SHT | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 1.00 |
+
+Last new card: day 40
+
+## T1 the 2026-10-05 sketch (sources Held+ only; per-tier yield Held+ only)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 0 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 3.6 | 0.5 | 0.1 | 1 | 2 (4) | 4 (0) | 22 | HH|HFFF | 0.98 |
+| 60 | 5.9 | 1.8 | 0.9 | 28 | 5 (4) | 4 (2) | 27 | SSTTT|SHTT | 0.87 |
+| 90 | 10.1 | 3.0 | 1.8 | 74 | 6 (4) | 4 (4) | 27 | SSSHHH|SSSS | 0.84 |
+
+Last new card: day 51
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.2 | 0.0 | -0.5 | 1 | 2 (3) | 4 (0) | 22 | TT|TFFF | 1.00 |
+| 60 | 5.7 | 1.7 | 1.3 | 16 | 4 (4) | 4 (1) | 23 | SHFF|HHHT | 0.93 |
+| 90 | 7.5 | 2.7 | 0.8 | 74 | 6 (4) | 4 (3) | 27 | SSTTTT|SSSS | 0.84 |
+
+Last new card: day 69
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 2.7 | 0.5 | -0.2 | 0 | 2 (4) | 4 (0) | 22 | TT|HTTT | 1.00 |
+| 60 | 6.5 | 2.4 | 1.2 | 70 | 5 (4) | 4 (2) | 27 | SHFFF|SSSH | 0.88 |
+| 90 | 9.6 | 3.0 | 1.7 | 74 | 6 (4) | 4 (4) | 27 | SSHHHT|SSSS | 0.84 |
+
+Last new card: day 55
+
+## T2 graded (cost 1.5/1/0.9/0.8/0.75; yield and source ×0/0.5/1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 5.5 | 1.5 | 1.2 | 63 | 4 (4) | 2 (1) | 22 | HHTT|HF | 0.92 |
+| 60 | 9.7 | 2.6 | 2.3 | 61 | 6 (4) | 3 (3) | 27 | SSSHTT|STF | 0.86 |
+| 90 | 12.8 | 4.0 | 3.5 | 74 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 0.84 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 4.3 | 1.2 | 1.1 | 12 | 2 (4) | 2 (1) | 22 | TT|TF | 1.00 |
+| 60 | 8.0 | 2.4 | 1.6 | 69 | 5 (4) | 3 (3) | 27 | SHTTF|HTF | 0.93 |
+| 90 | 12.2 | 4.0 | 3.3 | 74 | 6 (4) | 4 (4) | 27 | SSHHHT|SSHT | 0.89 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 5.0 | 1.7 | 1.3 | 41 | 4 (4) | 2 (1) | 22 | TTFF|HT | 1.00 |
+| 60 | 9.4 | 3.1 | 2.5 | 70 | 5 (4) | 3 (3) | 27 | SHTTF|SHT | 0.93 |
+| 90 | 12.8 | 4.3 | 3.7 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 0.90 |
+
+Last new card: day 40
+
+## T3 steep (cost 2/1/0.85/0.7/0.6; yield and source ×0/0.5/1/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 44 | 2 (3) | 1 (0) | 15 | TT|T | 0.84 |
+| 30 | 6.0 | 1.7 | 1.5 | 63 | 4 (4) | 2 (1) | 22 | HHTT|HF | 0.81 |
+| 60 | 11.3 | 3.1 | 3.2 | 61 | 6 (4) | 3 (3) | 27 | SSSHTT|STF | 0.73 |
+| 90 | 15.5 | 5.1 | 5.1 | 74 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 0.70 |
+
+Last new card: day 52
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 4.3 | 1.2 | 1.1 | 8 | 2 (4) | 2 (1) | 22 | TT|TF | 0.95 |
+| 60 | 8.7 | 2.6 | 2.0 | 70 | 5 (4) | 3 (3) | 27 | SHTTF|HTF | 0.86 |
+| 90 | 14.3 | 5.1 | 4.7 | 74 | 6 (4) | 4 (4) | 27 | SSHHHT|SSHT | 0.79 |
+
+Last new card: day 42
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 0.99 |
+| 30 | 5.3 | 1.9 | 1.5 | 64 | 4 (4) | 2 (1) | 22 | TTFF|HT | 0.95 |
+| 60 | 10.6 | 3.8 | 3.4 | 70 | 5 (4) | 3 (3) | 27 | SHTTF|SHT | 0.86 |
+| 90 | 15.4 | 5.6 | 5.5 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 0.80 |
+
+Last new card: day 42
+
+## T4 par at Foreign (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 0.9 | 31 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 5.8 | 1.7 | 1.4 | 63 | 4 (4) | 2 (1) | 22 | HHTT|HF | 0.92 |
+| 60 | 10.2 | 3.0 | 2.7 | 61 | 6 (4) | 3 (3) | 27 | SSSHTT|STF | 0.86 |
+| 90 | 12.8 | 4.1 | 3.5 | 74 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 0.84 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 5.4 | 1.5 | 1.2 | 50 | 4 (4) | 2 (1) | 22 | TTFF|TF | 1.00 |
+| 60 | 9.5 | 2.8 | 2.3 | 60 | 6 (4) | 3 (3) | 27 | SHHTFF|HTF | 0.93 |
+| 90 | 12.6 | 4.1 | 3.4 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSHT | 0.90 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.6 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 5.6 | 1.7 | 1.4 | 61 | 4 (4) | 2 (1) | 22 | TTFF|HT | 1.00 |
+| 60 | 9.9 | 3.2 | 2.8 | 60 | 6 (4) | 3 (3) | 27 | SHHTFF|SHT | 0.93 |
+| 90 | 12.8 | 4.3 | 3.7 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 0.90 |
+
+Last new card: day 40
+
+## T5 par at Foreign, steeper (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.25/1.5/2; source ×0/1/1.25/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.4 | 0.6 | 1.0 | 36 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 6.4 | 1.9 | 1.8 | 63 | 4 (4) | 2 (1) | 22 | HHTT|HF | 0.92 |
+| 60 | 11.9 | 3.6 | 3.7 | 61 | 6 (4) | 3 (3) | 27 | SSSHTT|STF | 0.86 |
+| 90 | 15.6 | 5.2 | 5.2 | 74 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 0.84 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 5.7 | 1.7 | 1.4 | 61 | 4 (4) | 2 (1) | 22 | TTFF|TF | 1.00 |
+| 60 | 10.5 | 3.1 | 2.9 | 60 | 6 (4) | 3 (3) | 27 | SHHTFF|HTF | 0.93 |
+| 90 | 15.2 | 5.2 | 5.1 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSHT | 0.90 |
+
+Last new card: day 42
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 1.0 | 30 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 6.1 | 2.0 | 1.7 | 61 | 4 (4) | 2 (1) | 22 | TTFF|HT | 1.00 |
+| 60 | 11.4 | 4.0 | 3.8 | 60 | 6 (4) | 3 (3) | 27 | SHHTFF|SHT | 0.93 |
+| 90 | 15.6 | 5.6 | 5.5 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 0.90 |
+
+Last new card: day 42
+
+## T6 par at Foreign, flat 0.1 yield kept (cost 1.5/1/0.9/0.8/0.75; yield 0.1 ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 21 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 4.0 | 1.7 | 1.0 | 8 | 3 (4) | 2 (1) | 22 | HHT|HF | 0.93 |
+| 60 | 6.6 | 3.0 | 1.5 | 61 | 6 (4) | 3 (3) | 27 | SSSHTT|STF | 0.86 |
+| 90 | 8.4 | 4.1 | 2.0 | 74 | 6 (4) | 4 (4) | 27 | SSSSSH|SSHT | 0.84 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.9 | 1.5 | 0.8 | 15 | 4 (4) | 2 (1) | 22 | TTFF|TF | 1.00 |
+| 60 | 6.6 | 2.8 | 1.3 | 60 | 6 (4) | 3 (3) | 27 | SHTTFF|HTF | 0.93 |
+| 90 | 8.4 | 4.1 | 2.0 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSHT | 0.90 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 4.1 | 1.7 | 1.0 | 25 | 4 (4) | 2 (1) | 22 | TTFF|HT | 1.00 |
+| 60 | 7.0 | 3.2 | 1.7 | 60 | 6 (4) | 3 (3) | 27 | SHTTFF|SHT | 0.93 |
+| 90 | 8.6 | 4.3 | 2.2 | 74 | 6 (4) | 4 (4) | 27 | SSSSHT|SSSH | 0.90 |
+
+Last new card: day 42
+
+# Turf scenario: pressed
+
+## T0 no band (main after THR-1747, flat 0.1 thread yield)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | TT|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | FFFF|Fx | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | xxxxFF|xxx | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | xxxxxx|xxxx | 1.00 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | xxxx|xx | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | xxxxxx|xxx | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | xxxxxx|xxxx | 1.00 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 3.8 | 1.4 | 0.7 | 10 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.00 |
+| 60 | 6.1 | 2.4 | 0.9 | 11 | 6 (4) | 3 (3) | 27 | xxxxxx|xxF | 1.00 |
+| 90 | 7.1 | 3.0 | 0.8 | 73 | 6 (4) | 4 (4) | 27 | xxxxxx|xxxx | 1.00 |
+
+Last new card: day 40
+
+## T1 the 2026-10-05 sketch (sources Held+ only; per-tier yield Held+ only)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 0 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 2.2 | 0.0 | -0.7 | 0 | 2 (4) | 4 (0) | 22 | FF|Fxxx | 0.99 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.02 |
+| 90 | 2.8 | 0.0 | -0.6 | 0 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.08 |
+
+Last new card: day 50
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.2 | 0.0 | -0.5 | 1 | 2 (3) | 4 (0) | 22 | xx|xxxx | 1.01 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.08 |
+| 90 | 2.8 | 0.0 | -0.6 | 2 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.14 |
+
+Last new card: day 44
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.2 | 0.0 | 0.2 | 1 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 2.2 | 0.0 | -0.5 | 1 | 2 (3) | 4 (0) | 22 | xx|FFFF | 1.01 |
+| 60 | 2.8 | 0.0 | -0.6 | 1 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.08 |
+| 90 | 2.8 | 0.0 | -0.6 | 2 | 2 (4) | 4 (0) | 23 | xx|xxxx | 1.14 |
+
+Last new card: day 44
+
+## T2 graded (cost 1.5/1/0.9/0.8/0.75; yield and source ×0/0.5/1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 3.4 | 0.5 | -0.2 | 36 | 4 (4) | 2 (1) | 22 | FFFF|Fx | 0.99 |
+| 60 | 2.9 | 0.0 | -1.6 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.01 |
+| 90 | 3.2 | 0.0 | -1.5 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.04 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.0 | 0.0 | -0.4 | 1 | 2 (4) | 2 (1) | 22 | xx|xx | 1.00 |
+| 60 | 2.6 | 0.0 | -0.7 | 1 | 2 (4) | 4 (1) | 23 | xx|xxxx | 1.06 |
+| 90 | 2.6 | 0.0 | -0.7 | 1 | 2 (4) | 4 (1) | 23 | xx|xxxx | 1.10 |
+
+Last new card: day 44
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 2.7 | 0.7 | -0.1 | 16 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.01 |
+| 60 | 2.9 | 0.3 | -1.4 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxF | 1.06 |
+| 90 | 3.2 | 0.0 | -1.5 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.09 |
+
+Last new card: day 36
+
+## T3 steep (cost 2/1/0.85/0.7/0.6; yield and source ×0/0.5/1/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 44 | 2 (3) | 1 (0) | 15 | TT|T | 0.84 |
+| 30 | 3.4 | 0.5 | -0.2 | 61 | 4 (4) | 2 (1) | 22 | FFFF|Fx | 0.85 |
+| 60 | 2.9 | 0.0 | -1.6 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 0.92 |
+| 90 | 3.2 | 0.0 | -1.5 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 0.99 |
+
+Last new card: day 40
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.6 | 0.3 | 0.5 | 9 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.0 | 0.0 | -0.4 | 1 | 2 (4) | 2 (1) | 22 | xx|xx | 1.01 |
+| 60 | 2.6 | 0.0 | -0.7 | 1 | 2 (4) | 4 (1) | 23 | xx|xxxx | 1.11 |
+| 90 | 2.6 | 0.0 | -0.7 | 1 | 2 (4) | 4 (1) | 23 | xx|xxxx | 1.19 |
+
+Last new card: day 40
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.5 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 0.99 |
+| 30 | 2.7 | 0.7 | -0.1 | 15 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.01 |
+| 60 | 2.9 | 0.3 | -1.4 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxF | 1.09 |
+| 90 | 3.2 | 0.0 | -1.5 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.16 |
+
+Last new card: day 35
+
+## T4 par at Foreign (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 0.9 | 31 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 4.8 | 1.0 | 0.6 | 61 | 4 (4) | 2 (1) | 22 | FFFF|Fx | 0.99 |
+| 60 | 4.9 | 0.0 | -1.3 | 1 | 5 (4) | 4 (2) | 27 | xxxxF|xxxx | 1.02 |
+| 90 | 5.0 | 0.0 | -1.4 | 2 | 5 (4) | 4 (2) | 27 | xxxxx|xxxx | 1.04 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.9 | 0.0 | -0.7 | 38 | 4 (4) | 2 (1) | 22 | xxxx|xx | 1.01 |
+| 60 | 4.0 | 0.0 | -1.0 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.07 |
+| 90 | 4.4 | 0.0 | -1.1 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.10 |
+
+Last new card: day 36
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.6 | 0.9 | 28 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 4.3 | 1.4 | 0.7 | 57 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.01 |
+| 60 | 5.5 | 0.9 | -0.4 | 0 | 5 (4) | 4 (2) | 27 | xxxxx|xxFF | 1.18 |
+| 90 | 5.0 | 0.0 | -1.4 | 2 | 5 (4) | 4 (2) | 27 | xxxxx|xxxx | 1.20 |
+
+Last new card: day 38
+
+## T5 par at Foreign, steeper (cost 1.5/1/0.9/0.8/0.75; yield ×0.5/1/1.25/1.5/2; source ×0/1/1.25/1.5/2)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.4 | 0.6 | 1.0 | 36 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 4.8 | 1.0 | 0.6 | 61 | 4 (4) | 2 (1) | 22 | FFFF|Fx | 0.99 |
+| 60 | 4.9 | 0.0 | -1.3 | 1 | 5 (4) | 4 (2) | 27 | xxxxF|xxxx | 1.02 |
+| 90 | 5.0 | 0.0 | -1.4 | 2 | 5 (4) | 4 (2) | 27 | xxxxx|xxxx | 1.04 |
+
+Last new card: day 42
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.1 | 0.5 | 0.9 | 26 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.9 | 0.0 | -0.7 | 38 | 4 (4) | 2 (1) | 22 | xxxx|xx | 1.01 |
+| 60 | 4.0 | 0.0 | -1.0 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.07 |
+| 90 | 4.4 | 0.0 | -1.1 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.10 |
+
+Last new card: day 36
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 3.2 | 0.6 | 1.0 | 30 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 4.3 | 1.4 | 0.7 | 57 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.01 |
+| 60 | 5.5 | 0.9 | -0.4 | 0 | 5 (4) | 4 (2) | 27 | xxxxx|xxFF | 1.18 |
+| 90 | 5.0 | 0.0 | -1.4 | 2 | 5 (4) | 4 (2) | 27 | xxxxx|xxxx | 1.20 |
+
+Last new card: day 38
+
+## T6 par at Foreign, flat 0.1 yield kept (cost 1.5/1/0.9/0.8/0.75; yield 0.1 ×0.5/1/1.1/1.25/1.5; source ×0/1/1.1/1.25/1.5)
+
+### Shepherd life3/spirit2 (seed 42)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 21 | 2 (3) | 1 (0) | 15 | TT|T | 0.98 |
+| 30 | 2.8 | 0.5 | -0.3 | 2 | 3 (4) | 3 (0) | 22 | FFF|Fxx | 0.99 |
+| 60 | 3.0 | 0.0 | -1.0 | 2 | 3 (4) | 4 (0) | 23 | xxx|xxxx | 1.01 |
+| 90 | 3.0 | 0.0 | -1.0 | 2 | 3 (4) | 4 (0) | 23 | xxx|xxxx | 1.05 |
+
+Last new card: day 46
+
+### Showcase mind3/spirit2 (seed 99, thinnest turf)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.7 | 0.5 | 0.7 | 16 | 2 (3) | 1 (0) | 15 | FF|F | 1.00 |
+| 30 | 2.2 | 0.0 | -0.8 | 5 | 4 (4) | 2 (1) | 22 | xxxx|xx | 1.02 |
+| 60 | 2.8 | 0.0 | -1.3 | 2 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.05 |
+| 90 | 3.1 | 0.0 | -1.5 | 1 | 4 (4) | 4 (1) | 23 | xxxx|xxxx | 1.09 |
+
+Last new card: day 36
+
+### World god time3/energy2 (seed 7, richest sources)
+
+| Day | Income / tick | Source income | Primary net after upkeep | Primary pool | Threads (max tier) | Sources (flowering) | Cards held | Bands (threads | sources) | Price index |
+|---|---|---|---|---|---|---|---|---|---|
+| 10 | 2.8 | 0.6 | 0.8 | 18 | 2 (3) | 1 (0) | 15 | FF|T | 1.00 |
+| 30 | 3.6 | 1.4 | 0.6 | 15 | 4 (4) | 2 (1) | 22 | xxxx|FF | 1.01 |
+| 60 | 4.3 | 0.9 | -0.5 | 1 | 4 (4) | 4 (2) | 27 | xxxx|xxFF | 1.15 |
+| 90 | 3.4 | 0.0 | -1.4 | 1 | 4 (4) | 4 (2) | 27 | xxxx|xxxx | 1.17 |
+
+Last new card: day 37

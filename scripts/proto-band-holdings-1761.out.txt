@@ -1,0 +1,45 @@
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 6 · possessions 7 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 2 · favours 9 · quarrels 4 · marks 4 · notables 47 (no holding 6 / no quarrel 0 / no secret-or-favour 3 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 109/109 casters wield a spell (109 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 192 spells across 32 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +110 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 127/489, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (4 ms)
+
+## seed 42 (medium) — world god chaos/energy
+  world-god chaos3/energy2     t0    pf=1  places[H/F/T/Hd/S]=0/188/36/11/0  sourceHosts(6)=0/5/1/0/0  mortals=0/509/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  world-god chaos3/energy2     t240  pf=1.33  places[H/F/T/Hd/S]=2/224/64/9/11  sourceHosts(6)=0/5/1/0/0  mortals=0/761/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  shepherd life3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=12/182/20/16/5  sourceHosts(6)=0/5/1/0/0  mortals=0/311/198/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  shepherd life3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=16/234/19/29/12  sourceHosts(6)=0/4/1/1/0  mortals=0/473/288/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  showcase mind3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=0/180/50/5/0  sourceHosts(6)=0/6/0/0/0  mortals=0/310/199/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  showcase mind3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=6/215/81/8/0  sourceHosts(6)=0/5/1/0/0  mortals=0/492/269/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  spread life2/matter2/mind1   t0    pf=1  places[H/F/T/Hd/S]=0/104/110/21/0  sourceHosts(6)=0/4/2/0/0  mortals=0/509/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0.4 0.4 0.4 0.4 0.4 0.4)
+  spread life2/matter2/mind1   t240  pf=1.33  places[H/F/T/Hd/S]=4/75/131/82/18  sourceHosts(6)=0/4/2/0/0  mortals=0/619/142/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.4 0.4 0.4 0.4 0.4 0.4)
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 17/friend 17/rival 17 (no pool 0) · home-realm moves 6 · favours 16 · quarrels 6 · marks 5 · notables 67 (no holding 10 / no quarrel 0 / no secret-or-favour 2 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 127/127 casters wield a spell (127 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 180 spells across 30 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +147 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 77, dead 2+3+4, descent 135/505, ambitions 3 minted / 3 skipped (5 ms)
+
+## seed 99 (medium) — world god energy/light
+  world-god energy3/light2     t0    pf=1  places[H/F/T/Hd/S]=0/180/8/50/0  sourceHosts(6)=0/6/0/0/0  mortals=0/643/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  world-god energy3/light2     t240  pf=1.33  places[H/F/T/Hd/S]=0/240/19/71/12  sourceHosts(6)=0/6/0/0/0  mortals=0/942/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  shepherd life3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=5/180/35/14/4  sourceHosts(6)=0/6/0/0/0  mortals=0/643/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  shepherd life3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=9/257/34/37/5  sourceHosts(6)=0/6/0/0/0  mortals=0/942/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  showcase mind3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=0/222/16/0/0  sourceHosts(6)=0/6/0/0/0  mortals=0/643/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  showcase mind3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=6/282/54/0/0  sourceHosts(6)=0/5/1/0/0  mortals=0/942/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  spread life2/matter2/mind1   t0    pf=1  places[H/F/T/Hd/S]=0/85/101/52/0  sourceHosts(6)=0/2/4/0/0  mortals=0/349/294/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  spread life2/matter2/mind1   t240  pf=1.33  places[H/F/T/Hd/S]=6/98/111/118/9  sourceHosts(6)=0/2/0/4/0  mortals=0/491/451/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 16/friend 16/rival 16 (no pool 0) · home-realm moves 1 · favours 13 · quarrels 4 · marks 5 · notables 72 (no holding 16 / no quarrel 0 / no secret-or-favour 0 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 129/129 casters wield a spell (129 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 186 spells across 31 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +148 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 3, founded 80, dead 3+3+4, descent 136/592, 3 war(s) without a burned town, ambitions 4 minted / 3 skipped (3 ms)
+
+## seed 7 (medium) — world god time/energy
+  world-god time3/energy2      t0    pf=1  places[H/F/T/Hd/S]=0/167/79/0/0  sourceHosts(6)=0/1/5/0/0  mortals=0/674/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0 0 0 0 0 0)
+  world-god time3/energy2      t240  pf=1.33  places[H/F/T/Hd/S]=10/189/106/16/0  sourceHosts(6)=0/0/6/0/0  mortals=0/1037/0/1/0  best6=Held,Foreign,Foreign,Foreign,Foreign,Foreign (1.2 0 0 0 0 0)
+  shepherd life3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=4/190/20/24/8  sourceHosts(6)=0/6/0/0/0  mortals=0/545/129/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  shepherd life3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=9/246/21/33/12  sourceHosts(6)=0/6/0/0/0  mortals=0/880/158/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  showcase mind3/spirit2       t0    pf=1  places[H/F/T/Hd/S]=0/236/10/0/0  sourceHosts(6)=0/6/0/0/0  mortals=0/545/129/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  showcase mind3/spirit2       t240  pf=1.33  places[H/F/T/Hd/S]=0/276/45/0/0  sourceHosts(6)=0/2/4/0/0  mortals=0/880/158/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.8 0.8 0.8 0.8 0.8 0.8)
+  spread life2/matter2/mind1   t0    pf=1  places[H/F/T/Hd/S]=0/111/108/27/0  sourceHosts(6)=0/6/0/0/0  mortals=0/674/0/0/0  best6=Foreign,Foreign,Foreign,Foreign,Foreign,Foreign (0.4 0.4 0.4 0.4 0.4 0.4)
+  spread life2/matter2/mind1   t240  pf=1.33  places[H/F/T/Hd/S]=7/134/102/66/12  sourceHosts(6)=0/6/0/0/0  mortals=0/741/297/0/0  best6=Touched,Touched,Touched,Touched,Touched,Touched (0.4 0.4 0.4 0.4 0.4 0.4)
