@@ -4997,7 +4997,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     settingsPanelOpen,
     readThreadsOpen,
     agendaPickerOpen: agendaPickerOpen && !!pendingAgendas,
-    actionDrawerOpen: (drawerOpen && !!selectedAgentId)
+    // The agent drawer's render guard includes `wheelSlots`: with no slots nothing is on
+    // screen, and a hold on an invisible drawer would keep the gift waiting for nothing.
+    actionDrawerOpen: (!!wheelSlots && drawerOpen && !!selectedAgentId)
       || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
     agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
     stubSheetCategory: stubModalState?.category ?? null,
