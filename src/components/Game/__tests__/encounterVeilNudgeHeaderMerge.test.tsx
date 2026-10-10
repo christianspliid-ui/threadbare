@@ -28,11 +28,17 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import { buildUnifiedEncounterStageModel } from '../encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { forecastWithNudges } from '../encounter-stage/useNudgeHand';
+import { NudgeReadingMarks } from '../encounter-stage/shells/NudgeStageHeader';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { WorldGraph } from '../../../engine/graph';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { GameState } from '../../../types/gameState';
 import type { UnifiedAction, UnifiedActionTemplate } from '../../../types/unifiedAction';
+import {
+  FORECAST_TIER_LADDER,
+  FORECAST_TIER_WORDS,
+  NUDGE_FORECAST_SHIFT_LINES,
+} from '../../../data/nudge-stage-content';
 
 /**
  * The hand is dimmed to unplayable without a pool. `buildNudgePhaseModel` reads
@@ -273,8 +279,11 @@ describe('THR-1478 — one header block above the prose', () => {
     expect(pill.textContent).toBe(expected.word);
     // And the shift line appears, because the tier moved — present tense and
     // naming its cause (THR-1714): "was Perilous" read as an already-made roll.
+    // THR-1791: it names the direction, never a tier word.
     const moved = screen.getByTestId('nudge-forecast-moved').textContent ?? '';
-    expect(moved).toBe(`your hand: ${phase.baseForecast.word} → ${expected.word}`);
+    const lifted =
+      FORECAST_TIER_LADDER.indexOf(expected.tier) > FORECAST_TIER_LADDER.indexOf(phase.baseForecast.tier);
+    expect(moved).toBe(NUDGE_FORECAST_SHIFT_LINES[lifted ? 'up' : 'down']);
     expect(moved).not.toMatch(/was/);
   });
 
@@ -301,5 +310,77 @@ describe('THR-1478 — one header block above the prose', () => {
     fireEvent.click(screen.getByTestId('nudge-reading-legend-dismiss'));
     expect(screen.queryByTestId('nudge-reading-legend')).toBeNull();
     expect(localStorage.getItem('threadbare.ui.nudgeReadingLegendSeen')).toBe('true');
+  });
+});
+
+/**
+ * Visible text nodes under `root` that are a forecast tier word — ignoring any
+ * subtree marked `aria-hidden` (the legend's sample mark) and tooltip content,
+ * which only mounts on hover.
+ */
+function visibleTierWords(root: HTMLElement): string[] {
+  const words = Object.values(FORECAST_TIER_WORDS).map((w) => w.toLowerCase());
+  const found: string[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (n.parentElement?.closest('[aria-hidden="true"], [role="tooltip"]')) continue;
+    for (const token of (n.textContent ?? '').toLowerCase().split(/[^a-z]+/)) {
+      if (words.includes(token)) found.push(token);
+    }
+  }
+  return found;
+}
+
+describe('THR-1791 — one odds word per chapter step', () => {
+  it('a hand that moves the forecast leaves exactly one tier word on the stage', () => {
+    localStorage.removeItem('threadbare.ui.nudgeReadingLegendSeen');
+    const model = renderVeil();
+    for (const card of model.nudgePhase!.cards) {
+      fireEvent.click(screen.getByTestId(`nudge-card-${card.id}`));
+    }
+    // Anti-vacuity: the shift line only renders when the tier moved.
+    expect(screen.queryByTestId('nudge-forecast-moved'), 'the hand did not move the odds').not.toBeNull();
+
+    // The whole veil, not just the title row: the title row, the context strip,
+    // the legend and the hand together carry exactly one odds word.
+    const words = visibleTierWords(document.body);
+    expect(words, `tier words on the header: ${words.join(', ')}`).toHaveLength(1);
+    expect(words[0]).toBe(screen.getByTestId('nudge-forecast-pill').textContent?.toLowerCase());
+  });
+
+  it('a Star tier-2 mortal reads "Charted", and a moved hand still shows one tier word (THR-1790)', () => {
+    const { unmount } = render(
+      <NudgeReadingMarks
+        testPanel={{
+          reach: 'star',
+          reachLabel: 'Star',
+          difficultyWord: 'hard',
+          difficultyValue: 0.5,
+          factors: [],
+          skill: { tier: 2, sentence: 'Vara is charted in Star.' },
+        }}
+        forecast={{ tier: 'favorable', word: FORECAST_TIER_WORDS.favorable, probability: 0.7 }}
+        baseForecast={{ tier: 'uncertain', word: FORECAST_TIER_WORDS.uncertain, probability: 0.5 }}
+        forecastMoved
+        designerView={false}
+      />,
+    );
+    const skillChip = screen.getByTestId('nudge-skill-chip');
+    expect(skillChip.textContent).toContain('Charted');
+    expect(screen.getByTestId('nudge-forecast-moved').textContent).toBe(NUDGE_FORECAST_SHIFT_LINES.up);
+    expect(visibleTierWords(document.body)).toEqual(['favorable']);
+    unmount();
+  });
+
+  it("the legend's sample pill prints no tier word", () => {
+    localStorage.removeItem('threadbare.ui.nudgeReadingLegendSeen');
+    renderVeil();
+    const legend = screen.getByTestId('nudge-reading-legend');
+    const words = Object.values(FORECAST_TIER_WORDS).map((w) => w.toLowerCase());
+    const pills = legend.querySelectorAll('[data-forecast-tier]');
+    expect(pills.length, 'the legend drew no sample pill').toBeGreaterThan(0);
+    for (const pill of pills) {
+      expect(words).not.toContain((pill.textContent ?? '').trim().toLowerCase());
+    }
   });
 });

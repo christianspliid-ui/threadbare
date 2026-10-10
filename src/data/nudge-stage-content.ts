@@ -239,10 +239,34 @@ export const NUDGE_COMMIT_LABEL = 'Play your hand, let fate answer';
 export const NUDGE_COMMIT_LABEL_SILENT = 'Stay silent, let fate answer';
 
 /**
- * The moved-forecast note beside the pill (THR-1714). Present tense and names
- * its cause: the old "was Perilous" read as *the roll already happened*.
+ * The forecast ladder, worst to best — the order a hand's move is read against
+ * when the moved-forecast note names its direction (THR-1791).
  */
-export const NUDGE_FORECAST_SHIFT_LINE = 'your hand: {from} → {to}';
+export const FORECAST_TIER_LADDER: readonly ForecastTier[] = [
+  'doomed',
+  'perilous',
+  'uncertain',
+  'favorable',
+  'fated',
+];
+
+/**
+ * The moved-forecast note beside the pill (THR-1714, THR-1791). Present tense
+ * and names its cause: the old "was Perilous" read as *the roll already
+ * happened*. It names the **direction** only — the pill beside it already
+ * carries the new word, and "your hand: Perilous → Uncertain" put three odds
+ * words on one screen (warm round 1, 3/3).
+ */
+export const NUDGE_FORECAST_SHIFT_LINES: Readonly<Record<'up' | 'down', string>> = {
+  up: '▲ your hand lifts the odds',
+  down: '▼ your hand lowers the odds',
+};
+
+/**
+ * The first-contact legend's sample pill word (THR-1791). The legend shows the
+ * pill's *shape*; a real tier word there read as data the game never computed.
+ */
+export const NUDGE_LEGEND_FORECAST_SAMPLE_WORD = 'odds';
 
 /**
  * A meeting card that argues for a pole says which (THR-1714). `{word}` is the

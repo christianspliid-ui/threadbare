@@ -6,7 +6,7 @@
  * `meetingEssenceSpend.test.tsx`) and asserts what the player reads:
  * - the commit names silence until a card is staged, then names the hand (Law 47);
  * - a leaning card wears its lean as a sheet word;
- * - the moved forecast reads "your hand: X → Y", never "was X";
+ * - the moved forecast names the hand and its direction, never "was X" (THR-1791);
  * - the reveal opens with the fate line, above the band prose, and its forecast
  *   word is the word the header showed at commit.
  */
@@ -94,7 +94,7 @@ describe('THR-1714 — show the roll in the meeting', () => {
     fireEvent.click(screen.getByTestId(`nudge-card-${card.id}`));
     const moved = screen.queryByTestId('nudge-forecast-moved');
     if (moved) {
-      expect(moved.textContent).toMatch(/^your hand: \w+ → \w+$/);
+      expect(moved.textContent).toMatch(/^[▲▼] your hand (lifts|lowers) the odds$/);
       expect(moved.textContent).not.toMatch(/\bwas\b/);
     }
   });
