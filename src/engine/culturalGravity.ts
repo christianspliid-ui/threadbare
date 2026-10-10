@@ -9,6 +9,7 @@ import type { SphereName } from '../types';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import type { CultureIdentity } from '../types/culture';
+import { SPHERE_OPPOSITES } from './cosmology';
 
 // ─── CulturalSignature ─────────────────────────────────────────
 
@@ -26,16 +27,11 @@ export const GRAVITY_FOUNDATION_WEIGHT = 0.2;
 
 // ─── Opposition Maps ────────────────────────────────────────────
 
-const SPHERE_OPPOSITIONS: ReadonlyMap<SphereName, SphereName> = new Map([
-  ['life', 'entropy'],
-  ['entropy', 'life'],
-  ['force', 'mind'],
-  ['mind', 'force'],
-  ['matter', 'spirit'],
-  ['spirit', 'matter'],
-  ['energy', 'time'],
-  ['time', 'energy'],
-]);
+// Sphere opposition reads the canonical `SPHERE_OPPOSITES` (cosmology.ts) — no private
+// table. A private one paired matter↔spirit / energy↔time against canon's matter↔time /
+// energy↔spirit, so cultural tension scored the wrong pairs as opposed (THR-1798).
+// Reading canon also covers the four Foundation spheres (chaos↔order, light↔darkness),
+// which the private table omitted.
 
 const FOUNDATION_OPPOSITIONS: ReadonlyMap<string, string> = new Map([
   ['Chaos', 'Order'],
@@ -62,7 +58,9 @@ function sphereAlignment(a: readonly SphereName[], b: readonly SphereName[]): nu
     if (setB.has(s)) {
       score += 1.0;
       pairs++;
-    } else if (setB.has(SPHERE_OPPOSITIONS.get(s)!)) {
+    } else {
+      const opposite = SPHERE_OPPOSITES[s];
+      if (opposite == null || !setB.has(opposite)) continue;
       score -= 0.5;
       pairs++;
     }
