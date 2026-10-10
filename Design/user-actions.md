@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-10 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,14 +28,13 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 - **2026-10-10: the review gate now judges the push it is actually given** ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)). Merged via [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312) and live.
 - **2026-10-10: the health check no longer calls a test run "failing" after a re-run of the same commit passed** ([THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the)). Merged via [#2311](https://github.com/christianspliid-ui/threadbare/pull/2311) and live.
-- **2026-10-10: a gift from the opening waits its turn instead of opening over what you just clicked** ([THR-1805](https://linear.app/threadbare/issue/THR-1805/the-opening-gifts-open-on-top-of-whatever-the-player-just-clicked)). You waived the veto window ("go ahead"); the build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)) is underway.
+- **2026-10-10: a gift from the opening waits its turn instead of opening over what you just clicked** ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)). You waived the veto window ("go ahead"). Merged via [#2313](https://github.com/christianspliid-ui/threadbare/pull/2313) and live.
 - **2026-10-10: the glossary now defines "The First", "Rite of the Thread" and "the god's mark"** ([THR-1756](https://linear.app/threadbare/issue/THR-1756/ul-proposal-the-first-the-first-mortal-the-god-threads-any-route-add)). Merged via [#2308](https://github.com/christianspliid-ui/threadbare/pull/2308).
 - **2026-10-10: five small faults from cold playtest round 3 fixed** ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)). Merged via [#2306](https://github.com/christianspliid-ui/threadbare/pull/2306) and live.
 - **2026-10-10: the choice screen states only the paying sphere’s essence, not all twelve summed** ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)). Merged via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305) and live.
 - **2026-10-10: a ruler’s card no longer reads "TRUE_BELIEVER" and shows one thread chip per person** ([THR-1797](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each)). Merged via [#2304](https://github.com/christianspliid-ui/threadbare/pull/2304) and live.
 - **2026-10-10: each chapter step shows one odds word, and the line under it says which way your hand moved them** (THR-1791). Merged via [#2303](https://github.com/christianspliid-ui/threadbare/pull/2303) and live.
 - **2026-10-10: God’s Will options name the encounter they ask for** ([THR-1802](https://linear.app/threadbare/issue/THR-1802/gods-will-options-never-name-what-they-ask-for-assist-right-here)). Merged via [#2302](https://github.com/christianspliid-ui/threadbare/pull/2302) and live.
-- **2026-10-10: a chapter's second step opens with an empty hand** ([THR-1801](https://linear.app/threadbare/issue/THR-1801/a-chapters-second-step-opens-with-the-first-steps-cards-already-picked)). Merged via [#2301](https://github.com/christianspliid-ui/threadbare/pull/2301) and live.
 
 ---
 

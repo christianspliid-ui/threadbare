@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-10 22:56 local (20:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-10 23:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -22,12 +22,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 0 jobs ready, 1 being built.** Nothing is blocked, stale or parked. The orchestrator and design lane refill the shelf on their next runs.
+**Starved: 0 jobs ready, 0 being built.** Nothing is blocked, stale or parked. The orchestrator (next run ~00:28) and the design lane (next run ~02:17) refill the shelf.
 
-- **Being built now:** the gift-waits-its-turn build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)). You waived its veto window ("go ahead"), so the builder took it at 22:32. Four commits are pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1809-gift-waits), the latest at 22:54, and it is in code review. No pull request is open yet.
-- **Now live:** the review-gate fix ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)), merged via [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312) and serving on the live site.
+- **Now live:** a gift from the opening waits its turn instead of opening over what you just clicked ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)), merged via [#2313](https://github.com/christianspliid-ui/threadbare/pull/2313) and serving on the live site.
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (5 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Three main commits in a row have failed since 17:33 UTC. The failing test is "emits exactly one aggregate trace per call, never one per tick" ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38082403404)). No session has claimed the fix. This is executor work, not yours.
-- Everything else is green. The live site is serving the latest main, no pull requests are stuck, automated checks are running normally, every scheduled lane is on time, and the engine's speed is flat (116 ms per tick, 3% under the weekly median).
+- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (4 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Four main commits in a row have failed since 17:33 UTC. The newest run fails a different test from the last one: "milestone triggered flag persists — no re-emission after first crossing" in `doomIdentityMilestones.test.ts`, which took 15.5 s and may be a timeout rather than a defect ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38086467350)). No session has claimed the fix, and the board is empty. This is executor work, not yours.
+- Everything else is green. The live site is serving the latest main, no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, and the engine's speed is flat (108 ms per tick, 10% under the weekly median).
