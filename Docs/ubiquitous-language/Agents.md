@@ -68,6 +68,36 @@ The player's seat in the world: a powerful former mortal who has transcended to 
 
 The bonded mortal agent who anchors the Ascendant's divine presence in the world. The First is a regular individual agent who has been formally bonded via a `thread` edge. They are the Ascendant's narrative anchor and the primary interface to mortal affairs. Seeded automatically in `?view=game&seeded` — use that URL for all standard testing.
 
+**The First is the first mortal the god threads, by any route** (THR-1644 D3; seated by delegation 2026-10-10, THR-1756). Whoever the god threads first, by Meet The First or by the Agent Thread card, becomes The First. Once a First exists, the meeting no longer fires. After a Return clears the First, the next thread names the next one. "Holds a First" means one rule on both routes: a `thread` edge whose `courtPosition` is `the_first`. The Dormant Thread card frees the slot too, and the Return cooldown gates both routes the same way.
+
+Code anchors: `src/engine/threadingRite.ts` (`resolveThreadWrite`), `src/engine/meetingEncounter.ts` (`isFirstBonded`).
+
+---
+
+### Rite of the Thread
+
+**Aliases:** the threading rite, the rite
+**Also see:** `[[The First]]`, `[[Thread]]`, `[[The God's Mark]]`, `[[Formative Test]]`
+**Status:** canonical (display term; seated by delegation 2026-10-10, THR-1756; veto retained)
+
+The short ceremony that plays every time the god threads a mortal. The meeting (Meet The First) is its first and fullest form. Later threads get one test and the bond, then the bond alone. **Rites shrink** with how many mortals the god has ever threaded. The meeting plays the full rite, and so does any thread that makes a new First. Threads 2 to `RITE_SHORT_MAX_ORDINAL` (3) play the short rite. Every thread after that is the bond alone. One writer lands every rite's outcomes, whichever route threaded the mortal.
+
+Code anchors: `src/engine/threadingRite.ts` (`applyThreadingRite`, `riteShapeFor`), `src/data/threading-rite-constants.ts` (`RITE_SHORT_MAX_ORDINAL`, `RITE_SURFACE_ENABLED`), trace `rite.applied`. Plan: `Docs/plans/2026-10-06-thr-1644-threading-ceremony.md`.
+
+---
+
+### The God's Mark
+
+**Aliases:** the First's mark, god-given trait
+**Also see:** `[[The First]]`, `[[Rite of the Thread]]`, `[[Trait]]`
+**Status:** canonical (seated by delegation 2026-10-10, THR-1756; veto retained)
+
+The one trait The First receives at the bond, in their spark's Reach (Iron Will, Golden Tongue, …). It is visible on the sheet and counts like one companion's skill in that Reach, so the First succeeds more often in their own Reach. Only The First gets a mark; later threads get none. On the card route the mark follows the mortal's primary Reach, because that route has no spark.
+
+The mark is a **`destiny`** trait, not `bestowed`. The proposal said `bestowed`, but every `bestowed` trait is a Power that the reward pool deals as loot and the sheet lists as a Bestowed Power. The mark is neither of those things. Only this grant writes `destiny` (THR-1755).
+
+Code anchors: `src/data/meeting-content.ts` (`GOD_GIVEN_TRAITS`, ids `trait.god.*`), `src/engine/firstMark.ts` (`grantFirstMark`, `seedFirstMarkTraits`, `FIRST_MARK_TAG`), `src/data/threading-rite-constants.ts` (`FIRST_MARK_*`).
+
 ---
 
 ### Thread

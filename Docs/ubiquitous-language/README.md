@@ -13,7 +13,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | Shard | Content | Content-adjacent |
 |---|---|---|
 | [Cosmology.md](./Cosmology.md) | Reaches, Spheres, Foundation/Creation, Tradition, domain capability, prerequisites | ✅ |
-| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Faction, Realm, Congregation, Fringe, Monster, Rival, Thread, Avatar | ✅ |
+| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Rite of the Thread, The God's Mark, Faction, Realm, Congregation, Fringe, Monster, Rival, Thread, Avatar | ✅ |
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
 | [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power, Temper, Strained | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
@@ -47,7 +47,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Actor](./Agents.md#actor)** — graph node type `'actor'`; covers individual, faction, culture, group, god, ascendant
 - **[ActorType](./Agents.md#actortype)** — actor subtype taxonomy: `god`, `ascendant`, `faction`, `culture`, `group`, `individual`
 - **[Ascendant](./Agents.md#ascendant)** — the player-character; a former mortal transcended to divine status; uses same prerequisite system as mortals
-- **[The First](./Agents.md#the-first)** — the bonded mortal agent anchoring the Ascendant's divine presence; seeded in `?view=game&seeded`
+- **[The First](./Agents.md#the-first)** — the bonded mortal agent anchoring the Ascendant's divine presence: the first mortal the god threads, by any route; seeded in `?view=game&seeded`
+- **[Rite of the Thread](./Agents.md#rite-of-the-thread)** — the ceremony every thread plays; the meeting is its fullest form, later threads shrink to one test and the bond, then the bond alone (`threadingRite.ts`)
+- **[The God's Mark](./Agents.md#the-gods-mark)** — the one `destiny` trait The First gets at the bond, in their spark's Reach (`GOD_GIVEN_TRAITS`, `trait.god.*`)
 - **[Thread](./Agents.md#thread)** — a `thread` edge from Ascendant to mortal; the mechanism for divine influence
 - **[Retinue](./Agents.md#retinue)** — the mortals an Ascendant holds close (`CourtPosition: 'retinue'`); arbitrated 2026-08-13 to the divine-court sense only, never a mortal's companions
 - **[Faction](./Agents.md#faction)** — structured social entity; `actorType: 'faction'`; agents join via `member_of` edges
