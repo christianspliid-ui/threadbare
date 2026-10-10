@@ -3,7 +3,7 @@ tags: [vision, north-star, experience]
 aliases: [North Star, Experience Target]
 status: draft
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-08-28
 ---
 
 # North Star — what the game feels like at its best
@@ -14,9 +14,9 @@ updated: 2026-04-20
 
 It is the seventh or eighth hour of their second run. The player has a handful of mortals they know by name — not because the UI tells them, but because they have watched these people *choose* things across dozens of ticks, and the choices have accumulated into something the player has opinions about.
 
-One of those mortals is about to do something the player does not want them to do. The player has a small supply of divine essence and a menu of interventions: a whisper, a nudge, a vision. Any of them will cost. None of them guarantees the outcome. The mortal is not a unit. The mortal is a person the player has come to care about, and whose sovereignty the player has been trying to respect because that is the kind of god they decided to be this run.
+One of those mortals is about to do something the player does not want them to do. The player has a small supply of divine essence and a hand of nudge cards — some authored by this very moment, some dealt from the repertoire their kind of god has earned. Any of them will cost. None of them picks the outcome. The mortal is not a unit. The mortal is a person the player has come to care about, and whose sovereignty the player has been trying to respect because that is the kind of god they decided to be this run.
 
-The player hesitates. They use the intervention. The mortal still makes a choice — the intervention shifted the odds, not the outcome — and the choice hurts. The player sits with it. They do not reload. They watch the story unfold from here, because the *unfolding* is why they are playing.
+The player hesitates. They play the card. The mortal still makes a choice — the nudge shifted the odds, fate picked the band, and the fork was always the mortal's to take — and the choice hurts. The player sits with it. They do not reload. They watch the story unfold from here, because the *unfolding* is why they are playing.
 
 That is the session we are building toward. Everything else is scaffolding.
 
@@ -35,6 +35,8 @@ That is the session we are building toward. Everything else is scaffolding.
 A good run has **cadence, not pacing**. Long stretches of simmer broken by set-pieces. The simmer is where the threads get woven — small encounters, small decisions, small ripples. The set-pieces are where the player spends essence and learns who their mortals really are.
 
 A good run has **one complex story at a time.** The player has a portfolio of mortals, but at any given hour there is *one* who is front-of-stage, and the game knows it. The scan → encounter → aftermath loop exists to make sure one mortal's story is legible before another's takes focus. This is Malazan, not a 4X — we want the feeling of a chapter, not the feeling of a spreadsheet.
+
+A good run happens **under pressure that is not the player's to pause.** Two clocks run — the Doom Clock toward an Unmaking, the Victory Mandate toward a win — and essence spent on one is essence not spent on the other. The simmer is never safe; that is what makes attention a spend and not a browse.
 
 A good run has **weight of threads.** Every attachment the player has — every bond, every favor, every grudge they helped spin — is load-bearing. Losing a thread should hurt. Keeping too many threads should become a problem the game surfaces, not a number the player optimizes.
 
@@ -59,3 +61,4 @@ Cosmic melancholy is the baseline. Wonder layered over grief. The player should 
 ---
 
 *last iterated 2026-04-20 — bootstrap, drawn from `Systems/Executive Vision.md` and `Systems/Tonal Bible.md`*
+*last iterated 2026-08-28 — nudge-model vocabulary (the fixed whisper/nudge/vision verb trio was retired 2026-05-04; the current surface is essence-priced nudge cards — the god bends odds, fate picks the band, mortals decide forks) and the two-clock pressure named. Director-approved sweep, THR-1335; the premise itself is unchanged.*

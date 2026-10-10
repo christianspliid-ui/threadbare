@@ -2,7 +2,7 @@ You are a playtester coming back to a browser game you started about an hour ago
 
 ## What you know about the game (the store page)
 
-**Threadbearer** — *A turn-based god-game of mortal stories in a living world.*
+**Threadbearer** — *A god-game of mortal stories in a living world that stops for every moment that matters.*
 
 > You are a new god, watching a world you didn't make. A handful of mortals catch your eye — a swordbearer, a scholar, a refugee. You follow their lives like chapters of a book, and when the moment matters you whisper, nudge, or send a dream. Their choices are theirs. The story becomes yours.
 

@@ -143,8 +143,8 @@
       ]
     },
     "identity-vision": {
-      "version": 1,
-      "versionNote": "Registered 2026-08-28 (THR-1331, context-cleanup round 1). The game is named Threadbearer (threadbearer.co) — director ruling 2026-08-28. Player = Ascendant. Nudge model: the god nudges odds with essence-priced cards, fate picks the outcome, mortals decide forks. Core loop: portfolio scan -> curated moment -> aftermath, 12 ticks/day.",
+      "version": 2,
+      "versionNote": "v2 2026-10-10 (THR-1796): pacing is the Stellaris model — real time between moments, halting for every moment that matters; turn-based pacing retired by Christian's ruling 2026-09-27 (THR-1605). v1 registered 2026-08-28 (THR-1331, context-cleanup round 1). The game is named Threadbearer (threadbearer.co) — director ruling 2026-08-28. Player = Ascendant. Nudge model: the god nudges odds with essence-priced cards, fate picks the outcome, mortals decide forks. Core loop: portfolio scan -> curated moment -> aftermath, 12 ticks/day.",
       "authorities": [
         "Docs/design-brief.md",
         "Docs/canon/rulebook-quick-reference.md"
@@ -154,7 +154,19 @@
         ".claude/skills/state-of-game-design/SKILL.md",
         ".claude/skills/game-design-direction/SKILL.md",
         "Docs/ubiquitous-language/README.md",
-        "Docs/ways-of-working.md"
+        "Docs/ways-of-working.md",
+        "TheFantasyWorldSimulator/Vision/README.md",
+        "TheFantasyWorldSimulator/Vision/00-north-star.md",
+        "TheFantasyWorldSimulator/Vision/01-core-loop.md",
+        "TheFantasyWorldSimulator/Vision/02-non-negotiables.md",
+        "TheFantasyWorldSimulator/Vision/03-design-tensions.md",
+        "TheFantasyWorldSimulator/Vision/taste-profile.md",
+        ".claude/skills/design-audit-pipeline/agents/vision-prompt.md",
+        ".claude/skills/state-of-game-design/reference/cosmology.md",
+        "scripts/vision-audit.ts",
+        "scripts/cold-playtest/player-brief.md",
+        "scripts/cold-playtest/player-brief-warm.md",
+        "Docs/plans/2026-04-16-game-design-direction.md"
       ],
       "manualDependents": [
         "vault:CLAUDE.md",
