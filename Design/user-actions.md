@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-10 14:57 local (12:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-10: a chapter's second step opens with an empty hand** ([THR-1801](https://linear.app/threadbare/issue/THR-1801/a-chapters-second-step-opens-with-the-first-steps-cards-already-picked)). Merged via [#2301](https://github.com/christianspliid-ui/threadbare/pull/2301) and live.
 - **2026-10-10: your god grows by spending through its spheres — about five growth steps a run, nothing fades if you stop** ([THR-1765](https://linear.app/threadbare/issue/THR-1765/how-the-gods-own-power-grows-what-raises-the-gods-sphere-score-across)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-10: a chapter with unpriced choices can be played again** (THR-1800). Merged via [#2299](https://github.com/christianspliid-ui/threadbare/pull/2299) and live.
 - **2026-10-10: factions, armies, companies and relics belong to your god through the people and ground they are made of** ([THR-1764](https://linear.app/threadbare/issue/THR-1764/dominion-of-the-secondary-actors-how-a-faction-an-army-a-company-or-an)). Decided for you by the design lane; say "veto" in chat to reverse.
@@ -35,7 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: The First's story moments name their stage in words, not "Beat 1 — Call"** (THR-1788). Merged via [#2293](https://github.com/christianspliid-ui/threadbare/pull/2293) and live.
 - **2026-10-09: a bonded First is no longer asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)). Merged via [#2290](https://github.com/christianspliid-ui/threadbare/pull/2290) and live.
 - **2026-10-09: your turf can be lost to neglect, rival gods and doom, but never your seat** ([THR-1763](https://linear.app/threadbare/issue/THR-1763/the-opposing-dominion-as-a-force-who-pushes-back-how-fast-turf-erodes)). Decided for you by the design lane; say "veto" in chat to reverse.
-- **2026-10-09: God's Will prices now name the sphere they bill** ([THR-1783](https://linear.app/threadbare/issue/THR-1783)). Merged via [#2289](https://github.com/christianspliid-ui/threadbare/pull/2289) and live.
 
 ---
 
