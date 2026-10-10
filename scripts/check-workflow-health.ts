@@ -441,19 +441,29 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
     };
   }
 
-  // Newest is red — but a later green run of the same commit from another event
-  // (the nightly schedule, a manual re-run) proves the tree passes: a flake, not
-  // broken code (THR-1776). Without a sha on both sides there is no proof.
+  // Newest is red — but if the newest conclusive later run of the same commit
+  // from another event (the nightly schedule, a manual re-run) is green, the
+  // tree passes: a flake, not broken code (THR-1776). The newest one decides, so
+  // a re-run that went red again on the same tree cancels an older green.
+  // Without a sha on both sides there is no proof.
   const newestRed = conclusive[0];
-  const vindicating = newestRed.headSha
-    ? (lane.otherRuns ?? []).find(
-        (r) =>
-          r.status === "completed" &&
-          GREEN_CONCLUSIONS.has(r.conclusion as string) &&
-          r.headSha === newestRed.headSha &&
-          r.createdAtMs > newestRed.createdAtMs,
-      )
+  const latestRerun = newestRed.headSha
+    ? (lane.otherRuns ?? [])
+        .filter(
+          (r) =>
+            r.status === "completed" &&
+            typeof r.conclusion === "string" &&
+            (RED_CONCLUSIONS.has(r.conclusion) || GREEN_CONCLUSIONS.has(r.conclusion)) &&
+            r.headSha === newestRed.headSha &&
+            r.createdAtMs > newestRed.createdAtMs,
+        )
+        .reduce<WorkflowRunRecord | undefined>(
+          (acc, r) => (acc === undefined || r.createdAtMs > acc.createdAtMs ? r : acc),
+          undefined,
+        )
     : undefined;
+  const vindicating =
+    latestRerun && GREEN_CONCLUSIONS.has(latestRerun.conclusion as string) ? latestRerun : undefined;
   if (vindicating) {
     const sha = (newestRed.headSha as string).slice(0, 8);
     return {

@@ -429,6 +429,13 @@ describe("classifyPushLane", () => {
       expect(classifyPushLane({ ...lane(pushRuns), otherRuns: others }, NOW).verdict).toBe("red-stale");
     });
 
+    it("lets a newer red re-run of the same commit cancel an older green", () => {
+      const redAgain: WorkflowRunRecord = { ...scheduleGreen, conclusion: "failure", createdAtMs: at("2026-10-08T03:00:00Z") };
+      // Newest first, as the API returns them — the order must not matter.
+      expect(classifyPushLane({ ...lane(pushRuns), otherRuns: [redAgain, scheduleGreen] }, NOW).verdict).toBe("red-stale");
+      expect(classifyPushLane({ ...lane(pushRuns), otherRuns: [scheduleGreen, redAgain] }, NOW).verdict).toBe("red-stale");
+    });
+
     it("cannot vindicate a push red that carries no sha", () => {
       const noSha = pushRuns.map(({ headSha: _drop, ...r }) => r);
       expect(classifyPushLane({ ...lane(noSha), otherRuns: [scheduleGreen] }, NOW).verdict).toBe(
