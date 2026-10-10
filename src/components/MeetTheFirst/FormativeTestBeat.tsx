@@ -19,7 +19,7 @@
  * Plan: `Docs/plans/2026-07-30-thr-868-meet-the-first-nudge-conversion.md`
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   DilemmaInstance,
   FormativeOutcome,
@@ -27,6 +27,7 @@ import type {
   NarrativeCandidate,
 } from '../../types/meetingEncounter';
 import { ComicPanel } from './ComicPanel';
+import { FORMATIVE_TOP_SPACER, useFitToParentHeight } from './fitToViewport';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
@@ -123,6 +124,10 @@ export function FormativeTestBeat({
     [current, index, essencePool, candidate.name, locationName, primarySphere],
   );
 
+  // THR-1804 — fit the column (prose, reading, whole hand, commit) to the panel.
+  const fitRef = useRef<HTMLDivElement>(null);
+  useFitToParentHeight(fitRef, [index, phase, revealed]);
+
   const handleCommit = useCallback(
     (nudgeIds: string[]) => {
       if (!current) return;
@@ -192,13 +197,18 @@ export function FormativeTestBeat({
             characterImagePath={candidate.imageAssetPath}
             characterPlaceholder={candidate.placeholderGradient}
             characterPosition={characterPosition}
+            topSpacer={FORMATIVE_TOP_SPACER}
           >
+            {/* THR-1804 — no scroll column: the whole hand is on screen at once.
+                The column zooms down to fit the panel when the hand wraps to a
+                second row (fitToViewport.ts, Law 33). */}
             <div
-              className="pb-8 overflow-y-auto"
+              ref={fitRef}
+              data-testid="formative-fit-column"
+              className="pb-8"
               style={{
                 paddingLeft: characterPosition === 'left' ? '38vw' : '8vw',
                 paddingRight: characterPosition === 'left' ? '8vw' : '38vw',
-                maxHeight: '78vh',
               }}
             >
               {/* God voice — diegetic framing only (verdict 10: no UI tutorials). */}
@@ -232,9 +242,9 @@ export function FormativeTestBeat({
               </p>
 
               {/* ── Deciding: the WS2 shell, consumed whole ──
-                  THR-1732 — its hand bar is `position: sticky` against this
-                  beat's scrolling column; no ancestor between here and that
-                  column may set `overflow`, or the commit falls below the fold. */}
+                  THR-1732 — its hand bar is `position: sticky`; since THR-1804
+                  the column fits the panel instead of scrolling, so the bar
+                  simply sits in flow under the whole hand. */}
               {!revealed && (
                 <NudgePhaseShell
                   phase={phase}

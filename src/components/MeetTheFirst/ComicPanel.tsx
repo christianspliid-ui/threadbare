@@ -6,6 +6,8 @@ interface ComicPanelProps {
   characterImagePath: string;
   characterPlaceholder: string;
   characterPosition?: 'left' | 'right';
+  /** Height held above the content overlay (THR-1804: the bonding hand needs it). */
+  topSpacer?: string;
   children?: ReactNode;
 }
 
@@ -15,6 +17,7 @@ export function ComicPanel({
   characterImagePath,
   characterPlaceholder,
   characterPosition = 'left',
+  topSpacer = '30%',
   children,
 }: ComicPanelProps) {
   const isLeft = characterPosition === 'left';
@@ -60,7 +63,7 @@ export function ComicPanel({
 
       {/* Content overlay (prose, choices) — top spacer keeps content in lower ~55% */}
       <div className="absolute inset-0 flex flex-col">
-        <div style={{ flexShrink: 0, minHeight: '30%' }} />
+        <div style={{ flexShrink: 0, minHeight: topSpacer }} />
         <div className="flex-1 overflow-y-auto flex flex-col justify-end">
           {children}
         </div>
