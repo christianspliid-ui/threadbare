@@ -32,7 +32,9 @@ import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
 import {
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
-  NUDGE_FORECAST_SHIFT_LINE,
+  NUDGE_FORECAST_SHIFT_LINES,
+  NUDGE_LEGEND_FORECAST_SAMPLE_WORD,
+  FORECAST_TIER_LADDER,
   NUDGE_FACTOR_KIND_TAGS,
 } from '../../../../data/nudge-stage-content';
 import type {
@@ -164,10 +166,11 @@ export function NudgeReadingMarks({
 
       {/* ── Forecast ─────────────────────────────────────────────
           The word in its ladder colour, recolouring live as the hand moves it.
-          The "your hand: …" note sits beside the pill, not beneath it, so the
+          The "your hand lifts/lowers the odds" note sits beside the pill, not beneath it, so the
           row keeps one height whether or not the forecast has moved. THR-1714:
           it names its cause in the present tense — "was Perilous" read as the
-          roll having already happened. */}
+          roll having already happened. THR-1791: it names the direction, never
+          a tier — the pill is the one odds word on the row. */}
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
         {/* THR-1713 D5 — the pill's hover explains *its* word, then chains the
             ladder; it changes as the hand moves the tier. */}
@@ -185,7 +188,7 @@ export function NudgeReadingMarks({
               whiteSpace: 'nowrap',
             }}
           >
-            {NUDGE_FORECAST_SHIFT_LINE.replace('{from}', baseForecast.word).replace('{to}', forecast.word)}
+            {NUDGE_FORECAST_SHIFT_LINES[forecastShiftDirection(baseForecast.tier, forecast.tier)]}
           </span>
         )}
       </span>
@@ -197,6 +200,19 @@ export function NudgeReadingMarks({
       )}
     </>
   );
+}
+
+/**
+ * THR-1791 — which way the hand moved the odds, read on the forecast ladder.
+ * Only called when the tier moved; an unknown tier ranks as `uncertain`
+ * (fail-soft), so a malformed pair reads as a lift rather than throwing.
+ */
+export function forecastShiftDirection(fromTier: string, toTier: string): 'up' | 'down' {
+  const rank = (tier: string) => {
+    const i = FORECAST_TIER_LADDER.indexOf(tier as (typeof FORECAST_TIER_LADDER)[number]);
+    return i < 0 ? FORECAST_TIER_LADDER.indexOf('uncertain') : i;
+  };
+  return rank(toTier) < rank(fromTier) ? 'down' : 'up';
 }
 
 /**
@@ -466,7 +482,7 @@ function LegendMark({ id }: { id: 'forecast' | 'balance' }) {
   if (id === 'forecast') {
     return (
       <span aria-hidden="true">
-        <ForecastPill tier="uncertain" word="uncertain" compact />
+        <ForecastPill tier="uncertain" word={NUDGE_LEGEND_FORECAST_SAMPLE_WORD} compact />
       </span>
     );
   }
