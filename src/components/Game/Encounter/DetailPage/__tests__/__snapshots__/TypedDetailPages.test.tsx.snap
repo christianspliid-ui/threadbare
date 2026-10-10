@@ -373,7 +373,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);"
       >
-        encounter_outcome
+        encounter outcome
       </div>
     </div>
     <div

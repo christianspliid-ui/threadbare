@@ -238,6 +238,9 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   return section;
 };
 
+/** Most distinct (person, kind) chips the "Threads between them" section shows. */
+export const THREADS_BETWEEN_THEM_MAX_CHIPS = 6;
+
 const threadsBetweenThemResolver: SectionResolver = (ctx) => {
   if (!ctx.protagonistId) return null;
   const actor = ctx.graph.getNode(ctx.nodeId);
@@ -248,12 +251,19 @@ const threadsBetweenThemResolver: SectionResolver = (ctx) => {
   const all = [...out, ...incoming];
   if (all.length === 0) return null;
 
+  // THR-1797: a bond is usually stored as two edges (A→B and B→A), so one chip
+  // per (person, kind) — Law 36 — and the cap counts people, not edges.
   const chips: ChipDescriptor[] = [];
-  for (const edge of all.slice(0, 6)) {
+  const seen = new Set<string>();
+  for (const edge of all) {
+    if (chips.length >= THREADS_BETWEEN_THEM_MAX_CHIPS) break;
     const otherId = edge.source === actor.id ? edge.target : edge.source;
     const other = ctx.graph.getNode(otherId);
     if (!other) continue;
     const basis = (edge.properties?.basis as string | undefined) ?? 'thread';
+    const key = `${otherId}\u0000${basis}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     const sentiment = (edge.properties?.sentiment as number | undefined) ?? 0;
     chips.push({
       label: other.name,
