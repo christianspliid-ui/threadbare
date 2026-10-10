@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-10 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 18:55 local (16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,7 +26,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-10: the choice screen states only the paying sphere’s essence, not all twelve summed** ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)). Merged via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305); going live now.
+- **2026-10-10: the choice screen states only the paying sphere’s essence, not all twelve summed** ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)). Merged via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305) and live.
 - **2026-10-10: a ruler’s card no longer reads "TRUE_BELIEVER" and shows one thread chip per person** ([THR-1797](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each)). Merged via [#2304](https://github.com/christianspliid-ui/threadbare/pull/2304) and live.
 - **2026-10-10: each chapter step shows one odds word, and the line under it says which way your hand moved them** (THR-1791). Merged via [#2303](https://github.com/christianspliid-ui/threadbare/pull/2303) and live.
 - **2026-10-10: God’s Will options name the encounter they ask for** ([THR-1802](https://linear.app/threadbare/issue/THR-1802/gods-will-options-never-name-what-they-ask-for-assist-right-here)). Merged via [#2302](https://github.com/christianspliid-ui/threadbare/pull/2302) and live.

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-10 17:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-10 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 jobs ready, 1 being finished.** Nothing ready is older than 4 days or blocked; no parked jobs.
+**Healthy: 5 jobs ready, 1 being built.** Nothing ready is older than 4 days or blocked; no parked jobs.
 
-- **Just merged, going live now:** the choice screen states only the paying sphere's essence, not all twelve summed ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice), via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305)).
-- **Now live:** a ruler's card no longer reads "TRUE_BELIEVER" and shows one thread chip per person ([THR-1797](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each), via [#2304](https://github.com/christianspliid-ui/threadbare/pull/2304)).
-- Next up from [cold playtest round 3](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-3.md): five small faults ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)). Nothing here needs a decision from you.
+- **Being built now:** the five small faults from [cold playtest round 3](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-3.md) ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)) — the fix is up for review as [#2306](https://github.com/christianspliid-ui/threadbare/pull/2306), not yet set to merge. Nothing here needs a decision from you.
+- **Now live:** the choice screen states only the paying sphere's essence, not all twelve summed ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice), via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305)).
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** — failed on every merge today, including the newest ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No session has claimed it. This is executor work, not yours.
-- Speed check back to normal: *"tick cost 126 ms/tick steady, +5% vs the 7-day median (120, 121 rows)."* Last hour's 251 reading was load, as suspected.
-- Everything else is green. The newest merge is deploying (under 20 minutes old), no pull requests are stuck, automated checks run normally, every scheduled lane is on time, and the worktree cleaner ran at 17:40.
+- **Heavy simulation tests are still red on the latest main** (about 4 hours now) ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). No session has claimed it. This is executor work, not yours.
+- Speed check flagged again: *"tick cost 261 ms/tick steady, 118% above the 7-day median (120, 121 rows since 39fed17e); top phase agent_decision, 609 agents. Name the merges between 39fed17e and 57da1b5b: git log --oneline --merges 39fed17e..57da1b5b"* — the same code read 126 last hour, so this is most likely the machine being busy (a build session is running), not a slowdown. Executor work if it repeats.
+- Everything else is green. The live site serves the newest merge, no pull requests are stuck, automated checks run normally, every scheduled lane is on time, and the worktree cleaner ran at 18:40.
