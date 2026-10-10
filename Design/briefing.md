@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-10 15:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-10 16:57 local (14:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 jobs ready, 1 being built.** Nothing ready is older than 4 days or blocked; no parked jobs.
+**Healthy: 7 jobs ready, 1 being built.** Nothing ready is older than 4 days or blocked; no parked jobs.
 
-- **A chapter's second step now opens with an empty hand** ([THR-1801](https://linear.app/threadbare/issue/THR-1801/a-chapters-second-step-opens-with-the-first-steps-cards-already-picked)) — merged via [#2301](https://github.com/christianspliid-ui/threadbare/pull/2301) and live.
-- **God's Will options will name the encounter they ask for** ([THR-1802](https://linear.app/threadbare/issue/THR-1802/gods-will-options-never-name-what-they-ask-for-assist-right-here), High) — built; its pull request [#2302](https://github.com/christianspliid-ui/threadbare/pull/2302) is waiting on checks and merges itself on green.
+- **Being built:** a ruler's card reads "TRUE_BELIEVER" and repeats each thread chip ([THR-1797](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each)) — active in the last few minutes.
+- **Now live:** God's Will options name the encounter they ask for ([THR-1802](https://linear.app/threadbare/issue/THR-1802/gods-will-options-never-name-what-they-ask-for-assist-right-here), via [#2302](https://github.com/christianspliid-ui/threadbare/pull/2302)), and each chapter step shows one odds word ([#2303](https://github.com/christianspliid-ui/threadbare/pull/2303)).
 - Next up from [cold playtest round 3](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-3.md): essence still summed on the choice screen ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)) and five small faults ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)). Nothing here needs a decision from you.
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main**, about 17 hours now. No session has claimed it. This is executor work, not yours.
-- Last hour's slow speed reading was load, not code: the game is back to 138 ms per tick, within normal range of the weekly median (120).
-- Everything else is green. The live site is current, no pull requests are stuck, automated checks run normally, every scheduled lane is on time, and the worktree cleaner ran at 15:45.
+- **Heavy simulation tests are still red on the latest main**, about 18 hours now. They failed on all three merges today ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38060280630)). No session has claimed it. This is executor work, not yours.
+- Speed check: *"tick cost 251 ms/tick steady, 110% above the 7-day median (120, 120 rows since d67c4aae); top phase agent_decision, 609 agents."* Likely load again: it was measured while the builder lane was running, and the reading an hour ago was 138. Watching for a second high reading at a quiet hour.
+- Everything else is green. The live site is current, no pull requests are stuck, automated checks run normally, every scheduled lane is on time, and the worktree cleaner ran at 16:40.
