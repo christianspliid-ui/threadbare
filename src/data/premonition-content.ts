@@ -280,6 +280,12 @@ export interface RetconInput {
   requiresPresence: boolean;
   locationName: string;
   agentName: string;
+  /**
+   * THR-1802 — leave the confidence clause off. The caller sets this when every
+   * offer on the screen shares one threat tier: the same "hardly a challenge" on
+   * every option tells the player nothing and reads as filler.
+   */
+  omitConfidence?: boolean;
 }
 
 function pickFragment(pool: string[], rng: () => number): string {
@@ -304,7 +310,7 @@ function collapseRepeatedNames(raw: string): string {
 }
 
 export function composeRetconLine(rng: () => number, input: RetconInput): string {
-  const { encounterType, threatRating, hexDistance: dist, requiresPresence, locationName, agentName } = input;
+  const { encounterType, threatRating, hexDistance: dist, requiresPresence, locationName, agentName, omitConfidence } = input;
 
   // 1. Distance context
   let distanceKey: string;
@@ -337,7 +343,9 @@ export function composeRetconLine(rng: () => number, input: RetconInput): string
     locationSuffix = locTemplate.replace(/\{locationName\}/g, locationName);
   }
 
-  const raw = `${distFragment} ${desireFragment}${locationSuffix} ${confFragment}`;
+  const raw = omitConfidence
+    ? `${distFragment} ${desireFragment}${locationSuffix}`
+    : `${distFragment} ${desireFragment}${locationSuffix} ${confFragment}`;
   return resolveAgentPronouns(collapseRepeatedNames(raw), agentName);
 }
 
