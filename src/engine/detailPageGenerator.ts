@@ -40,6 +40,8 @@ import {
   type AuthoredSection,
 } from '../data/detail-page-showcase';
 import { UNKNOWN_ENTITY_PROSE } from '../data/detail-page-fallback-templates';
+import { getArchetype } from '../data/archetype-content';
+import { humanizeKeySegment } from './aftermathWords';
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 //
@@ -325,28 +327,43 @@ function sphereForNode(node: { properties: Record<string, unknown> }): string {
   return (node.properties?.sphere as string | undefined) ?? 'force';
 }
 
-function subtitleForNode(
+/**
+ * THR-1797: every subtitle source is a stored key (`true_believer`, `trade_guild`,
+ * `river_ford`), so each one is worded before it reaches the card — the header
+ * renders upper-case, and an unworded key read as `TRUE_BELIEVER`. A narrative
+ * archetype takes its authored name; anything else is humanised. Empty or
+ * non-string values fall through to the kind's default word.
+ */
+function wordedKey(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const worded = humanizeKeySegment(raw).replace(/\s+/g, ' ').toLowerCase();
+  return worded.length > 0 ? worded : undefined;
+}
+
+function wordedArchetype(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  return getArchetype(raw)?.name ?? wordedKey(raw);
+}
+
+export function subtitleForNode(
   node: { name: string; properties: Record<string, unknown> },
   pageKind: GraphPageKind,
 ): string {
+  const p = node.properties ?? {};
   switch (pageKind) {
     case 'actor':
-      return (node.properties?.role as string | undefined)
-        ?? (node.properties?.narrativeArchetype as string | undefined)
-        ?? 'figure of the world';
+      return wordedKey(p.role) ?? wordedArchetype(p.narrativeArchetype) ?? 'figure of the world';
     case 'item':
-      return (node.properties?.category as string | undefined) ?? 'artifact';
+      return wordedKey(p.category) ?? 'artifact';
     case 'faction':
-      return (node.properties?.factionType as string | undefined) ?? 'faction';
+      return wordedKey(p.factionType) ?? 'faction';
     case 'place':
-      return (node.properties?.locationSubtype as string | undefined)
-        ?? (node.properties?.terrain as string | undefined)
-        ?? 'place';
+      return wordedKey(p.locationSubtype) ?? wordedKey(p.terrain) ?? 'place';
     case 'event':
-      return (node.properties?.eventType as string | undefined) ?? 'event';
+      return wordedKey(p.eventType) ?? 'event';
     case 'group':
       // The group kind is the subtitle: a Host reads differently from a Network.
-      return (node.properties?.groupKind as string | undefined) ?? 'company';
+      return wordedKey(p.groupKind) ?? 'company';
   }
 }
 
