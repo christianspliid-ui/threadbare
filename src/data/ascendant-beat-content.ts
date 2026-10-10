@@ -53,6 +53,42 @@ export const SPINE_PLAYER_ACTS_BETWEEN_GIFTS = 1;
  */
 export const SPINE_IDLE_FALLBACK_TICKS = 36;
 /**
+ * THR-1809 — a ready spine gift (beats 1–4) waits this long after the player's last
+ * click or key press before it opens itself, so a gift never takes the click that
+ * made it due. Wall-clock milliseconds: this is when a modal mounts, not engine time.
+ */
+export const GIFT_QUIET_AFTER_INPUT_MS = 2000;
+/**
+ * THR-1809 — the player-opened surfaces a ready gift never opens over. These are the
+ * ids `openPlayerSurfaces()` (`giftDelivery.ts`) can return, in its order; adding a
+ * surface is an edit here and in that helper. `ChapterLedger` and `ScryOverlay` are
+ * registry interrupts too, but the player opened them, so they hold as surfaces.
+ */
+export const GIFT_HOLD_SURFACES: readonly string[] = [
+  'SettingsPanel',
+  'ReadTheThreadsPanel',
+  'AgendaPicker',
+  'ActionDrawer',
+  'AgentProfileModal',
+  'LocationProfileModal',
+  'FactionSheet',
+  'ArmySheet',
+  'ArtifactSheet',
+  'AttachmentDetailView',
+  'AscendantSheet',
+  'DoomClockDetail',
+  'MandateDetail',
+  'HarvestScreen',
+  'Codex',
+  'ChapterLedger',
+  'ScryOverlay',
+];
+/**
+ * THR-1809 — gifts that open at once regardless of open surfaces or recent input.
+ * Beat 0 ("Reach Down") is the arrival's first beat (THR-1716): nothing is open yet.
+ */
+export const GIFT_HOLD_EXEMPT_BEAT_IDS: readonly string[] = ['beat.spine.opening'];
+/**
  * The chronicle line written when Beat 0 settles as already played because The
  * First is bonded before the Director first runs (THR-1786). `{firstName}` is
  * The First's name; a nameless First falls back to {@link SETTLED_OPENING_FIRST_FALLBACK}.

@@ -13,6 +13,14 @@ if (import.meta.env.DEV) {
     queuedPopups: number;
     running: boolean;
   }
+  /** `getGiftDelivery()` shape (THR-1809) — mirrors `DebugGiftDelivery` in debug-bridge.d.ts. */
+  interface DebugGiftDelivery {
+    pendingBeatId: string | null;
+    entered: boolean;
+    heldBy: string[];
+    heldBySurfaces: string[];
+    msSinceLastInput: number;
+  }
   interface SceneSnapshot {
     hexCount: number;
     agentsVisible: number;
@@ -145,6 +153,7 @@ if (import.meta.env.DEV) {
   let _interruptStateProvider: (() => DebugInterruptState) | null = null;
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
   let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
+  let _giftDeliveryProvider: (() => DebugGiftDelivery) | null = null;
   let _refRouterOpen:
     | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
     | null = null;
@@ -1201,6 +1210,9 @@ if (import.meta.env.DEV) {
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
     _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
     _registerOpeningUiProvider: (fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }) => { _openingUiProvider = fn; },
+    getGiftDelivery: async () => _giftDeliveryProvider?.()
+      ?? { pendingBeatId: null, entered: false, heldBy: [], heldBySurfaces: [], msSinceLastInput: 0 },
+    _registerGiftDeliveryProvider: (fn: () => DebugGiftDelivery) => { _giftDeliveryProvider = fn; },
 
     // ── The ref router (THR-1490) ───────────────────────────────────────────
     /**

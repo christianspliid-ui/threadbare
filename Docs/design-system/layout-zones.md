@@ -140,6 +140,7 @@ From bottom to top — every layer that participates in the stacking context:
 | 50 | Focused overlays | ActionDrawer backdrop, `SettingsPanel`, `EncounterVeil` | Focused card interaction, settings |
 | 51 | Focused card | ActionDrawer focused card detail | Above backdrop |
 | 60 | Modals | `Modal` (shared primitive) | Standard dialogs — `MODAL_Z_DEFAULT` |
+| 62 | Held-gift pill | `AscendantBeatOfferBanner` carrying a waiting opening gift | `GIFT_PILL_Z` — above the player surfaces that hold the gift (Modal 60) so the pill stays visible over them; the pool-beat pill stays at 40 (THR-1809) |
 | 65 | Sheet over interrupt | `AgentProfileModal` when opened from `PremonitionModal` | `MODAL_Z_ABOVE_INTERRUPT`, via `Modal`'s `zIndex` prop (THR-1139) |
 | 70+ | Tooltips | `Tooltip` (shared primitive) | `70 + depth` for nested tooltips |
 | 9999 | Portaled menus | `Dropdown` | Portal-based, always on top |

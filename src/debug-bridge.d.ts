@@ -248,6 +248,20 @@ export interface DebugInterruptState {
   running: boolean;
 }
 
+/** `getGiftDelivery()` (THR-1809) — why a ready opening gift is, or is not, on screen. */
+export interface DebugGiftDelivery {
+  /** The pending beat, or null. */
+  pendingBeatId: string | null;
+  /** Its modal is on screen. */
+  entered: boolean;
+  /** Why it waits (`giftDelivery.ts` `GiftHoldReason`); empty when entered or nothing is due. */
+  heldBy: Array<'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed'>;
+  /** The player-opened surfaces holding it. */
+  heldBySurfaces: string[];
+  /** Wall-clock ms since the last pointer or key input (large when none yet). */
+  msSinceLastInput: number;
+}
+
 export interface DebugActiveUIState {
   view: string;
   selectedAgentId: string | null;
@@ -1798,6 +1812,15 @@ export interface DebugBridge {
   _registerInterruptStateProvider(fn: () => DebugInterruptState): void;
   /** THR-1716 — GameView registers the UI-session half of `getOpeningState()`. */
   _registerOpeningUiProvider(fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }): void;
+  /**
+   * THR-1809 — the opening-gift delivery: whether a ready spine gift (beats 1–4) is on
+   * screen, and if not, what holds it — a player-opened surface, input within
+   * `GIFT_QUIET_AFTER_INPUT_MS`, another interrupt, a journey vignette, or suppression.
+   * Async. Returns the empty shape before GameView mounts.
+   */
+  getGiftDelivery(): Promise<DebugGiftDelivery>;
+  /** @internal GameView registers the gift-delivery provider here (THR-1809). */
+  _registerGiftDeliveryProvider(fn: () => DebugGiftDelivery): void;
   /**
    * Both surface records the ref router dispatches on (THR-1490, THR-1491).
    *
