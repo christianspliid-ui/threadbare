@@ -1,0 +1,127 @@
+# THR-1765 — god power growth on the full-window economy (T4 band table, THR-1762 pace, THR-1763 neglect + raids TOGETHER)
+# per god: power d10/30/45/60/90 · primary/secondary score d90 · signature mult d90 · income d10/30/45/60/90 · pool d90 · unpaid ticks · min pool · Held+/Sovereign holdings d90 · bands d90 · sphere levels (days)
+
+## P pinned at 1 (THR-1761..1763 baseline)
+  shepherd P 1.00/1.00/1.00/1.00/1.00  score 2/1  sig ×0.88  income 3.3/5.9/8.8/10.0/11.9  pool 74  unpaid 0  min 44.2  H+ 6/10 S 5  SSSSSH|TFFT  levels@d -  earned 2967/118
+  thin     P 1.00/1.00/1.00/1.00/1.00  score 2/1  sig ×0.88  income 3.2/5.9/8.6/9.8/11.8  pool 74  unpaid 0  min 26.7  H+ 6/10 S 5  SSSSSH|FFFT  levels@d -  earned 2989/118
+  rich     P 1.00/1.00/1.00/1.00/1.00  score 2/1  sig ×0.88  income 3.2/5.9/8.8/10.0/12.0  pool 74  unpaid 0  min 29.1  H+ 6/10 S 5  SSSSSH|TTTT  levels@d -  earned 2981/118
+
+## V0 today: mandate only — no cap
+  shepherd P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.3/5.9/8.8/10.2/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 50,75  earned 2965/118
+  thin     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.6/10.1/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 50,75  earned 2987/118
+  rich     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.8/10.2/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 50,75  earned 2980/118
+
+## V0 today: mandate only — power cap 2.00
+  shepherd P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.3/5.9/8.8/10.2/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 50,75  earned 2965/118
+  thin     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.6/10.1/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 50,75  earned 2987/118
+  rich     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.8/10.2/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 50,75  earned 2980/118
+
+## V0 today: mandate only — power cap 1.67
+  shepherd P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.3/5.9/8.8/10.2/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 50,75  earned 2965/118
+  thin     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.6/10.1/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 50,75  earned 2987/118
+  rich     P 1.00/1.00/1.00/1.33/1.67  score 4/1  sig ×1.16  income 3.2/5.9/8.8/10.2/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 50,75  earned 2980/118
+
+## V1 mandate + attunement [20,60,150,300,600] +1/mark, both bought spheres — no cap
+  shepherd P 1.00/1.33/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,40,75  earned 2960/118
+  thin     P 1.00/1.33/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,40,75  earned 2981/118
+  rich     P 1.00/1.33/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.2/6.1/9.5/10.8/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,40,75  earned 2976/118
+
+## V1 mandate + attunement [20,60,150,300,600] +1/mark, both bought spheres — power cap 2.00
+  shepherd P 1.00/1.33/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,40,75  earned 2960/118
+  thin     P 1.00/1.33/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,40,75  earned 2981/118
+  rich     P 1.00/1.33/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.2/6.1/9.5/10.8/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,40,75  earned 2976/118
+
+## V1 mandate + attunement [20,60,150,300,600] +1/mark, both bought spheres — power cap 1.67
+  shepherd P 1.00/1.33/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.3/6.2/9.3/10.4/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 12,32,40,75  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.2/6.0/9.2/10.3/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 12,31,40,75  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,40,75  earned 2978/118
+
+## V1p as V1, primary only — no cap
+  shepherd P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,75  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,75  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,75  earned 2978/118
+
+## V1p as V1, primary only — power cap 2.00
+  shepherd P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,75  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,75  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/2.00  score 5/1  sig ×1.30  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,75  earned 2978/118
+
+## V1p as V1, primary only — power cap 1.67
+  shepherd P 1.00/1.33/1.67/1.67/1.67  score 5/1  sig ×1.30  income 3.3/6.2/9.3/10.4/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 12,32,75  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/1.67  score 5/1  sig ×1.30  income 3.2/6.0/9.2/10.3/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 12,31,75  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/1.67  score 5/1  sig ×1.30  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,75  earned 2978/118
+
+## V2 mandate + attunement +2/mark, both — no cap
+  shepherd P 1.33/2.00/2.33/2.33/2.67  score 6/2  sig ×1.44  income 3.4/6.6/9.6/10.7/12.4  pool 74  unpaid 0  min 47.4  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 7,10,19,32,75  earned 2956/118
+  thin     P 1.33/2.00/2.33/2.33/2.67  score 6/2  sig ×1.44  income 3.3/6.6/9.2/10.6/12.3  pool 74  unpaid 0  min 33.4  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 7,12,19,31,75  earned 2972/118
+  rich     P 1.33/2.00/2.33/2.33/2.67  score 6/2  sig ×1.44  income 3.3/6.6/9.5/10.8/12.8  pool 74  unpaid 0  min 36.9  H+ 10/10 S 7  SSSSSS|HHHS  levels@d 7,12,19,31,75  earned 2967/118
+
+## V2 mandate + attunement +2/mark, both — power cap 2.00
+  shepherd P 1.33/2.00/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.4/6.6/9.3/10.4/12.4  pool 74  unpaid 0  min 47.4  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 7,10,19,32,75  earned 2956/118
+  thin     P 1.33/2.00/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.3/6.6/9.2/10.3/12.3  pool 74  unpaid 0  min 33.4  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 7,12,19,31,75  earned 2972/118
+  rich     P 1.33/2.00/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.3/6.6/9.5/10.8/12.6  pool 74  unpaid 0  min 36.9  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 7,12,19,31,75  earned 2967/118
+
+## V2 mandate + attunement +2/mark, both — power cap 1.67
+  shepherd P 1.33/1.67/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.4/6.6/9.3/10.4/12.2  pool 74  unpaid 0  min 47.4  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 7,10,19,32,75  earned 2959/118
+  thin     P 1.33/1.67/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.3/6.3/9.2/10.3/12.0  pool 74  unpaid 0  min 33.4  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 7,12,19,31,75  earned 2978/118
+  rich     P 1.33/1.67/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.3/6.6/9.3/10.5/12.6  pool 74  unpaid 0  min 36.9  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 7,12,19,31,75  earned 2970/118
+
+## V3 Model C: attunement +1/mark primary + clash trials 120/6/2 — no cap
+  shepherd P 1.00/1.67/2.00/2.33/2.67  score 7/1  sig ×1.58  income 3.3/6.6/9.3/10.7/12.4  pool 74  unpaid 0  min 44.3  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 10,20,30,50,75  earned 2958/166
+  thin     P 1.00/1.67/2.00/2.33/2.67  score 7/1  sig ×1.58  income 3.2/6.3/9.2/10.6/12.3  pool 74  unpaid 0  min 28.3  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 10,20,30,50,75  earned 2977/166
+  rich     P 1.00/1.67/2.00/2.33/2.67  score 7/1  sig ×1.58  income 3.2/6.6/9.5/10.8/12.8  pool 74  unpaid 0  min 29.8  H+ 10/10 S 7  SSSSSS|HHHS  levels@d 10,20,30,50,75  earned 2973/166
+
+## V3 Model C: attunement +1/mark primary + clash trials 120/6/2 — power cap 2.00
+  shepherd P 1.00/1.67/2.00/2.00/2.00  score 7/1  sig ×1.58  income 3.3/6.6/9.3/10.4/12.4  pool 74  unpaid 0  min 44.3  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 10,20,30,50,75  earned 2958/166
+  thin     P 1.00/1.67/2.00/2.00/2.00  score 7/1  sig ×1.58  income 3.2/6.3/9.2/10.3/12.3  pool 74  unpaid 0  min 28.3  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 10,20,30,50,75  earned 2977/166
+  rich     P 1.00/1.67/2.00/2.00/2.00  score 7/1  sig ×1.58  income 3.2/6.6/9.5/10.8/12.6  pool 74  unpaid 0  min 29.8  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 10,20,30,50,75  earned 2973/166
+
+## V3 Model C: attunement +1/mark primary + clash trials 120/6/2 — power cap 1.67
+  shepherd P 1.00/1.67/1.67/1.67/1.67  score 7/1  sig ×1.58  income 3.3/6.6/9.3/10.4/12.2  pool 74  unpaid 0  min 44.3  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 10,20,30,50,75  earned 2961/166
+  thin     P 1.00/1.67/1.67/1.67/1.67  score 7/1  sig ×1.58  income 3.2/6.3/9.2/10.3/12.0  pool 74  unpaid 0  min 28.3  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 10,20,30,50,75  earned 2982/166
+  rich     P 1.00/1.67/1.67/1.67/1.67  score 7/1  sig ×1.58  income 3.2/6.6/9.3/10.5/12.6  pool 74  unpaid 0  min 29.8  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 10,20,30,50,75  earned 2975/166
+
+## V4 V1 + turf feedback (+1 primary progress per Sovereign holding per 10 days) — no cap
+  shepherd P 1.00/1.67/2.33/2.67/3.67  score 10/2  sig ×2.00  income 3.3/6.6/9.6/10.8/12.9  pool 74  unpaid 0  min 44.2  H+ 8/10 S 8  SSSSSS|STTS  levels@d 12,25,32,40,50,60,70,75,90  earned 2959/118
+  thin     P 1.00/1.33/2.00/2.33/3.67  score 9/2  sig ×1.86  income 3.2/6.0/9.2/10.6/12.5  pool 74  unpaid 0  min 26.7  H+ 7/10 S 7  SSSSSS|TTTS  levels@d 12,30,40,50,60,70,75,80  earned 2981/118
+  rich     P 1.00/1.33/2.33/2.67/3.67  score 10/2  sig ×2.00  income 3.2/6.1/9.5/10.8/13.3  pool 74  unpaid 0  min 29.1  H+ 10/10 S 10  SSSSSS|SSSS  levels@d 12,30,40,40,50,60,70,80,90  earned 2976/118
+
+## V4 V1 + turf feedback (+1 primary progress per Sovereign holding per 10 days) — power cap 2.00
+  shepherd P 1.00/1.67/2.00/2.00/2.00  score 10/2  sig ×2.00  income 3.3/6.6/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,25,32,40,50,60,70,80,90  earned 2960/118
+  thin     P 1.00/1.33/2.00/2.00/2.00  score 9/2  sig ×1.86  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,30,40,50,60,70,80,90  earned 2981/118
+  rich     P 1.00/1.33/2.00/2.00/2.00  score 9/2  sig ×1.86  income 3.2/6.1/9.5/10.8/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,30,40,40,50,60,75,80  earned 2976/118
+
+## V4 V1 + turf feedback (+1 primary progress per Sovereign holding per 10 days) — power cap 1.67
+  shepherd P 1.00/1.67/1.67/1.67/1.67  score 9/2  sig ×1.86  income 3.3/6.6/9.3/10.4/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 12,25,32,40,50,60,75,80  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/1.67  score 9/2  sig ×1.86  income 3.2/6.0/9.2/10.3/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 12,30,40,50,60,70,80,90  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/1.67  score 9/2  sig ×1.86  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,30,40,40,50,70,75,90  earned 2978/118
+
+## V5 V1 with marks [20,60,120,200,300,450,650] — no cap
+  shepherd P 1.00/1.67/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.3/6.6/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 10,25,40,75  earned 2960/118
+  thin     P 1.00/1.67/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.2/6.3/9.2/10.3/12.3  pool 74  unpaid 0  min 28.3  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 10,25,42,75  earned 2979/118
+  rich     P 1.00/1.67/2.00/2.00/2.33  score 5/2  sig ×1.30  income 3.2/6.6/9.5/10.8/12.6  pool 74  unpaid 0  min 29.7  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 10,25,42,75  earned 2974/118
+
+## V5 V1 with marks [20,60,120,200,300,450,650] — power cap 2.00
+  shepherd P 1.00/1.67/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.3/6.6/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 10,25,40,75  earned 2960/118
+  thin     P 1.00/1.67/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.2/6.3/9.2/10.3/12.3  pool 74  unpaid 0  min 28.3  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 10,25,42,75  earned 2979/118
+  rich     P 1.00/1.67/2.00/2.00/2.00  score 5/2  sig ×1.30  income 3.2/6.6/9.5/10.8/12.6  pool 74  unpaid 0  min 29.7  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 10,25,42,75  earned 2974/118
+
+## V5 V1 with marks [20,60,120,200,300,450,650] — power cap 1.67
+  shepherd P 1.00/1.67/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.3/6.6/9.3/10.4/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 10,25,40,75  earned 2962/118
+  thin     P 1.00/1.67/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.2/6.3/9.2/10.3/12.0  pool 74  unpaid 0  min 28.3  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 10,25,42,75  earned 2982/118
+  rich     P 1.00/1.67/1.67/1.67/1.67  score 5/2  sig ×1.30  income 3.2/6.6/9.3/10.5/12.6  pool 74  unpaid 0  min 29.7  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 10,25,42,75  earned 2975/118
+
+## V6 mandate + run-long marks [20,60,150,300,600,1000,1500,2100,2800] +1/mark, both — no cap
+  shepherd P 1.00/1.33/2.00/2.00/2.67  score 6/2  sig ×1.44  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,40,71,86  earned 2960/118
+  thin     P 1.00/1.33/2.00/2.00/2.67  score 6/2  sig ×1.44  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,40,70,86  earned 2981/118
+  rich     P 1.00/1.33/2.00/2.00/2.67  score 6/2  sig ×1.44  income 3.2/6.1/9.5/10.8/12.8  pool 74  unpaid 0  min 29.1  H+ 10/10 S 7  SSSSSS|HHHS  levels@d 12,31,40,70,86  earned 2976/118
+
+## V6 mandate + run-long marks [20,60,150,300,600,1000,1500,2100,2800] +1/mark, both — power cap 2.00
+  shepherd P 1.00/1.33/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.3/6.2/9.3/10.4/12.4  pool 74  unpaid 0  min 44.2  H+ 8/10 S 6  SSSSSS|HTTH  levels@d 12,32,40,71,86  earned 2960/118
+  thin     P 1.00/1.33/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.2/6.0/9.2/10.3/12.3  pool 74  unpaid 0  min 26.7  H+ 7/10 S 6  SSSSSS|TTTH  levels@d 12,31,40,70,86  earned 2981/118
+  rich     P 1.00/1.33/2.00/2.00/2.00  score 6/2  sig ×1.44  income 3.2/6.1/9.5/10.8/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,40,70,86  earned 2976/118
+
+## V6 mandate + run-long marks [20,60,150,300,600,1000,1500,2100,2800] +1/mark, both — power cap 1.67
+  shepherd P 1.00/1.33/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.3/6.2/9.3/10.4/12.2  pool 74  unpaid 0  min 44.2  H+ 7/10 S 6  SSSSSS|HFFT  levels@d 12,32,40,71,86  earned 2962/118
+  thin     P 1.00/1.33/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.2/6.0/9.2/10.3/12.0  pool 74  unpaid 0  min 26.7  H+ 6/10 S 6  SSSSSS|FFFT  levels@d 12,31,40,70,86  earned 2985/118
+  rich     P 1.00/1.33/1.67/1.67/1.67  score 6/2  sig ×1.44  income 3.2/6.1/9.3/10.5/12.6  pool 74  unpaid 0  min 29.1  H+ 10/10 S 6  SSSSSS|HHHH  levels@d 12,31,40,70,86  earned 2978/118

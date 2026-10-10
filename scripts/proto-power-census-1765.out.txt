@@ -1,0 +1,503 @@
+# THR-1765 — band census by god power (cut B, pair-strength opposition, power widens the positive side only)
+# columns per power factor: Hostile Foreign Touched Held Sovereign · "free" = places above Foreign that were Foreign at power 1
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 6 · possessions 7 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 2 · favours 9 · quarrels 4 · marks 4 · notables 47 (no holding 6 / no quarrel 0 / no secret-or-favour 3 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 109/109 casters wield a spell (109 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 192 spells across 32 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +110 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 127/489, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (5 ms)
+
+## seed 42 (medium) — places 235, individuals 509, factions 52; god seeded scores sum 3
+
+### world-god chaos3/energy2
+  place: positive-match 69/235 (p25 0.40 p50 0.80 p75 0.80 max 1.60)
+    P=1.00     0  188   36   11    0   free 0
+    P=1.33     0  179   44   12    0   free 9
+    P=1.67     0  179   44   12    0   free 9
+    P=2.00     0  179   14   31   11   free 9
+    P=2.33     0  178   15   31   11   free 10
+    P=2.67     0  166   22   35   12   free 22
+    P=3.00     0  166   22   35   12   free 22
+    P=3.33     0  166   22   35   12   free 22
+    P=4.00     0  166   13   14   42   free 22
+  individual: positive-match 0/509 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  509    0    0    0   free 0
+    P=1.33     0  509    0    0    0   free 0
+    P=1.67     0  509    0    0    0   free 0
+    P=2.00     0  509    0    0    0   free 0
+    P=2.33     0  509    0    0    0   free 0
+    P=2.67     0  509    0    0    0   free 0
+    P=3.00     0  509    0    0    0   free 0
+    P=3.33     0  509    0    0    0   free 0
+    P=4.00     0  509    0    0    0   free 0
+  faction: positive-match 0/52 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   52    0    0    0   free 0
+    P=1.33     0   52    0    0    0   free 0
+    P=1.67     0   52    0    0    0   free 0
+    P=2.00     0   52    0    0    0   free 0
+    P=2.33     0   52    0    0    0   free 0
+    P=2.67     0   52    0    0    0   free 0
+    P=3.00     0   52    0    0    0   free 0
+    P=3.33     0   52    0    0    0   free 0
+    P=4.00     0   52    0    0    0   free 0
+
+### shepherd life3/spirit2
+  place: positive-match 76/235 (p25 0.28 p50 0.60 p75 2.20 max 3.80)
+    P=1.00    12  182   20   16    5   free 0
+    P=1.33    12  175   18   22    8   free 7
+    P=1.67    12  175   18    9   21   free 7
+    P=2.00    12  150   38   14   21   free 32
+    P=2.33    12  149   37   14   23   free 33
+    P=2.67    12  149   33   11   30   free 33
+    P=3.00    12  149   33   11   30   free 33
+    P=3.33    12  149   33   11   30   free 33
+    P=4.00    12  149   26   13   35   free 33
+  individual: positive-match 198/509 (p25 0.60 p50 0.80 p75 0.80 max 0.80)
+    P=1.00     0  311  198    0    0   free 0
+    P=1.33     0  311  198    0    0   free 0
+    P=1.67     0  311  198    0    0   free 0
+    P=2.00     0  311   94  104    0   free 0
+    P=2.33     0  311   94  104    0   free 0
+    P=2.67     0  311    0  198    0   free 0
+    P=3.00     0  311    0  198    0   free 0
+    P=3.33     0  311    0  198    0   free 0
+    P=4.00     0  311    0   94  104   free 0
+  faction: positive-match 0/52 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   52    0    0    0   free 0
+    P=1.33     0   52    0    0    0   free 0
+    P=1.67     0   52    0    0    0   free 0
+    P=2.00     0   52    0    0    0   free 0
+    P=2.33     0   52    0    0    0   free 0
+    P=2.67     0   52    0    0    0   free 0
+    P=3.00     0   52    0    0    0   free 0
+    P=3.33     0   52    0    0    0   free 0
+    P=4.00     0   52    0    0    0   free 0
+
+### showcase mind3/spirit2
+  place: positive-match 107/235 (p25 0.28 p50 0.60 p75 0.84 max 1.60)
+    P=1.00     0  180   50    5    0   free 0
+    P=1.33     0  155   72    8    0   free 25
+    P=1.67     0  155   70   10    0   free 25
+    P=2.00     0  149   35   46    5   free 31
+    P=2.33     0  140   44   46    5   free 40
+    P=2.67     0  140   40   47    8   free 40
+    P=3.00     0  140   40   45   10   free 40
+    P=3.33     0  140   40   45   10   free 40
+    P=4.00     0  140   15   29   51   free 40
+  individual: positive-match 199/509 (p25 0.60 p50 0.80 p75 0.80 max 0.80)
+    P=1.00     0  310  199    0    0   free 0
+    P=1.33     0  310  199    0    0   free 0
+    P=1.67     0  310  199    0    0   free 0
+    P=2.00     0  310   95  104    0   free 0
+    P=2.33     0  310   95  104    0   free 0
+    P=2.67     0  310    0  199    0   free 0
+    P=3.00     0  310    0  199    0   free 0
+    P=3.33     0  310    0  199    0   free 0
+    P=4.00     0  310    0   95  104   free 0
+  faction: positive-match 0/52 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   52    0    0    0   free 0
+    P=1.33     0   52    0    0    0   free 0
+    P=1.67     0   52    0    0    0   free 0
+    P=2.00     0   52    0    0    0   free 0
+    P=2.33     0   52    0    0    0   free 0
+    P=2.67     0   52    0    0    0   free 0
+    P=3.00     0   52    0    0    0   free 0
+    P=3.33     0   52    0    0    0   free 0
+    P=4.00     0   52    0    0    0   free 0
+
+### stone force3/matter2
+  place: positive-match 106/235 (p25 1.08 p50 1.80 p75 1.80 max 2.80)
+    P=1.00     0  130   34   71    0   free 0
+    P=1.33     0  129   27   66   13   free 1
+    P=1.67     0  129    3   35   68   free 1
+    P=2.00     0  129    3   32   71   free 1
+    P=2.33     0  129    3   24   79   free 1
+    P=2.67     0  129    1   26   79   free 1
+    P=3.00     0  129    1    2  103   free 1
+    P=3.33     0  129    1    2  103   free 1
+    P=4.00     0  129    0    3  103   free 1
+  individual: positive-match 0/509 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  509    0    0    0   free 0
+    P=1.33     0  509    0    0    0   free 0
+    P=1.67     0  509    0    0    0   free 0
+    P=2.00     0  509    0    0    0   free 0
+    P=2.33     0  509    0    0    0   free 0
+    P=2.67     0  509    0    0    0   free 0
+    P=3.00     0  509    0    0    0   free 0
+    P=3.33     0  509    0    0    0   free 0
+    P=4.00     0  509    0    0    0   free 0
+  faction: positive-match 0/52 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   52    0    0    0   free 0
+    P=1.33     0   52    0    0    0   free 0
+    P=1.67     0   52    0    0    0   free 0
+    P=2.00     0   52    0    0    0   free 0
+    P=2.33     0   52    0    0    0   free 0
+    P=2.67     0   52    0    0    0   free 0
+    P=3.00     0   52    0    0    0   free 0
+    P=3.33     0   52    0    0    0   free 0
+    P=4.00     0   52    0    0    0   free 0
+
+### spread life2/matter2/mind1
+  place: positive-match 178/235 (p25 0.44 p50 1.08 p75 1.48 max 2.00)
+    P=1.00     0  104  110   21    0   free 0
+    P=1.33     0   63   95   77    0   free 41
+    P=1.67     0   63   73   87   12   free 41
+    P=2.00     0   63   53   98   21   free 41
+    P=2.33     0   58   58   55   64   free 46
+    P=2.67     0   58   52   48   77   free 46
+    P=3.00     0   58   46   38   93   free 46
+    P=3.33     0   57   47   32   99   free 47
+    P=4.00     0   57    6   53  119   free 47
+  individual: positive-match 94/509 (p25 0.40 p50 0.40 p75 0.40 max 0.40)
+    P=1.00     0  509    0    0    0   free 0
+    P=1.33     0  415   94    0    0   free 94
+    P=1.67     0  415   94    0    0   free 94
+    P=2.00     0  415   94    0    0   free 94
+    P=2.33     0  415   94    0    0   free 94
+    P=2.67     0  415   94    0    0   free 94
+    P=3.00     0  415   94    0    0   free 94
+    P=3.33     0  415   94    0    0   free 94
+    P=4.00     0  415    0   94    0   free 94
+  faction: positive-match 0/52 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   52    0    0    0   free 0
+    P=1.33     0   52    0    0    0   free 0
+    P=1.67     0   52    0    0    0   free 0
+    P=2.00     0   52    0    0    0   free 0
+    P=2.33     0   52    0    0    0   free 0
+    P=2.67     0   52    0    0    0   free 0
+    P=3.00     0   52    0    0    0   free 0
+    P=3.33     0   52    0    0    0   free 0
+    P=4.00     0   52    0    0    0   free 0
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 17/friend 17/rival 17 (no pool 0) · home-realm moves 6 · favours 16 · quarrels 6 · marks 5 · notables 67 (no holding 10 / no quarrel 0 / no secret-or-favour 2 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 127/127 casters wield a spell (127 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 180 spells across 30 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +147 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 77, dead 2+3+4, descent 135/505, ambitions 3 minted / 3 skipped (3 ms)
+
+## seed 99 (medium) — places 238, individuals 643, factions 59; god seeded scores sum 3
+
+### world-god energy3/light2
+  place: positive-match 82/238 (p25 0.40 p50 1.60 p75 1.60 max 2.80)
+    P=1.00     0  180    8   50    0   free 0
+    P=1.33     0  176   11   47    4   free 4
+    P=1.67     0  176   11   46    5   free 4
+    P=2.00     0  176   11    1   50   free 4
+    P=2.33     0  176   11    0   51   free 4
+    P=2.67     0  167   13    7   51   free 13
+    P=3.00     0  167   13    7   51   free 13
+    P=3.33     0  156   24    7   51   free 24
+    P=4.00     0  156   20   11   51   free 24
+  individual: positive-match 0/643 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  643    0    0    0   free 0
+    P=1.33     0  643    0    0    0   free 0
+    P=1.67     0  643    0    0    0   free 0
+    P=2.00     0  643    0    0    0   free 0
+    P=2.33     0  643    0    0    0   free 0
+    P=2.67     0  643    0    0    0   free 0
+    P=3.00     0  643    0    0    0   free 0
+    P=3.33     0  643    0    0    0   free 0
+    P=4.00     0  643    0    0    0   free 0
+  faction: positive-match 0/59 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   59    0    0    0   free 0
+    P=1.33     0   59    0    0    0   free 0
+    P=1.67     0   59    0    0    0   free 0
+    P=2.00     0   59    0    0    0   free 0
+    P=2.33     0   59    0    0    0   free 0
+    P=2.67     0   59    0    0    0   free 0
+    P=3.00     0   59    0    0    0   free 0
+    P=3.33     0   59    0    0    0   free 0
+    P=4.00     0   59    0    0    0   free 0
+
+### shepherd life3/spirit2
+  place: positive-match 118/238 (p25 0.28 p50 0.40 p75 0.88 max 3.80)
+    P=1.00     5  180   35   14    4   free 0
+    P=1.33     5  172   33   23    5   free 8
+    P=1.67     5  172   33   10   18   free 8
+    P=2.00     5  141   43   31   18   free 39
+    P=2.33     5  122   61   27   23   free 58
+    P=2.67     5  122   58   25   28   free 58
+    P=3.00     5  122   58   25   28   free 58
+    P=3.33     5  122   58   25   28   free 58
+    P=4.00     5  122   50   12   49   free 58
+  individual: positive-match 0/643 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  643    0    0    0   free 0
+    P=1.33     0  643    0    0    0   free 0
+    P=1.67     0  643    0    0    0   free 0
+    P=2.00     0  643    0    0    0   free 0
+    P=2.33     0  643    0    0    0   free 0
+    P=2.67     0  643    0    0    0   free 0
+    P=3.00     0  643    0    0    0   free 0
+    P=3.33     0  643    0    0    0   free 0
+    P=4.00     0  643    0    0    0   free 0
+  faction: positive-match 0/59 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   59    0    0    0   free 0
+    P=1.33     0   59    0    0    0   free 0
+    P=1.67     0   59    0    0    0   free 0
+    P=2.00     0   59    0    0    0   free 0
+    P=2.33     0   59    0    0    0   free 0
+    P=2.67     0   59    0    0    0   free 0
+    P=3.00     0   59    0    0    0   free 0
+    P=3.33     0   59    0    0    0   free 0
+    P=4.00     0   59    0    0    0   free 0
+
+### showcase mind3/spirit2
+  place: positive-match 61/238 (p25 0.24 p50 0.40 p75 0.60 max 1.00)
+    P=1.00     0  222   16    0    0   free 0
+    P=1.33     0  201   37    0    0   free 21
+    P=1.67     0  201   33    4    0   free 21
+    P=2.00     0  194   38    6    0   free 28
+    P=2.33     0  187   45    6    0   free 35
+    P=2.67     0  187   35   16    0   free 35
+    P=3.00     0  187   35   12    4   free 35
+    P=3.33     0  187   35   12    4   free 35
+    P=4.00     0  187   14   31    6   free 35
+  individual: positive-match 0/643 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  643    0    0    0   free 0
+    P=1.33     0  643    0    0    0   free 0
+    P=1.67     0  643    0    0    0   free 0
+    P=2.00     0  643    0    0    0   free 0
+    P=2.33     0  643    0    0    0   free 0
+    P=2.67     0  643    0    0    0   free 0
+    P=3.00     0  643    0    0    0   free 0
+    P=3.33     0  643    0    0    0   free 0
+    P=4.00     0  643    0    0    0   free 0
+  faction: positive-match 0/59 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   59    0    0    0   free 0
+    P=1.33     0   59    0    0    0   free 0
+    P=1.67     0   59    0    0    0   free 0
+    P=2.00     0   59    0    0    0   free 0
+    P=2.33     0   59    0    0    0   free 0
+    P=2.67     0   59    0    0    0   free 0
+    P=3.00     0   59    0    0    0   free 0
+    P=3.33     0   59    0    0    0   free 0
+    P=4.00     0   59    0    0    0   free 0
+
+### stone force3/matter2
+  place: positive-match 115/238 (p25 0.80 p50 1.80 p75 2.60 max 2.80)
+    P=1.00     0  126   40   72    0   free 0
+    P=1.33     0  125   34   37   42   free 1
+    P=1.67     0  125   34    8   71   free 1
+    P=2.00     0  125    8   33   72   free 1
+    P=2.33     0  125    8   26   79   free 1
+    P=2.67     0  125    1   33   79   free 1
+    P=3.00     0  125    1   33   79   free 1
+    P=3.33     0  125    1   33   79   free 1
+    P=4.00     0  125    0    8  105   free 1
+  individual: positive-match 456/643 (p25 1.20 p50 1.20 p75 1.40 max 1.40)
+    P=1.00     0  187  456    0    0   free 0
+    P=1.33     0  187  109  347    0   free 0
+    P=1.67     0  187  109  347    0   free 0
+    P=2.00     0  187    0  456    0   free 0
+    P=2.33     0  187    0  271  185   free 0
+    P=2.67     0  187    0  109  347   free 0
+    P=3.00     0  187    0  109  347   free 0
+    P=3.33     0  187    0  109  347   free 0
+    P=4.00     0  187    0    0  456   free 0
+  faction: positive-match 0/59 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   59    0    0    0   free 0
+    P=1.33     0   59    0    0    0   free 0
+    P=1.67     0   59    0    0    0   free 0
+    P=2.00     0   59    0    0    0   free 0
+    P=2.33     0   59    0    0    0   free 0
+    P=2.67     0   59    0    0    0   free 0
+    P=3.00     0   59    0    0    0   free 0
+    P=3.33     0   59    0    0    0   free 0
+    P=4.00     0   59    0    0    0   free 0
+
+### spread life2/matter2/mind1
+  place: positive-match 178/238 (p25 0.60 p50 1.20 p75 1.88 max 2.00)
+    P=1.00     0   85  101   52    0   free 0
+    P=1.33     0   76   55  107    0   free 9
+    P=1.67     0   76   42   68   52   free 9
+    P=2.00     0   74   34   78   52   free 11
+    P=2.33     0   74   32   57   75   free 11
+    P=2.67     0   74   25   32  107   free 11
+    P=3.00     0   74   11   36  117   free 11
+    P=3.33     0   60   25   33  120   free 25
+    P=4.00     0   60   16   32  130   free 25
+  individual: positive-match 294/643 (p25 0.68 p50 0.68 p75 0.80 max 0.80)
+    P=1.00     0  349  294    0    0   free 0
+    P=1.33     0  349  294    0    0   free 0
+    P=1.67     0  349  294    0    0   free 0
+    P=2.00     0  349  185  109    0   free 0
+    P=2.33     0  349    0  294    0   free 0
+    P=2.67     0  349    0  294    0   free 0
+    P=3.00     0  349    0  294    0   free 0
+    P=3.33     0  349    0  294    0   free 0
+    P=4.00     0  349    0  185  109   free 0
+  faction: positive-match 0/59 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   59    0    0    0   free 0
+    P=1.33     0   59    0    0    0   free 0
+    P=1.67     0   59    0    0    0   free 0
+    P=2.00     0   59    0    0    0   free 0
+    P=2.33     0   59    0    0    0   free 0
+    P=2.67     0   59    0    0    0   free 0
+    P=3.00     0   59    0    0    0   free 0
+    P=3.33     0   59    0    0    0   free 0
+    P=4.00     0   59    0    0    0   free 0
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 16/friend 16/rival 16 (no pool 0) · home-realm moves 1 · favours 13 · quarrels 4 · marks 5 · notables 72 (no holding 16 / no quarrel 0 / no secret-or-favour 0 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 129/129 casters wield a spell (129 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 186 spells across 31 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +148 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 3, founded 80, dead 3+3+4, descent 136/592, 3 war(s) without a burned town, ambitions 4 minted / 3 skipped (3 ms)
+
+## seed 7 (medium) — places 246, individuals 674, factions 58; god seeded scores sum 3
+
+### world-god time3/energy2
+  place: positive-match 92/246 (p25 0.60 p50 0.60 p75 1.00 max 1.20)
+    P=1.00     0  167   79    0    0   free 0
+    P=1.33     0  154   85    7    0   free 13
+    P=1.67     0  154   60   32    0   free 13
+    P=2.00     0  154   48   44    0   free 13
+    P=2.33     0  154   48   44    0   free 13
+    P=2.67     0  154   14   71    7   free 13
+    P=3.00     0  154   13   49   30   free 13
+    P=3.33     0  154   13   47   32   free 13
+    P=4.00     0  154    0   48   44   free 13
+  individual: positive-match 0/674 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0  674    0    0    0   free 0
+    P=1.33     0  674    0    0    0   free 0
+    P=1.67     0  674    0    0    0   free 0
+    P=2.00     0  674    0    0    0   free 0
+    P=2.33     0  674    0    0    0   free 0
+    P=2.67     0  674    0    0    0   free 0
+    P=3.00     0  674    0    0    0   free 0
+    P=3.33     0  674    0    0    0   free 0
+    P=4.00     0  674    0    0    0   free 0
+  faction: positive-match 0/58 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   58    0    0    0   free 0
+    P=1.33     0   58    0    0    0   free 0
+    P=1.67     0   58    0    0    0   free 0
+    P=2.00     0   58    0    0    0   free 0
+    P=2.33     0   58    0    0    0   free 0
+    P=2.67     0   58    0    0    0   free 0
+    P=3.00     0   58    0    0    0   free 0
+    P=3.33     0   58    0    0    0   free 0
+    P=4.00     0   58    0    0    0   free 0
+
+### shepherd life3/spirit2
+  place: positive-match 83/246 (p25 0.28 p50 0.84 p75 2.20 max 3.40)
+    P=1.00     4  190   20   24    8   free 0
+    P=1.33     4  184   20   26   12   free 6
+    P=1.67     4  184   20    6   32   free 6
+    P=2.00     4  173   23   14   32   free 17
+    P=2.33     4  166   29   14   33   free 24
+    P=2.67     4  166   24   14   38   free 24
+    P=3.00     4  166   24   14   38   free 24
+    P=3.33     4  166   24   14   38   free 24
+    P=4.00     4  166   18   12   46   free 24
+  individual: positive-match 129/674 (p25 0.80 p50 0.80 p75 0.80 max 0.80)
+    P=1.00     0  545  129    0    0   free 0
+    P=1.33     0  545  129    0    0   free 0
+    P=1.67     0  545  129    0    0   free 0
+    P=2.00     0  545    0  129    0   free 0
+    P=2.33     0  545    0  129    0   free 0
+    P=2.67     0  545    0  129    0   free 0
+    P=3.00     0  545    0  129    0   free 0
+    P=3.33     0  545    0  129    0   free 0
+    P=4.00     0  545    0    0  129   free 0
+  faction: positive-match 0/58 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   58    0    0    0   free 0
+    P=1.33     0   58    0    0    0   free 0
+    P=1.67     0   58    0    0    0   free 0
+    P=2.00     0   58    0    0    0   free 0
+    P=2.33     0   58    0    0    0   free 0
+    P=2.67     0   58    0    0    0   free 0
+    P=3.00     0   58    0    0    0   free 0
+    P=3.33     0   58    0    0    0   free 0
+    P=4.00     0   58    0    0    0   free 0
+
+### showcase mind3/spirit2
+  place: positive-match 59/246 (p25 0.24 p50 0.40 p75 0.40 max 1.00)
+    P=1.00     0  236   10    0    0   free 0
+    P=1.33     0  208   38    0    0   free 28
+    P=1.67     0  208   31    7    0   free 28
+    P=2.00     0  206   32    8    0   free 30
+    P=2.33     0  194   44    8    0   free 42
+    P=2.67     0  194   42   10    0   free 42
+    P=3.00     0  194   42    3    7   free 42
+    P=3.33     0  194   42    3    7   free 42
+    P=4.00     0  194   14   30    8   free 42
+  individual: positive-match 129/674 (p25 0.80 p50 0.80 p75 0.80 max 0.80)
+    P=1.00     0  545  129    0    0   free 0
+    P=1.33     0  545  129    0    0   free 0
+    P=1.67     0  545  129    0    0   free 0
+    P=2.00     0  545    0  129    0   free 0
+    P=2.33     0  545    0  129    0   free 0
+    P=2.67     0  545    0  129    0   free 0
+    P=3.00     0  545    0  129    0   free 0
+    P=3.33     0  545    0  129    0   free 0
+    P=4.00     0  545    0    0  129   free 0
+  faction: positive-match 0/58 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   58    0    0    0   free 0
+    P=1.33     0   58    0    0    0   free 0
+    P=1.67     0   58    0    0    0   free 0
+    P=2.00     0   58    0    0    0   free 0
+    P=2.33     0   58    0    0    0   free 0
+    P=2.67     0   58    0    0    0   free 0
+    P=3.00     0   58    0    0    0   free 0
+    P=3.33     0   58    0    0    0   free 0
+    P=4.00     0   58    0    0    0   free 0
+
+### stone force3/matter2
+  place: positive-match 138/246 (p25 1.20 p50 1.80 p75 2.60 max 3.00)
+    P=1.00     0  110   56   52   28   free 0
+    P=1.33     0  110   14   74   48   free 0
+    P=1.67     0  110    1   56   79   free 0
+    P=2.00     0  110    1   55   80   free 0
+    P=2.33     0  110    1   43   92   free 0
+    P=2.67     0  110    0   14  122   free 0
+    P=3.00     0  110    0    1  135   free 0
+    P=3.33     0  110    0    1  135   free 0
+    P=4.00     0  110    0    1  135   free 0
+  individual: positive-match 300/674 (p25 0.40 p50 0.40 p75 1.20 max 1.20)
+    P=1.00     0  571  103    0    0   free 0
+    P=1.33     0  374  197  103    0   free 197
+    P=1.67     0  374  197  103    0   free 197
+    P=2.00     0  374  197  103    0   free 197
+    P=2.33     0  374  197  103    0   free 197
+    P=2.67     0  374  197    0  103   free 197
+    P=3.00     0  374  197    0  103   free 197
+    P=3.33     0  374  197    0  103   free 197
+    P=4.00     0  374    0  197  103   free 197
+  faction: positive-match 0/58 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   58    0    0    0   free 0
+    P=1.33     0   58    0    0    0   free 0
+    P=1.67     0   58    0    0    0   free 0
+    P=2.00     0   58    0    0    0   free 0
+    P=2.33     0   58    0    0    0   free 0
+    P=2.67     0   58    0    0    0   free 0
+    P=3.00     0   58    0    0    0   free 0
+    P=3.33     0   58    0    0    0   free 0
+    P=4.00     0   58    0    0    0   free 0
+
+### spread life2/matter2/mind1
+  place: positive-match 152/246 (p25 0.84 p50 1.08 p75 1.48 max 2.00)
+    P=1.00     0  111  108   27    0   free 0
+    P=1.33     0  110   70   66    0   free 1
+    P=1.67     0  110   39   73   24   free 1
+    P=2.00     0  110   11   98   27   free 1
+    P=2.33     0  110   11   73   52   free 1
+    P=2.67     0  110    9   61   66   free 1
+    P=3.00     0  110    1   56   79   free 1
+    P=3.33     0   94   17   38   97   free 17
+    P=4.00     0   94   16   11  125   free 17
+  individual: positive-match 197/674 (p25 0.40 p50 0.40 p75 0.40 max 0.40)
+    P=1.00     0  674    0    0    0   free 0
+    P=1.33     0  477  197    0    0   free 197
+    P=1.67     0  477  197    0    0   free 197
+    P=2.00     0  477  197    0    0   free 197
+    P=2.33     0  477  197    0    0   free 197
+    P=2.67     0  477  197    0    0   free 197
+    P=3.00     0  477  197    0    0   free 197
+    P=3.33     0  477  197    0    0   free 197
+    P=4.00     0  477    0  197    0   free 197
+  faction: positive-match 0/58 (p25 0.00 p50 0.00 p75 0.00 max 0.00)
+    P=1.00     0   58    0    0    0   free 0
+    P=1.33     0   58    0    0    0   free 0
+    P=1.67     0   58    0    0    0   free 0
+    P=2.00     0   58    0    0    0   free 0
+    P=2.33     0   58    0    0    0   free 0
+    P=2.67     0   58    0    0    0   free 0
+    P=3.00     0   58    0    0    0   free 0
+    P=3.33     0   58    0    0    0   free 0
+    P=4.00     0   58    0    0    0   free 0
