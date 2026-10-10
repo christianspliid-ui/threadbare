@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-10 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-10: the choice screen states only the paying sphere’s essence, not all twelve summed** ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)). Merged via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305); going live now.
+- **2026-10-10: a ruler’s card no longer reads "TRUE_BELIEVER" and shows one thread chip per person** ([THR-1797](https://linear.app/threadbare/issue/THR-1797/a-rulers-card-reads-true-believer-under-the-name-and-repeats-each)). Merged via [#2304](https://github.com/christianspliid-ui/threadbare/pull/2304) and live.
 - **2026-10-10: each chapter step shows one odds word, and the line under it says which way your hand moved them** (THR-1791). Merged via [#2303](https://github.com/christianspliid-ui/threadbare/pull/2303) and live.
 - **2026-10-10: God’s Will options name the encounter they ask for** ([THR-1802](https://linear.app/threadbare/issue/THR-1802/gods-will-options-never-name-what-they-ask-for-assist-right-here)). Merged via [#2302](https://github.com/christianspliid-ui/threadbare/pull/2302) and live.
 - **2026-10-10: a chapter's second step opens with an empty hand** ([THR-1801](https://linear.app/threadbare/issue/THR-1801/a-chapters-second-step-opens-with-the-first-steps-cards-already-picked)). Merged via [#2301](https://github.com/christianspliid-ui/threadbare/pull/2301) and live.
@@ -34,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-10: factions, armies, companies and relics belong to your god through the people and ground they are made of** ([THR-1764](https://linear.app/threadbare/issue/THR-1764/dominion-of-the-secondary-actors-how-a-faction-an-army-a-company-or-an)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: Star's third skill word is now "Charted", so no skill word reads as an odds word** (THR-1790). Merged via [#2295](https://github.com/christianspliid-ui/threadbare/pull/2295) and live.
 - **2026-10-09: an ending shows one reputation row per mortal, named** ([THR-1789](https://linear.app/threadbare/issue/THR-1789/an-ending-shows-one-reputation-row-per-mortal-named-fold-the-per-step)). Merged via [#2294](https://github.com/christianspliid-ui/threadbare/pull/2294) and live.
-- **2026-10-09: the warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)). Merged via [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292) and live.
-- **2026-10-09: The First's story moments name their stage in words, not "Beat 1 — Call"** (THR-1788). Merged via [#2293](https://github.com/christianspliid-ui/threadbare/pull/2293) and live.
 
 ---
 
