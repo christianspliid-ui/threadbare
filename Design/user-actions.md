@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-10 13:30 local (11:30 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 13:56 local (11:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-10: factions, armies, companies and relics belong to your god through the people and ground they are made of** ([THR-1764](https://linear.app/threadbare/issue/THR-1764/dominion-of-the-secondary-actors-how-a-faction-an-army-a-company-or-an)). Decided for you by the design lane; say "veto" in chat to reverse.
 - **2026-10-09: Star's third skill word is now "Charted", so no skill word reads as an odds word** (THR-1790). Merged via [#2295](https://github.com/christianspliid-ui/threadbare/pull/2295) and live.
 - **2026-10-09: an ending shows one reputation row per mortal, named** ([THR-1789](https://linear.app/threadbare/issue/THR-1789/an-ending-shows-one-reputation-row-per-mortal-named-fold-the-per-step)). Merged via [#2294](https://github.com/christianspliid-ui/threadbare/pull/2294) and live.
 - **2026-10-09: the warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)). Merged via [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292) and live.
@@ -35,7 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: God's Will prices now name the sphere they bill** ([THR-1783](https://linear.app/threadbare/issue/THR-1783)). Merged via [#2289](https://github.com/christianspliid-ui/threadbare/pull/2289) and live.
 - **2026-10-09: "Who holds power" now opens the person you click** ([THR-1780](https://linear.app/threadbare/issue/THR-1780/who-holds-power-is-a-dead-end-the-notables-badge-counts-active-agendas)). Merged via [#2288](https://github.com/christianspliid-ui/threadbare/pull/2288) and live.
 - **2026-10-09: template seams no longer reach the player's text** ([THR-1779](https://linear.app/threadbare/issue/THR-1779/recurs-after-fix-template-seams-reach-the-player-his-only-kin-claims)). Merged via [#2286](https://github.com/christianspliid-ui/threadbare/pull/2286) and live.
-- **2026-10-09: you chose B: the world offers powers, you choose and pay** ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)). Your words: *"i go with B, and i would like a tier/progression system of actions, aswell as an assessment of which should be generic."* The tiers and generic set are now [THR-1794](https://linear.app/threadbare/issue/THR-1794/god-card-tiers-and-the-generic-set-a-progression-ladder-for-every-god).
 
 ---
 
