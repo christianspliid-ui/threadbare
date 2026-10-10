@@ -498,13 +498,16 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     }
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
-  it("denies a push whose `cd` target cannot be resolved, instead of failing soft into allow (THR-1795)", () => {
+  it("judges an unresolvable `cd` target in the hook's cwd — never a phantom path that fails soft into allow (THR-1795)", () => {
     resetTo(baseSha);
     clearReceipts();
     commit("src/feature.ts", "feat: code");
     const r = runHook("cd $WT && git push origin HEAD", ARMED);
     expect(r.status).toBe(2);
-    expect(r.stderr).toContain("cannot resolve the directory");
+    expect(r.stderr).not.toContain("fail-soft");
+    expect(r.stderr).toContain(head().slice(0, 10));
+    // An ordinary first push of a branch with no PR is still never judged.
+    expect(runHook('cd "$(git rev-parse --show-toplevel)" && git push -u origin HEAD', null as unknown as object).status).toBe(0);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("carries a receipt across a reference-page fix, but not across a src/ fix (THR-1795, #1156)", () => {

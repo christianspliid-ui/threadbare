@@ -164,24 +164,15 @@ const isAbsoluteDir = (dir: string) => /^([a-zA-Z]:)?[\\/]/.test(dir) || /^~/.te
 /**
  * The directory a line's `cd` / `git -C` leaves a command in, resolved against the
  * hook's cwd, with `~` expanded to the home directory. Null when it does not resolve to
- * a directory that exists (an unexpanded `$VAR`, a typo). The caller then DENIES:
- * judging a phantom tree throws, and the fail-soft path would ALLOW an unreviewed push
- * (THR-1795 review, round 1).
+ * a directory that exists (an unexpanded `$VAR`, a `$(…)`, a tree created earlier on
+ * the same line). The caller then judges the hook's cwd instead: judging a phantom tree
+ * throws, and the fail-soft path would ALLOW an unreviewed push (THR-1795 review).
  */
 export function resolveCommandDir(hookCwd: string, dir: string | null, home: string = homedir()): string | null {
   if (!dir) return hookCwd;
   const expanded = dir.replace(/^~(?=$|[\\/])/, () => home.replace(/\\/g, "/"));
   const resolved = path.resolve(hookCwd, normalizeCwd(expanded));
   return existsSync(resolved) ? resolved : null;
-}
-
-function unresolvedDir(dir: string | null): GateDecision {
-  return {
-    verdict: "deny",
-    reason:
-      `cannot resolve the directory this command runs in (\`${dir}\`), so the gate cannot tell which commit it ships. ` +
-      "Use a literal path with no variables: `git -C <absolute path> push …`.",
-  };
 }
 
 /** `<base>/<next>`, where an absolute `next` replaces `base` (as both `cd` and `git -C` do). */
@@ -566,8 +557,9 @@ function evaluateMerge(command: string, hookCwd: string): GateDecision {
   const { target, repo } = extractMergeTarget(command);
   // `cd <dir> && gh pr merge` runs in <dir>: judge that repo, not the hook's cwd.
   const dir = mergeDir(command);
-  const cwd = resolveCommandDir(hookCwd, dir);
-  if (cwd === null) return unresolvedDir(dir);
+  // Unresolvable (`$VAR`, `$(…)`, a tree made earlier on the line) → judge the hook's
+  // cwd, as before THR-1795: never a phantom path, which would throw into fail-soft ALLOW.
+  const cwd = resolveCommandDir(hookCwd, dir) ?? hookCwd;
   let headSha: string;
   let prComments: string[] = [];
   if (target && (ghAvailable() || process.env.REVIEW_GATE_PR_FIXTURE)) {
@@ -615,8 +607,9 @@ function evaluateMerge(command: string, hookCwd: string): GateDecision {
 function evaluatePush(command: string, hookCwd: string): GateDecision {
   const { source, dest, dir } = extractPushTarget(command);
   // `git -C <dir> push` runs in <dir>: judge that repo, not the hook's cwd.
-  const cwd = resolveCommandDir(hookCwd, dir);
-  if (cwd === null) return unresolvedDir(dir);
+  // Unresolvable (`$VAR`, `$(…)`, a tree made earlier on the line) → judge the hook's
+  // cwd, as before THR-1795: never a phantom path, which would throw into fail-soft ALLOW.
+  const cwd = resolveCommandDir(hookCwd, dir) ?? hookCwd;
   const looked = viewPr(cwd, dest, null, "number,state,autoMergeRequest,comments");
   if (isLookupError(looked)) {
     // We cannot tell whether this push merges — so judge it as if it does. A pushed
