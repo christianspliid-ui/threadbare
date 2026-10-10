@@ -441,46 +441,51 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
     };
   }
 
-  // Newest is red — but if the newest conclusive later run of the same commit
-  // from another event (the nightly schedule, a manual re-run) is green, the
-  // tree passes: a flake, not broken code (THR-1776). The newest one decides, so
-  // a re-run that went red again on the same tree cancels an older green.
-  // Without a sha on both sides there is no proof.
+  // Newest push run is red — but the lane's non-push runs on main (the nightly
+  // schedule, a manual dispatch) always test main's head at their time, so they
+  // are evidence too (THR-1776). The newest conclusive one after the push red
+  // decides: a re-run that went red again cancels an older green. Green on the
+  // same commit → a flake, not broken code. Green on a later commit (a docs-only
+  // push moved main without running the push lane) → main's code passes now.
   const newestRed = conclusive[0];
-  const latestRerun = newestRed.headSha
-    ? (lane.otherRuns ?? [])
-        .filter(
-          (r) =>
-            r.status === "completed" &&
-            typeof r.conclusion === "string" &&
-            (RED_CONCLUSIONS.has(r.conclusion) || GREEN_CONCLUSIONS.has(r.conclusion)) &&
-            r.headSha === newestRed.headSha &&
-            r.createdAtMs > newestRed.createdAtMs,
-        )
-        .reduce<WorkflowRunRecord | undefined>(
-          (acc, r) => (acc === undefined || r.createdAtMs > acc.createdAtMs ? r : acc),
-          undefined,
-        )
-    : undefined;
-  const vindicating =
-    latestRerun && GREEN_CONCLUSIONS.has(latestRerun.conclusion as string) ? latestRerun : undefined;
-  if (vindicating) {
-    const sha = (newestRed.headSha as string).slice(0, 8);
+  const otherConclusive = (lane.otherRuns ?? []).filter(
+    (r) =>
+      r.status === "completed" &&
+      typeof r.conclusion === "string" &&
+      (RED_CONCLUSIONS.has(r.conclusion) || GREEN_CONCLUSIONS.has(r.conclusion)),
+  );
+  const latestRerun = otherConclusive
+    .filter((r) => r.createdAtMs > newestRed.createdAtMs)
+    .reduce<WorkflowRunRecord | undefined>(
+      (acc, r) => (acc === undefined || r.createdAtMs > acc.createdAtMs ? r : acc),
+      undefined,
+    );
+  if (latestRerun && GREEN_CONCLUSIONS.has(latestRerun.conclusion as string)) {
+    const redSha = newestRed.headSha?.slice(0, 8) ?? "unknown";
+    const sameCommit = newestRed.headSha !== undefined && latestRerun.headSha === newestRed.headSha;
     return {
       name,
       file,
-      verdict: "flaky",
+      verdict: sameCommit ? "flaky" : "healthy",
       needsChristian: false,
       considered,
       redSinceMs: null,
-      detail: `"${name}" failed on push for commit ${sha} (${newestRed.conclusion}), then passed on a later run of the same commit (${vindicating.conclusion}) — a flaky test, not broken code.`,
+      detail: sameCommit
+        ? `"${name}" failed on push for commit ${redSha} (${newestRed.conclusion}), then passed on a later run of the same commit (${latestRerun.conclusion}) — a flaky test, not broken code.`
+        : `"${name}" failed on push for commit ${redSha}, but a later run of main (commit ${latestRerun.headSha?.slice(0, 8) ?? "unknown"}) passed — main's code is green.`,
     };
   }
 
-  // Newest is red: walk back to where the streak began.
-  let redSinceMs = conclusive[0].createdAtMs;
+  // Still red: walk back to where the streak began. A non-push green before the
+  // newest red means main was green then, so the streak cannot begin earlier —
+  // a push red that a later run already vindicated does not age this one.
+  const greenFloorMs = otherConclusive
+    .filter((r) => GREEN_CONCLUSIONS.has(r.conclusion as string) && r.createdAtMs < newestRed.createdAtMs)
+    .reduce((acc, r) => Math.max(acc, r.createdAtMs), Number.NEGATIVE_INFINITY);
+  let redSinceMs = newestRed.createdAtMs;
   for (const r of conclusive) {
     if (!RED_CONCLUSIONS.has(r.conclusion as string)) break;
+    if (r.createdAtMs <= greenFloorMs) break;
     redSinceMs = r.createdAtMs;
   }
   const redHours = Math.max(0, (nowMs - redSinceMs) / (60 * 60 * 1000));
