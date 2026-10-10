@@ -14,6 +14,8 @@
  * Verdicts (exit code is the PreToolUse contract — 0 allow, 2 deny):
  *   - not a merge-arming command, or `--disable-auto`            → allow
  *   - a `git push` to a branch whose PR has NO auto-merge armed    → allow
+ *     (a `gh` lookup that FAILS is not "no PR": the push is then judged as if
+ *     armed, so a gh hiccup cannot wave an unreviewed head through — THR-1795)
  *     (a push to an armed PR merges with no further `gh pr merge`, so it is
  *     judged exactly like a merge of the pushed commit)
  *   - the PR diff classifies docs-only (the CI predicate)          → allow
@@ -21,7 +23,9 @@
  *   - a receipt for the head SHA with zero `open` findings         → allow
  *   - a receipt for an ancestor SHA whose delta to head — counting
  *     only files in this PR's own diff, so a `git merge origin/main`
- *     does not stale it — is docs-only                             → allow
+ *     does not stale it — is docs-only, counting `public/*-reference.html`
+ *     pages as docs for this carry only (THR-1795)                  → allow
+ * A leading `cd <dir>` on the line moves the judged repo, like `git -C <dir>`.
  *   - a PR head missing locally even after a fetch                 → deny
  *   - otherwise                                                    → deny
  *
@@ -151,15 +155,51 @@ export function isMergeCommand(command: string): boolean {
 /** git global options that take the next word as their value (`git -C <dir> push`). */
 const GIT_VALUE_OPTIONS = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env"]);
 
-/** The first `git … push` on the line: its push args and any `-C` directory. */
-function findPush(command: string): { args: string[]; dir: string | null } | null {
+/** Directory-changing commands whose effect carries to later commands on the line (bash + PowerShell spellings). */
+const CD_COMMANDS = new Set(["cd", "pushd", "Set-Location", "sl", "Push-Location"]);
+
+const isAbsoluteDir = (dir: string) => /^([a-zA-Z]:)?[\\/]/.test(dir) || /^~/.test(dir);
+
+/** `<base>/<next>`, where an absolute `next` replaces `base` (as both `cd` and `git -C` do). */
+function joinDir(base: string | null, next: string): string {
+  return base && !isAbsoluteDir(next) ? `${base}/${next}` : next;
+}
+
+/**
+ * Every simple command on the line with the directory a preceding `cd <dir>` left it
+ * in (null = the hook's cwd). THR-1795: `cd <worktree> && git push` runs the push in
+ * <worktree>, so the gate must judge HEAD there — judging the session cwd named the
+ * home tree's `main` as "the pushed commit" (impediment #1146). A bare `cd` (no
+ * directory argument) is left alone rather than guessed at.
+ */
+export function commandsWithDir(command: string): { argv: string[]; dir: string | null }[] {
+  let dir: string | null = null;
+  const out: { argv: string[]; dir: string | null }[] = [];
   for (const argv of commandsOf(command)) {
+    if (CD_COMMANDS.has(argv[0])) {
+      const target = argv.slice(1).find((w) => !w.startsWith("-"));
+      if (target) dir = joinDir(dir, target);
+      continue;
+    }
+    out.push({ argv, dir });
+  }
+  return out;
+}
+
+/** The directory the first arming `gh pr merge` on the line runs in (a preceding `cd`), or null. */
+export function mergeDir(command: string): string | null {
+  return commandsWithDir(command).find(({ argv }) => isArmingMerge(argv))?.dir ?? null;
+}
+
+/** The first `git … push` on the line: its push args and its directory (a preceding `cd`, then any `-C`). */
+function findPush(command: string): { args: string[]; dir: string | null } | null {
+  for (const { argv, dir: cdDir } of commandsWithDir(command)) {
     if (argv[0] !== "git") continue;
-    let dir: string | null = null;
+    let dir: string | null = cdDir;
     let k = 1;
     while (k < argv.length && argv[k].startsWith("-")) {
       if (GIT_VALUE_OPTIONS.has(argv[k])) {
-        if (argv[k] === "-C") dir = dir ? `${dir}/${argv[k + 1]}` : argv[k + 1] ?? null;
+        if (argv[k] === "-C" && argv[k + 1] !== undefined) dir = joinDir(dir, argv[k + 1]);
         k += 2;
       } else {
         k += 1;
@@ -365,6 +405,23 @@ export function ownDelta(delta: readonly string[], prFiles: readonly string[]): 
   return delta.filter((f) => own.has(f));
 }
 
+/**
+ * The generated/hand-kept reference pages under `public/` (`public/*-reference.html`).
+ * THR-1795: `check:wiki-freshness:blocking` runs LAST by gate law and routinely forces a
+ * one-line edit to one of these after the receipt is written (impediment #1156). They
+ * document code; they are not code the game runs, so a receipt **carries** across them.
+ * This widens the carry rule only — the CI docs-only predicate (`classifyDiff`) and the
+ * gate's own docs-only allow are unchanged, so a PR whose diff is *only* these pages
+ * still owes the code track.
+ */
+export const CARRY_SAFE_PAGE = /^public\/[^/]+-reference\.html$/;
+
+/** Can a receipt carry across this delta (receipt → head, already narrowed by {@link ownDelta})? */
+export function isCarrySafeDelta(delta: readonly string[]): boolean {
+  const rest = delta.filter((f) => !CARRY_SAFE_PAGE.test(f));
+  return rest.length === 0 || classifyDiff(rest) === "docs-only";
+}
+
 function findCarriedReceipt(cwd: string, receiptDir: string, headSha: string, prFiles: readonly string[]): Receipt | null {
   if (!existsSync(receiptDir)) return null;
   for (const name of readdirSync(receiptDir)) {
@@ -375,7 +432,7 @@ function findCarriedReceipt(cwd: string, receiptDir: string, headSha: string, pr
       // Ancestor of head, and this PR's own delta since it is docs-only.
       execFileSync("git", ["-C", cwd, "merge-base", "--is-ancestor", receipt.sha, headSha], { stdio: "ignore" });
       const delta = ownDelta(git(cwd, ["diff", "--name-only", receipt.sha, headSha]).split("\n").filter(Boolean), prFiles);
-      if (delta.length === 0 || classifyDiff(delta) === "docs-only") return receipt;
+      if (isCarrySafeDelta(delta)) return receipt;
     } catch {
       // Not an ancestor, or unknown object — not a candidate.
     }
@@ -402,23 +459,45 @@ type PrView = {
   comments?: { body: string }[];
 };
 
+/** `gh pr view`'s own "there is no PR" answers — the only failures that mean *no PR*. */
+const NO_PR_MESSAGE = /no (open )?pull requests? found/i;
+
+/**
+ * Why a `gh pr view` returned no PR, when it failed for any reason other than "there
+ * is no PR" (timeout, auth, network, a detached HEAD with no selector). Pure, so the
+ * classification is pinned by a unit test.
+ */
+export function ghLookupError(stderr: string, message: string): string | null {
+  return NO_PR_MESSAGE.test(stderr) ? null : (stderr.trim().split("\n")[0] || message || "gh pr view failed");
+}
+
 /**
  * `gh pr view` — or, for the hermetic fixture tests, the JSON in
- * `REVIEW_GATE_PR_FIXTURE` (the hook must be drivable without GitHub). Null when
- * there is no PR or gh is unavailable.
+ * `REVIEW_GATE_PR_FIXTURE` (the hook must be drivable without GitHub; a fixture of
+ * `{"__ghError": "<msg>"}` simulates a failed lookup). `null` when there is no PR or gh
+ * is disabled; `{ error }` when the lookup itself failed — THR-1795: that used to read
+ * as "no PR", so a push to an armed PR during a gh hiccup was waved through as
+ * unarmed (the suspected path of impediment #1143).
  */
-function viewPr(cwd: string, selector: string | null, repo: string | null, fields: string): PrView | null {
+function viewPr(cwd: string, selector: string | null, repo: string | null, fields: string): PrView | { error: string } | null {
   const fixture = process.env.REVIEW_GATE_PR_FIXTURE;
-  if (fixture) return JSON.parse(fixture) as PrView;
+  if (fixture) {
+    const parsed = JSON.parse(fixture) as (PrView & { __ghError?: string }) | null;
+    return parsed?.__ghError ? { error: parsed.__ghError } : parsed;
+  }
   if (!ghAvailable()) return null;
   const args = ["pr", "view", ...(selector ? [selector] : []), "--json", fields];
   if (repo) args.push("--repo", repo);
   try {
     return JSON.parse(gh(cwd, args)) as PrView;
-  } catch {
-    return null;
+  } catch (err) {
+    const stderr = String((err as { stderr?: unknown }).stderr ?? "");
+    const error = ghLookupError(stderr, err instanceof Error ? err.message.split("\n")[0] : String(err));
+    return error ? { error } : null;
   }
 }
+
+const isLookupError = (v: PrView | { error: string } | null): v is { error: string } => v !== null && "error" in v;
 
 /** Is `sha` a commit this repo has? Fetches it once (and the PR's head ref) if not. */
 function ensureCommit(cwd: string, sha: string, prNumber: number | undefined): boolean {
@@ -459,12 +538,16 @@ function gatherGateInputs(cwd: string, headSha: string, prComments: readonly str
   return { headSha, files, commitBodies, exactReceipt, carriedReceipt, commentMarker };
 }
 
-function evaluateMerge(command: string, cwd: string): GateDecision {
+function evaluateMerge(command: string, hookCwd: string): GateDecision {
   const { target, repo } = extractMergeTarget(command);
+  // `cd <dir> && gh pr merge` runs in <dir>: judge that repo, not the hook's cwd.
+  const dir = mergeDir(command);
+  const cwd = dir ? path.resolve(hookCwd, normalizeCwd(dir)) : hookCwd;
   let headSha: string;
   let prComments: string[] = [];
   if (target && (ghAvailable() || process.env.REVIEW_GATE_PR_FIXTURE)) {
-    const view = viewPr(cwd, target, repo, "number,headRefOid,comments");
+    const looked = viewPr(cwd, target, repo, "number,headRefOid,comments");
+    const view = isLookupError(looked) ? null : looked;
     if (!view?.headRefOid) {
       return { verdict: "deny", reason: `could not read PR ${target}'s head from GitHub — retry once gh can reach it` };
     }
@@ -481,7 +564,8 @@ function evaluateMerge(command: string, cwd: string): GateDecision {
   } else {
     // `gh pr merge` with no argument arms the current branch's PR — whose head is the
     // REMOTE head. Judge that, not a local HEAD another tree may have pushed past.
-    const view = viewPr(cwd, null, null, "number,headRefOid,comments");
+    const looked = viewPr(cwd, null, null, "number,headRefOid,comments");
+    const view = isLookupError(looked) ? null : looked;
     prComments = (view?.comments ?? []).map((c) => c.body);
     if (view?.headRefOid) {
       headSha = view.headRefOid;
@@ -507,7 +591,23 @@ function evaluatePush(command: string, hookCwd: string): GateDecision {
   const { source, dest, dir } = extractPushTarget(command);
   // `git -C <dir> push` runs in <dir>: judge that repo, not the hook's cwd.
   const cwd = dir ? path.resolve(hookCwd, normalizeCwd(dir)) : hookCwd;
-  const view = viewPr(cwd, dest, null, "number,state,autoMergeRequest,comments");
+  const looked = viewPr(cwd, dest, null, "number,state,autoMergeRequest,comments");
+  if (isLookupError(looked)) {
+    // We cannot tell whether this push merges — so judge it as if it does. A pushed
+    // commit with a clean receipt (or a docs-only diff) still goes through; an
+    // unreviewed one waits for gh, exactly as a `gh pr merge` would (THR-1795).
+    const headSha = git(cwd, ["rev-parse", `${source}^{commit}`]);
+    const decision = decideReviewGate(gatherGateInputs(cwd, headSha, []));
+    if (decision.verdict === "allow") return decision;
+    return {
+      verdict: "deny",
+      reason:
+        `could not read whether ${dest ? `branch ${dest}` : "this branch"}'s PR has auto-merge armed ` +
+        `(gh: ${looked.error}), and ${headSha.slice(0, 10)} has no clean review receipt — retry once gh can reach ` +
+        `GitHub, or write the receipt first.\n${decision.reason}`,
+    };
+  }
+  const view = looked;
   if (!view || !view.autoMergeRequest || (view.state && view.state !== "OPEN")) {
     return { verdict: "allow", reason: "push to a branch with no armed PR — not judged" };
   }
