@@ -2530,7 +2530,7 @@ describe('EncounterVeil — footer states the paying pool (THR-1803)', () => {
     render(<EncounterVeil {...defaultProps} essence={12} />);
     const footer = screen.getByTestId('veil-footer');
     expect(footer).toHaveTextContent('12 essence');
-    expect(footer.textContent).not.toMatch(/d+ [A-Z][a-z]+ essence/);
+    expect(footer.textContent).not.toMatch(/\d+ [A-Z][a-z]+ essence/);
   });
 });
 
