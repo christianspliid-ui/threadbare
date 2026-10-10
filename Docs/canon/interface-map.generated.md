@@ -417,10 +417,10 @@ remediation ticket or the build fails.
 - **Intent:** What the player had open when the world looked wrong is half the question; the bundle carries the same record the debug bridge serves, so the two can never disagree.
 - **Producer → Consumer:** Diagnostics & Incident Capture → Diagnostics & Incident Capture
 - **Module:** `src/components/Game/GameView.tsx`
-- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
 - **Write sites:** `src/components/Game/GameView.tsx`
 - **Read sites:** `src/components/Game/hooks/useIncidentCapture.ts`, `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
-- **Other hits:** `src/data/ia-manifest.ts`
+- **Other hits:** `src/components/Game/giftDelivery.ts`, `src/data/ia-manifest.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. The composer already sat outside the `import.meta.env.DEV` guard — only its bridge *registration* is dev-gated — so the production capture path passes the very same callback the bridge registers, rather than a second composer that would drift. `incidentBundle`'s `ui` section stores it and `focus` reads its three selection ids to choose the neighbourhood to dump. Non-vacuous by `incidentBundle.test.ts`: the focus arm asserts the selected actor's neighbours resolve through `getAllEdgesForNode`, and a separate arm asserts a selection id that resolves to no node is marked `missing: true` rather than dropped — a row silently omitted is the failure this section exists to make visible.
 
 ### `agent-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1969,10 +1969,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 23 total — 2 write, 5 read, 16 unclassified
+- **Production hits:** 25 total — 2 write, 5 read, 18 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx` +11 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/giftDelivery.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-trait-tags-have-bearers` — 🟢 LIVE
@@ -2331,10 +2331,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 362 total — 1 write, 1 read, 360 unclassified
+- **Production hits:** 363 total — 1 write, 1 read, 361 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +355 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +356 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
