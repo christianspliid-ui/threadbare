@@ -62,8 +62,9 @@ interface BuildGateDutyEncounterStageModelArgs {
    * sphere-partitioned `essencePool` and `unlockedActionIds` to decide which
    * authored cards are playable, dimmed or withheld.
    *
-   * Distinct from `essence` above, which is a single summed number for the
-   * stage's resource line and cannot answer an affordability question: essence
+   * Distinct from `essence` above, which is one number for the stage's
+   * resource line (the paying pool since THR-1803, the twelve pools summed
+   * before) and cannot answer an affordability question: essence
    * is held per sphere and a card gated on one the god cannot pay is withheld,
    * not merely priced. Without this every priced card renders dimmed, which
    * reads to the player as "you cannot afford this" no matter how rich they are.
