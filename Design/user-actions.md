@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-09 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-10 13:30 local (11:30 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-09: Star's third skill word is now "Charted", so no skill word reads as an odds word** (THR-1790). Merged via [#2295](https://github.com/christianspliid-ui/threadbare/pull/2295) and live.
+- **2026-10-09: an ending shows one reputation row per mortal, named** ([THR-1789](https://linear.app/threadbare/issue/THR-1789/an-ending-shows-one-reputation-row-per-mortal-named-fold-the-per-step)). Merged via [#2294](https://github.com/christianspliid-ui/threadbare/pull/2294) and live.
 - **2026-10-09: the warm start arrives with the opening already played** ([THR-1787](https://linear.app/threadbare/issue/THR-1787/the-warm-start-should-arrive-with-the-opening-already-played-settle)). Merged via [#2292](https://github.com/christianspliid-ui/threadbare/pull/2292) and live.
 - **2026-10-09: The First's story moments name their stage in words, not "Beat 1 — Call"** (THR-1788). Merged via [#2293](https://github.com/christianspliid-ui/threadbare/pull/2293) and live.
 - **2026-10-09: a bonded First is no longer asked to "Reach Down" again** ([THR-1786](https://linear.app/threadbare/issue/THR-1786/a-bonded-first-is-asked-to-reach-down-again-beat-0-should-settle-as)). Merged via [#2290](https://github.com/christianspliid-ui/threadbare/pull/2290) and live.
@@ -34,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-09: "Who holds power" now opens the person you click** ([THR-1780](https://linear.app/threadbare/issue/THR-1780/who-holds-power-is-a-dead-end-the-notables-badge-counts-active-agendas)). Merged via [#2288](https://github.com/christianspliid-ui/threadbare/pull/2288) and live.
 - **2026-10-09: template seams no longer reach the player's text** ([THR-1779](https://linear.app/threadbare/issue/THR-1779/recurs-after-fix-template-seams-reach-the-player-his-only-kin-claims)). Merged via [#2286](https://github.com/christianspliid-ui/threadbare/pull/2286) and live.
 - **2026-10-09: you chose B: the world offers powers, you choose and pay** ([THR-1770](https://linear.app/threadbare/issue/THR-1770/a-buy-system-for-god-actions-can-the-player-buy-cards-with-what-the)). Your words: *"i go with B, and i would like a tier/progression system of actions, aswell as an assessment of which should be generic."* The tiers and generic set are now [THR-1794](https://linear.app/threadbare/issue/THR-1794/god-card-tiers-and-the-generic-set-a-progression-ladder-for-every-god).
-- **2026-10-09: "Return to the world" now resolves the whole chapter** ([THR-1778](https://linear.app/threadbare/issue/THR-1778/return-to-the-world-bounces-back-closing-an-aftermath-resolves-only)). Merged via [#2285](https://github.com/christianspliid-ui/threadbare/pull/2285) and live.
-- **2026-10-09: every world now draws its doom from all seven archetypes, not just Breach** ([THR-1774](https://linear.app/threadbare/issue/THR-1774/every-runs-doom-is-breach-six-of-the-seven-authored-doom-archetypes)). Merged via [#2284](https://github.com/christianspliid-ui/threadbare/pull/2284) and live.
 
 ---
 
