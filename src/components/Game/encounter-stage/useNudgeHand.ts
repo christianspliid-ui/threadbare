@@ -50,6 +50,15 @@ export function budgetSphereRemaining(
 }
 
 /**
+ * THR-1801 — which step a hand belongs to. A selection made under one key is
+ * never carried to another: a step change starts the hand over. Pure, so the
+ * hook and its tests share it. `''` for no phase.
+ */
+export function handStepKey(phase: EncounterStageNudgePhaseModel | undefined): string {
+  return phase ? `${phase.actionId}:${phase.stepIndex}` : '';
+}
+
+/**
  * The forecast a given selection produces — the single implementation the hook
  * and the commit handler both call, so the tier the player watched change and
  * the tier recorded in `nudge_played` can never disagree.
@@ -125,6 +134,19 @@ export function useNudgeHand(
   phase: EncounterStageNudgePhaseModel | undefined,
 ): UseNudgeHandResult {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => [...(phase?.committedIds ?? [])]);
+
+  // THR-1801 — the selection belongs to one step. The veil stays mounted
+  // across a step change, so without this the previous step's picks carried
+  // into the next step and were charged again at its commit. On a new
+  // action/step the hand restarts from what that step itself has committed
+  // (nothing, for a step the god has not touched). Adjusting state during
+  // render, not in an effect, so the stale hand never paints for a frame.
+  const stepKey = handStepKey(phase);
+  const [handStep, setHandStep] = useState(stepKey);
+  if (handStep !== stepKey) {
+    setHandStep(stepKey);
+    setSelectedIds([...(phase?.committedIds ?? [])]);
+  }
 
   const cardsById = useMemo(() => {
     const map = new Map<string, EncounterStageNudgeCardModel>();
