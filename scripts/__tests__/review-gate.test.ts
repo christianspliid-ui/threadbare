@@ -29,6 +29,7 @@ import {
   mergeDir,
   normalizeCwd,
   ownDelta,
+  resolveCommandDir,
   parseCommentMarker,
   parseExemptReason,
   renderReceiptComment,
@@ -117,6 +118,15 @@ describe("review gate — pure verdict", () => {
     // A cd AFTER the push does not move it; a bare cd is not guessed at.
     expect(extractPushTarget("git push && cd C:/wt").dir).toBeNull();
     expect(commandsWithDir("cd && git push")[0]).toEqual({ argv: ["git", "push"], dir: null });
+  });
+
+  it("resolves a command's directory, expanding ~, and refuses one that does not exist (THR-1795)", () => {
+    const home = realpathSync(tmpdir());
+    expect(resolveCommandDir("/anywhere", null)).toBe("/anywhere");
+    expect(resolveCommandDir("/anywhere", "~", home)).toBe(path.resolve(home));
+    expect(resolveCommandDir(home, ".")).toBe(path.resolve(home));
+    expect(resolveCommandDir(home, "$WT")).toBeNull();
+    expect(resolveCommandDir(home, "~/no-such-tree-thr1795", home)).toBeNull();
   });
 
   it("tells gh's own 'no PR' answer apart from a failed lookup (THR-1795)", () => {
@@ -486,6 +496,15 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     } finally {
       rmSync(other, { recursive: true, force: true });
     }
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("denies a push whose `cd` target cannot be resolved, instead of failing soft into allow (THR-1795)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const r = runHook("cd $WT && git push origin HEAD", ARMED);
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain("cannot resolve the directory");
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("carries a receipt across a reference-page fix, but not across a src/ fix (THR-1795, #1156)", () => {
