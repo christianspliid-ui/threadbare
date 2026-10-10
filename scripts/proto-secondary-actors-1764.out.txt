@@ -1,0 +1,315 @@
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 6 · possessions 7 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 2 · favours 9 · quarrels 4 · marks 4 · notables 47 (no holding 6 / no quarrel 0 / no secret-or-favour 3 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 109/109 casters wield a spell (109 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 192 spells across 32 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +110 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 127/489, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (5 ms)
+
+## seed 42 (medium) — world god chaos/energy
+
+### t0  power=1.00
+  note: factions=52 zeroMembers=34 noLeader=34 noHeldPlaces=34 heldPlacesTotal=47 sphereAggregateComputed=0
+  note: zeroMemberFactionsByType={"guild":34}
+  note: groups=5 byKind={"army":5}
+  note: artifacts=185 (common=184 legendary=1) nonEmptyScores=0 withBearer=62
+  note: threadEdges=0
+  note: livingIndividuals=500 emptyScores=216 factionLeaders=18 nonzeroSphereValueHist={"1":182,"2":284}
+  note: mortalsUnresolvedToPlace=0
+  -- god world chaos3/energy2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 52   0  52   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a3 members mean-dominion             52  34  18   0   0   0  0.00
+     a4 faction held places               18   0  16   2   0   0  0.80
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   4   1   0   0  0.80
+     c1 artifact own (unimbued=0)        185   0 185   0   0   0  0.00
+     c2 artifact bearer                   62   0  62   0   0   0  0.00
+     d all individual mortals            500   0 500   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 52   0  52   0   0   0  0.00
+     a2 faction leader                    18   0  10   8   0   0  0.80
+     a3 members mean-dominion             52  34  12   6   0   0  0.80
+     a4 faction held places               18   0  16   2   0   0  1.00
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   5   0   0   0  0.04
+     c1 artifact own (unimbued=0)        185   0 185   0   0   0  0.00
+     c2 artifact bearer                   62   0  42  20   0   0  0.80
+     d all individual mortals            500   0 307 193   0   0  0.80
+     d mortals who lead a faction         18   0  10   8   0   0  0.80
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 52   0  52   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a3 members mean-dominion             52  34  18   0   0   0  0.00
+     a4 faction held places               18   0   8   5   5   0  2.40
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   2   1   2   0  2.40
+     c1 artifact own (unimbued=0)        185   0 185   0   0   0  0.00
+     c2 artifact bearer                   62   0  62   0   0   0  0.00
+     d all individual mortals            500   0 500   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+
+  effect sizing t0: placeTierLocations=235 placesWith>=1Mortal=62 mortalsPlaced=500 perPlace p50=6 p90=19 max=22
+    rate 0.005: if ALL placed mortals carried — places at cap=37/62, world flow/tick=1.445 (one carrier = 0.005, ticks to tend 0.03 = 6.0)
+    rate 0.01: if ALL placed mortals carried — places at cap=55/62, world flow/tick=1.720 (one carrier = 0.01, ticks to tend 0.03 = 3.0)
+    rate 0.015: if ALL placed mortals carried — places at cap=55/62, world flow/tick=1.755 (one carrier = 0.015, ticks to tend 0.03 = 2.0)
+    rate 0.02: if ALL placed mortals carried — places at cap=55/62, world flow/tick=1.790 (one carrier = 0.02, ticks to tend 0.03 = 1.5)
+
+### t240  power=1.00
+  note: factions=80 zeroMembers=62 noLeader=62 noHeldPlaces=34 heldPlacesTotal=75 sphereAggregateComputed=80
+  note: zeroMemberFactionsByType={"guild":34,"monster":28}
+  note: groups=25 byKind={"company":21,"army":3,"battle":1}
+  note: artifacts=591 (common=590 legendary=1) nonEmptyScores=0 withBearer=349
+  note: threadEdges=0
+  note: livingIndividuals=744 emptyScores=335 factionLeaders=18 nonzeroSphereValueHist={"1":265,"2":406}
+  note: mortalsUnresolvedToPlace=0
+  -- god world chaos3/energy2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 80   0  70  10   0   0  0.80
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a4 faction held places               46   1  32   3   2   8  4.00
+     b1 army members mean                  3   0   3   0   0   0  0.00
+     b1 company members mean              21   0  21   0   0   0  0.00
+     b2 army owning faction                3   0   3   0   0   0  0.00
+     b2 company owning faction            20   0  20   0   0   0  0.00
+     b3 army standing place                3   0   3   0   0   0  0.40
+     b3 battle standing place              1   0   1   0   0   0  -1.36
+     c1 artifact own (unimbued=0)        591   0 591   0   0   0  0.00
+     c2 artifact bearer                  349   0 349   0   0   0  0.00
+     d all individual mortals            744   0 744   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 80   0  72   8   0   0  1.00
+     a2 faction leader                    18   0   8  10   0   0  0.80
+     a4 faction held places               46   6  38   2   0   0  1.00
+     b1 army members mean                  3   0   2   1   0   0  0.80
+     b1 company members mean              21   0  14   7   0   0  0.80
+     b2 army owning faction                3   0   2   1   0   0  1.00
+     b2 company owning faction            20   0  15   5   0   0  0.80
+     b3 army standing place                3   0   3   0   0   0  0.04
+     b3 battle standing place              1   0   1   0   0   0  0.04
+     c1 artifact own (unimbued=0)        591   0 591   0   0   0  0.00
+     c2 artifact bearer                  349   0 267  82   0   0  0.80
+     d all individual mortals            744   0 473 271   0   0  0.80
+     d mortals who lead a faction         18   0   8  10   0   0  0.80
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 80   0  67  13   0   0  0.80
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a4 faction held places               46   0  20   7   7  12  5.20
+     b1 army members mean                  3   0   3   0   0   0  0.00
+     b1 company members mean              21   0  21   0   0   0  0.00
+     b2 army owning faction                3   0   3   0   0   0  0.00
+     b2 company owning faction            20   0  20   0   0   0  0.00
+     b3 army standing place                3   0   1   2   0   0  0.60
+     b3 battle standing place              1   0   0   1   0   0  0.60
+     c1 artifact own (unimbued=0)        591   0 591   0   0   0  0.00
+     c2 artifact bearer                  349   0 349   0   0   0  0.00
+     d all individual mortals            744   0 744   0   0   0  0.40
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 17/friend 17/rival 17 (no pool 0) · home-realm moves 6 · favours 16 · quarrels 6 · marks 5 · notables 67 (no holding 10 / no quarrel 0 / no secret-or-favour 2 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 127/127 casters wield a spell (127 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 180 spells across 30 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +147 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 77, dead 2+3+4, descent 135/505, ambitions 3 minted / 3 skipped (4 ms)
+
+## seed 99 (medium) — world god energy/light
+
+### t0  power=1.00
+  note: factions=59 zeroMembers=41 noLeader=41 noHeldPlaces=41 heldPlacesTotal=68 sphereAggregateComputed=0
+  note: zeroMemberFactionsByType={"guild":41}
+  note: groups=5 byKind={"army":5}
+  note: artifacts=204 (common=203 legendary=1) nonEmptyScores=0 withBearer=81
+  note: threadEdges=0
+  note: livingIndividuals=634 emptyScores=187 factionLeaders=17 nonzeroSphereValueHist={"1":184,"2":447}
+  note: mortalsUnresolvedToPlace=0
+  -- god world energy3/light2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 59   0  59   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a3 members mean-dominion             59  41  18   0   0   0  0.00
+     a4 faction held places               18   0  13   0   5   0  1.60
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   3   0   2   0  1.60
+     c1 artifact own (unimbued=0)        204   0 204   0   0   0  0.00
+     c2 artifact bearer                   81   0  81   0   0   0  0.00
+     d all individual mortals            634   0 634   0   0   0  0.00
+     d mortals who lead a faction         17   0  17   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 59   0  59   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a3 members mean-dominion             59  41  18   0   0   0  0.00
+     a4 faction held places               18   0  14   4   0   0  1.00
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   5   0   0   0  0.04
+     c1 artifact own (unimbued=0)        204   0 204   0   0   0  0.00
+     c2 artifact bearer                   81   0  81   0   0   0  0.00
+     d all individual mortals            634   0 634   0   0   0  0.00
+     d mortals who lead a faction         17   0  17   0   0   0  0.00
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 59   0  59   0   0   0  0.00
+     a2 faction leader                    18   0   7  11   0   0  1.40
+     a3 members mean-dominion             59  41   4  14   0   0  1.40
+     a4 faction held places               18   0  10   7   1   0  1.80
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   1   3   1   0  1.80
+     c1 artifact own (unimbued=0)        204   0 204   0   0   0  0.00
+     c2 artifact bearer                   81   0  26  55   0   0  1.40
+     d all individual mortals            634   0 187 447   0   0  1.40
+     d mortals who lead a faction         17   0   6  11   0   0  1.40
+
+  effect sizing t0: placeTierLocations=238 placesWith>=1Mortal=87 mortalsPlaced=634 perPlace p50=6 p90=18 max=22
+    rate 0.005: if ALL placed mortals carried — places at cap=53/87, world flow/tick=2.070 (one carrier = 0.005, ticks to tend 0.03 = 6.0)
+    rate 0.01: if ALL placed mortals carried — places at cap=80/87, world flow/tick=2.470 (one carrier = 0.01, ticks to tend 0.03 = 3.0)
+    rate 0.015: if ALL placed mortals carried — places at cap=80/87, world flow/tick=2.505 (one carrier = 0.015, ticks to tend 0.03 = 2.0)
+    rate 0.02: if ALL placed mortals carried — places at cap=80/87, world flow/tick=2.540 (one carrier = 0.02, ticks to tend 0.03 = 1.5)
+
+### t240  power=1.00
+  note: factions=81 zeroMembers=63 noLeader=63 noHeldPlaces=41 heldPlacesTotal=90 sphereAggregateComputed=81
+  note: zeroMemberFactionsByType={"guild":41,"monster":22}
+  note: groups=27 byKind={"company":22,"army":3,"battle":2}
+  note: artifacts=601 (common=600 legendary=1) nonEmptyScores=0 withBearer=374
+  note: threadEdges=0
+  note: livingIndividuals=931 emptyScores=279 factionLeaders=18 nonzeroSphereValueHist={"1":270,"2":652}
+  note: mortalsUnresolvedToPlace=0
+  -- god world energy3/light2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 81   0  72   9   0   0  1.20
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a4 faction held places               40   0  24   2   5   9  6.40
+     b1 army members mean                  3   0   3   0   0   0  0.00
+     b1 company members mean              22   0  22   0   0   0  0.00
+     b2 army owning faction                3   0   3   0   0   0  0.00
+     b2 company owning faction            21   0  21   0   0   0  0.00
+     b3 army standing place                3   0   1   0   2   0  1.60
+     b3 battle standing place              2   0   0   0   2   0  1.60
+     c1 artifact own (unimbued=0)        601   0 601   0   0   0  0.00
+     c2 artifact bearer                  374   0 374   0   0   0  0.00
+     d all individual mortals            931   0 931   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 81   0  81   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a4 faction held places               40   6  30   4   0   0  1.00
+     b1 army members mean                  3   0   3   0   0   0  0.00
+     b1 company members mean              22   0  22   0   0   0  0.00
+     b2 army owning faction                3   0   3   0   0   0  0.00
+     b2 company owning faction            21   0  21   0   0   0  0.00
+     b3 army standing place                3   0   2   1   0   0  1.00
+     b3 battle standing place              2   0   2   0   0   0  0.28
+     c1 artifact own (unimbued=0)        601   0 601   0   0   0  0.00
+     c2 artifact bearer                  374   0 374   0   0   0  0.00
+     d all individual mortals            931   0 931   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 81   0  61  20   0   0  1.40
+     a2 faction leader                    18   0   7  11   0   0  1.40
+     a4 faction held places               40   0  23   7   3   7  4.60
+     b1 army members mean                  3   0   3   0   0   0  0.00
+     b1 company members mean              22   0   5  17   0   0  1.40
+     b2 army owning faction                3   0   1   2   0   0  1.40
+     b2 company owning faction            21   0   4  17   0   0  1.40
+     b3 army standing place                3   0   2   1   0   0  0.60
+     b3 battle standing place              2   0   1   1   0   0  0.60
+     c1 artifact own (unimbued=0)        601   0 601   0   0   0  0.00
+     c2 artifact bearer                  374   0 167 207   0   0  1.40
+     d all individual mortals            931   0 284 647   0   0  1.40
+     d mortals who lead a faction         18   0   7  11   0   0  1.40
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 16/friend 16/rival 16 (no pool 0) · home-realm moves 1 · favours 13 · quarrels 4 · marks 5 · notables 72 (no holding 16 / no quarrel 0 / no secret-or-favour 0 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 129/129 casters wield a spell (129 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 186 spells across 31 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +148 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 3, founded 80, dead 3+3+4, descent 136/592, 3 war(s) without a burned town, ambitions 4 minted / 3 skipped (6 ms)
+
+## seed 7 (medium) — world god time/energy
+
+### t0  power=1.00
+  note: factions=58 zeroMembers=40 noLeader=40 noHeldPlaces=40 heldPlacesTotal=66 sphereAggregateComputed=0
+  note: zeroMemberFactionsByType={"guild":40}
+  note: groups=5 byKind={"army":5}
+  note: artifacts=202 (common=201 legendary=1) nonEmptyScores=0 withBearer=80
+  note: threadEdges=0
+  note: livingIndividuals=664 emptyScores=245 factionLeaders=18 nonzeroSphereValueHist={"1":293,"2":419}
+  note: mortalsUnresolvedToPlace=0
+  -- god world time3/energy2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 58   0  58   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a3 members mean-dominion             58  40  18   0   0   0  0.00
+     a4 faction held places               18   0  17   1   0   0  0.60
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   4   1   0   0  0.60
+     c1 artifact own (unimbued=0)        202   0 202   0   0   0  0.00
+     c2 artifact bearer                   80   0  80   0   0   0  0.00
+     d all individual mortals            664   0 664   0   0   0  0.00
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 58   0  58   0   0   0  0.00
+     a2 faction leader                    18   0  16   2   0   0  0.80
+     a3 members mean-dominion             58  40  16   2   0   0  0.80
+     a4 faction held places               18   0  10   8   0   0  1.00
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   5   0   0   0  0.00
+     c1 artifact own (unimbued=0)        202   0 202   0   0   0  0.00
+     c2 artifact bearer                   80   0  69  11   0   0  0.80
+     d all individual mortals            664   0 538 126   0   0  0.80
+     d mortals who lead a faction         18   0  16   2   0   0  0.80
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 58   0  58   0   0   0  0.00
+     a2 faction leader                    18   0  14   4   0   0  1.20
+     a3 members mean-dominion             58  40  15   3   0   0  1.20
+     a4 faction held places               18   0  10   2   6   0  2.40
+     b1 army members mean                  5   0   5   0   0   0  0.00
+     b2 army owning faction                5   0   5   0   0   0  0.00
+     b3 army standing place                5   0   1   0   4   0  2.40
+     c1 artifact own (unimbued=0)        202   0 202   0   0   0  0.00
+     c2 artifact bearer                   80   0  69  11   0   0  1.20
+     d all individual mortals            664   0 564 100   0   0  1.20
+     d mortals who lead a faction         18   0  14   4   0   0  1.20
+
+  effect sizing t0: placeTierLocations=246 placesWith>=1Mortal=92 mortalsPlaced=664 perPlace p50=6 p90=18 max=21
+    rate 0.005: if ALL placed mortals carried — places at cap=51/92, world flow/tick=2.110 (one carrier = 0.005, ticks to tend 0.03 = 6.0)
+    rate 0.01: if ALL placed mortals carried — places at cap=85/92, world flow/tick=2.620 (one carrier = 0.01, ticks to tend 0.03 = 3.0)
+    rate 0.015: if ALL placed mortals carried — places at cap=85/92, world flow/tick=2.655 (one carrier = 0.015, ticks to tend 0.03 = 2.0)
+    rate 0.02: if ALL placed mortals carried — places at cap=85/92, world flow/tick=2.690 (one carrier = 0.02, ticks to tend 0.03 = 1.5)
+
+### t240  power=1.33
+  note: factions=74 zeroMembers=56 noLeader=56 noHeldPlaces=41 heldPlacesTotal=82 sphereAggregateComputed=74
+  note: zeroMemberFactionsByType={"guild":40,"monster":16}
+  note: groups=30 byKind={"company":30}
+  note: artifacts=709 (common=708 legendary=1) nonEmptyScores=0 withBearer=471
+  note: threadEdges=0
+  note: livingIndividuals=1034 emptyScores=435 factionLeaders=18 nonzeroSphereValueHist={"1":443,"2":591,"3":3,"4":3}
+  note: mortalsUnresolvedToPlace=0
+  -- god world time3/energy2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 74   0  74   0   0   0  0.00
+     a2 faction leader                    18   0  18   0   0   0  0.00
+     a4 faction held places               33  13  15   5   0   0  0.80
+     b1 company members mean              30   0  30   0   0   0  0.20
+     b2 company owning faction            28   0  28   0   0   0  0.00
+     c1 artifact own (unimbued=0)        709   0 709   0   0   0  0.00
+     c2 artifact bearer                  471   0 448  22   1   0  1.20
+     d all individual mortals           1034   0 1032   1   1   0  1.20
+     d mortals who lead a faction         18   0  18   0   0   0  0.00
+  -- god showcase mind3/spirit2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 74   0  70   4   0   0  0.80
+     a2 faction leader                    18   0  16   2   0   0  0.80
+     a4 faction held places               33   0  24   6   0   3  4.60
+     b1 company members mean              30   0  25   5   0   0  0.80
+     b2 company owning faction            28   0  22   6   0   0  0.80
+     c1 artifact own (unimbued=0)        709   0 709   0   0   0  0.00
+     c2 artifact bearer                  471   0 441  30   0   0  0.80
+     d all individual mortals           1034   0 876 158   0   0  0.80
+     d mortals who lead a faction         18   0  16   2   0   0  0.80
+  -- god stone force3/matter2            n   H   F   T  He   S  maxMatch
+     a1 faction aggregate                 74   0  54  17   3   0  1.20
+     a2 faction leader                    18   0   9   4   5   0  1.20
+     a4 faction held places               33   0  14   1   4  14  4.60
+     b1 company members mean              30   0  17   8   5   0  1.20
+     b2 company owning faction            28   0  13  10   5   0  1.20
+     c1 artifact own (unimbued=0)        709   0 709   0   0   0  0.00
+     c2 artifact bearer                  471   0 357  93  21   0  1.20
+     d all individual mortals           1034   0 597 294 143   0  1.20
+     d mortals who lead a faction         18   0   9   4   5   0  1.20
