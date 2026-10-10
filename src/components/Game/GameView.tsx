@@ -2245,12 +2245,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const RETINUE_EYE_ZOOM_SCALE = 20;
 
   // Eye icon next to agent name: zoom camera to agent's hex at max zoom
+  // THR-1792 — climbs `parentLocationId` (as debug `gotoAgent` does) so a sublocation
+  // id finds its settlement's hex instead of failing silently.
   const handleCenterOnHex = useCallback((locationId: string) => {
-    const locNode = gameState.graph.getNode(locationId);
-    if (!locNode) return;
-    const props = (locNode.properties ?? {}) as Record<string, unknown>;
-    const col = typeof props.hexCol === 'number' ? props.hexCol : undefined;
-    const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
+    let locNode = gameState.graph.getNode(locationId);
+    let col: number | undefined;
+    let row: number | undefined;
+    for (let depth = 0; depth < 3 && locNode; depth++) {
+      const props = (locNode.properties ?? {}) as Record<string, unknown>;
+      if (typeof props.hexCol === 'number' && typeof props.hexRow === 'number') {
+        col = props.hexCol;
+        row = props.hexRow;
+        break;
+      }
+      const parentId = props.parentLocationId as string | undefined;
+      locNode = parentId ? gameState.graph.getNode(parentId) : undefined;
+    }
     if (col !== undefined && row !== undefined && hexMapRef.current) {
       const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
       // Y-flip: hexToPixel returns SVG y-down, Three.js camera uses y-up
@@ -5348,6 +5358,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // same concept class is what Law 3 exists to prevent.
           onOpenAttachment={setAttachmentSheetId}
           showMandate={firstScreenReveal.mandate}
+          onCenterOnSeat={handleCenterOnHex}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
           onReleaseControl={(effectId) =>

@@ -213,6 +213,32 @@
   flex: 1;
 }
 
+/* ── Seat line (THR-1792) ──────────────────────────────────────── */
+.seatLine {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 6px 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.seatLink {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seatLink:hover {
+  color: var(--accent-gold);
+}
+
 /* ── Action rows ────────────────────────────────────────────────── */
 .actionRow {
   display: grid;

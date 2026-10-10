@@ -32,6 +32,14 @@ export const ESSENCE_PER_PLACE_OF_POWER = 0.5;
  */
 export const ESSENCE_PER_SEAT = 1.0;
 
+/**
+ * THR-1792 — how far (in hexes) the Seat beat looks for a settlement when The First
+ * stands somewhere that is not one (a Waypoint on open ground, a lair, a ruin, a shrine).
+ * The seat lands in the nearest settlement within this radius; past it the beat keeps
+ * the old placement (fail-soft, traced).
+ */
+export const HOME_SEAT_MAX_SEARCH_RADIUS_HEXES = 6;
+
 /** Maximum essence pool scales with total influence level. */
 export const BASE_MAX_ESSENCE = 50;
 export const MAX_ESSENCE_PER_THREAD = 5;

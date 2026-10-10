@@ -97,11 +97,11 @@ import { createUndertakingOutcomeNode } from '../grievance/undertakingOutcomeNod
 import { isMonster } from '../monsters/isMonster';
 import { applyReputationWithDelta } from '../reputation';
 import { drawSeededReward } from '../rewardPool';
-import { hexDistance } from '../delivery';
 import { getAgentFaction } from '../graphQueries';
 import { resolveHeldLair } from '../monsters/monsterFelling';
 import { touchWorld } from '../simulationRuntime';
-import { getLocationNodes, resolveToParentLocation } from '../sublocationShape';
+import { nearestSettlement } from '../nearestSettlement';
+import { resolveToParentLocation } from '../sublocationShape';
 import { emitTrace } from '../traceBuffer';
 import { readOpponentCard } from './opponentCard';
 
@@ -551,22 +551,7 @@ export function nearestGratefulSettlement(
   graph: WorldGraph,
   hex: { col: number; row: number } | undefined,
 ): GraphNode | undefined {
-  if (!hex) return undefined;
-  let best: GraphNode | undefined;
-  let bestDist = Infinity;
-  for (const loc of getLocationNodes(graph)) {
-    if (!SETTLEMENT_SUBTYPES.has(loc.properties.locationSubtype as string)) continue;
-    const col = loc.properties.hexCol;
-    const row = loc.properties.hexRow;
-    if (typeof col !== 'number' || typeof row !== 'number') continue;
-    const dist = hexDistance(hex, { col, row });
-    if (dist > FIGHT_GRATITUDE_RADIUS_HEXES) continue;
-    if (dist < bestDist || (dist === bestDist && best && loc.id < best.id)) {
-      best = loc;
-      bestDist = dist;
-    }
-  }
-  return best;
+  return nearestSettlement(graph, hex, FIGHT_GRATITUDE_RADIUS_HEXES);
 }
 
 /**

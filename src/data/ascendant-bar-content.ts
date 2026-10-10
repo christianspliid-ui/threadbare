@@ -230,6 +230,9 @@ export const ESSENCE_CAUSE_PHRASES: Record<EssenceMovementCause, { fed: string; 
 export const ESSENCE_FED_LEAD = 'Fed by';
 export const ESSENCE_DRAWN_LEAD = 'Drawn by';
 
+/** THR-1792 — the lead word of the god's seat line on the bar: "Seat: <settlement>". */
+export const HOME_SEAT_LABEL = 'Seat';
+
 /** Eyebrow labels for the two permanent domains. */
 export const REACH_RANK_LABEL = {
   primary: 'Primary',

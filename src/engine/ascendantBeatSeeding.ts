@@ -40,6 +40,8 @@ import { setHomeSeat } from './influence';
 import { pickSphereFlavoredEffect } from './ascendantPrimitives';
 import { getAscendantPrimarySphere } from './ascendantExpression';
 import { getAgentLocationId } from './graphQueries';
+import { isSettlementNode, nearestSettlement } from './nearestSettlement';
+import { HOME_SEAT_MAX_SEARCH_RADIUS_HEXES } from '../data/influence-content';
 import { emitTrace } from './traceBuffer';
 import { fillReceiptSlots, GIFT_SEAT_PLACED_LINE, GIFT_ARTIFACT_PLACED_LINE } from '../data/receipt-content';
 
@@ -58,7 +60,17 @@ export interface BeatSeedResult {
    * on a bearer); `resolvePendingBeat` turns it into a chronicle line and a toast.
    */
   readonly placement?: BeatGiftPlacement;
+  /** THR-1792 — how the home seat was chosen (home_seat seeds only); carried on the trace. */
+  readonly seatRule?: HomeSeatRule;
 }
+
+/**
+ * THR-1792 — how the Seat beat chose its settlement: The First already stood in one
+ * (`first_settlement`), the nearest one to The First's hex (`nearest_settlement`), none
+ * within `HOME_SEAT_MAX_SEARCH_RADIUS_HEXES` so the old placement stood
+ * (`no_settlement_in_range`), or no First / no location (`default`, setHomeSeat's fallback).
+ */
+export type HomeSeatRule = 'first_settlement' | 'nearest_settlement' | 'no_settlement_in_range' | 'default';
 
 /** A spine gift's visible placement (THR-1606). */
 export interface BeatGiftPlacement {
@@ -89,6 +101,7 @@ function emitSeedTrace(
     seededNodeIds: [...result.seededNodeIds],
     seededEdgeIds: [...result.seededEdgeIds],
     ...(failSoft ? { failSoft } : {}),
+    ...(result.seatRule ? { seatRule: result.seatRule } : {}),
     summary: failSoft
       ? `ascendant beat seed no-op: ${seed} (${failSoft})`
       : `ascendant beat seeded: ${seed} → nodes [${result.seededNodeIds.join(', ')}]`,
@@ -114,7 +127,10 @@ function findBondedFirstId(graph: GameState['graph'], ascendantId: string): stri
 /**
  * Seed Beat 1 "The Seat": designate the ascendant's home seat at the settlement where
  * The First was met. Resolves The First → its `located_at` location, climbing one tier
- * to the parent settlement when the First stands at a sublocation. Falls back to
+ * to the parent settlement when the First stands at a sublocation. THR-1792: a seat is
+ * always a settlement — when The First stands on a Waypoint, lair, ruin or shrine, the seat
+ * goes to the nearest settlement within `HOME_SEAT_MAX_SEARCH_RADIUS_HEXES` (none in range →
+ * the old placement, traced as `seatRule: no_settlement_in_range`). Falls back to
  * `setHomeSeat`'s deterministic default (capital → city → first location) when The First
  * or its location can't be resolved (director's call, per the THR-520 handoff).
  */
@@ -122,12 +138,29 @@ function seedHomeSeat(state: GameState, ascendantId: string, turn: number): Beat
   const graph = state.graph;
   const firstId = findBondedFirstId(graph, ascendantId);
   let seatRef: string | undefined;
+  let seatRule: HomeSeatRule = 'default';
   if (firstId) {
     const locId = getAgentLocationId(graph, firstId);
     if (locId) {
       // Climb to the parent settlement if The First stands at a sublocation (three-tier model).
       const parentId = graph.getNode(locId)?.properties.parentLocationId as string | undefined;
       seatRef = parentId ?? locId;
+      seatRule = 'first_settlement';
+      // THR-1792 — a seat is always a settlement. The First may stand on a Waypoint, a lair
+      // or a ruin; then the seat goes to the nearest settlement to The First's hex.
+      const standing = graph.getNode(seatRef);
+      if (!isSettlementNode(standing)) {
+        const hexCol = standing?.properties.hexCol;
+        const hexRow = standing?.properties.hexRow;
+        const hex = typeof hexCol === 'number' && typeof hexRow === 'number' ? { col: hexCol, row: hexRow } : undefined;
+        const town = nearestSettlement(graph, hex, HOME_SEAT_MAX_SEARCH_RADIUS_HEXES);
+        if (town) {
+          seatRef = town.id;
+          seatRule = 'nearest_settlement';
+        } else {
+          seatRule = 'no_settlement_in_range';
+        }
+      }
     }
   }
 
@@ -142,6 +175,7 @@ function seedHomeSeat(state: GameState, ascendantId: string, turn: number): Beat
   return {
     seededNodeIds: [result.locationId],
     seededEdgeIds,
+    seatRule,
     placement: {
       placedNodeId: result.locationId,
       anchorId: result.locationId,
