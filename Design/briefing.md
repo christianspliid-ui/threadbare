@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 00:56 local (22:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 01:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -22,9 +22,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 0 jobs ready, 0 being built.** Nothing is blocked, stale or parked. The orchestrator (next run ~01:28) and the design lane (next run ~02:17) refill the shelf. Waiting in Todo for them: the three round-3 design tickets ([chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player), [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808)) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build.
+**Starved: 0 jobs ready, 0 being built.** Nothing is blocked, stale or parked. The orchestrator (next run ~02:28) and the design lane (next run ~02:17) refill the shelf. Waiting in Todo for them: the three round-3 design tickets ([chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player), [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808)) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build.
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (5 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Four main commits in a row have failed since 17:33 UTC. The newest run fails "milestone triggered flag persists" in `doomIdentityMilestones.test.ts` at 15.5 s, the same timeout already logged as impediment #1167 (solo runs pass in 7–10 s; the fix named there is a larger timeout) ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38086467350)). No session has claimed the fix, and the board is empty. This is executor work, not yours.
-- Everything else is green. The live site is serving the latest main, no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, and the engine's speed is flat (104 ms per tick, 13% under the weekly median).
+- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (6 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Four main commits in a row have failed since 17:33 UTC. The newest run fails "milestone triggered flag persists" in `doomIdentityMilestones.test.ts` at 15.5 s, the same timeout already logged as impediment #1167 (solo runs pass in 7–10 s; the fix named there is a larger timeout) ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38086467350)). No session has claimed the fix, and the board is empty. This is executor work, not yours.
+- Everything else is green. The live site is serving the latest main, no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, and the engine's speed is flat (105 ms per tick, 12% under the weekly median).
