@@ -161,9 +161,11 @@ export type WorkflowVerdict = "healthy" | "all-red" | "never-run" | "disabled" |
 
 /**
  * `red` — the newest conclusive push run failed, less than
- * `PUSH_LANE_RED_GRACE_HOURS` ago; `red-stale` — it has been red longer than that.
+ * `PUSH_LANE_RED_GRACE_HOURS` ago; `red-stale` — it has been red longer than that;
+ * `flaky` — it failed on push, but a later non-push run (the nightly schedule, a
+ * manual dispatch) passed on the same commit, so the tree is fine (THR-1776).
  */
-export type PushLaneVerdict = "healthy" | "red" | "red-stale" | "never-run" | "unknown";
+export type PushLaneVerdict = "healthy" | "red" | "red-stale" | "flaky" | "never-run" | "unknown";
 
 export interface PushLaneInput {
   /** Display name, e.g. "Heavy simulation tests". */
@@ -172,6 +174,13 @@ export interface PushLaneInput {
   file: string;
   /** Push-to-main runs, newest first. `null` when the fetch failed. */
   runs: WorkflowRunRecord[] | null;
+  /**
+   * The lane's non-push runs on `main` (`schedule`, `workflow_dispatch`),
+   * newest first (THR-1776). A green one on the red push run's commit means the
+   * red was a flake, not broken code. Absent or `null` (fetch failed) → the
+   * push runs alone decide, as before.
+   */
+  otherRuns?: WorkflowRunRecord[] | null;
 }
 
 export interface PushLaneReport {
@@ -191,6 +200,8 @@ export interface WorkflowRunRecord {
   conclusion: string | null;
   status: string;
   createdAtMs: number;
+  /** The commit the run tested. Optional so fixtures without it still type. */
+  headSha?: string;
 }
 
 export interface ScheduledWorkflowInput {
@@ -430,10 +441,51 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
     };
   }
 
-  // Newest is red: walk back to where the streak began.
-  let redSinceMs = conclusive[0].createdAtMs;
+  // Newest push run is red — but the lane's non-push runs on main (the nightly
+  // schedule, a manual dispatch) always test main's head at their time, so they
+  // are evidence too (THR-1776). The newest conclusive one after the push red
+  // decides: a re-run that went red again cancels an older green. Green on the
+  // same commit → a flake, not broken code. Green on a later commit (a docs-only
+  // push moved main without running the push lane) → main's code passes now.
+  const newestRed = conclusive[0];
+  const otherConclusive = (lane.otherRuns ?? []).filter(
+    (r) =>
+      r.status === "completed" &&
+      typeof r.conclusion === "string" &&
+      (RED_CONCLUSIONS.has(r.conclusion) || GREEN_CONCLUSIONS.has(r.conclusion)),
+  );
+  const latestRerun = otherConclusive
+    .filter((r) => r.createdAtMs > newestRed.createdAtMs)
+    .reduce<WorkflowRunRecord | undefined>(
+      (acc, r) => (acc === undefined || r.createdAtMs > acc.createdAtMs ? r : acc),
+      undefined,
+    );
+  if (latestRerun && GREEN_CONCLUSIONS.has(latestRerun.conclusion as string)) {
+    const redSha = newestRed.headSha?.slice(0, 8) ?? "unknown";
+    const sameCommit = newestRed.headSha !== undefined && latestRerun.headSha === newestRed.headSha;
+    return {
+      name,
+      file,
+      verdict: sameCommit ? "flaky" : "healthy",
+      needsChristian: false,
+      considered,
+      redSinceMs: null,
+      detail: sameCommit
+        ? `"${name}" failed on push for commit ${redSha} (${newestRed.conclusion}), then passed on a later run of the same commit (${latestRerun.conclusion}) — a flaky test, not broken code.`
+        : `"${name}" failed on push for commit ${redSha}, but a later run of main (commit ${latestRerun.headSha?.slice(0, 8) ?? "unknown"}) passed — main's code is green.`,
+    };
+  }
+
+  // Still red: walk back to where the streak began. A non-push green before the
+  // newest red means main was green then, so the streak cannot begin earlier —
+  // a push red that a later run already vindicated does not age this one.
+  const greenFloorMs = otherConclusive
+    .filter((r) => GREEN_CONCLUSIONS.has(r.conclusion as string) && r.createdAtMs < newestRed.createdAtMs)
+    .reduce((acc, r) => Math.max(acc, r.createdAtMs), Number.NEGATIVE_INFINITY);
+  let redSinceMs = newestRed.createdAtMs;
   for (const r of conclusive) {
     if (!RED_CONCLUSIONS.has(r.conclusion as string)) break;
+    if (r.createdAtMs <= greenFloorMs) break;
     redSinceMs = r.createdAtMs;
   }
   const redHours = Math.max(0, (nowMs - redSinceMs) / (60 * 60 * 1000));
@@ -643,22 +695,46 @@ function fetchScheduledRuns(file: string, beforeMs: number | null): WorkflowRunR
 /** Push-to-main runs of one post-merge lane, newest first (THR-1384). */
 function fetchPushRuns(file: string, beforeMs: number | null): WorkflowRunRecord[] | null {
   const perPage = beforeMs === null ? PUSH_RUN_LOOKBACK : PUSH_RUN_LOOKBACK * 20;
+  return fetchMainRuns(file, `event=push&branch=main&per_page=${perPage}`, beforeMs, () => true);
+}
 
+/**
+ * Non-push runs of one post-merge lane on `main` — the nightly `schedule`, a
+ * `workflow_dispatch` — newest first (THR-1776). They decide nothing alone; they
+ * are the evidence that a push-red commit later passed.
+ */
+function fetchOtherMainRuns(file: string, beforeMs: number | null): WorkflowRunRecord[] | null {
+  const perPage = PUSH_RUN_LOOKBACK * 20;
+  return fetchMainRuns(file, `branch=main&per_page=${perPage}`, beforeMs, (event) => event !== "push");
+}
+
+function fetchMainRuns(
+  file: string,
+  query: string,
+  beforeMs: number | null,
+  keepEvent: (event: string) => boolean,
+): WorkflowRunRecord[] | null {
   const body = ghJson<{
-    workflow_runs?: Array<{ conclusion: string | null; status: string; created_at: string }>;
-  }>(
-    `repos/${GH_REPO}/actions/workflows/${file}/runs?event=push&branch=main&per_page=${perPage}`,
-  );
+    workflow_runs?: Array<{
+      conclusion: string | null;
+      status: string;
+      created_at: string;
+      event?: string;
+      head_sha?: string;
+    }>;
+  }>(`repos/${GH_REPO}/actions/workflows/${file}/runs?${query}`);
 
   if (!body?.workflow_runs) {
     return null;
   }
 
   return body.workflow_runs
+    .filter((r) => keepEvent(r.event ?? ""))
     .map((r) => ({
       conclusion: r.conclusion,
       status: r.status,
       createdAtMs: Date.parse(r.created_at),
+      headSha: r.head_sha,
     }))
     .filter((r) => beforeMs === null || r.createdAtMs < beforeMs)
     .slice(0, PUSH_RUN_LOOKBACK);
@@ -720,6 +796,7 @@ function main(): void {
         name: meta?.name ?? file,
         file,
         runs: fetchPushRuns(file, cutoffMs),
+        otherRuns: fetchOtherMainRuns(file, cutoffMs),
       };
     });
 
@@ -739,7 +816,8 @@ function main(): void {
     }
     for (const lane of result.postMerge) {
       const runs = lane.considered.length > 0 ? ` [${lane.considered.join(",")}]` : "";
-      console.log(`[workflow-health]   post-merge ${lane.file}: ${lane.verdict}${runs}`);
+      const note = lane.verdict === "flaky" ? ` — ${lane.detail}` : "";
+      console.log(`[workflow-health]   post-merge ${lane.file}: ${lane.verdict}${runs}${note}`);
     }
     console.log(`[workflow-health] ${result.summary}`);
   }

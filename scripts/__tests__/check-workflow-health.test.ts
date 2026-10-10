@@ -385,6 +385,108 @@ describe("classifyPushLane", () => {
     expect(result.summary).toContain("Heavy simulation tests");
   });
 
+  describe("a green re-run of the same commit (THR-1776)", () => {
+    // heavy-tests.yml on main, 2026-10-06/07: two push reds, then the nightly
+    // schedule passed on the red head a43dc356. The 10-08 04:47Z briefing called
+    // it "failing on main for 35 hours" — the same tree had passed 18 h earlier.
+    const at = (iso: string) => new Date(iso).getTime();
+    const NOW = at("2026-10-08T04:47:00Z");
+    const pushRuns: WorkflowRunRecord[] = [
+      { conclusion: "failure", status: "completed", createdAtMs: at("2026-10-06T20:44:00Z"), headSha: "a43dc356" },
+      { conclusion: "failure", status: "completed", createdAtMs: at("2026-10-06T17:58:00Z"), headSha: "a2080d20" },
+      { conclusion: "success", status: "completed", createdAtMs: at("2026-10-06T15:16:00Z"), headSha: "1a9e5385" },
+    ];
+    const scheduleGreen: WorkflowRunRecord = {
+      conclusion: "success",
+      status: "completed",
+      createdAtMs: at("2026-10-07T10:15:00Z"),
+      headSha: "a43dc356",
+    };
+
+    it("classifies push-red then schedule-green on the same sha as flaky, not red-stale", () => {
+      const report = classifyPushLane({ ...lane(pushRuns), otherRuns: [scheduleGreen] }, NOW);
+      expect(report.verdict).toBe("flaky");
+      expect(report.needsChristian).toBe(false);
+      expect(report.redSinceMs).toBeNull();
+      expect(report.detail).toContain("a43dc356");
+      expect(report.detail).toMatch(/failure/);
+      expect(report.detail).toMatch(/success/);
+      expect(report.detail).toMatch(/flaky test, not broken code/);
+    });
+
+    it("stays red-stale without the schedule green — the pre-fix reading", () => {
+      expect(classifyPushLane(lane(pushRuns), NOW).verdict).toBe("red-stale");
+      expect(classifyPushLane({ ...lane(pushRuns), otherRuns: null }, NOW).verdict).toBe("red-stale");
+    });
+
+    it("ignores an earlier green, a red re-run and an unfinished run as vindication", () => {
+      expect(
+        classifyPushLane(
+          { ...lane(pushRuns), otherRuns: [{ ...scheduleGreen, createdAtMs: at("2026-10-06T20:00:00Z") }] },
+          NOW,
+        ).verdict,
+      ).toBe("red-stale");
+      expect(
+        classifyPushLane({ ...lane(pushRuns), otherRuns: [{ ...scheduleGreen, conclusion: "failure" }] }, NOW).verdict,
+      ).toBe("red-stale");
+      expect(
+        classifyPushLane(
+          { ...lane(pushRuns), otherRuns: [{ ...scheduleGreen, status: "in_progress", conclusion: null }] },
+          NOW,
+        ).verdict,
+      ).toBe("red-stale");
+    });
+
+    it("reads a later green on a newer commit as main green, not flaky", () => {
+      // A docs-only push moved main without running the push lane; the nightly
+      // tested the new head and passed — main's code is fine.
+      const report = classifyPushLane(
+        { ...lane(pushRuns), otherRuns: [{ ...scheduleGreen, headSha: "beadfeed" }] },
+        NOW,
+      );
+      expect(report.verdict).toBe("healthy");
+      expect(report.needsChristian).toBe(false);
+      expect(report.detail).toContain("beadfeed");
+    });
+
+    it("does not age a new red from an older red a later run already vindicated", () => {
+      // Push A flakes at T0, the nightly passes A at T0+8h, push B fails at T0+20h.
+      const T0 = at("2026-10-06T00:00:00Z");
+      const H = 60 * 60 * 1000;
+      const runs: WorkflowRunRecord[] = [
+        { conclusion: "failure", status: "completed", createdAtMs: T0 + 20 * H, headSha: "bbbbbbbb" },
+        { conclusion: "failure", status: "completed", createdAtMs: T0, headSha: "aaaaaaaa" },
+      ];
+      const nightly: WorkflowRunRecord = { conclusion: "success", status: "completed", createdAtMs: T0 + 8 * H, headSha: "aaaaaaaa" };
+      const report = classifyPushLane({ ...lane(runs), otherRuns: [nightly] }, T0 + 24 * H);
+      expect(report.verdict).toBe("red");
+      expect(report.redSinceMs).toBe(T0 + 20 * H);
+    });
+
+    it("lets a newer red re-run of the same commit cancel an older green", () => {
+      const redAgain: WorkflowRunRecord = { ...scheduleGreen, conclusion: "failure", createdAtMs: at("2026-10-08T03:00:00Z") };
+      // Newest first, as the API returns them — the order must not matter.
+      expect(classifyPushLane({ ...lane(pushRuns), otherRuns: [redAgain, scheduleGreen] }, NOW).verdict).toBe("red-stale");
+      expect(classifyPushLane({ ...lane(pushRuns), otherRuns: [scheduleGreen, redAgain] }, NOW).verdict).toBe("red-stale");
+    });
+
+    it("cannot call a push red without a sha flaky, but a later green still reads main green", () => {
+      const noSha = pushRuns.map(({ headSha: _drop, ...r }) => r);
+      expect(classifyPushLane({ ...lane(noSha), otherRuns: [scheduleGreen] }, NOW).verdict).toBe("healthy");
+    });
+
+    it("keeps a flaky lane out of the ask and out of the session nudge", () => {
+      const result = classifyWorkflowHealth(
+        [workflow({ runs: [runRecord("success")] })],
+        [{ ...lane(pushRuns), otherRuns: [scheduleGreen] }],
+        NOW,
+      );
+      expect(result.needsChristian).toBe(false);
+      expect(result.needsSession).toBe(false);
+      expect(result.summary).not.toContain("failing on main");
+    });
+  });
+
   it("asks nothing of a session when every post-merge lane is green", () => {
     const result = classifyWorkflowHealth(
       [workflow({ runs: [runRecord("success")] })],
