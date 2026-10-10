@@ -59,6 +59,8 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
              style={{
                opacity: cardsVisible ? 1 : 0,
                transform: cardsVisible ? 'translateY(0)' : 'translateY(20px)',
+               // THR-1804: a hidden row takes no clicks (RevealBeat pattern).
+               pointerEvents: cardsVisible ? 'auto' : 'none',
                transition: 'opacity 1s ease, transform 1s ease',
              }}>
           {fragments.map(fragment => (
@@ -67,7 +69,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
               prose={fragment.prose}
               imageAssetPath={fragment.imageAssetPath}
               selected={false}
-              onClick={() => choose(fragment)}
+              onClick={() => { if (cardsVisible) choose(fragment); }}
               accentColor="#b88c9a"
               testId={`drive-${fragment.id}`}
             />

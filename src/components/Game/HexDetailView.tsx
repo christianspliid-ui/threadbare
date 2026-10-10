@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import type { HexCoord, HexTile } from '../../types';
 import type { WorldGraph } from '../../engine/graph';
 import { terrainDisplayName } from '../HexMapV2/palette/terrainPalette';
@@ -9,6 +9,10 @@ import { EntityVisual } from '../shared/EntityVisual';
 import { ListRow } from '../shared/ListRow';
 import { Tooltip } from '../shared/Tooltip';
 import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../data/geo-word-bands';
+import {
+  isNudgeDesignerViewEnabled,
+  subscribeNudgeDesignerView,
+} from './encounter-stage/designerView';
 
 /**
  * How many locations / agents list before the row collapses into a count.
@@ -65,6 +69,17 @@ export const HexDetailView = React.memo(function HexDetailView({
 }: HexDetailViewProps) {
   const terrainKey = tile?.terrain ?? 'unknown';
   const terrainName = terrainDisplayName(terrainKey);
+  // THR-1804. Grid coordinates, the raw geo parameters and the terrain's sphere
+  // resonance are map-generation readouts; cold playtest round 3 read them as
+  // debug info. They show only under the designer view (DebugPanel toggle,
+  // `window.__DEBUG.setNudgeDesignerView(true)`). The terrain name heads the panel
+  // and the Locations list names any settlement, so the player still knows where
+  // they are.
+  const designerView = useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    isNudgeDesignerViewEnabled,
+  );
 
   // Locations on this hex
   let locations: HexEntityRef[] = [];
@@ -170,16 +185,19 @@ export const HexDetailView = React.memo(function HexDetailView({
           {terrainName}
         </h2>
 
-        <span
-          style={{
-            display: 'inline-block',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-body)',
-          }}
-        >
-          {coord.col}, {coord.row}
-        </span>
+        {designerView && (
+          <span
+            data-testid="hex-detail-coords"
+            style={{
+              display: 'inline-block',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-body)',
+            }}
+          >
+            {coord.col}, {coord.row}
+          </span>
+        )}
       </div>
 
       {/* Body */}
@@ -203,7 +221,7 @@ export const HexDetailView = React.memo(function HexDetailView({
         {tile?.dangerLevel != null && tile.dangerLevel > 0 && (
           <HexField label="Danger" value={dangerLabel(tile.dangerLevel)} />
         )}
-        {tile?.geoParams && (
+        {designerView && tile?.geoParams && (
           <>
             <HexField label="Elevation" value={geoWord(tile.geoParams.elevation, ELEVATION_WORDS)} />
             <HexField label="Temperature" value={geoWord(tile.geoParams.temperature, TEMPERATURE_WORDS)} />
@@ -227,7 +245,7 @@ export const HexDetailView = React.memo(function HexDetailView({
           graph={graph}
           onEntityClick={onAgentClick}
         />
-        {tile && <SphereResonanceRow terrain={tile.terrain} />}
+        {designerView && tile && <SphereResonanceRow terrain={tile.terrain} />}
       </div>
 
       {/* Footer */}

@@ -109,3 +109,25 @@ describe('ProseTtsButton', () => {
     expect(screen.getByTestId(BUTTON)).toBeTruthy();
   });
 });
+
+describe('ProseTtsButton — reads as narration, not "play the scene" (THR-1804)', () => {
+  it('idles on a speaker glyph, not ▷', () => {
+    render(<ProseTtsButton text={['A scene.']} />);
+    expect(screen.getByTestId('prose-tts-speaker')).toBeTruthy();
+    expect(screen.queryByTestId('prose-tts-loading-line')).toBeNull();
+  });
+
+  it('says what it is doing, in visible text, while the voice downloads', () => {
+    narrationState = { ...narrationState, isLoading: true, loadProgress: 0.4 };
+    render(<ProseTtsButton text={['A scene.']} />);
+    const line = screen.getByTestId('prose-tts-loading-line');
+    expect(line.textContent).toBe("Fetching the narrator's voice… 40%");
+    expect(screen.getByTestId(BUTTON).getAttribute('aria-label')).toBe("Fetching the narrator's voice… 40%");
+  });
+
+  it('drops the percentage before any progress arrives', () => {
+    narrationState = { ...narrationState, isLoading: true, loadProgress: 0 };
+    render(<ProseTtsButton text={['A scene.']} />);
+    expect(screen.getByTestId('prose-tts-loading-line').textContent).toBe("Fetching the narrator's voice…");
+  });
+});

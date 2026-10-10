@@ -55,10 +55,12 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
   });
 
   const handleHungerClick = useCallback((hunger: HungerDefinition) => {
+    // THR-1804: a hunger row still fading in takes no clicks.
+    if (!contentVisible) return;
     const def = hunger.courtOptions.find(c => c.isDefault) ?? hunger.courtOptions[0];
     setSelectedCourt(def?.courtType ?? null);
     chooseHunger(hunger);
-  }, [chooseHunger]);
+  }, [chooseHunger, contentVisible]);
 
   // An undo (the button or Escape, which clears the choice inside the hook)
   // puts the screen back on the hunger row.
@@ -160,6 +162,8 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                  style={{
                    opacity: contentVisible ? 1 : 0,
                    transform: contentVisible ? 'translateY(0)' : 'translateY(20px)',
+                   // THR-1804: a hidden row takes no clicks (RevealBeat pattern).
+                   pointerEvents: contentVisible ? 'auto' : 'none',
                    transition: 'opacity 1s ease, transform 1s ease',
                  }}>
               {hungers.map(hunger => {

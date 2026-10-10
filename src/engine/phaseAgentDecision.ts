@@ -49,7 +49,7 @@ import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, E
 import { META_VALUE_PAIR } from '../types/agent';
 import type { EngagementDecisionTrace } from '../types/trace';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, FIRST_CHAPTER_REPEAT_FLOOR_TICKS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
   REROUTE_SCORE_MULTIPLIER,
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
@@ -130,6 +130,18 @@ import { settingClassForSubtype } from '../data/settingClasses';
 import { fightParticipantIds } from './fights/fightParticipants';
 
 /**
+ * Whether `actorId` is the bonded First — a `thread` edge at
+ * `courtPosition: 'the_first'`. The same predicate as `fights/fightHarm.ts`
+ * `isBondedFirst`, restated here because that module imports the aftermath
+ * chain, and pulling it into the decision phase risks a load cycle.
+ */
+export function isBondedFirstActor(graph: WorldGraph, actorId: string): boolean {
+  return graph.getIncomingEdges(actorId, 'thread').some(
+    (e) => (e.properties as { courtPosition?: string } | undefined)?.courtPosition === 'the_first',
+  );
+}
+
+/**
  * Compute effective cooldown scaled by available template pool size.
  * Large pools use full cooldown; small pools get shorter cooldowns
  * to prevent agents from hitting `all_on_cooldown` repeatedly.
@@ -160,6 +172,11 @@ function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: numb
  * failure is therefore also read from `chapterArchive`, which outlives the prune.
  * The archive is appended in resolution order, so the scan walks back from its tail
  * and stops at the first record older than the failed window.
+ *
+ * THR-1804: `repeatFloorTicks` (the bonded First's FIRST_CHAPTER_REPEAT_FLOOR_TICKS)
+ * lifts the completed and failed cooldowns to at least that many ticks, whatever the
+ * pool size. It is fail-soft: if the floor would empty the candidate list, the
+ * call falls back to the scaled cooldowns alone.
  */
 export function filterByCooldown(
   candidates: EncounterCacheEntry[],
@@ -169,9 +186,28 @@ export function filterByCooldown(
   tick: number,
   availableTemplateCount: number,
   chapterArchive: readonly ChapterRecord[] = [],
+  repeatFloorTicks = 0,
+): EncounterCacheEntry[] {
+  const args = [candidates, agentId, encounterProgress, unifiedActions, tick, availableTemplateCount, chapterArchive] as const;
+  if (repeatFloorTicks <= 0) return applyCooldowns(...args, 0);
+  const floored = applyCooldowns(...args, repeatFloorTicks);
+  return floored.length > 0 || candidates.length === 0 ? floored : applyCooldowns(...args, 0);
+}
+
+/** One cooldown pass of {@link filterByCooldown}; `floor` lifts the completed and failed windows. */
+function applyCooldowns(
+  candidates: EncounterCacheEntry[],
+  agentId: string,
+  encounterProgress: readonly EncounterProgress[],
+  unifiedActions: readonly UnifiedAction[],
+  tick: number,
+  availableTemplateCount: number,
+  chapterArchive: readonly ChapterRecord[],
+  floor: number,
 ): EncounterCacheEntry[] {
   const effectiveAbandon = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, availableTemplateCount);
-  const effectiveComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
+  const scaledComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
+  const effectiveComplete = Math.max(scaledComplete, floor);
 
   // Collect cooldown end ticks per template for this agent
   const cooldownEnd = new Map<string, number>();
@@ -188,7 +224,7 @@ export function filterByCooldown(
     }
   }
 
-  const effectiveFailed = effectiveComplete * FAILED_TEMPLATE_COOLDOWN_MULT;
+  const effectiveFailed = Math.max(scaledComplete * FAILED_TEMPLATE_COOLDOWN_MULT, floor);
   for (const action of unifiedActions) {
     if (action.actorId !== agentId || !action.resolved) continue;
     const completedAt = action.completedAtTick ?? action.startTick;
@@ -201,8 +237,13 @@ export function filterByCooldown(
   for (let i = chapterArchive.length - 1; i >= 0; i--) {
     const record = chapterArchive[i];
     if (tick - record.resolvedTick > effectiveFailed) break;
-    if (record.actorId !== agentId || !isFailedOutcome(record.outcome)) continue;
-    const end = record.resolvedTick + effectiveFailed;
+    if (record.actorId !== agentId) continue;
+    const failed = isFailedOutcome(record.outcome);
+    // THR-1804: under a repeat floor a success counts too, because the resolved
+    // action that carried it is pruned after RESOLVED_ACTION_RETENTION_TICKS,
+    // well inside the floor.
+    if (!failed && floor <= 0) continue;
+    const end = record.resolvedTick + (failed ? effectiveFailed : effectiveComplete);
     const prior = cooldownEnd.get(record.templateId);
     cooldownEnd.set(record.templateId, prior !== undefined && prior > end ? prior : end);
   }
@@ -963,24 +1004,28 @@ export function phaseAgentDecision(
       // Emit filter pipeline trace
       emitTrace(filterResult.trace as TraceEntry);
 
+      // C.1: Max completions retirement — permanently exclude templates the agent has exhausted.
+      // THR-1804: runs before the cooldown pass (the two filters commute) so the First's
+      // repeat-floor fallback judges the pool the agent can actually draw from.
+      const familiarityRecord = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
+      const unretiredCandidates = rawCandidates.filter(c => {
+        const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
+        return completions < MAX_COMPLETIONS_PER_TEMPLATE;
+      });
+
       // Filter out encounters on cooldown (abandoned/completed recently)
       // Pool size for dynamic cooldown = raw candidates after filter pipeline
-      const cooldownCandidates = filterByCooldown(
-        rawCandidates,
+      const candidates = filterByCooldown(
+        unretiredCandidates,
         agentId,
         state.encounterProgress,
         state.unifiedActions,
         state.tick,
         rawCandidates.length,
         state.chapterArchive,
+        // THR-1804 — the bonded First does not restart a chapter minutes after it ends.
+        isBondedFirstActor(graph, agentId) ? FIRST_CHAPTER_REPEAT_FLOOR_TICKS : 0,
       );
-
-      // C.1: Max completions retirement — permanently exclude templates the agent has exhausted
-      const familiarityRecord = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
-      const candidates = cooldownCandidates.filter(c => {
-        const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
-        return completions < MAX_COMPLETIONS_PER_TEMPLATE;
-      });
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
       const identityBias = state.doomIdentityMatrix?.encounterPoolBias ?? {};

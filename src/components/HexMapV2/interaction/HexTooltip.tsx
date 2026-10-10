@@ -5,6 +5,11 @@ import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActiv
 import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
 import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../../data/geo-word-bands';
 import { MAP_OVERLAY_Z } from '../overlay/mapOverlayZ';
+import { useSyncExternalStore } from 'react';
+import {
+  isNudgeDesignerViewEnabled,
+  subscribeNudgeDesignerView,
+} from '../../Game/encounter-stage/designerView';
 
 /** Max trade routes listed per tooltip before the "(N more)" overflow line. */
 const TOOLTIP_MAX_ROUTES = 3;
@@ -112,6 +117,13 @@ export function HexTooltip({
   avatarLine,
   avatarColor,
 }: HexTooltipProps) {
+  // THR-1804 — grid coordinates and the raw terrain key are map plumbing; cold
+  // playtest round 3 read "Wilderness (18, 11)" as debug info. Designer view only.
+  const designerView = useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    isNudgeDesignerViewEnabled,
+  );
   const hasLocationData = locationActivity && locationActivity.agentThreads.length > 0 || locationActivity?.murmurs.length;
 
   // Estimated tooltip dimensions for clamping
@@ -191,22 +203,25 @@ export function HexTooltip({
         )}
       </div>
 
-      {/* Secondary line: coordinates (always shown) */}
-      <div
-        style={{
-          color:      'var(--text-secondary)',
-          fontSize:   'var(--text-xs)',
-          fontWeight: 400,
-          fontFamily: 'var(--font-body)',
-          lineHeight: 1.4,
-          marginBottom: locationActivity ? 4 : 0,
-        }}
-      >
-        ({coord.col}, {coord.row})
-        {!locationActivity && terrainKey && terrainKey !== displayTerrainName.toLowerCase() && (
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>{terrainKey}</span>
-        )}
-      </div>
+      {/* Secondary line: coordinates — designer view only (THR-1804) */}
+      {designerView && (
+        <div
+          data-testid="hex-tooltip-coords"
+          style={{
+            color:      'var(--text-secondary)',
+            fontSize:   'var(--text-xs)',
+            fontWeight: 400,
+            fontFamily: 'var(--font-body)',
+            lineHeight: 1.4,
+            marginBottom: locationActivity ? 4 : 0,
+          }}
+        >
+          ({coord.col}, {coord.row})
+          {!locationActivity && terrainKey && terrainKey !== displayTerrainName.toLowerCase() && (
+            <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>{terrainKey}</span>
+          )}
+        </div>
+      )}
 
       {/* The player's own shape on this hex (THR-1609) */}
       {avatarLine && (

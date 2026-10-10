@@ -155,6 +155,8 @@ export interface EncounterNarrationApi {
   readonly isSpeaking: boolean;
   /** True while a backend is initialising. */
   readonly isLoading: boolean;
+  /** Model download progress while loading, 0–1 (THR-1804: shown as visible text). */
+  readonly loadProgress: number;
   /** True when a backend exists but the model still needs opting into. */
   readonly needsOptIn: boolean;
   /** True when narration can actually be started right now. */
@@ -174,7 +176,7 @@ export interface EncounterNarrationApi {
 
 export function useEncounterNarration(): EncounterNarrationApi {
   const {
-    enabled, isSpeaking, isLoading, isAvailable, status, speak, stop, initWorker,
+    enabled, isSpeaking, isLoading, isAvailable, status, speak, stop, initWorker, loadProgress,
   } = useNarration();
 
   const speakEncounterBound = useCallback(
@@ -192,6 +194,7 @@ export function useEncounterNarration(): EncounterNarrationApi {
     enabled,
     isSpeaking,
     isLoading,
+    loadProgress,
     needsOptIn,
     canNarrate,
     enable: initWorker,
@@ -199,7 +202,7 @@ export function useEncounterNarration(): EncounterNarrationApi {
     speakEncounter: speakEncounterBound,
     stop,
   }), [
-    enabled, isSpeaking, isLoading, needsOptIn, canNarrate,
+    enabled, isSpeaking, isLoading, loadProgress, needsOptIn, canNarrate,
     initWorker, speak, speakEncounterBound, stop,
   ]);
 }

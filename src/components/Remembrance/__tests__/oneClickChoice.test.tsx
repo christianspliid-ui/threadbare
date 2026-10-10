@@ -38,6 +38,9 @@ const drives = [fragment('drive.a', 'drive'), fragment('drive.b', 'drive')];
 const origins = [fragment('origin.a', 'origin'), fragment('origin.b', 'origin')];
 
 beforeEach(() => vi.useFakeTimers());
+/** THR-1804: the choice rows fade in and take no clicks until they are visible. */
+const CARDS_FADE_IN_MS = 1000;
+function revealCards() { act(() => { vi.advanceTimersByTime(CARDS_FADE_IN_MS); }); }
 afterEach(() => vi.useRealTimers());
 
 describe('StirringBeat — one click (THR-1716)', () => {
@@ -93,6 +96,7 @@ describe('DriveBeat — one click (THR-1716)', () => {
   it('one click chooses, and the flow moves on after the hold', () => {
     const onSelect = vi.fn();
     render(<DriveBeat fragments={drives} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId('drive-drive.b'));
     expect(screen.getByTestId('drive-chosen-drive.b')).toBeTruthy();
     act(() => { vi.advanceTimersByTime(DRIVE_CHOSEN_HOLD_MS); });
@@ -102,6 +106,7 @@ describe('DriveBeat — one click (THR-1716)', () => {
   it('"Choose again" and Escape undo during the hold', () => {
     const onSelect = vi.fn();
     render(<DriveBeat fragments={drives} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId('drive-drive.a'));
     fireEvent.click(screen.getByTestId('remembrance-choose-again'));
     fireEvent.click(screen.getByTestId('drive-drive.b'));
@@ -116,6 +121,7 @@ describe('OriginBeat — one click, Continue still needed (THR-1716)', () => {
   it('one click chooses and reveals naming; nothing advances without Continue', () => {
     const onSelect = vi.fn();
     render(<OriginBeat fragments={origins} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId('origin-origin.a'));
     act(() => { vi.advanceTimersByTime(ORIGIN_NAMING_REVEAL_MS * 5); });
     expect(onSelect).not.toHaveBeenCalled();
@@ -127,6 +133,7 @@ describe('OriginBeat — one click, Continue still needed (THR-1716)', () => {
   it('before Continue, "Choose again" lets a different origin be chosen; the name is kept', () => {
     const onSelect = vi.fn();
     render(<OriginBeat fragments={origins} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId('origin-origin.a'));
     act(() => { vi.advanceTimersByTime(ORIGIN_NAMING_REVEAL_MS); });
     fireEvent.change(screen.getByTestId('mortal-name-input'), { target: { value: 'Maren' } });
@@ -145,6 +152,7 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
   it('one click chooses a hunger and the court step follows; the court still needs Continue', () => {
     const onSelect = vi.fn();
     render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
     act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
     expect(screen.getByTestId('court-confirm')).toBeTruthy();
@@ -161,10 +169,12 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
   it('"Choose again" on the court step returns to the hunger row', () => {
     const onSelect = vi.fn();
     render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onSelect} />);
+    revealCards();
     fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
     act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
     fireEvent.click(screen.getByTestId('remembrance-choose-again'));
     expect(screen.getByTestId(`hunger-${hungers[1].id}`)).toBeTruthy();
+    revealCards(); // the hunger row fades back in (THR-1804)
     fireEvent.click(screen.getByTestId(`hunger-${hungers[1].id}`));
     act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
     fireEvent.click(screen.getByTestId('court-confirm'));
@@ -172,5 +182,42 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     fireEvent.click(screen.getByTestId('spheres-confirm'));
     act(() => { vi.advanceTimersByTime(3000); });
     expect(onSelect.mock.calls[0][0]).toBe(hungers[1]);
+  });
+});
+
+describe("THR-1804 — a card row still fading in takes no clicks", () => {
+  it("DriveBeat ignores a click before the row is visible", () => {
+    const onSelect = vi.fn();
+    render(<DriveBeat fragments={drives} onSelect={onSelect} />);
+    fireEvent.click(screen.getByTestId("drive-drive.a"));
+    expect(screen.queryByTestId("drive-chosen-drive.a")).toBeNull();
+    act(() => { vi.advanceTimersByTime(DRIVE_CHOSEN_HOLD_MS * 2); });
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("OriginBeat ignores a click before the row is visible", () => {
+    const onSelect = vi.fn();
+    render(<OriginBeat fragments={origins} onSelect={onSelect} />);
+    fireEvent.click(screen.getByTestId("origin-origin.a"));
+    act(() => { vi.advanceTimersByTime(ORIGIN_NAMING_REVEAL_MS * 2); });
+    // Nothing was chosen, so Enter in the name field submits nothing.
+    fireEvent.keyDown(screen.getByTestId("mortal-name-input"), { key: "Enter" });
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("TransformationBeat ignores a hunger click before the row is visible", () => {
+    const hungers = HUNGER_CATALOG.slice(0, 2);
+    render(<TransformationBeat hungers={[...hungers]} driveFragment={drives[0]} onSelect={vi.fn()} />);
+    fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
+    act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS * 2); });
+    expect(screen.queryByTestId("court-confirm")).toBeNull();
+  });
+
+  it("a hidden row is pointer-events: none (the RevealBeat pattern)", () => {
+    render(<DriveBeat fragments={drives} onSelect={vi.fn()} />);
+    const row = screen.getByTestId("drive-drive.a").parentElement as HTMLElement;
+    expect(row.style.pointerEvents).toBe("none");
+    revealCards();
+    expect(row.style.pointerEvents).toBe("auto");
   });
 });
