@@ -31,13 +31,18 @@ function Harness({ pending }: { pending: PendingBeat }) {
 
 describe('AscendantBeatOfferBanner — a held opening gift', () => {
   it('reads "A gift waits — <gift eyebrow> · Open ▸" above the player surfaces', () => {
-    render(<AscendantBeatOfferBanner pending={pendingFor(SEAT, 'spine')} onEnter={() => {}} />);
+    render(<AscendantBeatOfferBanner pending={pendingFor(SEAT, 'spine')} onEnter={() => {}} raised />);
     const pill = screen.getByTestId('beat-offer-banner');
     expect(pill.textContent).toContain(GIFT_WAITS_COPY.eyebrow);
     expect(pill.textContent).toContain(SPINE_BEAT_PRESENTATION[SEAT].eyebrow);
     expect(pill.textContent).toContain(GIFT_WAITS_COPY.cta);
     expect(pill.getAttribute('data-gift-waits')).toBe('true');
     expect(pill.style.zIndex).toBe(String(GIFT_PILL_Z));
+  });
+
+  it('stays below the modal backdrop when not raised (held by an interrupt or a vignette)', () => {
+    render(<AscendantBeatOfferBanner pending={pendingFor(SEAT, 'spine')} onEnter={() => {}} />);
+    expect(Number(screen.getByTestId('beat-offer-banner').style.zIndex)).toBeLessThan(60);
   });
 
   it('opens the gift when clicked', () => {

@@ -5063,6 +5063,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return () => clearTimeout(timer);
   }, [pendingBeat, beatEntered, computeGiftDelivery, giftRecheck]);
 
+  // THR-1809: the held pill rises above the player surface holding the gift, never above
+  // an interrupt or a vignette (there it stays under the backdrop and cannot stack the gift).
+  const giftPillRaised = !!pendingBeat && !beatEntered && (() => {
+    const held = computeGiftDelivery().heldBy;
+    return held.length > 0 && held.every(r => r === 'player_surface' || r === 'recent_input');
+  })();
+
   const getDebugGiftDelivery = useCallback(() => {
     const d = computeGiftDelivery();
     const entered = !!pendingBeat && beatEntered;
@@ -6431,7 +6438,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* Ascendant beat: thread-tug offer affordance + entered-beat modal (THR-517) */}
       {pendingBeat && !beatEntered && !interruptsSuppressed && (
-        <AscendantBeatOfferBanner pending={pendingBeat} onEnter={() => setBeatEntered(true)} />
+        <AscendantBeatOfferBanner
+          pending={pendingBeat}
+          onEnter={() => setBeatEntered(true)}
+          raised={giftPillRaised}
+        />
       )}
       {pendingBeat && beatEntered && (
         <AscendantBeatModal

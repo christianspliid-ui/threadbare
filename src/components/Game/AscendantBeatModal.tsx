@@ -380,6 +380,13 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
 interface AscendantBeatOfferBannerProps {
   pending: PendingBeat;
   onEnter: () => void;
+  /**
+   * THR-1809: lift a held gift's pill to `GIFT_PILL_Z`, above the player surface holding it.
+   * GameView passes true only when nothing but the player's own surfaces or recent input
+   * holds the gift: under an interrupt or a vignette the pill stays below the backdrop, so
+   * it cannot open the gift over them.
+   */
+  raised?: boolean;
 }
 
 /**
@@ -400,6 +407,7 @@ const OFFER_PILL_Z = 40;
 export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
   pending,
   onEnter,
+  raised = false,
 }: AscendantBeatOfferBannerProps) {
   // Same precedence as the modal, so the banner and the card it opens agree.
   const eyebrow =
@@ -427,7 +435,7 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
         top: 'var(--space-4)',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: giftWaits ? GIFT_PILL_Z : OFFER_PILL_Z,
+        zIndex: giftWaits && raised ? GIFT_PILL_Z : OFFER_PILL_Z,
         display: 'flex',
         alignItems: 'center',
         gap: 'var(--space-2)',
