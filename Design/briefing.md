@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-10 20:55 local (18:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-10 21:55 local (19:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,14 +23,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 2 jobs ready, 1 being built.** Neither ready job is older than 2 days or blocked; no parked jobs.
+**Thin on purpose: 1 job ready, 1 being built.** The one ready job is held for your veto window; nothing is blocked, stale or parked.
 
-- **Being built now:** a fix so the health check stops calling a test run "failing" after a re-run of the same commit passed ([THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the)) — up as [#2311](https://github.com/christianspliid-ui/threadbare/pull/2311), waiting on checks and set to merge on its own.
-- **Ready:** the gift-waits-its-turn build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)) — held until Sunday ~20:35 for your veto window; and a machinery fix to the review gate ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)).
-- **Now live:** the glossary entry for "The First", "Rite of the Thread" and "the god's mark" ([THR-1756](https://linear.app/threadbare/issue/THR-1756/ul-proposal-the-first-the-first-mortal-the-god-threads-any-route-add), via [#2308](https://github.com/christianspliid-ui/threadbare/pull/2308)).
+- **Being built now:** the review-gate machinery fix ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)) — up as [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312), checks running, set to merge on its own.
+- **Ready:** the gift-waits-its-turn build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)) — held until Sunday ~20:35 for your veto window.
+- **Now live:** the health check no longer calls a test run "failing" after a re-run of the same commit passed ([THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the), via [#2311](https://github.com/christianspliid-ui/threadbare/pull/2311)).
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (4 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* No session has claimed the fix itself. Executor work, not yours.
-- Overnight quiet Friday 20:34 → Saturday 11:26 (14.9 h) is the normal night-and-weekend shape; not an ask.
-- Everything else is green. The live site is current (only docs merged since the last publish), no pull requests are stuck, automated checks run normally, every scheduled lane is on time, and the speed check is back to normal (132 ms/tick, +10% vs the weekly median).
+- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (5 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* No session has claimed the fix. Executor work, not yours.
+- Everything else is green. The live site is serving the latest main, no pull requests are stuck, automated checks run normally, and every scheduled lane is on time.
