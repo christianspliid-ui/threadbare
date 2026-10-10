@@ -31,6 +31,7 @@ import {
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
 import { heldSources } from '../../../engine/essenceSources';
+import { resolveToParentLocation } from '../../../engine/sublocationShape';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -503,4 +504,28 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
     });
   }
   return [...controlRows, ...sourceRows];
+}
+
+// ── Home seat (THR-1792) ─────────────────────────────────────────────────────
+
+export interface HomeSeatView {
+  /** The seat's place-tier location id — what the map centres on. */
+  locationId: string;
+  /** The settlement's name as the player reads it. */
+  name: string;
+}
+
+/**
+ * The god's home seat, once the Seat beat has set `homeSeatLocationId`; null before.
+ * Climbs a sublocation to its place-tier parent so the centre handler always gets a
+ * node that carries a hex. Fail-soft: a dangling id reads as no seat.
+ */
+export function selectHomeSeat(gameState: GameState): HomeSeatView | null {
+  const graph = gameState.graph;
+  const ascendant = gameState.ascendantId ? graph.getNode(gameState.ascendantId) : undefined;
+  const seatId = ascendant?.properties.homeSeatLocationId as string | undefined;
+  if (!seatId) return null;
+  const place = resolveToParentLocation(graph, graph.getNode(seatId));
+  if (!place) return null;
+  return { locationId: place.id, name: place.name ?? place.id };
 }

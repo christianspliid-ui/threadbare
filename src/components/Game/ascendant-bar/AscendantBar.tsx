@@ -18,6 +18,7 @@ import type { CodexRunStateFilter } from '../../Codex/codexRunState';
 import { BarSection } from './BarSection';
 import { IdentityStrip } from './IdentityStrip';
 import { EssenceBlock } from './EssenceBlock';
+import { SeatLine } from './SeatLine';
 import { ReachesBlock } from './ReachesBlock';
 import { SignaturesBlock } from './SignaturesBlock';
 import { ActionsBlock } from './ActionsBlock';
@@ -33,6 +34,7 @@ import {
   selectReachRows,
   selectSignaturePaths,
   selectCovenantRows,
+  selectHomeSeat,
 } from './selectors';
 import styles from './styles.module.css';
 
@@ -79,6 +81,8 @@ interface AscendantBarProps {
    * First. Omitted means shown — the pre-S5 behaviour.
    */
   showMandate?: boolean;
+  /** THR-1792 — centre the map on the god's seat (the Seat line's link). */
+  onCenterOnSeat?: (locationId: string) => void;
 }
 
 export function AscendantBar({
@@ -95,6 +99,7 @@ export function AscendantBar({
   onOpenCodex,
   onOpenAttachment,
   showMandate = true,
+  onCenterOnSeat,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -140,6 +145,11 @@ export function AscendantBar({
   const yourSignatureCount = useMemo(
     () => signaturePaths.filter((p) => p.state !== 'locked_incarnation').length,
     [signaturePaths],
+  );
+  const homeSeat = useMemo(
+    () => selectHomeSeat(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, worldVersion],
   );
   const covenantRows = useMemo(
     () => selectCovenantRows(gameState),
@@ -201,6 +211,8 @@ export function AscendantBar({
         open={open.essence}
         onToggle={() => toggle('essence')}
       >
+        {/* THR-1792 — the god's seat, beside the essence it feeds. */}
+        <SeatLine seat={homeSeat} onCenter={onCenterOnSeat} />
         <EssenceBlock rows={essenceRows} />
       </BarSection>
 

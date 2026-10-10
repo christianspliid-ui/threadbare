@@ -942,6 +942,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Investiture',
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
   },
+  'ui.home_seat': {
+    label: 'Seat',
+    desc: 'The settlement you have taken as your home in the world. It feeds your essence every day you hold it. Click the name to find it on the map.',
+  },
   'ui.covenant': {
     label: 'Covenants',
     desc: 'The lasting grips you hold on the world — a place, a faction, a working kept open. Each costs upkeep while you hold it; release one to stop paying.',

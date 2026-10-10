@@ -112,6 +112,51 @@ describe('seedBeatGraph — home_seat (THR-520)', () => {
     expect(graph.getNode(ASC)?.properties.homeSeatLocationId).toBe('loc-haven');
   });
 
+  describe('THR-1792 — the seat always lands in a settlement', () => {
+    /** Put Haven at (10,10) and The First on a Waypoint at `hex`. */
+    function firstOnWaypoint(hex: { col: number; row: number }): WorldGraph {
+      const graph = buildGraph();
+      graph.updateNode('loc-haven', { properties: { ...graph.getNode('loc-haven')!.properties, hexCol: 10, hexRow: 10, locationSubtype: 'town' } });
+      const wpId = `loc.waypoint.${hex.col}.${hex.row}`;
+      graph.addNode({
+        id: wpId,
+        type: 'location',
+        name: `Wilderness (${hex.col}, ${hex.row})`,
+        properties: { hexCol: hex.col, hexRow: hex.row, locationType: 'wilderness', locationSubtype: 'wilderness_waypoint' },
+      });
+      graph.updateEdge('first.located_at', { target: wpId });
+      return graph;
+    }
+
+    function seatRuleTrace(): string | undefined {
+      const t = getTraces().find(x => x.category === 'ascendant.beat.seeded') as { seatRule?: string } | undefined;
+      return t?.seatRule;
+    }
+
+    it('First on a Waypoint 3 hexes from a town → the seat is the town', () => {
+      const graph = firstOnWaypoint({ col: 13, row: 10 });
+      const result = seedBeatGraph(stateWith(graph), SEAT_BEAT, 4);
+      expect(result.seededNodeIds).toEqual(['loc-haven']);
+      expect(graph.getNode(ASC)?.properties.homeSeatLocationId).toBe('loc-haven');
+      expect(result.placement?.line).toContain('Haven');
+      expect(seatRuleTrace()).toBe('nearest_settlement');
+    });
+
+    it('First already inside a settlement → unchanged', () => {
+      const graph = buildGraph();
+      const result = seedBeatGraph(stateWith(graph), SEAT_BEAT, 4);
+      expect(result.seededNodeIds).toEqual(['loc-haven']);
+      expect(seatRuleTrace()).toBe('first_settlement');
+    });
+
+    it('no settlement in range → today’s placement, traced', () => {
+      const graph = firstOnWaypoint({ col: 40, row: 40 });
+      const result = seedBeatGraph(stateWith(graph), SEAT_BEAT, 4);
+      expect(result.seededNodeIds).toEqual(['loc.waypoint.40.40']);
+      expect(seatRuleTrace()).toBe('no_settlement_in_range');
+    });
+  });
+
   it('falls back to the deterministic default when no First is bonded', () => {
     const graph = buildGraph({ withFirst: false });
     const result = seedBeatGraph(stateWith(graph), SEAT_BEAT, 4);
