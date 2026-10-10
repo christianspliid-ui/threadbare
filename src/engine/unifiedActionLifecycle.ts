@@ -264,8 +264,18 @@ export function advanceStep(
   const nextStep = resolveStepDefinition(template, nextStepIndex, action.choiceHistory);
   const nextDuration = computeStepDuration(tierScaledDuration(nextStep, targetProperties), rng);
 
+  // THR-1801 — `activeNudges` is the hand committed to the *current* step, and
+  // it was spent on the step that just resolved. Carrying it into the next step
+  // let that step resolve with cards nobody paid for (dealt ids repeat across
+  // steps) and made the stage pre-select them, charging the player again. The
+  // per-step record survives in `choiceHistory` (THR-1123), which every
+  // retrospective reader uses. Final-step and fight-result returns above keep
+  // the hand: the aftermath dispatch reads it off the step it was played on.
+  const withoutSpentHand: { -readonly [K in keyof UnifiedAction]?: UnifiedAction[K] } = { ...action };
+  delete withoutSpentHand.activeNudges;
+
   return {
-    ...action,
+    ...(withoutSpentHand as UnifiedAction),
     currentStep: nextStepIndex,
     stepProgress: 0,
     stepDuration: nextDuration,
