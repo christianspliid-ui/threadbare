@@ -142,14 +142,16 @@ export function buildHexTargetContext(params: {
 }
 
 /**
- * THR-1804 — the player-facing name of a hex: the settlement on it (first by
+ * THR-1804 — the player-facing name of a hex: the discovered place on it (first by
  * name, so the choice is stable), else its terrain ("the deep forest"). Grid
  * coordinates are map plumbing, never a name a player reads.
  */
 export function hexPlaceName(col: number, row: number, terrain: string, graph?: WorldGraph): string {
   if (graph) {
     const onHex = getLocationNodes(graph)
-      .filter(n => n.properties.hexCol === col && n.properties.hexRow === row && n.name)
+      // An undiscovered place (an elder ruin before it is found) is never named.
+      .filter(n => n.properties.hexCol === col && n.properties.hexRow === row && n.name
+        && n.properties.discovered !== false)
       .map(n => n.name)
       .sort((a, b) => a.localeCompare(b));
     if (onHex.length > 0) return onHex[0];

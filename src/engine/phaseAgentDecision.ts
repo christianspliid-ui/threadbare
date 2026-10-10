@@ -1004,10 +1004,19 @@ export function phaseAgentDecision(
       // Emit filter pipeline trace
       emitTrace(filterResult.trace as TraceEntry);
 
+      // C.1: Max completions retirement — permanently exclude templates the agent has exhausted.
+      // THR-1804: runs before the cooldown pass (the two filters commute) so the First's
+      // repeat-floor fallback judges the pool the agent can actually draw from.
+      const familiarityRecord = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
+      const unretiredCandidates = rawCandidates.filter(c => {
+        const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
+        return completions < MAX_COMPLETIONS_PER_TEMPLATE;
+      });
+
       // Filter out encounters on cooldown (abandoned/completed recently)
       // Pool size for dynamic cooldown = raw candidates after filter pipeline
-      const cooldownCandidates = filterByCooldown(
-        rawCandidates,
+      const candidates = filterByCooldown(
+        unretiredCandidates,
         agentId,
         state.encounterProgress,
         state.unifiedActions,
@@ -1017,13 +1026,6 @@ export function phaseAgentDecision(
         // THR-1804 — the bonded First does not restart a chapter minutes after it ends.
         isBondedFirstActor(graph, agentId) ? FIRST_CHAPTER_REPEAT_FLOOR_TICKS : 0,
       );
-
-      // C.1: Max completions retirement — permanently exclude templates the agent has exhausted
-      const familiarityRecord = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
-      const candidates = cooldownCandidates.filter(c => {
-        const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
-        return completions < MAX_COMPLETIONS_PER_TEMPLATE;
-      });
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
       const identityBias = state.doomIdentityMatrix?.encounterPoolBias ?? {};

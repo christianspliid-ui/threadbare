@@ -212,3 +212,11 @@ describe('buildLegendaryArtifactTargetContext', () => {
     expect(ctx!.subtype).toBe('regalia');
   });
 });
+
+describe('hexPlaceName — undiscovered places stay unnamed (THR-1804 review)', () => {
+  it('falls back to the terrain when the only place on the hex is undiscovered', () => {
+    const g = new WorldGraph();
+    g.addNode({ id: 'ruin', type: 'location', name: 'Tower Ruin', properties: { hexCol: 1, hexRow: 1, discovered: false } } as never);
+    expect(buildHexTargetContext({ col: 1, row: 1, terrain: 'hills', graph: g }).displayName).toBe('the hills');
+  });
+});
