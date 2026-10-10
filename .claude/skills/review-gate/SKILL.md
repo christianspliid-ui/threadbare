@@ -1,7 +1,7 @@
 ---
 name: review-gate
 description: The automatic code-review gate (THR-1691). Run before arming auto-merge on any code PR — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
-last_validated_against: 2026-10-04
+last_validated_against: 2026-10-10
 ---
 
 # Review gate
@@ -29,9 +29,11 @@ Nobody reviews code before it merges here — Christian is chat-only and does no
 
 **What the hook accepts** (`scripts/review-gate.ts`, `decideReviewGate`): a docs-only diff; a `Review-gate exempt: <reason>` line alone on a line in a commit body of the range (audited by the weekly retro — for reverts and emergencies, not convenience); a receipt for the PR head with zero `open` findings; a receipt for an **ancestor** whose delta to head is docs-only, counting only files in the PR's own diff (closeout docs written after the review, or a `git merge origin/main` — main's code is not this PR's); a PR-comment marker for the head with `open=0`. Anything else is denied, including a named PR whose head is not in the repo even after a fetch. A gate that errors **allows with a loud warning** and logs to `.claude/review-receipts/gate-errors.log` — fail-soft, never silent. Commands are tokenised, and each line, `;`, `&&` or `|` segment is checked: the words `gh pr merge` inside a quoted commit message or PR body are not a merge, while a re-arm after a disarm on the same line is. A bare `gh pr merge` is judged against the PR's **remote** head, because that is what GitHub merges, not this tree's HEAD.
 
+**Reference pages and the carry (THR-1795).** For the ancestor-receipt carry only, the top-level `public/*-reference.html` pages count as docs: `check:wiki-freshness:blocking` runs last by gate law and often forces a one-line page edit after the receipt, and those pages document code rather than run it. The CI docs-only predicate is unchanged, so a PR whose diff is only reference pages still owes the code track and a review. Any other `public/` file, and any `src/` or `scripts/` change, still re-opens the gate.
+
 **Code changed after the review?** The receipt is stale and the hook denies. Re-run the review on the new head (it counts as a round).
 
-**Pushing to a PR that is already armed** (the resume path after a red CI): that push merges with no further `gh pr merge`, so the hook judges a `git push` to an armed PR exactly like a merge of the pushed commit. Review the new head and write its receipt **before** pushing, or disarm first (`gh pr merge <N> --disable-auto`) and re-arm after the review. Pushes to unarmed or PR-less branches are never judged. `git push -u origin HEAD` and `git -C <dir> push` are both recognised.
+**Pushing to a PR that is already armed** (the resume path after a red CI): that push merges with no further `gh pr merge`, so the hook judges a `git push` to an armed PR exactly like a merge of the pushed commit. Review the new head and write its receipt **before** pushing, or disarm first (`gh pr merge <N> --disable-auto`) and re-arm after the review. Pushes to unarmed or PR-less branches are never judged — but only gh's own *no pull requests found* answer means "no PR": if the PR lookup **fails** (timeout, auth, network), the push is judged as if armed, so a reviewed or docs-only head goes through and an unreviewed one waits for gh (THR-1795; a silent gh failure is the suspected path by which an unreviewed head merged, impediment #1143). `git push -u origin HEAD`, `git push origin HEAD:<branch>` from a detached HEAD, `git -C <dir> push` and `cd <dir> && … git push` are all recognised and judged in the directory the push runs in — a leading `cd` / `Set-Location` on the same line moves the judged repo, so the `git -C` workaround is no longer needed.
 
 ## Reviewer prompt
 

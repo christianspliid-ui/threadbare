@@ -18,13 +18,18 @@ import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { SUBPROCESS_TEST_TIMEOUT_MS } from "../../src/testing/testTimeouts";
 import {
+  commandsWithDir,
   decideReviewGate,
   extractMergeTarget,
   extractPushTarget,
+  ghLookupError,
+  isCarrySafeDelta,
   isMergeCommand,
   isPushCommand,
+  mergeDir,
   normalizeCwd,
   ownDelta,
+  resolveCommandDir,
   parseCommentMarker,
   parseExemptReason,
   renderReceiptComment,
@@ -99,6 +104,46 @@ describe("review gate — pure verdict", () => {
     expect(extractPushTarget("git push origin HEAD:claude/topic")).toEqual({ source: "HEAD", dest: "claude/topic", dir: null });
     expect(extractPushTarget("git push -o ci.skip origin +abc123:refs/heads/topic")).toEqual({ source: "abc123", dest: "topic", dir: null });
     expect(extractPushTarget("git -C ../tree push origin topic")).toEqual({ source: "topic", dest: "topic", dir: "../tree" });
+  });
+
+  it("carries a preceding `cd <dir>` into the push's and the merge's directory (THR-1795)", () => {
+    expect(extractPushTarget("cd C:/wt && git merge origin/main && git push origin HEAD")).toEqual({ source: "HEAD", dest: null, dir: "C:/wt" });
+    expect(extractPushTarget("cd ../wt; git push origin topic")).toEqual({ source: "topic", dest: "topic", dir: "../wt" });
+    // A relative -C after a cd is relative to the cd; an absolute one replaces it.
+    expect(extractPushTarget("cd /c/home && git -C wt push")).toEqual({ source: "HEAD", dest: null, dir: "/c/home/wt" });
+    expect(extractPushTarget("cd /c/home && git -C D:/wt push")).toEqual({ source: "HEAD", dest: null, dir: "D:/wt" });
+    expect(extractPushTarget('Set-Location "C:/my wt"; git push')).toEqual({ source: "HEAD", dest: null, dir: "C:/my wt" });
+    expect(mergeDir("cd C:/wt && gh pr merge --auto --merge")).toBe("C:/wt");
+    expect(mergeDir("gh pr merge --auto --merge")).toBeNull();
+    // A cd AFTER the push does not move it; a bare cd is not guessed at.
+    expect(extractPushTarget("git push && cd C:/wt").dir).toBeNull();
+    expect(commandsWithDir("cd && git push")[0]).toEqual({ argv: ["git", "push"], dir: null });
+  });
+
+  it("resolves a command's directory, expanding ~, and refuses one that does not exist (THR-1795)", () => {
+    const home = realpathSync(tmpdir());
+    expect(resolveCommandDir("/anywhere", null)).toBe("/anywhere");
+    expect(resolveCommandDir("/anywhere", "~", home)).toBe(path.resolve(home));
+    expect(resolveCommandDir(home, ".")).toBe(path.resolve(home));
+    expect(resolveCommandDir(home, "$WT")).toBeNull();
+    expect(resolveCommandDir(home, "~/no-such-tree-thr1795", home)).toBeNull();
+  });
+
+  it("tells gh's own 'no PR' answer apart from a failed lookup (THR-1795)", () => {
+    expect(ghLookupError('no pull requests found for branch "claude/x"\n', "Command failed")).toBeNull();
+    expect(ghLookupError("could not determine current branch: failed to run git: not on any branch\n", "x"))
+      .toBe("could not determine current branch: failed to run git: not on any branch");
+    expect(ghLookupError("", "spawnSync gh ETIMEDOUT")).toBe("spawnSync gh ETIMEDOUT");
+  });
+
+  it("carries a receipt across a reference-page-only delta, never across code (THR-1795)", () => {
+    expect(isCarrySafeDelta([])).toBe(true);
+    expect(isCarrySafeDelta(["public/encounters-manual-reference.html"])).toBe(true);
+    expect(isCarrySafeDelta(["public/encounters-manual-reference.html", "Docs/status/x.md"])).toBe(true);
+    expect(isCarrySafeDelta(["public/encounters-manual-reference.html", "src/engine/a.ts"])).toBe(false);
+    // Only top-level *-reference.html pages — not other public assets.
+    expect(isCarrySafeDelta(["public/wiki-manifest.json"])).toBe(false);
+    expect(isCarrySafeDelta(["public/art/x-reference.html"])).toBe(false);
   });
 
   it("counts only the PR's own files in a carried receipt's delta", () => {
@@ -386,5 +431,94 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     rmSync(notRepo, { recursive: true, force: true });
     expect(result.status).toBe(0);
     expect(result.stderr).toContain("ALLOWING fail-soft");
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+  const ARMED = { number: 9, state: "OPEN", autoMergeRequest: { mergeMethod: "MERGE" }, comments: [] };
+
+  it("denies a detached-HEAD `git push origin HEAD:<branch>` to an armed PR with no receipt (THR-1795, #1143)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    writeReceipt(head(), null);
+    // The resume shape: detach at the reviewed tip, merge main-like work, push by refspec.
+    git("checkout", "-q", "--detach");
+    commit("src/fix.ts", "fix: resume commit");
+    try {
+      const r = runHook("git push origin HEAD:feature", ARMED);
+      expect(r.status).toBe(2);
+      expect(r.stderr).toContain("auto-merge armed");
+      expect(r.stderr).toContain(head().slice(0, 10));
+    } finally {
+      git("checkout", "-q", "-B", "feature");
+    }
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges a push as armed when the gh lookup fails, instead of waving it through (THR-1795)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const failed = { __ghError: "gh: request timed out" };
+    const r = runHook("git push origin HEAD:feature", failed);
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain("could not read whether");
+    expect(r.stderr).toContain("request timed out");
+    // A reviewed head, or gh's real "no PR" answer, still goes through.
+    writeReceipt(head(), null);
+    expect(runHook("git push origin HEAD:feature", failed).status).toBe(0);
+    clearReceipts();
+    expect(runHook("git push origin HEAD:feature", null as unknown as object).status).toBe(0);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges `cd <dir> && git push` in <dir>, not the session cwd (THR-1795, #1146)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const pushed = head();
+    // The session cwd is a different repo whose HEAD is reviewed — today's main judged it and allowed.
+    const other = realpathSync(mkdtempSync(path.join(tmpdir(), "tb-review-gate-home-")));
+    const otherGit = (...args: string[]) => execFileSync("git", args, { cwd: other, stdio: "pipe", encoding: "utf8" }).trim();
+    try {
+      otherGit("init", "-q", "--initial-branch=main");
+      otherGit("config", "user.email", "test@example.com");
+      otherGit("config", "user.name", "test");
+      otherGit("commit", "-q", "--allow-empty", "-m", "home");
+      otherGit("update-ref", "refs/remotes/origin/main", otherGit("rev-parse", "HEAD"));
+      const result = spawnSync(BASH as string, [HOOK], {
+        input: JSON.stringify({
+          tool_name: "Bash",
+          tool_input: { command: `cd "${repo}" && git merge origin/main && git push origin HEAD` },
+          cwd: other,
+        }),
+        encoding: "utf8",
+        env: { ...process.env, REVIEW_GATE_NO_GH: "1", REVIEW_GATE_PR_FIXTURE: JSON.stringify(ARMED) },
+      });
+      expect(result.status).toBe(2);
+      expect(result.stderr).toContain(pushed.slice(0, 10));
+    } finally {
+      rmSync(other, { recursive: true, force: true });
+    }
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("judges an unresolvable `cd` target in the hook's cwd — never a phantom path that fails soft into allow (THR-1795)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    const r = runHook("cd $WT && git push origin HEAD", ARMED);
+    expect(r.status).toBe(2);
+    expect(r.stderr).not.toContain("fail-soft");
+    expect(r.stderr).toContain(head().slice(0, 10));
+    // An ordinary first push of a branch with no PR is still never judged.
+    expect(runHook('cd "$(git rev-parse --show-toplevel)" && git push -u origin HEAD', null as unknown as object).status).toBe(0);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("carries a receipt across a reference-page fix, but not across a src/ fix (THR-1795, #1156)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/feature.ts", "feat: code");
+    commit("public/encounters-manual-reference.html", "docs: page in the PR");
+    writeReceipt(head(), null);
+    commit("public/encounters-manual-reference.html", "docs: wiki-freshness one-liner");
+    expect(runHook().status).toBe(0);
+    commit("src/feature.ts", "fix: code after the review");
+    expect(runHook().status).toBe(2);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 });
