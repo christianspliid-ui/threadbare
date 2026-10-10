@@ -383,6 +383,7 @@
         <tbody>
           <tr><td>InfluenceTier</td><td>0–4</td><td>Investment-depth range on a thread · <code>src/types/influence.ts:35</code></td></tr>
           <tr><td>TIER_MAINTENANCE</td><td>0 / 0.1 / 0.2 / 0.35 / 0.5</td><td>Per-tick upkeep by tier, from the primary sphere · <code>src/data/influence-content.ts</code>. Retuned 2026-10-08 (THR-1747): at 0.5 / 1 / 2 / 4 one Devoted thread emptied the primary sphere by tick 240 with no casts. Base + seat income now keeps one thread to Aspect or two at Devoted; two Enthralled threads need held ground.</td></tr>
+          <tr><td>HOME_SEAT_MAX_SEARCH_RADIUS_HEXES</td><td>6</td><td>The Seat beat places the god&rsquo;s seat in the nearest settlement within this many hexes of The First when The First stands outside one (THR-1792); the bar then names it · <code>src/data/influence-content.ts</code></td></tr>
           <tr><td>TIER_PROMOTION_THRESHOLDS</td><td>0 / 0 / 30 / 90 / 180</td><td>Maintained ticks to reach each tier · <code>src/data/influence-content.ts:62</code></td></tr>
           <tr><td>RECRUIT_COST</td><td>5</td><td>Essence to establish a Tier-1 thread · <code>src/data/influence-content.ts:73</code></td></tr>
           <tr><td>ESSENCE_PER_THREAD</td><td>0.1</td><td>Per-tick income per held thread · <code>src/data/influence-content.ts:18</code></td></tr>
