@@ -1,5 +1,5 @@
 // ── ProseTtsButton (THR-348) ────────────────────────────────────────
-// Small play/stop control that narrates a block of encounter prose in the
+// Small speaker/stop control that narrates a block of encounter prose in the
 // Kokoro encounter voice. Consumes the D3 adapter in
 // `src/services/narration/encounterNarration.ts`.
 //
@@ -10,7 +10,7 @@
 // state into the scene.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Play, Square } from 'lucide-react';
+import { Loader2, Square, Volume2 } from 'lucide-react';
 import {
   useEncounterNarration,
   type EncounterTtsContext,
@@ -29,6 +29,17 @@ const TTS_MIN_HIT_PX = 24;
 /** Icon sizes, keyed to the button edge. */
 const TTS_ICON_SIZE = 10;
 const TTS_STOP_ICON_SIZE = 8;
+
+/**
+ * THR-1804 — cold playtest round 3 read the old ▷ as "play the scene" and its
+ * spinner as a stuck scene: the ~90MB voice download explained itself only in a
+ * tooltip. The idle glyph is now a speaker, and the download says what it is
+ * doing in visible text beside the ring.
+ */
+export function narrationLoadingLine(progress: number): string {
+  const pct = Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress * 100))) : 0;
+  return pct > 0 ? `Fetching the narrator's voice… ${pct}%` : `Fetching the narrator's voice…`;
+}
 
 export interface ProseTtsButtonProps {
   /**
@@ -50,7 +61,7 @@ export function ProseTtsButton({
   label = 'Narrate this scene',
   style,
 }: ProseTtsButtonProps) {
-  const { enabled, isSpeaking, isLoading, needsOptIn, canNarrate, enable, speakEncounter, stop } =
+  const { enabled, isSpeaking, isLoading, loadProgress, needsOptIn, canNarrate, enable, speakEncounter, stop } =
     useEncounterNarration();
   const handleRef = useRef<TtsHandle | null>(null);
   const [dispatching, setDispatching] = useState(false);
@@ -105,9 +116,11 @@ export function ProseTtsButton({
     ? 'Download voice narration (~90MB)'
     : isSpeaking
       ? 'Stop narration'
-      : busy
-        ? 'Loading…'
-        : label;
+      : isLoading
+        ? narrationLoadingLine(loadProgress ?? 0)
+        : busy
+          ? 'Loading…'
+          : label;
 
   return (
     <button
@@ -118,12 +131,15 @@ export function ProseTtsButton({
       data-testid="prose-tts-button"
       className="focus-ring"
       style={{
-        width: TTS_MIN_HIT_PX,
+        // Grows past the ring only while the download line shows beside it.
+        minWidth: TTS_MIN_HIT_PX,
+        width: isLoading ? 'auto' : TTS_MIN_HIT_PX,
         height: TTS_MIN_HIT_PX,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: '50%',
+        gap: 6,
+        borderRadius: isLoading ? 12 : '50%',
         border: 'none',
         background: 'transparent',
         cursor: busy ? 'wait' : 'pointer',
@@ -154,9 +170,24 @@ export function ProseTtsButton({
         ) : isSpeaking ? (
           <Square size={TTS_STOP_ICON_SIZE} />
         ) : (
-          <Play size={TTS_ICON_SIZE} style={{ marginLeft: '1px' }} />
+          <Volume2 size={TTS_ICON_SIZE} data-testid="prose-tts-speaker" />
         )}
       </span>
+      {isLoading && (
+        <span
+          data-testid="prose-tts-loading-line"
+          aria-hidden="true"
+          style={{
+            fontSize: 'var(--text-xs)',
+            fontStyle: 'italic',
+            color: 'var(--text-tertiary)',
+            whiteSpace: 'nowrap',
+            paddingRight: 4,
+          }}
+        >
+          {narrationLoadingLine(loadProgress ?? 0)}
+        </span>
+      )}
     </button>
   );
 }

@@ -2011,6 +2011,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         terrain: liveTile?.terrain ?? 'plains',
         divineInfluence: liveTile?.divineInfluence,
         corruption: liveTile?.corruption,
+        graph: gameState.graph,
       });
     }
     if (viewLevel === 'location' && focusedLocationId) {
@@ -2025,6 +2026,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         terrain: liveTile?.terrain ?? 'plains',
         divineInfluence: liveTile?.divineInfluence,
         corruption: liveTile?.corruption,
+        graph: gameState.graph,
       });
     }
     return null;

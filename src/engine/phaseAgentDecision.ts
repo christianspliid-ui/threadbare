@@ -49,7 +49,7 @@ import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, E
 import { META_VALUE_PAIR } from '../types/agent';
 import type { EngagementDecisionTrace } from '../types/trace';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, FIRST_CHAPTER_REPEAT_FLOOR_TICKS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
   REROUTE_SCORE_MULTIPLIER,
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
@@ -130,6 +130,18 @@ import { settingClassForSubtype } from '../data/settingClasses';
 import { fightParticipantIds } from './fights/fightParticipants';
 
 /**
+ * Whether `actorId` is the bonded First — a `thread` edge at
+ * `courtPosition: 'the_first'`. The same predicate as `fights/fightHarm.ts`
+ * `isBondedFirst`, restated here because that module imports the aftermath
+ * chain, and pulling it into the decision phase risks a load cycle.
+ */
+export function isBondedFirstActor(graph: WorldGraph, actorId: string): boolean {
+  return graph.getIncomingEdges(actorId, 'thread').some(
+    (e) => (e.properties as { courtPosition?: string } | undefined)?.courtPosition === 'the_first',
+  );
+}
+
+/**
  * Compute effective cooldown scaled by available template pool size.
  * Large pools use full cooldown; small pools get shorter cooldowns
  * to prevent agents from hitting `all_on_cooldown` repeatedly.
@@ -160,6 +172,11 @@ function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: numb
  * failure is therefore also read from `chapterArchive`, which outlives the prune.
  * The archive is appended in resolution order, so the scan walks back from its tail
  * and stops at the first record older than the failed window.
+ *
+ * THR-1804: `repeatFloorTicks` (the bonded First's FIRST_CHAPTER_REPEAT_FLOOR_TICKS)
+ * lifts the completed and failed cooldowns to at least that many ticks, whatever the
+ * pool size. It is fail-soft: if the floor would empty the candidate list, the
+ * call falls back to the scaled cooldowns alone.
  */
 export function filterByCooldown(
   candidates: EncounterCacheEntry[],
@@ -169,9 +186,28 @@ export function filterByCooldown(
   tick: number,
   availableTemplateCount: number,
   chapterArchive: readonly ChapterRecord[] = [],
+  repeatFloorTicks = 0,
+): EncounterCacheEntry[] {
+  const args = [candidates, agentId, encounterProgress, unifiedActions, tick, availableTemplateCount, chapterArchive] as const;
+  if (repeatFloorTicks <= 0) return applyCooldowns(...args, 0);
+  const floored = applyCooldowns(...args, repeatFloorTicks);
+  return floored.length > 0 || candidates.length === 0 ? floored : applyCooldowns(...args, 0);
+}
+
+/** One cooldown pass of {@link filterByCooldown}; `floor` lifts the completed and failed windows. */
+function applyCooldowns(
+  candidates: EncounterCacheEntry[],
+  agentId: string,
+  encounterProgress: readonly EncounterProgress[],
+  unifiedActions: readonly UnifiedAction[],
+  tick: number,
+  availableTemplateCount: number,
+  chapterArchive: readonly ChapterRecord[],
+  floor: number,
 ): EncounterCacheEntry[] {
   const effectiveAbandon = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, availableTemplateCount);
-  const effectiveComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
+  const scaledComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
+  const effectiveComplete = Math.max(scaledComplete, floor);
 
   // Collect cooldown end ticks per template for this agent
   const cooldownEnd = new Map<string, number>();
@@ -188,7 +224,7 @@ export function filterByCooldown(
     }
   }
 
-  const effectiveFailed = effectiveComplete * FAILED_TEMPLATE_COOLDOWN_MULT;
+  const effectiveFailed = Math.max(scaledComplete * FAILED_TEMPLATE_COOLDOWN_MULT, floor);
   for (const action of unifiedActions) {
     if (action.actorId !== agentId || !action.resolved) continue;
     const completedAt = action.completedAtTick ?? action.startTick;
@@ -973,6 +1009,8 @@ export function phaseAgentDecision(
         state.tick,
         rawCandidates.length,
         state.chapterArchive,
+        // THR-1804 — the bonded First does not restart a chapter minutes after it ends.
+        isBondedFirstActor(graph, agentId) ? FIRST_CHAPTER_REPEAT_FLOOR_TICKS : 0,
       );
 
       // C.1: Max completions retirement — permanently exclude templates the agent has exhausted

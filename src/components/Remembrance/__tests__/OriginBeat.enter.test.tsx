@@ -4,7 +4,7 @@
  * testers typed a name, pressed Enter, and nothing happened.
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { OriginBeat } from '../OriginBeat';
 import type { RemembranceFragment } from '../../../types/remembrance';
 
@@ -23,7 +23,11 @@ const fragment = {
 describe('OriginBeat name field (THR-1604)', () => {
   it('submits on Enter once an origin is chosen', () => {
     const onSelect = vi.fn();
+    vi.useFakeTimers();
     render(<OriginBeat fragments={[fragment]} onSelect={onSelect} />);
+    // The row fades in and takes no clicks until visible (THR-1804).
+    act(() => { vi.advanceTimersByTime(1000); });
+    vi.useRealTimers();
     // One click chooses the fragment (THR-1716).
     fireEvent.click(screen.getByTestId('origin-origin.test'));
     const input = screen.getByTestId('mortal-name-input');

@@ -145,6 +145,21 @@ describe('buildHexTargetContext', () => {
     expect(ctx.nodeId).toBe('hex_custom');
   });
 
+  it('names the hex by its terrain, never its grid coordinates (THR-1804)', () => {
+    const ctx = buildHexTargetContext({ col: 14, row: 11, terrain: 'deep_forest' });
+    expect(ctx.displayName).toBe('the deep forest');
+    expect(ctx.displayName).not.toMatch(/\d/);
+  });
+
+  it('names the hex by its settlement when one stands on it (THR-1804)', () => {
+    const g = new WorldGraph();
+    g.addNode({ id: 'loc_b', type: 'location', name: 'Brennock', properties: { hexCol: 2, hexRow: 4 } } as never);
+    g.addNode({ id: 'loc_a', type: 'location', name: 'Ashford', properties: { hexCol: 2, hexRow: 4 } } as never);
+    g.addNode({ id: 'loc_far', type: 'location', name: 'Aaron', properties: { hexCol: 9, hexRow: 9 } } as never);
+    const ctx = buildHexTargetContext({ col: 2, row: 4, terrain: 'plains', graph: g });
+    expect(ctx.displayName).toBe('Ashford');
+  });
+
   it('generates nodeId from coords if not provided', () => {
     const ctx = buildHexTargetContext({ col: 2, row: 4, terrain: 'desert' });
     expect(ctx.nodeId).toBe('hex_2_4');

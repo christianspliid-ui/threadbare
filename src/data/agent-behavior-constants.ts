@@ -738,6 +738,18 @@ export const COOLDOWN_FULL_POOL_SIZE = 15;
  * @range 1–4 */
 export const COOLDOWN_MINIMUM = 2;
 
+/**
+ * THR-1804 — the bonded First's chapter-repeat floor, in ticks (12 to a day, so
+ * 60 is five days). The pool-size scaling above cuts a completed template's
+ * cooldown to as little as COOLDOWN_MINIMUM when fewer than COOLDOWN_FULL_POOL_SIZE
+ * templates are eligible, and the First's early pool is that small, so cold
+ * playtest round 3 watched a just-finished chapter restart minutes later. For
+ * the First only, a completed (or failed) template stays out for at least this
+ * long — fail-soft: when the floor would leave no candidate at all, the scaled
+ * cooldowns apply instead, so the First is never starved into idleness by it.
+ * @range 20–180 */
+export const FIRST_CHAPTER_REPEAT_FLOOR_TICKS = 60;
+
 // ═══════════════════════════════════════════════════════════════════
 // WORLD POPULATION — Agent count by map size (worldSeed.ts)
 // ═══════════════════════════════════════════════════════════════════

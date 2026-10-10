@@ -7,13 +7,16 @@
  * elevation/temperature/moisture as `NN%`.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HexDetailView } from '../HexDetailView';
+import { setNudgeDesignerView, resetNudgeDesignerView } from '../encounter-stage/designerView';
 import { WorldGraph } from '../../../engine/graph';
 import type { HexTile } from '../../../types';
 
 const COORD = { col: 3, row: 4 };
+
+afterEach(() => resetNudgeDesignerView());
 
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -109,6 +112,8 @@ describe('HexDetailView — UI Laws (THR-1009)', () => {
   });
 
   it('Law 13: geo parameters render as words, with no percentage anywhere', () => {
+    // THR-1804: geo parameters show only under the designer view.
+    setNudgeDesignerView(true);
     const { container } = renderView();
 
     expect(screen.getByText('Lowland')).toBeTruthy();   // elevation 0.12
@@ -123,5 +128,29 @@ describe('HexDetailView — UI Laws (THR-1009)', () => {
     const chips = container.querySelectorAll('[data-entity-visual-tier]');
     // One per listed entity: the mill and the agent.
     expect(chips.length).toBe(2);
+  });
+});
+
+describe('HexDetailView — map readouts stay off the player surface (THR-1804)', () => {
+
+  it('renders no elevation, temperature, moisture, resonance or coordinates without the designer view', () => {
+    const { container } = renderView();
+    const text = container.textContent ?? '';
+    for (const word of ['Elevation', 'Temperature', 'Moisture', 'Lowland', 'Drenched']) {
+      expect(text).not.toContain(word);
+    }
+    expect(text).not.toMatch(/resonance/i);
+    expect(text).not.toMatch(/(^|\D)3,\s*4(\D|$)/);
+    expect(screen.queryByTestId('hex-detail-coords')).toBeNull();
+    // The player still learns where they are.
+    expect(screen.getByText('Plains')).toBeTruthy();
+    expect(screen.getByText('Greyhollow Mill')).toBeTruthy();
+  });
+
+  it('the designer view brings the readouts back', () => {
+    setNudgeDesignerView(true);
+    renderView();
+    expect(screen.getByTestId('hex-detail-coords').textContent).toBe('3, 4');
+    expect(screen.getByText('Lowland')).toBeTruthy();
   });
 });
