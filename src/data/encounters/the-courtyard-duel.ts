@@ -542,7 +542,6 @@ export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContr
 
   supportBundle: SUPPORT_BUNDLE,
 
-  illustrationUrl: '/concept-art/encounters/courtyard-duel.jpg',
   illustrationAlt: 'Two figures circling in a swept stone courtyard at midday — blades drawn, weight differential visible in their stances, an arbiter with a folded white sash at the gate, and an audience arranged along the walls',
 
   authoredChoices: {

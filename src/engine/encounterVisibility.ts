@@ -697,7 +697,8 @@ export function phaseEncounterVisibility(
         notification.choices = authoredForStep.map(card => ({
           id: card.id,
           text: card.label,
-          essenceCost: card.essenceCost,
+          // THR-1800 — an unpriced card is free, never NaN in the tracking sum.
+          essenceCost: Number.isFinite(card.essenceCost) ? card.essenceCost : 0,
           probabilityBoost: 0,
           interventionType: card.interventionType,
           godVoice: card.likelyBurden,

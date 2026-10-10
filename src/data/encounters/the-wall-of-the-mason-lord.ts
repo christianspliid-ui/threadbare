@@ -419,7 +419,6 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
       'safety nor mercy cleanly. The region gets the worse of both the granite and the open pass.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
   authoredChoices: {
     0: [
@@ -433,6 +432,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
           'winter and the raiders alone, with your blessing on the stone that did it. Permanence is protection ' +
           'for one valley and a sentence for the rest.',
         targetLabel: 'The mason-lord',
+        essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
@@ -445,6 +445,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
           'grain over an unsealed pass — but no one will be walled outside to die with a god\'s name on the ' +
           'granite. Mercy through impermanence, paid for by the people who chose it.',
         targetLabel: 'The mason-lord',
+        essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'supportive',
       },
     ],

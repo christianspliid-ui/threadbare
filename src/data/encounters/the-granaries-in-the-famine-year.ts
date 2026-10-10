@@ -429,7 +429,6 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
       'fed thin and unevenly, living but unforgiving.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
   authoredChoices: {
     0: [
@@ -443,6 +442,7 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
           'out of bond. The merchant ends the famine poorer in coin and bound to no one\'s ruin, a patron ' +
           'instead of a master. Generosity that has to be pressed into being, paid for by the fortune not made.',
         targetLabel: 'The merchant-prince',
+        essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
@@ -456,6 +456,7 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
           'willing when one hand holds all the food. The region is fed and sold at once, and your silence ' +
           'underwrites the deed. Letting them handle it, when handling it means the bleeding.',
         targetLabel: 'The merchant-prince',
+        essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'supportive',
       },
     ],

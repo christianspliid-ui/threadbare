@@ -91,7 +91,6 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
       'away with the shape of a different life held briefly and set down again.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
   illustrationAlt: 'A small workshop or study at the moment of offered apprenticeship — two figures in conversation, one older and standing, one younger and seated.',
 
   authoredChoices: {

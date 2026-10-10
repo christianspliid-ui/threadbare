@@ -93,7 +93,6 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
       'air, unfinished.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
   illustrationAlt: 'A workshop or study at the end of a long apprenticeship — tools laid down, the teacher watching the apprentice with a look of complicated pride.',
 
   authoredChoices: {

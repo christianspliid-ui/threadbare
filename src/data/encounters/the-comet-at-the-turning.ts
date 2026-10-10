@@ -481,7 +481,6 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
       'meant; the omen turns the age all the same, only messier, and no one quite in command of it.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
   authoredChoices: {
     0: [
@@ -495,6 +494,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
           'The words will reshape the fate of nations. Some of what they unseat needed unseating; some of ' +
           'it was holding people up.',
         targetLabel: 'The prophet',
+        essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
@@ -507,6 +507,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
           'grief will be prevented, and something that wanted to be born under the comet will go quietly ' +
           'back to sleep, mourned by no one but you.',
         targetLabel: 'The prophet',
+        essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'supportive',
       },
     ],

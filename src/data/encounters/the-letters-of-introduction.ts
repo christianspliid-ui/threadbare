@@ -569,7 +569,6 @@ export const LETTERS_OF_INTRODUCTION_TEMPLATE: UnifiedActionTemplate = withEncou
 
   supportBundle: SUPPORT_BUNDLE,
 
-  illustrationUrl: '/concept-art/encounters/letters-of-introduction.jpg',
   illustrationAlt: 'A civic hall interior, morning light through tall windows — a gatekeeper at a desk reviewing documents, a merchant pausing mid-step with a ledger under her arm, and across the hall a closed door bearing the seal of a council patron',
 
   authoredChoices: {

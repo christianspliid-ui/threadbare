@@ -527,7 +527,6 @@ export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
 
   supportBundle: SUPPORT_BUNDLE,
 
-  illustrationUrl: '/concept-art/encounters/brink-rescue.jpg',
   illustrationAlt: 'A settlement structure in partial collapse or fire, smoke rising, a bystander at the perimeter holding a coil of rope, and inside — barely visible through the haze — a figure that is still alive',
 
   authoredChoices: {

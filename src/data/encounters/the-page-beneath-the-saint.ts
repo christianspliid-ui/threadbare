@@ -484,7 +484,6 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
       'deny. The region gets neither a clean comfort nor a clean reckoning.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
   authoredChoices: {
     0: [
@@ -499,6 +498,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
           'keeper carrying the fact that could end everything, for the rest of their life, with your name on ' +
           'the not-looking.',
         targetLabel: 'The archivist',
+        essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
@@ -512,6 +512,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
           'The dying will not be comforted the way they were; they will also not be lied to. A reckoning ' +
           'through restraint, paid for by everyone who loved the river.',
         targetLabel: 'The archivist',
+        essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'supportive',
       },
     ],

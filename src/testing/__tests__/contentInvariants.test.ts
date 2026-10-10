@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import type { ActionStep, ActionStepOrBranch, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { FactionDefinition } from '../../types/faction';
 import { REACH_DOMAINS } from '../../types/traits';
@@ -6,6 +9,7 @@ import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { MONSTER_FACTION_DEFINITIONS } from '../../data/monster-faction-definitions';
 import {
   assertAllValidReaches,
+  assertAuthoredChoicesPriced,
   assertNoDuplicateIds,
   assertValidReachWeights,
   assertValidStep,
@@ -145,5 +149,41 @@ describe('assertValidReachWeights — real faction content (THR-1345)', () => {
       reachWeights: Object.fromEntries(REACH_DOMAINS.map(r => [r, 0.5])),
     } as FactionDefinition;
     expect(() => assertValidReachWeights(clean)).not.toThrow();
+  });
+});
+
+/**
+ * THR-1800 — every authored choice card is priced, and every authored
+ * illustration points at a file that ships. Catalog-wide: the five unpriced
+ * chapters and the nine dead placeholder URLs sat in templates no narrower
+ * content harness looked at.
+ */
+describe('authored choice cards and illustrations (catalog-wide, THR-1800)', () => {
+  const authored = UNIFIED_ACTION_TEMPLATES.filter(t => Object.keys(t.authoredChoices ?? {}).length > 0);
+
+  it('inspects a non-empty authored-choice population', () => {
+    expect(authored.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('every authored choice card carries a numeric essenceCost', () => {
+    for (const template of authored) assertAuthoredChoicesPriced(template);
+  });
+
+  it('rejects a card with no essenceCost (negative control)', () => {
+    const template = authored[0];
+    const [step, cards] = Object.entries(template.authoredChoices ?? {})[0];
+    const { essenceCost: _dropped, ...unpriced } = cards[0];
+    const poisoned = {
+      ...template,
+      authoredChoices: { [step]: [unpriced, ...cards.slice(1)] },
+    } as unknown as UnifiedActionTemplate;
+    expect(() => assertAuthoredChoicesPriced(poisoned)).toThrow(/essenceCost/);
+  });
+
+  it('every illustrationUrl resolves to a file under public/', () => {
+    const missing = UNIFIED_ACTION_TEMPLATES
+      .filter(t => t.illustrationUrl && !existsSync(join(process.cwd(), 'public', t.illustrationUrl)))
+      .map(t => `${t.id} → ${t.illustrationUrl}`);
+    expect(missing).toEqual([]);
   });
 });
