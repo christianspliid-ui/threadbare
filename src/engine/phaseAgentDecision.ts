@@ -237,8 +237,13 @@ function applyCooldowns(
   for (let i = chapterArchive.length - 1; i >= 0; i--) {
     const record = chapterArchive[i];
     if (tick - record.resolvedTick > effectiveFailed) break;
-    if (record.actorId !== agentId || !isFailedOutcome(record.outcome)) continue;
-    const end = record.resolvedTick + effectiveFailed;
+    if (record.actorId !== agentId) continue;
+    const failed = isFailedOutcome(record.outcome);
+    // THR-1804: under a repeat floor a success counts too, because the resolved
+    // action that carried it is pruned after RESOLVED_ACTION_RETENTION_TICKS,
+    // well inside the floor.
+    if (!failed && floor <= 0) continue;
+    const end = record.resolvedTick + (failed ? effectiveFailed : effectiveComplete);
     const prior = cooldownEnd.get(record.templateId);
     cooldownEnd.set(record.templateId, prior !== undefined && prior > end ? prior : end);
   }

@@ -2030,7 +2030,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       });
     }
     return null;
-  }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph]);
+  // runtime.worldVersion: hexPlaceName reads the graph, which is mutated in place (THR-1804).
+  }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph, runtime.worldVersion]);
 
   const nonAgentTargetContext = manualTargetContext ?? autoNonAgentTargetContext;
 

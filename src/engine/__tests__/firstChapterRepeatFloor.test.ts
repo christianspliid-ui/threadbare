@@ -73,3 +73,24 @@ describe('who carries the floor (THR-1804)', () => {
     expect(isBondedFirstActor(g, 'asc')).toBe(false);
   });
 });
+
+describe('the floor outlives the resolved-action prune (THR-1804 review)', () => {
+  // The First's chapters run as unified actions, which write no EncounterProgress
+  // record; the resolved action is pruned 20 ticks after it closes, so a success
+  // must also be read from the chapter archive while the floor holds.
+  const archivedSuccess = {
+    templateId: DONE, actorId: FIRST, startTick: COMPLETED_AT - 5,
+    resolvedTick: COMPLETED_AT, resolved: true, outcome: 'success',
+  } as unknown as import('../../types/chapterRecord').ChapterRecord;
+  const afterPrune = COMPLETED_AT + 30;
+  const archivePass = (floor: number) =>
+    ids(filterByCooldown(both, FIRST, [], [], afterPrune, SMALL_POOL, [archivedSuccess], floor));
+
+  it('holds an archived success for the floor once its action is pruned', () => {
+    expect(archivePass(FIRST_CHAPTER_REPEAT_FLOOR_TICKS)).toEqual([OTHER]);
+  });
+
+  it('without the floor an archived success holds nothing (failures only, as before)', () => {
+    expect(archivePass(0)).toEqual([DONE, OTHER]);
+  });
+});
