@@ -28,6 +28,7 @@ import { supportRoleWord } from '../../../../engine/supportRoleWords';
 import { isDefaultSupportSpec } from '../../../../data/default-support-bundles';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
+import { renderableIllustrationUrl } from './encounterIllustration';
 import { stakesContextFor, stakesLineForAction } from '../../../../engine/encounters/stakesLine';
 import { resolveFightStepInputs } from '../../../../engine/fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
@@ -109,6 +110,16 @@ export interface BuildUnifiedEncounterStageModelArgs {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
+
+/**
+ * THR-1800 — a choice card's price, read fail-soft (NFP #4). `essenceCost` is
+ * typed required, but five authored chapters shipped without it, and
+ * `essence >= undefined` is always false: both cards greyed out as
+ * unaffordable and the play button stayed dead. A missing price is free.
+ */
+export function choiceEssenceCost(cost: number | undefined): number {
+  return typeof cost === 'number' && Number.isFinite(cost) ? cost : 0;
+}
 
 function getNodeName(graph: WorldGraph, nodeId: string | undefined, fallback: string): string {
   if (!nodeId) return fallback;
@@ -456,19 +467,22 @@ function buildChoices(
     // `card.interventionType` — so the same template rendered its stance at
     // `watched` tier and dropped it at attended, which is the asymmetry the
     // THR-1133 pixel sweep caught on `crafting.quest.flawed_steel`.
-    return authoredForStep.map((card) => ({
-      id: card.id,
-      label: enrichProse(card.label, ctx),
-      intent: enrichProse(card.intent, ctx),
-      targetLabel: card.targetLabel,
-      essenceCost: card.essenceCost,
-      affordable: payingEssence + 1e-9 >= card.essenceCost,
-      ...(payingSphere ? { payingSphere } : {}),
-      costLabel: card.essenceCost > 0 ? formatEssenceLabel(card.essenceCost) : undefined,
-      likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
-      interventionType: card.interventionType,
-      stanceLabel: interventionStanceWord(card.interventionType),
-    }));
+    return authoredForStep.map((card) => {
+      const essenceCost = choiceEssenceCost(card.essenceCost);
+      return {
+        id: card.id,
+        label: enrichProse(card.label, ctx),
+        intent: enrichProse(card.intent, ctx),
+        targetLabel: card.targetLabel,
+        essenceCost,
+        affordable: payingEssence + 1e-9 >= essenceCost,
+        ...(payingSphere ? { payingSphere } : {}),
+        costLabel: essenceCost > 0 ? formatEssenceLabel(essenceCost) : undefined,
+        likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
+        interventionType: card.interventionType,
+        stanceLabel: interventionStanceWord(card.interventionType),
+      };
+    });
   }
 
   // Fall back to generic notification choices
@@ -481,18 +495,21 @@ function buildChoices(
   // which is why the veil audit caught the tag and missed this. Unreachable is
   // one edit away from reachable, and the fix is the field the sibling adapter
   // already uses: `choice.text` is the choice's own display text.
-  return notification.choices.map((choice) => ({
-    id: choice.id,
-    label: choice.text,
-    intent: choice.text,
-    essenceCost: choice.essenceCost,
-    affordable: choice.essenceCost <= essence,
-    costLabel: choice.essenceCost > 0 ? formatEssenceLabel(choice.essenceCost) : 'Free',
-    interventionType: choice.interventionType,
-    stanceLabel: interventionStanceWord(choice.interventionType),
-    godVoice: choice.godVoice,
-    probabilityBoost: choice.probabilityBoost,
-  }));
+  return notification.choices.map((choice) => {
+    const essenceCost = choiceEssenceCost(choice.essenceCost);
+    return {
+      id: choice.id,
+      label: choice.text,
+      intent: choice.text,
+      essenceCost,
+      affordable: essenceCost <= essence,
+      costLabel: essenceCost > 0 ? formatEssenceLabel(essenceCost) : 'Free',
+      interventionType: choice.interventionType,
+      stanceLabel: interventionStanceWord(choice.interventionType),
+      godVoice: choice.godVoice,
+      probabilityBoost: choice.probabilityBoost,
+    };
+  });
 }
 
 function buildHistory(
@@ -950,9 +967,11 @@ export function buildUnifiedEncounterStageModel(
   // Show illustration at step 0 only (opening scene), not during aftermath
   const isAftermath = activeAction.resolved;
   const isOpeningStep = activeAction.currentStep === 0;
-  const illustration = !isAftermath && isOpeningStep && args.template.illustrationUrl
+  // THR-1800 — a known-missing placeholder renders no panel and no caption.
+  const illustrationSrc = renderableIllustrationUrl(args.template.illustrationUrl);
+  const illustration = !isAftermath && isOpeningStep && illustrationSrc
     ? {
-        src: args.template.illustrationUrl,
+        src: illustrationSrc,
         alt: args.template.illustrationAlt ?? `Scene from ${args.template.name}`,
         caption: 'Some encounters arrive with a remembered image already clinging to them.',
       }

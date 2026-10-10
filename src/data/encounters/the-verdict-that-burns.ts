@@ -436,7 +436,6 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
       'region gets neither clean justice nor clean peace.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
   authoredChoices: {
     0: [
@@ -451,6 +450,7 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
           'round again, with your blessing on the verdict that lit them. Justice that lands, paid for by ' +
           'everyone who lives under it.',
         targetLabel: 'The magistrate',
+        essenceCost: 2, // THR-1800 — the god's push is paid for
         interventionType: 'coercive',
       },
       {
@@ -464,6 +464,7 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
           'decade are born. The truth is kept where the justice is not, and the debt at the fords stays owed. ' +
           'Mercy to the living through a reckoning deferred.',
         targetLabel: 'The magistrate',
+        essenceCost: 0, // THR-1800 — staying your hand costs nothing
         interventionType: 'supportive',
       },
     ],

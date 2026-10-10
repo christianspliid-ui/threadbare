@@ -767,7 +767,6 @@ export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeni
         'The thin place gave out before the threshold could be held, and the doorway shut on a half-spoken answer.',
     },
 
-    illustrationUrl: '/concept-art/encounters/placeholder.jpg',
 
     aftermathConfig: {
       // The *deciding* step (0), not the fork's index (1). See the header note —

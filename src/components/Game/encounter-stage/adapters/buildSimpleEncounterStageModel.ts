@@ -37,6 +37,7 @@ import { formatEssenceLabel } from '../../../shared/formatEssence';
 import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { fightRoleOf } from '../../../../engine/fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
+import { renderableIllustrationUrl } from './encounterIllustration';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -353,9 +354,11 @@ export function buildSimpleEncounterStageModel(
     : buildCurrentResolutionCheck(graph, agentId, template, currentIndex);
 
   // ── Illustration ──
-  const illustration = template.illustrationUrl
+  // THR-1800 — a known-missing placeholder renders no panel.
+  const illustrationSrc = renderableIllustrationUrl(template.illustrationUrl);
+  const illustration = illustrationSrc
     ? {
-        src: template.illustrationUrl,
+        src: illustrationSrc,
         alt: template.illustrationAlt ?? `Scene from ${template.name}`,
       }
     : undefined;

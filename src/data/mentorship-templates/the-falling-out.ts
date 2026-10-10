@@ -89,7 +89,6 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
       'The bond breaks worse than it had to. What the apprentice carries forward is more wound than craft.',
   },
 
-  illustrationUrl: '/concept-art/encounters/placeholder.jpg',
   illustrationAlt: 'A confrontation in a workshop or training yard — teacher and former apprentice no longer facing each other in the old way.',
 
   authoredChoices: {

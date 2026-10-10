@@ -331,6 +331,31 @@ export function assertFightBlockRules(template: UnifiedActionTemplate): void {
   });
 }
 
+/**
+ * THR-1800 — every authored choice card carries a numeric, finite, non-negative
+ * `essenceCost`. The field is typed required, yet five chapters shipped without
+ * it (content files are object literals spread through builders, so the type
+ * never bit), and the stage read `essence >= undefined` as unaffordable: both
+ * cards greyed out and the chapter could not be played. Catalog-wide, so the
+ * class cannot return.
+ */
+export function assertAuthoredChoicesPriced(template: UnifiedActionTemplate): void {
+  const unpriced: string[] = [];
+  for (const [step, cards] of Object.entries(template.authoredChoices ?? {})) {
+    for (const card of cards ?? []) {
+      const cost: unknown = (card as { essenceCost?: unknown }).essenceCost;
+      if (typeof cost !== 'number' || !Number.isFinite(cost) || cost < 0) {
+        unpriced.push(`step ${step} ${card.id}`);
+      }
+    }
+  }
+  expect(
+    unpriced,
+    `${template.id} authored choice card(s) [${unpriced.join(', ')}] carry no numeric essenceCost. `
+    + 'The stage greys an unpriced card out as unaffordable (THR-1800) — price every card, 0 for free.',
+  ).toEqual([]);
+}
+
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {
   if (isActionStepBranch(step)) {
     for (const [choiceId, variantStep] of Object.entries(step.variants)) {
