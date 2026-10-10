@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-10 21:55 local (19:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-10 22:56 local (20:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,7 +15,6 @@ The silence check still reports the Tuesday-to-Thursday gap this setting is mean
 
 ## Decided for you
 
-- [The opening gifts open on top of whatever the player just clicked](https://linear.app/threadbare/issue/THR-1805/the-opening-gifts-open-on-top-of-whatever-the-player-just-clicked) — **a gift from the opening now waits its turn.** It never opens over something you opened yourself (a mortal's profile, the cast drawer, the Chapter Ledger, the Codex), and never within 2 seconds of a click. Until then it waits as a small pill at the top of the screen: "✦ A GIFT WAITS — A Place to Stand · Open ▸". It opens by itself once your screen is clear, or straight away if you click the pill. "Reach Down" still opens at once. All three round-3 testers hit this. [Plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-10-thr-1805-gift-waits-its-turn.md). *To veto, say:* **"gifts should only open when I click them"** or **"gifts should open the moment they're ready"**. Building waits until about 20:35 Sunday your time. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-10c.md)*
 - [How the god's own power grows](https://linear.app/threadbare/issue/THR-1765/how-the-gods-own-power-grows-what-raises-the-gods-sphere-score-across) — your god grows by spending through its spheres: essence drawn through a sphere it bought attunes it a little further, and the mandate's milestones lift it as today. About five growth steps a run, roughly one every two to four weeks. Growth firms up friendly ground and makes signature powers strike harder. Turf stops widening at double strength; past that, deeper ground is won place by place. Nothing fades if you stop spending; you simply stop growing. *To veto, say:* **"my god should keep growing its land"**, **"power should come from deeds, not spending"** or **"unspent power should fade"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-10b.md)*
 - [Dominion of the secondary actors](https://linear.app/threadbare/issue/THR-1764/dominion-of-the-secondary-actors-how-a-faction-an-army-a-company-or-an) — factions, armies, companies and relics read the people or ground they are made of. A mortal you **bestow** a gift on spreads your spheres faster. A faction you **anoint** keeps its towns on your ground tended and shrugs off one rival raid, but does not grow your turf. Your faithful armies don't fight better on your land by themselves. *To veto, say:* **"my faithful should win on my land"**, **"a relic should hold ground on its own"** or **"anointing should spread my turf, not just defend it"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-10a.md)*
 
@@ -23,13 +22,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin on purpose: 1 job ready, 1 being built.** The one ready job is held for your veto window; nothing is blocked, stale or parked.
+**Starved: 0 jobs ready, 1 being built.** Nothing is blocked, stale or parked. The orchestrator and design lane refill the shelf on their next runs.
 
-- **Being built now:** the review-gate machinery fix ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)) — up as [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312), checks running, set to merge on its own.
-- **Ready:** the gift-waits-its-turn build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)) — held until Sunday ~20:35 for your veto window.
-- **Now live:** the health check no longer calls a test run "failing" after a re-run of the same commit passed ([THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the), via [#2311](https://github.com/christianspliid-ui/threadbare/pull/2311)).
+- **Being built now:** the gift-waits-its-turn build ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)). You waived its veto window ("go ahead"), so the builder took it at 22:32. Four commits are pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1809-gift-waits), the latest at 22:54, and it is in code review. No pull request is open yet.
+- **Now live:** the review-gate fix ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)), merged via [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312) and serving on the live site.
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (5 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* No session has claimed the fix. Executor work, not yours.
-- Everything else is green. The live site is serving the latest main, no pull requests are stuck, automated checks run normally, and every scheduled lane is on time.
+- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (5 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Three main commits in a row have failed since 17:33 UTC. The failing test is "emits exactly one aggregate trace per call, never one per tick" ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38082403404)). No session has claimed the fix. This is executor work, not yours.
+- Everything else is green. The live site is serving the latest main, no pull requests are stuck, automated checks are running normally, every scheduled lane is on time, and the engine's speed is flat (116 ms per tick, 3% under the weekly median).
