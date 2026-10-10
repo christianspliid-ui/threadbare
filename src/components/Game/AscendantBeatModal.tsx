@@ -31,7 +31,9 @@ import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
-import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
+import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, isSpineBeatId, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
+import { GIFT_WAITS_COPY } from '../../data/ui-content';
+import { Tooltip } from '../shared/Tooltip';
 import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beats';
 import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
@@ -378,32 +380,62 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
 interface AscendantBeatOfferBannerProps {
   pending: PendingBeat;
   onEnter: () => void;
+  /**
+   * THR-1809: lift a held gift's pill to `GIFT_PILL_Z`, above the player surface holding it.
+   * GameView passes true only when nothing but the player's own surfaces or recent input
+   * holds the gift: under an interrupt or a vignette the pill stays below the backdrop, so
+   * it cannot open the gift over them.
+   */
+  raised?: boolean;
 }
+
+/**
+ * Stacking band of the pill while it carries a held opening gift (THR-1809): above the
+ * player surfaces that hold the gift (`Modal` at 60) so it stays visible over them, below
+ * a sheet raised over an interrupt (65) and tooltips (70+). Row in `layout-zones.md`.
+ */
+export const GIFT_PILL_Z = 62;
+/** The pool-beat pill's band — the ActionDrawer card tray's (40). */
+const OFFER_PILL_Z = 40;
 
 /**
  * The "thread-tug" the player chooses to enter — a quiet top-center pill in the world
  * view when a pool/optional beat is pending (THR-340 handoff pattern, simplified).
- * Spine beats auto-open the modal instead of routing through this affordance.
+ * A spine gift opens itself once the screen is quiet (THR-1809, `giftDelivery.ts`);
+ * while it waits, this pill carries it, worded "A gift waits", and opens it on a click.
  */
 export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
   pending,
   onEnter,
+  raised = false,
 }: AscendantBeatOfferBannerProps) {
   // Same precedence as the modal, so the banner and the card it opens agree.
   const eyebrow =
     AUTHORED_BEAT_PRESENTATION[pending.beatId]?.eyebrow ??
     (KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine).eyebrow;
+  const giftWaits = isSpineBeatId(pending.beatId);
+  const content = (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+      <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
+      <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
+        {giftWaits ? GIFT_WAITS_COPY.eyebrow : eyebrow}
+      </span>
+      <span style={{ color: 'var(--text-secondary)' }}>— {giftWaits ? eyebrow : humanizeBeatId(pending.beatId)}</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{giftWaits ? GIFT_WAITS_COPY.cta : 'Enter ▸'}</span>
+    </span>
+  );
   return (
     <button
       type="button"
       onClick={onEnter}
       data-testid="beat-offer-banner"
+      data-gift-waits={giftWaits ? 'true' : undefined}
       style={{
         position: 'fixed',
         top: 'var(--space-4)',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 40,
+        zIndex: giftWaits && raised ? GIFT_PILL_Z : OFFER_PILL_Z,
         display: 'flex',
         alignItems: 'center',
         gap: 'var(--space-2)',
@@ -419,12 +451,11 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
         letterSpacing: '0.04em',
       }}
     >
-      <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
-      <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
-        {eyebrow}
-      </span>
-      <span style={{ color: 'var(--text-secondary)' }}>— {humanizeBeatId(pending.beatId)}</span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter ▸</span>
+      {giftWaits ? (
+        <Tooltip label={GIFT_WAITS_COPY.eyebrow} desc={GIFT_WAITS_COPY.tooltip} focusable={false} fit>
+          {content}
+        </Tooltip>
+      ) : content}
     </button>
   );
 });

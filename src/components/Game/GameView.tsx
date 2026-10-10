@@ -246,6 +246,13 @@ import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal'
 import { ASCENDANT_SPINE, isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
+import {
+  resolveGiftDelivery,
+  openPlayerSurfaces,
+  isGiftHoldExempt,
+  PLAYER_SURFACE_INTERRUPT_IDS,
+  type GiftDelivery,
+} from './giftDelivery';
 import { buildActorTargetContext, buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
@@ -572,6 +579,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-1716 U1: the opening beat offered at arrival enters itself — no offer
   // banner frame first. Later beats still start un-entered.
   const [beatEntered, setBeatEntered] = useState(arrivalBeatOffered);
+  // THR-1809: wall-clock time of the player's last pointer or key input. A ready
+  // opening gift waits `GIFT_QUIET_AFTER_INPUT_MS` after it (`giftDelivery.ts`).
+  // Capture phase + passive: it only stamps, never stops or delays the event.
+  // Starts at 0, so with no input yet the hold is surface-only (fail-soft).
+  const lastInputAtRef = useRef(0);
+  useEffect(() => {
+    const stamp = () => { lastInputAtRef.current = Date.now(); };
+    const opts: AddEventListenerOptions = { capture: true, passive: true };
+    window.addEventListener('pointerdown', stamp, opts);
+    window.addEventListener('keydown', stamp, opts);
+    return () => {
+      window.removeEventListener('pointerdown', stamp, opts);
+      window.removeEventListener('keydown', stamp, opts);
+    };
+  }, []);
 
   // ── Doom clock and mandate detail modals ──
   const [doomDetailOpen, setDoomDetailOpen] = useState(false);
@@ -3303,15 +3325,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleResolveBeat, setGameState, runtime]);
 
   // Spine beats present modally so the opening is not missable; pool beats wait behind
-  // the offer affordance. Keyed on the spine id prefix so the closing selection beat
-  // (Beat 4, kind 'selection') auto-opens too. Gated by interrupt suppression.
-  // THR-1744: it also waits while a journey vignette is pending, so two held decisions
-  // (e.g. after a warm start) open one at a time instead of stacking; it enters once
-  // the vignette is answered.
+  // the offer affordance. THR-1744: a gift waits while a journey vignette is pending, so
+  // two held decisions open one at a time. THR-1809: the entry itself is decided by
+  // `resolveGiftDelivery` (the effect sits after `interruptResolution`, which it reads).
   const journeyVignettePending = (gameState.pendingVignettes?.length ?? 0) > 0;
-  useEffect(() => {
-    if (pendingBeat && isSpineBeatId(pendingBeat.beatId) && !interruptsSuppressed && !journeyVignettePending) setBeatEntered(true);
-  }, [pendingBeat?.beatId, pendingBeat, interruptsSuppressed, journeyVignettePending]);
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>();
@@ -4974,57 +4991,121 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setPendingMoment(next);
   }, [pendingMoment, otherInterruptOpen, gameState.pendingUndertakingMoments, gameState.tick]);
 
+  // ── Player-opened surfaces (THR-1809) ──
+  // One list for the gift hold and the debug open-modals list, so they cannot drift.
+  const playerSurfacesOpen = openPlayerSurfaces({
+    settingsPanelOpen,
+    readThreadsOpen,
+    agendaPickerOpen: agendaPickerOpen && !!pendingAgendas,
+    // The agent drawer's render guard includes `wheelSlots`: with no slots nothing is on
+    // screen, and a hold on an invisible drawer would keep the gift waiting for nothing.
+    actionDrawerOpen: (!!wheelSlots && drawerOpen && !!selectedAgentId)
+      || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
+    agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
+    // Same guard as the stub sheet's render: a sheet whose node is gone renders nothing.
+    stubSheetCategory: stubModalState
+      && (threadedNodes.some(n => n.id === stubModalState.nodeId) || gameState.graph.getNode(stubModalState.nodeId))
+      ? stubModalState.category
+      : null,
+    attachmentSheetOpen: !!attachmentSheetId,
+    ascendantSheetOpen,
+    doomDetailOpen,
+    mandateDetailOpen: mandateDetailOpen && !!gameState.mandateDefinition && !!gameState.mandateState,
+    harvestOpen: !!harvestResult,
+    codexOpen,
+    chapterLedgerOpen,
+    scryOpen: scryVisible,
+  });
+  const playerSurfacesKey = playerSurfacesOpen.join('|');
+  // The ledger and the court are registry interrupts *and* player surfaces: report them
+  // once, as surfaces. The gift's own modal is not a hold on itself.
+  const giftOtherInterrupts = interruptResolution.open.filter(
+    id => id !== 'AscendantBeatModal' && !PLAYER_SURFACE_INTERRUPT_IDS.includes(id),
+  );
+  const giftOtherInterruptsKey = giftOtherInterrupts.join('|');
+
+  // ── A ready opening gift waits for a quiet moment (THR-1809) ──
+  // `resolveGiftDelivery` is the one rule; this effect and `__DEBUG.getGiftDelivery()`
+  // both read it. A surface closing or an interrupt changing re-runs the effect through
+  // React; a recent-input hold re-runs it once by timer.
+  const computeGiftDelivery = useCallback((): GiftDelivery & { msSinceLastInput: number } => {
+    const msSinceLastInput = Date.now() - lastInputAtRef.current;
+    const delivery = resolveGiftDelivery({
+      pendingBeatId: pendingBeat?.beatId ?? null,
+      isSpine: !!pendingBeat && isSpineBeatId(pendingBeat.beatId),
+      isArrivalBeat: !!pendingBeat && isGiftHoldExempt(pendingBeat.beatId),
+      suppressed: interruptsSuppressed,
+      journeyVignettePending,
+      otherInterruptsOpen: giftOtherInterruptsKey ? giftOtherInterruptsKey.split('|') : [],
+      playerSurfacesOpen: playerSurfacesKey ? playerSurfacesKey.split('|') : [],
+      msSinceLastInput,
+    });
+    return { ...delivery, msSinceLastInput };
+  }, [pendingBeat, interruptsSuppressed, journeyVignettePending, giftOtherInterruptsKey, playerSurfacesKey]);
+
+  const [giftRecheck, setGiftRecheck] = useState(0);
+  const giftHoldLogRef = useRef('');
+  useEffect(() => {
+    if (!pendingBeat || beatEntered) {
+      giftHoldLogRef.current = '';
+      return undefined;
+    }
+    const delivery = computeGiftDelivery();
+    if (import.meta.env.DEV && delivery.heldBy.length > 0) {
+      const key = `${delivery.heldBy.join(',')}:${delivery.heldBySurfaces.join(',')}`;
+      if (giftHoldLogRef.current !== key) {
+        giftHoldLogRef.current = key;
+        console.debug('[gift-delivery] held', delivery.heldBy, delivery.heldBySurfaces);
+      }
+    }
+    if (delivery.enter) {
+      setBeatEntered(true);
+      return undefined;
+    }
+    if (delivery.recheckInMs === null) return undefined;
+    const timer = setTimeout(() => setGiftRecheck(n => n + 1), delivery.recheckInMs);
+    return () => clearTimeout(timer);
+  }, [pendingBeat, beatEntered, computeGiftDelivery, giftRecheck]);
+
+  // THR-1809: the held pill rises above the player surface holding the gift, never above
+  // an interrupt or a vignette (there it stays under the backdrop and cannot stack the gift).
+  const giftPillRaised = !!pendingBeat && !beatEntered && (() => {
+    const held = computeGiftDelivery().heldBy;
+    return held.length > 0 && held.every(r => r === 'player_surface' || r === 'recent_input');
+  })();
+
+  const getDebugGiftDelivery = useCallback(() => {
+    const d = computeGiftDelivery();
+    const entered = !!pendingBeat && beatEntered;
+    return {
+      pendingBeatId: pendingBeat?.beatId ?? null,
+      entered,
+      heldBy: entered ? [] : d.heldBy,
+      heldBySurfaces: entered ? [] : d.heldBySurfaces,
+      msSinceLastInput: d.msSinceLastInput,
+    };
+  }, [computeGiftDelivery, pendingBeat, beatEntered]);
+
   const getDebugOpenModals = useCallback((): string[] => {
     const openModals: string[] = [];
 
     if (debugPanelOpen) openModals.push('DebugPanel');
-    if (settingsPanelOpen) openModals.push('SettingsPanel');
-    if (readThreadsOpen) openModals.push('ReadTheThreadsPanel');
-    if (agendaPickerOpen && !!pendingAgendas) openModals.push('AgendaPicker');
-    if (drawerOpen && !!selectedAgentId) openModals.push('ActionDrawer');
-    if (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId) openModals.push('ActionDrawer');
-    if (profileModalAgentId && !!agentInfoCard) openModals.push('AgentProfileModal');
-    if (stubModalState) {
-      if (stubModalState.category === 'location') openModals.push('LocationProfileModal');
-      if (stubModalState.category === 'faction') openModals.push('FactionSheet');
-      if (stubModalState.category === 'army') openModals.push('ArmySheet');
-      if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
-    }
-    if (attachmentSheetId) openModals.push('AttachmentDetailView');
+    // Player-opened surfaces (THR-1809 shared helper); the two that are also registry
+    // interrupts come from the registry below, so they are listed once.
+    const surfaces = playerSurfacesKey ? playerSurfacesKey.split('|') : [];
+    openModals.push(...surfaces.filter(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id)));
     // Every interrupt comes from the registry (THR-1608) — the same resolution
     // the auto-pause reads, so the debug surface and the pause cannot disagree.
     openModals.push(...interruptResolution.open);
     // The offer banner is not an interrupt: it does not stop the world.
     if (pendingBeat && !beatEntered && !interruptsSuppressed) openModals.push('AscendantBeatOfferBanner');
-    if (ascendantSheetOpen) openModals.push('AscendantSheet');
-    if (doomDetailOpen) openModals.push('DoomClockDetail');
-    if (mandateDetailOpen && gameState.mandateDefinition && gameState.mandateState) openModals.push('MandateDetail');
-    if (harvestResult) openModals.push('HarvestScreen');
 
     return openModals;
   }, [
-    agendaPickerOpen,
-    agentInfoCard,
-    ascendantSheetOpen,
-    attachmentSheetId,
     debugPanelOpen,
-    doomDetailOpen,
-    drawerOpen,
-    enrichedNonAgentSlots,
-    gameState.mandateDefinition,
-    gameState.mandateState,
-    harvestResult,
+    playerSurfacesKey,
     interruptResolution,
     interruptsSuppressed,
-    mandateDetailOpen,
-    nonAgentDrawerOpen,
-    pendingAgendas,
-    profileModalAgentId,
-    readThreadsOpen,
-    scryVisible,
-    selectedAgentId,
-    settingsPanelOpen,
-    stubModalState,
     pendingBeat,
     beatEntered,
   ]);
@@ -5084,7 +5165,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
     window.__DEBUG._registerInterruptStateProvider?.(getDebugInterruptState);
     window.__DEBUG._registerOpeningUiProvider?.(() => ({ arrivalBeatOffered, clockEverRan }));
-  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, arrivalBeatOffered, clockEverRan]);
+    window.__DEBUG._registerGiftDeliveryProvider?.(getDebugGiftDelivery);
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -6360,7 +6442,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* Ascendant beat: thread-tug offer affordance + entered-beat modal (THR-517) */}
       {pendingBeat && !beatEntered && !interruptsSuppressed && (
-        <AscendantBeatOfferBanner pending={pendingBeat} onEnter={() => setBeatEntered(true)} />
+        <AscendantBeatOfferBanner
+          pending={pendingBeat}
+          onEnter={() => setBeatEntered(true)}
+          raised={giftPillRaised}
+        />
       )}
       {pendingBeat && beatEntered && (
         <AscendantBeatModal

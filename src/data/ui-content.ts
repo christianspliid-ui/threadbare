@@ -36,6 +36,17 @@ export const JOURNEY_STAGE_LABELS: Record<CampbellianPhase, string> = {
 /** THR-1716 — the remembrance's undo while a chosen picture holds before the flow moves on. */
 export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
 
+/**
+ * THR-1809 — the offer pill's wording while a ready opening gift waits for a quiet
+ * moment (`ui.gift.waits.eyebrow` / `.cta` / `.tooltip`). The pill's middle line is
+ * the gift's own eyebrow from `SPINE_BEAT_PRESENTATION`.
+ */
+export const GIFT_WAITS_COPY = {
+  eyebrow: 'A gift waits',
+  cta: 'Open ▸',
+  tooltip: 'A gift of the opening is ready. It opens when nothing else is open, or open it now.',
+} as const;
+
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
   'ui.doom_bar': {
