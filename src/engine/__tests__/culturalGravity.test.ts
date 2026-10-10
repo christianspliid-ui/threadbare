@@ -11,6 +11,8 @@ import {
 import type { CultureIdentity } from '../../types/culture';
 import type { ReachDomain } from '../../types/traits';
 import { REACH_DOMAINS } from '../../types/traits';
+import { SPHERE_NAMES, type SphereName } from '../../types';
+import { SPHERE_OPPOSITES } from '../cosmology';
 
 function emptyReaches(): Record<ReachDomain, number> {
   return Object.fromEntries(REACH_DOMAINS.map((d) => [d, 0])) as Record<ReachDomain, number>;
@@ -44,6 +46,27 @@ describe('culturalGravity', () => {
     const a = makeSignature({ spheres: ['life'] });
     const b = makeSignature({ spheres: ['entropy'] });
     expect(culturalGravity(a, b)).toBeLessThan(0);
+  });
+
+  // THR-1798: opposition follows the canonical SPHERE_OPPOSITES, never a private table.
+  it('reports a sphere pair as opposed exactly when it is a canonical SPHERE_OPPOSITES pair', () => {
+    for (const s of SPHERE_NAMES) {
+      for (const t of SPHERE_NAMES) {
+        if (s === t) continue;
+        const g = culturalGravity(makeSignature({ spheres: [s] }), makeSignature({ spheres: [t] }));
+        const canonical = SPHERE_OPPOSITES[s] === t;
+        expect({ pair: `${s}↔${t}`, opposed: g < 0 }).toEqual({ pair: `${s}↔${t}`, opposed: canonical });
+      }
+    }
+  });
+
+  it('scores matter↔time and energy↔spirit as opposed, not matter↔spirit or energy↔time', () => {
+    const g = (x: SphereName, y: SphereName) =>
+      culturalGravity(makeSignature({ spheres: [x] }), makeSignature({ spheres: [y] }));
+    expect(g('matter', 'time')).toBeLessThan(0);
+    expect(g('energy', 'spirit')).toBeLessThan(0);
+    expect(g('matter', 'spirit')).toBe(0);
+    expect(g('energy', 'time')).toBe(0);
   });
 
   it('is positive for aligned reach vectors', () => {

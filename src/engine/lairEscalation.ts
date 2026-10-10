@@ -2,7 +2,8 @@
  * Lair Escalation Phase — TB-M2.5 Phase 2.3575
  *
  * Runs every LAIR_ESCALATION_INTERVAL ticks. For each active lair:
- *   1. Emits sphere pressure to adjacent hexes (environmental feedback loop)
+ *   1. Emits sphere pressure into the lair's own location node (`targetEntityId: lairNode.id`)
+ *      — not into adjacent hexes. Lairs spread by spawning new lairs (step 4), not by pressure.
  *   2. Upgrades minor→major lairs after LAIR_UPGRADE_MIN_TICKS (creates named elite)
  *   3. Upgrades major→legendary lairs after LAIR_LEGENDARY_MIN_TICKS (seeds monster faction)
  *   4. Rolls adjacent lair spawning for wilderness/borderland hexes
