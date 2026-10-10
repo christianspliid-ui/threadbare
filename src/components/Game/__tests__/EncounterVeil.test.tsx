@@ -2515,6 +2515,25 @@ describe('THR-1172 — an underline must earn itself (composed veil)', () => {
  * column (0 ≥ 94 fails) or by re-expressing it as a `vh` the shorthand then
  * overrides.
  */
+/**
+ * THR-1803 — the authored-choice footer stated all twelve pools summed
+ * ("◆ 608 essence") beside per-sphere bars reading 45–55. It now states the
+ * paying sphere's own pool and names it, as the nudge hand's budget line does.
+ */
+describe('EncounterVeil — footer states the paying pool (THR-1803)', () => {
+  it('names the sphere the footer pool belongs to', () => {
+    render(<EncounterVeil {...defaultProps} essence={45.7} essenceSphere="energy" />);
+    expect(screen.getByTestId('veil-footer')).toHaveTextContent('45 Energy essence');
+  });
+
+  it('reads the bare pool when the caller names no sphere', () => {
+    render(<EncounterVeil {...defaultProps} essence={12} />);
+    const footer = screen.getByTestId('veil-footer');
+    expect(footer).toHaveTextContent('12 essence');
+    expect(footer.textContent).not.toMatch(/d+ [A-Z][a-z]+ essence/);
+  });
+});
+
 describe('EncounterVeil — footer clearance (THR-1410)', () => {
   const px = (value: string): number => {
     expect(value).toMatch(/^\d+(\.\d+)?px$/);

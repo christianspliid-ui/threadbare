@@ -42,7 +42,7 @@ import { NudgeBalance, NudgeReadingMarks } from './encounter-stage/shells/NudgeS
 import { useNudgeHand } from './encounter-stage/useNudgeHand';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { OpponentHeader } from './encounter-stage/OpponentHeader';
-import { formatEssence, formatEssencePool, sphereWord } from '../shared/formatEssence';
+import { essencePoolLabel, formatEssence, sphereWord } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
 import { NUDGE_BLOCKED_REASONS, NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
@@ -55,7 +55,17 @@ export interface EncounterVeilProps {
   open: boolean;
   model: EncounterStageModel;
   threadTier: ThreadTier;
+  /**
+   * The pool the footer states. THR-1803: the caller passes the paying
+   * sphere's own pool, never the twelve pools summed (THR-1706's rule).
+   */
   essence: number;
+  /**
+   * THR-1803 — the sphere `essence` belongs to, so the footer names it
+   * ("◆ 45 Energy essence") the way the hand's budget line and the top bar's
+   * per-sphere rows do. Omitted, the footer reads the bare "◆ 45 essence".
+   */
+  essenceSphere?: string;
   tick: number;
   autoResolveTick: number | null;
   onIntervene: (choiceId: string, essenceCost: number) => void;
@@ -414,6 +424,7 @@ export function EncounterVeil({
   model,
   threadTier,
   essence,
+  essenceSphere,
   tick,
   autoResolveTick,
   onIntervene,
@@ -1922,7 +1933,7 @@ export function EncounterVeil({
           >
             {/* THR-1006 — the pool is a float; interpolating it raw put
                 `193.60000000000005` on a mortal-facing surface. */}
-            &#9670; {formatEssencePool(essence)} essence
+            &#9670; {essencePoolLabel(essence, essenceSphere)}
           </div>
 
           {/* Action buttons */}
@@ -2558,7 +2569,7 @@ export function EncounterVeil({
         >
           {/* THR-1006 — second of three diamond readouts in this file; this is the
               branch the nudge stage actually mounts. */}
-          &#9670; {formatEssencePool(essence)} essence
+          &#9670; {essencePoolLabel(essence, essenceSphere)}
         </div>
 
         {/* THR-1724 — "Look away" is gone. Escape and "Show on map" minimise

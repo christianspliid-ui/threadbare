@@ -80,3 +80,14 @@ export function formatEssencePool(value: number): string {
 export function sphereWord(sphere: string): string {
   return sphere.length > 0 ? sphere.charAt(0).toUpperCase() + sphere.slice(1) : sphere;
 }
+
+/**
+ * THR-1803 — one pool's readout, named by its sphere when the caller knows it
+ * ("45 Energy essence"), the wording of the nudge hand's budget line. The
+ * encounter veil's footer reads this; it never states the twelve pools summed
+ * (THR-1706's rule). Without a sphere it reads the bare "45 essence".
+ */
+export function essencePoolLabel(essence: number, sphere?: string): string {
+  const pool = formatEssencePool(essence);
+  return sphere ? `${pool} ${sphereWord(sphere)} essence` : `${pool} essence`;
+}

@@ -1612,6 +1612,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return gameState.clearanceGateStates?.get(runtimeId) ?? tieredEncounterState?.clearanceGateStateSnapshot;
   }, [gameState.clearanceGateStates, encounterStageActiveAction, tieredEncounterState]);
 
+  // THR-1803 — every encounter surface is billed to the god's primary sphere
+  // (`handleEncounterIntervene`), so it reads that one pool. Summing all twelve
+  // put "◆ 608 essence" in the veil footer beside per-sphere bars reading 45–55
+  // (THR-1706's rule: no surface shows a summed essence total).
+  const encounterPayingSphere = archetype.sphereAlignment.primary;
+  const encounterPayingEssence = gameState.essencePool[encounterPayingSphere] ?? 0;
+
   // Build EncounterStageModel for gate duty and general unified encounters
   const encounterStageModel = useMemo(() => {
     if (!(isGateDutyEncounterStage || !!unifiedTemplateForStage) || !tieredEncounterState) return null;
@@ -1627,10 +1634,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         graph: gameState.graph,
         activeAction: encounterStageActiveAction ?? undefined,
         clearanceGateState: gateDutyClearanceGateState,
-        essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        essence: encounterPayingEssence,
         // THR-1123 — the authored nudge hand needs the per-sphere pool and the
-        // unlock list to decide what is playable; the summed `essence` above
-        // cannot answer that.
+        // unlock list to decide what is playable; the single-pool `essence`
+        // above cannot answer that.
         gameState,
         // THR-1499 — the political map a `$realm` standing chip links through.
         realmProjection: () => realmProjection,
@@ -1646,9 +1653,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         agentName: tieredEncounterState.agentName,
         threadTier: tieredEncounterState.threadTier,
         graph: gameState.graph,
-        essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        essence: encounterPayingEssence,
         // THR-1720 — price choices against the pool handleEncounterIntervene charges.
-        payingSphere: archetype.sphereAlignment.primary,
+        payingSphere: encounterPayingSphere,
         doomIdentityMatrix: gameState.doomIdentityMatrix,
         gameState,
         tick: gameState.tick,
@@ -1691,9 +1698,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       agentId: tieredEncounterState.agentId,
       graph: gameState.graph,
       threadTier: tieredEncounterState.threadTier,
-      essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      essence: encounterPayingEssence,
       // THR-1720 — price choices against the pool handleEncounterIntervene charges.
-      payingSphere: archetype.sphereAlignment.primary,
+      payingSphere: encounterPayingSphere,
       tick: gameState.tick,
       gameState,
       // THR-1551 (fight on screen F2) — the watched view's one opponent line on a
@@ -6182,7 +6189,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // THR-1299 slice 4 — follow the encounter's subject from the veil.
             followState={describeFollowFor(tieredEncounterState.agentId)}
             onToggleFollow={(agentId) => handleToggleFollow(agentId, 'encounter_ui')}
-            essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+            essence={encounterPayingEssence}
+            essenceSphere={encounterPayingSphere}
             tick={gameState.tick}
             autoResolveTick={tieredEncounterState.notification.autoResolveTick}
             onIntervene={handleEncounterIntervene}
