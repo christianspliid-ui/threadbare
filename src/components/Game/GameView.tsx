@@ -5002,7 +5002,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     actionDrawerOpen: (!!wheelSlots && drawerOpen && !!selectedAgentId)
       || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
     agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
-    stubSheetCategory: stubModalState?.category ?? null,
+    // Same guard as the stub sheet's render: a sheet whose node is gone renders nothing.
+    stubSheetCategory: stubModalState
+      && (threadedNodes.some(n => n.id === stubModalState.nodeId) || gameState.graph.getNode(stubModalState.nodeId))
+      ? stubModalState.category
+      : null,
     attachmentSheetOpen: !!attachmentSheetId,
     ascendantSheetOpen,
     doomDetailOpen,
