@@ -151,6 +151,11 @@ export function buildCompulsionEvent(
   const agentLocationId = graph.getOutgoingEdges(agentId, 'located_at')[0]?.target ?? null;
   const agentHex = agentLocationId ? resolveLocationToHex(graph, agentLocationId) : null;
 
+  // THR-1802 — one shared threat tier across every offer makes the confidence
+  // clause identical on each option ("hardly a challenge" ×3), so drop it.
+  const sharedThreatTier = candidates.length > 1
+    && candidates.every(c => c.entry.threatRating === candidates[0].entry.threatRating);
+
   // Build CompulsionCandidate entries
   const compulsionCandidates: CompulsionCandidate[] = candidates.map(c => {
     const template = getAnyEncounterById(c.entry.templateId);
@@ -179,6 +184,7 @@ export function buildCompulsionEvent(
       requiresPresence: c.entry.requiresPresence,
       locationName,
       agentName,
+      omitConfidence: sharedThreatTier,
     });
 
     return {

@@ -187,9 +187,19 @@ function CompulsionOptionRow({
       disabled={!affordable}
       onClick={onClick}
     >
-      {/* Retcon prose — the main content. Law 45: `opacity-70` on the option's
+      {/* THR-1802 — the option names the encounter it asks for, the same name the
+          result toast prints. The retcon hook alone ("they could make a
+          difference") let "Assist right here" turn out to be Rest and Recover. */}
+      <div
+        className="text-sm font-semibold"
+        style={{ color: sphereTint(color, 'text') }}
+        data-testid="compulsion-option-name"
+      >
+        {candidate.encounterName}
+      </div>
+      {/* Retcon prose — why it pulls. Law 45: `opacity-70` on the option's
           own subject was the lowest-contrast reading on the surface. */}
-      <div className="text-sm leading-relaxed italic" style={{ color: fullText(false) }}>
+      <div className="text-sm leading-relaxed italic mt-1" style={{ color: fullText(false) }}>
         {candidate.encounterHook}
       </div>
       {/* Mechanical footer — encounter kind and distance are information. */}
