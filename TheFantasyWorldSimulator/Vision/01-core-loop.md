@@ -3,7 +3,7 @@ tags: [vision, core-loop, rhythm]
 aliases: [Core Loop, Loop Rhythm]
 status: draft
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-08-28
 ---
 
 # Core Loop — the loop as a rhythm, not a flowchart
@@ -12,7 +12,7 @@ updated: 2026-04-20
 
 ## The loop, in one breath
 
-The player looks across their mortals. One of them is about to do something that matters. The game pulls that mortal's situation into focus. The player — with some small supply of divine essence — makes a choice about whether and how to intervene. The world resolves. The mortal, and the world around them, lives with what happened. Then the player looks across their mortals again.
+The player looks across their mortals. Maybe some of them are giving a heads-up that something interesting is going on. One of them is about to do something that matters. The game pulls that mortal's situation into focus. The player — with some small supply of divine essence — makes a choice about whether and how to intervene. The world resolves. The mortal, and the world around them, lives with what happened. Then the player looks across their mortals again.
 
 That is it. That is the game.
 
@@ -50,17 +50,19 @@ It is also what keeps us Malazan-shaped rather than 4X-shaped. Malazan tracks do
 
 **Scanning:** the player is looking at their world and forming an intuition about where attention is warranted. The game helps — it will surface mortals whose situations have crossed thresholds — but the *choice* of whose story to witness is the player's. Scanning is low-effort, high-texture: the player takes in a lot of small signals and picks one.
 
-**Encounter:** the player is reading, deciding, and spending. Reading, because the prose is dense and particular. Deciding, because at the critical moment an intervention menu appears and the player must choose (including "do nothing"). Spending, because essence is the economy and every intervention draws from it.
+**Encounter:** the player is reading, deciding, and spending. Reading, because the prose is dense and particular. Deciding, because at an attended step a hand of nudge cards appears — authored specials plus cards dealt from the god's earned repertoire — and the player chooses what to play, including nothing. The cards bend the named odds; fate picks the band; forks are the mortal's to take. Spending, because essence is the economy and every card draws from it.
 
 **Aftermath:** the player is witnessing. This is the beat with the lowest player action load. The world resolves. Threads thicken or fray. The prose closes the chapter. The player sits with what just happened — and only then do they scan again.
 
 We think the balance of effort across the three beats matters. Scan is about taste. Encounter is about judgment. Aftermath is about presence. All three must be present, and the order must be preserved, for the game to feel like Threadbearer rather than something adjacent.
 
-## Turn-based is load-bearing
+## Time stops for every moment (was: "Turn-based is load-bearing")
 
-The loop does not tick on a clock. The world advances when the player says so (see `project_turn_based` memory and `Systems/Design Direction.md`). This is a settled decision.
+The world runs in real time between moments, at the speed the player sets, and **halts for every moment that matters**: an encounter, a choice, the meeting, a doom stage, a receipt, the Chapter Ledger. When the last of them closes, the clock goes back to the state the player left it in; a god who paused to think stays paused. This is the Stellaris model, Christian's ruling of 2026-09-27. (A tick is two in-world hours; twelve ticks make a day.)
 
-The reason is the rhythm. If time advances while the player reads an encounter, the encounter's gravity leaks out into frustration about the clock. If time advances while the player scans their portfolio, the player cannot actually *look* — they can only *react*. The scan → encounter → aftermath rhythm demands that the player be the metronome. Turn-based is not a genre choice; it is a rhythm choice.
+The reason is unchanged, and it is the rule: **the rhythm.** If time advances while the player reads an encounter, the encounter's gravity leaks out into frustration about the clock. If time advances while the player scans their portfolio, the player cannot actually *look* — they can only *react*. So reading surfaces halt the clock. What changed is the mechanism, not the reason. "The world advances only when the player says so" described a single-step game the code never was, and it left the Doom Clock's pressure theoretical: the north star asks for pressure "not the player's to pause", and a clock that only moves on command never presses.
+
+*2026-09-27 — rewritten from "Turn-based is load-bearing" to the Stellaris model per Christian's ruling in the onboarding design session (Threadbare `Docs/plans/2026-09-27-thr-1605-the-opening.md`). The rhythm argument is kept verbatim as the halt rule.*
 
 ## Density
 
@@ -83,4 +85,6 @@ Two things this does **not** change:
 
 ---
 
-*last iterated 2026-07-04 — Density section settled (THR-603, creative-director verdict). Previously 2026-04-20 bootstrap, drawn from `project_core_loop`, `project_turn_based`, `feedback_god_not_protagonist`, `feedback_prose_first_ui`, `Systems/Design Direction.md`*
+*last iterated 2026-04-20 — bootstrap, drawn from `project_core_loop`, `project_turn_based`, `feedback_god_not_protagonist`, `feedback_prose_first_ui`, `Systems/Design Direction.md`*
+*last iterated 2026-08-28 — the encounter beat's "intervention menu" updated to the nudge-card hand (verb-trio menu retired 2026-05-04); the tick length recorded as settled (12/day); session-scoped memory citations replaced with the durable source. The rhythm argument is untouched — it was already correct. THR-1335.*
+*last iterated 2026-10-10 — in-repo copy re-synced from the vault (THR-1796). The vault had lost the Density section settled 2026-07-04 (THR-603) and still carried the "three to six per session" ration that section retired; the repo keeps the settled Density text. The vault should take this section back.*

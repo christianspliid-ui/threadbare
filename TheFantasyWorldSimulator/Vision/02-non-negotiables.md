@@ -3,7 +3,7 @@ tags: [vision, non-negotiables, load-bearing]
 aliases: [Non-Negotiables, Load-Bearing Decisions]
 status: draft
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-08-28
 ---
 
 # Non-Negotiables — the load-bearing decisions, narrated
@@ -12,11 +12,13 @@ updated: 2026-04-20
 
 ## 1. The player is a god, not a protagonist
 
-**The decision:** player choices are divine interventions — nudges, whispers, visions — that shift probabilities and surface context. They are never direct character control.
+**The decision:** player choices are divine interventions — today, essence-priced nudge cards played into a mortal's attended moments — that shift probabilities and surface context. They are never direct character control: the god bends the odds, fate picks the outcome, and forks are decided by the mortal.
 
 **Why it is load-bearing:** the entire emotional register of the game depends on the distance between player and mortal. A god who can move a mortal like a chess piece has no moral weight when they do. A god who can *influence but not command* has to choose — every intervention is a small claim on another being's sovereignty, and the game never lets that choice disappear into mechanics. Sovereignty vs. Consumption (the canonical moral doctrine in `Systems/Executive Vision.md`) only exists if the god is distant enough that consumption is a temptation, not the default.
 
 **How to apply:** when a design wants to add direct control — "the player clicks here and the mortal does X" — flag it. Either the design wants to become choose-your-own-adventure (which is a different game) or the design needs to be reframed as a *kind of intervention* the god can buy with essence, with an uncertain outcome.
+
+**The asymmetry is also two-way.** The god intervenes; the mortal responds. The mortal's response — prayer, doubt, gratitude, refusal, communion — travels back through the thread as part of how the player perceives the bond. Without the return channel, sovereignty is something we *say* mortals have; with it, sovereignty is something mortals *exercise*. Both directions of the thread are load-bearing to the texture of play. *Added 2026-05-11 as part of the Agent Feedback System design — `Docs/plans/2026-05-11-agent-feedback-system.md`.*
 
 ## 2. Narrative over mechanical perfection
 
@@ -70,4 +72,5 @@ This Vision folder exists because we were losing the expansive half. That loss i
 
 ---
 
-*last iterated 2026-04-20 — bootstrap, drawn from `CLAUDE.md` Load-Bearing Decisions and NFPs, plus memories: feedback_god_not_protagonist, feedback_prose_first_ui, feedback_narrative_tiebreaker, feedback_design_expansiveness, feedback_graph_edges_not_properties, feedback_ui_phase_required*
+*last iterated 2026-05-11 — bootstrap 2026-04-20, drawn from `CLAUDE.md` Load-Bearing Decisions and NFPs, plus memories: feedback_god_not_protagonist, feedback_prose_first_ui, feedback_narrative_tiebreaker, feedback_design_expansiveness, feedback_graph_edges_not_properties, feedback_ui_phase_required. 2026-05-11: expanded item #1 with the two-way thread premise per THR-402 (Agent Feedback System).*
+*last iterated 2026-08-28 — item #1's example vocabulary updated from the retired whisper/nudge/vision verb trio to the nudge-card model (THR-1335). The premise — influence, never command — is unchanged; the substance of this page was already the nudge model before the nudge model existed.*

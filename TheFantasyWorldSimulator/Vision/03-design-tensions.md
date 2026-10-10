@@ -73,3 +73,4 @@ When reviewing a design, the tensions are a checklist of directions the design c
 ---
 
 *last iterated 2026-04-20 — bootstrap, drawn from `feedback_design_expansiveness`, `feedback_narrative_tiebreaker`, `feedback_god_not_protagonist`, `feedback_prose_first_ui`, `project_core_loop`, `project_elder_magic`*
+*last iterated 2026-08-28 — verified current against the round-2 game-design audit (no retired vocabulary found; content unchanged); dated signature refreshed so the file no longer reads as unswept. THR-1342.*

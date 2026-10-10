@@ -3,8 +3,10 @@ tags: [vision, taste, aesthetic]
 aliases: [Taste Profile, Design Taste, Aesthetic Voice]
 status: draft
 created: 2026-04-23
-updated: 2026-05-07
+updated: 2026-08-29
 ---
+<!-- frontmatter `updated` was stuck at 2026-05-07 while the body carried amendments through 2026-08-25 (THR-868, THR-1247, prose-doctrine v2) — corrected at THR-1335; keep this date honest when amending the body. -->
+
 
 # Taste Profile
 
@@ -64,24 +66,31 @@ improvement.
 
 ### Player is a god, never a protagonist
 
-Interventions are divine acts — nudge, whisper, vision. The player never
-directly controls a mortal. Mortal sovereignty is the source of the game's
-texture; collapsing it into character control destroys the distinction.
+Interventions are divine acts — today, essence-priced nudge cards played into
+a mortal's attended moments. The player never directly controls a mortal:
+cards bend the odds, fate rolls the outcome, and forks are decided by the
+mortal. Mortal sovereignty is the source of the game's texture; collapsing it
+into character control destroys the distinction. *(Wording updated 2026-08-28,
+THR-1342 — this entry previously named the fixed "nudge, whisper, vision" verb
+trio as current, which the entry "Encounter-specific intervention verbs" below
+records as retired 2026-05-04; the premise itself is unchanged.)*
 
-- **Example:** the player cannot choose a mortal's dialogue. They can
-  whisper a doubt; the mortal may or may not hear it.
+- **Example:** the player cannot choose a mortal's dialogue. They can play a
+  card that plants a doubt; the mortal may or may not act on it, and fate
+  picks the band.
 - **Source:** memory `feedback_god_not_protagonist.md`; `Vision/02-non-negotiables.md`;
   core loop memory.
 
-### Turn-based, not auto-advancing
+### Real time, halting for every moment (the Stellaris model)
 
-The game advances on player input. Auto-advancing time undermines the
-portfolio-scan rhythm and the feeling of attention being *yours* to spend.
+Time runs between moments and stops for every one that asks for you. Reading
+never leaks time; a paused god stays paused after a moment closes.
 
-- **Example:** the tick loop waits for the player to act on the current
-  beat; it does not time out into the next tick on idle.
-- **Source:** memory `project_turn_based.md` (settled 2026-04-16); core loop
-  memory.
+- **Example:** an encounter, a choice or the Chapter Ledger halts the clock;
+  closing it restores whatever state the clock was in before.
+- **Source:** Christian's ruling 2026-09-27 (onboarding design session),
+  superseding "Turn-based, not auto-advancing" (settled 2026-04-16), which
+  described a single-step game the code never was.
 
 ### Always dark, one gold emphasis per panel
 
@@ -103,16 +112,66 @@ the emotional work; ornamentation competes with it.
 - **Source:** `threadbearer-design`; memory `feedback_prose_quality_bar.md`
   (meeting-encounter prose is the quality bar).
 
-### Meeting-encounter prose is the quality bar
+### Meeting-encounter prose is the quality bar — plain register, not lyrical
 
 All narrative content — vignettes, dilemmas, aftermath — is evaluated
 against the meeting-encounter prose as the reference quality. Content that
 falls below that bar is editorial-pass work, not ship-ready.
 
-- **Example:** a new dilemma template with flat prose does not pass
-  editorial even if its systems are correct.
-- **Source:** memory `feedback_prose_quality_bar.md`; encounter-pipeline
-  editorial pass criteria.
+**Updated 2026-07-30 (THR-868 WS6).** The bar still points at the meeting
+prose, but the meeting prose itself moved. Christian's verdict: the game's
+prose was *too lyrical* game-wide, and the register is now **simple and
+descriptive of events, people, and motivations**. The old meeting text was
+the exemplar of the register being retired, so citing "the meeting prose" as
+the bar without this note now points at the wrong thing.
+
+- **Reconciled 2026-08-29 (THR-1324 guidance audit):** Prose Doctrine v2
+  (Christian, 2026-08-25) retired the **picturable-anchor** rule by name, and
+  this entry was still mandating it to every design pass — the THR-1247 audit
+  amended the verbs entry below on the same day and walked past this one. The
+  bar itself is unchanged: meeting-encounter prose, plain register. What moved
+  is *how* you hit it. The failure was never vocabulary, it was **mode** — the
+  border-perils read named it: *"you are still writing in situ instead of just
+  describing."* Authority: `Docs/canon/prose.md` § Narrator mode.
+
+What the bar means concretely:
+
+- **Narrate, never inhabit.** Write as a game master reading a module aloud —
+  a narrator reporting from outside the scene. No interior sensation, no
+  camera work, no atmosphere without a job.
+- **State facts, never encode them.** If the fact is "no one dares approach
+  it," write that sentence — not the physical evidence a reader must decode.
+  *(This replaces the retired picturable-anchor rule, which read: "Every
+  sentence carries a picturable anchor. If the reader cannot see it, rewrite
+  it." It trained the encoding habit — evidence in place of the fact.)*
+- **Tell.** *Show-don't-tell* and *foreshadow-never-announce* are both
+  explicitly **reversed** under v2: announce the stake plainly.
+- Abstractions may be **staked but must be cashed in-sentence** — name what
+  the abstraction looks like here.
+- **No closing abstraction.** Ending a paragraph on the meaning of the scene
+  is the tell.
+- The **vagueness lexicon is scoped, not flat** (THR-899, 2026-08-01 — this
+  bullet previously cited a flat `AUDIT_VAGUENESS_TERMS` catching `someone`,
+  `very` and `deeply` everywhere, which is the version that failed
+  Christian's canonical example of *correct* prose): **evasive** terms
+  (`something`, hedges) target zero in every field class; **natural
+  indefinites** (`someone`, `somewhere`, `thing`) are policed in outcome
+  prose only; **intensifiers** are a warning, nowhere enforced. Single
+  authority: `src/data/content-eval/nudgeAuditDetectors.ts`.
+
+- **Example (retired):** "Something inside them settles into place like a
+  stone dropped into still water." · "…a loneliness that no amount of being
+  right can cure."
+- **Example (current):** "She has given the village three predictions and
+  two have already come true. The third was about the harvest, and since
+  then no one has asked her to dinner."
+- **Enforcement:** `src/data/__tests__/meetingProseRegister.test.ts` scores
+  the whole meeting corpus with the real scorer and carries negative
+  controls, so the bar is executable rather than remembered.
+- **Source:** Christian, chat 2026-07-30; memory
+  `feedback_prose_register_game_wide.md`;
+  `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`
+  § Prose rubric; `Docs/canon/encounters.md` § Rejected approaches.
 
 ### Graph edges, not property-bag relationships
 
@@ -132,6 +191,7 @@ Verbs are encounter-specific, anchored in the cosmological pattern of reach + sp
 
 - **Example:** `Stir her resolve` and `Speak when not asked` can both map to structural metadata without sharing a fixed global verb taxonomy.
 - **Source:** `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §10.4.
+- **Reconciled 2026-08-25 (THR-1247 vision audit):** the THR-883 communication pivot (locked 2026-07-30) moved card *faces* to a generic, library-wide vocabulary — prose does the scene, cards do the rules — and the dealt-hand design extends that. What survives of this entry: the **scene prose** stays encounter-specific (openings, spine, band prose, and the 0–2 authored *specials* per encounter), and there is still no fixed three-verb taxonomy — the 21-type card library is open-ended and data-driven. What is superseded: "encounter authors write per-scene god-verbs" as a rule about *card text*. The taste — bespoke, scene-anchored expression of divine influence — now lives in the prose layer, not the card faces.
 
 ---
 
@@ -242,14 +302,15 @@ player's choices are divine interventions, not character choices.
   tension the game is built on.
 - **Source:** memory `feedback_god_not_protagonist.md`; `Vision/02-non-negotiables.md`.
 
-### Auto-advancing time
+### Time that runs while you read
 
-Replaced by turn-based pacing. Auto-advancing removes the player's felt
-authorship of attention.
+Real time is right (Stellaris model, 2026-09-27); real time that keeps
+running while an encounter, a choice or the ledger is open is not.
 
-- **Rejected because:** attention-as-currency stops working when ticks
-  pass on their own.
-- **Source:** memory `project_turn_based.md`.
+- **Rejected because:** reading while the clock runs turns gravity into
+  clock anxiety, and attention stops being yours to spend.
+- **Source:** Christian's ruling 2026-09-27, narrowing the earlier rejection
+  of all auto-advancing time (memory `project_turn_based.md`).
 
 ### Manual-style explanatory marketing copy
 
@@ -306,3 +367,5 @@ the date it was archived. Archived entries remain readable but are not
 loaded by default.*
 
 
+
+*last iterated 2026-08-28 — the "Player is a god" entry updated off the retired nudge/whisper/vision verb trio (which line 161 already recorded as retired — the file contradicted itself); this dated signature added per the README mandate. THR-1342, context-cleanup round 2.*

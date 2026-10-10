@@ -23,7 +23,7 @@ Every play session moves through the same rhythm.
 
 **Portfolio scan.** You look at your people. Protagonist states arrive as emotional signals and human-textured prose — "Serafina is struggling", "Kael is ascending" — not as raw numbers. You scan, you assess, you decide who matters most right now.
 
-**Curated moment.** The game pulls you toward an encounter it has identified as emotionally significant: a pivotal confrontation, a turning point, a moment where your choice will matter. You engage with branching decision-making under uncertainty.
+**Curated moment.** The game pulls you toward an encounter it has identified as emotionally significant: a pivotal confrontation, a turning point, a moment where your choice will matter. The clock halts. You decide whether and how to nudge: essence-priced cards bend the odds, fate picks the outcome, and the fork is the mortal's to take.
 
 **Aftermath.** Resolution reshapes the protagonist's trajectory. Failure is not a loss state — it's a story turn. The next chapter is richer for what just happened.
 
@@ -46,7 +46,7 @@ Every design decision — engine, content, UI, prose — is checked against thes
 1. **Emotional read at every level.** The player understands game state through human conditions (alone, ashamed, triumphant), not through numbers.
 2. **Genuine dilemmas.** Choices where there is no obviously right answer and the best option depends on understanding the protagonist.
 3. **Cool failure.** Every failure state produces narrative texture that makes the next chapter more interesting. Failure is plot, not punishment.
-4. **Turn-based pacing.** Each tick is a turn the player controls. Features must work in both quick turns (scan and advance) and deep turns (stop and engage).
+4. **Time stops for every moment.** The world runs in real time between moments, at the speed the player sets. It halts for every moment that matters: an encounter, a choice, a doom stage, the Chapter Ledger. When the moment closes, the clock returns to the state the player left it in. Features must work both while the world runs (scan and advance) and while it is halted (stop and engage). This is the Stellaris model, Christian's ruling of 2026-09-27 (THR-1605). It retired turn-based pacing ("each tick is a turn").
 5. **Prose carries narrative, UI carries status.** Mechanics are communicated through story, never through exposed numbers.
 6. **Content is design.** Authored prose, encounter templates, and complication moments are the player experience, not implementation details behind it.
 

@@ -3,7 +3,7 @@ tags: [vision, notebook, meta]
 aliases: [Vision Layer, Designer's Notebook]
 status: draft
 created: 2026-04-20
-updated: 2026-04-20
+updated: 2026-08-28
 ---
 
 # Vision — the designer's notebook
@@ -22,11 +22,11 @@ When a design doesn't land — the implementation surfaces a tension we hadn't s
 
 ## How to use it
 
-**If you are reading:** start with `00-north-star.md`. Then skim `02-non-negotiables.md` to understand what is load-bearing. `01-core-loop.md` tells you the rhythm. `03-design-tensions.md` is the live debate — the tradeoffs we are consciously navigating, none of them fully resolved.
+**If you are reading:** start with `00-north-star.md`. Then skim `02-non-negotiables.md` to understand what is load-bearing. `01-core-loop.md` tells you the rhythm. `03-design-tensions.md` is the live debate — the tradeoffs we are consciously navigating, none of them fully resolved. **End with `taste-profile.md`** — the accumulated aesthetic voice, and the most frequently updated file in this folder; it is where corrections land first, so the reading order that skips it reads yesterday's game.
 
-**If you are designing:** read all five before drafting a plan doc. Cite back to the premises your design leans on (by filename + section). If your design contradicts a premise, that is a signal — either your design is wrong, or the premise has drifted and needs updating. Either outcome is legitimate; both require you to write the tension down before moving on.
+**If you are designing:** read all six before drafting a plan doc. Cite back to the premises your design leans on (by filename + section). If your design contradicts a premise, that is a signal — either your design is wrong, or the premise has drifted and needs updating. Either outcome is legitimate; both require you to write the tension down before moving on.
 
-**If you are implementing (CC / Codex):** you probably do not need to read this. The plan doc you were handed is the contract. This folder exists so the plan doc can stay tight.
+**If you are implementing (an execution session):** you probably do not need to read this. The plan doc you were handed is the contract. This folder exists so the plan doc can stay tight.
 
 ## How it gets maintained
 
@@ -43,6 +43,8 @@ Slowly, with intent.
 - [[01-core-loop]] — the loop as a rhythm, not a flowchart
 - [[02-non-negotiables]] — the load-bearing decisions, narrated
 - [[03-design-tensions]] — unresolved tradeoffs we navigate continuously
+- [[taste-profile]] — the persistent aesthetic voice: strong opinions, soft patterns, anti-patterns
+- `taste-profile-archive.md` — dormant taste, when archiving ever happens (does not exist yet)
 
 ## Why this exists
 
@@ -53,3 +55,4 @@ This folder, combined with the Brainstorm companion habit in `Brainstorms/YYYY-M
 ---
 
 *last iterated 2026-04-20 — bootstrap*
+*last iterated 2026-08-28 — taste-profile added to the index and reading order (it had been missing from both, so the folder's most-current file was the one the reading order never reached); "all five" → six; the implementer line stopped naming the retired Codex runtime. THR-1335.*

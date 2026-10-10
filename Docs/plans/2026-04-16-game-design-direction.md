@@ -72,7 +72,9 @@ The resolution reshapes the protagonist's trajectory, and the player sees the ch
 
 ## Pacing: Turn-Based, Player-Paced
 
-**Settled decision: The game is turn-based.** Each tick is a turn. The player decides when to advance to the next turn.
+> **Superseded 2026-09-27 (THR-1605, Christian's ruling).** Turn-based pacing is retired. The game now uses the Stellaris model: real time between moments, at the speed the player sets, halting for every moment that matters. The clock returns to the player's state when the moment closes. The rhythm argument below survives as the reason the clock halts, but the turn-based mechanism does not. Current authority: `TheFantasyWorldSimulator/Vision/01-core-loop.md` § Time stops for every moment, and `Docs/design-brief.md` principle 4.
+
+**Settled decision (retired 2026-09-27): The game is turn-based.** Each tick is a turn. The player decides when to advance to the next turn.
 
 Continuous real-time play actively works against the core experience. If the game's value is in *being present for moments* — reading prose, scanning protagonist states, choosing whether to dive into an encounter — then auto-advancing time pulls attention away from what matters. Turn-based says "each tick is yours. Here's what happened. Here's what needs attention. Take your time."
 
@@ -274,7 +276,7 @@ This is not a specification. It's a **compass**. It tells you what direction "go
 
 Decisions that were open during drafting but are now settled:
 
-1. **Turn-based, not continuous.** The game is turn-based. Each tick is a turn, and the player decides when to advance. Continuous real-time play actively undermines the core experience by pulling attention away from the moments that matter.
+1. **Turn-based, not continuous.** *(Retired 2026-09-27 by THR-1605: replaced by real time that halts for every moment. See the banner under "Pacing" above.)* The game is turn-based. Each tick is a turn, and the player decides when to advance. Continuous real-time play actively undermines the core experience by pulling attention away from the moments that matter.
 
 2. **The emotional read is a synthesis layer, not a new system.** It reads from existing systems (personality, ambition, encounter trajectory, reputation, conditions, relationships, location) and produces a human-readable emotional hook. No new game mechanics — better presentation of existing data.
 

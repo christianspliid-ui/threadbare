@@ -6,7 +6,7 @@ description: >
   Load for content authoring, encounter design, cosmology work, or prose that
   references Sphere/Reach combinations.
 validated_doctrine: rules-of-play@1
-last_validated_against: 2026-08-28
+last_validated_against: 2026-10-10
 ---
 
 # Cosmology & Game Design Direction
@@ -28,7 +28,7 @@ last_validated_against: 2026-08-28
 1. **Emotional read at every level** — the player understands state through human conditions (alone, ashamed, triumphant), not numbers.
 2. **Genuine dilemmas** — choices where there's no obviously right answer and the "best" option depends on understanding the protagonist.
 3. **Cool failure** — every failure state produces narrative texture that makes the next chapter more interesting. Failure is plot, not punishment.
-4. **Turn-based pacing** — each tick is a turn the player controls. Features must work in quick turns (scan and advance) AND deep turns (stop and engage).
+4. **Time stops for every moment.** The world runs in real time between moments and halts for every moment that matters (an encounter, a choice, a doom stage, the Chapter Ledger). Features must work while the world runs (scan and advance) AND while it is halted (stop and engage). This is the Stellaris model, Christian's 2026-09-27 ruling (THR-1605), which retired turn-based pacing.
 5. **Prose carries narrative, UI carries status** — mechanics are communicated through story, never through exposed numbers.
 6. **Content is design** — authored prose, encounter templates, and complication moments are not implementation details. They ARE the player experience.
 
