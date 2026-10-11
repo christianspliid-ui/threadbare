@@ -14,7 +14,7 @@ This is an automated run of a scheduled task. The user is not present to answer 
 
 - **Never claim an issue** (`assignee:"me"`) or move one to In Dev — the hourly `tb-opus-pickup` task owns the single WIP=1 executor slot.
 - **Never touch `src/`.**
-- **Do not file process/infrastructure tickets** — CLAUDE.md § Continuous Improvement (Christian, 2026-08-10) makes the weekly retro the single promotion point, and names a lane prompt that says otherwise as superseded. The one exception is a loss *actively corrupting work right now*.
+- **Do not file process/infrastructure tickets** — `Docs/canon/session-protocol.md` § Continuous Improvement (moved verbatim from CLAUDE.md by THR-1718) (Christian, 2026-08-10) makes the weekly retro the single promotion point, and names a lane prompt that says otherwise as superseded. The one exception is a loss *actively corrupting work right now*.
 - You MAY: post explanatory comments, write/commit your report, and make durable corrections to lane prompts and registry docs on `main`.
 
 ## Objective
@@ -30,12 +30,12 @@ Christian does not read Linear. The hourly `keep-work-flowing-cc` task owns `Des
 ## Pre-flight
 
 1. **Load `state-of-game-design` first** (the thin router) — foundational context for decisions about work routing.
-2. Read **CLAUDE.md**. Pay particular attention to:
+2. Read **CLAUDE.md** (a pointer card since THR-1718) and **`Docs/canon/session-protocol.md`**, where these sections now live verbatim. Pay particular attention to:
    - `## Session Types: Design vs Execution — Read This First` (one runtime, one executor queue: **Ready for Dev**)
    - `## Skill Tree Layout` (`.claude/skills/` is the only skill tree)
    - `## Known Sandbox Limitations` (a summary — the full catalog is `Docs/ops/sandbox-limitations.md`, THR-1336)
    - `## Definition of Done`
-   - `Docs/ops/scheduled-tasks-registry.md` (the registry this sweep should keep honest; CLAUDE.md § Scheduled Tasks is now a pointer at it)
+   - `Docs/ops/scheduled-tasks-registry.md` (the registry this sweep should keep honest; session-protocol.md § Scheduled Tasks points at it)
 3. Read `Docs/plans/2026-04-13-linear-coordination-protocol.md` — full protocol, especially "Coordination Failure Modes — Hard Rules" (Rules 1–10).
 4. Skim `Docs/impediments.md` and the most recent file in `Design/retros/` so you can distinguish new patterns from known ones.
 
@@ -60,15 +60,15 @@ For each issue found:
 - **Coordination block** in the latest handoff comment — required fields per CLAUDE.md: `Suggested model`, `Parallel-safe with`, `Mutex with`. (`Suggested model` is advisory only: the CC lane always runs Opus. A `model:*` label is a work-type signal, not a queue filter.)
 - **Stale In Dev?** More than ~5 days with no updates → flag.
 - **Stale handoff?** Ready-for-Dev items older than a week with no pickup may indicate queue starvation or a mutex deadlock.
-- **Deferrals** (`label:"Deferral"`) in active projects should sit at the top of their queues, per CLAUDE.md "Finish Before You Start."
+- **Deferrals** (`label:"Deferral"`) in active projects should sit at the top of their queues, per session-protocol.md "Finish Before You Start."
 
 ### 2. Skill-tree audit
 
-Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill tree** — the second tree at `.agents/skills/`, `scripts/check-skill-sync.js`, and the THR-192 parity pre-commit hook were all deleted 2026-07-21 (THR-654).
+Enforce `Docs/canon/session-protocol.md` § Skill Tree Layout. **`.claude/skills/` is the only skill tree** — the second tree at `.agents/skills/`, `scripts/check-skill-sync.js`, and the THR-192 parity pre-commit hook were all deleted 2026-07-21 (THR-654).
 
 - **If any `SKILL.md` exists under `.agents/skills/`, that is a finding** — the tree was demolished and must not come back. Find it with `find .agents -name SKILL.md`, not `ls -d`: the directory itself survives in the home tree, untracked (by 2026-09-27 `ls -la` listed it empty while `rmdir` reported it non-empty, and the unattended lane may not delete it). A directory holding no `SKILL.md` is debris, not a tree. Record it in `## Notes`, not as a finding (2026-09-13 F3, 2026-09-27).
 - For each folder under `.claude/skills/`: confirm `SKILL.md` exists with `name` and `description` in the frontmatter. **Known-accepted exception:** `.claude/skills/image-manipulation-workspace/` is gitignored eval output from the `image-manipulation` skill (iteration-1..3 PNGs) with no `SKILL.md`. The skill loader skips it, and it is not an orphan skill.
-- CLAUDE.md's `## Domain Skills` table was retired in THR-760 — skill triggers now live in each skill's own `description:` frontmatter. Cross-check instead that every skill named in CLAUDE.md's Domain Skills **routing policy** (the load-order bullets) resolves to a real folder under `.claude/skills/`, and that each skill's `description:` is non-empty. Broken references and empty descriptions are findings.
+- The `## Domain Skills` table was retired in THR-760 — skill triggers now live in each skill's own `description:` frontmatter. Cross-check instead that every skill named in session-protocol.md's Domain Skills **routing policy** (the load-order bullets) resolves to a real folder under `.claude/skills/`, and that each skill's `description:` is non-empty. Broken references and empty descriptions are findings.
 - Look for orphan skill directories — present in the tree but referenced nowhere in CLAUDE.md or documented routing.
 - Spot-check `last_validated_against` dates: a skill whose referenced systems have since changed but whose date is months stale is worth flagging.
 
@@ -127,7 +127,7 @@ Read `Docs/impediments.md`. For each impediment:
 
 ### 7. Sandbox limitations check
 
-Compare `Docs/ops/sandbox-limitations.md` (the catalog; CLAUDE.md § Known Sandbox Limitations is its five-rule summary) against the impediment log. Any new chronic issue that should be promoted? Any listed limitation now resolved and removable?
+Compare `Docs/ops/sandbox-limitations.md` (the catalog; CLAUDE.md § Sandbox — the five that bite first is its summary) against the impediment log. Any new chronic issue that should be promoted? Any listed limitation now resolved and removable?
 
 ### 8. Three-pillar compliance on in-flight design
 
@@ -178,7 +178,7 @@ This is a **report**, not a gate: the script always exits 0. Two consecutive enc
 
 ## Recording findings
 
-**This lane does not file tickets** (CLAUDE.md § Continuous Improvement, Christian 2026-08-10). Measured that week: 32 of 35 Ready-for-Dev items were Low-priority process cleanup and zero were feature or content work, with the lanes still filing more. The materiality bar governed what *qualified*; nothing governed *who files*. So a scheduled lane logs what it finds and moves on, and the **weekly retro is the single promotion point** — it batches the log and files the few items that clear the bar, with the accumulated cost quoted.
+**This lane does not file tickets** (`Docs/canon/session-protocol.md` § Continuous Improvement (moved verbatim from CLAUDE.md by THR-1718), Christian 2026-08-10). Measured that week: 32 of 35 Ready-for-Dev items were Low-priority process cleanup and zero were feature or content work, with the lanes still filing more. The materiality bar governed what *qualified*; nothing governed *who files*. So a scheduled lane logs what it finds and moves on, and the **weekly retro is the single promotion point** — it batches the log and files the few items that clear the bar, with the accumulated cost quoted.
 
 Findings therefore go in the report's `## Findings` section, one entry each, carrying what the retro needs to promote without re-deriving it:
 
@@ -257,4 +257,4 @@ CC-lane port of the Cowork `weekly-project-hygiene` task (THR-677, Pure Claude C
 
 ## Rule-0 minting bar (2026-08-08):
 
-This lane files nothing (§ Recording findings) — the bar below is what each finding must report against, and what the retro applies when it promotes. Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
+This lane files nothing (§ Recording findings) — the bar below is what each finding must report against, and what the retro applies when it promotes. Before filing any process/infrastructure ticket, apply the materiality bar (`Docs/canon/session-protocol.md` § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
