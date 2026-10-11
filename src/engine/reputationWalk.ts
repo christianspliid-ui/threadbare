@@ -33,7 +33,8 @@
 import type { WorldGraph } from './graph';
 import { getFactionMembershipEdges } from './graphQueries';
 import { findAllPaths } from './graphUtils';
-import { computeCapabilityPreRefit } from './domainCapability';
+import { computeReachShare } from './domainCapability';
+import type { ReachDomain } from '../types/traits';
 import { getDerivedMembershipRank } from './factionReputation';
 import { getAgentFactionBonuses } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
@@ -57,8 +58,18 @@ import {
 
 // ─── Core Function ───────────────────────────────────────────
 
+/** A 0–1 capability reader for one reach of one node. */
+export type CapabilityReader = (graph: WorldGraph, nodeId: string, domain: ReachDomain) => number;
+
 /**
  * Perceive another agent's reputation through the graph.
+ *
+ * Shadow distortion and Heart resistance read the **reach share** (THR-1580): they
+ * scale with how much Shadow or Heart an agent has, not with a d100 chance, so they
+ * read the 0–1 standing scale. The pre-refit sigmoid saturated at raw ~20, which
+ * gave nearly every seasoned intermediary full distortion and nearly every seasoned
+ * source full resistance. `readCapability` exists for the measurement script
+ * (`npm run measure:reputation-walk-scales`); callers leave it unset.
  *
  * Algorithm:
  * 1. Direct edge → return trust value (personal experience trumps all)
@@ -75,6 +86,7 @@ export function perceiveReputation(
   graph: WorldGraph,
   sourceId: string,
   targetId: string,
+  readCapability: CapabilityReader = computeReachShare,
 ): number {
   // Self-reputation: return 0
   if (sourceId === targetId) return UNKNOWN_REPUTATION;
@@ -124,8 +136,7 @@ export function perceiveReputation(
   let distortion = 0;
 
   for (const intermediaryId of intermediaryIds) {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    const shadowCap = computeCapabilityPreRefit(graph, intermediaryId, 'shadow');
+    const shadowCap = readCapability(graph, intermediaryId, 'shadow');
     // Distortion direction: based on intermediary's trust with target
     const intermediaryTargetTrust = getDirectTrust(graph, intermediaryId, targetId) ?? 0;
     const sign = intermediaryTargetTrust >= 0 ? 1 : -1;
@@ -133,8 +144,7 @@ export function perceiveReputation(
   }
 
   // Step 7: Compute source Heart resistance
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const sourceHeartCap = computeCapabilityPreRefit(graph, sourceId, 'heart');
+  const sourceHeartCap = readCapability(graph, sourceId, 'heart');
   const heartResistance = sourceHeartCap * HEART_TRUST_FACTOR;
   const effectiveDistortion = distortion * (1 - heartResistance);
 

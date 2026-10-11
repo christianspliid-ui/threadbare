@@ -11,7 +11,7 @@ import { WorldGraph } from '../graph';
 
 /**
  * Helper: build a graph with agents and relates_to edges.
- * Agents have no traits by default (capability = sigmoid(0) ≈ 0.018).
+ * Agents have no traits by default (reach share 0, so no distortion or resistance).
  */
 function makeGraph(): WorldGraph {
   return new WorldGraph();
@@ -174,6 +174,31 @@ describe('perceiveReputation', () => {
     // With heart, distortion should be reduced — result closer to raw 0.4
     const raw = 0.4;
     expect(Math.abs(withHeart - raw)).toBeLessThan(Math.abs(withoutHeart - raw));
+  });
+
+  // THR-1580: both readers sit on the reach share (raw ÷ 40, capped), so seasoned
+  // agents past raw 20 still differ. The pre-refit curve read raw 20 and raw 40 as ~1.
+  it('scales Shadow distortion by how much Shadow the intermediary holds (THR-1580)', () => {
+    const distortionAt = (shadow: number): number => {
+      const g = makeGraph();
+      for (const id of ['a', 'mid', 'b']) addAgent(g, id);
+      addRelatesTo(g, 'a', 'mid', 0.8);
+      addRelatesTo(g, 'mid', 'b', 0.5);
+      addTraitWithShadow(g, 'mid', shadow);
+      return perceiveReputation(g, 'a', 'b') - 0.4;
+    };
+    expect(distortionAt(20)).toBeCloseTo(0.5 * SHADOW_DISTORTION_FACTOR, 6);
+    expect(distortionAt(40)).toBeCloseTo(SHADOW_DISTORTION_FACTOR, 6);
+  });
+
+  it('scales Heart resistance by how much Heart the source holds (THR-1580)', () => {
+    for (const id of ['a', 'mid', 'b']) addAgent(graph, id);
+    addRelatesTo(graph, 'a', 'mid', 0.8);
+    addRelatesTo(graph, 'mid', 'b', 0.5);
+    addTraitWithShadow(graph, 'mid', 40);
+    addTraitWithHeart(graph, 'a', 20);
+    expect(perceiveReputation(graph, 'a', 'b') - 0.4)
+      .toBeCloseTo(SHADOW_DISTORTION_FACTOR * (1 - 0.5 * HEART_TRUST_FACTOR), 6);
   });
 
   it('returns UNKNOWN_REPUTATION when no path exists', () => {
