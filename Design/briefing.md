@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 16:57 local (14:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,4 +30,4 @@ Say "veto <title>" to reverse any of these.
 ## Health
 
 - **Heavy background tests have now failed on the last two commits on main:** [8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478) and [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324). The commit before those passed ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38137581351)). Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row.
-- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 16:40. The engine speed check is normal (103 ms per tick, 12% faster than its week average).
+- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 17:40. The engine speed check is normal (127 ms per tick, 8% slower than its week average and well inside the 25% limit).
