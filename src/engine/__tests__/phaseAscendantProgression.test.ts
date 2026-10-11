@@ -5,8 +5,8 @@ import {
   accruePlayerReachPractice,
   getAscendantProgress,
 } from '../phaseAscendantProgression';
-// THR-1581: ascendant tiers read the pre-refit curve (a non-dice reader, TODO(THR-1580)).
-import { computeCapabilityPreRefit as computeCapability, computeTier } from '../domainCapability';
+// THR-1580: ascendant tiers and practice damping read the reach share.
+import { computeReachShare as computeCapability, computeTier } from '../domainCapability';
 import { createInitialAscendantBeatState } from '../ascendantBeat';
 import { deepeningBeatIdForReach, MILESTONE_COMPANY_BEAT_ID, MILESTONE_GATHERING_BEAT_ID } from '../../data/player-progression';
 import type { GameState } from '../../types/gameState';
@@ -323,5 +323,29 @@ describe('getAscendantProgress', () => {
     const gold = report.reaches.find(r => r.reach === 'gold')!;
     expect(gold.isPrimary).toBe(false);
     expect(gold.pendingDeepening).toBe(false);
+  });
+});
+
+// ─── THR-1580: the god's tier and damping read the reach share ───────────────
+
+describe('THR-1580 — ascendant progression reads the reach share', () => {
+  const tierAtRaw = (raw: number): number => {
+    const state = progressionState(5, { domainCapabilities: { iron: raw, gold: 0 } });
+    return getAscendantProgress(state)!.reaches.find((r) => r.reach === 'iron')!.tier;
+  };
+
+  it('steps one tier per 4 raw across the mortal range (not saturating at raw ~15.5)', () => {
+    expect(tierAtRaw(0)).toBe(1);
+    expect(tierAtRaw(4)).toBe(1);
+    expect(tierAtRaw(4.5)).toBe(2);
+    // The pre-refit curve read tier 10 here; the share reads a journeyman.
+    expect(tierAtRaw(15.5)).toBe(4);
+    expect(tierAtRaw(36.5)).toBe(10);
+  });
+
+  it('damps practice by the reach share: raw 20 (share 0.5) grants 0.4 × (1 − 0.5 × 0.7)', () => {
+    const state = progressionState(5, { domainCapabilities: { iron: 20 }, domainAffinities: { iron: 5, gold: 3 } });
+    const total = accruePlayerReachPractice(state.graph, 'asc-1', 'iron', 0.5, 5)!;
+    expect(total).toBeCloseTo(0.4 * (1 - 0.5 * 0.7), 6);
   });
 });

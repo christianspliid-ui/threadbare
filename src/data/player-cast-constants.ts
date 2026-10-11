@@ -88,8 +88,11 @@ export const PLAYER_CAST_PUSH_ENABLED: boolean = false;
  * by THR-1581) is re-measured in `playerCastBalance.test.ts`.
  *
  * Known consequence, owned by THR-1580 rather than this constant: `reachPractice`
- * (≈ 0.4 raw per action) now walks a raw axis five times wider, so the Deepening
- * arc moves the dice five times more slowly than THR-613 tuned it to.
+ * (≈ 0.4 raw per action) now walks a raw axis five times wider. THR-1580 moved the
+ * Deepening tiers and the practice damping onto the reach share, whose damping is
+ * gentler at low raw: after 58 primary actions at difficulty 0.5 (the end of the old
+ * arc) a god holds practice raw ≈ 19 rather than ≈ 15.5, so a primary cast reads
+ * ≈ 0.72 rather than ≈ 0.65 on the dice, and keeps deepening to ≈ 0.91 at tier 10.
  */
 export const ASCENDANT_CAST_BASE_RAW = 10;
 

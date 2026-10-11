@@ -3338,6 +3338,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/socialLeverage.ts',
       // THR-1580: the anomaly discovery Eye gate and Eye/Veil pull read the share.
       'src/engine/encounterScoring.ts',
+      // THR-1580: the god's reach tiers (Deepening crossings) and practice damping.
+      'src/engine/phaseAscendantProgression.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
       'scripts/reach-gate-census.ts',
