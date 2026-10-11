@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The World Remembers</title>
+<!-- THR-1773 prototype mock (attended, 2026-10-11). Static, never wired. Christian's ruling: what carries between
+     runs is "the world remembers + wider", and each run wakes in a NEW world shaped by echoes. This is the one
+     surface: a first step of the Remembrance flow from the second run on, before the Stirring. Words, never numbers
+     (Law 13); sphere tints from SPHERE_COLORS (src/data/premonition-constants.ts); every echo is named. -->
+<style>
+  :root { --bg:#14121a; --panel:#1f1c27; --ink:#ece6d8; --muted:#a49c8c; --line:#3a3446;
+          --life:#33ff77; --spirit:#cc66ff; --mind:#44aaff; --entropy:#8fd4c0; --time:#ffb355; --force:#ff6b6b;
+          --matter:#d4a87a; --energy:#ffe44d; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg:#f3efe6; --panel:#fffaf0; --ink:#231f1a; --muted:#6c6458; --line:#d9d0bf;
+          --life:#1f9d4c; --spirit:#9b3fd0; --mind:#1f77c9; --entropy:#3c8f7c; --time:#c47a12; --force:#d23f3f; --matter:#9a6b3a; --energy:#a8900a; } }
+  :root[data-theme="dark"] { --bg:#14121a; --panel:#1f1c27; --ink:#ece6d8; --muted:#a49c8c; --line:#3a3446; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 Georgia, serif; }
+  .frame { max-width:980px; margin:24px auto; padding:0 16px; }
+  .step { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:22px 24px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  h2 { font-size:15px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:22px 0 10px; font-weight:normal; }
+  .lede { margin:0 0 6px; color:var(--muted); font-style:italic; }
+  .lean { margin:10px 0 0; }
+  .lean b { font-weight:normal; color:var(--tint); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:14px; }
+  .echo { border:1px solid var(--line); border-left:6px solid var(--tint); border-radius:8px; padding:14px;
+          background:color-mix(in srgb, var(--tint) 8%, var(--panel)); }
+  .echo.fading { opacity:.72; }
+  .echo.against { border-left-style:dashed; }
+  .kind { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--tint); }
+  .echo h3 { font-size:16px; margin:2px 0 4px; }
+  .echo h3 a { color:inherit; text-decoration:underline dotted; text-underline-offset:3px; }
+  .echo p { margin:6px 0; }
+  .state { font-size:13px; color:var(--muted); }
+  .state b { color:var(--ink); font-weight:normal; }
+  .hungers { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; }
+  .hunger { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px; }
+  .hunger.asleep { opacity:.4; font-style:italic; }
+  .hunger.stirs { border-color:var(--tint); background:color-mix(in srgb, var(--tint) 12%, var(--panel)); }
+  .hunger small { display:block; color:var(--muted); font-size:12px; }
+  .choose { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  button { font:inherit; font-size:14px; padding:7px 14px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer; }
+  button.tinted { border-color:var(--tint); background:color-mix(in srgb, var(--tint) 18%, transparent); }
+  .powers { margin:0; padding-left:18px; }
+  .powers li { margin:3px 0; }
+  .powers .s { color:var(--tint); font-size:12px; letter-spacing:.05em; text-transform:uppercase; margin-left:6px; }
+  .foot { margin-top:22px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:13px; }
+  .note { margin-top:26px; font:13px/1.55 system-ui, sans-serif; color:var(--muted); }
+  .note li { margin:3px 0; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <section class="step" aria-label="The world remembers">
+    <h1>The world remembers</h1>
+    <p class="lede">Before you wake, a new world settles around what the old ones left behind.</p>
+    <p class="lean" style="--tint:var(--life)">This world leans a little toward <b>Life</b> and <b style="color:var(--spirit)">Spirit</b>, the spheres the last god drew on most.</p>
+
+    <h2>What still stands</h2>
+    <div class="grid">
+      <article class="echo" style="--tint:var(--life)">
+        <div class="kind">Monument · Life and Spirit</div>
+        <h3><a href="#">The Long Barrow at Hesk</a></h3>
+        <p>Raised by the Shepherd who came before you. The ground around it still answers to the old prayers.</p>
+        <div class="state">Memory: <b>still warm</b>. If your spheres are kin to it, it wakes as ground already yours. Left untended, it fades.</div>
+      </article>
+      <article class="echo" style="--tint:var(--spirit)">
+        <div class="kind">Legacy · Spirit</div>
+        <h3><a href="#">The line of Maren Ashfold</a></h3>
+        <p>Maren became an Aspect of the old god. Her grandchildren walk this world, and they remember a voice in the dark.</p>
+        <div class="state">Memory: <b>still warm</b>. A kin god will find them easy to reach.</div>
+      </article>
+      <article class="echo fading" style="--tint:var(--mind)">
+        <div class="kind">Relic · Mind</div>
+        <h3><a href="#">The Hollow Bell</a></h3>
+        <p>It rang for a god who watched. Now it lies unclaimed somewhere in the hills, waiting for a hand.</p>
+        <div class="state">Memory: <b>fading</b>. Two more worlds, perhaps, before it is only a story.</div>
+      </article>
+      <article class="echo against" style="--tint:var(--entropy)">
+        <div class="kind">Monument · Entropy</div>
+        <h3><a href="#">The Salt Spire</a></h3>
+        <p>Raised by a god of endings, three worlds ago. Nothing grows in its shadow.</p>
+        <div class="state">Memory: <b>almost gone</b>. It will stand <b>against</b> a god of Life.</div>
+      </article>
+    </div>
+
+    <h2>Gods who may wake</h2>
+    <div class="hungers">
+      <div class="hunger" style="--tint:var(--life)">Gather<small>awake</small></div>
+      <div class="hunger" style="--tint:var(--mind)">Witness<small>awake</small></div>
+      <div class="hunger" style="--tint:var(--force)">Reclaim<small>awake</small></div>
+      <div class="hunger" style="--tint:var(--entropy)">Sever<small>awake</small></div>
+      <div class="hunger" style="--tint:var(--time)">Preserve<small>awake</small></div>
+      <div class="hunger stirs" style="--tint:var(--matter)">Reshape<small>stirs</small></div>
+      <div class="hunger stirs" style="--tint:var(--energy)">Kindle<small>stirs</small></div>
+      <div class="hunger asleep">Bind<small>asleep</small></div>
+      <div class="hunger asleep">Wander<small>asleep</small></div>
+      <div class="hunger asleep">Consume<small>asleep</small></div>
+      <div class="hunger asleep">Haunt<small>asleep</small></div>
+      <div class="hunger asleep">Illuminate<small>asleep</small></div>
+    </div>
+    <p class="lede" style="margin-top:10px">Two hungers stir. The old god's echoes favour one; you choose which wakes.</p>
+    <div class="choose">
+      <button class="tinted" style="--tint:var(--energy)">Let Kindle wake</button>
+      <button class="tinted" style="--tint:var(--matter)">Let Reshape wake</button>
+    </div>
+
+    <h2>Powers that may now rise among the omens</h2>
+    <ul class="powers">
+      <li><a href="#">Awaken the Spirit of the Place</a><span class="s" style="--tint:var(--spirit)">Spirit</span></li>
+      <li><a href="#">Send a Herald</a><span class="s" style="--tint:var(--spirit)">Spirit</span></li>
+      <li><a href="#">Enshrine Relic</a><span class="s" style="--tint:var(--spirit)">Spirit</span></li>
+      <li><a href="#">Forge Seer's Token</a><span class="s" style="--tint:var(--spirit)">Spirit</span></li>
+    </ul>
+    <p class="lede">Because the last god drew on Spirit, more of Spirit's powers can rise for whoever comes next.</p>
+
+    <div class="foot">
+      <span>The kind of god you were is part of this world now.</span>
+      <button>Go on to the stirring</button>
+    </div>
+  </section>
+
+  <div class="note">
+    <strong>Mock notes (THR-1773).</strong>
+    <ul>
+      <li>Shown from the second run on, as the first step of Remembrance, before the Stirring. A first run skips it.</li>
+      <li>Every echo is one the last harvest kept (HARVEST_ECHO_COUNTS) and that has not faded (ECHO_DEGRADATION_RATE 0.15 a world, gone at 0.9). Memory words map degradation: still warm / fading / almost gone.</li>
+      <li>"Against": a monument whose spheres oppose the god you are about to choose. It is shown here, before the choice, so the choice carries weight.</li>
+      <li>Law 13: no numbers. Laws 1/17/21 owed in a build: every sphere and echo word gets a registry tooltip; every name opens its Codex or Chronicle entry. Sphere tint kept.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
