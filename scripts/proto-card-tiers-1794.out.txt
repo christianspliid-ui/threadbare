@@ -1,27 +1,27 @@
 warn — market holes by sphere: chaos: no T3 · light: no T1/T2/T3/T4 · darkness: no T1/T2/T4 · matter: no T2 · time: no T4 · energy: no T1/T4 · spirit: no T4 · life: no T3/T4 · entropy: no T4
 ok — 143 cards
 THR-1794 card tiers — table proto-card-tiers-1794.tsv
-143 cards: 101 market, 42 gift (32 generic) · by tier T1 23m/21g · T2 36m/16g · T3 33m/3g · T4 9m/2g
+143 cards: 93 market, 50 gift (32 generic) · by tier T1 23m/21g · T2 36m/24g · T3 25m/3g · T4 9m/2g
 
 ================ player: fit ================
 
 Shepherd (life/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet life/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 16 / 1 / 1 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
-| 10  | 2     | 1    | 18 / 1 / 1 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
-| 20  | 4     | 2    | 20 / 7 / 1 / 0   | 4 / 2 / 0 / 0      | 28   | 6      | 2                   | 62/2               |
-| 45  | 7     | 3    | 24 / 14 / 5 / 0  | 8 / 6 / 1 / 0      | 43   | 15     | 7                   | 115/43             |
-| 90  | 11    | 4    | 24 / 15 / 11 / 4 | 8 / 7 / 7 / 2      | 54   | 24     | 15                  | 196/92             |
+| 5   | 1     | 1    | 16 / 2 / 0 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
+| 10  | 2     | 1    | 18 / 2 / 0 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
+| 20  | 4     | 2    | 20 / 8 / 0 / 0   | 4 / 2 / 0 / 0      | 28   | 6      | 2                   | 62/2               |
+| 45  | 7     | 3    | 24 / 16 / 4 / 0  | 8 / 6 / 1 / 0      | 44   | 15     | 7                   | 115/43             |
+| 90  | 11    | 4    | 24 / 17 / 10 / 4 | 8 / 7 / 7 / 2      | 55   | 24     | 15                  | 196/92             |
 
 Showcase (Vara) (mind/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet mind/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 17 / 1 / 1 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
-| 10  | 2     | 1    | 20 / 1 / 1 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
-| 20  | 4     | 2    | 21 / 8 / 1 / 0   | 5 / 3 / 0 / 0      | 30   | 8      | 0                   | 4/28               |
-| 45  | 7     | 3    | 25 / 15 / 5 / 0  | 9 / 7 / 1 / 0      | 45   | 17     | 3                   | 113/39             |
-| 90  | 11    | 4    | 25 / 16 / 13 / 4 | 9 / 8 / 9 / 2      | 58   | 28     | 8                   | 94/88              |
+| 5   | 1     | 1    | 17 / 2 / 0 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
+| 10  | 2     | 1    | 20 / 2 / 0 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
+| 20  | 4     | 2    | 21 / 9 / 0 / 0   | 5 / 3 / 0 / 0      | 30   | 8      | 0                   | 4/28               |
+| 45  | 7     | 3    | 25 / 17 / 4 / 0  | 9 / 7 / 1 / 0      | 46   | 17     | 4                   | 53/39              |
+| 90  | 11    | 4    | 25 / 17 / 12 / 4 | 9 / 7 / 9 / 2      | 58   | 27     | 9                   | 122/88             |
 
 First five buys, side by side (day · card · tier)
 | # | Shepherd                       | Showcase                      |
@@ -36,35 +36,35 @@ First eight acquisitions after the spine, buys and gifts (day · card · how)
 |---|---------------------------------|--------------------------------------|
 | 1 | 6 · Whisper the Direction · buy | 4 · Deceive · buy                    |
 | 2 | 9 · Bless the Land · buy        | 6 · Whisper of Intuition · buy       |
-| 3 | 10 · Bestow Power · gift        | 9 · Read the Threads · buy           |
+| 3 | 10 · The Great Work · gift      | 9 · Read the Threads · buy           |
 | 4 | 11 · Sanctify Tavern · buy      | 9 · Listen for a Name · buy          |
-| 5 | 13 · Compose a Clue · buy       | 10 · Bestow Power · gift             |
-| 6 | 13 · Shift Dominion · gift      | 12 · Bestow Vision · buy             |
-| 7 | 16 · Cultivate · buy            | 13 · Shift Dominion · gift           |
-| 8 | 16 · Attune Thread · gift       | 15 · Plant a Dream of the Past · buy |
+| 5 | 13 · Compose a Clue · buy       | 10 · Rend the Gate · gift            |
+| 6 | 13 · Bestow Power · gift        | 12 · Bestow Vision · buy             |
+| 7 | 16 · Cultivate · buy            | 13 · Bestow Power · gift             |
+| 8 | 16 · Shift Dominion · gift      | 15 · Plant a Dream of the Past · buy |
 Over 400 seeds — shared cards in the two gods' first five BUYS: 0.38 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
-  shared in the first five acquisitions after the spine, gifts included: 1.21
-  Shepherd: held day 20 28.2, day 90 54.1 (bought 24.1: T1/T2/T3/T4 7.0 / 8.0 / 7.3 / 1.8); fifth buy on day 16
+  shared in the first five acquisitions after the spine, gifts included: 0.21
+  Shepherd: held day 20 28.2, day 90 55.0 (bought 24.1: T1/T2/T3/T4 7.0 / 8.0 / 7.2 / 1.9); fifth buy on day 16
 
 ================ player: optimiser ================
 
 Shepherd (life/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet life/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 16 / 1 / 1 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
-| 10  | 2     | 1    | 18 / 1 / 1 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
-| 20  | 4     | 2    | 20 / 7 / 1 / 0   | 4 / 2 / 0 / 0      | 28   | 6      | 2                   | 62/2               |
-| 45  | 7     | 3    | 24 / 14 / 5 / 0  | 8 / 6 / 1 / 0      | 43   | 15     | 7                   | 115/43             |
-| 90  | 11    | 4    | 34 / 21 / 6 / 2  | 18 / 13 / 2 / 0    | 63   | 33     | 22                  | 96/52              |
+| 5   | 1     | 1    | 16 / 2 / 0 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
+| 10  | 2     | 1    | 18 / 2 / 0 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
+| 20  | 4     | 2    | 20 / 8 / 0 / 0   | 4 / 2 / 0 / 0      | 28   | 6      | 2                   | 62/2               |
+| 45  | 7     | 3    | 26 / 16 / 3 / 0  | 10 / 6 / 0 / 0     | 45   | 16     | 9                   | 47/43              |
+| 90  | 11    | 4    | 34 / 23 / 4 / 3  | 18 / 13 / 1 / 1    | 64   | 33     | 21                  | 164/50             |
 
 Showcase (Vara) (mind/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet mind/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 17 / 1 / 1 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
-| 10  | 2     | 1    | 20 / 1 / 1 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
-| 20  | 4     | 2    | 21 / 8 / 1 / 0   | 5 / 3 / 0 / 0      | 30   | 8      | 0                   | 4/28               |
-| 45  | 7     | 3    | 27 / 15 / 4 / 0  | 11 / 7 / 0 / 0     | 46   | 18     | 5                   | 43/39              |
-| 90  | 11    | 4    | 36 / 20 / 8 / 3  | 20 / 12 / 4 / 1    | 67   | 37     | 15                  | 98/40              |
+| 5   | 1     | 1    | 17 / 2 / 0 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
+| 10  | 2     | 1    | 20 / 2 / 0 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
+| 20  | 4     | 2    | 21 / 9 / 0 / 0   | 5 / 3 / 0 / 0      | 30   | 8      | 0                   | 4/28               |
+| 45  | 7     | 3    | 27 / 16 / 4 / 0  | 11 / 6 / 1 / 0     | 47   | 18     | 5                   | 53/39              |
+| 90  | 11    | 4    | 35 / 22 / 7 / 3  | 19 / 12 / 4 / 1    | 67   | 36     | 16                  | 132/4              |
 
 First five buys, side by side (day · card · tier)
 | # | Shepherd                       | Showcase                      |
@@ -79,56 +79,57 @@ First eight acquisitions after the spine, buys and gifts (day · card · how)
 |---|---------------------------------|--------------------------------------|
 | 1 | 6 · Whisper the Direction · buy | 4 · Deceive · buy                    |
 | 2 | 9 · Bless the Land · buy        | 6 · Whisper of Intuition · buy       |
-| 3 | 10 · Bestow Power · gift        | 9 · Read the Threads · buy           |
+| 3 | 10 · The Great Work · gift      | 9 · Read the Threads · buy           |
 | 4 | 11 · Sanctify Tavern · buy      | 9 · Listen for a Name · buy          |
-| 5 | 13 · Compose a Clue · buy       | 10 · Bestow Power · gift             |
-| 6 | 13 · Shift Dominion · gift      | 12 · Bestow Vision · buy             |
-| 7 | 16 · Cultivate · buy            | 13 · Shift Dominion · gift           |
-| 8 | 16 · Attune Thread · gift       | 15 · Plant a Dream of the Past · buy |
+| 5 | 13 · Compose a Clue · buy       | 10 · Rend the Gate · gift            |
+| 6 | 13 · Bestow Power · gift        | 12 · Bestow Vision · buy             |
+| 7 | 16 · Cultivate · buy            | 13 · Bestow Power · gift             |
+| 8 | 16 · Shift Dominion · gift      | 15 · Plant a Dream of the Past · buy |
 Over 400 seeds — shared cards in the two gods' first five BUYS: 0.52 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
-  shared in the first five acquisitions after the spine, gifts included: 1.36
-  Shepherd: held day 20 28.3, day 90 63.6 (bought 33.6: T1/T2/T3/T4 18.0 / 12.7 / 2.2 / 0.7); fifth buy on day 16
+  shared in the first five acquisitions after the spine, gifts included: 0.36
+  Shepherd: held day 20 28.3, day 90 64.7 (bought 33.7: T1/T2/T3/T4 18.1 / 12.8 / 2.1 / 0.8); fifth buy on day 16
 
 Generic tools held (share of 400 seeds, fit player, Shepherd) — GIFTED at rungs
 | card                       | tier | by day 45 | by day 90 |
 |----------------------------|------|-----------|-----------|
 | Focus                      | 2    | 74%       | 76%       |
-| Reveal                     | 4    | 0%        | 95%       |
+| Reveal                     | 4    | 0%        | 93%       |
 | Bestow Power               | 2    | 100%      | 100%      |
-| Teach a Spell              | 2    | 77%       | 79%       |
+| Teach a Spell              | 2    | 76%       | 78%       |
 | Anoint                     | 3    | 100%      | 100%      |
 | Attune                     | 2    | 90%       | 91%       |
 | Shift Dominion             | 2    | 100%      | 100%      |
 | Attune Thread              | 2    | 100%      | 100%      |
 | Strengthen Thread          | 2    | 100%      | 100%      |
-| Scry                       | 3    | 20%       | 73%       |
+| Scry                       | 3    | 21%       | 76%       |
 | Bind Thread — Faction      | 3    | 100%      | 100%      |
 | Bind Thread — Army         | 3    | 100%      | 100%      |
 | Bind Thread — Artifact     | 4    | 0%        | 100%      |
 | Bind Strong Thread — Agent | 4    | 0%        | 100%      |
+| The Great Work             | 2    | 100%      | 100%      |
 === FORK OPTION: generic cards sold ===
 THR-1794 card tiers — table proto-card-tiers-1794.tsv — FORK OPTION: generic cards SOLD (priced in the primary)
-143 cards: 110 market, 33 gift (32 generic) · by tier T1 23m/21g · T2 40m/12g · T3 36m/0g · T4 11m/0g
+143 cards: 102 market, 41 gift (32 generic) · by tier T1 23m/21g · T2 40m/20g · T3 28m/0g · T4 11m/0g
 
 ================ player: fit ================
 
 Shepherd (life/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet life/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 16 / 1 / 1 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
-| 10  | 2     | 1    | 18 / 1 / 1 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
-| 20  | 4     | 2    | 20 / 3 / 1 / 0   | 4 / 2 / 0 / 0      | 24   | 6      | 3                   | 10/28              |
-| 45  | 7     | 3    | 24 / 12 / 1 / 0  | 8 / 8 / 0 / 0      | 37   | 16     | 7                   | 59/41              |
-| 90  | 11    | 4    | 24 / 12 / 9 / 3  | 8 / 8 / 8 / 3      | 48   | 27     | 12                  | 136/90             |
+| 5   | 1     | 1    | 16 / 2 / 0 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
+| 10  | 2     | 1    | 18 / 2 / 0 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
+| 20  | 4     | 2    | 20 / 5 / 0 / 0   | 4 / 2 / 0 / 0      | 25   | 6      | 3                   | 10/28              |
+| 45  | 7     | 3    | 24 / 14 / 0 / 0  | 8 / 8 / 0 / 0      | 38   | 16     | 7                   | 71/41              |
+| 90  | 11    | 4    | 24 / 15 / 7 / 3  | 8 / 9 / 7 / 3      | 49   | 27     | 13                  | 112/90             |
 
 Showcase (Vara) (mind/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet mind/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 17 / 1 / 1 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
-| 10  | 2     | 1    | 20 / 1 / 1 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
-| 20  | 4     | 2    | 21 / 4 / 1 / 0   | 5 / 3 / 0 / 0      | 26   | 8      | 0                   | 4/28               |
-| 45  | 7     | 3    | 25 / 11 / 3 / 0  | 9 / 7 / 2 / 0      | 39   | 18     | 2                   | 93/39              |
-| 90  | 11    | 4    | 25 / 12 / 10 / 4 | 9 / 8 / 9 / 4      | 51   | 30     | 5                   | 130/88             |
+| 5   | 1     | 1    | 17 / 2 / 0 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
+| 10  | 2     | 1    | 20 / 2 / 0 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
+| 20  | 4     | 2    | 21 / 6 / 0 / 0   | 5 / 3 / 0 / 0      | 27   | 8      | 0                   | 4/28               |
+| 45  | 7     | 3    | 25 / 14 / 1 / 0  | 9 / 8 / 1 / 0      | 40   | 18     | 3                   | 45/39              |
+| 90  | 11    | 4    | 25 / 15 / 8 / 3  | 9 / 9 / 8 / 3      | 51   | 29     | 7                   | 194/88             |
 
 First five buys, side by side (day · card · tier)
 | # | Shepherd                       | Showcase                      |
@@ -143,35 +144,35 @@ First eight acquisitions after the spine, buys and gifts (day · card · how)
 |---|---------------------------------|--------------------------------|
 | 1 | 6 · Whisper the Direction · buy | 4 · Deceive · buy              |
 | 2 | 9 · Bless the Land · buy        | 6 · Whisper of Intuition · buy |
-| 3 | 11 · Compose a Clue · buy       | 9 · Read the Threads · buy     |
-| 4 | 14 · Nullify · buy              | 9 · Listen for a Name · buy    |
-| 5 | 19 · Cultivate · buy            | 12 · Bestow Vision · buy       |
-| 6 | 20 · Strengthen Thread · buy    | 14 · Bestow Power · buy        |
-| 7 | 21 · Cast Attention · buy       | 18 · Stir the People · buy     |
-| 8 | 24 · Shift Dominion · buy       | 20 · Compel Exploration · buy  |
+| 3 | 10 · The Great Work · gift      | 9 · Read the Threads · buy     |
+| 4 | 11 · Compose a Clue · buy       | 9 · Listen for a Name · buy    |
+| 5 | 14 · Nullify · buy              | 10 · Rend the Gate · gift      |
+| 6 | 19 · Cultivate · buy            | 12 · Bestow Vision · buy       |
+| 7 | 20 · Strengthen Thread · buy    | 14 · Bestow Power · buy        |
+| 8 | 21 · Cast Attention · buy       | 18 · Stir the People · buy     |
 Over 400 seeds — shared cards in the two gods' first five BUYS: 0.35 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
-  shared in the first five acquisitions after the spine, gifts included: 0.35
-  Shepherd: held day 20 24.3, day 90 46.9 (bought 25.9: T1/T2/T3/T4 6.4 / 8.6 / 8.0 / 2.9); fifth buy on day 16
+  shared in the first five acquisitions after the spine, gifts included: 0.23
+  Shepherd: held day 20 25.3, day 90 47.9 (bought 25.9: T1/T2/T3/T4 6.4 / 8.6 / 8.0 / 3.0); fifth buy on day 16
 
 ================ player: optimiser ================
 
 Shepherd (life/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet life/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 16 / 1 / 1 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
-| 10  | 2     | 1    | 18 / 1 / 1 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
-| 20  | 4     | 2    | 20 / 3 / 1 / 0   | 4 / 2 / 0 / 0      | 24   | 6      | 3                   | 10/28              |
-| 45  | 7     | 3    | 26 / 10 / 2 / 0  | 10 / 6 / 1 / 0     | 38   | 17     | 8                   | 31/41              |
-| 90  | 11    | 4    | 34 / 17 / 4 / 2  | 18 / 13 / 3 / 2    | 57   | 36     | 18                  | 56/42              |
+| 5   | 1     | 1    | 16 / 2 / 0 / 0   | 0 / 0 / 0 / 0      | 18   | 0      | 0                   | 40/9               |
+| 10  | 2     | 1    | 18 / 2 / 0 / 0   | 2 / 0 / 0 / 0      | 20   | 2      | 1                   | 42/18              |
+| 20  | 4     | 2    | 20 / 5 / 0 / 0   | 4 / 2 / 0 / 0      | 25   | 6      | 3                   | 10/28              |
+| 45  | 7     | 3    | 25 / 12 / 1 / 0  | 9 / 6 / 1 / 0      | 38   | 16     | 8                   | 51/41              |
+| 90  | 11    | 4    | 35 / 18 / 3 / 3  | 19 / 12 / 3 / 3    | 59   | 37     | 17                  | 92/48              |
 
 Showcase (Vara) (mind/spirit) — seed 1 · rungs open on day 3 / 10 / 35 / 48
 | Day | Marks | Rung | Held T1/T2/T3/T4 | Bought T1/T2/T3/T4 | Held | Bought | of which off-sphere | Wallet mind/spirit |
 |-----|-------|------|------------------|--------------------|------|--------|---------------------|--------------------|
-| 5   | 1     | 1    | 17 / 1 / 1 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
-| 10  | 2     | 1    | 20 / 1 / 1 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
-| 20  | 4     | 2    | 22 / 3 / 1 / 0   | 6 / 2 / 0 / 0      | 26   | 8      | 0                   | 22/28              |
-| 45  | 7     | 3    | 26 / 12 / 2 / 0  | 10 / 8 / 1 / 0     | 40   | 19     | 2                   | 71/35              |
-| 90  | 11    | 4    | 36 / 17 / 5 / 2  | 20 / 13 / 4 / 2    | 60   | 39     | 12                  | 80/40              |
+| 5   | 1     | 1    | 17 / 2 / 0 / 0   | 1 / 0 / 0 / 0      | 19   | 1      | 0                   | 20/9               |
+| 10  | 2     | 1    | 20 / 2 / 0 / 0   | 4 / 0 / 0 / 0      | 22   | 4      | 0                   | 12/18              |
+| 20  | 4     | 2    | 22 / 5 / 0 / 0   | 6 / 2 / 0 / 0      | 27   | 8      | 0                   | 22/28              |
+| 45  | 7     | 3    | 26 / 14 / 1 / 0  | 10 / 8 / 1 / 0     | 41   | 19     | 2                   | 71/35              |
+| 90  | 11    | 4    | 36 / 17 / 4 / 3  | 20 / 11 / 4 / 3    | 60   | 38     | 12                  | 104/42             |
 
 First five buys, side by side (day · card · tier)
 | # | Shepherd                       | Showcase                      |
@@ -186,30 +187,49 @@ First eight acquisitions after the spine, buys and gifts (day · card · how)
 |---|---------------------------------|--------------------------------|
 | 1 | 6 · Whisper the Direction · buy | 4 · Deceive · buy              |
 | 2 | 9 · Bless the Land · buy        | 6 · Whisper of Intuition · buy |
-| 3 | 11 · Compose a Clue · buy       | 9 · Read the Threads · buy     |
-| 4 | 14 · Nullify · buy              | 9 · Listen for a Name · buy    |
-| 5 | 19 · Cultivate · buy            | 12 · Compose a Clue · buy      |
-| 6 | 20 · Strengthen Thread · buy    | 14 · Vision · buy              |
-| 7 | 21 · Cast Attention · buy       | 16 · Compel Exploration · buy  |
-| 8 | 24 · Shift Dominion · buy       | 19 · Reveal Secret · buy       |
+| 3 | 10 · The Great Work · gift      | 9 · Read the Threads · buy     |
+| 4 | 11 · Compose a Clue · buy       | 9 · Listen for a Name · buy    |
+| 5 | 14 · Nullify · buy              | 10 · Rend the Gate · gift      |
+| 6 | 19 · Cultivate · buy            | 12 · Compose a Clue · buy      |
+| 7 | 20 · Strengthen Thread · buy    | 14 · Vision · buy              |
+| 8 | 21 · Cast Attention · buy       | 16 · Compel Exploration · buy  |
 Over 400 seeds — shared cards in the two gods' first five BUYS: 0.48 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
-  shared in the first five acquisitions after the spine, gifts included: 0.48
-  Shepherd: held day 20 24.4, day 90 56.8 (bought 35.8: T1/T2/T3/T4 16.9 / 13.6 / 3.4 / 1.9); fifth buy on day 16
+  shared in the first five acquisitions after the spine, gifts included: 0.39
+  Shepherd: held day 20 25.4, day 90 58.0 (bought 36.0: T1/T2/T3/T4 17.1 / 13.7 / 3.3 / 1.9); fifth buy on day 16
 
 Generic tools held (share of 400 seeds, fit player, Shepherd) — SOLD
 | card                       | tier | by day 45 | by day 90 |
 |----------------------------|------|-----------|-----------|
-| Focus                      | 2    | 65%       | 67%       |
-| Reveal                     | 4    | 0%        | 87%       |
-| Bestow Power               | 2    | 75%       | 77%       |
-| Teach a Spell              | 2    | 66%       | 68%       |
-| Anoint                     | 3    | 30%       | 89%       |
-| Attune                     | 2    | 78%       | 80%       |
-| Shift Dominion             | 2    | 48%       | 49%       |
-| Attune Thread              | 2    | 39%       | 42%       |
-| Strengthen Thread          | 2    | 81%       | 83%       |
+| Focus                      | 2    | 65%       | 68%       |
+| Reveal                     | 4    | 0%        | 88%       |
+| Bestow Power               | 2    | 75%       | 76%       |
+| Teach a Spell              | 2    | 63%       | 65%       |
+| Anoint                     | 3    | 33%       | 88%       |
+| Attune                     | 2    | 79%       | 82%       |
+| Shift Dominion             | 2    | 49%       | 51%       |
+| Attune Thread              | 2    | 38%       | 41%       |
+| Strengthen Thread          | 2    | 83%       | 85%       |
 | Scry                       | 3    | 14%       | 65%       |
-| Bind Thread — Faction      | 3    | 25%       | 87%       |
-| Bind Thread — Army         | 3    | 31%       | 87%       |
-| Bind Thread — Artifact     | 4    | 0%        | 83%       |
-| Bind Strong Thread — Agent | 4    | 0%        | 86%       |
+| Bind Thread — Faction      | 3    | 28%       | 87%       |
+| Bind Thread — Army         | 3    | 34%       | 89%       |
+| Bind Thread — Artifact     | 4    | 0%        | 85%       |
+| Bind Strong Thread — Agent | 4    | 0%        | 88%       |
+| The Great Work             | 2    | 100%      | 100%      |
+=== SENSITIVITY: strict own-sphere pricing (--off-sphere-mult 0) ===
+================ player: fit ================
+Over 400 seeds — shared cards in the two gods' first five BUYS: 0.06 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
+  shared in the first five acquisitions after the spine, gifts included: 0.01
+  Shepherd: held day 20 27.6, day 90 43.7 (bought 12.7: T1/T2/T3/T4 2.9 / 7.4 / 1.5 / 1.0); fifth buy on day 17
+================ player: optimiser ================
+Over 400 seeds — shared cards in the two gods' first five BUYS: 0.06 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
+  shared in the first five acquisitions after the spine, gifts included: 0.01
+  Shepherd: held day 20 27.7, day 90 47.2 (bought 16.2: T1/T2/T3/T4 6.5 / 7.9 / 0.8 / 1.0); fifth buy on day 17
+=== SENSITIVITY: THR-1770 escalation over every buy (--escalation-scope all) ===
+================ player: fit ================
+Over 400 seeds — shared cards in the two gods' first five BUYS: 0.44 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
+  shared in the first five acquisitions after the spine, gifts included: 0.22
+  Shepherd: held day 20 27.1, day 90 48.9 (bought 17.9: T1/T2/T3/T4 6.6 / 6.6 / 4.0 / 0.7); fifth buy on day 18
+================ player: optimiser ================
+Over 400 seeds — shared cards in the two gods' first five BUYS: 0.69 (THR-1770 H3 baseline 0.49 fit / 0.61 optimiser; today's gifts 3.77)
+  shared in the first five acquisitions after the spine, gifts included: 0.38
+  Shepherd: held day 20 27.1, day 90 58.2 (bought 27.2: T1/T2/T3/T4 17.7 / 9.4 / 0.0 / 0.0); fifth buy on day 18

@@ -33,14 +33,14 @@ divine.self.stillness	1	gift	y		spine		Free self verb; rides with Beat 4 so the 
 divine.self.recede	1	gift	y		spine		Free self verb; rides with Beat 4
 divine.self.focus	2	market	y				Self verb every god can use; sold, paid from the primary
 divine.self.reveal	4	market	y				The god shows itself; a late wonder, sold, paid from the primary
-invest.gold.patronage_network	3	market	n	order		signature	Signature; reach gate keeps it to Gold gods; primary arrives at Beat 4
-invest.shadow.brokers_web	3	market	n	darkness		signature	Signature; reach-gated
-invest.star.beacon_of_fate	3	market	n	time		signature	Signature; reach-gated
-invest.eye.deep_eye	3	market	n	mind		signature	Signature; reach-gated
-invest.heart.sworn_oath	3	market	n	spirit		signature	Signature; reach-gated
-invest.iron.warhost	3	market	n	force		signature	Signature; reach-gated
-invest.veil.rend_the_gate	3	market	n	mind		signature	Signature; reach-gated
-invest.stone.great_work	3	market	n	matter		signature	Signature; reach-gated
+invest.gold.patronage_network	2	gift	n	order	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.shadow.brokers_web	2	gift	n	darkness	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.star.beacon_of_fate	2	gift	n	time	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.eye.deep_eye	2	gift	n	mind	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.heart.sworn_oath	2	gift	n	spirit	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.iron.warhost	2	gift	n	force	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.veil.rend_the_gate	2	gift	n	mind	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
+invest.stone.great_work	2	gift	n	matter	signature	signature	KEY: reach signature; primary at Beat 4, secondary gifted when rung 2 opens (sold, a god holds its own secondary in only 45% of runs)
 loc.ward	1	market	n	order			Cheap protective place verb
 loc.place_of_power	2	gift	y		milestone		Held-ground milestone (THR-1747 E5)
 loc.incite_unrest	1	market	n	chaos			Cheap place nudge

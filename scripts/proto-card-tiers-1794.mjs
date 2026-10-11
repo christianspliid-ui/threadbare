@@ -63,7 +63,7 @@ function check() {
     if (![1, 2, 3, 4].includes(c.tier)) errs.push(`${c.id}: tier ${c.tier} not in 1..4`);
     if (!['market', 'gift'].includes(c.offer)) errs.push(`${c.id}: offer '${c.offer}' not market|gift`);
     if (c.offer === 'market' && !c.generic && !SPHERES.includes(c.pricedIn)) errs.push(`${c.id}: market card with no price sphere`);
-    if (c.offer === 'gift' && !['spine', 'milestone', 'rung'].includes(c.gift)) errs.push(`${c.id}: gift with no giver`);
+    if (c.offer === 'gift' && !['spine', 'milestone', 'rung', 'signature'].includes(c.gift)) errs.push(`${c.id}: gift with no giver`);
     if (c.sphere && c.pricedIn !== c.sphere) errs.push(`${c.id}: pricedIn ${c.pricedIn} disagrees with sphereAffinity ${c.sphere}`);
   }
   for (const id of Object.keys(TIERS)) if (!CATALOG.some(c => c.id === id)) errs.push(`${id}: row for a card that is not in the catalog`);
@@ -114,6 +114,7 @@ const MARKET_EVERY = 9, MARKET_OFFER = 3;               // THR-1770 H3: three om
 const FIT_PLAYER_SKIPS_BELOW = 1;                      // player model, not a game rule: the fit player passes on cards more than this many tiers below the top open rung
 const FRESH_RUNG_WEIGHT = 1.5;                         // the newest open rung's cards rise a little more often
 const RUNG_GIFT_SPACING = 36;                           // a rung's generic gifts arrive one per 3 days, not in a flood
+const SECONDARY_SIGNATURE_RUNG = 2;                     // the secondary reach signature is the first gift of this rung
 const HELD_GROUND_FLOWERING = 2;                        // THR-1747 E5 milestone
 
 // ─── The two sample gods (THR-1769 audit § Timeline today) ───
@@ -179,6 +180,7 @@ function run(god, kind, seed = 1) {
     if (t >= SIGNATURE_TICK) while (rung < 4 && marks() >= PROGRESSION_RUNG_MARKS[rung]) {
       rung++; rungOpen[rung] = t;
       for (const c of CARDS) if (c.gift === 'rung' && c.tier === rung) giftQueue.push(c.id);
+      if (rung === SECONDARY_SIGNATURE_RUNG) giftQueue.unshift(god.signatures.secondary); // the world calls on the deeper domain
     }
     if (giftQueue.length && t >= nextGift && t >= SIGNATURE_TICK) { acquire(t, giftQueue.shift(), 'gift'); nextGift = t + RUNG_GIFT_SPACING; }
     if (!heldGround && sources.filter(s => s.flowering).length >= HELD_GROUND_FLOWERING) {
@@ -293,7 +295,7 @@ for (const kind of (argv('--player') ? [argv('--player')] : ['fit', 'optimiser']
 
 // ─── Tool reach: how often a god holds each generic tool by day 45 / 90 (the risk of selling them) ───
 if (args.includes('--tool-reach')) {
-  const tools = CARDS.filter(c => c.generic && c.gift !== 'spine' && c.gift !== 'milestone').map(c => c.id);
+  const tools = [...CARDS.filter(c => c.generic && c.gift !== 'spine' && c.gift !== 'milestone').map(c => c.id), GODS.shepherd.signatures.secondary];
   console.log(`\nGeneric tools held (share of ${MC_RUNS} seeds, fit player, Shepherd) — ${GENERIC_SOLD ? 'SOLD' : 'GIFTED at rungs'}`);
   const rows = tools.map(id => {
     let d45 = 0, d90 = 0;
