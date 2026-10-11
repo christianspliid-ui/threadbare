@@ -1,0 +1,144 @@
+id	tier	offer	generic	pricedIn	gift	flag	why
+divine.dream	1	gift	n	mind	spine		Beat 4 choice; teaches the first sphere verb
+divine.persuade	1	gift	n	spirit	spine		Spine Beat 3
+divine.deceive	1	market	n	mind			Cheap one-mortal nudge
+divine.intimidate	1	market	n	force			Cheap one-mortal nudge
+divine.inspire	1	gift	n	life	spine		Beat 4 choice
+divine.coincidence	2	market	n	time			Bends events around a mortal, not a whisper
+divine.omen	1	gift	n	spirit	spine		Beat 4 choice
+divine.afflict_bless	2	market	n	life			Reshapes a body; larger than a nudge
+divine.rekindle_thread	2	gift	n	spirit	milestone		Earned by the first Broken thread
+action.social.tip_scales	2	market	n	mind			Costly personal nudge inside a negotiation
+action.social.embolden	2	market	n	force			Personal; needs a mortal mid-scene
+action.secrets.reveal_secret	2	market	n	mind			Secrets family opener
+action.secrets.call_in_favor	2	market	n	force			Secrets family
+action.secrets.plant_secret	3	market	n	darkness			A fabricated truth that spreads; bigger than a reveal
+action.divine-edict	4	market	n	mind			Overrules a faction conclave; most expensive card in the catalog
+action.faction.stir_dissent	3	market	n	mind		faction	Faction family opens with the faction thread at rung 3
+action.faction.whisper_leader	3	market	n	spirit		faction	Faction family
+action.faction.recover_doctrine	3	market	n	mind		faction	Faction family
+action.faction.surface_doubter	3	market	n	spirit		faction	Faction family
+action.faction.kindle_a_calling	3	market	n	force		faction	Faction family
+action.faction.schism	4	market	n	chaos		faction	Splits a faction in two; world-marking
+action.anoint-champion	3	market	n	force			Mantles a champion; larger than Bestow
+action.faction.anoint_successor	4	market	n	force		faction	Decides who rules a faction next
+divine.perceive.cast_attention	1	market	n	spirit		ruins	Ruin-reading family opener
+divine.perceive.refine_the_hush	1	market	n	spirit		ruins	Ruin-reading
+divine.perceive.listen_for_a_name	1	market	n	mind		ruins	Ruin-reading
+divine.perceive.read_the_threads	1	market	n	mind		ruins	Ruin-reading
+divine.perceive.taste_the_wake	2	market	n	time		ruins	Reads other gods' recent work; deeper sight
+divine.relay.compose_a_clue	1	market	n	mind			One clue into a bond; cheap
+divine.relay.whisper_the_direction	1	market	n	spirit		whispers	Overlaps four other whisper-to-a-mortal cards
+divine.self.stillness	1	gift	y		spine		Free self verb; rides with Beat 4 so the drawer opens with it
+divine.self.recede	1	gift	y		spine		Free self verb; rides with Beat 4
+divine.self.focus	2	market	y				Self verb every god can use; sold, paid from the primary
+divine.self.reveal	4	market	y				The god shows itself; a late wonder, sold, paid from the primary
+invest.gold.patronage_network	3	market	n	order		signature	Signature; reach gate keeps it to Gold gods; primary arrives at Beat 4
+invest.shadow.brokers_web	3	market	n	darkness		signature	Signature; reach-gated
+invest.star.beacon_of_fate	3	market	n	time		signature	Signature; reach-gated
+invest.eye.deep_eye	3	market	n	mind		signature	Signature; reach-gated
+invest.heart.sworn_oath	3	market	n	spirit		signature	Signature; reach-gated
+invest.iron.warhost	3	market	n	force		signature	Signature; reach-gated
+invest.veil.rend_the_gate	3	market	n	mind		signature	Signature; reach-gated
+invest.stone.great_work	3	market	n	matter		signature	Signature; reach-gated
+loc.ward	1	market	n	order			Cheap protective place verb
+loc.place_of_power	2	gift	y		milestone		Held-ground milestone (THR-1747 E5)
+loc.incite_unrest	1	market	n	chaos			Cheap place nudge
+loc.fortify	1	market	n	force			Cheap place nudge
+loc.bless_harvest	1	gift	n	life	milestone		Wellspring-flows milestone
+loc.blight	1	gift	n	entropy	milestone		Wellspring-flows milestone
+loc.reveal_vein	2	gift	n	matter	milestone		Wellspring-flows milestone
+loc.guide_caravan	2	gift	n	order	milestone		Wellspring-flows milestone
+loc.sour_mine	2	gift	n	entropy	milestone		Wellspring-flows milestone
+loc.open_markets	1	gift	n	order	milestone		Wellspring-flows milestone
+loc.sanctify_square	2	market	n	spirit		consecration	One of five consecrate-a-place cards
+loc.consecrate_source	1	gift	y		milestone		Wellspring milestone
+loc.sanctify_source	1	gift	y		milestone		Wellspring milestone
+loc.defend_source	1	gift	y		milestone		Wellspring milestone
+loc.find_source	1	gift	y		milestone		Wellspring milestone
+loc.claim_source	1	gift	y		milestone		Wellspring milestone
+loc.awaken_spirit	3	market	n	spirit			Wakes a settlement's spirit; regional and lasting
+loc.sicken_wells	2	market	n	entropy			A settlement-wide affliction
+loc.curse_roads	2	market	n	chaos			Regional hex on trade
+action.imbue	1	gift	y		spine		Spine Beat 2
+action.consecrate	2	market	n	spirit		consecration	Sphere-tinted hold on a holy place
+action.consecrate-relic	3	market	n	spirit		consecration	A relic that feeds a consecration; bigger than Consecrate
+action.bestow	2	gift	y		rung		KEY: Dominion carrier (THR-1764: a bestowed mortal carries one thread tier higher)
+action.teach_spell	2	market	y				The spell carries the sphere, not the card; sold, paid from the primary
+action.anoint	3	gift	y		rung		KEY: Dominion carrier (THR-1764: an anointed faction tends its towns)
+artifact.enchant	1	market	n	order			Cheap relic verb
+artifact.empower	1	market	n	force			Cheap relic verb
+artifact.attune	2	market	y				Tunes a relic to the god's own sphere; sold, paid from the primary
+artifact.nullify	1	market	n	entropy			Cheap relic verb
+artifact.curse	2	market	n	chaos			Lasting curse on a relic
+company.bless	2	gift	n	spirit	milestone		First-company milestone
+company.draw_together	2	gift	n	spirit	milestone		Gathering-bonds milestone
+company.reunite	2	gift	n	spirit	milestone		Empty-road milestone
+company.sunder	2	gift	n	entropy	milestone		Empty-road milestone
+sub.sanctify	1	market	n	spirit		consecration	Cheapest consecration
+sub.trap	1	market	n	chaos			Cheap snare
+sub.vision	1	market	n	mind			Cheap sight into a room
+sub.sanctify_tavern	2	market	n	life		consecration,merge	A tavern is a sublocation: Sanctify covers it; merge candidate
+hex.bless_land	1	market	n	life			Cheap land blessing
+hex.corrupt_land	2	market	n	entropy			Lasting land harm
+hex.survey	1	gift	y		spine		Free sight; rides with Beat 0 beside Observe
+hex.seed_life	2	market	n	life			Restores barren ground
+hex.raise_landmark	3	market	n	matter			Reshapes a hex; lasting
+hex.dowse_resources	1	market	n	matter			Cheap sight into the ground
+hex.shift_season	2	market	n	life			Moves a season across a hex
+hex.scorch_earth	2	market	n	force			Destroys a hex's yield
+hex.rend_earth	4	market	n	force			Catastrophe; world-marking
+hex.attune_leyline	2	market	n	energy		flows	Leyline family
+hex.forge_seer_token	3	market	n	spirit			Makes a lasting artifact of sight
+hex.read_currents	1	market	n	spirit		flows	Cheap sight into the flows
+hex.shift_dominion	2	gift	y		rung		KEY: the frontier move (THR-1762); sold, it rises in only 48% of runs
+hex.amplify_flow	2	market	n	energy		flows	Leyline family
+hex.sever_flow	3	market	n	entropy		flows	Cuts every flow in a hex
+hex.dispel_wild	2	market	n	order		flows	Leyline family
+hex.send_herald	3	market	n	spirit			A divine messenger in mortal form
+hex.forge_instrument	4	market	n	matter			A divine instrument; world-marking
+hex.spark_encounter	2	market	n	chaos			Draws mortals together by fate
+hex.stir_people	2	market	n	mind			Moves a population's mood
+hex.summon_congregation	2	market	n	spirit			Calls the receptive to gather
+hex.bestow_vision	1	market	n	mind		whispers	Overlaps four other whisper-to-a-mortal cards
+hex.scatter	3	market	n	force			Breaks a gathering by force
+hex.smite	4	market	n	force			Kills a mortal outright; world-marking
+hex.incite_exodus	3	market	n	entropy			Empties a territory
+hex.mark_ground	1	market	n	time		ruins	Cheap ruin verb
+hex.plant_dream	2	market	n	mind		ruins,whispers	Ruin vision sent along a thread
+hex.read_stones	2	market	n	spirit		ruins	Deeper ruin-reading
+hex.whisper_intuition	1	market	n	mind		whispers	Overlaps four other whisper-to-a-mortal cards
+hex.consecrate_past	3	market	n	time		ruins	Re-spheres a ruin
+hex.restore_fragment	3	market	n	matter		ruins	Rebuilds part of a ruin
+hex.rewrite_history	4	market	n	mind		ruins	Rewrites what a ruin remembers; world-marking
+hex.bury_past	3	market	n	entropy		ruins	Swallows a ruin
+hex.desecrate	2	market	n	entropy		ruins	Twists a ruin's character
+hex.claim_dominion	2	gift	y		milestone		Held-ground milestone (THR-1747 E5); the plain Dominion hold
+hex.cultivate	2	market	n	life			Sustained land growth
+hex.claim_resource	2	gift	y		milestone		Held-ground milestone (THR-1747 E5)
+hex.anchor_sphere	3	market	n	energy		flows,merge	A sustained sphere hold: overlaps Claim Dominion after THR-1762
+hex.tap_source	2	gift	y		milestone		Held-ground milestone (THR-1747 E5)
+hex.attune_thread	2	gift	y		rung		KEY: thread care, every god's
+hex.channel_current	3	market	n	energy		flows,merge	Sustained redirect of sphere pressure: overlaps Claim Dominion after THR-1762
+hex.shepherd_flock	3	market	n	spirit			Sustained presence over a people
+hex.install_champion	4	market	n	order			Puts a chosen mortal at a faction's head
+hex.strengthen_thread	2	gift	y		rung		KEY: thread care, every god's
+hex.impose_decree	3	market	n	order			A law over a territory
+hex.bind_echoes	3	market	n	time		ruins	Sustained hold on a ruin's echoes
+hex.compel_exploration	2	market	n	mind		ruins	Sends nearby mortals into a ruin
+hex.seal_tomb	2	market	n	order		ruins	Wards a ruin shut
+hex.ward_against_deep	2	market	n	spirit		ruins	Guards a mortal going into a ruin
+action.undertaking.inspire	2	market	n	spirit			Helps a mortal's undertaking
+action.undertaking.sabotage	2	market	n	entropy			Hinders a mortal's undertaking
+observe_agent	1	gift	y		spine		Spine Beat 0
+scry_agent	3	market	y				Deep sight into one mortal; sold, paid from the primary
+whisper_insight	2	market	n	spirit			Reads a mortal's values; sphere-tinted sight
+dream_sending	3	market	n	mind			Draws out a mortal's ambitions and fears
+bind_thread_location	1	gift	y		spine		Spine Beat 1
+bind_thread_faction	3	gift	y		rung		KEY: opens the faction family; sold, 24% hold it by day 45
+bind_thread_army	3	gift	y		rung		KEY: opens the army thread
+bind_thread_artifact	4	gift	y		rung		KEY: opens the relic thread
+bind_thread_agent	1	gift	y		spine		Spine Beat 0
+bind_thread_agent_strong	4	gift	y		rung		KEY: the deepest mortal thread
+thread.dormant	1	gift	y		spine		Free thread care; rides with Beat 0 (the first thread), not a power to shop for
+thread.reactivate	1	gift	y		spine		Free thread care; rides with Beat 0
