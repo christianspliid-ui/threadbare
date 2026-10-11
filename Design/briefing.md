@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 03:58 local (01:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 04:56 local (02:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -13,19 +13,20 @@ The silence check still reports the Tuesday-to-Thursday gap this setting is mean
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
 
+Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+
 ## Decided for you
 
 - [How the god's own power grows](https://linear.app/threadbare/issue/THR-1765/how-the-gods-own-power-grows-what-raises-the-gods-sphere-score-across) — your god grows by spending through its spheres: essence drawn through a sphere it bought attunes it a little further, and the mandate's milestones lift it as today. About five growth steps a run, roughly one every two to four weeks. Growth firms up friendly ground and makes signature powers strike harder. Turf stops widening at double strength; past that, deeper ground is won place by place. Nothing fades if you stop spending; you simply stop growing. *To veto, say:* **"my god should keep growing its land"**, **"power should come from deeds, not spending"** or **"unspent power should fade"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-10b.md)*
 - [Dominion of the secondary actors](https://linear.app/threadbare/issue/THR-1764/dominion-of-the-secondary-actors-how-a-faction-an-army-a-company-or-an) — factions, armies, companies and relics read the people or ground they are made of. A mortal you **bestow** a gift on spreads your spheres faster. A faction you **anoint** keeps its towns on your ground tended and shrugs off one rival raid, but does not grow your turf. Your faithful armies don't fight better on your land by themselves. *To veto, say:* **"my faithful should win on my land"**, **"a relic should hold ground on its own"** or **"anointing should spread my turf, not just defend it"**. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-10a.md)*
 
-Say "veto <title>" to reverse any of these.
+Say "veto <title>" to reverse any of these. Both windows close this afternoon (about 13:50 and 14:30).
 
 ## Queue
 
-**Starved: 0 jobs ready, 0 being built.** Nothing is blocked, stale or parked. The design lane is planning [chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player) — claimed 22:20 last night, the run is still active (last activity 03:56), no plan pull request yet. Still waiting in Todo: [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build. Next orchestrator run ~04:28.
+**Starved: 0 jobs ready, 1 being built.** The orchestrator queued one engine job overnight and the builder picked it up at 04:30: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at) (mortals' sight, growth and renown still treat every hero as a master). It has local commits (latest 04:41) and no pull request yet — normal for a run 25 minutes in. Nothing is blocked, stale or parked. Still waiting in Todo: [chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player), [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build. Next design-lane run ~08:14.
 
 ## Health
 
-- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (8 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Same timeout already logged as impediment #1167; no session has claimed the fix and the board is empty. Executor work, not yours.
-- **The design lane's current run is 5.6 hours old** (normal runs take ~20–40 min). It is still active, so this is a watch line, not a fault yet.
-- Everything else is green. The live site is serving the latest main, no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, the cleanup job ran at 03:43, and the engine's speed is flat (107 ms per tick, 10% under the weekly median).
+- **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (9 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Same timeout already logged as impediment #1167; still unclaimed. Executor work, not yours.
+- Everything else is green. The live site is serving the latest main (57516cf7), no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, the cleanup job ran at 04:40, and the engine's speed is flat (107 ms per tick, 9% under the weekly median).
