@@ -16,7 +16,7 @@
  * the dice curve. THR-1580 moved them off the pre-refit sigmoid, which saturates at
  * raw ~20: two seasoned agents both read ~1.0 there, so neither bonus could ever
  * fire between them (measured 0% in that band on seeds 42/99/7; reach share
- * 0–27%). Population-wide fire rates stayed within a few points, so the
+ * 0–17%). Population-wide fire rates stayed within a few points, so the
  * thresholds are unchanged. Evidence: `npm run measure:leverage-scales`.
  * - Faction rank advantage (highest rank vs target's highest rank)
  *
