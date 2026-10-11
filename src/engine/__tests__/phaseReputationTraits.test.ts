@@ -9,6 +9,7 @@ import {
   processReputationTally,
   determinePolarity,
   resetReputationTraitInit,
+  renownLevelFromTier,
 } from '../phaseReputationTraits';
 import { getTraitsForNode } from '../traits';
 import type { GameState } from '../../types/gameState';
@@ -18,6 +19,9 @@ import {
   REPUTATION_LEVEL_2_THRESHOLD,
   REPUTATION_LEVEL_3_THRESHOLD,
   REPUTATION_TALLY_DECAY_PER_TICK,
+  REPUTATION_POWER_TIER_NOTED,
+  REPUTATION_POWER_TIER_RENOWNED,
+  REPUTATION_POWER_TIER_LEGENDARY,
 } from '../../data/agent-behavior-constants';
 
 // ─── Test Helpers ──────────────────────────────────────────────────
@@ -301,5 +305,42 @@ describe('determinePolarity', () => {
       reach: 'shadow',
     } as unknown as UnifiedActionTemplate;
     expect(determinePolarity(template, graph, 'agent-1')).toBeNull();
+  });
+});
+
+describe('power renown (THR-1580: reads the reach share)', () => {
+  const RENOWN = 'trait.reputation.power.renown';
+
+  beforeEach(() => {
+    resetReputationTraitInit();
+  });
+
+  function renownAt(ironRaw: number): number {
+    const graph = makeGraph();
+    const node = graph.getNode('agent-1')!;
+    node.properties.domainCapabilities = { iron: ironRaw };
+    phaseReputationTraits(makeState(graph));
+    return getTraitLevel(graph, 'agent-1', RENOWN);
+  }
+
+  it('maps the best tier onto the three rungs', () => {
+    expect(renownLevelFromTier(REPUTATION_POWER_TIER_NOTED - 1)).toBe(0);
+    expect(renownLevelFromTier(REPUTATION_POWER_TIER_NOTED)).toBe(1);
+    expect(renownLevelFromTier(REPUTATION_POWER_TIER_RENOWNED)).toBe(2);
+    expect(renownLevelFromTier(REPUTATION_POWER_TIER_LEGENDARY)).toBe(3);
+    expect(renownLevelFromTier(10)).toBe(3);
+  });
+
+  it('gives an ordinary mortal (raw 10, share 0.25) no renown', () => {
+    expect(renownAt(10)).toBe(0);
+  });
+
+  it('reads raw 15 as Noted, not Legendary — the pre-refit curve saturated there', () => {
+    expect(renownAt(15)).toBe(1);
+  });
+
+  it('reads raw 22 as Renowned and raw 30 as Legendary', () => {
+    expect(renownAt(22)).toBe(2);
+    expect(renownAt(30)).toBe(3);
   });
 });

@@ -153,7 +153,8 @@
     "census:cells": "esbuild scripts/census-cells.ts --bundle --platform=node --format=esm --outfile=.cache/census-cells.mjs --external:fs --external:path && node .cache/census-cells.mjs",
     "census:seeded-world": "esbuild scripts/census-seeded-world.ts --bundle --platform=node --format=esm --outfile=.cache/census-seeded-world.mjs --external:fs --external:path && node .cache/census-seeded-world.mjs",
     "check:content-model-census": "esbuild scripts/content-model-census.ts --bundle --platform=node --format=esm --outfile=.cache/content-model-census.mjs --external:fs --external:path --external:process --external:url && node .cache/content-model-census.mjs",
-    "check:grudge-duels": "esbuild scripts/check-grudge-duels.ts --bundle --platform=node --format=esm --outfile=.cache/check-grudge-duels.mjs --external:fs --external:path && node .cache/check-grudge-duels.mjs"
+    "check:grudge-duels": "esbuild scripts/check-grudge-duels.ts --bundle --platform=node --format=esm --outfile=.cache/check-grudge-duels.mjs --external:fs --external:path && node .cache/check-grudge-duels.mjs",
+    "measure:renown-scales": "esbuild scripts/measure-renown-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-renown-scales.mjs --external:fs --external:path && node .cache/measure-renown-scales.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",
