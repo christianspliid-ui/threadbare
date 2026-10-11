@@ -546,8 +546,8 @@
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
         <tbody>
-          <tr><td>SIGMOID_MIDPOINT</td><td>10</td><td>Capability sigmoid midpoint · <code>src/engine/domainCapability.ts:13</code></td></tr>
-          <tr><td>SIGMOID_K</td><td>0.4</td><td>Capability sigmoid steepness · <code>src/engine/domainCapability.ts:14</code></td></tr>
+          <tr><td>SIGMOID_MIDPOINT</td><td>30 (dice; THR-1581, was 10)</td><td>Capability sigmoid midpoint · <code>src/engine/domainCapability.ts</code></td></tr>
+          <tr><td>SIGMOID_K</td><td>0.08 (dice; THR-1581, was 0.4)</td><td>Capability sigmoid steepness · <code>src/engine/domainCapability.ts</code></td></tr>
           <tr><td>PROBABILITY_FLOOR / CEILING</td><td>0.05 / 0.95</td><td>Resolution threshold clamp · <code>src/engine/resolutionService.ts:57,60</code></td></tr>
           <tr><td>SCALE_DIFFICULTY_OFFSETS</td><td>−0.20 / 0 / 0 / +0.10</td><td>Difficulty by scale (personal→cosmic; local 0 since THR-1627) · <code>src/engine/resolutionScaleAdjust.ts:36</code></td></tr>
           <tr><td>CRIT_FAILURE_PERMITTED_BY_SCALE</td><td>personal/local = false</td><td>Small acts can't crit-fail · <code>resolutionScaleAdjust.ts:69</code></td></tr>

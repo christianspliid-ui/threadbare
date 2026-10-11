@@ -7,6 +7,7 @@ import {
   computeTier,
   getNarrativeLabel,
   computeFullProfile,
+  computeReachShare,
   getTopContributors,
 } from '../domainCapability';
 
@@ -205,6 +206,29 @@ describe('Domain Capability', () => {
       expect(Object.keys(profile)).toHaveLength(8);
       expect(profile.iron.rawScore).toBe(3);
       expect(profile.stone.rawScore).toBe(4);
+    });
+
+    // THR-1580: the profile's tier/label read the reach share — the scale
+    // capabilityGrowth crosses tiers on — not the pre-refit curve.
+    it('reads capability, tier and label off the reach share', () => {
+      const profile = computeFullProfile(graph, 'actor.thorin');
+      // stone raw 4 → share 0.1 → tier 1 (the pre-refit curve read 0.08 → tier 1 too)
+      expect(profile.stone.capability).toBeCloseTo(computeReachShare(graph, 'actor.thorin', 'stone'), 10);
+      expect(profile.stone.tier).toBe(computeTier(profile.stone.capability));
+      // raw 16 → share 0.4 → tier 4; the pre-refit curve read ≈ 0.92 → tier 10
+      graph.addNode({
+        id: 'trait.test.stone_mastery', type: 'trait', name: 'Stone Mastery',
+        properties: {
+          subcategory: 'mastery', maxLevel: 1, importance: 1.0, visibility: 'public',
+          domainContributions: { stone: 12 }, tags: [], flavorText: '',
+        },
+      });
+      assignTrait(graph, 'actor.thorin', 'trait.test.stone_mastery', { tick: 1, source: 'test' });
+      const after = computeFullProfile(graph, 'actor.thorin');
+      expect(after.stone.rawScore).toBe(16);
+      expect(after.stone.capability).toBeCloseTo(0.4, 10);
+      expect(after.stone.tier).toBe(4);
+      expect(after.stone.label).toBe(getNarrativeLabel('stone', 4));
     });
   });
 
