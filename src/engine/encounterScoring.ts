@@ -54,7 +54,7 @@ import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
-import { computeCapability, computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeCapability, computeReachShare, computeTier } from './domainCapability';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -434,7 +434,10 @@ export function computeRuinsBonus(
 /**
  * Compute anomaly discovery bonus — Eye/Veil-skilled agents are drawn to anomaly encounters.
  * Only applies when the location is an undiscovered anomaly.
- * Scales with agent's Eye and Veil capabilities.
+ * Scales with agent's Eye and Veil reach shares (THR-1580): a standing gate and a
+ * graded pull, not a d100 read. The share keeps the gate where it was (raw 6) and
+ * grades the pull across the whole population, where the pre-refit curve saturated
+ * it at raw ~18 so a raw-18 dabbler pulled as hard as a raw-40 seer.
  *
  * @returns Scoring bonus (0.0 if agent doesn't qualify or location isn't an anomaly)
  */
@@ -455,23 +458,10 @@ export function computeAnomalyDiscoveryBonus(
   const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
   if (!subtype || !ANOMALY_RESOURCE_MAP[subtype]) return 0;
 
-  // Check agent's Eye capability meets threshold
-  let eyeCap: number;
-  let veilCap: number;
-  try {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    eyeCap = computeCapabilityPreRefit(graph, agentId, 'eye');
-  } catch {
-    eyeCap = 0;
-  }
+  // Check agent's Eye reach share meets threshold (computeReachShare is fail-soft: a throwing walk reads 0)
+  const eyeCap = computeReachShare(graph, agentId, 'eye');
   if (eyeCap < ANOMALY_EYE_THRESHOLD) return 0;
-
-  try {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    veilCap = computeCapabilityPreRefit(graph, agentId, 'veil');
-  } catch {
-    veilCap = 0;
-  }
+  const veilCap = computeReachShare(graph, agentId, 'veil');
 
   // Scale bonus with Eye and Veil capability
   const eyeBonus = eyeCap * ANOMALY_EYE_SCALING * 10; // per 0.1 capability
