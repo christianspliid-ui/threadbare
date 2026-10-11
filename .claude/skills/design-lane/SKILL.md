@@ -1,7 +1,7 @@
 ---
 name: design-lane
 description: The unattended design lane (tb-design-lane, four runs a day). Progresses agreed design work without Christian present — decides a wayfinder map's frontier ticket under the 2026-09-11 delegation with outputs attached and a veto invited, closes a cleared map with its carve-up, or authors, gates and hands off one plan doc for agreed-but-undesigned work. Never charts a map, never picks direction, never touches a ticket reserved for Christian. Christian's ruling 2026-09-25 (THR-1611).
-last_validated_against: 2026-10-02
+last_validated_against: 2026-10-11
 ---
 
 # Design lane
@@ -190,16 +190,17 @@ the claim; Step 1 resumes it.
 `Docs/ops/design-lane-YYYY-MM-DD[letter].md` (next unused letter from `git ls-tree -r --name-only origin/ops`),
 published with `bash scripts/ops-publish.sh -m "docs(ops): design lane <summary>" <path>` from the worktree
 root, then the local file deleted. Gate with
-`npm run check:substantive --silent -- --lane report --file <path> --json` — `skip` means delete, publish
+`npm run check:substantive --silent -- --lane report --file <path> --json` (it parses the counters below as numbers; ids
+read as "no outcome" and fail soft, so the no-op check never runs — impediment #1176) — `skip` means delete, publish
 nothing.
 
 ```markdown
 ---
 lane: tb-design-lane
 run: YYYY-MM-DD<letter>
-promoted: <plan docs handed off to Ready for Dev>
-filed: <tickets filed>
-resolved: <decision tickets closed + maps closed>
+promoted: <count — plan docs handed off to Ready for Dev; a number, not ids>
+filed: <count — tickets filed>
+resolved: <count — decision tickets closed + maps closed>
 newFindings: 0
 needsChristian: <true only when something was reserved>
 ---
