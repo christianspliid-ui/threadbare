@@ -14,7 +14,7 @@
  * | COOPERATIVE_BOND_BOOST          | 0.4     | Score boost for cooperative encounters       |
  * | RIVAL_BOND_BOOST                | 0.3     | Score boost for destructive encounters       |
  * | STRANGER_MODIFIER               | -0.1    | Penalty for encountering strangers           |
- * | STRANGER_CURIOSITY_THRESHOLD    | 0.3     | Eye capability threshold for curiosity bonus |
+ * | STRANGER_CURIOSITY_THRESHOLD    | 0.3     | Eye reach share for the curiosity bonus      |
  * | STRANGER_CURIOSITY_BONUS        | 0.15    | Bonus for perceptive agents meeting strangers|
  * | MAX_SOCIAL_CANDIDATES_PER_AGENT | 3       | Max templates generated per target agent     |
  * | REPUTATION_REACTION_MAX_LEVEL   | 3       | Max level for reputation trait scaling       |
@@ -57,7 +57,7 @@ import { hashString } from './factionAmbitions';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { getTrust } from './trustMechanics';
-import { computeCapabilityPreRefit } from './domainCapability';
+import { computeReachShare } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { TAVERN_SUBLOCATION_TYPE_ID } from './sublocation';
 import { HEARTH_BLESSING_SOCIAL_BOOST } from '../data/ascendant-expression-constants';
@@ -595,8 +595,8 @@ export function computeBondModifier(
 
   // No significant bond → stranger
   if (trust === 0) {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    const eyeCap = computeCapabilityPreRefit(graph, agentId, 'eye');
+    // A perceptiveness threshold, not a d100 read — the reach share (THR-1580).
+    const eyeCap = computeReachShare(graph, agentId, 'eye');
     const curiosityBonus = eyeCap > STRANGER_CURIOSITY_THRESHOLD ? STRANGER_CURIOSITY_BONUS : 0;
     return STRANGER_MODIFIER + curiosityBonus + reputationShift;
   }
