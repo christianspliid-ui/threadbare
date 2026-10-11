@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { useState } from 'react';
 import { EncounterVeil } from '../EncounterVeil';
+import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../../shared/Modal';
 import type { EncounterStageModel } from '../encounter-stage/types';
 import {
   resetNudgeDesignerView,
@@ -199,6 +201,30 @@ describe('EncounterVeil', () => {
     render(<EncounterVeil {...defaultProps} />);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(defaultProps.onDisregard).toHaveBeenCalled();
+  });
+
+  // THR-1816 — a sheet opened over the veil takes the first Escape; the veil
+  // stays, and the second Escape reaches it (Law 23 / Law 50).
+  it('leaves the veil open when Escape closes a modal stacked above it', () => {
+    const onMinimize = vi.fn();
+    function Host() {
+      const [sheetOpen, setSheetOpen] = useState(true);
+      return (
+        <>
+          <EncounterVeil {...defaultProps} onMinimize={onMinimize} />
+          <Modal open={sheetOpen} onClose={() => setSheetOpen(false)} zIndex={MODAL_Z_ABOVE_INTERRUPT}>
+            <Modal.Body>Agent sheet</Modal.Body>
+          </Modal>
+          <span data-testid="sheet-state">{sheetOpen ? 'open' : 'closed'}</span>
+        </>
+      );
+    }
+    render(<Host />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByTestId('sheet-state')).toHaveTextContent('closed');
+    expect(onMinimize).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onMinimize).toHaveBeenCalledTimes(1);
   });
 
   // THR-1724 — Escape minimises the attended veil: the encounter stays pending

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
 import { Tooltip } from '../shared/Tooltip';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
 import {
   DeltaCluster,
   DELTA_CLUSTER_MAX,
@@ -394,6 +395,13 @@ const VEIL_ROOT_INSET = {
 } as const;
 
 /**
+ * The veil's stacking band — the focused-overlay band in `layout-zones.md` (50),
+ * below the modal band (60). Also its escape-layer rank (THR-1816): a modal over
+ * the veil takes Escape first.
+ */
+export const ENCOUNTER_VEIL_Z = 50;
+
+/**
  * THR-1724 — the scene's two columns: prose on the left, the cast and what is
  * at stake on the right. The side column is fixed so the prose keeps its
  * measure; the gap is the breathing room between them.
@@ -532,17 +540,10 @@ export function EncounterVeil({
   const isAttendedPending = !model.aftermath && threadTier !== 'watched';
   const leaveVeil = isAttendedPending && onMinimize ? onMinimize : onDisregard;
 
-  // Escape key handler
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        leaveVeil();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, leaveVeil]);
+  // THR-1816 — Escape leaves the veil only when it is the topmost surface: a
+  // character sheet opened over it (MODAL_Z_ABOVE_INTERRUPT) takes the first
+  // Escape, and the veil the next.
+  useEscapeLayer(open, leaveVeil, ENCOUNTER_VEIL_Z);
 
   const hasArt = !!model.illustration;
 
@@ -700,7 +701,7 @@ export function EncounterVeil({
           position: 'fixed',
           ...VEIL_ROOT_INSET,
           background: VOID,
-          zIndex: 50,
+          zIndex: ENCOUNTER_VEIL_Z,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -1598,7 +1599,7 @@ export function EncounterVeil({
           position: 'fixed',
           ...VEIL_ROOT_INSET,
           background: VOID,
-          zIndex: 50,
+          zIndex: ENCOUNTER_VEIL_Z,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -2050,7 +2051,7 @@ export function EncounterVeil({
         position: 'fixed',
         ...VEIL_ROOT_INSET,
         background: VOID,
-        zIndex: 50,
+        zIndex: ENCOUNTER_VEIL_Z,
         overflow: 'hidden',
       }}
     >

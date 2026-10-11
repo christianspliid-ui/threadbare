@@ -1,7 +1,8 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import { useDialogFocus } from './useDialogFocus';
+import { useEscapeLayer } from './useEscapeLayer';
 import { dialogContextClass, type DialogContext } from './dialogContext';
 
 /**
@@ -79,18 +80,8 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    },
-    [onClose],
-  );
-
-  useEffect(() => {
-    if (!open) return;
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [open, handleEscape]);
+  // THR-1816 — Escape closes this modal only when it is the topmost surface.
+  useEscapeLayer(open, onClose, zIndex);
 
   /**
    * Law 50 — focus follows the surface. The contract lives in `useDialogFocus` so
