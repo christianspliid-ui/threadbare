@@ -19,9 +19,9 @@ function setupFactionWithMilitaryAmbition(graph: WorldGraph, opts?: {
   goldCapability?: number;
   ambitionType?: string;
 }) {
-  // Sigmoid: raw 10→tier 5, raw 8→tier 4, raw 6→tier 3, raw 3→tier 1
-  const ironCap = opts?.ironCapability ?? 12; // tier 6+ (well above min 4)
-  const goldCap = opts?.goldCapability ?? 8;  // tier 4 (above min 3)
+  // Reach share (THR-1580): tier = ceil(raw / 4) — raw 20→tier 5, raw 16→tier 4, raw 12→tier 3
+  const ironCap = opts?.ironCapability ?? 20; // tier 5 (above min 4)
+  const goldCap = opts?.goldCapability ?? 16; // tier 4 (above min 3)
   const ambitionType = opts?.ambitionType ?? 'territorial_expansion';
 
   // Location
@@ -161,7 +161,7 @@ describe('selectCommander', () => {
       name: 'Weaker Agent',
       properties: {
         actorType: 'individual',
-        domainCapabilities: { iron: 8 }, // tier ~4
+        domainCapabilities: { iron: 16 }, // tier 4 — clears the gate, weaker than agent1
       },
     });
     graph.addEdge({
@@ -173,8 +173,33 @@ describe('selectCommander', () => {
     });
 
     const state = makeState(5, graph);
-    // agent1 has iron: 60 (tier ~6), agent2 has iron: 40 (tier ~4)
+    // agent1 has iron 20 (tier 5), agent2 has iron 16 (tier 4)
     expect(selectCommander(state, 'faction1')).toBe('agent1');
+  });
+
+  it('ranks on the raw Iron score where the tier saturates (THR-1580)', () => {
+    // Both clear tier 10 on the reach share (raw ≥ 36); the first edge used to win the tie.
+    setupFactionWithMilitaryAmbition(graph, { ironCapability: 40 });
+    graph.addNode({
+      id: 'agent2',
+      type: 'actor',
+      name: 'Garrison Captain',
+      properties: { actorType: 'individual', domainCapabilities: { iron: 60 } },
+    });
+    graph.addEdge({
+      id: 'e_member_agent2',
+      source: 'agent2',
+      target: 'faction1',
+      type: 'member_of',
+      properties: { role: 'member', rank: 'sellsword', joinedTick: 0 },
+    });
+    expect(selectCommander(makeState(5, graph), 'faction1')).toBe('agent2');
+  });
+
+  it('reads the reach share, not the pre-refit curve: raw 12 Iron cannot command (THR-1580)', () => {
+    // Pre-refit read raw 12 as tier 6; the share reads it as tier 3, under ARMY_SPAWN_IRON_TIER_MIN.
+    setupFactionWithMilitaryAmbition(graph, { ironCapability: 12 });
+    expect(selectCommander(makeState(5, graph), 'faction1')).toBeNull();
   });
 
   it('returns null when no qualifying agents', () => {
