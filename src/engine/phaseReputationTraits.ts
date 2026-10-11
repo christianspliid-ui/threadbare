@@ -16,6 +16,10 @@
  * | REPUTATION_POWER_TIER_RENOWNED     | 6       | Min tier for Renowned (L2)           |
  * | REPUTATION_POWER_TIER_LEGENDARY    | 8       | Min tier for Legendary (L3)          |
  *
+ * Power renown's tier is `computeTier(reach share)` — ceil(share × 10), so Noted
+ * starts past raw 12, Renowned past raw 20, Legendary past raw 28 (THR-1580). It read
+ * the pre-refit sigmoid, which put every mortal past raw ~12 at Legendary.
+ *
  * ─── Tracing ─────────────────────────────────────────────────
  * Emits 'reputation_trait' traces for tally increments, trait assignments,
  * reinforcements, removals, and decays.
@@ -26,7 +30,7 @@
  * | Missing actor node              | Skip                                 |
  * | Missing trait definition node   | Skip (ensureTraitNodes handles)      |
  * | Missing reputationTallies prop  | Treat as empty ({})                  |
- * | computeCapability throws        | Use 0 for that reach                 |
+ * | computeReachShare throws        | Use 0 for that reach                 |
  *
  * ─── PRNG ────────────────────────────────────────────────────
  * None — reputation traits are deterministic threshold checks.
@@ -42,7 +46,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { REACH_DOMAINS } from '../types/traits';
 import { REACH_VALUE_PAIR } from '../types/agent';
 import { assignTrait, removeTrait, reinforceTrait, getTraitsForNode } from './traits';
-import { computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeReachShare, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { CRUD_TO_ENCOUNTER_TYPE } from './encounterCache';
@@ -200,6 +204,16 @@ export function processReputationTally(
   } as unknown as Parameters<typeof emitTrace>[0]);
 }
 
+// ─── Power Renown ──────────────────────────────────────────────────
+
+/** Power renown level (0–3) from an actor's best tier (1–10) across the reaches. */
+export function renownLevelFromTier(maxTier: number): 0 | 1 | 2 | 3 {
+  return maxTier >= REPUTATION_POWER_TIER_LEGENDARY ? 3
+    : maxTier >= REPUTATION_POWER_TIER_RENOWNED ? 2
+    : maxTier >= REPUTATION_POWER_TIER_NOTED ? 1
+    : 0;
+}
+
 // ─── Orchestrator Phase ────────────────────────────────────────────
 
 /**
@@ -265,19 +279,15 @@ export function phaseReputationTraits(state: GameState): Partial<GameState> {
     let maxTier = 0;
     for (const reach of REACH_DOMAINS) {
       try {
-        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-        const cap = computeCapabilityPreRefit(graph, actorId, reach);
-        const tier = computeTier(cap);
+        // A standing label, not a d100 read — the reach share (THR-1580).
+        const tier = computeTier(computeReachShare(graph, actorId, reach));
         if (tier > maxTier) maxTier = tier;
       } catch {
         // fail-soft: skip this reach
       }
     }
 
-    const renownLevel = maxTier >= REPUTATION_POWER_TIER_LEGENDARY ? 3
-      : maxTier >= REPUTATION_POWER_TIER_RENOWNED ? 2
-      : maxTier >= REPUTATION_POWER_TIER_NOTED ? 1
-      : 0;
+    const renownLevel = renownLevelFromTier(maxTier);
 
     const renownTraitId = 'trait.reputation.power.renown';
     if (renownLevel > 0) {
