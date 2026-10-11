@@ -239,7 +239,11 @@ export function getNarrativeLabel(domain: ReachDomain, tier: number): string {
 }
 
 /**
- * Compute a full profile across all 9 domains.
+ * Compute a full profile across all 8 domains.
+ *
+ * `capability` is the reach share (THR-1580) and `tier`/`label` are read from it —
+ * the same scale `capabilityGrowth` crosses tiers on, so a profile's label agrees
+ * with the "is now <label>" line a growth tier-shift prints.
  */
 export function computeFullProfile(
   graph: WorldGraph,
@@ -249,8 +253,7 @@ export function computeFullProfile(
 
   for (const domain of REACH_DOMAINS) {
     const rawScore = computeRawScore(graph, nodeId, domain);
-    // TODO(THR-1580): pre-refit reader — a tier/label profile, not the dice.
-    const capability = sigmoid(rawScore, PRE_REFIT_SIGMOID_MIDPOINT, PRE_REFIT_SIGMOID_K);
+    const capability = rawToReachShare(rawScore);
     const tier = computeTier(capability);
     const label = getNarrativeLabel(domain, tier);
     result[domain] = { rawScore, capability, tier, label };
