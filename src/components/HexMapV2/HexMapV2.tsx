@@ -105,6 +105,7 @@ import { LocationLabelOverlay, type LocationLabelData } from './overlay/Location
 import { AgentPulseOverlay } from './overlay/AgentPulseOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
 import { HexTooltip } from './interaction/HexTooltip';
+import { useHexTooltipDelay } from './interaction/useHexTooltipDelay';
 import { avatarHoverLine } from '../../data/avatar-framing';
 import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
@@ -682,28 +683,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Tooltip is delayed by TOOLTIP_HOVER_DELAY_MS — tooltipHex trails hoveredHex with a debounce.
     // hoveredHex updates instantly (for highlights); tooltipHex controls when the HTML overlay shows.
-    const [tooltipHex, setTooltipHex] = useState<HexCoord | null>(null);
-    const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    useEffect(() => {
-      if (tooltipTimerRef.current !== null) {
-        clearTimeout(tooltipTimerRef.current);
-        tooltipTimerRef.current = null;
-      }
-      if (hoveredHex === null) {
-        setTooltipHex(null);
-      } else {
-        tooltipTimerRef.current = setTimeout(() => {
-          setTooltipHex(hoveredHex);
-          tooltipTimerRef.current = null;
-        }, INTERACTION_CONSTANTS.TOOLTIP_HOVER_DELAY_MS);
-      }
-      return () => {
-        if (tooltipTimerRef.current !== null) {
-          clearTimeout(tooltipTimerRef.current);
-          tooltipTimerRef.current = null;
-        }
-      };
-    }, [hoveredHex]);
+    // A map click hides it until the pointer reaches another hex (THR-1818).
+    const { tooltipHex, suppressTooltip } = useHexTooltipDelay(hoveredHex);
 
     // Build a fast tile lookup map: "col,row" -> HexTile
     const tileLookup = useRef<Map<string, HexTile>>(new Map());
@@ -1839,6 +1820,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const camera = cameraRef.current;
       if (!canvas || !camera) return;
 
+      // Whatever the click opens, the hover tooltip must not sit on top of it (THR-1818).
+      suppressTooltip();
+
       // Agent sprites are small — try to pick them before falling back to hex.
       const spriteMap = agentSpriteGroupRef.current?.spriteMap ?? new Map();
 
@@ -2005,14 +1989,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const hoveredTile = tiles.find(
             t => t.coord.col === tooltipHex.col && t.coord.row === tooltipHex.row,
           );
-          const terrainName = String(hoveredTile?.terrain ?? '');
+          // THR-1818: the engine key goes in as terrainKey; HexTooltip resolves the
+          // player-facing name through terrainDisplayName, as the detail panel does.
+          const terrainKey = String(hoveredTile?.terrain ?? '');
           // THR-1609: name the player's own shape when the avatar stands here.
           const avatarHere = agents?.find(
             a => a.isAvatar && a.hexCol === tooltipHex.col && a.hexRow === tooltipHex.row,
           );
           return (
             <HexTooltip
-              terrainName={terrainName}
+              terrainName={terrainKey}
+              terrainKey={terrainKey}
+              hasRiver={hoveredTile?.hasRiver}
               coord={tooltipHex}
               screenX={screen.x}
               screenY={screen.y}
