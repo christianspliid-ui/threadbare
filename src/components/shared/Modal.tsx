@@ -29,6 +29,13 @@ interface ModalProps {
    * untouched; pass `MODAL_Z_ABOVE_INTERRUPT` to open above a modal-tier interrupt.
    */
   zIndex?: number;
+  /**
+   * Whether Escape closes this modal (default true). A modal whose `onClose`
+   * deliberately ignores implicit closes (PremonitionModal, THR-1711) passes
+   * false, so it registers no escape layer and Escape reaches the surface
+   * beneath it instead of being swallowed (THR-1816).
+   */
+  closeOnEscape?: boolean;
   /** Accessible label for the dialog (aria-label). */
   'aria-label'?: string;
   /**
@@ -74,14 +81,14 @@ export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
  * a new containing block). Instead, the backdrop div handles its own
  * mount/unmount lifecycle and applies animation classes directly.
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
+function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, closeOnEscape = true, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   // THR-1816 — Escape closes this modal only when it is the topmost surface.
-  useEscapeLayer(open, onClose, zIndex);
+  useEscapeLayer(open && closeOnEscape, onClose, zIndex);
 
   /**
    * Law 50 — focus follows the surface. The contract lives in `useDialogFocus` so

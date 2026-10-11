@@ -250,8 +250,9 @@ export function PremonitionModal({
     // THR-1711 (1): Escape and a backdrop click do NOT decline. A premonition is a
     // one-shot choice — `handlePremonitionDismiss` drops it from the queue for good —
     // and Escape is the key the player presses to close the action drawer under it.
-    // Only the explicit decline button below declines.
-    <Modal open={open} onClose={IGNORE_IMPLICIT_CLOSE} maxWidth={520} aria-label={headerText}>
+    // Only the explicit decline button below declines. `closeOnEscape={false}`
+    // keeps it off the escape registry so that Escape still reaches the drawer (THR-1816).
+    <Modal open={open} onClose={IGNORE_IMPLICIT_CLOSE} closeOnEscape={false} maxWidth={520} aria-label={headerText}>
       <div
         className="rounded-lg overflow-hidden"
         style={{
