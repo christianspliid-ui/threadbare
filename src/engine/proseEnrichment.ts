@@ -10,6 +10,7 @@
  *   {artifact:weapon}   → notable weapon name, or fallback
  *   {ally:strongest}    → strongest ally name, or fallback
  *   {them}/{they}/{s}   → gendered pronouns (default: they/them)
+ *   {is}/{are}          → copula agreeing with {they} ("is" / "are") (THR-1810)
  *   {location}          → current location name
  *   {target:family}     → a monster target's family card line (THR-1545); strips
  *                         for any other target
@@ -847,6 +848,13 @@ export function enrichProse(
   // Reflexive of `them`; the they/them default makes "themselves" the right form.
   result = result.replace(/{themselves}/g, ctx.pronouns.themselves ?? 'themselves');
   result = result.replace(/{s}/g, ctx.pronouns.s);
+  // THR-1810 — the copula after the subject pronoun. `{is}` and `{are}` are one token
+  // spelled two ways (ambitionProse authors `{is}`, the rite prose `{are}`); both read
+  // "is" for he/she and "are" for they. Derived from `s` so every caller's pronoun
+  // shape works unchanged: the empty suffix is the plural arm.
+  const copula = ctx.pronouns.s === '' ? 'are' : 'is';
+  result = result.replace(/{is}/g, copula);
+  result = result.replace(/{are}/g, copula);
   result = result.replace(/{They}/g, capitalize(ctx.pronouns.they));
   result = result.replace(/{Them}/g, capitalize(ctx.pronouns.them));
   result = result.replace(/{Their}/g, capitalize(ctx.pronouns.their));
