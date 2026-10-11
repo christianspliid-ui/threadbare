@@ -5,6 +5,7 @@ import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActiv
 import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
 import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../../data/geo-word-bands';
 import { MAP_OVERLAY_Z } from '../overlay/mapOverlayZ';
+import { terrainDisplayName } from '../palette/terrainPalette';
 import { useSyncExternalStore } from 'react';
 import {
   isNudgeDesignerViewEnabled,
@@ -15,23 +16,17 @@ import {
 const TOOLTIP_MAX_ROUTES = 3;
 
 /**
- * Water terrain types and their display labels.
- * Matches the tooltip copywriting contract in 01-UI-SPEC.md.
+ * THR-1818 — the river feature reads as a word, the same "River" the hex detail
+ * panel's Feature row shows. No icon vocabulary owns map features, and an emoji
+ * is outside every one (Law 9), so the word is the honest glyph.
  */
-const WATER_DISPLAY_LABELS: Record<string, string> = {
-  ocean:            'Ocean',
-  tropical_ocean:   'Ocean',
-  deep_ocean:       'Deep Ocean',
-  lake:             'Lake',
-  river:            'River',
-  shallows:         'Shallow Waters',
-  coastal_shallows: 'Shallow Waters',
-  coast:            'Shallow Waters',
-  reef:             'Shallow Waters',
-};
+export const HEX_TOOLTIP_RIVER_LABEL = 'River';
 
 interface HexTooltipProps {
-  /** Display name for the terrain type (Title Case) */
+  /**
+   * Terrain name fallback when no `terrainKey` is given. Always passed through
+   * `terrainDisplayName`, so a raw engine key here still renders Title Case.
+   */
   terrainName: string;
   /** Hex coordinate for "(col, row)" display */
   coord: HexCoord;
@@ -43,7 +38,7 @@ interface HexTooltipProps {
   canvasWidth: number;
   /** Canvas height — used for vertical clamping */
   canvasHeight: number;
-  /** Raw terrain key — if this is a water terrain, override terrainName with water label */
+  /** Raw terrain key — resolved to its display name via `terrainDisplayName` (THR-1818). */
   terrainKey?: string;
   /** Geo parameters for dev debug display */
   geoParams?: GeoParams;
@@ -153,10 +148,8 @@ export function HexTooltip({
   if (left + estimatedWidth > canvasWidth - 4) left = canvasWidth - estimatedWidth - 4;
   if (top < 4) top = screenY + offsetY;
 
-  // Resolve terrain display name
-  const displayTerrainName = terrainKey && WATER_DISPLAY_LABELS[terrainKey]
-    ? WATER_DISPLAY_LABELS[terrainKey]
-    : terrainName;
+  // Resolve terrain display name through the one display-name map (THR-1818)
+  const displayTerrainName = terrainDisplayName(terrainKey || terrainName);
 
   const dimStyle = {
     color:      'var(--text-tertiary)',
@@ -198,8 +191,13 @@ export function HexTooltip({
         }}
       >
         {locationActivity ? locationActivity.locationName : displayTerrainName}
-        {hasRiver && !locationActivity && (
-          <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> 🌊</span>
+        {hasRiver && !locationActivity && displayTerrainName !== HEX_TOOLTIP_RIVER_LABEL && (
+          <span
+            data-testid="hex-tooltip-river"
+            style={{ color: 'var(--text-secondary)', fontWeight: 400 }}
+          >
+            {' · '}{HEX_TOOLTIP_RIVER_LABEL}
+          </span>
         )}
       </div>
 

@@ -62,12 +62,33 @@ export const TERRAIN_PALETTE: Record<string, string> = {
 export const FALLBACK_TERRAIN_COLOR = '#888888';
 
 /**
- * Converts a snake_case terrain key to Title Case display name.
- * e.g. 'temperate_forest' -> 'Temperate Forest'
+ * Terrain keys whose player-facing name is not the Title-Cased key (THR-1818).
+ * Water reads by what the player sees, not by the biome's subtype — formerly a
+ * tooltip-only map, now the one map every surface reads through
+ * `terrainDisplayName`, so the hover tooltip and the hex detail panel agree.
+ */
+export const TERRAIN_DISPLAY_OVERRIDES: Record<string, string> = {
+  ocean:            'Ocean',
+  tropical_ocean:   'Ocean',
+  deep_ocean:       'Deep Ocean',
+  lake:             'Lake',
+  river:            'River',
+  shallows:         'Shallow Waters',
+  coastal_shallows: 'Shallow Waters',
+  coast:            'Shallow Waters',
+  reef:             'Shallow Waters',
+};
+
+/**
+ * Player-facing name for a terrain key: the override when one exists, else
+ * the snake_case key in Title Case. e.g. 'temperate_forest' -> 'Temperate Forest'
  */
 export function terrainDisplayName(key: string): string {
+  const override = TERRAIN_DISPLAY_OVERRIDES[key];
+  if (override) return override;
   return key
     .split('_')
+    .filter(word => word.length > 0)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
