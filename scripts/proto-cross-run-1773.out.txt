@@ -1,0 +1,52 @@
+THR-1773 cross-run curve — harvest bittersweet every run, 2 card unlocks a run, 300 seeds per point
+Run-1 market 70 cards; reservoir 23: Divine Edict, Stir Dissent, Whisper to the Leader, Surface a Doubter, Kindle a Calling, Schism, Anoint Champion, Anoint Successor, Awaken the Spirit of the Place, Enshrine Relic, Rend the Earth, Forge Seer's Token, Sever the Flow, Send a Herald, Forge Divine Instrument, Smite, Consecrate the Past, Restore a Fragment, Rewrite History, Bury the Past, Anchor the Sphere, Install a Champion, Dream Sending
+
+What a run starts with (the god played that run; head start read against its spheres)
+| Run | God                     | Hungers on offer | Market cards | Still sealed | Echoes alive M/L/R | Places Held/Touched at start | Hostile monuments | Kin mortals | World tilt to its spheres |
+|-----|-------------------------|------------------|--------------|--------------|--------------------|------------------------------|-------------------|-------------|---------------------------|
+| 1   | gather (life/spirit)    | 4                | 70           | 23           | 0 / 0 / 0          | 0/0                          | 0                 | 0           | ×1.00                     |
+| 2   | witness (mind/spirit)   | 5                | 72           | 21           | 0 / 1 / 1          | 0/0                          | 0                 | 1           | ×1.20                     |
+| 5   | preserve (time/spirit)  | 8                | 78           | 15           | 2 / 2 / 2          | 1/1                          | 0                 | 1           | ×1.34                     |
+| 10  | consume (entropy/force) | 12               | 88           | 5            | 2 / 2 / 2          | 0/0                          | 1                 | 0           | ×0.92                     |
+| 20  | bind (matter/mind)      | 12               | 93           | 0            | 2 / 2 / 2          | 1/0                          | 1                 | 1           | ×1.20                     |
+
+What the run then does (Shepherd measured on that account's market; fit player; means)
+| Run | Day 10 held / bought | Day 45 held / bought | Day 45 bought T1/T2/T3/T4 | Day 90 bought T3/T4 | Shared first five buys |
+|-----|----------------------|----------------------|---------------------------|---------------------|------------------------|
+| 1   | 20.0 / 2.0           | 44.1 / 15.1          | 7.0 / 7.7 / 0.4 / 0.0     | 7.4 / 1.0           | 0.35                   |
+| 2   | 20.0 / 2.0           | 44.1 / 15.1          | 7.0 / 7.7 / 0.4 / 0.0     | 7.8 / 1.0           | 0.35                   |
+| 5   | 20.0 / 2.0           | 43.9 / 14.9          | 7.0 / 7.6 / 0.4 / 0.0     | 8.0 / 1.0           | 0.35                   |
+| 10  | 20.0 / 2.0           | 43.9 / 14.9          | 7.0 / 7.5 / 0.4 / 0.0     | 7.5 / 1.6           | 0.35                   |
+| 20  | 20.0 / 2.0           | 43.9 / 14.9          | 7.0 / 7.5 / 0.4 / 0.0     | 7.2 / 1.9           | 0.35                   |
+
+Hunger awakening order: gather, witness, reclaim, sever, preserve, reshape, kindle, bind, wander, consume, illuminate, haunt
+=== SENSITIVITY: harvest triumphant every run ===
+What a run starts with (the god played that run; head start read against its spheres)
+| Run | God                     | Hungers on offer | Market cards | Still sealed | Echoes alive M/L/R | Places Held/Touched at start | Hostile monuments | Kin mortals | World tilt to its spheres |
+|-----|-------------------------|------------------|--------------|--------------|--------------------|------------------------------|-------------------|-------------|---------------------------|
+| 1   | gather (life/spirit)    | 4                | 70           | 23           | 0 / 0 / 0          | 0/0                          | 0                 | 0           | ×1.00                     |
+| 2   | witness (mind/spirit)   | 5                | 72           | 21           | 1 / 1 / 1          | 1/0                          | 0                 | 1           | ×1.20                     |
+| 5   | preserve (time/spirit)  | 8                | 78           | 15           | 2 / 2 / 2          | 1/0                          | 0                 | 1           | ×1.34                     |
+| 10  | consume (entropy/force) | 12               | 88           | 5            | 2 / 2 / 2          | 0/0                          | 1                 | 0           | ×0.92                     |
+| 20  | bind (matter/mind)      | 12               | 93           | 0            | 2 / 2 / 2          | 1/0                          | 0                 | 1           | ×1.20                     |
+
+=== SENSITIVITY: harvest somber every run ===
+What a run starts with (the god played that run; head start read against its spheres)
+| Run | God                     | Hungers on offer | Market cards | Still sealed | Echoes alive M/L/R | Places Held/Touched at start | Hostile monuments | Kin mortals | World tilt to its spheres |
+|-----|-------------------------|------------------|--------------|--------------|--------------------|------------------------------|-------------------|-------------|---------------------------|
+| 1   | gather (life/spirit)    | 4                | 70           | 23           | 0 / 0 / 0          | 0/0                          | 0                 | 0           | ×1.00                     |
+| 2   | witness (mind/spirit)   | 5                | 72           | 21           | 0 / 1 / 0          | 0/0                          | 0                 | 1           | ×1.20                     |
+| 5   | preserve (time/spirit)  | 8                | 78           | 15           | 1 / 2 / 1          | 1/0                          | 0                 | 1           | ×1.34                     |
+| 10  | consume (entropy/force) | 12               | 88           | 5            | 2 / 2 / 2          | 0/1                          | 0                 | 1           | ×0.92                     |
+| 20  | bind (matter/mind)      | 12               | 93           | 0            | 2 / 2 / 2          | 1/0                          | 1                 | 1           | ×1.20                     |
+
+=== SENSITIVITY: 4 card unlocks a run ===
+What a run starts with (the god played that run; head start read against its spheres)
+| Run | God                     | Hungers on offer | Market cards | Still sealed | Echoes alive M/L/R | Places Held/Touched at start | Hostile monuments | Kin mortals | World tilt to its spheres |
+|-----|-------------------------|------------------|--------------|--------------|--------------------|------------------------------|-------------------|-------------|---------------------------|
+| 1   | gather (life/spirit)    | 4                | 70           | 23           | 0 / 0 / 0          | 0/0                          | 0                 | 0           | ×1.00                     |
+| 2   | witness (mind/spirit)   | 5                | 74           | 19           | 0 / 1 / 1          | 0/0                          | 0                 | 1           | ×1.20                     |
+| 5   | preserve (time/spirit)  | 8                | 86           | 7            | 2 / 2 / 2          | 1/1                          | 0                 | 1           | ×1.34                     |
+| 10  | consume (entropy/force) | 12               | 93           | 0            | 2 / 2 / 2          | 0/0                          | 1                 | 0           | ×0.92                     |
+| 20  | bind (matter/mind)      | 12               | 93           | 0            | 2 / 2 / 2          | 1/0                          | 1                 | 1           | ×1.20                     |
+

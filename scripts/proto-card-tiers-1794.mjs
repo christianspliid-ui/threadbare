@@ -51,6 +51,9 @@ const CARDS = CATALOG.map(c => {
   return { ...c, tier: p ? Number(p.tier) : null, offer: p?.offer ?? null, generic: p?.generic === 'y',
     pricedIn: p?.pricedIn || c.sphere || null, gift: p?.gift || null, flag: p?.flag || '', why: p?.why || '' };
 });
+// THR-1773: cards the account has not yet unlocked never rise among the omens (--locked id,id,… or @file)
+const LOCKED = new Set((() => { const v = argv('--locked'); if (!v) return []; return (v.startsWith('@') ? readFileSync(v.slice(1), 'utf8') : v).split(/[\s,]+/).filter(Boolean); })());
+for (const c of CARDS) if (LOCKED.has(c.id) && c.offer === 'market') c.offer = 'locked';
 if (GENERIC_SOLD) for (const c of CARDS) if (c.generic && c.gift === 'rung') { c.offer = 'market'; c.gift = null; }
 
 const SPHERES = ['chaos', 'order', 'light', 'darkness', 'force', 'mind', 'matter', 'time', 'energy', 'spirit', 'life', 'entropy'];
@@ -61,7 +64,7 @@ function check() {
   for (const c of CARDS) {
     if (c.tier == null) { errs.push(`${c.id}: no progression row`); continue; }
     if (![1, 2, 3, 4].includes(c.tier)) errs.push(`${c.id}: tier ${c.tier} not in 1..4`);
-    if (!['market', 'gift'].includes(c.offer)) errs.push(`${c.id}: offer '${c.offer}' not market|gift`);
+    if (!['market', 'gift', 'locked'].includes(c.offer)) errs.push(`${c.id}: offer '${c.offer}' not market|gift`);
     if (c.offer === 'market' && !c.generic && !SPHERES.includes(c.pricedIn)) errs.push(`${c.id}: market card with no price sphere`);
     if (c.offer === 'gift' && !['spine', 'milestone', 'rung', 'signature'].includes(c.gift)) errs.push(`${c.id}: gift with no giver`);
     if (c.sphere && c.pricedIn !== c.sphere) errs.push(`${c.id}: pricedIn ${c.pricedIn} disagrees with sphereAffinity ${c.sphere}`);
@@ -254,6 +257,19 @@ const nameOf = id => CARDS.find(c => c.id === id)?.name ?? id;
 const buys = acq => acq.filter(a => a.how === 'buy');
 const postSpine = (acq, god) => acq.filter(a => a.id !== god.signatures.primary && !/_source$/.test(a.id));
 
+// THR-1773: machine-readable summary for the cross-run curve (fit player, both gods, means over MC_RUNS seeds)
+if (args.includes('--json')) {
+  const out = { market: CARDS.filter(c => c.offer === 'market').length, locked: CARDS.filter(c => c.offer === 'locked').length, gods: {} };
+  for (const [k, god] of Object.entries(GODS)) {
+    const acc = { 10: { held: 0, bought: 0, rung: 0, tiers: [0, 0, 0, 0] }, 45: { held: 0, bought: 0, rung: 0, tiers: [0, 0, 0, 0] }, 90: { held: 0, bought: 0, rung: 0, tiers: [0, 0, 0, 0] } };
+    for (let s = 1; s <= MC_RUNS; s++) for (const sn of run(god, 'fit', s).snaps) if (acc[sn.day]) { const a = acc[sn.day]; a.held += sn.cards; a.bought += sn.bought; a.rung += sn.rung; sn.boughtTiers.forEach((n, i) => { a.tiers[i] += n; }); }
+    for (const d of Object.values(acc)) { d.held /= MC_RUNS; d.bought /= MC_RUNS; d.rung /= MC_RUNS; d.tiers = d.tiers.map(n => n / MC_RUNS); }
+    out.gods[k] = acc;
+  }
+  let sh = 0; for (let s = 1; s <= MC_RUNS; s++) { const x = buys(run(GODS.shepherd, 'fit', s).acquired).slice(0, 5).map(q => q.id), y = buys(run(GODS.showcase, 'fit', s).acquired).slice(0, 5).map(q => q.id); sh += x.filter(id => y.includes(id)).length; }
+  out.shared5 = sh / MC_RUNS;
+  console.log(JSON.stringify(out)); process.exit(0);
+}
 console.log(`THR-1794 card tiers — table ${TIERS_PATH.split(/[\\/]/).pop()}${GENERIC_SOLD ? ' — FORK OPTION: generic cards SOLD (priced in the primary)' : ''}`);
 const counts = { market: 0, gift: 0 }; for (const c of CARDS) counts[c.offer]++;
 const byTier = [1, 2, 3, 4].map(n => `T${n} ${CARDS.filter(c => c.tier === n && c.offer === 'market').length}m/${CARDS.filter(c => c.tier === n && c.offer === 'gift').length}g`);
