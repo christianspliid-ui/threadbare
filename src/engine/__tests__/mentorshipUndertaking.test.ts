@@ -22,6 +22,7 @@ import {
   applyPendingMentorshipSevers,
   MENTORSHIP_TEMPLATE_ID,
 } from '../mentorshipUndertaking';
+import { resolveMentorship } from '../mentorshipOutcomes';
 import {
   MENTOR_MIN_TIER,
   BOND_DRIFT_ON_SUCCESS,
@@ -76,9 +77,9 @@ function makeLocation(graph: WorldGraph, id: string, col: number, row: number): 
 /**
  * A mentor comfortably above the tier floor and an apprentice inside the band.
  *
- * The raw values are measured, not guessed: `computeCapability` is a sigmoid that
- * saturates near raw 20, and `computeTier` is `ceil(cap * 10)`. So raw 40 → tier 10
- * (clears MENTOR_MIN_TIER 6) and raw 7 → tier 3 (inside APPRENTICE_MIN/MAX 2–4).
+ * The raw values are measured, not guessed: the gates read the reach share
+ * (raw / 40, THR-1580), and `computeTier` is `ceil(share * 10)`. So raw 40 → tier 10
+ * (clears MENTOR_MIN_TIER 6) and raw 7 → tier 2 (inside APPRENTICE_MIN/MAX 2–4).
  * The first draft used raw 3 for the apprentice, which is **tier 1** — below the
  * band — and every eligibility test in this file failed for that reason rather than
  * for anything about the code.
@@ -431,5 +432,49 @@ describe('rewires that fix retired-phase defects', () => {
     expect(first.events.length + first.seeds.length).toBeGreaterThan(0);
     expect(second.events).toEqual([]);
     expect(second.seeds).toEqual([]);
+  });
+});
+
+// ─── THR-1580 — the tier gates read the reach share ──────────────────
+//
+// On the pre-refit curve (midpoint 10, k 0.4) raw 15.5 already read tier 10, so a
+// raw-15 dabbler could teach and a raw-16 graduate "surpassed" a raw-40 master.
+
+describe('THR-1580 — mentorship tiers read the reach share', () => {
+  function pair(mentorRaw: number, apprenticeRaw: number): WorldGraph {
+    const graph = new WorldGraph();
+    makeLocation(graph, 'loc_town', 5, 5);
+    makeActor(graph, 'mentor', mentorRaw, 'loc_town');
+    makeActor(graph, 'apprentice', apprenticeRaw, 'loc_town');
+    return graph;
+  }
+
+  function graduate(mentorRaw: number, apprenticeRaw: number) {
+    const graph = pair(mentorRaw, apprenticeRaw);
+    graph.addEdge({
+      id: 'mentors_t',
+      source: 'mentor',
+      target: 'apprentice',
+      type: 'mentors',
+      properties: { domain: 'heart', bondQuality: 0.9, progress: 1, phase: 'training' },
+    });
+    return resolveMentorship(graph, graph.getEdge('mentors_t')!, 'completed', 20).arc;
+  }
+
+  it('a raw-15 actor (pre-refit tier 10) cannot teach', () => {
+    expect(findEligibleApprentices(pair(15, 7), 'mentor')).toEqual([]);
+  });
+
+  it('a raw-12 apprentice (pre-refit tier 9) is inside the band', () => {
+    const picks = findEligibleApprentices(pair(40, 12), 'mentor');
+    expect(picks).toContainEqual({ apprenticeId: 'apprentice', domain: 'heart' });
+  });
+
+  it('a raw-20 graduate of a raw-40 master graduates rather than surpassing', () => {
+    expect(graduate(40, 20)).toBe('graduation');
+  });
+
+  it('a graduate who reaches the master surpasses them', () => {
+    expect(graduate(40, 40)).toBe('surpassing');
   });
 });

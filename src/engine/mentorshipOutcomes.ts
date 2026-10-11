@@ -18,7 +18,7 @@ import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { ReachDomain } from '../types/traits';
 import { MASTERY_TRAIT_BY_REACH } from '../data/mastery-trait-content';
 import { emitTrace } from './traceBuffer';
-import { computeTier, computeCapabilityPreRefit } from './domainCapability';
+import { computeTier, computeReachShare } from './domainCapability';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld } from './simulationRuntime';
 import {
@@ -78,13 +78,14 @@ export function resolveMentorship(
   if (undertakingStatus === 'failed') {
     arc = 'dissolution';
   } else if (progress >= 1.0 && bondQuality >= GRADUATION_BOND_THRESHOLD) {
+    // A standing comparison, not a d100 read — the reach-share tier (THR-1580). The
+    // pre-refit curve hit tier 10 at raw ~15.5, so a raw-16 graduate "surpassed" a
+    // raw-40 master; on the share the apprentice must actually reach the mentor.
     const apprTier = apprenticeNode
-      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-      ? computeTier(computeCapabilityPreRefit(graph, apprenticeId, domain))
+      ? computeTier(computeReachShare(graph, apprenticeId, domain))
       : 0;
     const mentorTier = mentorNode
-      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-      ? computeTier(computeCapabilityPreRefit(graph, mentorId, domain))
+      ? computeTier(computeReachShare(graph, mentorId, domain))
       : 0;
     arc = apprTier >= mentorTier + SURPASSING_TIER_DELTA ? 'surpassing' : 'graduation';
   } else if (bondQuality < FALLING_OUT_BOND_THRESHOLD) {
@@ -151,12 +152,10 @@ export function resolveMentorship(
       newEncounterSeeds.push(buildSystemSeed('mentorship.graduation', apprenticeId, tick, 'mentorship_surpassing'));
 
       const apprTier = apprenticeNode
-        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-        ? computeTier(computeCapabilityPreRefit(graph, apprenticeId, domain))
+          ? computeTier(computeReachShare(graph, apprenticeId, domain))
         : 0;
       const mentorTier = mentorNode
-        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-        ? computeTier(computeCapabilityPreRefit(graph, mentorId, domain))
+          ? computeTier(computeReachShare(graph, mentorId, domain))
         : 0;
 
       emitTrace({

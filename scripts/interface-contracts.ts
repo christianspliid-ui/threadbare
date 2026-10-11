@@ -592,6 +592,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/socialEncounterGeneration.ts',
       // THR-1580: the ring-founding Shadow recruit preference reads the share.
       'src/engine/strategicGraphOps.ts',
+      // THR-1580: the mentor / apprentice tier gates and the Surpassing comparison read the share.
+      'src/engine/mentorshipUndertaking.ts',
+      'src/engine/mentorshipOutcomes.ts',
       // THR-1211: the `past_crime` secret branch, which used to read a
       // `relates_to.properties.reputation` that nothing writes.
       'src/engine/secretGeneration.ts',
