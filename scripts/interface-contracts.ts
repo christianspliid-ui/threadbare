@@ -2403,6 +2403,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/encounterFilterPipeline.ts',
       'src/engine/encounterScoring.ts',
       'src/engine/phaseAscendantProgression.ts',
+      // THR-1580: encounter growth damping and tier crossings (tier promotions).
+      'src/engine/capabilityGrowth.ts',
     ],
     // Deliberately not LIVE: `BROKEN_GATE_ENABLED` ships false, so the candidacy
     // exclusion and drift pull are wired but inert until WS5's rebuild encounters

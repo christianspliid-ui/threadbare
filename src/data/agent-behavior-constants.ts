@@ -350,7 +350,8 @@ export const BASE_ENCOUNTER_GROWTH = 0.5;
  * @range 1.5–3.0 */
 export const PROMOTION_ELIGIBLE_MULTIPLIER = 2.0;
 
-/** Rate at which high capability reduces growth (0–1).
+/** Rate at which high capability reduces growth (0–1). Capability here is the reach
+ * share (THR-1580): raw 40 → 1.0, so growth falls to 30% for a top protagonist.
  * @range 0.3–0.9 (higher = steeper diminishing returns at high cap) */
 export const DIMINISHING_RETURNS_FACTOR = 0.7;
 

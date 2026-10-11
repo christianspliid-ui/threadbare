@@ -10,6 +10,8 @@ import {
   DIMINISHING_RETURNS_FACTOR,
 } from '../capabilityGrowth';
 import type { DomainContributions } from '../../types/traits';
+import { computeRawScore, computeTier } from '../domainCapability';
+import { rawToReachShare } from '../../data/reach-share-constants';
 
 /** Create a minimal graph with an agent and an existing trait for capability */
 function makeGraphWithAgent(agentId: string, domain: string = 'iron', traitLevel: number = 0): WorldGraph {
@@ -273,5 +275,37 @@ describe('applyEncounterGrowth', () => {
     const implicit = applyEncounterGrowth(graph1, 'agent_def_1', 'iron', 60, true, false);
     const explicit = applyEncounterGrowth(graph2, 'agent_def_2', 'iron', 60, true, false, 1.0);
     expect(implicit.growthApplied).toBeCloseTo(explicit.growthApplied, 10);
+  });
+});
+
+// ─── THR-1580: growth damping and tier crossings read the reach share ───────
+
+describe('THR-1580 — capability growth reads the reach share', () => {
+  it('reads previousCapability as the reach share of the raw score', () => {
+    const graph = makeGraphWithAgent('agent_rs', 'iron', 8);
+    const raw = computeRawScore(graph, 'agent_rs', 'iron');
+    const result = applyEncounterGrowth(graph, 'agent_rs', 'iron', 50, true, false);
+    expect(result.previousCapability).toBeCloseTo(rawToReachShare(raw), 10);
+    expect(result.previousTier).toBe(computeTier(rawToReachShare(raw)));
+  });
+
+  it('damps growth by the share: a raw-20 agent (share 0.5) grows 0.5 × (1 − 0.5 × 0.7)', () => {
+    const graph = makeGraphWithAgent('agent_rs20', 'iron', 1);
+    const raw1 = computeRawScore(graph, 'agent_rs20', 'iron');
+    // Scale the base trait so the raw score is exactly 20, whatever the walk's per-level weight.
+    graph.updateEdge('edge_trait_iron_base', { properties: { ...graph.getEdge('edge_trait_iron_base')!.properties, level: 20 / raw1 } });
+    expect(computeRawScore(graph, 'agent_rs20', 'iron')).toBeCloseTo(20, 6);
+    const result = applyEncounterGrowth(graph, 'agent_rs20', 'iron', 50, true, false);
+    expect(result.growthApplied).toBeCloseTo(BASE_ENCOUNTER_GROWTH * (1 - 0.5 * DIMINISHING_RETURNS_FACTOR), 10);
+  });
+
+  it('a raw-20 protagonist still turns a tier over (the pre-refit curve read tier 10 there)', () => {
+    const graph = makeGraphWithAgent('agent_cross', 'iron', 1);
+    const raw1 = computeRawScore(graph, 'agent_cross', 'iron');
+    graph.updateEdge('edge_trait_iron_base', { properties: { ...graph.getEdge('edge_trait_iron_base')!.properties, level: 20 / raw1 } });
+    const result = applyEncounterGrowth(graph, 'agent_cross', 'iron', 50, true, false);
+    expect(result.previousTier).toBe(5);
+    expect(result.newTier).toBe(6);
+    expect(result.tierCrossed).toBe(true);
   });
 });
