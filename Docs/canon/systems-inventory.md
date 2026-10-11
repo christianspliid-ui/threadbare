@@ -239,7 +239,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `appointments` (1) | `appointments.ts` | `THR-1479` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `area` (1) | `areaProjection.ts` | `THR-1155` |
-| `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `TB-073`, `THR-1564`, `THR-626` |
+| `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `TB-073`, `THR-1564`, `THR-1580`, `THR-626` |
 | `artifact` (1) | `artifactTraits.ts` | `THR-1521` |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-1213`, `THR-1318`, `THR-184`, `THR-416`, `THR-500`, `THR-503`, `THR-508`, `THR-509`, `THR-517`, `THR-520` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
