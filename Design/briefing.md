@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 17:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 18:55 local (16:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,4 +30,5 @@ Say "veto <title>" to reverse any of these.
 ## Health
 
 - **Heavy background tests have now failed on the last two commits on main:** [8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478) and [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324). The commit before those passed ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38137581351)). Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row.
-- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 17:40. The engine speed check is normal (127 ms per tick, 8% slower than its week average and well inside the 25% limit).
+- **Engine speed check tripped:** "tick cost 167 ms/tick steady, 43% above the 7-day median (117, 120 rows since 288083e6); top phase agent_decision, 586 agents. Name the merges between 288083e6 and 8f9853c2: git log --oneline --merges 288083e6..8f9853c2". Same commit measured 127 ms an hour ago, and this run measured while other checks ran alongside, so it may be noise; if the next run also trips, the builder owes a look. Not yours.
+- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 18:40.
