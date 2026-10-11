@@ -45,6 +45,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 | Slot | Cadence | Task | Enabled | Disposition |
 |------|---------|------|---------|-------------|
 | — | Manual only | `website-code-work` ("check for work on the website") | **No** (`enabled: false`, last ran 2026-05-26) | **Out of scope — personal site, not Threadbare. Do not touch, do not enable, do not port.** Prompt: `C:\Users\chris\.claude\scheduled-tasks\website-code-work\SKILL.md` |
+| **1st 09:00** | Monthly | `korselsfradrag-monthly` ("Kørselsfradrag månedlig") | Yes (`0 9 1 * *`) | **Out of scope — personal bookkeeping, not Threadbare. Do not touch, do not port, do not mirror.** Row added by the 2026-10-11 hygiene sweep, which found the directory with no row. It shares the 1st-09:00 slot with `monthly-rulebook-review` but uses no Linear MCP, so there is no collision. |
 
 It carries no cron and fires only when invoked by hand, so it never contends for a slot. The row exists purely so the registered-vs-documented audit has something to match against — mirroring the `weekly-invoice-check` treatment in the Cowork lane table below. A dormant task with no row is indistinguishable from an undocumented one, which is exactly what made this the THR-794 miss.
 
