@@ -910,7 +910,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'but the settlement stands.',
         failureAfterimage:
           'The line buckles. The horde is in the inner streets and the survivors are already moving through the back alleys ' +
-          'toward whatever country is open. {name} is among them, or {they} {is} not. ' +
+          'toward whatever country is open. {name} is among them, or is not. ' +
           'Either way, the place that was {location} is no longer the same word.',
       },
     ],
