@@ -1883,6 +1883,26 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       onHexHover(null);
     };
 
+    // ── Filter labels by fog state — hide labels on unexplored hexes ──
+    // Declared above the empty-state return: a hook after an early return
+    // changes the hook count when tiles go from empty to non-empty (THR-1817).
+    const visibleRegionLabels = useMemo(() => {
+      if (!fogEnabled || !visibilityMap) return regionLabels;
+      return regionLabels.filter(label => {
+        const hex = worldToHex(label.worldX, label.worldY, HEX_CONSTANTS.HEX_SIZE);
+        const hexVis = visibilityMap.get(`${hex.col},${hex.row}`);
+        return hexVis?.state !== 'unexplored';
+      });
+    }, [regionLabels, visibilityMap, fogEnabled]);
+
+    const visibleLocationLabels = useMemo(() => {
+      if (!fogEnabled || !visibilityMap) return locationLabels;
+      return locationLabels.filter(loc => {
+        const hexVis = visibilityMap.get(`${loc.hexCol},${loc.hexRow}`);
+        return hexVis?.state !== 'unexplored';
+      });
+    }, [locationLabels, visibilityMap, fogEnabled]);
+
     // ── Empty state ───────────────────────────────────────────────
     if (tiles.length === 0) {
       return (
@@ -1911,24 +1931,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         </div>
       );
     }
-
-    // ── Filter labels by fog state — hide labels on unexplored hexes ──
-    const visibleRegionLabels = useMemo(() => {
-      if (!fogEnabled || !visibilityMap) return regionLabels;
-      return regionLabels.filter(label => {
-        const hex = worldToHex(label.worldX, label.worldY, HEX_CONSTANTS.HEX_SIZE);
-        const hexVis = visibilityMap.get(`${hex.col},${hex.row}`);
-        return hexVis?.state !== 'unexplored';
-      });
-    }, [regionLabels, visibilityMap, fogEnabled]);
-
-    const visibleLocationLabels = useMemo(() => {
-      if (!fogEnabled || !visibilityMap) return locationLabels;
-      return locationLabels.filter(loc => {
-        const hexVis = visibilityMap.get(`${loc.hexCol},${loc.hexRow}`);
-        return hexVis?.state !== 'unexplored';
-      });
-    }, [locationLabels, visibilityMap, fogEnabled]);
 
     // ── Normal render ─────────────────────────────────────────────
     return (
