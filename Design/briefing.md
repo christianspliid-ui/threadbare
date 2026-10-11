@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 04:56 local (02:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 05:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,9 +24,9 @@ Say "veto <title>" to reverse any of these. Both windows close this afternoon (a
 
 ## Queue
 
-**Starved: 0 jobs ready, 1 being built.** The orchestrator queued one engine job overnight and the builder picked it up at 04:30: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at) (mortals' sight, growth and renown still treat every hero as a master). It has local commits (latest 04:41) and no pull request yet — normal for a run 25 minutes in. Nothing is blocked, stale or parked. Still waiting in Todo: [chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player), [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build. Next design-lane run ~08:14.
+**Starved: 0 jobs ready, 1 being built.** The builder is working through [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at) one system at a time. Two pieces are already merged and live: social leverage ([#2314](https://github.com/christianspliid-ui/threadbare/pull/2314)) and the reputation walk ([#2315](https://github.com/christianspliid-ui/threadbare/pull/2315)). The third piece, power and renown, is on its own branch with a commit from 05:55, so it is actively in progress. Nothing is blocked, stale or parked. Still waiting in Todo: [chapter results out of sight](https://linear.app/threadbare/issue/THR-1806/on-the-main-map-the-firsts-chapters-end-out-of-sight-the-player), [can't read what they spend or risk](https://linear.app/threadbare/issue/THR-1807), [no direction after the bond](https://linear.app/threadbare/issue/THR-1808) and the [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) build. Next design-lane run ~08:14.
 
 ## Health
 
 - **Heavy simulation tests are still red on the latest main** ([CI runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)): *"\"Heavy simulation tests\" is red on the latest main (9 h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it."* Same timeout already logged as impediment #1167; still unclaimed. Executor work, not yours.
-- Everything else is green. The live site is serving the latest main (57516cf7), no pull requests are open or stuck, automated checks are running normally, every scheduled lane is on time, the cleanup job ran at 04:40, and the engine's speed is flat (107 ms per tick, 9% under the weekly median).
+- Everything else is green. The live site is serving the latest main (a48240c7), no pull requests are open or stuck, automated checks are running normally, all 11 scheduled lanes are on time, the cleanup job ran at 05:40, and the engine's speed is flat (106 ms per tick, 10% under the weekly median).
