@@ -1,0 +1,8 @@
+# 2026-10-11 — THR-1580 (slice 6): ring recruiting reads the reach share
+
+**Ticket:** [THR-1580](https://linear.app/threadbare/issue/THR-1580) · **Plan:** `Docs/plans/2026-09-24-thr-1575-forecast-window.md` § Systems design 4 · multi-PR deferral, ticket stays open.
+
+- **The reader.** `foundRing` (`strategicGraphOps`) fills a ring from the bound recruit cast, then from co-located ungrouped individuals ordered faction-mate first, then anyone whose Shadow is at or above `RING_RECRUIT_SHADOW_MIN` (0.35), then everyone else, by id. A preference, not a gate — the ring founds either way. It read the pre-refit curve (midpoint 10, k 0.4), where 0.35 sits at raw ~8.5.
+- **Measured** (`npm run measure:ring-recruit-scales`, ring-eligible people at every location, medium, tick 0, seeds 42 · 99 · 7). Shadow is bimodal: p50 raw 0, p90 2–3, p99 27–37. Leaners: pre-refit 3.8 · 3.5 · 3.2% → reach share 3.8 · 3.3 · 3.0% (dice 1.2 · 1.9 · 1.4%). Locations with a leaner 14.5 · 12.8 · 12.0% → 14.5 · 12.1 · 11.4%. No location has more leaners than a ring takes on any scale.
+- **Verdict: reach share** (`computeReachShare`), threshold unchanged — the lean now starts past raw 14. Behaviourally near-neutral: the pre-refit and reach-share cuts both fall in Shadow's empty middle. The dice would halve the leaners, which is a tuning call. `RING_RECRUIT_SHADOW_MIN` remains the lever.
+- **Remaining THR-1580 families:** capabilityGrowth, domainCapability profile, encounterAwareness (idle-rate check mandatory; mutex with a THR-1757 cap change), encounterScoring, mentorship (outcomes + undertaking), phaseAscendantProgression.
