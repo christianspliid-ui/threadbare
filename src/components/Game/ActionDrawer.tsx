@@ -36,6 +36,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import type { OutcomeBand } from '../../engine/outcomeConsequences';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
 import { HAND_MAX_HEIGHT_PX } from '../shared/CardFace';
 import {
   NARRATIVE_LAYER_ICONS,
@@ -57,6 +58,9 @@ const LAYER_CONFIG: { key: NarrativeLayer; label: string; icon: string }[] = [
 
 /** Drawer slide transition (ms). */
 const DRAWER_TRANSITION_MS = 200;
+
+/** The action-card hand band in `layout-zones.md` (40) — its escape-layer rank (THR-1816). */
+const ACTION_DRAWER_ESCAPE_Z = 40;
 
 /**
  * Gap between cards in the row. Matches the nudge hand's own gap, so the two
@@ -154,21 +158,16 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       if (!open) setArmedSlotId(null);
     }, [open]);
 
-    // Handle Escape key — disarm first, then close the drawer
-    useEffect(() => {
-      if (!open) return;
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          if (armedSlotId) {
-            setArmedSlotId(null);
-          } else {
-            onClose();
-          }
-        }
-      };
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [open, onClose, armedSlotId]);
+    // Handle Escape key — disarm first, then close the drawer. Routed through the
+    // escape registry (THR-1816) so a sheet or veil above the drawer takes it first.
+    const handleDrawerEscape = useCallback(() => {
+      if (armedSlotId) {
+        setArmedSlotId(null);
+      } else {
+        onClose();
+      }
+    }, [armedSlotId, onClose]);
+    useEscapeLayer(open, handleDrawerEscape, ACTION_DRAWER_ESCAPE_Z);
 
     // Slot filtering — apply layer filter for hex-targeting cards
     const { observationSlots, interventionSlots, lockedSlots } = useMemo(() => {
