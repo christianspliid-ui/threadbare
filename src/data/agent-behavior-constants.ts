@@ -510,7 +510,9 @@ export const RIVAL_BOND_BOOST = 0.3;
  * @range -0.3 to 0.0 */
 export const STRANGER_MODIFIER = -0.1;
 
-/** Eye capability threshold above which the agent gets a curiosity bonus.
+/** Eye reach share above which the agent gets a curiosity bonus (raw 12 at 0.3).
+ * Read on the reach share, not the pre-refit curve (THR-1580): that curve put 0.3 at
+ * raw ~7.9, so ambient folk with a stray Eye trait read as perceptive.
  * @range 0.1–0.5 */
 export const STRANGER_CURIOSITY_THRESHOLD = 0.3;
 

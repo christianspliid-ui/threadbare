@@ -266,6 +266,21 @@ describe('socialEncounterGeneration', () => {
       const modifier = computeBondModifier(graph, 'a', 'b');
       expect(modifier).toBeCloseTo(STRANGER_MODIFIER + STRANGER_CURIOSITY_BONUS);
     });
+
+    // THR-1580: the gate reads the reach share (raw ÷ 40), so 0.3 sits at raw 12. The
+    // pre-refit curve put it at raw ~7.9, which made a stray Eye trait read as perceptive.
+    it('reads the reach share: raw 10 Eye is not curious, raw 13 is (THR-1580)', () => {
+      addLocation(graph, 'loc-1', 'town');
+      addAgent(graph, 'a', 'loc-1');
+      addAgent(graph, 'c', 'loc-1');
+      addAgent(graph, 'b', 'loc-1');
+      addTraitWithEye(graph, 'a', 10);
+      addTraitWithEye(graph, 'c', 13);
+
+      expect(computeBondModifier(graph, 'a', 'b')).toBeCloseTo(STRANGER_MODIFIER);
+      expect(computeBondModifier(graph, 'c', 'b')).toBeCloseTo(STRANGER_MODIFIER + STRANGER_CURIOSITY_BONUS);
+      expect(STRANGER_CURIOSITY_THRESHOLD).toBe(0.3);
+    });
   });
 
   describe('tavern social mechanics', () => {

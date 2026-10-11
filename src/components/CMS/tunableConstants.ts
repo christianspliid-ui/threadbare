@@ -462,7 +462,7 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'src/data/agent-behavior-constants.ts', [-0.3, 0.0],
         'socialEncounterGeneration → stranger penalty'),
       n('STRANGER_CURIOSITY_THRESHOLD', abc.STRANGER_CURIOSITY_THRESHOLD,
-        'Eye capability threshold above which the agent gets a curiosity bonus.',
+        'Eye reach share above which the agent gets a curiosity bonus (raw 12 at 0.3).',
         'src/data/agent-behavior-constants.ts', [0.1, 0.5],
         'socialEncounterGeneration → eye capability gate'),
       n('STRANGER_CURIOSITY_BONUS', abc.STRANGER_CURIOSITY_BONUS,
