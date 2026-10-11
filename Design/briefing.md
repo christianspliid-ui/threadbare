@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 18:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 19:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,10 +25,10 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 jobs ready, none being built right now.** Ready, all from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). The next builder run picks one up on its own. Now live: [the map tooltip names land in plain words and hides when you click](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and) ([#2336](https://github.com/christianspliid-ui/threadbare/pull/2336)). Nothing is blocked, stale or parked.
+**Healthy: 3 jobs ready, none being built right now.** Ready, all from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). The next builder run picks one up on its own. Nothing is blocked, stale or parked.
 
 ## Health
 
-- **Heavy background tests have now failed on the last two commits on main:** [8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478) and [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324). The commit before those passed ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38137581351)). Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row.
-- **Engine speed check tripped:** "tick cost 167 ms/tick steady, 43% above the 7-day median (117, 120 rows since 288083e6); top phase agent_decision, 586 agents. Name the merges between 288083e6 and 8f9853c2: git log --oneline --merges 288083e6..8f9853c2". Same commit measured 127 ms an hour ago, and this run measured while other checks ran alongside, so it may be noise; if the next run also trips, the builder owes a look. Not yours.
-- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 18:40.
+- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 5 hours now. The newest commit only touched docs, so it did not re-run them. Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row. Not yours.
+- Engine speed is back to normal (120 ms per tick, 2% above the weekly median); last hour's alarm was noise.
+- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 19:40.
