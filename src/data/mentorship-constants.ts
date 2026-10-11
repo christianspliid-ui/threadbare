@@ -12,15 +12,16 @@
  *  Allows full rollback without a code revert. */
 export const ENABLE_MENTORSHIP = true;
 
-/** Minimum Domain Capability tier (0-8) a mentor must have in a Reach to teach it.
+/** Minimum reach-share tier (1-10) a mentor must have in a Reach to teach it — raw 20.5+,
+ *  half a top protagonist (THR-1580; the pre-refit curve let raw 10.5 teach, ~10% of people).
  * @range 5–7 */
 export const MENTOR_MIN_TIER = 6;
 
-/** Minimum apprentice tier — must have a foundation to build on.
+/** Minimum apprentice reach-share tier — must have a foundation to build on (raw 4.5+).
  * @range 1–3 */
 export const APPRENTICE_MIN_TIER = 2;
 
-/** Maximum apprentice tier — above this they don't need a mentor.
+/** Maximum apprentice reach-share tier — above this they don't need a mentor (raw < 16.5).
  * @range 3–5 */
 export const APPRENTICE_MAX_TIER = 4;
 
@@ -74,7 +75,8 @@ export const GRADUATION_TRAIT_LEVEL = 2;
  * @range 0.25–0.75 */
 export const FALLING_OUT_TRANSFER_FRACTION = 0.5;
 
-/** Apprentice tier ≥ mentor tier + this → Surpassing arc.
+/** Apprentice reach-share tier ≥ mentor tier + this → Surpassing arc (THR-1580: on the share
+ *  a graduate must truly reach the mentor; the saturating pre-refit curve tied them at tier 10).
  *  Zero means: equal-or-greater tier triggers Surpassing.
  * @range 0–2 */
 export const SURPASSING_TIER_DELTA = 0;

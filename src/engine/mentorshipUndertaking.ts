@@ -46,7 +46,7 @@ import type { GraphNode, GraphEdge, MentorsEdgeProperties } from '../types/graph
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { StrategicProjectRuntime, UndertakingCheckpointEffect } from '../types/strategicAction';
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
-import { computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeReachShare, computeTier } from './domainCapability';
 import { getAgentLocationId, getAgentsAtLocation } from './graphQueries';
 import { resolveToParentLocation } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
@@ -112,13 +112,12 @@ export function findEligibleApprentices(
   const colocated = getAgentsAtLocation(graph, parentLocId).filter(a => a.id !== mentorId);
 
   for (const domain of REACH_DOMAINS) {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    if (computeTier(computeCapabilityPreRefit(graph, mentorId, domain)) < MENTOR_MIN_TIER) continue;
+    // Standing requirements, not d100 reads — the reach-share tier (THR-1580).
+    if (computeTier(computeReachShare(graph, mentorId, domain)) < MENTOR_MIN_TIER) continue;
 
     for (const cand of colocated) {
       if (cand.properties.actorType !== 'individual') continue;
-      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-      const apprTier = computeTier(computeCapabilityPreRefit(graph, cand.id, domain));
+      const apprTier = computeTier(computeReachShare(graph, cand.id, domain));
       if (apprTier < APPRENTICE_MIN_TIER || apprTier > APPRENTICE_MAX_TIER) continue;
       if (hasActiveMentorship(graph, cand.id)) continue;
       picks.push({ apprenticeId: cand.id, domain });
