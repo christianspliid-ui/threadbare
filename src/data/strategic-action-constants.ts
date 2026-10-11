@@ -1632,13 +1632,16 @@ export const RING_TARGET_MEMBER_COUNT = 4;
 export const RING_REACH_HEXES = 3;
 
 /**
- * The Shadow capability at which a stranger is ring material.
+ * The Shadow reach share at which a stranger is ring material (raw 14 at 0.35).
  *
  * The **Reach**, not the Sphere: Shadow is a thing a mortal does, and the two axes
  * are orthogonal — reading `sphereAlignment.darkness` here found nobody on seed 42,
  * because it asks a different question entirely. Measured against the live
  * population (see the ring-founding test): it sits low enough that an ordinary
- * settlement supplies recruits and high enough that not everyone is one.
+ * settlement supplies recruits and high enough that not everyone is one. Read on the
+ * reach share, not the pre-refit curve (THR-1580): Shadow is bimodal (p90 raw 2–3,
+ * leaners raw 9+), so both scales pick the same ~3–4% of people; the dice would
+ * halve them.
  */
 export const RING_RECRUIT_SHADOW_MIN = 0.35;
 

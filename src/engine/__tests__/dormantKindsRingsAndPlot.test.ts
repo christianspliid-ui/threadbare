@@ -125,6 +125,22 @@ describe('founding a ring', () => {
     const memberIds = getGroupMemberEdges(graph, result.createdId!).map(e => e.source);
     expect(memberIds).toContain('actor_peer_5');
   });
+
+  // THR-1580: the Shadow preference reads the reach share (raw ÷ 40), so 0.35 sits at
+  // raw 14. The pre-refit curve put it at raw ~8.5, where raw 12 also read as a leaner.
+  it('prefers a Shadow leaner on the reach share: raw 15 jumps the id order, raw 12 does not (THR-1580)', () => {
+    const graph = world(10);
+    const shadow = (id: string, raw: number) => {
+      graph.addNode({ id: `trait_shadow_${id}`, type: 'trait', name: 'Shadow', properties: { domainContributions: { shadow: raw } } });
+      graph.addEdge({ id: `e_trait_${id}`, source: id, target: `trait_shadow_${id}`, type: 'has_trait', properties: { level: 1 } });
+    };
+    shadow('actor_peer_8', 15);
+    shadow('actor_peer_9', 12);
+    const result = foundRing(makeState(graph), FOUNDER);
+    const memberIds = getGroupMemberEdges(graph, result.createdId!).map(e => e.source);
+    expect(memberIds).toContain('actor_peer_8');
+    expect(memberIds).not.toContain('actor_peer_9');
+  });
 });
 
 // ─── The two facts about the group phase, asserted separately ───────

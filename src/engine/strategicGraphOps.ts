@@ -52,7 +52,7 @@ import {
   RING_REACH_HEXES,
   RING_RECRUIT_SHADOW_MIN,
 } from '../data/strategic-action-constants';
-import { computeCapabilityPreRefit } from './domainCapability';
+import { computeReachShare } from './domainCapability';
 import { seedFactionFromDefinition } from './factionSeeding';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
@@ -1479,8 +1479,8 @@ export function foundRing(
      * Shadow" is the *Reach* (the two axes are orthogonal — reading
      * `sphereAlignment.darkness` asks a different question and found nobody on seed
      * 42), but a hard Shadow threshold makes the cell nearly unfoundable: an
-     * ordinary NPC carries no capability traits at all, so `computeCapability`
-     * returns ~0.02 for them and a settlement full of people supplies no recruits.
+     * ordinary NPC carries no capability traits at all, so their Shadow reach
+     * share reads ~0 and a settlement full of people supplies no recruits.
      * That is this plan's own kill criterion, reached before shipping rather than
      * after. `raiseWarband` takes whoever is standing there for the same reason; a
      * ring is choosier about *order*, never about whether it can exist.
@@ -1492,8 +1492,8 @@ export function foundRing(
         }
       }
       try {
-        // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-        if (computeCapabilityPreRefit(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
+        // A standing lean, not a d100 read — the reach share (THR-1580).
+        if (computeReachShare(graph, n.id, 'shadow') >= RING_RECRUIT_SHADOW_MIN) return 1;
       } catch {
         // Fail-soft: an unreadable capability is simply not a preference.
       }
