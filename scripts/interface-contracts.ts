@@ -3320,6 +3320,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/encounterFilterPipeline.ts',
       'src/engine/strategicActionCandidates.ts',
       'src/engine/phaseDivinePremonition.ts',
+      // THR-1580: social-scene wealth and power leverage compare two agents' standing.
+      'src/engine/socialLeverage.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
       'scripts/reach-gate-census.ts',
