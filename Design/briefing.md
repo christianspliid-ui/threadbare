@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 08:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,8 +24,10 @@ Say "veto <title>" to reverse any of these. Both windows close this afternoon (a
 
 ## Queue
 
-**Starved: 1 job ready, 1 being built.** Ready: [encounter lines show a raw `{are}`](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only) (small bug, filed this morning). Being built: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at), one system at a time. Six pieces are merged and live (the latest, ring recruiting, via [#2319](https://github.com/christianspliid-ui/threadbare/pull/2319)); the seventh, mentorship, is [#2320](https://github.com/christianspliid-ui/threadbare/pull/2320), set to merge when its checks pass. Nothing is blocked, stale or parked.
+**Starved: 1 job ready, 1 being built.** Ready: [encounter lines show a raw `{are}`](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only) (small bug, filed this morning). Being built: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at), one system at a time. Mentorship ([#2320](https://github.com/christianspliid-ui/threadbare/pull/2320)) and anomaly discovery ([#2321](https://github.com/christianspliid-ui/threadbare/pull/2321)) merged in the last hour and are live. No pull requests are waiting. Nothing is blocked, stale or parked.
 
 ## Health
 
-All green. The live site is serving the latest main (f26e6fe3), automated checks and the three background jobs are running normally, all 11 scheduled lanes are on time, and the cleanup job ran at 08:47. Last hour's engine slowdown did not repeat: this run measured 107 ms per tick, 9% under the weekly median, so the 198 ms reading was a one-off.
+- **One slow background test.** "Heavy simulation tests" went red on the mentorship merge: one test ran 19 seconds against a 15-second limit ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38120115603)). That looks like a timing limit, not a broken game. The run on the latest main is still going ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38122107893)). If it goes red too, the builder owes a fix.
+- **Engine slower again:** tick cost 189 ms/tick steady, 61% above the 7-day median (117, 120 rows since 4ac21642); top phase agent_decision, 615 agents. Name the merges between 4ac21642 and 1ed28336: `git log --oneline --merges 4ac21642..1ed28336`. This is the second slow reading in three hours (198, then 107, now 189). It may be other work running on the computer at the same time; the builder should check.
+- Everything else is green: the live site serves the latest main (1ed28336), automated checks are normal, all 11 scheduled lanes are on time, and the cleanup job ran at 09:45.
