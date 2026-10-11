@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 10:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 11:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,6 +30,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Heavy background tests red three runs in a row on main.** Two tests run out of time: one trace test at 5 s and the doom-milestone test at 15 s ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38124096935), [previous](https://github.com/christianspliid-ui/threadbare/actions/runs/38122107893), [first](https://github.com/christianspliid-ui/threadbare/actions/runs/38120115603)). These are timing limits, not a broken game, but it lines up with the slower engine below. The builder owes a fix and an impediment row.
-- **Engine still slower:** tick cost 176 ms/tick steady, 50% above the 7-day median (117, 120 rows since da24c566); top phase agent_decision, 615 agents. Name the merges between da24c566 and 5808578a: `git log --oneline --merges da24c566..5808578a`. Third slow reading in four hours (198, 189, now 176), so it is probably not just other work on the computer. The builder should find the merge.
-- Everything else is green: the live site is current (commits since its last build touched only docs), automated checks are normal, all 11 scheduled lanes are on time, and the cleanup job ran at 10:40.
+- **Heavy background tests now red four runs in a row on main** (red about 3 h). Two tests run out of time: one trace test at 5 s and the doom-milestone test at 15 s ([a recent run](https://github.com/christianspliid-ui/threadbare/actions/runs/38124096935), [the first](https://github.com/christianspliid-ui/threadbare/actions/runs/38120115603)). These are timing limits, not a broken game, and they line up with the slower engine below. The builder owes a fix and an impediment row.
+- **Engine still slower, but easing:** tick cost 154 ms/tick steady, 31% above the 7-day median (118, 121 rows since da24c566); top phase agent_decision, 609 agents. Name the merges between da24c566 and e6882c0f: `git log --oneline --merges da24c566..e6882c0f`. Fourth slow reading in a row (198, 189, 176, now 154). The builder should find the merge.
+- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 11:44.
