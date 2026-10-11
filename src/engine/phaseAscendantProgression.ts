@@ -29,7 +29,7 @@ import type { AscendantProperties } from '../types/influence';
 import type { PendingBeat } from '../types/ascendantBeat';
 import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
-import { computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeReachShare, computeTier } from './domainCapability';
 import { difficultyScaling } from './capabilityGrowth';
 import { emitTrace } from './traceBuffer';
 import {
@@ -98,8 +98,9 @@ export function accruePlayerReachPractice(
   const rank = ranked.indexOf(reach);
   if (rank < 0) return null; // off-domain: no accrual (plan §3.1)
 
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const currentCap = computeCapabilityPreRefit(graph, ascendantId, reach);
+  // Damping reads the reach share (THR-1580), the same scale the tier reads below, so
+  // practice slows across the whole raw 0–40 range rather than flooring at raw ~15.
+  const currentCap = computeReachShare(graph, ascendantId, reach);
   const diffScale = difficultyScaling(stepDifficulty0to1 * 100);
   const diminishing = Math.max(1 - currentCap * PLAYER_DIMINISHING_RETURNS_FACTOR, 0.1);
   const secondaryMult = rank >= 1 ? SECONDARY_REACH_PRACTICE_MULT : 1;
@@ -157,8 +158,10 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   const primarySphere: SphereName = props.sphereAlignment?.primary ?? 'order';
 
   for (const reach of reaches) {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    const cap = computeCapabilityPreRefit(graph, ascId, reach);
+    // The god's tier reads the reach share (THR-1580): one tier per 4 raw across the
+    // mortal range, so Deepening beats arrive evenly and a tier-10 god stands where a
+    // raw-40 mortal master does (the pre-refit curve hit tier 10 at raw ~15.5).
+    const cap = computeReachShare(graph, ascId, reach);
     const tier = computeTier(cap);
     const prev = snapshot[reach];
 
@@ -563,6 +566,7 @@ export interface AscendantReachProgress {
   reach: ReachDomain;
   isPrimary: boolean;
   rawPractice: number;
+  /** Reach share (0–1, THR-1580) — the scale `tier` is read from. */
   capability: number;
   tier: number;
   snapshotTier: number | null;
@@ -586,8 +590,8 @@ export function getAscendantProgress(state: GameState): {
   const practice = props.reachPractice ?? {};
   const pendingBeatId = state.ascendantBeats?.pending?.beatId ?? null;
   const reaches: AscendantReachProgress[] = ranked.map((reach, i) => {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    const capability = computeCapabilityPreRefit(graph, state.ascendantId, reach);
+    // Same reach share as the phase's tier read (THR-1580) — the bar and the beat agree.
+    const capability = computeReachShare(graph, state.ascendantId, reach);
     return {
       reach,
       isPrimary: i === 0,

@@ -14,11 +14,19 @@
 
 import type { ReachDomain } from '../types/traits';
 
-/** Base reach-practice granted per resolved in-domain player action. */
+/**
+ * Base reach-practice granted per resolved in-domain player action.
+ *
+ * The god's tier reads the reach share (THR-1580): one tier per 4 raw, tier 10 past
+ * raw 36. At difficulty 0.5 a primary reach crosses tiers 2…10 at actions
+ * 11 · 22 · 34 · 47 · 62 · 78 · 96 · 117 · 142 (`npm run measure:ascendant-progression-scales`);
+ * the pre-refit curve bunched tiers 3–7 into actions 18–33 and topped out at 58. This
+ * is the lever for the Deepening arc's length.
+ */
 export const PLAYER_PRACTICE_PER_ACTION = 0.4;
 
 /**
- * Rate at which high capability damps further practice (0–1). Mirrors the agent
+ * Rate at which a high reach share (THR-1580) damps further practice (0–1). Mirrors the agent
  * `DIMINISHING_RETURNS_FACTOR` for curve parity — "easy to start, hard to master".
  */
 export const PLAYER_DIMINISHING_RETURNS_FACTOR = 0.7;
