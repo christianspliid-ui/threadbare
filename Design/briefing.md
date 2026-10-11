@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 07:56 local (05:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 08:57 local (06:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,9 +24,8 @@ Say "veto <title>" to reverse any of these. Both windows close this afternoon (a
 
 ## Queue
 
-**Starved: 1 job ready, 1 being built.** Ready: [encounter lines show a raw `{are}`](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only) (small bug, filed this morning by the orchestrator). Being built: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at), one system at a time. Five pieces are merged and live: social leverage ([#2314](https://github.com/christianspliid-ui/threadbare/pull/2314)), the reputation walk ([#2315](https://github.com/christianspliid-ui/threadbare/pull/2315)), power and renown ([#2316](https://github.com/christianspliid-ui/threadbare/pull/2316)), notable agendas ([#2317](https://github.com/christianspliid-ui/threadbare/pull/2317)) and stranger curiosity ([#2318](https://github.com/christianspliid-ui/threadbare/pull/2318)). Nothing is blocked, stale or parked. Next design-lane run ~08:17.
+**Starved: 1 job ready, 1 being built.** Ready: [encounter lines show a raw `{are}`](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only) (small bug, filed this morning). Being built: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at), one system at a time. Six pieces are merged and live (the latest, ring recruiting, via [#2319](https://github.com/christianspliid-ui/threadbare/pull/2319)); the seventh, mentorship, is [#2320](https://github.com/christianspliid-ui/threadbare/pull/2320), set to merge when its checks pass. Nothing is blocked, stale or parked.
 
 ## Health
 
-- **The engine got much slower with the last two merges.** Probe: *"tick cost 198 ms/tick steady, 68% above the 7-day median (118, 121 rows since 30f82b87); top phase agent_decision, 615 agents. Name the merges between 30f82b87 and e7cd2e89: git log --oneline --merges 30f82b87..e7cd2e89"* The previous hourly reading (at [#2316](https://github.com/christianspliid-ui/threadbare/pull/2316)) was 105 ms, so the jump sits in [#2317](https://github.com/christianspliid-ui/threadbare/pull/2317) or [#2318](https://github.com/christianspliid-ui/threadbare/pull/2318) — both THR-1580 slices; world setup also produced 615 agents instead of 609. One reading so far; executor work, not yours.
-- Everything else is green. The live site is serving the latest main (e7cd2e89), no pull requests are waiting, heavy simulation tests are green again on main, automated checks are running normally, all 11 scheduled lanes are on time, and the cleanup job is running.
+All green. The live site is serving the latest main (f26e6fe3), automated checks and the three background jobs are running normally, all 11 scheduled lanes are on time, and the cleanup job ran at 08:47. Last hour's engine slowdown did not repeat: this run measured 107 ms per tick, 9% under the weekly median, so the 198 ms reading was a one-off.
