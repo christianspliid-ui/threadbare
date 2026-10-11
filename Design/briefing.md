@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 23:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 00:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,9 +26,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 jobs ready, none being built right now.** [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) (High) is held for its veto window until Monday 19:00 UTC. Also ready, from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). The next builder run picks one up on its own. Nothing is blocked, stale or parked.
+**Healthy: 4 jobs ready, none being built — all four are waiting out your veto windows.** [A paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world) opens for building at 10:05 Monday your time; [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the) at 10:22 (the words job also waits for the paused-choice one); [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) at 21:00. The builder picks each up on its own. Nothing is blocked, stale or parked.
 
 ## Health
 
-- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 9 hours now. Newer commits only touched docs, so they did not re-run them. The builder owes a fix and an impediment row. Not yours.
-- Everything else is green: engine speed is normal, the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 23:43.
+- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 10 hours now. Newer commits only touched docs, so they did not re-run them. The builder owes a fix and an impediment row. Not yours.
+- Everything else is green: engine speed is normal (109 ms a tick, 7% under the weekly median), the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 00:40.
