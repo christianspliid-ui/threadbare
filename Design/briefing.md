@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 14:56 local (12:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 15:56 local (13:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,9 +25,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 jobs ready, 1 being built.** Ready, all from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). Being built: [the map tooltip shows raw terrain words and lingers](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and), with its branch pushed. Now live: [the world map can no longer crash on load](https://linear.app/threadbare/issue/THR-1817/the-world-map-can-crash-on-load-hexmapv2-calls-two-usememo-hooks-after) ([#2334](https://github.com/christianspliid-ui/threadbare/pull/2334)) and [Escape closes the sheet on top, not the encounter behind it](https://linear.app/threadbare/issue/THR-1816/escape-closes-the-encounter-behind-an-open-sheet-instead-of-the-sheet) ([#2333](https://github.com/christianspliid-ui/threadbare/pull/2333)). Nothing is blocked, stale or parked.
+**Healthy: 3 jobs ready, none being built right now.** Ready, all from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). The next builder run picks one up on its own. Now live: [the map tooltip names land in plain words and hides when you click](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and) ([#2336](https://github.com/christianspliid-ui/threadbare/pull/2336)). Nothing is blocked, stale or parked.
 
 ## Health
 
-- **Heavy background tests are flaky on main:** failed on the newest commit ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), passed on the one before ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38137581351)), failed before that ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38134727282)). Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row.
-- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 14:40.
+- **Heavy background tests have now failed on the last two commits on main:** [8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478) and [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324). The commit before those passed ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38137581351)). Earlier failures were tests running out of time, not a broken game. The builder owes a fix and an impediment row.
+- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 15:40.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-11 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-11 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-11: the map tooltip names land in plain words and hides when you click** ([THR-1818](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and)). Merged via [#2336](https://github.com/christianspliid-ui/threadbare/pull/2336) and live.
 - **2026-10-11: the world map can no longer crash on load** ([THR-1817](https://linear.app/threadbare/issue/THR-1817/the-world-map-can-crash-on-load-hexmapv2-calls-two-usememo-hooks-after)). Merged via [#2334](https://github.com/christianspliid-ui/threadbare/pull/2334) and live.
 - **2026-10-11: Escape closes the sheet on top, not the encounter behind it** ([THR-1816](https://linear.app/threadbare/issue/THR-1816/escape-closes-the-encounter-behind-an-open-sheet-instead-of-the-sheet)). Merged via [#2333](https://github.com/christianspliid-ui/threadbare/pull/2333) and live.
 - **2026-10-11: encounter lines no longer show a raw `{are}` instead of the word** ([THR-1810](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only)). Merged via [#2332](https://github.com/christianspliid-ui/threadbare/pull/2332) and live.
@@ -35,7 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-10: a gift from the opening waits its turn instead of opening over what you just clicked** ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)). You waived the veto window ("go ahead"). Merged via [#2313](https://github.com/christianspliid-ui/threadbare/pull/2313) and live.
 - **2026-10-10: the glossary now defines "The First", "Rite of the Thread" and "the god's mark"** ([THR-1756](https://linear.app/threadbare/issue/THR-1756/ul-proposal-the-first-the-first-mortal-the-god-threads-any-route-add)). Merged via [#2308](https://github.com/christianspliid-ui/threadbare/pull/2308).
 - **2026-10-10: five small faults from cold playtest round 3 fixed** ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)). Merged via [#2306](https://github.com/christianspliid-ui/threadbare/pull/2306) and live.
-- **2026-10-10: the choice screen states only the paying sphere’s essence, not all twelve summed** ([THR-1803](https://linear.app/threadbare/issue/THR-1803/recurs-after-fix-essence-tells-three-stories-the-authored-choice)). Merged via [#2305](https://github.com/christianspliid-ui/threadbare/pull/2305) and live.
 
 ---
 
