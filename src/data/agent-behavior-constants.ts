@@ -1041,13 +1041,14 @@ export const RUINS_TRAIT_BONUS_PER_LEVEL = 0.10;
  * Scales with agent's Eye + Veil capability. @range 0.10–0.50 */
 export const ANOMALY_DISCOVERY_BASE_BONUS = 0.20;
 
-/** Scaling factor per 0.1 Eye capability. @range 0.05–0.20 */
+/** Scaling factor per 0.1 Eye reach share (raw 4; THR-1580). @range 0.05–0.20 */
 export const ANOMALY_EYE_SCALING = 0.10;
 
-/** Scaling factor per 0.1 Veil capability. @range 0.05–0.20 */
+/** Scaling factor per 0.1 Veil reach share (raw 4; THR-1580). @range 0.05–0.20 */
 export const ANOMALY_VEIL_SCALING = 0.05;
 
-/** Minimum Eye capability to receive anomaly discovery bonus. @range 0.10–0.30 */
+/** Minimum Eye reach share to receive anomaly discovery bonus — raw 6, the same cut the
+ *  pre-refit curve made (THR-1580). @range 0.10–0.30 */
 export const ANOMALY_EYE_THRESHOLD = 0.15;
 
 /** Weight for explorationAttraction hex field set by hex.mark_ground.

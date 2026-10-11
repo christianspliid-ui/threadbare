@@ -3336,6 +3336,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/phaseDivinePremonition.ts',
       // THR-1580: social-scene wealth and power leverage compare two agents' standing.
       'src/engine/socialLeverage.ts',
+      // THR-1580: the anomaly discovery Eye gate and Eye/Veil pull read the share.
+      'src/engine/encounterScoring.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
       'scripts/reach-gate-census.ts',

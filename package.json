@@ -158,7 +158,8 @@
     "measure:army-scales": "esbuild scripts/measure-army-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-scales.mjs --external:fs --external:path && node .cache/measure-army-scales.mjs",
     "measure:stranger-curiosity-scales": "esbuild scripts/measure-stranger-curiosity-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-stranger-curiosity-scales.mjs --external:fs --external:path && node .cache/measure-stranger-curiosity-scales.mjs",
     "measure:ring-recruit-scales": "esbuild scripts/measure-ring-recruit-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-ring-recruit-scales.mjs --external:fs --external:path && node .cache/measure-ring-recruit-scales.mjs",
-    "measure:mentorship-scales": "esbuild scripts/measure-mentorship-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-mentorship-scales.mjs --external:fs --external:path && node .cache/measure-mentorship-scales.mjs"
+    "measure:mentorship-scales": "esbuild scripts/measure-mentorship-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-mentorship-scales.mjs --external:fs --external:path && node .cache/measure-mentorship-scales.mjs",
+    "measure:anomaly-scales": "esbuild scripts/measure-anomaly-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-anomaly-scales.mjs --external:fs --external:path && node .cache/measure-anomaly-scales.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",
