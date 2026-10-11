@@ -3342,6 +3342,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/encounterScoring.ts',
       // THR-1580: the god's reach tiers (Deepening crossings) and practice damping.
       'src/engine/phaseAscendantProgression.ts',
+      // THR-1580: encounter awareness hop counts (the candidate pool's horizon).
+      'src/engine/encounterAwareness.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
       'scripts/reach-gate-census.ts',

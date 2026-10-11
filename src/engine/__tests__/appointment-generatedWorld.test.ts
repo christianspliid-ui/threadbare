@@ -366,13 +366,28 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
     const ctx = resolveAppointmentContext(s, actorId, s.tick, resolveAxiologicalProfile(s.graph, actorId, s.tick, s.worldSoul?.fundament));
     return ctx && ctx.seed.seedId === seedId && ctx.regime === 'departing' ? ctx.slack.slack : null;
   }
+  /**
+   * Drop the mortal's running action and active encounter, as `sendAway` already sets
+   * their journey by hand. The arm needs one departing tick with room to walk away, and
+   * the live world can keep the mortal busy through all of them: once awareness read the
+   * reach share (THR-1580), seed 42's mortal spent the whole departing window in two
+   * own-hex encounters and was free only once the slack had fallen below 2.
+   */
+  function freeUp(s: GameState, actorId: string): GameState {
+    if (isFree(s, actorId)) return s;
+    return {
+      ...s,
+      unifiedActions: s.unifiedActions.filter(a => a.actorId !== actorId || a.resolved),
+      encounterProgress: s.encounterProgress.filter(e => e.actorId !== actorId || e.status !== 'active'),
+    };
+  }
   /** One tick spent walking away must leave the promise makeable, or the arm measures `lost`, not the outvote. */
   const SEND_AWAY_MIN_SLACK = 2;
 
   /**
-   * The live world is not a fixture: the mortal may be mid-action, or slide back to
-   * `leaning` as its standing shifts. So the arm is attempted on each tick where the
-   * mortal is free and departing going in, and only a tick that was *still* departing
+   * The live world is not a fixture: the mortal may be mid-action (`freeUp` clears it),
+   * or slide back to `leaning` as its standing shifts. So the arm is attempted on each
+   * tick where the mortal is departing going in, and only a tick that was *still* departing
    * coming out counts — the memo is written on change, so it names the regime the
    * decision phase actually ran under.
    */
@@ -382,11 +397,12 @@ describe('THR-1669 — a journey the board chose while departing is not turned b
       let { state, runtime, actorId, placeId, seedId, dueTick } = driveToDeparting();
       while (state.tick < dueTick) {
         const slackNow = departingSlack(state, actorId, seedId);
-        if (!isDeparting(state, actorId, seedId) || slackNow === null || slackNow < SEND_AWAY_MIN_SLACK || !isFree(state, actorId)) {
+        if (!isDeparting(state, actorId, seedId) || slackNow === null || slackNow < SEND_AWAY_MIN_SLACK) {
           state = runTick(onlyThePlant(state, actorId, seedId), [], runtime);
           clearTraces();
           continue;
         }
+        state = freeUp(state, actorId);
         const before = state.tick;
         const awayId = sendAway(state, actorId, placeId, mark === 'marked' ? seedId : undefined);
         state = runTick(onlyThePlant(state, actorId, seedId), [], runtime);
