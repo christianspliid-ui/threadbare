@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-11 11:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-11 12:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,10 +26,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 jobs ready, 1 being built.** The round-3 playtest fixes are now buildable: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the) (all High), plus the small [raw `{are}` bug](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only). Being built: [re-fit the skill readers off the old curve](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at). No pull requests are waiting. Nothing is blocked, stale or parked.
+**Healthy: 3 jobs ready, 1 being built.** Ready, all High, from the round-3 playtest: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world), [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the). Being built: the small [raw `{are}` bug](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only). [Re-fitting the skill readers](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at) finished and is live ([#2331](https://github.com/christianspliid-ui/threadbare/pull/2331)). No pull requests are waiting. Nothing is blocked, stale or parked.
 
 ## Health
 
-- **Heavy background tests now red four runs in a row on main** (red about 3 h). Two tests run out of time: one trace test at 5 s and the doom-milestone test at 15 s ([a recent run](https://github.com/christianspliid-ui/threadbare/actions/runs/38124096935), [the first](https://github.com/christianspliid-ui/threadbare/actions/runs/38120115603)). These are timing limits, not a broken game, and they line up with the slower engine below. The builder owes a fix and an impediment row.
-- **Engine still slower, but easing:** tick cost 154 ms/tick steady, 31% above the 7-day median (118, 121 rows since da24c566); top phase agent_decision, 609 agents. Name the merges between da24c566 and e6882c0f: `git log --oneline --merges da24c566..e6882c0f`. Fourth slow reading in a row (198, 189, 176, now 154). The builder should find the merge.
-- Everything else is green: the live site serves the latest commit, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 11:44.
+- **Heavy background tests still red on main**, now including the newest commit ([latest run](https://github.com/christianspliid-ui/threadbare/actions/runs/38132422938), [previous](https://github.com/christianspliid-ui/threadbare/actions/runs/38130332647)). Earlier runs showed two tests running out of time, not a broken game. The builder owes a fix and an impediment row.
+- Everything else is green: the engine is back to normal speed (121 ms/tick, 3% above its weekly median), the live site serves the latest commit, automated checks are normal, all 11 scheduled lanes are on time, and the cleanup job ran at 12:40.
