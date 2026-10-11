@@ -52,6 +52,24 @@ describe('Modal', () => {
     expect(fn).toHaveBeenCalledOnce();
   });
 
+  // THR-1816 — a modal that opts out of Escape must not swallow it: the
+  // surface beneath (here a default-band modal) still receives it.
+  it('passes Escape through to the surface beneath when closeOnEscape is false', () => {
+    const below = vi.fn();
+    const above = vi.fn();
+    render(
+      <>
+        <Modal open onClose={below}><Modal.Body>Below</Modal.Body></Modal>
+        <Modal open onClose={above} closeOnEscape={false} zIndex={MODAL_Z_ABOVE_INTERRUPT}>
+          <Modal.Body>Above</Modal.Body>
+        </Modal>
+      </>,
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(above).not.toHaveBeenCalled();
+    expect(below).toHaveBeenCalledOnce();
+  });
+
   it('calls onClose on backdrop click', () => {
     const fn = vi.fn();
     render(

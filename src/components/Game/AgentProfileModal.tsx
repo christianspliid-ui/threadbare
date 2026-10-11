@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { AgentKnowledge } from '../../types/agentKnowledge';
 import { clampRarityTier } from '../../types/rarity';
 import { RarityBadge } from '../shared/RarityBadge';
 import { deriveArchetypeEpithet } from '../../engine/archetypeEpithet';
 import { Tooltip } from '../shared/Tooltip';
-import { Modal } from '../shared/Modal';
+import { Modal, MODAL_Z_DEFAULT } from '../shared/Modal';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import type { AttachmentDetailData } from './AttachmentDetailView';
 import type { AttachmentFullEntry } from '../../engine/agentAttachments';
@@ -76,18 +77,10 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
   const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
   const [portraitExpanded, setPortraitExpanded] = useState(false);
 
-  // Custom escape: close attachment overlay first, then modal
-  useEffect(() => {
-    if (!selectedAttachment) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        setSelectedAttachment(null);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [selectedAttachment]);
+  // Escape closes the attachment overlay first, then the sheet (THR-1816): the
+  // overlay ranks one step above the sheet's own escape layer.
+  const closeAttachment = useCallback(() => setSelectedAttachment(null), []);
+  useEscapeLayer(selectedAttachment !== null, closeAttachment, (zIndex ?? MODAL_Z_DEFAULT) + 1);
 
   // Switch to chronicle when scrollToNewStrata changes
   useEffect(() => {

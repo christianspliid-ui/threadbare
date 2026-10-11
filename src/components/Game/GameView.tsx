@@ -115,6 +115,7 @@ import { ArtifactSheet } from './ArtifactSheet';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
 import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
+import { useEscapeLayer, ESCAPE_LAYER_Z_PANEL } from '../shared/useEscapeLayer';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger, countThreadedChapters } from './ChapterLedger';
 import { useFirstScreenReveal, unreadChapterCount } from './GameView/firstScreenReveal';
@@ -5229,18 +5230,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (selectedThreadNode?.nodeId !== revealedNotices.anchorId) setRevealedNotices(null);
   }, [selectedThreadNode, revealedNotices]);
 
-  // Close detail panel on Escape key
-  useEffect(() => {
-    if (!selectedThreadNode && !selectedHexCoord) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleThreadDetailClose();
-        handleHexDetailClose();
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [selectedThreadNode, selectedHexCoord, handleThreadDetailClose, handleHexDetailClose]);
+  // Close detail panel on Escape key — only when no overlay sits above it
+  // (THR-1816: the escape layer ranks below every modal and the veil).
+  const closeDetailPanels = useCallback(() => {
+    handleThreadDetailClose();
+    handleHexDetailClose();
+  }, [handleThreadDetailClose, handleHexDetailClose]);
+  useEscapeLayer(!!selectedThreadNode || !!selectedHexCoord, closeDetailPanels, ESCAPE_LAYER_Z_PANEL);
 
   const handleJourneyChoice = useCallback((choiceId: string) => {
     if (!activeVignette) return;
