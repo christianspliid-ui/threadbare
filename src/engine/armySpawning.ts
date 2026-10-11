@@ -7,6 +7,13 @@
  * Design doc: Docs/plans/2026-03-29-conflict-and-destruction-design.md — Phase 1
  * NFP: Determinism (commander selection deterministic, size from Gold tier),
  *       Fail-soft (missing data → skip spawn), Inspectability (ArmyLifecycleTrace).
+ *
+ * The Gold and Iron tiers are `computeTier(reach share)` — ceil(share × 10), so the
+ * Gold gate (tier 3) opens past raw 8, a regiment past raw 16, a host past raw 24, and
+ * the commander gate (Iron tier 4) past raw 12 (THR-1580). They read the pre-refit
+ * sigmoid, which made every faction a host and tied every commander past raw ~16 at
+ * tier 10. Commander choice ranks on the raw Iron score, so the strongest wins even
+ * where the tier saturates.
  */
 
 import type { GameState } from '../types/gameState';
@@ -23,10 +30,22 @@ import {
 } from '../types/army';
 import { requiresMilitaryForce } from '../types/faction';
 import type { FactionAmbitionType } from '../types/faction';
-import { computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeRawScore, computeReachShare, computeTier } from './domainCapability';
+import type { WorldGraph } from './graph';
+import type { ReachDomain } from '../types/traits';
 import { findAllShortestPaths } from './pathfinding';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
+
+// ─── Army tiers ─────────────────────────────────────────────────────────
+
+/**
+ * The tier (1–10) an army gate reads: a standing requirement, so the reach share
+ * (THR-1580), not the dice. Shared with the campaign hand-off in `notableAgendas`.
+ */
+export function armyReachTier(graph: WorldGraph, nodeId: string, reach: ReachDomain): number {
+  return computeTier(computeReachShare(graph, nodeId, reach));
+}
 
 // ─── Eligibility ────────────────────────────────────────────────────────
 
@@ -71,9 +90,7 @@ export function isEligibleForArmySpawn(
   if (!commander) return false;
 
   // Check faction Gold capability
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const goldCap = computeCapabilityPreRefit(graph, factionId, 'gold');
-  const goldTier = computeTier(goldCap);
+  const goldTier = armyReachTier(graph, factionId, 'gold');
   if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return false;
 
   return true;
@@ -83,7 +100,9 @@ export function isEligibleForArmySpawn(
 
 /**
  * Select the best commander for a new army.
- * Deterministic: returns the member with highest Iron capability tier.
+ * Deterministic: among members whose Iron tier clears ARMY_SPAWN_IRON_TIER_MIN,
+ * returns the one with the highest raw Iron score (first edge on a tie). Ranking on
+ * the raw score, not the tier, keeps the strongest from tying at tier 10 (THR-1580).
  * Returns null if no member qualifies.
  */
 export function selectCommander(
@@ -94,7 +113,7 @@ export function selectCommander(
   const memberEdges = graph.getIncomingEdges(factionId, 'member_of');
 
   let bestId: string | null = null;
-  let bestTier = 0;
+  let bestRaw = -Infinity;
 
   for (const edge of memberEdges) {
     const memberNode = graph.getNode(edge.source);
@@ -107,11 +126,10 @@ export function selectCommander(
     const commandedByEdges = graph.getIncomingEdges(edge.source, 'commanded_by');
     if (commandedByEdges.length > 0) continue;
 
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    const ironCap = computeCapabilityPreRefit(graph, edge.source, 'iron');
-    const ironTier = computeTier(ironCap);
-    if (ironTier >= ARMY_SPAWN_IRON_TIER_MIN && ironTier > bestTier) {
-      bestTier = ironTier;
+    if (armyReachTier(graph, edge.source, 'iron') < ARMY_SPAWN_IRON_TIER_MIN) continue;
+    const ironRaw = computeRawScore(graph, edge.source, 'iron');
+    if (ironRaw > bestRaw) {
+      bestRaw = ironRaw;
       bestId = edge.source;
     }
   }
@@ -194,9 +212,7 @@ export function spawnArmy(
   const graph = state.graph;
 
   // Determine size from faction Gold tier
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const goldCap = computeCapabilityPreRefit(graph, factionId, 'gold');
-  const goldTier = computeTier(goldCap);
+  const goldTier = armyReachTier(graph, factionId, 'gold');
   const size: ArmySizeCategory = determineSizeCategory(goldTier);
 
   // Get faction and commander info

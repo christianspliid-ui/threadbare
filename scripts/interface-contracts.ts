@@ -585,6 +585,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/reputationWalk.ts',
       // THR-1580: power renown's tier (Noted / Renowned / Legendary) reads the share.
       'src/engine/phaseReputationTraits.ts',
+      // THR-1580: army gates (faction Gold, commander Iron, size bands) and the campaign mirror read the share.
+      'src/engine/armySpawning.ts',
+      'src/engine/notableAgendas.ts',
       // THR-1211: the `past_crime` secret branch, which used to read a
       // `relates_to.properties.reputation` that nothing writes.
       'src/engine/secretGeneration.ts',

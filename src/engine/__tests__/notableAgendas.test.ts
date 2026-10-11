@@ -440,9 +440,9 @@ describe('notableAgendas (THR-630 seam A)', () => {
 
   it('campaign muster raises a real army commanded by the notable with a conquer objective', async () => {
     const graph = claimWorld();
-    // Saturate the gates: faction gold, notable iron (sigmoid saturates by 10).
-    graph.getNode('f_mine')!.properties.domainCapabilities = { gold: 10 };
-    graph.getNode('leader_mine')!.properties.domainCapabilities = { iron: 10 };
+    // Clear the gates on the reach share (THR-1580): gold tier ≥ 3, notable iron tier ≥ 4.
+    graph.getNode('f_mine')!.properties.domainCapabilities = { gold: 20 };
+    graph.getNode('leader_mine')!.properties.domainCapabilities = { iron: 20 };
     const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');
     const plan = buildNotableAgenda(
       'leader_mine', 'Leader', 'The Home Court', CAMPAIGN_FAMILY, 0, 'their_town', 'Farwatch', () => 0,
