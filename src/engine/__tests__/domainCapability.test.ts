@@ -312,3 +312,26 @@ describe('Domain Capability', () => {
     });
   });
 });
+
+// THR-1580: every non-dice reader moved to the reach share. The March curve survives
+// only as the duel calibration's reference, so no engine module may read it again.
+describe('THR-1580 — no engine reader of the pre-refit curve', () => {
+  it('computeCapabilityPreRefit is not called anywhere under src/engine/', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const root = path.resolve(__dirname, '..');
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name !== '__tests__') walk(full);
+        } else if (/\.tsx?$/.test(entry.name) && entry.name !== 'domainCapability.ts') {
+          if (fs.readFileSync(full, 'utf8').includes('computeCapabilityPreRefit')) offenders.push(full);
+        }
+      }
+    };
+    walk(root);
+    expect(offenders).toEqual([]);
+  });
+});

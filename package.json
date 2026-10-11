@@ -161,7 +161,8 @@
     "measure:mentorship-scales": "esbuild scripts/measure-mentorship-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-mentorship-scales.mjs --external:fs --external:path && node .cache/measure-mentorship-scales.mjs",
     "measure:anomaly-scales": "esbuild scripts/measure-anomaly-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-anomaly-scales.mjs --external:fs --external:path && node .cache/measure-anomaly-scales.mjs",
     "measure:ascendant-progression-scales": "esbuild scripts/measure-ascendant-progression-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-ascendant-progression-scales.mjs --external:fs --external:path && node .cache/measure-ascendant-progression-scales.mjs",
-    "measure:capability-growth-scales": "esbuild scripts/measure-capability-growth-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-capability-growth-scales.mjs --external:fs --external:path && node .cache/measure-capability-growth-scales.mjs"
+    "measure:capability-growth-scales": "esbuild scripts/measure-capability-growth-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-capability-growth-scales.mjs --external:fs --external:path && node .cache/measure-capability-growth-scales.mjs",
+    "measure:awareness-scales": "esbuild scripts/measure-awareness-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-awareness-scales.mjs --external:fs --external:path && node .cache/measure-awareness-scales.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",

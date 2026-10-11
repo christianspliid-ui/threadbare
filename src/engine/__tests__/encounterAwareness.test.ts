@@ -73,12 +73,13 @@ function addSublocation(graph: WorldGraph, id: string, parentId: string): void {
 /**
  * Build a graph with an agent that has a trait giving known domain contributions.
  *
- * The sigmoid function used by computeCapability is: 1 / (1 + e^(-0.4*(x - 10)))
- * With raw=0  → ~0.018 (below threshold)
- * With raw=10 → 0.5
- * With raw=20 → ~0.982
- * With raw=5  → ~0.119
- * With raw=3  → ~0.047 (below AWARENESS_THRESHOLD of 0.05)
+ * Awareness reads the reach share (THR-1580): raw ÷ 40, capped at 1.
+ * With raw=0  → 0     (below threshold → 0 hops)
+ * With raw=5  → 0.125 → 1 hop
+ * With raw=12 → 0.3   → 3 hops
+ * With raw=19 → 0.475 → 4 hops
+ * With raw=20 → 0.5   → 4 hops
+ * With raw=30 → 0.75  → 6 → capped at 5
  */
 function buildAgentGraph(
   agentId: string,
@@ -196,7 +197,7 @@ describe('resolveLocationToHex', () => {
 
 describe('filterByAwareness', () => {
   it('agent with 0 capability sees same-hex encounters (distance 0 always visible)', () => {
-    // raw=0 → sigmoid ~0.018 → below threshold → 0 hops
+    // raw=0 → share 0 → below threshold → 0 hops
     // But same-hex encounters are ALWAYS visible (distance 0 rule)
     const graph = buildAgentGraph('agent-1', {});
     addLocation(graph, 'loc-home', 3, 3);
@@ -214,8 +215,8 @@ describe('filterByAwareness', () => {
   });
 
   it('agent with high iron capability sees iron encounters at hex distance 5', () => {
-    // raw=20 → sigmoid ~0.982 → hops = 1 + floor(0.982/0.15) = 7 → capped at 5
-    const graph = buildAgentGraph('agent-1', { iron: 20 });
+    // raw=30 → share 0.75 → hops = 1 + floor(0.75/0.15) = 6 → capped at 5
+    const graph = buildAgentGraph('agent-1', { iron: 30 });
     addLocation(graph, 'loc-home', 0, 0);
     addLocation(graph, 'loc-1', 1, 0);   // hex dist 1
     addLocation(graph, 'loc-5', 5, 0);   // hex dist 5
@@ -233,7 +234,7 @@ describe('filterByAwareness', () => {
   });
 
   it('agent with low capability sees encounters at hex distance 1 only', () => {
-    // raw=5 → sigmoid ~0.119 → hops = 1 + floor(0.119/0.15) = 1
+    // raw=5 → share 0.125 → hops = 1 + floor(0.125/0.15) = 1
     const graph = buildAgentGraph('agent-1', { iron: 5 });
     addLocation(graph, 'loc-home', 0, 0);
     addLocation(graph, 'loc-near', 1, 0);  // hex dist 1
@@ -250,10 +251,10 @@ describe('filterByAwareness', () => {
   });
 
   it('uses max(primary, secondary) to pick the better visibility channel', () => {
-    // Agent has high gold (raw=20 → ~0.982) but low iron (raw=0 → ~0.018)
+    // Agent has high gold (raw=20 → share 0.5) but no iron (raw=0 → share 0)
     // Entry: primary=iron, secondary=gold
-    // Iron cap: 0 hops. Gold cap: 5 hops.
-    // max(0, 5) = 5 → sees at hex distance 3
+    // Iron: 0 hops. Gold: 4 hops.
+    // max(0, 4) = 4 → sees at hex distance 3
     const graph = buildAgentGraph('agent-1', { gold: 20 });
     addLocation(graph, 'loc-home', 0, 0);
     addLocation(graph, 'loc-3', 3, 0);  // hex dist 3
@@ -342,8 +343,8 @@ describe('filterByAwareness', () => {
   });
 
   it('filters a mix of near and far entries correctly', () => {
-    // raw=10 → sigmoid = 0.5 → hops = 1 + floor(0.5/0.15) = 1+3 = 4
-    const graph = buildAgentGraph('agent-1', { iron: 10 });
+    // raw=19 → share 0.475 → hops = 1 + floor(0.475/0.15) = 1+3 = 4
+    const graph = buildAgentGraph('agent-1', { iron: 19 });
     addLocation(graph, 'loc-home', 0, 0);
     addLocation(graph, 'loc-1', 1, 0);  // hex dist 1
     addLocation(graph, 'loc-2', 2, 0);  // hex dist 2
@@ -363,5 +364,21 @@ describe('filterByAwareness', () => {
     // Hex distance 1,2,3,4 are within 4 hops; distance 5 is outside
     expect(result.length).toBe(4);
     expect(result.map((e) => e.templateId)).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('reads the reach share, not the pre-refit curve: raw 12 sees 3 hops, not 5 (THR-1580)', () => {
+    // Pre-refit: raw 12 → ~0.69 → 1 + 4 = 5 hops. Reach share: 0.3 → 1 + 2 = 3 hops.
+    const graph = buildAgentGraph('agent-1', { eye: 12 });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-3', 3, 0);
+    addLocation(graph, 'loc-4', 4, 0);
+
+    const entries = [
+      makeEntry({ templateId: 'near', locationId: 'loc-3', reachPrimary: 'eye', reachSecondary: 'eye' }),
+      makeEntry({ templateId: 'far', locationId: 'loc-4', reachPrimary: 'eye', reachSecondary: 'eye' }),
+    ];
+
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
+    expect(result.map((e) => e.templateId)).toEqual(['near']);
   });
 });

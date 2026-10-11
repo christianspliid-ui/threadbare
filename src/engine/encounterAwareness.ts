@@ -1,8 +1,8 @@
 /**
  * Encounter Awareness Filter — per-reach hex-distance-limited visibility.
  *
- * An agent's domain capability determines how many hex hops they can "see"
- * encounters across. Visibility is hex-granular: if the agent can see a hex,
+ * An agent's reach share (raw ÷ 40, THR-1580) determines how many hex hops they
+ * can "see" encounters across: 1 hop past raw 2, one more per 6 raw, 5 past raw 24. Visibility is hex-granular: if the agent can see a hex,
  * they can see everything on it (every location, sublocation, encounter).
  *
  * Within-hex visibility is automatic (distance 0). Cross-hex visibility is
@@ -24,7 +24,7 @@
  * | Failure case                     | Fallback                        |
  * |----------------------------------|---------------------------------|
  * | Agent not in graph               | Return empty array              |
- * | Agent has no capability data     | computeCapability returns ~0.02 |
+ * | Agent has no capability data     | computeReachShare returns 0     |
  * |                                  | → below threshold → 0 hops     |
  * | Entry missing reachPrimary       | Skip entry                      |
  * | Location missing hex coordinates | Skip entry (invisible)          |
@@ -39,7 +39,7 @@
 import type { ReachDomain } from '../types/traits';
 import type { WorldGraph } from './graph';
 import type { EncounterCacheEntry } from './encounterCache';
-import { computeCapabilityPreRefit } from './domainCapability';
+import { computeReachShare } from './domainCapability';
 import { hexDistance } from '../lib/hexMath';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -204,8 +204,10 @@ export function filterByAwareness(
   const awarenessRangeOf = (reach: ReachDomain): number => {
     let range = rangeCache.get(reach);
     if (range === undefined) {
-      // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-      range = computeAwarenessHops(computeCapabilityPreRefit(graph, agentId, reach), reach);
+      // Sight is a standing sense, not a d100 read — the reach share (THR-1580). The
+      // pre-refit curve capped hops at raw ~11, so every seasoned agent saw the full
+      // disc in every reach; on the share the cap sits at raw 24 and hops grade 2→24.
+      range = computeAwarenessHops(computeReachShare(graph, agentId, reach), reach);
       rangeCache.set(reach, range);
     }
     return range;

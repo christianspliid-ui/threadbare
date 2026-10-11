@@ -53,7 +53,8 @@ export const AMBITION_REACH_BOOST = 0.5;
 // AWARENESS — Per-reach distance-limited visibility (encounterAwareness.ts)
 // ═══════════════════════════════════════════════════════════════════
 
-/** Minimum capability to perceive encounters at all (below this = 0 hops).
+/** Minimum reach share to perceive encounters at all (below this = 0 hops).
+ * Read on the reach share (THR-1580): 0.05 sits at raw 2.
  * @range 0.01–0.2 */
 export const AWARENESS_THRESHOLD = 0.05;
 
@@ -61,7 +62,8 @@ export const AWARENESS_THRESHOLD = 0.05;
  * @range 1–3 */
 export const BASE_AWARENESS_HOPS = 1;
 
-/** Capability points needed per additional hop beyond base.
+/** Reach share needed per additional hop beyond base — 0.15 is 6 raw, so the
+ * 5-hop cap sits at raw 24 (THR-1580; the pre-refit curve reached it at raw ~11).
  * @range 0.05–0.3 (lower = awareness extends faster with capability) */
 export const CAPABILITY_PER_HOP = 0.15;
 
