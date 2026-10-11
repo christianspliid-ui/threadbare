@@ -25,9 +25,10 @@ export const SIGMOID_MIDPOINT = 30;
 export const SIGMOID_K = 0.08;
 
 /**
- * The pre-refit curve (the March fit), kept for readers that are **not** the dice —
- * sight, tiers, growth, gates, leverage — until each is re-fitted on its own evidence
- * (THR-1580). Read through `computeCapabilityPreRefit`.
+ * The pre-refit curve (the March fit). No engine reader uses it any more: THR-1580
+ * re-fitted every non-dice reader (sight, tiers, growth, gates, leverage) onto the
+ * reach share, each on its own evidence. Kept as a historical reference for the duel
+ * calibration (which reproduces `main`'s clash odds) and the `measure:*-scales` scripts.
  */
 export const PRE_REFIT_SIGMOID_MIDPOINT = 10;
 export const PRE_REFIT_SIGMOID_K = 0.4;
@@ -151,14 +152,13 @@ export function computeCapability(
 /**
  * Capability on the **pre-refit** curve (midpoint 10, k 0.4) — THR-1581.
  *
- * The same raw walk as `computeCapability`, through the March sigmoid. For readers
- * that do not feed a d100 probability or an odds-based choice: awareness range,
- * tier words and tier crossings, growth, mentorship and agenda gates, leverage,
- * anomaly thresholds. Their thresholds were tuned against this curve, and moving
- * them with the dice would silently change who sees what and who qualifies for
- * what. Each is re-fitted, one at a time, by THR-1580.
+ * The same raw walk as `computeCapability`, through the March sigmoid. Retired as an
+ * engine read by THR-1580: every reader that once used it (awareness range, tier words
+ * and crossings, growth, mentorship and agenda gates, leverage, anomaly thresholds)
+ * now reads the reach share (`computeReachShare`). The only caller left is the duel
+ * calibration harness, which needs `main`'s historical clash odds. A guard test
+ * (`domainCapability.test.ts`) keeps it out of `src/engine/`.
  */
-// TODO(THR-1580): re-fit each pre-refit reader onto the dice curve on its own evidence, then retire this.
 export function computeCapabilityPreRefit(
   graph: WorldGraph,
   nodeId: string,
