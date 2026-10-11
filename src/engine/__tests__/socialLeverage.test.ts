@@ -18,6 +18,8 @@ import {
   LEVERAGE_BOND_BONUS,
   LEVERAGE_INITIAL_CAP,
   LEVERAGE_RANK_BONUS,
+  LEVERAGE_WEALTH_BONUS,
+  LEVERAGE_POWER_BONUS,
 } from '../socialLeverage';
 import { FACTION_RANK_MAX } from '../../data/agent-behavior-constants';
 import {
@@ -187,6 +189,37 @@ describe('computeInitialLeverage', () => {
     });
     const result = computeInitialLeverage(graph, 'a1', 't1');
     expect(result.leverage).toBeLessThanOrEqual(LEVERAGE_INITIAL_CAP);
+  });
+
+  // THR-1580: wealth and power read the reach share, which still tells two seasoned
+  // agents apart. On the pre-refit curve raw 24 and raw 40 both read ~0.99, so
+  // neither bonus could fire between them.
+  it('grants the wealth and power bonuses between two seasoned agents (reach share, THR-1580)', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: { domainCapabilities: { gold: 40, iron: 40 } } });
+    graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: { domainCapabilities: { gold: 24, iron: 24 } } });
+    const result = computeInitialLeverage(graph, 'a1', 't1');
+    const sources = result.history.map(h => h.source);
+    expect(sources).toContain('wealth_bonus');
+    expect(sources).toContain('power_bonus');
+    expect(result.leverage).toBeCloseTo(LEVERAGE_WEALTH_BONUS + LEVERAGE_POWER_BONUS, 6);
+  });
+
+  it('withholds the wealth and power bonuses between near-equals (reach share, THR-1580)', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: { domainCapabilities: { gold: 30, iron: 30 } } });
+    graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: { domainCapabilities: { gold: 24, iron: 24 } } });
+    const sources = computeInitialLeverage(graph, 'a1', 't1').history.map(h => h.source);
+    expect(sources).not.toContain('wealth_bonus');
+    expect(sources).not.toContain('power_bonus');
+  });
+
+  it('grants the wealth bonus against a target with no Gold at all', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: { domainCapabilities: { gold: 4 } } });
+    graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
+    const sources = computeInitialLeverage(graph, 'a1', 't1').history.map(h => h.source);
+    expect(sources).toContain('wealth_bonus');
   });
 
   it('returns 0 when actor node is missing (fail-soft)', () => {

@@ -8,8 +8,16 @@
  *
  * Initial leverage comes from four sources:
  * - Bond strength (trust on relates_to edge)
- * - Wealth advantage (Gold capability ratio)
- * - Power advantage (Iron capability gap)
+ * - Wealth advantage (Gold reach-share ratio)
+ * - Power advantage (Iron reach-share gap)
+ *
+ * Wealth and power compare two agents' standing, not a d100 chance, so they read
+ * the reach share (`computeReachShare`, linear over the raw score — THR-1562), not
+ * the dice curve. THR-1580 moved them off the pre-refit sigmoid, which saturates at
+ * raw ~20: two seasoned agents both read ~1.0 there, so neither bonus could ever
+ * fire between them (measured 0% in that band on seeds 42/99/7; reach share
+ * 0–27%). Population-wide fire rates stayed within a few points, so the
+ * thresholds are unchanged. Evidence: `npm run measure:leverage-scales`.
  * - Faction rank advantage (highest rank vs target's highest rank)
  *
  * ─── Constants ────────────────────────────────────────────────────
@@ -31,7 +39,7 @@
  * | Target node missing         | Return 0.0                            |
  * | No relates_to edge          | bond bonus = 0 (strangers)            |
  * | No member_of edges          | rank bonus = 0                        |
- * | No capability data          | computeCapability returns 0           |
+ * | No capability data          | computeReachShare returns 0           |
  *
  * ─── PRNG ────────────────────────────────────────────────────────
  * None — all leverage values are deterministic graph walks.
@@ -42,7 +50,7 @@ import { getFactionMembershipEdges } from './graphQueries';
 import { getDerivedMembershipRank } from './factionReputation';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
-import { computeCapabilityPreRefit } from './domainCapability';
+import { computeReachShare } from './domainCapability';
 import { reputationLeverageTerm } from './reputation';
 import { STRONG_BOND_THRESHOLD, FACTION_RANK_MAX } from '../data/agent-behavior-constants';
 import {
@@ -55,21 +63,21 @@ import {
 /** Starting leverage bonus when actor has a strong trust bond with the target. */
 export const LEVERAGE_BOND_BONUS = 0.10;
 
-/** Starting leverage bonus when actor's Gold capability substantially exceeds target's. */
+/** Starting leverage bonus when actor's Gold reach share substantially exceeds target's. */
 export const LEVERAGE_WEALTH_BONUS = 0.08;
 
 /**
- * Wealth ratio threshold. Actor's Gold capability must be at least
+ * Wealth ratio threshold. Actor's Gold reach share must be at least
  * (target × LEVERAGE_WEALTH_RATIO) to qualify for the bonus.
  */
 export const LEVERAGE_WEALTH_RATIO = 1.5;
 
-/** Starting leverage bonus when actor's Iron capability substantially exceeds target's. */
+/** Starting leverage bonus when actor's Iron reach share substantially exceeds target's. */
 export const LEVERAGE_POWER_BONUS = 0.08;
 
 /**
- * Minimum Iron capability gap required for the power advantage bonus.
- * Both capabilities are on the 0–1 normalized scale.
+ * Minimum Iron reach-share gap required for the power advantage bonus.
+ * Both shares are on the 0–1 reach-share scale (raw / REACH_SHARE_FULL_RAW).
  */
 export const LEVERAGE_POWER_GAP = 0.20;
 
@@ -176,10 +184,9 @@ export function computeInitialLeverage(
   }
 
   // ─── Wealth advantage ────────────────────────────────────────────
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const actorGold = computeCapabilityPreRefit(graph, actorId, 'gold');
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const targetGold = computeCapabilityPreRefit(graph, targetId, 'gold');
+  // A comparison of standing, read on the reach share (THR-1580).
+  const actorGold = computeReachShare(graph, actorId, 'gold');
+  const targetGold = computeReachShare(graph, targetId, 'gold');
   if (targetGold > 0 && actorGold > targetGold * LEVERAGE_WEALTH_RATIO) {
     leverage += LEVERAGE_WEALTH_BONUS;
     history.push({ stepIndex: -1, delta: LEVERAGE_WEALTH_BONUS, source: 'wealth_bonus' });
@@ -189,10 +196,8 @@ export function computeInitialLeverage(
   }
 
   // ─── Power advantage ─────────────────────────────────────────────
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const actorIron = computeCapabilityPreRefit(graph, actorId, 'iron');
-  // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-  const targetIron = computeCapabilityPreRefit(graph, targetId, 'iron');
+  const actorIron = computeReachShare(graph, actorId, 'iron');
+  const targetIron = computeReachShare(graph, targetId, 'iron');
   if (actorIron > targetIron + LEVERAGE_POWER_GAP) {
     leverage += LEVERAGE_POWER_BONUS;
     history.push({ stepIndex: -1, delta: LEVERAGE_POWER_BONUS, source: 'power_bonus' });
