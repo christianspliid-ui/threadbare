@@ -25,7 +25,7 @@
  * |---------------------------------|---------------------------------------|
  * | Missing agent node              | Return zero-growth result             |
  * | Missing experience trait        | Create new trait node + edge          |
- * | computeCapability throws        | Return zero-growth result             |
+ * | computeReachShare walk throws   | Reads 0 (computeReachShare fail-soft) |
  *
  * ─── PRNG ───────────────────────────────────────────────────────
  * None — growth is fully deterministic based on step parameters.
@@ -34,7 +34,7 @@
 import type { WorldGraph } from './graph';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { ReachDomain, DomainContributions } from '../types/traits';
-import { computeCapabilityPreRefit, computeTier } from './domainCapability';
+import { computeReachShare, computeTier } from './domainCapability';
 import { experienceTraitId, legacyExperienceTraitId, findExistingTraitEdge } from './traitShape';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -61,6 +61,7 @@ import {
 export interface GrowthResult {
   domain: ReachDomain;
   growthApplied: number;
+  /** Reach share (0–1, THR-1580) — the scale the tiers below are read from. */
   previousCapability: number;
   newCapability: number;
   previousTier: number;
@@ -162,8 +163,11 @@ export function applyEncounterGrowth(
   // Compute current state
   let previousCapability: number;
   try {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    previousCapability = computeCapabilityPreRefit(graph, agentId, domain);
+    // Growth reads the reach share (THR-1580): its damping and its tier crossings span
+    // the whole raw 0–40 range. The pre-refit curve read tier 10 from raw ~15.5, below
+    // most protagonists' worldgen roll, so their growth sat on the floor and no tier
+    // ever turned over again.
+    previousCapability = computeReachShare(graph, agentId, domain);
   } catch {
     return zeroResult;
   }
@@ -260,8 +264,8 @@ export function applyEncounterGrowth(
   // Recompute capability after growth
   let newCapability: number;
   try {
-    // TODO(THR-1580): pre-refit reader — not the dice; re-fit on its own evidence.
-    newCapability = computeCapabilityPreRefit(graph, agentId, domain);
+    // Same reach share as the read above (THR-1580) — before and after on one scale.
+    newCapability = computeReachShare(graph, agentId, domain);
   } catch {
     newCapability = previousCapability;
   }
