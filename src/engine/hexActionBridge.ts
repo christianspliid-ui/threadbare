@@ -40,8 +40,6 @@ export const HEX_DISPEL_WILD_INFLUENCE_DELTA = 0.2;
 
 // TB-081: Dynamic graph op effect constants
 export const AMPLIFY_FLOW_SATURATION_BOOST = 0.20;
-export const SHIFT_DOMINION_BOOST = 0.15;
-export const SHIFT_DOMINION_REDUCTION = 0.10;
 export const SPARK_ENCOUNTER_INFLUENCE_DELTA = 0.10;
 export const STIR_PEOPLE_DRIFT_STRENGTH = 0.08;
 export const BESTOW_VISION_STRENGTH = 0.6;
@@ -165,7 +163,8 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
   },
   // hex.forge_seer_token — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
   // hex.read_currents — no mutation (observation only)
-  // hex.shift_dominion — no hex mutation; dynamic GraphOp generator (TB-081)
+  // hex.shift_dominion — retired from the bridge (THR-1748): it targets places now, and
+  // its break push lives in unifiedActionResolution (DOMINION_BREAK_PRESSURE).
   // hex.amplify_flow — no hex mutation; dynamic GraphOp generator (TB-081)
 
   // TB-047: People one-shots
@@ -380,35 +379,6 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
       nodeId: loc.id,
       changes: { magicalSaturation: `+${AMPLIFY_FLOW_SATURATION_BOOST}` },
     }));
-  },
-
-  'hex.shift_dominion': (graph, col, row) => {
-    const locations = getLocationsInHex(graph, col, row);
-    const ops: GraphOp[] = [];
-    for (const loc of locations) {
-      const sphereInfluence = (loc.properties?.sphereInfluence as Record<string, number>) ?? {};
-      // Find the highest sphere to reduce
-      let highestSphere: string | undefined;
-      let highestValue = -Infinity;
-      for (const [sphere, value] of Object.entries(sphereInfluence)) {
-        if (value > highestValue) {
-          highestValue = value;
-          highestSphere = sphere;
-        }
-      }
-      // Build updated sphereInfluence: boost 'resonance' (default divine sphere), reduce dominant
-      const updated = { ...sphereInfluence };
-      updated['resonance'] = (updated['resonance'] ?? 0) + SHIFT_DOMINION_BOOST;
-      if (highestSphere && highestSphere !== 'resonance') {
-        updated[highestSphere] = Math.max(0, (updated[highestSphere] ?? 0) - SHIFT_DOMINION_REDUCTION);
-      }
-      ops.push({
-        op: 'update_node',
-        nodeId: loc.id,
-        properties: { sphereInfluence: updated },
-      });
-    }
-    return ops;
   },
 
   /**

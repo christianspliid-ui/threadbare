@@ -41,6 +41,12 @@ export interface WheelSlot {
   lockedReason: string | null;
   /** Essence cost to use this action */
   essenceCost: number;
+  /**
+   * The Dominion band the cost and odds were read at (THR-1748) — the target's band,
+   * Foreign for a card with no world target. Engine/debug only until THR-1750 ships
+   * the card chip that words it; never printed as-is.
+   */
+  dominionBand?: import('../data/dominion-content').DominionBand;
   /** Sphere type for this action (used for essence cost), or null for scry/center */
   sphere: SphereName | null;
   /** Intervention type (dream, persuade, etc.), or null for non-interventions */

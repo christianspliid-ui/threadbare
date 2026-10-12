@@ -3,6 +3,8 @@
  */
 import type { CosmologyProfile, SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
+import { SPHERE_OPPOSITES } from './cosmology';
+import type { SpherePoints } from './spherePoints';
 import type {
   RivalDefinition,
   RivalState,
@@ -47,9 +49,36 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/**
+ * The opposing dominion's spheres (THR-1748 / THR-1763): the opposite pole of each
+ * sphere the god bought, weighted by its points. Empty when the god bought nothing.
+ */
+export function opposingSpheresOfBuy(godPoints: SpherePoints | undefined): Array<{ sphere: SphereName; weight: number }> {
+  const out: Array<{ sphere: SphereName; weight: number }> = [];
+  for (const s of SPHERE_NAMES) {
+    const p = godPoints?.[s] ?? 0;
+    const opp = SPHERE_OPPOSITES[s];
+    if (p > 0 && opp) out.push({ sphere: opp, weight: p });
+  }
+  return out;
+}
+
+/** One weighted pick with a single draw. */
+function weightedPick(entries: Array<{ sphere: SphereName; weight: number }>, roll: number): SphereName {
+  const total = entries.reduce((s, e) => s + e.weight, 0);
+  let r = roll * total;
+  for (const e of entries) {
+    r -= e.weight;
+    if (r < 0) return e.sphere;
+  }
+  return entries[entries.length - 1].sphere;
+}
+
 export function generateRivals(
   playerAlignment: CosmologyProfile,
   seed: number,
+  /** THR-1748: the god's bought vector — rivals draw from its opposites. */
+  godPoints?: SpherePoints,
 ): RivalDefinition[] {
   const rng = mulberry32(seed);
   const count = 2 + Math.floor(rng() * 3);
@@ -57,16 +86,22 @@ export function generateRivals(
   const playerSphereRank = [...SPHERE_NAMES].sort(
     (a, b) => playerAlignment[b] - playerAlignment[a],
   );
-  const playerTopSpheres = playerSphereRank.slice(0, 2);
+  const bought = SPHERE_NAMES.filter(s => (godPoints?.[s] ?? 0) > 0);
+  const playerTopSpheres = bought.length > 0 ? bought : playerSphereRank.slice(0, 2);
   const opposingSpheres = playerSphereRank.slice(-4);
+  const opposingByBuy = opposingSpheresOfBuy(godPoints);
 
   const rivals: RivalDefinition[] = [];
   const usedPrefixes = new Set<number>();
   const usedSuffixes = new Set<number>();
 
   for (let i = 0; i < count; i++) {
-    const primaryIndex = Math.floor(rng() * opposingSpheres.length);
-    const primary = opposingSpheres[primaryIndex];
+    // THR-1748: the opposite of a bought sphere, weighted by its points; the old
+    // bottom-four World-Soul draw only when the god bought nothing. One draw either way.
+    const roll = rng();
+    const primary = opposingByBuy.length > 0
+      ? weightedPick(opposingByBuy, roll)
+      : opposingSpheres[Math.floor(roll * opposingSpheres.length)];
 
     const secondaryPool = SPHERE_NAMES.filter(
       s => s !== primary && !playerTopSpheres.includes(s),

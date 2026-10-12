@@ -142,6 +142,13 @@ export interface ControlSpec {
   /** Per-tick essence cost by sphere. Empty = no drain (threshold-only). */
   readonly perTickCost: Partial<Record<SphereName, number>>;
 
+  /**
+   * When set, the per-tick cost is this amount charged from the **owner's primary**
+   * sphere (the largest buy), resolved at establishment and replacing `perTickCost`.
+   * Claim Dominion (THR-1748 / THR-1762). Falls back to `perTickCost` without a graph.
+   */
+  readonly perTickCostFromPrimary?: number;
+
   /** Per-tick essence income generated. Only for income-producing effects. */
   readonly perTickIncome?: Partial<Record<SphereName, number>>;
 

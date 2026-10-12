@@ -412,6 +412,34 @@ export interface DebugAscendantSpheresResult {
   source: 'bought' | 'fallback';
 }
 
+/** Result of `getDominion(objectId)`. THR-1748 */
+export interface DebugDominionResult {
+  /** 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign' */
+  band: string;
+  /** The weighted match on the 0–10 scale (debug only — never a player surface). */
+  match: number;
+  /** The god's power factor on the band read (capped at 2.0). */
+  power: number;
+  /** place / sublocation / mortal / culture / faction / army / company / artifact / ascendant / unknown */
+  kind: string;
+  /** Whose scores were read, e.g. 'own', 'faction-of-army', 'bearer', 'no-god'. */
+  readThrough: string;
+  /** Who tends the object's top-level place this tick ('claim' | 'seat' | 'carry' | 'anointed'), or null. */
+  tendedBy: string[] | null;
+}
+
+/** Result of `getGodPower()`. THR-1748 */
+export interface DebugGodPowerResult {
+  /** The power factor the band read uses (capped). */
+  power: number;
+  /** True when the uncapped factor reached the cap. */
+  capped: boolean;
+  /** The bought-sphere score sum recorded at creation. */
+  baseline: number;
+  /** Dominion attunement marks crossed, per bought sphere. */
+  marksCrossed: Partial<Record<string, number>>;
+}
+
 /** One reach-signature entry returned by `listSignatures()`. THR-554 */
 export interface DebugSignatureInfo {
   reach: string;
@@ -2191,6 +2219,12 @@ export interface DebugBridge {
 
   /** THR-1749 — the god's bought sphere points, derived primary / secondary, and whether bought or fallback. Null before a game is running. */
   getAscendantSpheres: () => Promise<DebugAscendantSpheresResult | null>;
+  /** THR-1748 — the Dominion band of any object for the god, with the match, power and who tends its place. Null before a game is running or for an unknown id. */
+  getDominion: (objectId: string) => Promise<DebugDominionResult | null>;
+  /** THR-1748 — how many top-level places stand in each Dominion band. Null before a game is running. */
+  getDominionCensus: () => Promise<Record<'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign', number> | null>;
+  /** THR-1748 — the god's power factor, its baseline and the attunement marks crossed per bought sphere. Null before a game is running. */
+  getGodPower: () => Promise<DebugGodPowerResult | null>;
   /** THR-554 — list the eight reach signatures, their run-unlock status, and the ascendant's primary-sphere multiplier. */
   listSignatures: () => Promise<DebugListSignaturesResult>;
   /** THR-554 — grant a reach signature's unlock + materialize a minimal on-map footprint (engine-backed reaches only). */

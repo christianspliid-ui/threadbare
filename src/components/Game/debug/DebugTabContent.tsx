@@ -204,7 +204,7 @@ export function DebugTabContent({
     );
   }
   if (viewMode === 'factions') return <FactionDebugContent graph={graph} onZoomToLocation={onZoomToLocation} />;
-  if (viewMode === 'spheres') return <SphereStateTabContent aggregate={sphereAggregate} />;
+  if (viewMode === 'spheres') return <SphereStateTabContent aggregate={sphereAggregate} graph={graph} inspectedId={effectiveAgentId} controlEffects={controlEffects} />;
   if (viewMode === 'revelation-log') return <RevelationLogTab traces={allTraces as TraceEntry[]} agentKnowledge={agentKnowledge ?? new Map()} />;
   if (viewMode === 'knowledge-gaps') return <KnowledgeComparisonTab agentKnowledge={agentKnowledge ?? new Map()} graph={graph} />;
   if (viewMode === 'armies') return <ArmiesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />;

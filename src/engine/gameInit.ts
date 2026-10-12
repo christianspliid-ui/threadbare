@@ -37,6 +37,7 @@ import {
   seedActorSphereAffinity,
   seedLocationSphereAffinity,
   backfillSphereAffinity,
+  computeFactionSphereAggregates,
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
@@ -62,6 +63,9 @@ import { publishDynamicFactionDefinitions } from '../data/faction-definition-loo
 import { computeReachShares } from './domainCapability';
 import { placeSeededCarriedNotices } from './spellGenerator/notice';
 import { grantFirstMark } from './firstMark';
+import { godBoughtScoreSum } from './dominion';
+import { recordSeededScores } from './phaseDominion';
+import { getSpherePoints } from './spherePoints';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -322,6 +326,14 @@ export function initializeGameState(
   // starting aggregate below reads the world.
   backfillSphereAffinity(graph, tiles, 0);
 
+  // ── Dominion's starting record (THR-1748) ─────────────────────────────────
+  // The god's power baseline (its bought-sphere scores as seeded, so power reads
+  // 1.0 at start for every buy), each place's seeded scores (the floor neglect never
+  // crosses), and the faction aggregates — so tick 0 reads a band for a faction too.
+  graph.updateNode(ascendantId, { properties: { dominionPowerBaseline: godBoughtScoreSum(graph, ascendantId) } });
+  recordSeededScores(graph);
+  computeFactionSphereAggregates(graph, 0);
+
   // No initial threads — the ascendant starts alone with no retinue.
   // Threads are established through gameplay (Meet The First, divine actions, etc.)
 
@@ -331,7 +343,8 @@ export function initializeGameState(
   const initialSphereWeights = normalizeAggregate(initialAggregate.totalBySphere);
 
   // Generate rival gods
-  const rivalDefs = generateRivals(cosmology, seed);
+  // THR-1748: rivals draw their spheres from the opposites of the god's buy.
+  const rivalDefs = generateRivals(cosmology, seed, getSpherePoints(graph.getNode(ascendantId)?.properties));
   const rivalStates = rivalDefs.map(r => createRivalState(r.id));
 
   // Generate doom clock. THR-1774: every world draws its doom from the seed and the

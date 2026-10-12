@@ -1064,6 +1064,59 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // ── Dominion (THR-1748) ──────────────────────────────────────────────────
+    /** The Dominion band of any object for the god, with the debug-only reasons. */
+    getDominion: async (objectId: string) => {
+      const { dominionOf, buildTendingIndex, isTended, placeOf } = await import('./engine/dominion');
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      if (!state || !graph || !graph.getNode(objectId)) return null;
+      const read = dominionOf(graph, state.ascendantId, objectId);
+      const index = buildTendingIndex(graph, state.ascendantId, state.controlEffects,
+        (id) => dominionOf(graph, state.ascendantId, id).band);
+      const place = placeOf(graph, objectId);
+      return {
+        band: read.band,
+        match: read.reason.match,
+        power: read.reason.power,
+        kind: read.reason.kind,
+        readThrough: read.reason.readThrough,
+        tendedBy: place ? isTended(index, place.id) : null,
+      };
+    },
+    /** How many top-level places stand in each band. */
+    getDominionCensus: async () => {
+      const [{ dominionOf }, { getLocationNodes }] = await Promise.all([
+        import('./engine/dominion'),
+        import('./engine/sublocationShape'),
+      ]);
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      if (!state || !graph) return null;
+      const census = { hostile: 0, foreign: 0, touched: 0, held: 0, sovereign: 0 };
+      for (const place of getLocationNodes(graph)) census[dominionOf(graph, state.ascendantId, place.id).band]++;
+      return census;
+    },
+    /** The god's power factor, baseline and attunement marks crossed per bought sphere. */
+    getGodPower: async () => {
+      const [{ dominionPower, dominionPowerRaw, dominionPowerBaseline, getAttunementMarksCrossed, godSpherePoints }, { DOMINION_POWER_CAP }] =
+        await Promise.all([import('./engine/dominion'), import('./data/dominion-content')]);
+      const state = _gameStateProvider?.();
+      const graph = _graphProvider?.();
+      if (!state || !graph) return null;
+      const points = godSpherePoints(graph, state.ascendantId);
+      const marksCrossed: Partial<Record<string, number>> = {};
+      for (const [sphere, p] of Object.entries(points)) {
+        if (p && p > 0) marksCrossed[sphere] = getAttunementMarksCrossed({ ...state, graph }, sphere as never);
+      }
+      return {
+        power: dominionPower(graph, state.ascendantId),
+        capped: dominionPowerRaw(graph, state.ascendantId) >= DOMINION_POWER_CAP,
+        baseline: dominionPowerBaseline(graph, state.ascendantId),
+        marksCrossed,
+      };
+    },
+
     // ── Reach signatures — map signifiers + surfacing (THR-554) ─────────────
     /**
      * List the eight reach signatures with their run-unlock status and the

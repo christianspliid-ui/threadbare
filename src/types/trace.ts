@@ -32,6 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
+import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -621,6 +622,14 @@ export type TraceCategory =
   | 'sphere_seeded'
   // Buy your spheres — the bought vector was missing or invalid, preset used (THR-1749)
   | 'sphere_points.fallback'
+  // Dominion — the god's home turf (THR-1748). Interfaces in `src/types/traces/dominion-traces.ts`.
+  | 'dominion.band_change'
+  | 'dominion.tend'
+  | 'dominion.neglect'
+  | 'dominion.raid'
+  | 'dominion.attunement'
+  | 'dominion.seat_floor'
+  | 'dominion.read'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -932,6 +941,14 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'sphere_seeded',
   // Buy your spheres — preset fallback (THR-1749)
   'sphere_points.fallback',
+  // Dominion (THR-1748)
+  'dominion.band_change',
+  'dominion.tend',
+  'dominion.neglect',
+  'dominion.raid',
+  'dominion.attunement',
+  'dominion.seat_floor',
+  'dominion.read',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -4812,6 +4829,14 @@ export type TraceEntry =
   | SpherePressureResolvedTrace
   | SphereSeededTrace
   | SpherePointsFallbackTrace
+  // Dominion (THR-1748)
+  | DominionBandChangeTrace
+  | DominionTendTrace
+  | DominionNeglectTrace
+  | DominionRaidTrace
+  | DominionAttunementTrace
+  | DominionSeatFloorTrace
+  | DominionReadTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

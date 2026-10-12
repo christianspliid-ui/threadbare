@@ -285,7 +285,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.read_currents':
     'Engine bridge (read): on success, reveals the hex’s `soul` narrative layer and uncovers hidden sites. No tile mutation.',
   'hex.shift_dominion':
-    "Engine bridge: on success, on each location on the hex boosts the `resonance` sphere-influence by SHIFT_DOMINION_BOOST and reduces the dominant sphere by SHIFT_DOMINION_REDUCTION (via location `update_node` ops).",
+    "Dominion (THR-1748): targets a place. On success, pushes DOMINION_BREAK_PRESSURE of the god's bought sphere whose opposing pole weighs most there (points × pair weight × opposite score) — breaking that pole so a Claim can take root.",
   'hex.amplify_flow':
     "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST.",
   'hex.sever_flow':
@@ -331,7 +331,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
 
   // ─── hex.* — sustained control effects (controlSpec, phaseControlEffects) ──
   'hex.claim_dominion':
-    'Sustained: spawns a `ControlEffect` that proclaims divine dominion, adding a small per-tick `divineInfluence` mutation at a per-tick Spirit cost. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.',
+    'Sustained (Dominion, THR-1748): targets a place. Spawns a `ControlEffect` that tends it — `phaseDominion` pushes DOMINION_CLAIM_PRESSURE_PER_TICK of the god’s bought vector into it a tick, and it is spared neglect — at DOMINION_CLAIM_UPKEEP_PER_TICK from the primary sphere. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.',
   'hex.cultivate':
     'Sustained: `ControlEffect` adding a small per-tick `divineInfluence` mutation at a per-tick Life cost, accelerating prosperity growth on the hex’s locations. Persists until it lapses or is destroyed (Iron ≥ t1).',
   'hex.claim_resource':

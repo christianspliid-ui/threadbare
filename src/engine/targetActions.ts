@@ -40,6 +40,7 @@ import { effectiveCastDifficulty, castForecastProbability } from './playerCastRe
 import { classifyForecastTier } from './encounters/outcomeForecast';
 import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
+import { castTargetBand, dominionScaledCost, dominionSphereFactor } from './dominion';
 import type { ControlEffect } from '../types/controlEffect';
 import { findHeldNonStackingEffect, findPendingNonStackingCast } from './controlEffectSpawn';
 
@@ -95,6 +96,7 @@ function castDifficultyFields(
   template: UnifiedActionTemplate,
   capabilities: Partial<Record<ReachDomain, number>> | undefined,
   targetProperties?: Readonly<Record<string, unknown>>,
+  sphereFactor?: number,
 ): CastReadoutFields {
   const { difficulty, reach } = hardestStep(template, targetProperties);
   const fields: CastReadoutFields = {
@@ -114,12 +116,13 @@ function castDifficultyFields(
       difficulty,
       capabilities[reach],
       template.scale,
+      sphereFactor,
     );
     // THR-1002: the word the card prints, classified from the probability the
     // roll will use. Omitted above when no capability map was supplied, so the
     // card renders no odds zone rather than a tier nobody computed.
     fields.forecastTier = classifyForecastTier(
-      castForecastProbability(difficulty, capabilities[reach], template.scale),
+      castForecastProbability(difficulty, capabilities[reach], template.scale, sphereFactor),
     );
   }
   return fields;
@@ -218,6 +221,11 @@ export interface TargetActionParams {
   heldControlEffects?: readonly ControlEffect[];
   /** Owner whose effects {@link heldControlEffects} locks against. */
   controlOwnerId?: string;
+  /**
+   * The god whose Dominion prices the cards (THR-1748). Falls back to
+   * `controlOwnerId`, which every production caller sets to the ascendant.
+   */
+  ascendantId?: string;
   /**
    * Actions in play (`GameState.unifiedActions`). An unresolved cast of the same
    * non-stacking verb by {@link controlOwnerId} on this target also locks "Already
@@ -461,7 +469,12 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     // the pool will not be charged — a card reading 4 while the cast takes 14
     // would be a worse defect than the flat price it replaces. Every other
     // template gets its authored `essenceCost` back unchanged.
-    const essenceCost = tierScaledEssenceCost(template, target.properties);
+    // THR-1748: then the target's Dominion band — the same pieces
+    // `dominionScaledEssenceCost` uses at the charge, so preview equals charge.
+    // Par for every band while DOMINION_PRICES_LIVE is false (§ Decided 13).
+    const dominionAscendantId = params.ascendantId ?? controlOwnerId;
+    const dominionBand = castTargetBand(graph, dominionAscendantId, target.nodeId);
+    const essenceCost = dominionScaledCost(tierScaledEssenceCost(template, target.properties), dominionBand);
     const sphere = template.sphereAffinity ?? primarySphere;
     const currentEssence = (pool as Record<string, number>)[sphere] ?? 0;
     const canAffordEssence = essenceCost === 0 || currentEssence >= essenceCost;
@@ -545,6 +558,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       available,
       lockedReason,
       essenceCost,
+      dominionBand,
       sphere: template.sphereAffinity ?? null,
       interventionType: null,
       rangeStatus,
@@ -567,7 +581,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
-      ...castDifficultyFields(template, ascendantCastCapabilities, target.properties),
+      ...castDifficultyFields(template, ascendantCastCapabilities, target.properties, dominionSphereFactor(dominionBand, 'player')),
     });
   }
 

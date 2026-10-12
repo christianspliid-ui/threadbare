@@ -21,6 +21,8 @@ import type { TickEvent } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import { isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import { getSpherePoints, rankSpherePoints } from './spherePoints';
+import type { SphereName } from '../types/index';
 import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 
 // ─── Counter ────────────────────────────────────────────────────────────────
@@ -114,6 +116,21 @@ export function resetEffectCounter(): void {
  *
  * The caller is responsible for pushing the result onto GameState.controlEffects[].
  */
+/**
+ * The effect's per-tick cost: `perTickCostFromPrimary` charged from the owner's
+ * primary sphere when the spec asks for it (THR-1748), else the authored
+ * `perTickCost`. Fail-soft to the authored cost when the owner cannot be read.
+ */
+export function resolvePerTickCost(
+  spec: ControlSpec,
+  graph: WorldGraph | undefined,
+  ownerId: string,
+): Partial<Record<SphereName, number>> {
+  if (spec.perTickCostFromPrimary === undefined || !graph) return spec.perTickCost;
+  const primary = rankSpherePoints(getSpherePoints(graph.getNode(ownerId)?.properties))[0];
+  return primary ? { [primary]: spec.perTickCostFromPrimary } : spec.perTickCost;
+}
+
 export function spawnControlEffect(
   action: UnifiedAction,
   template: UnifiedActionTemplate,
@@ -207,7 +224,7 @@ export function spawnControlEffect(
     ritualEssenceInvested: action.essencePaid ?? 0,
 
     // Sustain (copied from ControlSpec)
-    perTickCost: spec.perTickCost,
+    perTickCost: resolvePerTickCost(spec, graph, action.actorId),
     perTickIncome: spec.perTickIncome,
     sustainThreshold: spec.sustainThreshold,
 

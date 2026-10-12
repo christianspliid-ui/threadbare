@@ -17,6 +17,7 @@ import type { GameState } from '../../types/gameState';
 import type { ControlEffect } from '../../types/controlEffect';
 import type { EssencePool } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
+import { CONTROL_PRESSURE_PER_TICK } from '../../types/sphereAffinity';
 
 function pool(): EssencePool {
   const p = {} as EssencePool;
@@ -98,8 +99,8 @@ describe('phaseControlEffects — rift (THR-551)', () => {
       const result = phaseControlEffects(state);
       const infl = (result.pendingSpherePressures ?? []).find(p => p.sourceId === 'rift_eff_1' && p.magnitude === 4);
       expect(infl).toBeUndefined();
-      // The generic per-cost pressure (magnitude 1) still fires — influence is additive.
-      const generic = (result.pendingSpherePressures ?? []).find(p => p.sourceId === 'rift_eff_1' && p.magnitude === 1);
+      // The generic per-cost pressure (CONTROL_PRESSURE_PER_TICK) still fires — influence is additive.
+      const generic = (result.pendingSpherePressures ?? []).find(p => p.sourceId === 'rift_eff_1' && p.magnitude === CONTROL_PRESSURE_PER_TICK);
       expect(generic).toBeDefined();
     });
   });

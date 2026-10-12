@@ -56,10 +56,11 @@ const CARD_READOUT_ACTOR_LABEL = 'cast-readout';
 /**
  * Sphere factor for a player cast, pre-roll.
  *
- * `resolveUncontestedStep` hardcodes `const sphereFactor = 0` for every source, so
- * the card reads the same zero rather than guessing at a term the resolver does not
- * yet compute. Named rather than inlined (NFP #1) so that if the resolver ever grows
- * a real sphere factor, the two places that must move are greppable from each other.
+ * The default when no Dominion band is supplied. Since THR-1748 the resolver reads
+ * `dominionSphereFactor(band, 'player')` for a player cast; the card passes the same
+ * value through the `sphereFactor` parameter below (from `getTargetActionSlots`), so
+ * the forecast word and the roll read one number (PC-6). Both are 0 while
+ * `DOMINION_PRICES_LIVE` is false.
  */
 export const CARD_READOUT_SPHERE_FACTOR = 0;
 
@@ -104,6 +105,7 @@ export function effectiveCastDifficulty(
   maxDifficulty: number | undefined,
   capability: number | undefined,
   scale: ActionScale | undefined,
+  sphereFactor: number = CARD_READOUT_SPHERE_FACTOR,
 ): number {
   if (typeof maxDifficulty !== 'number' || !Number.isFinite(maxDifficulty) || maxDifficulty <= 0) {
     return 0;
@@ -113,7 +115,7 @@ export function effectiveCastDifficulty(
   const { adjustedDifficulty } = applyScaleDifficultyAdjust(
     maxDifficulty,
     capability,
-    CARD_READOUT_SPHERE_FACTOR,
+    sphereFactor,
     CARD_READOUT_MODS,
     scale,
   );
@@ -207,6 +209,7 @@ export function castForecastProbability(
   maxDifficulty: number | undefined,
   capability: number | undefined,
   scale: ActionScale | undefined,
+  sphereFactor: number = CARD_READOUT_SPHERE_FACTOR,
 ): number {
   const resolvedScale: ActionScale = scale ?? 'regional';
   const floor = MIN_PROBABILITY_BY_SCALE[resolvedScale] ?? PROBABILITY_FLOOR;
@@ -233,7 +236,7 @@ export function castForecastProbability(
   const { adjustedDifficulty } = applyScaleDifficultyAdjust(
     authored,
     capability,
-    CARD_READOUT_SPHERE_FACTOR,
+    sphereFactor,
     CARD_READOUT_MODS,
     scale,
   );
@@ -246,7 +249,7 @@ export function castForecastProbability(
     domain: REACH_DOMAINS[0],
     capability,
     difficulty: adjustedDifficulty,
-    sphereFactor: CARD_READOUT_SPHERE_FACTOR,
+    sphereFactor,
     actionModifiers: CARD_READOUT_MODS,
   });
 

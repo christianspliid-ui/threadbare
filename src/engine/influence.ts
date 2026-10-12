@@ -10,7 +10,6 @@ import { SPHERE_NAMES } from '../types/index';
 import type { EssencePool, EssenceGeneration, SphereAlignment, InfluenceTier } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
-  ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
   ESSENCE_PER_SEAT,
   BASE_MAX_ESSENCE,
@@ -24,6 +23,7 @@ import { assignTrait } from './traits';
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 import { computeSourceIncome, readEssenceSource } from './essenceSources';
 import { distributeBySpherePoints, getSpherePoints } from './spherePoints';
+import { computeThreadYield } from './dominion';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
@@ -86,7 +86,7 @@ export function generateEssence(pool: EssencePool, generation: EssenceGeneration
  *
  * Sources:
  * 1. Base generation: 1.0 essence/tick distributed by sphere alignment
- * 2. Threaded mortals: +0.1 per thread (thread edges from ascendant)
+ * 2. Threaded mortals: ESSENCE_PER_THREAD_BY_TIER × the mortal's Dominion band (THR-1748)
  * 3. Places of power: +0.5 per controlled place of power
  * 4. Control effect income: sum of perTickIncome from active ControlEffects
  */
@@ -104,9 +104,10 @@ export function computeEssenceGeneration(
   // 1. Base generation
   let totalRate = BASE_ESSENCE_PER_TICK;
 
-  // 2. Thread bonus (one per threaded mortal)
-  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
-  totalRate += threadEdges.length * ESSENCE_PER_THREAD;
+  // 2. Thread yield (THR-1748): by tier and by the Dominion band of the mortal the
+  //    thread binds — a mortal on the god's ground pays more than one on foreign soil.
+  //    Shared with the essence-bar readout (computeThreadYield) so the two agree.
+  totalRate += computeThreadYield(graph, ascendantId).total;
 
   // 3. Places of power bonus. The home seat (see step 3a below) is a named
   //    higher-yield place of power, so it is excluded here to avoid stacking —

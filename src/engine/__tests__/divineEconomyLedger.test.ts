@@ -7,10 +7,17 @@
  *
  *   A: one thread, no ground           → never unpaid, reaches tier 4 (+0.235 at Aspect)
  *   B: two threads + a consecrated source → nothing unpaid, pool > 0 every 120 ticks, both tier 4 (+0.12)
- *   C: B without the source             → once both reach tier 4, one goes unpaid (−0.23: ground is needed)
+ *   C: B without the source             → THR-1748 restated (below): Model B thread yields pay their own
+ *                                         upkeep on Foreign ground; Hostile ground halves what they bring
  *   D: two threads capped at tier 3     → pool > 0 every 120 ticks, nothing unpaid (+0.07, the ticket's predicate)
  *
- * Arm C exists so a later retune that makes held ground pointless fails loudly.
+ * Arm C originally pinned "once both reach tier 4, one goes unpaid — ground is needed"
+ * (THR-1747, flat 0.1 a thread). THR-1748 ships THR-1761's Model B yields (0.15 / 0.30 /
+ * 0.45 / 0.60 by tier, × the mortal's Dominion band), so a tier-4 thread out-earns its
+ * 0.5 upkeep on Foreign ground and the old predicate no longer holds. Ground now matters
+ * through the band: the arm pins that Hostile ground costs the god income against
+ * Foreign ground, so a later retune that makes the band pointless still fails loudly.
+ * (Recorded as a finding on THR-1748, § Decided 6.)
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
@@ -23,6 +30,8 @@ import type { GameState } from '../../types/gameState';
 import type { SphereAlignment } from '../../types/influence';
 import type { EssenceSource } from '../../types/essenceSource';
 import { SPHERE_NAMES } from '../../types/index';
+import { createDefaultSphereAffinity } from '../../types/sphereAffinity';
+import { dominionOf } from '../dominion';
 
 const ASC = 'asc.player';
 const SEAT = 'loc.seat';
@@ -35,6 +44,8 @@ interface ArmOpts {
   source: boolean;
   /** Hold every thread below tier 4 for the whole run (Arm D). */
   capAtTier3?: boolean;
+  /** THR-1748: the mortals stand on spheres opposed to the god's (Hostile band). */
+  hostileMortals?: boolean;
 }
 
 interface ArmResult {
@@ -46,6 +57,13 @@ interface ArmResult {
   allTier4At: number | null;
   /** True when a thread went unpaid on or after `allTier4At`. */
   unpaidAfterAllTier4: boolean;
+}
+
+function hostileBag() {
+  const a = createDefaultSphereAffinity();
+  a.scores.entropy = 5;
+  a.scores.energy = 5;
+  return a;
 }
 
 function buildState(opts: ArmOpts): GameState {
@@ -65,7 +83,14 @@ function buildState(opts: ArmOpts): GameState {
 
   for (let i = 0; i < opts.threads; i++) {
     const id = `agent.${i}`;
-    graph.addNode({ id, type: 'actor', name: `Mortal ${i}`, properties: { actorType: 'individual' } });
+    graph.addNode({
+      id, type: 'actor', name: `Mortal ${i}`,
+      properties: {
+        actorType: 'individual',
+        // THR-1748: life's and spirit's opposites, so the mortal reads Hostile.
+        ...(opts.hostileMortals ? { sphereAffinity: hostileBag() } : {}),
+      },
+    });
     // Bound at tick 0 at tier 1 (bind_thread_agent's starting tier).
     graph.addEdge({
       id: `edge.thread.${i}`,
@@ -161,10 +186,15 @@ describe('THR-1747 divine economy ledger (1,080 ticks, no casts)', () => {
     expect(r.finalTiers).toEqual([4, 4]);
   });
 
-  it('Arm C — Arm B without the source: once both reach tier 4, a thread goes unpaid (ground is needed)', () => {
-    const r = runArm({ threads: 2, source: false });
-    expect(r.allTier4At).not.toBeNull();
-    expect(r.unpaidAfterAllTier4).toBe(true);
+  it('Arm C — Arm B without the source (THR-1748 Model B): tier-4 threads pay their own way on Foreign ground; Hostile ground costs income', () => {
+    const foreign = runArm({ threads: 2, source: false });
+    expect(foreign.allTier4At).not.toBeNull();
+    expect(foreign.unpaidAfterAllTier4).toBe(false);
+    const hostileState = buildState({ threads: 2, source: false, hostileMortals: true });
+    expect(dominionOf(hostileState.graph, ASC, 'agent.0').band).toBe('hostile');
+    const hostile = runArm({ threads: 2, source: false, hostileMortals: true });
+    expect(hostile.snapshots[hostile.snapshots.length - 1])
+      .toBeLessThan(foreign.snapshots[foreign.snapshots.length - 1]);
   });
 
   it('Arm D — two threads held at tier 3, no ground: pool above zero at every snapshot, nothing unpaid', () => {

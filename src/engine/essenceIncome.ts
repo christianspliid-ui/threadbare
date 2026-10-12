@@ -11,7 +11,6 @@ import type { SphereName } from '../types';
 import type { EssencePool, SphereAlignment, InfluenceTier } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
-  ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
   ESSENCE_PER_SEAT,
   TIER_MAINTENANCE,
@@ -22,6 +21,7 @@ import type { ControlEffect } from '../types/controlEffect';
 import { computeSourceIncome, readEssenceSource, upkeepChargedSources } from './essenceSources';
 import { SOURCE_CONTROL_SUSTAIN } from '../data/essence-sources';
 import { distributeBySpherePoints, getSpherePoints } from './spherePoints';
+import { computeThreadYield } from './dominion';
 
 function emptyPool(): EssencePool {
   return Object.fromEntries(SPHERE_NAMES.map(s => [s, 0])) as EssencePool;
@@ -45,7 +45,8 @@ export function computeEssenceIncome(
   // Gross generation
   let totalRate = BASE_ESSENCE_PER_TICK;
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
-  totalRate += threadEdges.length * ESSENCE_PER_THREAD;
+  // THR-1748: thread yield by tier and band — the ledger's own helper (PC-6).
+  totalRate += computeThreadYield(graph, ascendantId).total;
 
   // Home seat is a named higher-yield place of power — excluded from the
   // place-of-power loop and added once as ESSENCE_PER_SEAT (mirrors

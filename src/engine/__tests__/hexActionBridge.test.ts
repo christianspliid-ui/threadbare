@@ -7,8 +7,6 @@ import {
   parseHexTargetId,
   getAgentIdsAtHex,
   AMPLIFY_FLOW_SATURATION_BOOST,
-  SHIFT_DOMINION_BOOST,
-  SHIFT_DOMINION_REDUCTION,
   HEX_BLESS_INFLUENCE_DELTA,
   HEX_CORRUPT_CORRUPTION_DELTA,
   HEX_SEED_INFLUENCE_DELTA,
@@ -276,34 +274,6 @@ describe('TB-081 dynamic GraphOp generators', () => {
     it('returns empty ops for hex with no locations', () => {
       const result = resolveHexActionFull('hex.amplify_flow', 99, 99, 'success', 10, graph);
       expect(result.graphOps).toHaveLength(0);
-    });
-  });
-
-  describe('hex.shift_dominion', () => {
-    it('boosts resonance and reduces dominant sphere on locations', () => {
-      // Set up sphere influence on location
-      graph.updateNode('loc_a', { properties: { sphereInfluence: { mind: 0.5, entropy: 0.3, resonance: 0.1 } } });
-      const result = resolveHexActionFull('hex.shift_dominion', 3, 5, 'success', 10, graph);
-      const updateOps = result.graphOps.filter(op => op.op === 'update_node');
-      expect(updateOps.length).toBeGreaterThanOrEqual(2); // one per location
-
-      // Check loc_a: mind was dominant, should be reduced; resonance should be boosted
-      const locAOp = updateOps.find(op => op.nodeId === 'loc_a');
-      expect(locAOp).toBeDefined();
-      const si = locAOp!.properties!.sphereInfluence as Record<string, number>;
-      expect(si.resonance).toBeCloseTo(0.1 + SHIFT_DOMINION_BOOST);
-      expect(si.mind).toBeCloseTo(0.5 - SHIFT_DOMINION_REDUCTION);
-    });
-
-    it('handles locations with no existing sphereInfluence', () => {
-      const result = resolveHexActionFull('hex.shift_dominion', 3, 5, 'success', 10, graph);
-      // Should not throw — returns ops with just resonance boost
-      const updateOps = result.graphOps.filter(op => op.op === 'update_node');
-      expect(updateOps).toHaveLength(2);
-      for (const op of updateOps) {
-        const si = op.properties!.sphereInfluence as Record<string, number>;
-        expect(si.resonance).toBeCloseTo(SHIFT_DOMINION_BOOST);
-      }
     });
   });
 

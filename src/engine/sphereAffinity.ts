@@ -487,21 +487,29 @@ export function computeFactionSphereAggregates(graph: WorldGraph, tick: number):
   for (const faction of graph.getNodesByType('actor')) {
     if (faction.properties.actorType !== 'faction') continue;
     try {
+      // THR-1748: the dead do not lean a faction — a member the world's past (or a
+      // battle) killed drops out of its mean.
       const members = getFactionMembers(graph, faction.id).filter(m =>
-        m.properties.actorType === 'individual' && isValidSphereAffinity(m.properties.sphereAffinity),
+        m.properties.actorType === 'individual' && m.properties.deceased !== true
+        && isValidSphereAffinity(m.properties.sphereAffinity),
       );
       const scores = createDefaultSphereAffinity().scores;
+      // THR-1748 (THR-1764 finding 1): the unrounded mean, for the Dominion read —
+      // rounding a faction of mixed leanings to 0 hid its whole lean.
+      const exact = createDefaultSphereAffinity().scores;
       if (members.length > 0 && members.length >= FACTION_SPHERE_AGGREGATE_MIN_MEMBERS) {
         for (const s of SPHERE_NAMES) {
           let sum = 0;
           for (const m of members) sum += (m.properties.sphereAffinity as SphereAffinity).scores[s] ?? 0;
-          scores[s] = Math.round(sum / members.length);
+          exact[s] = sum / members.length;
+          scores[s] = Math.round(exact[s]);
         }
       }
       const prior = faction.properties.sphereAggregate as FactionSphereAggregate | undefined;
-      if (prior && sameScores(prior.scores, scores) && prior.memberCount === members.length) continue;
+      const priorExact = faction.properties.sphereAggregateExact as Record<string, number> | undefined;
+      if (prior && sameScores(prior.scores, scores) && prior.memberCount === members.length && sameScores(priorExact, exact)) continue;
       const aggregate: FactionSphereAggregate = { scores, memberCount: members.length, computedTick: tick };
-      graph.updateNode(faction.id, { properties: { sphereAggregate: aggregate } });
+      graph.updateNode(faction.id, { properties: { sphereAggregate: aggregate, sphereAggregateExact: exact } });
       written++;
     } catch {
       // Fail-soft: skip this faction, keep the phase running.

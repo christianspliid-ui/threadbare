@@ -34,6 +34,8 @@ import { getNodeSphereAffinity, backfillSphereAffinity } from './sphereAffinity'
 import { emitTrace } from './traceBuffer';
 import type { QuintessenceEvent } from '../types/quintessence';
 import { QUINTESSENCE_OVERCHANNEL_EROSION } from '../types/quintessence';
+import { buildTendingIndex, dominionOf, isTended } from './dominion';
+import { DOMINION_TENDED_RAID_ABSORB } from '../data/dominion-content';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -371,6 +373,23 @@ export function resolveSpherePressure(
   };
 }
 
+/**
+ * Reduce the rival pushes on one entity by `absorb` in total, in event order
+ * (THR-1748 § Decided 3). Non-rival pushes are untouched; a fully absorbed push
+ * is dropped. Pure.
+ */
+export function absorbTendedRaid(pressures: SpherePressureEvent[], absorb: number): SpherePressureEvent[] {
+  let left = absorb;
+  const out: SpherePressureEvent[] = [];
+  for (const p of pressures) {
+    if (p.source !== 'rival' || left <= 0) { out.push(p); continue; }
+    const take = Math.min(left, p.magnitude);
+    left -= take;
+    if (p.magnitude - take > 0) out.push({ ...p, magnitude: p.magnitude - take });
+  }
+  return out;
+}
+
 // ─── Orchestrator Phase ──────────────────────────────────────────────
 
 /**
@@ -412,6 +431,21 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
   }
 
   const graph = state.graph;
+
+  // THR-1748 § Decided 3: a tended place absorbs one raid burst as a rule, not by
+  // rounding. Built only when a rival push is in the batch.
+  if (pressures.some(p => p.source === 'rival')) {
+    try {
+      const index = buildTendingIndex(graph, state.ascendantId, state.controlEffects,
+        placeId => dominionOf(graph, state.ascendantId, placeId).band);
+      for (const [entityId, list] of byEntity) {
+        if (!isTended(index, entityId)) continue;
+        byEntity.set(entityId, absorbTendedRaid(list, DOMINION_TENDED_RAID_ABSORB));
+      }
+    } catch {
+      // Fail-soft: no absorption this tick, pressure resolves as before.
+    }
+  }
 
   // Build a map of location → present agents (located_at edges) for agent presence buffer
   // We do this lazily per entity rather than building a full map upfront
