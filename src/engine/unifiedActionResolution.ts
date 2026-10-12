@@ -109,7 +109,7 @@ import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
-import { castTargetBand, dominionSphereFactor, shiftBreakSphere } from './dominion';
+import { castTargetBand, dominionSphereFactor, placeOf, shiftBreakSphere } from './dominion';
 import { DOMINION_BREAK_PRESSURE, DOMINION_SHIFT_TEMPLATE_ID } from '../data/dominion-content';
 import { resolveRevelationAction } from './revelationEmitter';
 import { resolvePerceiveRelayAction, PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
@@ -4151,10 +4151,13 @@ export function phaseUnifiedActionProgress(
       completing_action.actorId === state.ascendantId &&
       completing_action.targetId
     ) {
-      const breakSphere = shiftBreakSphere(state.graph, state.ascendantId, completing_action.targetId);
+      // A sublocation resolves to its place, as Claim does: the place tier is what
+      // every band, tending and neglect read (review gate).
+      const breakTargetId = placeOf(state.graph, completing_action.targetId)?.id ?? completing_action.targetId;
+      const breakSphere = shiftBreakSphere(state.graph, state.ascendantId, breakTargetId);
       if (breakSphere) {
         spherePressures.push({
-          targetEntityId: completing_action.targetId,
+          targetEntityId: breakTargetId,
           sphere: breakSphere,
           magnitude: DOMINION_BREAK_PRESSURE,
           source: 'divine_action',

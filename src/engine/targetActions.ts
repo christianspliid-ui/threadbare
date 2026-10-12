@@ -43,7 +43,7 @@ import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling
 import { castTargetBand, dominionScaledCost, dominionSphereFactor } from './dominion';
 import { DOMINION_PLACE_ONLY_TEMPLATE_IDS } from '../data/dominion-content';
 import type { ControlEffect } from '../types/controlEffect';
-import { findHeldNonStackingEffect, findPendingNonStackingCast } from './controlEffectSpawn';
+import { findHeldNonStackingEffect, findPendingNonStackingCast, resolvePerTickCost } from './controlEffectSpawn';
 
 /**
  * The hardest step a template can present, with the reach it is rolled in
@@ -543,7 +543,10 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     let maxPerTickCost = 0;
     if (template.durationMode === 'sustained' && template.controlSpec) {
       const parts: string[] = [];
-      for (const [sphere, cost] of Object.entries(template.controlSpec.perTickCost)) {
+      // THR-1748: the upkeep the effect will actually charge — Claim's comes from the
+      // god's primary sphere (`perTickCostFromPrimary`), not its authored fallback.
+      const upkeep = resolvePerTickCost(template.controlSpec, graph, dominionAscendantId ?? '');
+      for (const [sphere, cost] of Object.entries(upkeep)) {
         if (cost && cost > 0) {
           parts.push(`${cost} ${sphere}`);
           if (cost > maxPerTickCost) maxPerTickCost = cost;

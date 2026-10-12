@@ -392,6 +392,22 @@ describe('THR-1748 Dominion — writers', () => {
     expect(ids(loc).length).toBe(2);
   });
 
+  it('the Claim card\'s upkeep label names the god\'s primary sphere, the one it charges (review gate)', () => {
+    const g = makeGraph();
+    addPlace(g, 'loc.a', {});
+    const claim = getUnifiedTemplateById('hex.claim_dominion')!;
+    const [slot] = getTargetActionSlots({
+      target: {
+        nodeId: 'loc.a', nodeType: 'location', displayName: 'loc.a', displayLabel: '',
+        subtype: null, traitIds: [], sphereAffinity: null, position: null, properties: g.getNode('loc.a')!.properties,
+      },
+      templates: [claim], pool: Object.fromEntries(SPHERE_NAMES.map(s => [s, 99])) as never,
+      primarySphere: 'mind', accessibleSpheres: SPHERE_NAMES, unlockedActionIds: [claim.id],
+      hexRevelation: {} as never, graph: g, controlOwnerId: GOD,
+    });
+    expect(slot.perTickCostLabel).toBe('0.3 mind/tick');
+  });
+
   it('a tended place absorbs one raid burst as a rule', () => {
     const raid: SpherePressureEvent = { targetEntityId: 'x', sphere: 'force', magnitude: 4, source: 'rival', sourceId: 'r1' };
     const cast: SpherePressureEvent = { targetEntityId: 'x', sphere: 'mind', magnitude: 3, source: 'divine_action', sourceId: 'a1' };
