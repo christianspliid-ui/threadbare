@@ -16,7 +16,9 @@ describe('resolveTooltip', () => {
       const tooltip = resolveTooltip('ui.doom_bar');
       expect(tooltip).not.toBeNull();
       expect(tooltip?.label).toBe('Doom Clock');
-      expect(tooltip?.desc).toContain('Unmaking');
+      // THR-1814 — says it is a slow clock that cannot end the world early.
+      expect(tooltip?.desc).toContain('unmaking');
+      expect(tooltip?.desc).toContain('cannot end the world early');
     });
 
     it('resolves ui.essence_panel', () => {

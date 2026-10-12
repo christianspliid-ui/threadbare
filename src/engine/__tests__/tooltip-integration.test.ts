@@ -11,15 +11,17 @@ import { UI_TOOLTIPS } from '../../data/ui-content';
 import { TOOLTIP_LINK_PATTERN } from '../../types/tooltip';
 
 describe('tooltip system integration', () => {
-  it('full chain: ui.doom_bar → sphere.entropy resolves at both depths', () => {
-    const doom = resolveTooltip('ui.doom_bar');
-    expect(doom).not.toBeNull();
-    expect(doom!.desc).toContain('{{sphere.entropy}}');
+  // THR-1814 rewrote `ui.doom_bar` to say what Doom does to the game, dropping its
+  // `{{sphere.entropy}}` link; the chain is now asserted from the entry that links to it.
+  it('full chain: doom.unmaking → ui.doom_bar resolves at both depths', () => {
+    const unmaking = resolveTooltip('doom.unmaking');
+    expect(unmaking).not.toBeNull();
+    expect(unmaking!.desc).toContain('{{ui.doom_bar}}');
 
     // The linked concept also resolves
-    const entropy = resolveTooltip('sphere.entropy');
-    expect(entropy).not.toBeNull();
-    expect(entropy!.label).toContain('Entropy');
+    const doom = resolveTooltip('ui.doom_bar');
+    expect(doom).not.toBeNull();
+    expect(doom!.label).toContain('Doom');
   });
 
   it('all UI tooltips with links form valid chains', () => {

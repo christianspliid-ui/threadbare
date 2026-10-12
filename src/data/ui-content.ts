@@ -56,8 +56,10 @@ export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
   // THR-1814 — says what Doom does to your game, and that it cannot end the world early.
+  // The label stays "Doom Clock": the top bar overrides it with the live stage, and
+  // it is the link text other entries chain to ("slow the {{ui.doom_bar}}").
   'ui.doom_bar': {
-    label: 'Doom',
+    label: 'Doom Clock',
     desc: 'A slow clock toward the world\'s unmaking, in five stages. It wakes when you bond The First and cannot end the world early. Open it to see what it is building toward.',
   },
   // THR-1814 — the three top-bar readings that bypassed the registry (Law 17).
