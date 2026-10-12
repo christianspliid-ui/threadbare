@@ -21,8 +21,32 @@ const PERIPHERAL_POSITIONS = [
   { x: -38, y: 14,  scale: 0.44, rotate: 1.8 },
 ];
 
-const FOCUS_SCALE = 1.1;
+/**
+ * THR-1836 — was 1.1, which put the vignette's bottom edge at 1085.9px on a
+ * 1080px viewport (Law 33). The vignette block sits inside the scaled button, so
+ * the scale moves the block and the portrait together: the name line keeps its
+ * place against the title painted into the art. See `focusedVignetteBottomPx`.
+ */
+export const FOCUS_SCALE = 1.05;
 const CONFIRM_SCALE = 1.8;
+/** How far below the portrait's foot the vignette block's bottom edge sits, in vh (pre-scale). */
+export const VIGNETTE_DROP_VH = 12;
+/** Portrait width: `min(PORTRAIT_MAX_WIDTH_PX, PORTRAIT_WIDTH_VW vw)`, aspect 3:4. */
+export const PORTRAIT_MAX_WIDTH_PX = 550;
+export const PORTRAIT_WIDTH_VW = 32;
+
+/**
+ * THR-1836 — where the focused vignette block's bottom edge lands, in px from the
+ * viewport top. The block is bottom-anchored and grows upward, so the edge does not
+ * depend on the text length: it is the centred portrait's half-height plus the drop,
+ * both scaled by FOCUS_SCALE about the viewport centre.
+ */
+export function focusedVignetteBottomPx(viewportW: number, viewportH: number): number {
+  const portraitW = Math.min(PORTRAIT_MAX_WIDTH_PX, (PORTRAIT_WIDTH_VW / 100) * viewportW);
+  const portraitH = (portraitW * 4) / 3;
+  const drop = (VIGNETTE_DROP_VH / 100) * viewportH;
+  return viewportH / 2 + (portraitH / 2 + drop) * FOCUS_SCALE;
+}
 const CONFIRM_DELAY_MS = 1200;
 const SCENE_BG = '#0a0a0f';
 
@@ -147,7 +171,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
             style={{
               top: '50%',
               left: '50%',
-              width: 'min(550px, 32vw)',
+              width: `min(${PORTRAIT_MAX_WIDTH_PX}px, ${PORTRAIT_WIDTH_VW}vw)`,
               aspectRatio: '3/4',
               background: 'transparent',
               border: 'none',
@@ -172,7 +196,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
             <div
               className="absolute left-0 right-0 text-center px-8 transition-opacity duration-700"
               style={{
-                bottom: '-12vh',
+                bottom: `-${VIGNETTE_DROP_VH}vh`,
                 opacity: isFocused ? 1 : 0,
                 pointerEvents: 'none',
               }}
