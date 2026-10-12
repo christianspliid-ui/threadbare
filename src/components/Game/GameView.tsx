@@ -180,7 +180,7 @@ import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buil
 import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
-import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
+import { NUDGE_REJECT_TOAST_MS, CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK, CHAPTER_ANSWER_TOAST_MS, chapterAnswerChoiceLine } from '../../data/nudge-stage-content';
 import { sphereWord } from '../shared/formatEssence';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
@@ -212,6 +212,7 @@ import { closeThreadingRite, isRiteAgentMissing, type RiteClose } from '../../en
 import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
+import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
 import { resolveInterrupts } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
@@ -380,6 +381,10 @@ function matchesTieredEncounterAction(
     && action.templateId === open.notification.encounterId;
 }
 
+/** Stable empties for the chapter-answer hook's inputs (THR-1812), so a missing list never re-runs its effect. */
+const EMPTY_UNIFIED_ACTIONS: readonly import('../../types/unifiedAction').UnifiedAction[] = [];
+const EMPTY_ENCOUNTER_NOTIFICATIONS: readonly EncounterNotification[] = [];
+
 export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
@@ -431,6 +436,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // interrupt holds the clock changes the state the clock returns to, instead
   // of flipping `running` and being undone on close.
   const interruptHoldRef = useRef<InterruptAutoPauseHandle | null>(null);
+  /** THR-1812 — the chapter answer run; declared after the auto-pause hook it reads, reached here by ref. */
+  const chapterAnswerRef = useRef<ChapterAnswerRunHandle | null>(null);
   const handleToggleRunningRespectingHold = useCallback(() => {
     if (interruptHoldRef.current?.toggleIfHeld()) return;
     handleToggleRunning();
@@ -4100,6 +4107,48 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * toast says so. The cards snap back because `activeNudges` never changed —
    * the failure can never surface after the roll.
    */
+  /**
+   * THR-1812 — after a commit, should the veil stay up as the answering card?
+   * Yes when the clock will stay paused once the veil closes: the step needs
+   * world time to answer, and closing would leave a silent, paused map. The hold
+   * is read here, before `tieredEncounterState` changes, while the veil still
+   * holds the clock. `null` (no hold recorded) counts as running — the worst
+   * case is today's behaviour. Returns `true` when it showed the card.
+   */
+  const keepChapterOnScreenAfterCommit = useCallback((
+    actionId: string,
+    stepIndex: number,
+    choiceNames: ReadonlyArray<string | null | undefined>,
+  ): boolean => {
+    if (!tieredEncounterState) return false;
+    const wasRunning = interruptHoldRef.current?.getWasRunningBeforeInterrupt() ?? null;
+    if (wasRunning !== false && !CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK) return false;
+    const answer = chapterAnswerRef.current;
+    if (!answer) return false;
+    answer.showCard({
+      actionId,
+      stepIndex,
+      notificationId: tieredEncounterState.notification.id,
+      chapterName: encounterVeilModel?.header.title || null,
+      choiceLine: chapterAnswerChoiceLine(choiceNames),
+    });
+    return true;
+  }, [tieredEncounterState, encounterVeilModel]);
+
+  /** THR-1812 — *Let the world turn*: set the hold to run, then close the veil. */
+  const handleChapterLetWorldTurn = useCallback(() => {
+    chapterAnswerRef.current?.letWorldTurn();
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+  }, [gameState.tick]);
+
+  /** THR-1812 — *Back to the map*: the answer waits; the clock stays paused. */
+  const handleChapterBackToMap = useCallback(() => {
+    chapterAnswerRef.current?.backToMap();
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+  }, [gameState.tick]);
+
   const handleCommitNudges = useCallback((nudgeIds: string[], _essenceCost: number) => {
     if (!tieredEncounterState) return;
     const phase = encounterVeilModel?.nudgePhase;
@@ -4215,6 +4264,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-1730 — the step is decided; a later set-down of it (reopened from the
     // badge before it resolves) must not hold it again.
     committedEncounterNotificationIds.current.add(tieredEncounterState.notification.id);
+    // THR-1812 — on a paused clock the step cannot answer until world time
+    // passes; keep the veil up as the answering card instead of closing onto a
+    // silent map. Read the hold *before* the veil closes, while it still holds.
+    if (keepChapterOnScreenAfterCommit(
+      phase.actionId,
+      phase.stepIndex,
+      nudgeIds.map(id => cardsById.get(id)?.name),
+    )) return;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
   }, [
@@ -4226,6 +4283,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     archetype.sphereAlignment.primary,
     handlePushToast,
     setGameState,
+    keepChapterOnScreenAfterCommit,
   ]);
 
   const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
@@ -4233,11 +4291,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // THR-1720 — a rejected spend leaves the stage open, like a rejected hand.
     if (!handleEncounterIntervene(choiceId, essenceSpent)) return;
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+    // THR-1812 — same answering card as a committed hand. A legacy encounter
+    // with no unified action has no step to watch, so it closes as before.
+    const { actionId, stepIndex } = tieredEncounterState.notification;
+    if (actionId && stepIndex !== undefined && keepChapterOnScreenAfterCommit(
+      actionId,
+      stepIndex,
+      [encounterVeilModel?.choices.find(c => c.id === choiceId)?.label],
+    )) return;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
     // The clock returns to its state before the encounter opened, once ALL
     // interrupts are closed (THR-668 auto-pause, THR-1608 resume-to-prior).
-  }, [gameState.tick, handleEncounterIntervene, tieredEncounterState]);
+  }, [gameState.tick, handleEncounterIntervene, tieredEncounterState, encounterVeilModel, keepChapterOnScreenAfterCommit]);
 
   /** Boost handler — Watched tier essence boost */
   const handleEncounterBoost = useCallback((essenceSpent: number) => {
@@ -4959,6 +5025,33 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     interruptHoldRef.current = interruptAutoPause;
   }, [interruptAutoPause]);
 
+  // ── A chapter answers on screen (THR-1812) ──
+  // Declared after `useInterruptAutoPause` on purpose: effects run in
+  // declaration order, so when the answer's veil opens the hold has already
+  // recorded its return state, and this hook's `pauseIfHeld()` re-points it.
+  const pushChapterAnswerToast = useCallback((message: string) => {
+    handlePushToast({
+      id: `chapter-answer-${Date.now()}`,
+      message,
+      count: 1,
+      createdTick: gameState.tick,
+      expiresAt: Date.now() + CHAPTER_ANSWER_TOAST_MS,
+    });
+  }, [handlePushToast, gameState.tick]);
+  const setRunningPlain = useCallback((next: boolean) => setRunning(next), [setRunning]);
+  const chapterAnswer = useChapterAnswerRun({
+    unifiedActions: gameState.unifiedActions ?? EMPTY_UNIFIED_ACTIONS,
+    encounterNotifications: gameState.encounterNotifications ?? EMPTY_ENCOUNTER_NOTIFICATIONS,
+    tick: gameState.tick,
+    running,
+    veilOpen: Boolean(tieredEncounterState && encounterVeilModel),
+    heldRunning: interruptAutoPause.heldRunning,
+    hold: interruptAutoPause,
+    setRunning: setRunningPlain,
+    pushToast: pushChapterAnswerToast,
+  });
+  chapterAnswerRef.current = chapterAnswer;
+
   // ── First-run Play prompt (THR-1716 U3) ──
   // While the clock has never run and nothing holds it, the Play control asks for
   // it — after `FIRST_RUN_PROMPT_DELAY_MS`, so it never flashes under the arrival beat.
@@ -5167,7 +5260,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerInterruptStateProvider?.(getDebugInterruptState);
     window.__DEBUG._registerOpeningUiProvider?.(() => ({ arrivalBeatOffered, clockEverRan }));
     window.__DEBUG._registerGiftDeliveryProvider?.(getDebugGiftDelivery);
-  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan]);
+    window.__DEBUG._registerChapterAnswerProvider?.(chapterAnswer.getDebugState);
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan, chapterAnswer.getDebugState]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -5386,6 +5480,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         clockHeldBy={interruptAutoPause.heldRunning !== null && tieredEncounterState && encounterVeilModel
           ? encounterVeilModel.header.title
           : undefined}
+        // THR-1812 — the TIME readout names a chapter answer the clock is turning
+        // toward, or one waiting on a paused clock.
+        clockAnswerStatus={chapterAnswer.answerStatus}
         encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
         firstRunPrompt={firstRunPrompt}
         speed={speed}
@@ -6332,6 +6429,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               );
             }}
             onCommitNudges={handleCommitNudges}
+            // THR-1812 — after a commit on a paused clock the veil is the answering card.
+            answering={chapterAnswer.answering ?? undefined}
+            onLetWorldTurn={handleChapterLetWorldTurn}
+            onBackToMap={handleChapterBackToMap}
             onShowOnMap={(col, row) => {
               if (hexMapRef.current) {
                 const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);

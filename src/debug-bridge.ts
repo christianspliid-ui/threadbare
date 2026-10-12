@@ -21,6 +21,14 @@ if (import.meta.env.DEV) {
     heldBySurfaces: string[];
     msSinceLastInput: number;
   }
+  /** `getChapterAnswer()` shape (THR-1812) — mirrors `DebugChapterAnswer` in debug-bridge.d.ts. */
+  interface DebugChapterAnswer {
+    state: 'none' | 'answering_card' | 'running' | 'waiting';
+    actionId: string | null;
+    stepIndex: number | null;
+    chapterName: string | null;
+    ticksRun: number;
+  }
   interface SceneSnapshot {
     hexCount: number;
     agentsVisible: number;
@@ -154,6 +162,7 @@ if (import.meta.env.DEV) {
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
   let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
   let _giftDeliveryProvider: (() => DebugGiftDelivery) | null = null;
+  let _chapterAnswerProvider: (() => DebugChapterAnswer) | null = null;
   let _refRouterOpen:
     | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
     | null = null;
@@ -1213,6 +1222,9 @@ if (import.meta.env.DEV) {
     getGiftDelivery: async () => _giftDeliveryProvider?.()
       ?? { pendingBeatId: null, entered: false, heldBy: [], heldBySurfaces: [], msSinceLastInput: 0 },
     _registerGiftDeliveryProvider: (fn: () => DebugGiftDelivery) => { _giftDeliveryProvider = fn; },
+    getChapterAnswer: async () => _chapterAnswerProvider?.()
+      ?? { state: 'none', actionId: null, stepIndex: null, chapterName: null, ticksRun: 0 },
+    _registerChapterAnswerProvider: (fn: () => DebugChapterAnswer) => { _chapterAnswerProvider = fn; },
 
     // ── The ref router (THR-1490) ───────────────────────────────────────────
     /**

@@ -33,6 +33,13 @@ interface SimulationControlsProps {
    */
   heldBy?: string;
   /**
+   * THR-1812 — a chapter answer this clock is turning toward ("turning · until
+   * The Healer's Oath answers") or one waiting on a paused clock ("paused · The
+   * Healer's Oath answers when time runs"). Replaces the running/paused words
+   * when the clock is not held by an interrupt (Law 52).
+   */
+  answerStatus?: string;
+  /**
    * THR-1716 — the clock has never run and nothing holds it: the Play control
    * pulses and the status line asks for it, until the first run. A static ring
    * under `prefers-reduced-motion` (Law 44).
@@ -63,7 +70,7 @@ const SEASON_ICONS: Record<string, string> = {
 
 export function SimulationControls({
   season, year, running, speed,
-  onToggle, onStep, onSpeedChange, compact, held = false, heldBy, firstRunPrompt = false,
+  onToggle, onStep, onSpeedChange, compact, held = false, heldBy, answerStatus, firstRunPrompt = false,
 }: SimulationControlsProps) {
   const reducedMotion = usePrefersReducedMotion();
   function speedDown() {
@@ -82,6 +89,7 @@ export function SimulationControls({
     const prompting = firstRunPrompt && !running && !held;
     const statusText = held
       ? (heldBy ? `paused · ${heldBy}` : running ? 'held · runs on after' : 'held · stays paused')
+      : answerStatus ? answerStatus
       : prompting ? FIRST_RUN_PROMPT_CAPTION
       : running ? `running ×${speed}` : 'paused';
     const playButton = (

@@ -43,6 +43,8 @@ export interface GameViewTopBarProps {
   clockHeld?: boolean;
   /** THR-1724 — the name of what holds the clock (the open encounter), for the status line. */
   clockHeldBy?: string;
+  /** THR-1812 — a chapter answer the clock is turning toward, or one waiting on a paused clock. */
+  clockAnswerStatus?: string;
   /** THR-1716 — the clock has never run and nothing holds it: the Play control asks for it. */
   firstRunPrompt?: boolean;
   /**
@@ -119,6 +121,7 @@ export function GameViewTopBar({
   running,
   clockHeld = false,
   clockHeldBy,
+  clockAnswerStatus,
   firstRunPrompt = false,
   encounterOpen = false,
   speed,
@@ -213,6 +216,7 @@ export function GameViewTopBar({
             running={running}
             held={clockHeld}
             heldBy={clockHeldBy}
+            answerStatus={clockAnswerStatus}
             firstRunPrompt={firstRunPrompt}
             speed={speed}
             onToggle={handleToggleRunning}
