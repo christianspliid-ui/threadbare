@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 62 |
-| **Total** | **236** |
+| 🔵 UNVERIFIED-OK | 63 |
+| **Total** | **237** |
 
 ## Contracts by producing subsystem
 
@@ -243,6 +243,7 @@ remediation ticket or the build fails.
 | `shortlist-reaches-every-template` | Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. What the mortal can start on its own hex is offered first, so a fair fill does not strand it away from the work where it stands. | function: `capWithDiversity`, `runFilterPipeline`, `CAP_FILL_ROTATE`, `CAP_FILL_LOCAL_SLOTS`, `capCutTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `spotlight-mortal-joins-guild` | A spotlight mortal who chooses a guild join and resolves it in a success band becomes a member of that guild — the unified-action resolution writes the `member_of` edge every faction reader counts, so the deciding mortals the player watches belong to the guilds whose content they are offered. | edge-prop: `processResolvedFactionLifecycleAction`, `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
 | `thread-write-resolves-first` | Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change. | function: `resolveThreadWrite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `tier-cross-reaches-the-info-card` | When a step crosses a Reach tier, the aftermath says so; the mortal's info card must then list that domain too, even when it is not among their top three. Both growth sites write `lastTierCross = { domain, tick }` on the agent; `getAgentInfoCard` appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS` (48). | node-prop: `lastTierCross`, `recordTierCross`, `readRecentTierCross` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
 | `wheel-slot-card-face` | A `WheelSlot` is read as a `CardFaceModel` by `actionCardModel`, so the action card and the nudge card render the same primitive (THR-1002). Law 28: the registry row's rendering *is* this face. The slot carries the words — `crudType`, `reach`, `scaleWord`, `upkeepWord`, `forecastTier`, `templateId` — and the adapter chooses vocabulary for them; it never computes a fact of its own. Every numeral the retired card printed (cost badge, `{n} hex`, `{X}% risk`, the per-tick rate) now lives behind the designer-view line. | function: `actionCardModel`, `CardFaceModel` | Essence & Divine Economy | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Undertakings | 🟢 LIVE | — |
@@ -2109,10 +2110,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Attention, Chronicle & Narrative
 - **UL terms:** *Opponent Card*, *Fight Clock*, *Temper*
 - **Module:** `src/components/Game/lair/buildLairMonsterCardModel.ts`
-- **Production hits:** 34 total — 2 write, 3 read, 29 unclassified
+- **Production hits:** 35 total — 2 write, 3 read, 30 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +24 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +25 more
 - **Verdict:** Verified 2026-09-25: THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads "Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match." with 4 square pips at 14px and "untouched"; stored clock 2/4 reads "half-broken"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads "slain by Vara". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads "slain by Vara" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; "slain by" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.
 
 ### `mortal-dies-through-one-funnel` — 🔵 UNVERIFIED-OK
@@ -2810,6 +2811,18 @@ exit
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
 - **Other hits:** `src/engine/incidentRecorder.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. Before this change the health log, the crash log and `stateMetrics` had exactly one consumer between them — the DEV-gated debug bridge — so on the deployed build every one of them was a write with no possible reader. Three read sites now ship in production: `incidentBundle.health` (log + crash log verbatim), `incidentBundle.census` (`exportDiagnostics(state)`), and `GameView`'s crash-prompt effect, which reads `getCrashLog().length` to raise the one toast that tells the player the door exists. `exportDiagnostics` was additionally invoked with no argument at `debug-bridge.ts:1711`, so its `stateMetrics` block had been `null` on every export since the bridge was written; it now receives the registered state. Non-vacuous by `src/engine/__tests__/incidentBundle.test.ts` — the census-section arm spies `exportDiagnostics` into throwing and asserts the section ships as `{ error }` with `failedSections` naming it and every sibling intact, which fails if the bundle stops calling it at all.
+
+### `tier-cross-reaches-the-info-card` — 🔵 UNVERIFIED-OK
+
+- **Intent:** When a step crosses a Reach tier, the aftermath says so; the mortal's info card must then list that domain too, even when it is not among their top three. Both growth sites write `lastTierCross = { domain, tick }` on the agent; `getAgentInfoCard` appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS` (48).
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Reach*
+- **Module:** `src/engine/capabilityGrowth.ts`
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/encounter.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/agentDetail.ts`
+- **Other hits:** `src/engine/capabilityGrowth.ts`, `src/types/balanceEval.ts`, `src/types/graph.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
 

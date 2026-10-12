@@ -1342,6 +1342,7 @@ const CHAPTERS = [
             ['<strong>Guild scenes and nearby wonders</strong>', 'Since THR-1641 two guildmates who meet are offered one of their guild&rsquo;s own <code>.social.</code> scenes (the reserved slot rotates per tick), and a mortal within one hex of an anomaly place keeps one shortlist slot for its encounter (<code>ANOMALY_SITE_CAP_RESERVE</code>) &mdash; the own-hex-first fill never reached those empty wilderness hexes.'],
             ['<strong>Idle score threshold</strong>', 'If the best final score stays below <span class="num">0.0001</span>, the actor idles instead of forcing a weak pick.'],
             ['<strong>Cooldowns</strong>', 'Abandoned encounters cool down for 6 ticks, completed ones for 20 ticks before they can be reattempted. Both scale down when fewer than COOLDOWN_FULL_POOL_SIZE (15) templates are eligible, to a COOLDOWN_MINIMUM of 2. The bonded First is the exception (THR-1804): a completed or failed template stays out for at least FIRST_CHAPTER_REPEAT_FLOOR_TICKS (60, five days), unless that floor would leave no candidate at all.'],
+            ['<strong>Tier-cross record</strong>', 'Since THR-1815 a step that crosses a Reach tier writes <code>lastTierCross = { domain, tick }</code> on the actor (<code>recordTierCross</code>, both growth roads); the info card lists that domain for 48 ticks. It does not change selection or growth.'],
             ['<strong>Telemetry everywhere</strong>', 'Every decision also emits traces, encounter-log entries, and balance telemetry for later tuning.']
           ]
         },
