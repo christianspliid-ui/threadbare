@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 21:55 local (19:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 23:02 local (21:02 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,8 +26,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin but moving: 1 job being built, 2 ready on timed holds.** [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) is being built now: its code and docs are pushed and it is at its final checks. [The god's screen fills one gift at a time](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the) opens 14:38 tomorrow; [Dominion on the map and on every sheet](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf) follows the core, not before 21:40 tomorrow. Nothing is blocked, stale or parked.
+**Thin: nothing being built, 2 ready on timed holds.** [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) is finished and live ([#2351](https://github.com/christianspliid-ui/threadbare/pull/2351)). [The god's screen fills one gift at a time](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the) opens 14:38 tomorrow; [Dominion on the map and on every sheet](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf) now has its core and opens 21:40 tomorrow. Until then the builder has nothing to pick up. Nothing is blocked, stale or parked.
 
 ## Health
 
-All green. Engine speed is normal (101 ms a tick, 14% faster than the weekly median). The live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 21:40. No new messages from you on Discord.
+- **The heavy simulation tests went red on the Dominion core merge** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38304374382)). Two tests ran past their time limit (`debugTickBatch`, `doomIdentityMilestones`); the other 250 passed. Engine speed is normal (101 ms a tick, 14% faster than the weekly median), so this looks like slow test runs, not a slower game. The builder owes a follow-up; nothing for you.
+- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 22:40. No new messages from you on Discord.

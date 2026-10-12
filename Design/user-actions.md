@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-12 21:55 local (19:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-12 23:02 local (21:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-12: Dominion core: one graded read of how much a place or thing is yours, used by prices and checks** ([THR-1748](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods)). Merged via [#2351](https://github.com/christianspliid-ui/threadbare/pull/2351) and live.
 - **2026-10-12: a long vignette on the Meet-The-First picker no longer runs off the bottom of the screen** ([THR-1836](https://linear.app/threadbare/issue/THR-1836/meet-the-first-picker-a-long-vignette-runs-past-the-bottom-of-the)). Merged via [#2345](https://github.com/christianspliid-ui/threadbare/pull/2345) and live.
 - **2026-10-12: pouring a Sphere says what it will change before you commit** ([THR-1815](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the)). Merged via [#2344](https://github.com/christianspliid-ui/threadbare/pull/2344) and live.
 - **2026-10-12: Doom, Omen, World-Soul and Attention now explain themselves when you hover them** ([THR-1814](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention)). Merged via [#2343](https://github.com/christianspliid-ui/threadbare/pull/2343) and live.
@@ -35,7 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-11: Escape closes the sheet on top, not the encounter behind it** ([THR-1816](https://linear.app/threadbare/issue/THR-1816/escape-closes-the-encounter-behind-an-open-sheet-instead-of-the-sheet)). Merged via [#2333](https://github.com/christianspliid-ui/threadbare/pull/2333) and live.
 - **2026-10-11: encounter lines no longer show a raw `{are}` instead of the word** ([THR-1810](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only)). Merged via [#2332](https://github.com/christianspliid-ui/threadbare/pull/2332) and live.
 - **2026-10-11: every skill reader now uses the new Reach share, last one was encounter awareness** ([THR-1580](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at)). Merged via [#2331](https://github.com/christianspliid-ui/threadbare/pull/2331) and live.
-- **2026-10-10: the review gate now judges the push it is actually given** ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)). Merged via [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312) and live.
 
 ---
 
