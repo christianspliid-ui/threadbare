@@ -37,7 +37,7 @@ import type {
 } from '../types/unifiedAction';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { applyAscendantBuffs } from './ascendantBuffs';
-import { tierScaledEssenceCost } from './targetTierScaling';
+import { dominionScaledEssenceCost } from './dominion';
 import { recordPlayerAct } from './playerActs';
 import { appendEvent } from './encounterTimeline';
 import { touchWorld } from './simulationRuntime';
@@ -122,7 +122,9 @@ export function preparePlayerCast(params: PreparePlayerCastParams): PreparedPlay
   // was charged the tier-3 one would be the same mismatch this ticket removes.
   // Untouched for every template without the marker: `tierScaledEssenceCost`
   // returns the authored `essenceCost` unchanged.
-  const scaledBaseCost = tierScaledEssenceCost(template, graph.getNode(targetId)?.properties);
+  // THR-1748: then the target's Dominion band, through the same helper the preview's
+  // pieces come from (`getTargetActionSlots`), so the price shown is the price paid.
+  const scaledBaseCost = dominionScaledEssenceCost(graph, ascendantId, template, targetId).cost;
   const pricedTemplate = scaledBaseCost === (template.essenceCost ?? 0)
     ? template
     : { ...template, essenceCost: scaledBaseCost };

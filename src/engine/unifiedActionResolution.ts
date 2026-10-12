@@ -109,6 +109,8 @@ import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
+import { castTargetBand, dominionSphereFactor, placeOf, shiftBreakSphere } from './dominion';
+import { DOMINION_BREAK_PRESSURE, DOMINION_SHIFT_TEMPLATE_ID } from '../data/dominion-content';
 import { resolveRevelationAction } from './revelationEmitter';
 import { resolvePerceiveRelayAction, PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
 import { getAvatarsOf, getFactionMembershipEdges } from './graphQueries';
@@ -434,9 +436,12 @@ function deriveStepRollInputs(
     )
     : computeCapability(state.graph, capabilityNodeId, stepReach);
 
-  // Sphere factor: small bonus if actor's location has sphere influence
-  // (simplified — full implementation would check location sphere influence)
-  const sphereFactor = 0;
+  // THR-1748: the target's Dominion band sets the odds of a **player** cast only — a
+  // mortal never rolls on the god's band. 0 while DOMINION_PRICES_LIVE is false
+  // (§ Decided 13): the card chip that explains it ships with THR-1750.
+  const sphereFactor = action.source === 'player'
+    ? dominionSphereFactor(castTargetBand(state.graph, state.ascendantId, action.targetId), action.source)
+    : 0;
   // THR-1537 — a fight step's context says "combat", so an `in_combat` shaper
   // works on a clash the card moved off Iron.
   const predicateContext = buildPredicateContext(
@@ -4134,6 +4139,30 @@ export function phaseUnifiedActionProgress(
         resolveSelfActionEffect(completing_action.templateId, state, state.tick);
       } catch (selfActionErr) {
         console.warn('[unifiedActionResolution] self-action post-processor error:', selfActionErr);
+      }
+    }
+
+    // THR-1748: Shift Dominion breaks the opposing pole of a place — one push of
+    // the god's bought sphere whose opposite weighs most there.
+    if (
+      updatedAction.resolved &&
+      isActionSuccess(updatedAction.outcome) &&
+      completing_action.templateId === DOMINION_SHIFT_TEMPLATE_ID &&
+      completing_action.actorId === state.ascendantId &&
+      completing_action.targetId
+    ) {
+      // A sublocation resolves to its place, as Claim does: the place tier is what
+      // every band, tending and neglect read (review gate).
+      const breakTargetId = placeOf(state.graph, completing_action.targetId)?.id ?? completing_action.targetId;
+      const breakSphere = shiftBreakSphere(state.graph, state.ascendantId, breakTargetId);
+      if (breakSphere) {
+        spherePressures.push({
+          targetEntityId: breakTargetId,
+          sphere: breakSphere,
+          magnitude: DOMINION_BREAK_PRESSURE,
+          source: 'divine_action',
+          sourceId: completing_action.actionId,
+        });
       }
     }
 

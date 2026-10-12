@@ -33,7 +33,12 @@ export type PressureSource =
   | 'notable'
   | 'mandate'
   | 'overchannel'
-  | 'environmental';
+  | 'environmental'
+  // Dominion writers (THR-1748): the tending pushes, neglect and the god's attunement.
+  | 'claim'
+  | 'seat'
+  | 'carry'
+  | 'attunement';
 
 /**
  * A single sphere pressure event accumulated per tick.
@@ -57,14 +62,18 @@ export const MAX_SPHERE_SCORE = 10;
 export const ACTION_PRESSURE_SUCCESS = 3;
 /** Pressure applied to target on failed divine action */
 export const ACTION_PRESSURE_FAILURE = 1;
-/** Pressure applied per tick from a control effect */
-export const CONTROL_PRESSURE_PER_TICK = 1;
+/**
+ * Pressure applied per tick from a control effect. 1 → 0.03 (THR-1748 / THR-1762): at 1 a
+ * hold reached score 5 in 15 ticks; a sustained hold now builds over in-game weeks.
+ * Accumulates through the progress path like every fractional push.
+ */
+export const CONTROL_PRESSURE_PER_TICK = 0.03;
 /** Pressure applied per encounter resolution step */
 export const ENCOUNTER_PRESSURE_PER_STEP = 1;
 /** Pressure per doom tier escalation */
 export const DOOM_PRESSURE_PER_TIER = 4;
-/** Pressure from rival divine actions */
-export const RIVAL_PRESSURE_MAGNITUDE = 2;
+/** Pressure from a rival probe landing on the god's turf. 2 → 4 (THR-1748 / THR-1763). */
+export const RIVAL_PRESSURE_MAGNITUDE = 4;
 /** Weight applied to max agentAwareness when computing effective hostility for rival action selection */
 export const RIVAL_AWARENESS_HOSTILITY_WEIGHT = 0.2;
 /** Pressure from reaching mandate milestones */

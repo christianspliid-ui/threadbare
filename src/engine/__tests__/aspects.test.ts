@@ -10,6 +10,7 @@ import {
 } from '../aspects';
 import { computeEssenceIncome } from '../essenceIncome';
 import { computeEssenceGeneration } from '../influence';
+import { computeThreadYield } from '../dominion';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { SPHERE_NAMES } from '../../types/index';
 import type { SphereAlignment } from '../../types/influence';
@@ -200,10 +201,13 @@ describe('aspect essence trickle', () => {
     const graph = makeGraph();
     grantAspect(graph, { mortalId: MORTAL, tick: 200, originEncounterId: 'enc.a' });
     const living = SPHERE_NAMES.reduce((s, n) => s + computeEssenceGeneration(graph, ASC)[n], 0);
+    // THR-1748: a thread yields by tier and by the Dominion band of its mortal.
+    const threadYield = computeThreadYield(graph, ASC).total;
     markAspectEchoOnDeath(graph, MORTAL, 300);
     const afterDeath = SPHERE_NAMES.reduce((s, n) => s + computeEssenceGeneration(graph, ASC)[n], 0);
-    // Aspect conduit (0.3) + thread (0.1) both stop.
-    expect(living - afterDeath).toBeCloseTo(ASPECT_ESSENCE_PER_TICK + 0.1, 5);
+    // Aspect conduit (0.3) + the thread's yield both stop.
+    expect(threadYield).toBeGreaterThan(0);
+    expect(living - afterDeath).toBeCloseTo(ASPECT_ESSENCE_PER_TICK + threadYield, 5);
     expect(getLivingAspectEdges(graph, ASC)).toHaveLength(0);
   });
 });

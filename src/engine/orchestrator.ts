@@ -73,7 +73,15 @@ import {
 } from '../data/narrative-content';
 import { pickWithRepetitionGuard } from './proseSelection';
 import { phaseAgentLifecycle, resetLifecycleCounter } from './agentLifecycle';
-import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEnabled } from './traceBuffer';
+import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEnabled, isTracingEnabled } from './traceBuffer';
+import { phaseDominion, afterSpherePressure, raidAllowanceLeft, recordRaidLanding } from './phaseDominion';
+import { getLocationNodes } from './sublocationShape';
+import type { GraphNode } from '../types/graph';
+import { bandAtLeast, buildTendingIndex, computeThreadYield, dominionOf, dominionPower, isTended } from './dominion';
+import {
+  DOMINION_RAID_PLACES_PER_DAILY_BURST,
+  DOMINION_RAID_UNTENDED_WEIGHT,
+} from '../data/dominion-content';
 import { doomFloorMetAtTick, isRivalGraceActive, resolveDoomWokeAtTick } from './doomClock';
 import {
   RIVAL_ACTION_INTERVAL_BASE,
@@ -1781,7 +1789,22 @@ function selectSchemeTarget(
     return !alreadyTargeted.has(loc.id);
   });
   if (locations.length === 0) return undefined;
-  const pick = locations[Math.floor(rng() * locations.length)];
+  // THR-1748: schemes prefer the god's turf, untended weighted over tended; with no
+  // turf to aim at, any top-level place as before. One rng draw either way.
+  const turfIds = new Set<string>();
+  let turfPick: { node: GraphNode } | undefined;
+  try {
+    const turf = godTurf(state);
+    const open = {
+      untended: turf.untended.filter(n => !alreadyTargeted.has(n.id) && n.properties.hexCol !== undefined),
+      tended: turf.tended.filter(n => !alreadyTargeted.has(n.id) && n.properties.hexCol !== undefined),
+    };
+    for (const n of [...open.untended, ...open.tended]) turfIds.add(n.id);
+    if (turfIds.size > 0) turfPick = pickFromTurf(open, rng);
+  } catch {
+    // Fail-soft: fall back to the uniform pick.
+  }
+  const pick = turfPick?.node ?? locations[Math.floor(rng() * locations.length)];
   // THR-1602: a location keeps its name on `node.name`; `properties.name` is
   // empty on every seeded location, so reading it first put `loc_36` in prose.
   return { id: pick.id, name: displayNameOf(pick) };
@@ -2003,13 +2026,85 @@ function rivalProbeMove(
     notification: { channel: 'toast' },
   });
   if (rival.primarySphere) {
+    landRivalProbe(state, rival, rng, spherePressures);
+  }
+}
+
+/** The god's top-level places at Touched or better, split by whether they are tended. */
+function godTurf(state: GameState): { untended: GraphNode[]; tended: GraphNode[] } {
+  const { graph, ascendantId } = state;
+  const turf = getLocationNodes(graph).filter(p => bandAtLeast(dominionOf(graph, ascendantId, p.id).band, 'touched'));
+  if (turf.length === 0) return { untended: [], tended: [] };
+  const index = buildTendingIndex(graph, ascendantId, state.controlEffects,
+    placeId => dominionOf(graph, ascendantId, placeId).band);
+  return {
+    untended: turf.filter(p => !isTended(index, p.id)),
+    tended: turf.filter(p => !!isTended(index, p.id)),
+  };
+}
+
+/**
+ * Pick from the god's turf, untended drawn DOMINION_RAID_UNTENDED_WEIGHT : 1 over
+ * tended (THR-1748 / THR-1763). One rng draw; undefined on empty turf.
+ */
+function pickFromTurf(turf: { untended: GraphNode[]; tended: GraphNode[] }, rng: () => number): { node: GraphNode; tended: boolean } | undefined {
+  const total = turf.untended.length * DOMINION_RAID_UNTENDED_WEIGHT + turf.tended.length;
+  if (total <= 0) return undefined;
+  let roll = rng() * total;
+  for (const node of turf.untended) {
+    roll -= DOMINION_RAID_UNTENDED_WEIGHT;
+    if (roll < 0) return { node, tended: false };
+  }
+  for (const node of turf.tended) {
+    roll -= 1;
+    if (roll < 0) return { node, tended: true };
+  }
+  const last = turf.tended[turf.tended.length - 1] ?? turf.untended[turf.untended.length - 1];
+  return last ? { node: last, tended: turf.tended.includes(last) } : undefined;
+}
+
+/**
+ * THR-1748 / THR-1763: the rival probe lands on one of the god's Touched-or-better
+ * places — a real node, never the rival's own id (which never landed) — at
+ * RIVAL_PRESSURE_MAGNITUDE, throttled to one landing a day per
+ * DOMINION_RAID_PLACES_PER_DAILY_BURST such places, all rivals together. A tended
+ * place absorbs the burst in phaseSpherePressure (`absorbed` on the trace).
+ */
+function landRivalProbe(
+  state: GameState,
+  rival: RivalDefinition,
+  rng: () => number,
+  spherePressures: SpherePressureEvent[],
+): void {
+  const sphere = rival.primarySphere ?? null;
+  try {
+    const turf = godTurf(state);
+    const turfCount = turf.untended.length + turf.tended.length;
+    const allowance = turfCount > 0 ? raidAllowanceLeft(state.graph, state.ascendantId, state.tick, turfCount) : 0;
+    const pick = allowance > 0 ? pickFromTurf(turf, rng) : undefined;
+    if (!pick || !sphere) {
+      emitTrace({
+        category: 'dominion.raid', tick: state.tick, rivalId: rival.id, placeId: null, sphere,
+        magnitude: 0, absorbed: false, throttled: true,
+        summary: `${rival.name}'s probe found no turf to land on (${turfCount} place(s), allowance ${allowance})`,
+      });
+      return;
+    }
     spherePressures.push({
-      targetEntityId: rival.id,
-      sphere: rival.primarySphere,
+      targetEntityId: pick.node.id,
+      sphere,
       magnitude: RIVAL_PRESSURE_MAGNITUDE,
       source: 'rival',
       sourceId: rival.id,
     });
+    recordRaidLanding(state.graph, state.ascendantId, state.tick);
+    emitTrace({
+      category: 'dominion.raid', tick: state.tick, rivalId: rival.id, placeId: pick.node.id, sphere,
+      magnitude: RIVAL_PRESSURE_MAGNITUDE, absorbed: pick.tended, throttled: false,
+      summary: `${rival.name} pressed ${sphere} on ${displayNameOf(pick.node)}${pick.tended ? ' (tended — absorbed)' : ''}`,
+    });
+  } catch {
+    // Fail-soft: a failed probe lands nothing this tick.
   }
 }
 
@@ -2619,6 +2714,24 @@ export function phaseEssence(state: GameState): Partial<GameState> {
   const max = computeMaxEssence(state.graph, state.ascendantId);
   const gen = computeEssenceGeneration(state.graph, state.ascendantId, state.controlEffects);
   generateEssence(pool, gen, max);
+
+  // THR-1748: the thread-yield trace — every thread's band this tick, the same read
+  // the ledger just paid on. Built only while tracing is on (it walks every thread).
+  if (isTracingEnabled()) {
+    try {
+      const { total, lines } = computeThreadYield(state.graph, state.ascendantId);
+      if (lines.length > 0) {
+        emitTrace({
+          category: 'dominion.read', tick: state.tick, objectId: state.ascendantId, kind: 'ascendant',
+          readThrough: 'threads', band: lines[0].band, match: 0, power: dominionPower(state.graph, state.ascendantId),
+          consumer: 'yield', lines,
+          summary: `thread yield ${total.toFixed(3)} over ${lines.length} thread(s)`,
+        });
+      }
+    } catch {
+      // Fail-soft: the trace is inspection only.
+    }
+  }
 
   const events: TickEvent[] = [];
   const totalGen = SPHERE_NAMES.reduce((s, sp) => s + gen[sp], 0);
@@ -3549,6 +3662,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
   prevEventCount = s.tickEvents.length;
 
+  // Phase 6.15: Dominion (THR-1748) — the tending pushes (Claim, seat, threaded
+  // mortals) and neglect. After control effects, before sphere pressure, so its
+  // pushes resolve this tick with every other writer's.
+  {
+    const r = runInlinePhase('dominion', s, () => phaseDominion(s));
+    s = r.next;
+    phaseEventCounts['dominion'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
   // ─── Decay ─────────────────────────────────────────────────────────────────────
   // Entropy pulls everything toward zero. Reputation, influence, trade, and magic
   // all fade without reinforcement.
@@ -3763,6 +3886,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     }));
     s = r.next;
     phaseEventCounts['sphere_pressure'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6391: Dominion, after pressure (THR-1748) — the seat floor, band changes
+  // and their traces, and once a day the chronicle lines.
+  {
+    const r = runInlinePhase('dominion_after_pressure', s, () => afterSpherePressure(s));
+    s = r.next;
+    phaseEventCounts['dominion_after_pressure'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
 

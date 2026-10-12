@@ -35,6 +35,7 @@ import type { ControlEffect, LapseReason } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { CONTROL_PRESSURE_PER_TICK } from '../types/sphereAffinity';
+import { DOMINION_CLAIM_TEMPLATE_ID } from '../data/dominion-content';
 import { emitTrace } from './traceBuffer';
 import { getUpkeepStatus, applyCoLocatedThreadAura } from './ascendantPrimitives';
 import { mulberry32 } from '../lib/prng';
@@ -411,7 +412,9 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
     // For each sphere channeled by this effect (perTickCost keys), push a SpherePressureEvent.
     // targetEntityId: use the specific target node if available; else skip (fail-soft: no node = no pressure).
     // Only applies to sphere-tagged (non-zero cost) spheres — effects without sphere cost produce no pressure.
-    if (effect.targetNodeId) {
+    // THR-1748: a Claim's push is the god's bought vector, written by phaseDominion —
+    // not its upkeep sphere at the generic rate.
+    if (effect.targetNodeId && effect.templateId !== DOMINION_CLAIM_TEMPLATE_ID) {
       for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
         const amount = cost as number;
         if (amount > 0) {

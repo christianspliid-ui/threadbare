@@ -1619,7 +1619,7 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. The faction becomes yours in the eyes of the world, and the favour you pour out lifts every hand that serves under it, steadily, for as long as your regard endures.",
+      "description": "You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. The faction becomes yours in the eyes of the world, and the favour you pour out lifts every hand that serves under it, steadily, for as long as your regard endures. Their towns on your ground will hold for you.",
       "technicalEffect": "Beat verb: stamps a `chosen` status on the target faction node (recording the ascendant's primary-reach power from the chosen-power table). The per-tick `phaseChosenFactionPowers` then grants the faction's members a power-keyed reputation gain each tick.",
       "effectSource": "template-ops"
     },
@@ -1651,7 +1651,7 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "You reach into a soul that already knows your touch and leave a portion of your strength behind. The mortal wakes changed — quicker in your chosen art, and quietly replenished by a wellspring that is, in truth, a sliver of you.",
+      "description": "You reach into a soul that already knows your touch and leave a portion of your strength behind. The mortal wakes changed — quicker in your chosen art, and quietly replenished by a wellspring that is, in truth, a sliver of you. They will tend your ground where they stand.",
       "technicalEffect": "Beat verb: mints a 'Divine Gift' artifact bound to the threaded agent via a `possesses` edge, carrying a passive reach bonus (BESTOW_REACH_BONUS in the ascendant's primary reach) and a per-tick quintessence regen (BESTOW_QUINTESSENCE_REGEN). Gated on thread awareness ≥ BESTOW_MIN_AWARENESS; no-op otherwise.",
       "effectSource": "template-ops"
     },
@@ -3508,7 +3508,7 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "hex"
+        "location"
       ],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -3516,8 +3516,8 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Grasps the threads of sphere influence in a hex and begins reweaving the magical balance, elevating one sphere at the expense of another. The dominant sphere shifts as divine will redirects the flow of power through the territory. Deeply entrenched sphere dominance resists the rebalancing and may snap back.",
-      "technicalEffect": "Engine bridge: on success, on each location on the hex boosts the `resonance` sphere-influence by SHIFT_DOMINION_BOOST and reduces the dominant sphere by SHIFT_DOMINION_REDUCTION (via location `update_node` ops).",
+      "description": "Break what stands against you in a place, so your hold can take root.",
+      "technicalEffect": "Dominion (THR-1748): targets a place. On success, pushes DOMINION_BREAK_PRESSURE of the god's bought sphere whose opposing pole weighs most there (points × pair weight × opposite score) — breaking that pole so a Claim can take root.",
       "effectSource": "engine-bridge"
     },
     {
@@ -4258,7 +4258,7 @@
       "hasControlSpec": true,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "hex"
+        "location"
       ],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -4266,8 +4266,8 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity's sphere influence into the earth's foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence.",
-      "technicalEffect": "Sustained: spawns a `ControlEffect` that proclaims divine dominion, adding a small per-tick `divineInfluence` mutation at a per-tick Spirit cost. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.",
+      "description": "Set your hand on a place and keep it there. While you hold, it grows more yours each day.",
+      "technicalEffect": "Sustained (Dominion, THR-1748): targets a place. Spawns a `ControlEffect` that tends it — `phaseDominion` pushes DOMINION_CLAIM_PRESSURE_PER_TICK of the god’s bought vector into it a tick, and it is spared neglect — at DOMINION_CLAIM_UPKEEP_PER_TICK from the primary sphere. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.",
       "effectSource": "control-spec"
     },
     {

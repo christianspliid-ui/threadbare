@@ -16,6 +16,7 @@
 // Usage:
 //   npm run model:power                     # all economies
 //   npm run model:power -- --model asis     # one economy (asis | holdings | threads | spheres | dominion)
+//   npm run model:power -- --model dominion # THR-1748's combined run (built constants, Claim upkeep charged)
 //   npm run model:power -- --events         # also print each economy's event log
 //   npm run model:power -- --check          # assert the plan doc's printed tables; exit 1 on drift
 
@@ -171,10 +172,221 @@ const MODELS = {
     tierUnlocks: null,
   },
   // The Dominion loop (Christian's 2026-10-05 ruling, THR-1745 § Director's ruling).
-  // Empty slot: the prototype tickets fill this with a config of the same shape as above
-  // (plus any new switches simulate() learns). Skipped while null.
-  dominion: null,
+  // THR-1748 fills the slot: the economy carries per-holding turf, so it runs through
+  // its own simulator (`simulateDominion`, below) rather than a switch on `simulate`.
+  dominion: { name: 'Dominion — the combined run (THR-1748)', dominion: true },
 };
+
+// ─── The Dominion economy (THR-1748 § Decided 6 — the combined run) ──────────
+// Port of the THR-1765 prototype economy (never-merged proto/thr-1765-god-power:
+// scripts/proto-power-economy-1765.mjs, itself the THR-1761/1762/1763 economy), run with
+// the BUILT constants (src/data/dominion-content.ts) and the decided power variant
+// (run-long attunement marks on both bought spheres, power cap 2.0), with the one input
+// the prototypes left owed: Claim Dominion's upkeep charged from the primary pool.
+//
+// Holdings (threaded mortals and claimed sources) carry a continuous match (0–10 scale).
+// Tended holdings gain match at the THR-1762 measured pace; from day 30 untended
+// holdings decay (THR-1763 neglect) and the top three Touched-or-better holdings are
+// raided at the throttled rate (THR-1763), a tended holding absorbing the burst.
+// Model assumptions (not engine constants) are marked as such.
+const DOM = {
+  // src/data/dominion-content.ts
+  cost: [1.5, 1, 0.9, 0.8, 0.75],             // DOMINION_COST_MULTIPLIER (H F T Hd S)
+  yieldMult: [0.5, 1, 1.1, 1.25, 1.5],        // DOMINION_THREAD_YIELD_MULTIPLIER
+  sourceMult: [0, 1, 1.1, 1.25, 1.5],         // DOMINION_SOURCE_INCOME_MULTIPLIER
+  cut: { foreign: -1.5, touched: 0.5, held: 1.5, sovereign: 3 }, // DOMINION_BAND_*_MIN
+  tierYield: { 1: 0.15, 2: 0.30, 3: 0.45, 4: 0.60 },             // ESSENCE_PER_THREAD_BY_TIER
+  powerCap: 2.0,                              // DOMINION_POWER_CAP
+  powerBaseline: 3,                           // dominionPowerBaseline (primary 2 + secondary 1)
+  marks: [20, 60, 150, 300, 600, 1000, 1500, 2100, 2800], // DOMINION_ATTUNEMENT_MARKS
+  claimUpkeep: 0.3,                           // DOMINION_CLAIM_UPKEEP_PER_TICK
+  claimCost: 5,                               // hex.claim_dominion essenceCost
+  raidPlacesPerBurst: 10,                     // DOMINION_RAID_PLACES_PER_DAILY_BURST
+  // THR-1762 / THR-1763 measured paces (match units a day at power 1)
+  gainPerDay: m => (m < 0.5 ? 0.10 : m < 1.5 ? 0.11 : m < 3.0 ? 0.054 : 0.04),
+  neglectPerDay: 0.04,
+  matchMax: 5,
+  pressFrom: 360,                             // neglect and raids from day 30 (THR-1763 run)
+  match0: { Hostile: -2, Foreign: 0.25, Touched: 1.0, Held: 2.2, Sovereign: 3.5 },
+  // Model assumptions
+  claimsHeld: 1,                              // the scripted player holds one Claim, on its best untended source
+  heldGroundFlowering: 2,                     // the Held Ground milestone (grants Claim Dominion, THR-1747)
+};
+// THR-1763 measured days-to-drop under a burst-4 raid every N days (proto-erosion-1763.rates.json, pooled p50).
+const DOM_BURST_DAYS = [[0.375, 0.42], [0.75, 0.75], [1.5, 1.5], [3, 3], [5, 5], [6, 6], [10, 10], [20, 20]];
+function domBurstDays(every) {
+  if (every <= DOM_BURST_DAYS[0][0]) return DOM_BURST_DAYS[0][1];
+  if (every >= 20) return every;
+  for (let i = 1; i < DOM_BURST_DAYS.length; i++) {
+    const [lo, a] = DOM_BURST_DAYS[i - 1], [hi, b] = DOM_BURST_DAYS[i];
+    if (every <= hi) { const f = Math.log(every / lo) / Math.log(hi / lo); return Math.exp(Math.log(a) + f * (Math.log(b) - Math.log(a))); }
+  }
+  return null;
+}
+// The three gods the THR-1760..1765 censuses measured (seeds 42 / 99 / 7).
+const DOM_GODS = {
+  shepherd: { name: 'Shepherd life3/spirit2 (seed 42)', mortal: 'Touched', sources: ['Touched', 'Foreign', 'Foreign', 'Foreign'] },
+  thin: { name: 'Showcase mind3/spirit2 (seed 99, thinnest turf)', mortal: 'Foreign', sources: ['Foreign', 'Foreign', 'Foreign', 'Foreign'] },
+  rich: { name: 'World god time3/energy2 (seed 7, richest sources)', mortal: 'Foreign', sources: ['Touched', 'Touched', 'Touched', 'Touched'] },
+};
+const DOM_SNAPSHOT_TICKS = [120, 360, 540, 720, 1080];
+const domBandOf = (m, P) => { const d = m > 0 ? m * P : m; const c = DOM.cut; return d >= c.sovereign ? 4 : d >= c.held ? 3 : d >= c.touched ? 2 : d >= c.foreign ? 1 : 0; };
+// dominionScaledCost: band multiplier, floored at half, never below 1, a free card stays free
+const domPriced = (c, mult) => (c <= 0 ? 0 : Math.max(1, Math.ceil(c * 0.5), Math.floor(c * mult + 0.5)));
+
+function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
+  const pool = { primary: INITIAL_ESSENCE_PER_SPHERE, secondary: INITIAL_ESSENCE_PER_SPHERE, other: INITIAL_ESSENCE_PER_SPHERE };
+  const earned = { primary: 0, secondary: 0 };
+  const sc = { primary: { s: STARTING_SPHERE_SCORE, p: 0 }, secondary: { s: 1, p: 0 } };
+  const threads = [], sources = [], snaps = [];
+  const marks = { primary: 0, secondary: 0 };
+  let seat = false, wellspring = false, latentLeft = 4, pendingClaim = 0;
+  let nextThread = 0, lastSourceStep = -999, lastAct = -999, heldGround = false;
+  let upkeepMissed = 0, minPoolP = Infinity, lastUnpaid = -9999, claimUpkeepPaid = 0, claimsLapsed = 0;
+  const push = (k, n) => { const x = sc[k]; x.p += n; while (x.s < MAX_SPHERE_SCORE && x.p >= x.s + 1) { x.p -= x.s + 1; x.s++; } };
+  const power = () => Math.min(DOM.powerCap, (sc.primary.s + sc.secondary.s) / DOM.powerBaseline);
+  const pay = (k, base, bi) => { const c = domPriced(base, DOM.cost[bi]); pool[k] -= c; return c; };
+  const all = () => [...sources.map(h => ({ h, src: true })), ...threads.map(h => ({ h, src: false }))];
+
+  for (let t = 0; t <= RUN_TICKS; t++) {
+    const P = power();
+    if (t === SEAT_TICK) seat = true;
+    if (t === WELLSPRING_MILESTONE_TICKS_AFTER_BOND) wellspring = true;
+
+    // turf: tended holdings gain; from day 30 untended ones decay and the top 3 are raided
+    const H = all();
+    for (const { h, src } of H) {
+      const tended = !src || !h.flowering || h.claimed;
+      if (tended) h.m = Math.min(DOM.matchMax, h.m + DOM.gainPerDay(h.m) / TICKS_PER_DAY);
+      else if (t >= DOM.pressFrom && h.m > h.m0) h.m = Math.max(h.m0, h.m - DOM.neglectPerDay / TICKS_PER_DAY);
+    }
+    if (t >= DOM.pressFrom) {
+      const turf = H.filter(x => domBandOf(x.h.m, P) >= 2).length;
+      if (turf > 0) {
+        const ranked = H.slice().sort((a, b) => b.h.m - a.h.m), focus = Math.min(3, turf);
+        const L = domBurstDays(focus * DOM.raidPlacesPerBurst / turf);
+        if (L) for (const x of ranked.slice(0, focus)) if (x.src && x.h.flowering && !x.h.claimed) x.h.m = Math.max(-2, x.h.m - 1 / (L * TICKS_PER_DAY));
+      }
+    }
+
+    // income (computeEssenceGeneration shape, band-scaled thread yield and source income)
+    let total = BASE_ESSENCE_PER_TICK + (seat ? ESSENCE_PER_SEAT : 0) + threads.filter(x => x.aspect).length * ASPECT_ESSENCE_PER_TICK;
+    for (const th of threads) total += DOM.tierYield[th.tier] * DOM.yieldMult[domBandOf(th.m, P)];
+    const gen = { primary: total * PRIMARY_SHARE, secondary: total * SECONDARY_SHARE, other: total * OTHER_SHARE_EACH };
+    const val = s => BASE_SOURCE_INCOME.placeOfPower * (s.flowering ? SOURCE_FLOWERING_MULTIPLIER : 1) * DOM.sourceMult[domBandOf(s.m, P)];
+    const rs = [...sources].sort((a, b) => val(b) - val(a));
+    gen.primary += rs.reduce((sum, s, r) => sum + val(s) * Math.pow(SOURCE_DR_BASE, r), 0);
+    const capE = BASE_MAX_ESSENCE + threads.length * MAX_ESSENCE_PER_THREAD;
+    for (const k of ['primary', 'secondary', 'other']) {
+      const added = Math.min(gen[k], Math.max(0, capE - pool[k]));
+      pool[k] += added; if (k !== 'other') earned[k] += added;
+    }
+    const income = gen.primary + gen.secondary + gen.other * OTHER_SPHERE_COUNT;
+
+    // upkeep: threads + sources + Claims (the owed input), all from the primary pool
+    let upkeep = sources.length * SOURCE_CONTROL_SUSTAIN;
+    for (const th of threads) upkeep += RETUNED_MAINTENANCE[th.tier];
+    if (pool.primary >= upkeep) { pool.primary -= upkeep; for (const th of threads) th.ticksAtTier++; }
+    else if (upkeep > 0) { upkeepMissed++; lastUnpaid = t; }
+    for (const s of sources) if (s.claimed) {
+      if (pool.primary >= DOM.claimUpkeep) { pool.primary -= DOM.claimUpkeep; claimUpkeepPaid += DOM.claimUpkeep; }
+      else { s.claimed = false; claimsLapsed++; }    // a Claim that cannot be paid lapses (phaseControlEffects)
+    }
+    if (t >= 120) minPoolP = Math.min(minPoolP, pool.primary);
+    for (const th of threads) {
+      if (th.tier < 4 && th.ticksAtTier >= TIER_PROMOTION_THRESHOLDS[th.tier + 1]) { th.tier++; th.ticksAtTier = 0; }
+      else if (th.tier === 4 && !th.aspect && th.ticksAtTier >= ASPECT_ELIGIBILITY_TICKS) th.aspect = true;
+    }
+
+    // power: mandate + attunement on both bought spheres (+1 progress a mark)
+    for (const k of ['primary', 'secondary']) {
+      while (marks[k] < DOM.marks.length && earned[k] >= DOM.marks[marks[k]]) { marks[k]++; push(k, 1); }
+    }
+    if (MANDATE_MILESTONE_TICKS.includes(t)) push('primary', MANDATE_PRESSURE_MILESTONE);
+    if (t === MANDATE_COMPLETION_TICK) push('primary', MANDATE_PRESSURE_COMPLETION);
+
+    // Claim Dominion: granted at Held Ground; held on the best-matched untended flowering source
+    const flowering = sources.filter(s => s.flowering).length;
+    if (!heldGround && flowering >= DOM.heldGroundFlowering) heldGround = true;
+    if (heldGround && sources.filter(s => s.claimed).length < claimsHeld) {
+      const target = sources.filter(s => s.flowering && !s.claimed).sort((a, b) => b.m - a.m)[0];
+      const bi = target ? domBandOf(target.m, P) : 1;
+      if (target && pool.primary >= domPriced(DOM.claimCost, DOM.cost[bi]) + DOM.claimUpkeep * 10) {
+        pay('primary', DOM.claimCost, bi); target.claimed = true;
+      }
+    }
+
+    // the player acts (the THR-1745 scripted player, prices band-scaled)
+    const firstBand = () => (threads.length ? domBandOf(threads[0].m, P) : domBandOf(DOM.match0[G.mortal], P));
+    if (t % PLAYER.storySpendEvery === 0 && t > 0) {
+      const bi = firstBand(), p = domPriced(PLAYER.storySpend.primary, DOM.cost[bi]), s = domPriced(PLAYER.storySpend.secondary, DOM.cost[bi]);
+      if (pool.primary >= p) pool.primary -= p;
+      if (pool.secondary >= s) pool.secondary -= s;
+    }
+    if (t - lastAct >= PLAYER.actEvery) {
+      const mb = domBandOf(DOM.match0[G.mortal], P), bindPrice = domPriced(COST.bindThread, DOM.cost[mb]);
+      if (nextThread < PLAYER.threadSchedule.length && t >= PLAYER.threadSchedule[nextThread] && pool.primary >= bindPrice + PLAYER.bindReserve) {
+        pay('primary', COST.bindThread, mb);
+        threads.push({ tier: 1, ticksAtTier: 0, aspect: false, m: DOM.match0[G.mortal], m0: DOM.match0[G.mortal] }); nextThread++; lastAct = t;
+      } else if (wellspring && t - lastSourceStep >= PLAYER.sourceStepEvery) {
+        const dormant = sources.find(s => !s.flowering);
+        const nb = G.sources[Math.min(sources.length, G.sources.length - 1)], nbi = domBandOf(DOM.match0[nb], P);
+        if (dormant && pool.primary >= domPriced(COST.sanctify, DOM.cost[domBandOf(dormant.m, P)])) {
+          pay('primary', COST.sanctify, domBandOf(dormant.m, P)); dormant.sanctity += SANCTITY_BUILD_PER_ACTION;
+          if (dormant.sanctity >= SANCTITY_FLOWERING_THRESHOLD - 1e-9) dormant.flowering = true;
+          lastSourceStep = t; lastAct = t;
+        } else if (pendingClaim > 0 && pool.other >= domPriced(COST.claimSource, DOM.cost[nbi])) {
+          pay('other', COST.claimSource, nbi); pendingClaim--;
+          sources.push({ sanctity: 0, flowering: false, claimed: false, m: DOM.match0[nb], m0: DOM.match0[nb] }); lastSourceStep = t; lastAct = t;
+        } else if (latentLeft > 0 && pool.other >= domPriced(COST.findSource, DOM.cost[nbi])) {
+          pay('other', COST.findSource, nbi); latentLeft--; pendingClaim++; lastSourceStep = t; lastAct = t;
+        }
+      } else {
+        const bi = firstBand(), c = domPriced(PLAYER.fallbackSpend, DOM.cost[bi]);
+        if (pool.primary >= c) { pool.primary -= c; lastAct = t; }
+      }
+    }
+
+    if (DOM_SNAPSHOT_TICKS.includes(t)) {
+      const bands = all().map(x => domBandOf(x.h.m, P));
+      snaps.push({
+        day: t / TICKS_PER_DAY, P, income, poolP: pool.primary, pinned: pool.primary < 1 || t - lastUnpaid <= 60,
+        heldPlus: bands.filter(b => b >= 3).length, n: bands.length,
+      });
+    }
+  }
+  return { snaps, upkeepMissed, minPoolP, claimUpkeepPaid, claimsLapsed, earned };
+}
+
+/** The § Decided 6 trip-wires: day-90 income must land in [10.5, 13.5] a tick, primary pool never pinned. */
+const DOM_TRIPWIRE = { low: 10.5, high: 13.5 };
+function runDominion(doCheckFlag) {
+  console.log('\n=== Dominion — the combined run (THR-1748 § Decided 6: neglect + raids + carriers + Claim upkeep, built constants) ===\n');
+  const rows = [];
+  let fail = false;
+  for (const [gk, G] of Object.entries(DOM_GODS)) {
+    for (const claims of [0, DOM.claimsHeld]) {
+      const r = simulateDominion(G, { claimsHeld: claims });
+      const d90 = r.snaps[r.snaps.length - 1];
+      const pinned = r.snaps.some(s => s.pinned);
+      const inBand = d90.income >= DOM_TRIPWIRE.low && d90.income <= DOM_TRIPWIRE.high;
+      if (claims === DOM.claimsHeld && (!inBand || pinned)) fail = true;
+      rows.push({
+        God: gk, Claims: String(claims),
+        'Income d10/30/45/60/90': r.snaps.map(s => s.income.toFixed(1)).join(' / '),
+        'Power d90': d90.P.toFixed(2), 'Held+ d90': `${d90.heldPlus}/${d90.n}`,
+        'Pool d90': String(Math.round(d90.poolP)), 'Min pool': r.minPoolP.toFixed(1),
+        'Claim upkeep paid': r.claimUpkeepPaid.toFixed(0), Lapsed: String(r.claimsLapsed),
+        Unpaid: String(r.upkeepMissed), 'Trip-wire': inBand && !pinned ? 'in band' : (pinned ? 'PINNED' : 'OUT'),
+      });
+    }
+  }
+  printTable(rows);
+  console.log(`\nTrip-wires (§ Decided 6): day-90 income in [${DOM_TRIPWIRE.low}, ${DOM_TRIPWIRE.high}] a tick, primary pool never pinned.`);
+  console.log('Below the floor → DOMINION_RAID_PLACES_PER_DAILY_BURST 10 → 15; above the ceiling → DOMINION_UNTENDED_DECAY_PER_TICK 0.01 → 0.015.');
+  if (doCheckFlag) console.log(fail ? '\nCHECK FAIL (dominion): a god with Claim upkeep charged lands outside the trip-wires' : '\nCHECK OK (dominion): every god lands inside the trip-wires with Claim upkeep charged');
+  return !fail;
+}
 
 // ─── Simulation ──────────────────────────────────────────────────────────────
 function simulate(M) {
@@ -462,6 +674,7 @@ for (const key of Object.keys(MODELS)) {
   if (only && key !== only) continue;
   const M = MODELS[key];
   if (!M) { console.log(`\n=== ${key} — empty slot (filled by the Dominion prototype tickets) ===`); continue; }
+  if (M.dominion) { if (!runDominion(doCheck)) failed = true; continue; }
   const { snapshots, events } = simulate(M);
   const rows = phaseRows(key, snapshots);
   console.log(`\n=== ${M.name} ===\n`);

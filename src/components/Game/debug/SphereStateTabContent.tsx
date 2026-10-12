@@ -3,6 +3,11 @@ import type { SphereAggregate } from '../../../types/worldSoul';
 import { SPHERE_ICONS } from '../../../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../../../data/sphereTooltips';
 import { MAX_SPHERE_SCORE } from '../../../types/sphereAffinity';
+import type { WorldGraph } from '../../../engine/graph';
+import type { ControlEffect } from '../../../types/controlEffect';
+import { buildTendingIndex, dominionOf, dominionPower, isTended, placeOf } from '../../../engine/dominion';
+import { getLocationNodes } from '../../../engine/sublocationShape';
+import { DOMINION_BANDS, DOMINION_BAND_WORDS, type DominionBand } from '../../../data/dominion-content';
 
 const EMPTY_STATE_STYLE: React.CSSProperties = {
   padding: '32px 16px',
@@ -39,9 +44,67 @@ const DETAIL_VALUE_STYLE: React.CSSProperties = {
 
 export interface SphereStateTabContentProps {
   aggregate?: SphereAggregate;
+  /** THR-1748 — the live graph, for the Dominion row. */
+  graph?: WorldGraph;
+  /** THR-1748 — the node the panel is inspecting (the followed agent). */
+  inspectedId?: string;
+  /** THR-1748 — active controls, for who tends the inspected place. */
+  controlEffects?: readonly ControlEffect[];
 }
 
-export function SphereStateTabContent({ aggregate }: SphereStateTabContentProps) {
+/** The god's id — the one ascendant actor (debug read; the panel has no state handle). */
+function findAscendantId(graph: WorldGraph): string | undefined {
+  return graph.getNodesByType('actor').find(n => n.properties.actorType === 'ascendant')?.id;
+}
+
+/**
+ * THR-1748 — the Dominion row: the census over top-level places, and the inspected
+ * node's band, match, power and who tends its place. Debug surface: numbers allowed.
+ */
+export function DominionDebugRow({ graph, inspectedId, controlEffects }: Pick<SphereStateTabContentProps, 'graph' | 'inspectedId' | 'controlEffects'>) {
+  if (!graph) return null;
+  const ascendantId = findAscendantId(graph);
+  if (!ascendantId) return null;
+  const census = Object.fromEntries(DOMINION_BANDS.map(b => [b, 0])) as Record<DominionBand, number>;
+  for (const place of getLocationNodes(graph)) census[dominionOf(graph, ascendantId, place.id).band]++;
+  const read = inspectedId ? dominionOf(graph, ascendantId, inspectedId) : null;
+  const place = inspectedId ? placeOf(graph, inspectedId) : undefined;
+  const placeRead = place ? dominionOf(graph, ascendantId, place.id) : null;
+  const tendedBy = place
+    ? isTended(buildTendingIndex(graph, ascendantId, controlEffects, id => dominionOf(graph, ascendantId, id).band), place.id)
+    : null;
+  return (
+    <div data-testid="dominion-debug-row" style={{ marginBottom: '16px', padding: '10px', background: 'var(--bg-raised)', borderRadius: '4px' }}>
+      <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+        <span style={DETAIL_LABEL_STYLE}>Dominion:</span>
+        <span style={DETAIL_VALUE_STYLE} data-testid="dominion-census">
+          {[...DOMINION_BANDS].reverse().map(b => `${DOMINION_BAND_WORDS[b]} ${census[b]}`).join(' · ')}
+          {' '}| power {dominionPower(graph, ascendantId).toFixed(2)}
+        </span>
+      </div>
+      {read && inspectedId && (
+        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+          <span style={DETAIL_LABEL_STYLE}>Inspected:</span>
+          <span style={DETAIL_VALUE_STYLE} data-testid="dominion-inspected" data-band={read.band}>
+            {graph.getNode(inspectedId)?.name ?? inspectedId} — {DOMINION_BAND_WORDS[read.band]}
+            {' '}(match {read.reason.match.toFixed(2)}, {read.reason.kind} via {read.reason.readThrough})
+          </span>
+        </div>
+      )}
+      {place && placeRead && (
+        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+          <span style={DETAIL_LABEL_STYLE}>Its place:</span>
+          <span style={DETAIL_VALUE_STYLE} data-testid="dominion-place" data-band={placeRead.band}>
+            {place.name ?? place.id} — {DOMINION_BAND_WORDS[placeRead.band]}
+            {' '}| tended by {tendedBy ? tendedBy.join(', ') : 'no one'}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function SphereStateTabContent({ aggregate, graph, inspectedId, controlEffects }: SphereStateTabContentProps) {
   if (!aggregate) {
     return (
       <div style={EMPTY_STATE_STYLE}>
@@ -57,6 +120,7 @@ export function SphereStateTabContent({ aggregate }: SphereStateTabContentProps)
 
   return (
     <div style={{ ...DETAIL_AREA_STYLE, padding: '16px' }}>
+      <DominionDebugRow graph={graph} inspectedId={inspectedId} controlEffects={controlEffects} />
       <div style={{ marginBottom: '16px', padding: '10px', background: 'var(--bg-raised)', borderRadius: '4px' }}>
         <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
           <span style={DETAIL_LABEL_STYLE}>Dominant:</span>

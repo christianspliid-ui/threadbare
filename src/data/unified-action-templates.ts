@@ -20,6 +20,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { REKINDLE_ESSENCE_COST } from './nudge-constants';
+import { DOMINION_CLAIM_UPKEEP_PER_TICK } from './dominion-content';
 import { UNDERTAKING_INSPIRE_MODIFIER } from './strategic-action-constants';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import {
@@ -2602,7 +2603,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     description:
       'You reach into a soul that already knows your touch and leave a portion of your ' +
       'strength behind. The mortal wakes changed — quicker in your chosen art, and quietly ' +
-      'replenished by a wellspring that is, in truth, a sliver of you.',
+      'replenished by a wellspring that is, in truth, a sliver of you. ' +
+      // THR-1748: a bestowed mortal carries the god's ground one tier stronger.
+      'They will tend your ground where they stand.',
     reach: 'star',
     trayTier: 'core',
     crudType: 'update',
@@ -2692,7 +2695,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     description:
       'You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. ' +
       'The faction becomes yours in the eyes of the world, and the favour you pour out lifts every ' +
-      'hand that serves under it, steadily, for as long as your regard endures.',
+      'hand that serves under it, steadily, for as long as your regard endures. ' +
+      // THR-1748: an anointed faction's towns on the god's ground tend it.
+      'Their towns on your ground will hold for you.',
     reach: 'star',
     trayTier: 'core',
     crudType: 'update',
@@ -3641,7 +3646,10 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Arcane Rebalance',
     rarityTier: 3,
     intrinsicTier: 'shaping',
-    description: 'Grasps the threads of sphere influence in a hex and begins reweaving the magical balance, elevating one sphere at the expense of another. The dominant sphere shifts as divine will redirects the flow of power through the territory. Deeply entrenched sphere dominance resists the rebalancing and may snap back.',
+    // THR-1748: re-targeted from hexes to places; the id keeps its `hex.` name
+    // (§ Decided 15). On success it pushes the bought sphere whose opposing pole
+    // weighs most there (DOMINION_BREAK_PRESSURE) — unifiedActionResolution.
+    description: 'Break what stands against you in a place, so your hold can take root.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -3656,7 +3664,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 4,
     actorAffinities: ['ascendant'],
-    targetCategories: ['hex'],
+    targetCategories: ['location'],
     narrativeLayer: 'soul',
     motivations: ['tradition_novelty', 'preservation_transformation'],
     narrativeTemplates: {
@@ -4328,7 +4336,10 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Sovereign Claim',
     rarityTier: 3,
     intrinsicTier: 'story_beat',
-    description: 'Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity\'s sphere influence into the earth\'s foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence.',
+    // THR-1748: re-targeted from hexes to places; the id keeps its `hex.` name
+    // (§ Decided 15). Its per-tick push is the god's bought vector, written by
+    // phaseDominion; upkeep comes from the primary sphere.
+    description: 'Set your hand on a place and keep it there. While you hold, it grows more yours each day.',
     reach: 'star',
     crudType: 'update',
     scale: 'regional',
@@ -4343,12 +4354,14 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 5,
     actorAffinities: ['ascendant'],
-    targetCategories: ['hex'],
+    targetCategories: ['location'],
     narrativeLayer: 'land',
     durationMode: 'sustained',
     controlSpec: {
+      // Fallback only: the live cost is DOMINION_CLAIM_UPKEEP_PER_TICK from the primary.
       perTickCost: { spirit: 0.3 },
-      perTickMutations: [{ field: 'divineInfluence', delta: 0.02, source: 'hex.claim_dominion' }],
+      perTickCostFromPrimary: DOMINION_CLAIM_UPKEEP_PER_TICK,
+      perTickMutations: [],
       contestPrerequisites: {
         usurp: { reach: { domain: 'star', minTier: 2 } },
         destroy: { reach: { domain: 'iron', minTier: 1 } },

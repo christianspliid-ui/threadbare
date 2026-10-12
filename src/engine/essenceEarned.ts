@@ -38,6 +38,9 @@ import type { EssenceEarnedBySphere, EssencePool } from '../types/influence';
 import type { GameState } from '../types/gameState';
 import { SPHERE_ATTUNEMENT_THRESHOLDS } from '../data/nudge-constants';
 import { attunementMemberIdsAt } from './nudgeCardRepertoire';
+import { ATTUNEMENT_SPHERE_PROGRESS, DOMINION_ATTUNEMENT_MARKS, DOMINION_POWER_CAP } from '../data/dominion-content';
+import { dominionPowerRaw, godSpherePoints } from './dominion';
+import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
 
 // Re-exported so the counter's own module is a legitimate import site for its
@@ -160,5 +163,57 @@ export function applyEssenceEarned(
     });
   }
 
+  // THR-1748 (THR-1765): the god attunes to a **bought** sphere at each Dominion
+  // mark its earned essence crosses — one push of progress into the god's own score
+  // there, through the pressure path. The card marks above keep granting exactly
+  // what they granted; this is a second, run-long table.
+  const attunement = dominionAttunementPressures(next, next.essenceEarnedBySphere, accrued);
+  if (attunement.length > 0) {
+    return {
+      ...next,
+      essenceEarnedBySphere: accrued,
+      pendingSpherePressures: [...(next.pendingSpherePressures ?? []), ...attunement],
+    };
+  }
   return { ...next, essenceEarnedBySphere: accrued };
+}
+
+/**
+ * The attunement pushes for one accrual: a mark of `DOMINION_ATTUNEMENT_MARKS`
+ * crossed in a bought sphere pushes ATTUNEMENT_SPHERE_PROGRESS into the god's score
+ * (source `attunement`), traced. Fail-soft: an unreadable god yields none.
+ */
+export function dominionAttunementPressures(
+  state: Pick<GameState, 'graph' | 'ascendantId' | 'tick'>,
+  before: EssenceEarnedBySphere | undefined,
+  after: EssenceEarnedBySphere | undefined,
+): SpherePressureEvent[] {
+  try {
+    const points = godSpherePoints(state.graph, state.ascendantId);
+    const crossings = attunementThresholdsCrossed(before, after, DOMINION_ATTUNEMENT_MARKS)
+      .filter(c => (points[c.sphere] ?? 0) > 0);
+    if (crossings.length === 0) return [];
+    const raw = dominionPowerRaw(state.graph, state.ascendantId);
+    return crossings.map(({ sphere, threshold }) => {
+      emitTrace({
+        tick: state.tick,
+        category: 'dominion.attunement',
+        summary: `attuned to ${sphere} at ${threshold} earned`,
+        sphere,
+        mark: threshold,
+        earned: essenceEarnedIn(after, sphere),
+        power: Math.min(DOMINION_POWER_CAP, raw),
+        capped: raw >= DOMINION_POWER_CAP,
+      });
+      return {
+        targetEntityId: state.ascendantId,
+        sphere,
+        magnitude: ATTUNEMENT_SPHERE_PROGRESS,
+        source: 'attunement' as const,
+        sourceId: `attunement:${sphere}:${threshold}`,
+      };
+    });
+  } catch {
+    return [];
+  }
 }

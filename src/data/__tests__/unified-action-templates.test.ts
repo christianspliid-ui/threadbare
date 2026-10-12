@@ -508,6 +508,9 @@ describe('divine templates', () => {
   });
 });
 
+/** THR-1748: Claim and Shift Dominion moved from hex targets to place targets. */
+const DOMINION_PLACE_TARGET_IDS: ReadonlySet<string> = new Set(['hex.claim_dominion', 'hex.shift_dominion']);
+
 // ─── TB-046: Land & Soul hex action templates ─────────────────────
 
 describe('TB-046 hex action templates', () => {
@@ -543,6 +546,8 @@ describe('TB-046 hex action templates', () => {
 
   it('all target hex category', () => {
     for (const id of ALL_TB046_IDS) {
+      // THR-1748: the Dominion cards target places now (ids keep their `hex.` names).
+      if (DOMINION_PLACE_TARGET_IDS.has(id)) continue;
       expect(getUnifiedTemplateById(id)!.targetCategories).toContain('hex');
     }
   });
@@ -751,6 +756,8 @@ describe('TB-048 control templates', () => {
 
   it('all target hex category', () => {
     for (const id of ALL_TB048_IDS) {
+      // THR-1748: the Dominion cards target places now (ids keep their `hex.` names).
+      if (DOMINION_PLACE_TARGET_IDS.has(id)) continue;
       expect(getUnifiedTemplateById(id)!.targetCategories).toContain('hex');
     }
   });

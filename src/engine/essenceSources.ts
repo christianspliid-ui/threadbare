@@ -25,6 +25,7 @@ import {
   SANCTITY_DRAIN_PER_TICK_CONTESTED,
   SOURCE_CONTROL_SUSTAIN,
 } from '../data/essence-sources';
+import { sourceIncomeMultiplier } from './dominion';
 
 /** Read the `essenceSource` bag from a node's properties (or undefined). */
 export function readEssenceSource(
@@ -99,7 +100,9 @@ export function computeSourceIncome(
     if (!isTypedSource(src)) continue;
 
     const base = BASE_SOURCE_INCOME[src.kind] ?? 0;
-    const preDrIncome = base * sourceTierMultiplier(src.tier);
+    // THR-1748: × the Dominion band of the host place, before diminishing returns
+    // (a Hostile host yields nothing; the seat's own term is not band-scaled).
+    const preDrIncome = base * sourceTierMultiplier(src.tier) * sourceIncomeMultiplier(graph, ascendantId, edge.target);
     if (preDrIncome <= 0) continue; // desecrated / zero-yield sources contribute nothing
 
     const list = bySphere.get(src.sphereAffinity) ?? [];

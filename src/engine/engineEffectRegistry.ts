@@ -34,6 +34,7 @@ import { HEX_BRIDGE_TEMPLATE_IDS } from './hexActionBridge';
 import { TEMPLATE_REVELATION_MAP } from './revelationResolver';
 import { PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
 import { SELF_ACTION_TEMPLATE_IDS } from './unifiedActionResolution';
+import { DOMINION_SHIFT_TEMPLATE_ID } from '../data/dominion-content';
 
 /**
  * Union of every template id the engine bridges implement outside the template's
@@ -45,4 +46,6 @@ export const ENGINE_EFFECT_TEMPLATE_IDS: ReadonlySet<string> = new Set<string>([
   ...Object.keys(TEMPLATE_REVELATION_MAP),
   ...PERCEIVE_RELAY_TEMPLATE_IDS,
   ...SELF_ACTION_TEMPLATE_IDS,
+  // THR-1748: Shift Dominion's break push lives in unifiedActionResolution.
+  DOMINION_SHIFT_TEMPLATE_ID,
 ]);
