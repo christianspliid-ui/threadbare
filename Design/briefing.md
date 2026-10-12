@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 15:58 local (13:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 16:57 local (14:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,4 +30,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. Engine speed is normal (115 ms a tick, 2% under the weekly median). The live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 15:40. No new messages from you on Discord.
+All green. Engine speed is normal (116 ms a tick, 2% under the weekly median). The live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 16:40. No new messages from you on Discord.
