@@ -2,7 +2,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
-import { FIRST_RUN_PROMPT_CAPTION } from '../../data/ui-content';
+import { FIRST_RUN_PROMPT_CAPTION, CLOCK_HELD_STAYS_PAUSED_DESC } from '../../data/ui-content';
 import { clockHeldStatus } from '../../data/nudge-stage-content';
 
 interface SimulationControlsProps {
@@ -155,7 +155,11 @@ export function SimulationControls({
               {statusText}
             </span>
           );
-          return held ? <Tooltip id="ui.clock_held">{status}</Tooltip> : status;
+          // The registry copy says time runs again; a clock paused before the hold
+          // stays paused, so that branch carries its own line.
+          return held
+            ? <Tooltip id="ui.clock_held" desc={running ? undefined : CLOCK_HELD_STAYS_PAUSED_DESC}>{status}</Tooltip>
+            : status;
         })()}
       </div>
     );

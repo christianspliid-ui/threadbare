@@ -53,6 +53,13 @@ export const GIFT_WAITS_COPY = {
  */
 export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
 
+/**
+ * THR-1814 — the `ui.clock_held` hover when the clock was already paused before the
+ * hold: the registry copy says it runs again, which is only true on the other branch.
+ */
+export const CLOCK_HELD_STAYS_PAUSED_DESC =
+  'Time stops while you read. It stays paused when this closes, as you left it.';
+
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
   // THR-1814 — says what Doom does to your game, and that it cannot end the world early.

@@ -23,7 +23,7 @@ import { AscendantBar } from '../ascendant-bar/AscendantBar';
 import { ReachesBlock } from '../ascendant-bar/ReachesBlock';
 import { INTERRUPT_SURFACES, resolveInterrupts } from '../interruptRegistry';
 import { resolveTooltip } from '../../../engine/tooltipResolver';
-import { TOPBAR_LOCKED_SUFFIX } from '../../../data/ui-content';
+import { TOPBAR_LOCKED_SUFFIX, CLOCK_HELD_STAYS_PAUSED_DESC } from '../../../data/ui-content';
 import {
   CLOCK_HELD_FALLBACK_HOLDER,
   INTERRUPT_HOLDER_NAMES,
@@ -139,6 +139,39 @@ describe('THR-1814 clock holder names', () => {
     const status = screen.getByTestId('clock-held-status');
     expect(status.textContent).toBe('held by the Chapter Ledger · runs on when it closes');
     expect(status.closest('[data-tooltip-id="ui.clock_held"]')).toBeTruthy();
+  });
+
+  it('the held hover matches the branch: runs again, or stays paused', () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(
+        <SimulationControls
+          season="spring" year={1} running speed={1}
+          onToggle={vi.fn()} onStep={vi.fn()} onSpeedChange={vi.fn()}
+          compact held heldBy="The Unsafe Bridge"
+        />,
+      );
+      fireEvent.pointerEnter(screen.getByTestId('clock-held-status'));
+      act(() => { vi.advanceTimersByTime(400); });
+      expect(screen.getByRole('tooltip').textContent).toContain('It runs again when this closes');
+      fireEvent.pointerLeave(screen.getByTestId('clock-held-status'));
+      act(() => { vi.advanceTimersByTime(400); });
+
+      rerender(
+        <SimulationControls
+          season="spring" year={1} running={false} speed={1}
+          onToggle={vi.fn()} onStep={vi.fn()} onSpeedChange={vi.fn()}
+          compact held heldBy="The Unsafe Bridge"
+        />,
+      );
+      fireEvent.pointerEnter(screen.getByTestId('clock-held-status'));
+      act(() => { vi.advanceTimersByTime(400); });
+      const tip = screen.getByRole('tooltip').textContent ?? '';
+      expect(tip).toContain(CLOCK_HELD_STAYS_PAUSED_DESC);
+      expect(tip).not.toContain('runs again');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
