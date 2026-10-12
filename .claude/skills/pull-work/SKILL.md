@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-09
+last_validated_against: 2026-10-12
 ---
 
 # Pull Work
@@ -250,7 +250,7 @@ Instead, **count it and say so.** Partition the queue response and emit one line
 
 `A > 0` means the writer-side leak has reopened (the create path in the orchestrator prompt's T1 step 5a, or a new filer that does not know the rule). Treat those issues as **candidates anyway**, and clear the stray assignee with `save_issue(id, assignee:null)` on the one you pick — it is a one-line repair, and `stale-claim-sweep`'s queue-assignee pass will catch the rest within 12 hours. Do not skip them and do not stop; a non-zero `A` is a number to report, not a blocker.
 
-**Drop held candidates before anything else is decided (THR-1694).** A ticket handed off under a veto window carries one line in its **description**: `Claimable from: <ISO-8601 UTC>`. Read it from the board-scan response — the default `list_issues` result includes `description`; if you pass `fields`, include `"description"` — and drop every candidate whose time is still in the future, one trace line each:
+**Drop held candidates before anything else is decided (THR-1694).** A ticket handed off under a veto window carries one line in its **description**: `Claimable from: <ISO-8601 UTC>`. Read it from the board-scan response — the default `list_issues` result includes `description`; if you pass `fields`, include `"description"` — and drop every candidate whose time is still in the future, one trace line each. **The scan's `description` is truncated at about 300 characters** (it ends `… (truncated, use get_issue for full description)`), so a hold line below a long first paragraph is cut. For any candidate whose scanned description ends in `(truncated`, call `get_issue(id, fields:["description"])` *before* the claim and apply the predicate to the full text — a read-only call, so claim-before-read is untouched (impediment #1178: THR-1748 claimed and released on 2026-10-12 that way). Handoff authors put the `Claimable from:` line first in the description for the same reason. The trace line:
 
 ```
 [pull-work] skipped THR-1687 — claimable from 2026-10-02T12:30:00.000Z
