@@ -13,10 +13,6 @@ export interface AttentionPoolIndicatorProps {
   attentionRegen: number;
 }
 
-/** What the meter measures — the hover tier's explanation (THR-1711). Passive: nothing to click. */
-const ATTENTION_TOOLTIP_DESC =
-  'How much of your notice is free. Attending a moment draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.';
-
 /** CSS variable name for each visual state's bar colour. */
 const STATE_COLOR: Record<AttentionVisualState, string> = {
   focused:    'var(--accent-gold)',
@@ -94,7 +90,9 @@ export function AttentionPoolIndicator({
   const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})`;
 
   return (
-    <Tooltip label={tooltipTitle} desc={ATTENTION_TOOLTIP_DESC}>
+    // THR-1814: the desc comes from the registry (`ui.attention`, Law 17); the live
+    // pool / cap / state label stays as the per-render override.
+    <Tooltip id="ui.attention" label={tooltipTitle}>
     <div
       className="topbar-tier"
       data-testid="attention-pool-indicator"

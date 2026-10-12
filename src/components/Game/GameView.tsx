@@ -180,7 +180,7 @@ import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buil
 import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
-import { NUDGE_REJECT_TOAST_MS, CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK, CHAPTER_ANSWER_TOAST_MS, chapterAnswerChoiceLine } from '../../data/nudge-stage-content';
+import { NUDGE_REJECT_TOAST_MS, CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK, CHAPTER_ANSWER_TOAST_MS, chapterAnswerChoiceLine, resolveClockHolder } from '../../data/nudge-stage-content';
 import { sphereWord } from '../shared/formatEssence';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
@@ -5214,6 +5214,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running,
   }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running]);
 
+  // ── Who holds the clock (THR-1814) ──
+  // Every held state names its holder, not only an encounter veil (Law 52): the
+  // veil's title first, else the open interrupt's holder name, else the fallback.
+  const clockHeldNow = interruptAutoPause.heldRunning !== null;
+  const clockHolder = clockHeldNow
+    ? resolveClockHolder(
+        interruptResolution.open,
+        tieredEncounterState && encounterVeilModel ? encounterVeilModel.header.title : null,
+      )
+    : null;
+  /** `__DEBUG.getClockHold()` (THR-1814) — the same values the TIME readout renders. */
+  const getDebugClockHold = useCallback(() => ({
+    held: clockHeldNow,
+    holder: clockHolder,
+    runsOnAfter: clockHeldNow ? interruptAutoPause.heldRunning : null,
+  }), [clockHeldNow, clockHolder, interruptAutoPause.heldRunning]);
+
   const getDebugActiveUIState = useCallback(() => {
     const urlView = new URLSearchParams(window.location.search).get('view') ?? 'game';
     const openModals = getDebugOpenModals();
@@ -5261,7 +5278,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerOpeningUiProvider?.(() => ({ arrivalBeatOffered, clockEverRan }));
     window.__DEBUG._registerGiftDeliveryProvider?.(getDebugGiftDelivery);
     window.__DEBUG._registerChapterAnswerProvider?.(chapterAnswer.getDebugState);
-  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan, chapterAnswer.getDebugState]);
+    window.__DEBUG._registerClockHoldProvider?.(getDebugClockHold);
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan, chapterAnswer.getDebugState, getDebugClockHold]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -5474,12 +5492,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         // THR-1711: while an interrupt holds the clock, show the state it returns
         // to — that is what the button now toggles — and label it as held.
         running={interruptAutoPause.heldRunning ?? running}
-        clockHeld={interruptAutoPause.heldRunning !== null}
-        // THR-1724 — Law 52 (amended): the time control names the encounter
-        // holding the clock, since the veil no longer says "Paused" itself.
-        clockHeldBy={interruptAutoPause.heldRunning !== null && tieredEncounterState && encounterVeilModel
-          ? encounterVeilModel.header.title
-          : undefined}
+        clockHeld={clockHeldNow}
+        // THR-1724 / THR-1814 — Law 52 (amended): the time control names whatever
+        // holds the clock (the encounter's title, or the interrupt's holder name).
+        clockHeldBy={clockHolder ?? undefined}
         // THR-1812 — the TIME readout names a chapter answer the clock is turning
         // toward, or one waiting on a paused clock.
         clockAnswerStatus={chapterAnswer.answerStatus}

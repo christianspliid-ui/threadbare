@@ -14,6 +14,7 @@
 import type { SphereAggregate } from '../types/worldSoul';
 import { WORLD_SOUL_PROSE, type WorldSoulIntensity } from '../data/worldSoulProse';
 import { renderProseWithIPK } from './ProseKeyword';
+import { Tooltip } from './shared/Tooltip';
 
 // ─── Intensity thresholds (NFP #1: Tunability) ────────────────────────────────
 
@@ -52,11 +53,13 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
 
   const proseTemplate = proseEntry[intensity];
 
+  // THR-1814: the hover explains what the World-Soul is through the registry
+  // (`ui.world_soul`, Law 17) instead of a raw title repeating the line.
   return (
+    <Tooltip id="ui.world_soul">
     <div
       data-testid="world-soul-indicator"
       className="topbar-tier topbar-compact-hide"
-      title={proseTemplate.replace(/\*\*/g, '')}
     >
       <span className="topbar-section-label">World-Soul</span>
       <div
@@ -75,5 +78,6 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
         {renderProseWithIPK(proseTemplate)}
       </div>
     </div>
+    </Tooltip>
   );
 }

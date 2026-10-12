@@ -191,16 +191,20 @@ export function AscendantBar({
         <ReachesBlock rows={reachRows} />
       </BarSection>
 
-      {/* 2b. Signatures (the eight reach powers — yours vs. another incarnation's) */}
+      {/* 2b. Signatures (the eight reach powers — yours vs. another incarnation's).
+          THR-1814: renders only once one is yours — a section with nothing in it
+          does not render (Laws 25, 53); the term arrives with its first entry. */}
+      {yourSignatureCount > 0 && (
       <BarSection
         label="Signatures"
+        tooltipId="ui.signatures"
         count={yourSignatureCount}
         open={open.signatures}
         onToggle={() => toggle('signatures')}
-        placeholder="Your paths of power are not yet settled."
       >
         <SignaturesBlock paths={signaturePaths} onOpenCodex={onOpenCodex} />
       </BarSection>
+      )}
 
       {/* 3. Essence — no count (THR-1706). Every other section's count is a
           tally of things you hold; here it was the number of sphere rows (12),
@@ -227,17 +231,19 @@ export function AscendantBar({
         <ActionsBlock tray={actionTray} onMove={onMove} onInvestiture={onInvestiture} />
       </BarSection>
 
-      {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A) */}
+      {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A).
+          THR-1814: renders only while one is held (Laws 25, 53). */}
+      {covenantRows.length > 0 && (
       <BarSection
         label="Covenants"
         tooltipId="ui.covenant"
         count={covenantRows.length}
         open={open.covenants}
         onToggle={() => toggle('covenants')}
-        placeholder="You hold nothing in a lasting grip."
       >
         <CovenantsBlock rows={covenantRows} onRelease={onReleaseControl} />
       </BarSection>
+      )}
 
       {/* 5. Mandate — hidden until the bond (THR-1648) */}
       {showMandate && (
@@ -253,16 +259,19 @@ export function AscendantBar({
       </BarSection>
       )}
 
-      {/* 6. Hooks (conditions / clues / vows) */}
+      {/* 6. Hooks (conditions / clues / vows). THR-1814: renders only once one
+          exists (Laws 25, 53). */}
+      {hookCount > 0 && (
       <BarSection
         label="Hooks"
+        tooltipId="ui.hooks"
         count={hookCount}
         open={open.hooks}
         onToggle={() => toggle('hooks')}
-        placeholder="No marks, clues, or vows."
       >
         <HooksBlock gameState={gameState} onOpenAttachment={onOpenAttachment} />
       </BarSection>
+      )}
     </aside>
   );
 }

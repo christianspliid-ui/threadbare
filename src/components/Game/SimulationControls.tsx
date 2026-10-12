@@ -3,6 +3,7 @@ import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { FIRST_RUN_PROMPT_CAPTION } from '../../data/ui-content';
+import { clockHeldStatus } from '../../data/nudge-stage-content';
 
 interface SimulationControlsProps {
   /*
@@ -26,10 +27,11 @@ interface SimulationControlsProps {
    */
   held?: boolean;
   /**
-   * THR-1724 — what is holding the clock, by name (an encounter's title). The
-   * status line then reads "paused · The Unsafe Bridge": Law 52, as amended
-   * 2026-10-04, names an encounter's auto-pause here rather than on the
-   * encounter surface itself. Absent ⇒ the generic held wording.
+   * THR-1724 / THR-1814 — what is holding the clock, by name (an encounter's
+   * title, or the interrupt's holder name). The status line then reads "held by
+   * the Chapter Ledger · runs on when it closes": Law 52, as amended 2026-10-04,
+   * names an auto-pause here rather than on the surface itself. Absent ⇒ the
+   * fallback holder ("this window").
    */
   heldBy?: string;
   /**
@@ -87,8 +89,9 @@ export function SimulationControls({
 
   if (compact) {
     const prompting = firstRunPrompt && !running && !held;
+    // THR-1814: a held clock always names its holder and what happens when it closes.
     const statusText = held
-      ? (heldBy ? `paused · ${heldBy}` : running ? 'held · runs on after' : 'held · stays paused')
+      ? clockHeldStatus(heldBy, running)
       : answerStatus ? answerStatus
       : prompting ? FIRST_RUN_PROMPT_CAPTION
       : running ? `running ×${speed}` : 'paused';
@@ -137,17 +140,23 @@ export function SimulationControls({
             {season} · year {year}
           </span>
         </div>
-        <span
-          style={{
-            font: 'var(--type-body-small)',
-            color: prompting ? 'var(--text-secondary)' : 'var(--text-tertiary)',
-            fontStyle: 'italic',
-            whiteSpace: 'nowrap',
-          }}
-          {...(prompting ? { 'data-testid': 'first-run-caption' } : {})}
-        >
-          {statusText}
-        </span>
+        {(() => {
+          const status = (
+            <span
+              style={{
+                font: 'var(--type-body-small)',
+                color: prompting ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+                fontStyle: 'italic',
+                whiteSpace: 'nowrap',
+              }}
+              {...(prompting ? { 'data-testid': 'first-run-caption' } : {})}
+              {...(held ? { 'data-testid': 'clock-held-status' } : {})}
+            >
+              {statusText}
+            </span>
+          );
+          return held ? <Tooltip id="ui.clock_held">{status}</Tooltip> : status;
+        })()}
       </div>
     );
   }

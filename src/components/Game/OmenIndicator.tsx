@@ -11,6 +11,8 @@ import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import { OmenDetail } from './OmenDetail';
+import { Tooltip } from '../shared/Tooltip';
+import { TOPBAR_LOCKED_SUFFIX, getUITooltip } from '../../data/ui-content';
 
 const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
   doom_echo: '⊘',
@@ -94,25 +96,38 @@ function OmenLine({
 interface OmenIndicatorProps {
   omenState: OmenState | undefined;
   currentTick: number;
+  /**
+   * THR-1814 — an encounter veil holds the top bar. The hover stays live and says the
+   * panel opens when the chapter closes; a press opens nothing, because the panel
+   * would sit beneath the veil's z-band.
+   */
+  locked?: boolean;
 }
 
-export function OmenIndicator({ omenState, currentTick }: OmenIndicatorProps) {
+export function OmenIndicator({ omenState, currentTick, locked = false }: OmenIndicatorProps) {
   const [detailOpen, setDetailOpen] = useState(false);
 
   if (!omenState?.primary) return null;
 
+  const open = () => { if (!locked) setDetailOpen(true); };
+  // THR-1814: the registry's `ui.omen` explains the term (Law 17); the live omen's
+  // name rides in the label override.
+  const baseDesc = getUITooltip('ui.omen')?.desc;
+  const lockedDesc = locked && baseDesc ? `${baseDesc} ${TOPBAR_LOCKED_SUFFIX}` : undefined;
+
   return (
     <>
+      <Tooltip id="ui.omen" label={`Omen — ${omenState.primary.name}`} desc={lockedDesc} focusable={false}>
       <div
         role="button"
         tabIndex={0}
         aria-label="View world omen details"
-        title={`Active omen: ${omenState.primary.name}. Click for details.`}
-        onClick={() => setDetailOpen(true)}
+        aria-disabled={locked || undefined}
+        onClick={open}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            setDetailOpen(true);
+            open();
           }
         }}
         className="topbar-tier"
@@ -135,6 +150,7 @@ export function OmenIndicator({ omenState, currentTick }: OmenIndicatorProps) {
           <OmenLine omen={omenState.secondary} isPrimary={false} />
         )}
       </div>
+      </Tooltip>
 
       {detailOpen && (
         <OmenDetail

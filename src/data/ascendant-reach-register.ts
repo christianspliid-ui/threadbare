@@ -89,6 +89,19 @@ export function getAscendantTierWord(reach: string, tier: number): string {
   return entry.tierWords[index];
 }
 
+/**
+ * THR-1814 — where a tier word sits on its reach's ladder, for the rung marker:
+ * `{ rung, count }` with `rung` 1-based. `null` for an unmapped reach or a word not
+ * on its ladder (fail-soft: the marker simply does not render).
+ */
+export function getReachRung(reach: string, word: string): { rung: number; count: number } | null {
+  const entry = ASCENDANT_REACH_REGISTER[reach as ReachDomain];
+  if (!entry) return null;
+  const index = entry.tierWords.indexOf(word);
+  if (index < 0) return null;
+  return { rung: index + 1, count: entry.tierWords.length };
+}
+
 /** The mortal-past echo line for a reach. Empty string when unmapped (fail-soft). */
 export function getAscendantEchoLine(reach: string): string {
   return ASCENDANT_REACH_REGISTER[reach as ReachDomain]?.echoLine ?? '';

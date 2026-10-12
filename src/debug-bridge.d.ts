@@ -248,6 +248,16 @@ export interface DebugInterruptState {
   running: boolean;
 }
 
+/** `getClockHold()` (THR-1814) — who holds the clock, as the TIME readout names it. */
+export interface DebugClockHold {
+  /** An interrupt holds the clock right now. */
+  held: boolean;
+  /** The holder the readout names ("the Chapter Ledger", an encounter's title); null when not held. */
+  holder: string | null;
+  /** The clock runs on when the holder closes; null when not held. */
+  runsOnAfter: boolean | null;
+}
+
 /** `getGiftDelivery()` (THR-1809) — why a ready opening gift is, or is not, on screen. */
 export interface DebugGiftDelivery {
   /** The pending beat, or null. */
@@ -1811,6 +1821,12 @@ export interface DebugBridge {
    * Async. Returns the empty shape before GameView mounts.
    */
   getInterruptState(): Promise<DebugInterruptState>;
+  /**
+   * THR-1814 — who holds the clock: `{ held, holder, runsOnAfter }`, the same
+   * values the TIME readout renders ("held by {holder} · runs on when it closes").
+   * Async. Returns `{ held: false, holder: null, runsOnAfter: null }` before GameView mounts.
+   */
+  getClockHold(): Promise<DebugClockHold>;
   /** Snapshot of current high-level UI state for test assertions. */
   getActiveUIState(): Promise<DebugActiveUIState>;
   /** Returns recent UI tick-events where event.tick > provided tick. */
@@ -1825,6 +1841,7 @@ export interface DebugBridge {
   _registerOpenModalsProvider(fn: () => string[]): void;
   /** @internal GameView registers the interrupt-state provider here (THR-1608) */
   _registerInterruptStateProvider(fn: () => DebugInterruptState): void;
+  _registerClockHoldProvider(fn: () => DebugClockHold): void;
   /** THR-1716 — GameView registers the UI-session half of `getOpeningState()`. */
   _registerOpeningUiProvider(fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }): void;
   /**
