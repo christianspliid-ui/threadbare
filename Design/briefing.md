@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 05:57 local (03:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 06:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,5 +31,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 15 hours now. Newer commits only touched docs, so they did not re-run them. The builder owes a fix and an impediment row. Not yours.
-- Everything else is green: engine speed is normal (109 ms a tick, 7% under the weekly median), the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 05:40. No new messages from you on Discord.
+- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 16 hours now. It is one test, and it ran out of time rather than failing: the Doom milestone check took 21 s against a 15 s limit. The orchestrator saw the same test pass on its own this morning. So the test's time limit is too tight; the game is not broken. The builder owes the fix, and nobody has logged it as an impediment yet. Not yours.
+- Everything else is green: engine speed is normal (110 ms a tick, 6% under the weekly median), the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 06:44. No new messages from you on Discord.
