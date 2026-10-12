@@ -369,6 +369,13 @@ export const CRITICAL_SUCCESS_MULTIPLIER = 1.5;
  * @range 0.0–0.5 */
 export const CRITICAL_FAILURE_GROWTH = 0.0;
 
+/** THR-1815: how long after a tier crossing the mortal's info card keeps the
+ * crossed domain listed beyond its normal top N, so the card agrees with the
+ * aftermath that named it (PC-6). Two of the 24-tick days the aftermath and the
+ * Chapter Ledger cover.
+ * @range 24–96 */
+export const RECENT_TIER_CROSS_WINDOW_TICKS = 48;
+
 // ═══════════════════════════════════════════════════════════════════
 // TIER PROMOTION — Narrative events at tier boundaries (tierPromotion.ts)
 // ═══════════════════════════════════════════════════════════════════

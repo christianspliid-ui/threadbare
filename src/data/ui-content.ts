@@ -12,6 +12,7 @@ import type { CampbellianPhase } from '../types/influence';
 import { buildReachTierTooltips } from './ascendant-reach-register';
 import { REACH_COPY } from './ascendant-bar-content';
 import { NUDGE_CARD_TYPES } from './nudge-card-library';
+import { SPHERE_POUR_REFILL_SENTENCE } from './sphere-points-content';
 
 /**
  * THR-1716 — the first-run Play prompt's caption, shown in the time control's status
@@ -51,6 +52,12 @@ export const GIFT_WAITS_COPY = {
  * THR-1814 — appended to the Doom and Omen hovers while an encounter veil holds the
  * top bar: the control is not broken, it waits on the chapter (Law 25).
  */
+/**
+ * THR-1815 (PC-6): the mark on an info-card domain row appended because the mortal
+ * just crossed a tier there — the aftermath's own words ("a new tier of mastery").
+ */
+export const AGENT_CARD_NEW_TIER_MARK = 'new tier';
+
 export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
 
 /**
@@ -973,7 +980,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // The essence block on the ascendant bar.
   'ui.essence.row': {
     label: 'Essence',
-    desc: 'The power you have to spend in this sphere. Casting a card of this sphere draws it down, and the pool refills slowly with time.',
+    desc: `The power you have to spend in this sphere. Casting a card of this sphere draws it down, and the pool refills slowly with time. ${SPHERE_POUR_REFILL_SENTENCE}.`,
   },
   'ui.essence.foundation_fold': {
     label: 'Elder powers',

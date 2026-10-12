@@ -192,6 +192,8 @@ export interface BalanceEvent {
   growthReach?: string;
   growthDelta?: number;
   newTier?: number;
+  /** THR-1815: set when the resolution site wrote the agent's `lastTierCross` this step. */
+  tierCrossRecorded?: true;
 
   // ── State transition context ──
   transitionType?: string;

@@ -238,3 +238,17 @@ export const MEETING_TEST_ACTOR_ID = 'meeting_candidate';
 
 /** Reach the meeting's tests resolve under — the god is reaching for a person. */
 export const MEETING_TEST_REACH = 'heart';
+
+// ─── THR-1815: the miss line ────────────────────────────────────
+//
+// Said above commit, before the roll: a missed formative test writes the
+// opposite pole (`resolveWrittenPole`). `{name}` is the mortal's name — not a
+// pronoun, because a candidate can be any gender; `{opposite}` is the other
+// pole's sheet word (`poleWordsFor`), the same word the fate line names.
+
+/** The hand leans to a pole: a miss can write the other one. */
+export const MEETING_MISS_FLIPS_LINE = 'On a miss, {name} may become {opposite} instead.';
+/** The hand leans nowhere: the seeded coin picks the pole. */
+export const MEETING_MISS_FLIPS_LINE_UNLEANED = 'With no lean, fate picks which way {name} goes.';
+/** Fail-soft: the opposite pole's word cannot be resolved. */
+export const MEETING_MISS_FLIPS_LINE_GENERIC = 'On a miss, fate may push {name} the other way.';

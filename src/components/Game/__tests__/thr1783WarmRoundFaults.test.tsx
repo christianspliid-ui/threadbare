@@ -87,9 +87,11 @@ function makeState(pool: EssencePool): GameState {
 }
 
 describe('premonition prices name the pool they bill (THR-1783)', () => {
-  it('a Force compulsion option reads "3 Force essence"', () => {
+  // THR-1815 — an Iron row that bills Force (Iron's own sphere) also names the
+  // Reach's sphere after the pool: the price still leads with what it bills.
+  it('a Force compulsion option reads "3 Force essence · Iron draws on Force"', () => {
     renderModal(BASE);
-    expect(screen.getByTestId('premonition-option-cost').textContent).toBe('3 Force essence');
+    expect(screen.getByTestId('premonition-option-cost').textContent).toBe('3 Force essence · Iron draws on Force');
   });
 
   it('a Life whisper option reads "2 Life essence"', () => {

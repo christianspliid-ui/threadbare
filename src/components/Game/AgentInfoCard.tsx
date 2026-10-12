@@ -6,6 +6,7 @@ import type { ReachDomain } from '../../types/traits';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
 import { ReachIcon } from '../icons';
 import { Tooltip } from '../shared/Tooltip';
+import { AGENT_CARD_NEW_TIER_MARK } from '../../data/ui-content';
 import { ActiveEffectChips } from './ActiveEffectChips';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
@@ -296,6 +297,11 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                 <div key={idx} className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                   <ReachIcon reach={dom.domain} size={14} />
                   {dom.word} in <Tooltip id={`reach.${dom.domain}`}><span className="underline decoration-dotted cursor-help">{DOMAIN_NAMES[dom.domain]}</span></Tooltip>
+                  {dom.recentTierCross && (
+                    <span data-testid="agent-card-new-tier" style={{ color: 'var(--text-primary)', fontStyle: 'italic' }}>
+                      — {AGENT_CARD_NEW_TIER_MARK}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

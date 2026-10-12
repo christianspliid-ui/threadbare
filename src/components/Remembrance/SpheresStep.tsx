@@ -92,8 +92,12 @@ export function SpheresStep({ preset, visible, onConfirm, onChooseAgain }: Spher
         transition: 'opacity 1s ease, transform 1s ease',
       }}
     >
-      <p style={{ ...proseFont, fontSize: '1.5rem', color: 'rgba(196,180,155,0.6)', letterSpacing: '0.06em', marginBottom: '3vh' }}>
+      <p style={{ ...proseFont, fontSize: '1.5rem', color: 'rgba(196,180,155,0.6)', letterSpacing: '0.06em', marginBottom: '1vh' }}>
         {REMEMBRANCE_SPHERE_COPY.prompt}
+      </p>
+      {/* THR-1815 — what the pour changes, said before the player pours (PC-1). */}
+      <p data-testid="sphere-pour-meaning" style={{ ...proseFont, fontSize: '1rem', color: 'rgba(212,196,158,0.7)', marginBottom: '3vh', textAlign: 'center' }}>
+        {REMEMBRANCE_SPHERE_COPY.pourMeaning}
       </p>
 
       <div className="flex flex-col" style={{ gap: '2.2vh', width: 'min(1100px, 100%)' }}>

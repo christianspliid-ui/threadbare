@@ -172,6 +172,12 @@ export interface NudgePhaseShellProps {
    * below it from ever disagreeing.
    */
   hand?: UseNudgeHandResult;
+  /**
+   * THR-1815 — one line said above commit, before the roll: what a miss can do
+   * (the meeting test writes the opposite pole on a miss). Filled only by
+   * `FormativeTestBeat`; every other host writes no pole and passes nothing.
+   */
+  missLine?: string;
 }
 
 // ── Card ───────────────────────────────────────────────────────────
@@ -284,6 +290,7 @@ export function NudgePhaseShell({
   onCommit,
   renderTestHeader = true,
   hand: externalHand,
+  missLine,
 }: NudgePhaseShellProps) {
   const designerView = useSyncExternalStore(
     subscribeNudgeDesignerView,
@@ -457,6 +464,14 @@ export function NudgePhaseShell({
           boxShadow: `0 ${HAND_BAR_SKIRT_PX}px 0 0 ${VOID}`,
         }}
       >
+        {missLine && (
+          <p
+            data-testid="nudge-miss-line"
+            style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontStyle: 'italic', margin: '0 0 8px' }}
+          >
+            {missLine}
+          </p>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}

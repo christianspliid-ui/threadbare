@@ -3100,3 +3100,13 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 | `engine/spellCasting.ts` divine echo · `engine/agentDetection.ts` `writeAgentDetection` | every cast of a god-taught transgression | — (mark label names the god) | `regionalDetectionPressure`, `hiddenMarks` | `spell.divine_echo` | CLI `eval state.hiddenMarks` |
 
 **Wired and asserted:** `spellGrant.test.ts` (18 tests: seam, divine pool, Teach a Spell both arms, dark price and its band crossing, cast echo, book predicate, reward/seize teaching, `spell_grant` reaction, drawer line/lock) and `spellGrant.pin.test.ts` (the three older writers' edges, snapshotted before the repoint).
+
+## Say it before it happens — the tier the card agrees on (THR-1815)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/capabilityGrowth.ts` `recordTierCross` | step resolution: `unifiedActionResolution.ts` and legacy `encounter.ts`, inside the existing `tierCrossed` branch | `AgentInfoCard` (via `getAgentInfoCard` → `readRecentTierCross`; row marked "new tier") | agent node property `lastTierCross: { domain, tick }` (`AgentNodeProperties`) | `growth_applied` balance event gains `tierCrossRecorded: true` | the agent info card's `domains[].recentTierCross` |
+| `engine/meetingFateLine.ts` `selectMeetingMissLine` | none (render) | `FormativeTestBeat` → `NudgePhaseShell` `missLine` | none (derived from the live hand via `computeNetPoleLean`) | none | `data-testid="nudge-miss-line"` |
+| pour line, cost note, picker names | none (render) | `SpheresStep`, `PremonitionModal` (`premonitionReachNote`), `SensingBeat` (`candidateLabel`) | none | none | DOM (`sphere-pour-meaning`, `premonition-reach-note`, `sensing-candidate-name-*`) |
+
+**Wired and asserted:** `sayItBeforeItHappensThr1815.test.tsx` (miss line above commit and following the lean, picker names on focus, cost note, pour line) and `agentInfoCardRecentTierCross.test.ts` (inside / outside the window, appended not swapped, both growth roads write the record).

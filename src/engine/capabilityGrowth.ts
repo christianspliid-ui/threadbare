@@ -281,3 +281,30 @@ export function applyEncounterGrowth(
     tierCrossed: newTier > previousTier,
   };
 }
+
+// ─── Tier-cross record (THR-1815) ───────────────────────────────
+
+/**
+ * Record a tier crossing on the agent node as `lastTierCross = { domain, tick }`,
+ * so the mortal's info card can list the domain the aftermath just named (PC-6).
+ * Called at both growth sites inside their existing `tierCrossed` branch —
+ * `applyEncounterGrowth` has no tick and keeps its signature (THR-1580).
+ *
+ * Fail-soft: a missing agent, or a graph that refuses the write, records nothing
+ * and returns false. The caller bumps `worldVersion` when it holds a runtime.
+ */
+export function recordTierCross(
+  graph: WorldGraph,
+  agentId: string,
+  domain: ReachDomain,
+  tick: number,
+): boolean {
+  const agentNode = graph.getNode(agentId);
+  if (!agentNode) return false;
+  try {
+    graph.updateNode(agentId, { properties: { ...agentNode.properties, lastTierCross: { domain, tick } } });
+    return true;
+  } catch {
+    return false;
+  }
+}

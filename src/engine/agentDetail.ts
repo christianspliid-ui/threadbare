@@ -25,6 +25,7 @@ import type { KnowledgeLevel } from '../types/familiarity';
 import { getCapabilityWord, getCapabilityTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { computeCapability } from './domainCapability';
 import { REACH_DOMAINS } from '../types/traits';
+import { RECENT_TIER_CROSS_WINDOW_TICKS } from '../data/agent-behavior-constants';
 import { generateQuotes, generateBackstory, humanizeDescriptor } from './profileGenerator';
 import type { AmbitionCategory } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
@@ -466,7 +467,11 @@ export interface AgentInfoCardData {
   holdGripWord?: string;
   cultureName?: string;
   topValues?: { pair: ValuePair; word: string }[];
-  domains?: { domain: ReachDomain; word: string; tier: number }[];
+  /**
+   * THR-1815: `recentTierCross` marks a row appended beyond the top N because the
+   * agent crossed a tier in that domain within `RECENT_TIER_CROSS_WINDOW_TICKS`.
+   */
+  domains?: { domain: ReachDomain; word: string; tier: number; recentTierCross?: true }[];
   /** Agent gender for pronoun resolution in prose (e.g. 'male', 'female'). Defaults to neutral. */
   gender?: string;
   /**
@@ -1453,6 +1458,21 @@ export function getAgentGrudges(graph: WorldGraph, agentId: string): GrudgeSumma
  * Get info card data for an agent, filtered by knowledge level.
  * Returns null if agent not found or has no thread edge from ascendant.
  */
+/**
+ * THR-1815: the domain of a still-recent `lastTierCross`, or null. Fail-soft: an
+ * unknown domain, a malformed record, or a tick in the future reads as nothing,
+ * so the card renders as it did before.
+ */
+export function readRecentTierCross(raw: unknown, tick: number): ReachDomain | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const { domain, tick: crossTick } = raw as { domain?: unknown; tick?: unknown };
+  if (typeof domain !== 'string' || typeof crossTick !== 'number') return null;
+  if (!(REACH_DOMAINS as readonly string[]).includes(domain)) return null;
+  const age = tick - crossTick;
+  if (age < 0 || age > RECENT_TIER_CROSS_WINDOW_TICKS) return null;
+  return domain as ReachDomain;
+}
+
 export function getAgentInfoCard(
   graph: WorldGraph,
   agentId: string,
@@ -1700,13 +1720,26 @@ export function getAgentInfoCard(
       .sort((a, b) => b.value - a.value)
       .slice(0, domainCount);
 
-    if (sortedDomains.length > 0) {
-      card.domains = sortedDomains.map(({ domain, value }) => ({
-        domain,
-        word: getCapabilityWord(domain, value),
+    const domainRows: NonNullable<AgentInfoCardData['domains']> = sortedDomains.map(({ domain, value }) => ({
+      domain,
+      word: getCapabilityWord(domain, value),
+      tier: getCapabilityTier(value),
+    }));
+
+    // THR-1815 (PC-6): the aftermath names a tier-up; the card must list that domain
+    // while it is recent, even when it sits below the top N. Appended, never swapped.
+    const recentCross = readRecentTierCross(agentProps.lastTierCross, tick);
+    if (recentCross && !domainRows.some(r => r.domain === recentCross)) {
+      const value = detail.reachCapabilities[recentCross] ?? 0;
+      domainRows.push({
+        domain: recentCross,
+        word: getCapabilityWord(recentCross, value),
         tier: getCapabilityTier(value),
-      }));
+        recentTierCross: true,
+      });
     }
+
+    if (domainRows.length > 0) card.domains = domainRows;
   }
 
   // Known+: key bonds and 1 quote

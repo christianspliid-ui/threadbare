@@ -49,6 +49,13 @@ export interface AgentNodeProperties {
   actorType: ActorType;
   /** True when the player has explicitly marked this agent as part of their protagonist portfolio. */
   isPortfolioPinned?: boolean;
+  /**
+   * THR-1815: the last Reach domain whose tier this agent crossed, and the tick it
+   * happened. Written at both growth sites (`recordTierCross`), read by
+   * `getAgentInfoCard` so the card lists a domain the aftermath just named.
+   * A fact about the agent, not a relationship, so a property, not an edge.
+   */
+  lastTierCross?: { domain: string; tick: number };
 }
 
 /** Every edge in the world graph */

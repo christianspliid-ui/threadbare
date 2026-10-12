@@ -100,7 +100,7 @@ import { appendEvent } from './encounterTimeline';
 import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
-import { applyEncounterGrowth } from './capabilityGrowth';
+import { applyEncounterGrowth, recordTierCross } from './capabilityGrowth';
 import { recordArtifactEncounterPresence } from './artifactTraits';
 import { applyChainStageCompletion } from './encounterChains';
 import { handleTierPromotion } from './tierPromotion';
@@ -2366,6 +2366,11 @@ export function executeStepResult(
 
     // Handle tier promotion if crossed
     if (growthResult.tierCrossed) {
+      // THR-1815: the info card lists the domain the aftermath is about to name.
+      const tierCrossRecorded = recordTierCross(
+        state.graph, action.actorId, (resolutionStats?.reach ?? step.reach), tick,
+      );
+      if (tierCrossRecorded && runtime) touchWorld(runtime);
       const promotion = handleTierPromotion(
         state.graph,
         action.actorId,
@@ -2404,6 +2409,7 @@ export function executeStepResult(
           growthReach: (resolutionStats?.reach ?? step.reach),
           growthDelta: growthResult.growthApplied,
           newTier: growthResult.newTier,
+          ...(tierCrossRecorded ? { tierCrossRecorded: true } : {}),
         });
       }
     }
