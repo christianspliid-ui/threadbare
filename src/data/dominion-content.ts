@@ -98,6 +98,12 @@ export const DOMINION_PRICES_LIVE = false;
 export const DOMINION_CLAIM_TEMPLATE_ID = 'hex.claim_dominion';
 /** The card that breaks the opposing pole of a place. */
 export const DOMINION_SHIFT_TEMPLATE_ID = 'hex.shift_dominion';
+/**
+ * The Dominion cards that act on a place and never on a bare hex. A hex target context
+ * carries `nodeType: 'location'`, so without this they would match the hex drawer too —
+ * and cast there they would charge essence and write nothing (review gate, THR-1748).
+ */
+export const DOMINION_PLACE_ONLY_TEMPLATE_IDS: ReadonlySet<string> = new Set([DOMINION_CLAIM_TEMPLATE_ID, DOMINION_SHIFT_TEMPLATE_ID]);
 
 /** Total pressure a Claim pushes a tick, split across the bought vector by points. */
 export const DOMINION_CLAIM_PRESSURE_PER_TICK = 0.03;

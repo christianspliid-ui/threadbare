@@ -12,7 +12,11 @@ import type { GameState } from '../../types/gameState';
 import type { ControlEffect } from '../../types/controlEffect';
 import type { SphereAffinity, SpherePressureEvent } from '../../types/sphereAffinity';
 import { createDefaultSphereAffinity } from '../../types/sphereAffinity';
+import { buildHexTargetContext } from '../targetContextBuilders';
+import { getTargetActionSlots } from '../targetActions';
+import { hexKey } from '../../lib/hexKey';
 import {
+  bearsBestowedGift,
   bandFromMatch,
   bandOfValue,
   buildTendingIndex,
@@ -358,6 +362,34 @@ describe('THR-1748 Dominion — writers', () => {
     expect(isTended(index, 'loc.seat')).toEqual(['seat']);
     expect(isTended(index, 'loc.carry')).toEqual(['carry']);
     expect(isTended(index, 'loc.unaware')).toBeNull();
+  });
+
+  it('the Bestow Power card\'s Divine Gift counts as a bestowed gift (review gate)', () => {
+    const g = makeGraph();
+    g.addNode({ id: 'm1', type: 'actor', name: 'm1', properties: { actorType: 'individual' } });
+    expect(bearsBestowedGift(g, 'm1')).toBe(false);
+    g.addNode({ id: 'gift', type: 'artifact', name: 'Divine Gift', properties: { source: 'bestow_power' } });
+    g.addEdge({ id: 'e-gift', source: 'm1', target: 'gift', type: 'possesses', properties: {} });
+    expect(bearsBestowedGift(g, 'm1')).toBe(true);
+  });
+
+  it('Claim and Shift Dominion never reach a bare hex drawer (review gate)', () => {
+    const g = makeGraph();
+    const hex = buildHexTargetContext({ col: 3, row: 5, terrain: 'grassland', graph: g });
+    addPlace(g, 'loc.a', {});
+    const loc = {
+      nodeId: 'loc.a', nodeType: 'location' as const, displayName: 'loc.a', displayLabel: '',
+      subtype: null, traitIds: [], sphereAffinity: null, position: null, properties: g.getNode('loc.a')!.properties,
+    };
+    const templates = [getUnifiedTemplateById('hex.claim_dominion')!, getUnifiedTemplateById('hex.shift_dominion')!];
+    const ids = (target: typeof loc | typeof hex) => getTargetActionSlots({
+      target, templates, pool: Object.fromEntries(SPHERE_NAMES.map(s => [s, 99])) as never,
+      primarySphere: 'mind', accessibleSpheres: SPHERE_NAMES, unlockedActionIds: templates.map(t => t.id),
+      // Both layers revealed on the hex, so only the node-type gate can drop the cards there.
+      hexRevelation: { [hexKey(3, 5)]: { land: true, soul: true } } as never,
+    }).map(s => s.id);
+    expect(ids(hex)).toEqual([]);
+    expect(ids(loc).length).toBe(2);
   });
 
   it('a tended place absorbs one raid burst as a rule', () => {

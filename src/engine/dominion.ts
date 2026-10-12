@@ -313,8 +313,19 @@ export function placeOf(graph: WorldGraph, nodeId: string | undefined): GraphNod
 
 // ─── Tending (§ Decided 2) ───────────────────────────────────────────
 
-/** True when a thread's mortal bears a bestowed gift (a `has_trait` to a `bestowed` trait). */
+/** Artifact `source` the Bestow Power card writes on its Divine Gift (`applyBestowPower`). */
+const BESTOW_GIFT_ARTIFACT_SOURCE = 'bestow_power';
+
+/**
+ * True when a thread's mortal bears a bestowed gift: the Divine Gift artifact the
+ * Bestow Power card leaves (`possesses`, `source: 'bestow_power'`), or a bestowed
+ * trait (a `has_trait` to a `bestowed` trait — seeded and reward-granted gifts).
+ */
 export function bearsBestowedGift(graph: WorldGraph, mortalId: string): boolean {
+  for (const e of graph.getOutgoingEdges(mortalId, 'possesses')) {
+    const a = graph.getNode(e.target);
+    if (a?.properties.source === BESTOW_GIFT_ARTIFACT_SOURCE) return true;
+  }
   for (const e of graph.getOutgoingEdges(mortalId, 'has_trait')) {
     const t = graph.getNode(e.target);
     const cat = (t?.properties.subcategory ?? t?.properties.category) as string | undefined;

@@ -41,6 +41,7 @@ import { classifyForecastTier } from './encounters/outcomeForecast';
 import { ACTION_SCALE_WORDS, upkeepWord } from '../data/action-card-display';
 import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
 import { castTargetBand, dominionScaledCost, dominionSphereFactor } from './dominion';
+import { DOMINION_PLACE_ONLY_TEMPLATE_IDS } from '../data/dominion-content';
 import type { ControlEffect } from '../types/controlEffect';
 import { findHeldNonStackingEffect, findPendingNonStackingCast } from './controlEffectSpawn';
 
@@ -342,7 +343,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       || (isHexTarget && (categories as readonly string[]).includes('hex'))
       || (isFactionTarget && (categories as readonly string[]).includes('faction'));
 
-    if (!nodeTypeMatches) {
+    // THR-1748: Claim and Shift Dominion hold a place, never a bare hex.
+    if (!nodeTypeMatches || (isHexTarget && DOMINION_PLACE_ONLY_TEMPLATE_IDS.has(template.id))) {
       counts.byNodeType++;
       continue;
     }
