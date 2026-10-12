@@ -177,20 +177,22 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 pointerEvents: 'none',
               }}
             >
-              {isFocused && candidate.name && (
-                <p
-                  data-testid={`sensing-candidate-name-${idx}`}
-                  style={{ fontFamily: 'var(--font-prose)', fontSize: '1.25rem', letterSpacing: '0.04em', color: 'rgba(222,206,172,0.95)', margin: 0 }}
-                >
-                  {candidate.name}
-                </p>
-              )}
-              {isFocused && candidate.epithet && (
-                <p
-                  data-testid={`sensing-candidate-epithet-${idx}`}
-                  style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.8)', margin: '0 0 6px' }}
-                >
-                  {candidate.epithet}
+              {/* One line, not two: the portrait art paints its own title near its
+                  foot, and a taller block would climb over it. */}
+              {isFocused && (candidate.name || candidate.epithet) && (
+                <p style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.85)', margin: '0 0 6px' }}>
+                  {candidate.name && (
+                    <span
+                      data-testid={`sensing-candidate-name-${idx}`}
+                      style={{ fontSize: '1.1rem', letterSpacing: '0.04em', color: 'rgba(222,206,172,0.95)' }}
+                    >
+                      {candidate.name}
+                    </span>
+                  )}
+                  {candidate.name && candidate.epithet && ' · '}
+                  {candidate.epithet && (
+                    <span data-testid={`sensing-candidate-epithet-${idx}`}>{candidate.epithet}</span>
+                  )}
                 </p>
               )}
               <p
