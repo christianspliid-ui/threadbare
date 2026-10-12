@@ -26,6 +26,12 @@ const CONFIRM_SCALE = 1.8;
 const CONFIRM_DELAY_MS = 1200;
 const SCENE_BG = '#0a0a0f';
 
+/** THR-1815 — "{name}, {epithet}", or whichever exists; undefined when neither does. */
+export function candidateLabel(name: string | undefined, epithet: string | undefined): string | undefined {
+  const parts = [name, epithet].filter((p): p is string => Boolean(p && p.trim()));
+  return parts.length > 0 ? parts.join(', ') : undefined;
+}
+
 export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatProps) {
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [confirmedIdx, setConfirmedIdx] = useState<number | null>(null);
@@ -134,6 +140,9 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
             data-testid={`sensing-candidate-${idx}`}
+            // THR-1815 — the player picks a person, not a painting. Fail-soft:
+            // whichever of name / epithet exists; neither ⇒ no label (as before).
+            aria-label={candidateLabel(candidate.name, candidate.epithet)}
             className="absolute cursor-pointer"
             style={{
               top: '50%',
@@ -158,7 +167,8 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%)',
               }}
             />
-            {/* Prose vignette — only when focused */}
+            {/* Name, epithet, then the vignette — only when focused (THR-1815: the
+                resting cluster stays a first look; a name arrives with focus). */}
             <div
               className="absolute left-0 right-0 text-center px-8 transition-opacity duration-700"
               style={{
@@ -167,6 +177,22 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 pointerEvents: 'none',
               }}
             >
+              {isFocused && candidate.name && (
+                <p
+                  data-testid={`sensing-candidate-name-${idx}`}
+                  style={{ fontFamily: 'var(--font-prose)', fontSize: '1.25rem', letterSpacing: '0.04em', color: 'rgba(222,206,172,0.95)', margin: 0 }}
+                >
+                  {candidate.name}
+                </p>
+              )}
+              {isFocused && candidate.epithet && (
+                <p
+                  data-testid={`sensing-candidate-epithet-${idx}`}
+                  style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.8)', margin: '0 0 6px' }}
+                >
+                  {candidate.epithet}
+                </p>
+              )}
               <p
                 style={{
                   fontFamily: 'var(--font-prose)',

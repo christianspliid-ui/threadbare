@@ -28,7 +28,12 @@ import {
   type FateAnswer,
   type FateLeanState,
 } from '../data/meeting-narrative-prose';
-import { MEETING_POLE_SHIFT_BY_BAND } from '../data/meeting-nudge-constants';
+import {
+  MEETING_POLE_SHIFT_BY_BAND,
+  MEETING_MISS_FLIPS_LINE,
+  MEETING_MISS_FLIPS_LINE_UNLEANED,
+  MEETING_MISS_FLIPS_LINE_GENERIC,
+} from '../data/meeting-nudge-constants';
 import {
   DERIVED_FACTOR_ACTOR_FALLBACK,
   FORECAST_TIER_WORDS,
@@ -189,4 +194,22 @@ export function selectBondFateLine(o: BondOutcome, _agentName: string): FateLine
   const forecast = forecastClause(leanState, o.baseForecastTier, o.handForecastTier);
   const key = `${BOND_KEY_PREFIX}${leanState}.${answer}${forecast ? '' : FATE_LINE_NO_FORECAST_SUFFIX}`;
   return assemble(key, [forecast, fate]);
+}
+
+/**
+ * THR-1815 — the line the meeting hand shows above commit, before the roll: what
+ * a miss does with the hand's lean. Computed from the live selection with the
+ * resolver's own lean rule (`computeNetPoleLean`), so the line and the pole a
+ * miss writes cannot disagree. Pure; no rng draw.
+ */
+export function selectMeetingMissLine(
+  valuePair: ValuePair | undefined,
+  netLean: 'a' | 'b' | 'none',
+  name: string,
+): string {
+  const fill = (template: string, opposite = '') =>
+    template.replace('{name}', name || 'the mortal').replace('{opposite}', opposite);
+  if (netLean === 'none') return fill(MEETING_MISS_FLIPS_LINE_UNLEANED);
+  const opposite = valuePair ? poleWordsFor(valuePair)[netLean === 'a' ? 'b' : 'a'] : '';
+  return opposite ? fill(MEETING_MISS_FLIPS_LINE, opposite) : fill(MEETING_MISS_FLIPS_LINE_GENERIC);
 }

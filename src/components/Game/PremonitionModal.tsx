@@ -18,7 +18,10 @@ import type { EssencePool } from '../../types/influence';
 import type { SphereName } from '../../types';
 import type { WorldGraph } from '../../engine/graph';
 import { resolveTooltip, type TooltipResolverContext } from '../../engine/tooltipResolver';
-import { SPHERE_COLORS, QUINTESSENCE_COLOR } from '../../data/premonition-constants';
+import { SPHERE_COLORS, QUINTESSENCE_COLOR, REACH_TO_SPHERE } from '../../data/premonition-constants';
+import { PREMONITION_REACH_SPHERE_NOTE } from '../../data/premonition-content';
+import { reachDisplayName } from '../../engine/aftermathWords';
+import type { ReachDomain } from '../../types/traits';
 import { formatEssence, sphereWord } from '../shared/formatEssence';
 import { sphereTint } from '../shared/sphereTint';
 
@@ -113,6 +116,38 @@ export function premonitionCostLabel(cost: number, sphere: SphereName | undefine
     : `${formatEssence(cost)} essence`;
 }
 
+/**
+ * THR-1815 — the "{Reach} draws on {Sphere}" note, split around the sphere word so
+ * the caller can wrap it in its registry tooltip. Null when the row did not come
+ * from a Reach, or when the pool it bills is not that Reach's sphere (an explicit
+ * `targetSphere`): the cost then reads as before.
+ */
+export function premonitionReachNote(
+  reach: ReachDomain | undefined,
+  billedSphere: SphereName | undefined,
+): { before: string; sphere: SphereName; after: string } | null {
+  if (!reach || !billedSphere) return null;
+  if (REACH_TO_SPHERE[reach] !== billedSphere) return null;
+  const filled = PREMONITION_REACH_SPHERE_NOTE.replace('{Reach}', reachDisplayName(reach));
+  const at = filled.indexOf('{Sphere}');
+  if (at < 0) return null;
+  return { before: filled.slice(0, at), sphere: billedSphere, after: filled.slice(at + '{Sphere}'.length) };
+}
+
+function PremonitionReachNote({ reach, sphere }: { reach: ReachDomain | undefined; sphere: SphereName | undefined }) {
+  const note = premonitionReachNote(reach, sphere);
+  if (!note) return null;
+  return (
+    <span data-testid="premonition-reach-note">
+      {' · '}{note.before}
+      <Tooltip id={`sphere.${note.sphere}`}>
+        <span className="underline decoration-dotted cursor-help">{sphereWord(note.sphere)}</span>
+      </Tooltip>
+      {note.after}
+    </span>
+  );
+}
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -151,6 +186,7 @@ function WhisperOptionRow({
         </span>
         <span className="text-xs ml-2 whitespace-nowrap" style={{ color }} data-testid="premonition-option-cost">
           {premonitionCostLabel(nudge.essenceCost, nudge.sphere)}
+          {!nudge.targetSphere && <PremonitionReachNote reach={nudge.targetReach} sphere={nudge.sphere} />}
         </span>
       </div>
       {/* Law 45: was `opacity-50` over the gradient (~2.9:1). The flavour line
@@ -210,6 +246,7 @@ function CompulsionOptionRow({
         </span>
         <span className="text-xs whitespace-nowrap" style={{ color }} data-testid="premonition-option-cost">
           {premonitionCostLabel(candidate.essenceCost, candidate.sphere)}
+          <PremonitionReachNote reach={candidate.reach} sphere={candidate.sphere} />
         </span>
       </div>
     </button>

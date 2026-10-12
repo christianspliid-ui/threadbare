@@ -6339,6 +6339,24 @@ export const CONTRACTS: readonly Contract[] = [
       'src/debug-bridge.ts',
     ],
   },
+  // -- The card names the tier the aftermath named (THR-1815, plan 2026-10-11-thr-1807 § Interface impact) --
+  // Both growth roads record the last tier crossing on the agent; the info card lists
+  // that domain while it is recent, beyond its normal top N (PC-6: two surfaces agree).
+  {
+    id: 'tier-cross-reaches-the-info-card',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'When a step crosses a Reach tier, the aftermath says so; the mortal\x27s info card must then list that domain too, even when it is not among their top three. Both growth sites write `lastTierCross = { domain, tick }` on the agent; `getAgentInfoCard` appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS` (48).',
+    ulTerms: ['Reach'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['lastTierCross', 'recordTierCross', 'readRecentTierCross'],
+      module: 'src/engine/capabilityGrowth.ts',
+    },
+    writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/encounter.ts'],
+    readSites: ['src/engine/agentDetail.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

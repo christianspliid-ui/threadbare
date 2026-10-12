@@ -19,6 +19,15 @@ import type { WhisperNudgeCategory } from '../types/premonition';
 import type { EncounterType } from '../types/encounter';
 import type { ReachDomain } from '../types/traits';
 
+// ─── Cost Note (THR-1815) ───────────────────────────────────────
+
+/**
+ * Appended to a premonition option's cost when the row came from a Reach and the
+ * pool it bills is that Reach's sphere (`REACH_TO_SPHERE`): "1 Life essence ·
+ * Gold draws on Life". Said before the player pays, not only after (PC-1, PC-6).
+ */
+export const PREMONITION_REACH_SPHERE_NOTE = '{Reach} draws on {Sphere}';
+
 // ─── Shared Pronoun Resolver ────────────────────────────────────
 
 /**

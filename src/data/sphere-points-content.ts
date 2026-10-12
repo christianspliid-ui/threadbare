@@ -68,9 +68,17 @@ export function sphereLeftToPourWord(remaining: number, budget: number = SPHERE_
   return 'nothing';
 }
 
+/**
+ * THR-1815 (PC-6): the one sentence the setup line and the essence-row hover share
+ * word for word — what the pour changes. `ui.essence.row` ends with it.
+ */
+export const SPHERE_POUR_REFILL_SENTENCE = 'What you pour decides which pools refill fastest';
+
 /** The spheres sub-step's words. */
 export const REMEMBRANCE_SPHERE_COPY = {
   prompt: 'What are you made of? Pour yourself into the spheres.',
+  /** THR-1815: said before the pour, under the prompt — no rule changes, every pool still starts flat. */
+  pourMeaning: `Every pool starts the same. ${SPHERE_POUR_REFILL_SENTENCE}, and your deepest sphere pays your upkeep.`,
   leftToPour: 'Left to pour:',
   neither: 'neither',
   continue: 'Continue',

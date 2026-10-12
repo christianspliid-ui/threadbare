@@ -421,7 +421,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-09 by Claude Code (THR-1754 — threading rite S2: the rite on screen). **Added**
+2026-10-12 by Claude Code (THR-1815 — say it before it happens). **Added**
+`tier-cross-reaches-the-info-card` (Encounters & Dilemmas → Attention, Chronicle & Narrative:
+both growth sites — `unifiedActionResolution.ts` and the legacy `encounter.ts` road — call
+`recordTierCross` inside their `tierCrossed` branch, writing the agent property
+`lastTierCross = { domain, tick }`; `getAgentInfoCard` reads it through `readRecentTierCross` and
+appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS`).
+Audit-on-touch: `applyEncounterGrowth` signature unchanged; the `growth_applied` balance event
+gains `tierCrossRecorded`.
+Earlier: 2026-10-09 by Claude Code (THR-1754 — threading rite S2: the rite on screen). **Added**
 `pending-rite-opens-surface` (Encounters & Dilemmas → Attention, Chronicle & Narrative: the
 drain's `pendingThreadingRite` is the `ThreadingRite` surface's input, `planThreadingRite` picks its
 tests, `closeThreadingRite` lands the hand through `applyThreadingRite` and writes one chronicle

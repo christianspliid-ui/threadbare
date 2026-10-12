@@ -30,7 +30,7 @@ import { computeScaledErosion, createEncounterFailureErosion } from './quintesse
 import { getQuintessenceRatio } from '../types/quintessence';
 import { mapResolverOutcomeToStep } from './unifiedActionResolution';
 import { emitTrace } from './traceBuffer';
-import { applyEncounterGrowth } from './capabilityGrowth';
+import { applyEncounterGrowth, recordTierCross } from './capabilityGrowth';
 import { recordArtifactEncounterPresence } from './artifactTraits';
 import { handleTierPromotion } from './tierPromotion';
 import type { GrowthResult } from './capabilityGrowth';
@@ -626,6 +626,9 @@ export function resolveEncounter(
   // Handle tier promotion if crossed
   let promotion: PromotionResult | undefined;
   if (growth.tierCrossed) {
+    // THR-1815: same record as the unified road. No runtime on this road;
+    // `runTick` bumps worldVersion at end of tick (TB-086) for in-place writes.
+    recordTierCross(state.graph, progress.actorId, step.reach, state.tick);
     promotion = handleTierPromotion(
       state.graph,
       progress.actorId,

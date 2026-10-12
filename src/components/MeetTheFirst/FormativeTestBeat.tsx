@@ -32,8 +32,9 @@ import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell'
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import type { SphereName } from '../../types/index';
-import { resolveFormativeTest } from '../../engine/meetingEncounter';
-import { selectFormativeFateLine } from '../../engine/meetingFateLine';
+import { computeNetPoleLean, resolveFormativeTest } from '../../engine/meetingEncounter';
+import { selectFormativeFateLine, selectMeetingMissLine } from '../../engine/meetingFateLine';
+import { useNudgeHand } from '../Game/encounter-stage/useNudgeHand';
 import { selectSceneForDilemma } from '../../data/meeting-art-library';
 import {
   MEETING_FATE_REVEAL_CONTINUE,
@@ -123,6 +124,18 @@ export function FormativeTestBeat({
         : undefined,
     [current, index, essencePool, candidate.name, locationName, primarySphere],
   );
+
+  // THR-1815 — this beat owns the hand (the shell drives it, THR-1478 pattern) so
+  // it can say, before the roll, what a miss does with the live lean. The hand
+  // resets per test on its own step key (`stepIndex` is the test index).
+  const hand = useNudgeHand(phase);
+  const missLine = current
+    ? selectMeetingMissLine(
+        current.test.valuePair,
+        computeNetPoleLean(current.test.nudges, hand.selectedIds),
+        candidate.name,
+      )
+    : undefined;
 
   // THR-1804 — fit the column (prose, reading, whole hand, commit) to the panel.
   const fitRef = useRef<HTMLDivElement>(null);
@@ -251,6 +264,8 @@ export function FormativeTestBeat({
                   portraitUrl={candidate.imageAssetPath}
                   agentName={candidate.name}
                   onCommit={handleCommit}
+                  hand={hand}
+                  missLine={missLine}
                 />
               )}
 
