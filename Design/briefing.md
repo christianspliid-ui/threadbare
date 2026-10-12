@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 14:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 15:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,8 +26,8 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 2 jobs ready, both on timed holds, nothing being built.** The design lane added [The god's screen fills one gift at a time](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the) (opens 14:38 tomorrow). [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) opens at 21:00 tonight. The builder idles until then; filling the shelf is the orchestrator's and design lane's job, not yours. Nothing is blocked, stale or parked.
+**Thin: 2 jobs ready, both on timed holds, nothing being built.** [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) opens at 21:00 tonight; [The god's screen fills one gift at a time](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the) opens 14:38 tomorrow. The builder idles until then; filling the shelf is the orchestrator's and design lane's job, not yours. Nothing is blocked, stale or parked.
 
 ## Health
 
-All green. Engine speed is normal (112 ms a tick, 4% under the weekly median). The live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job is running. No new messages from you on Discord.
+All green. Engine speed is normal (115 ms a tick, 2% under the weekly median). The live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 15:40. No new messages from you on Discord.
