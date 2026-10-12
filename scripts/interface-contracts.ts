@@ -1633,6 +1633,74 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/influence.ts', 'src/engine/essenceIncome.ts'],
   },
   {
+    id: 'dominion-band-prices-god-casts',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target\'s Dominion band — `dominionOf` over the target\'s sphere scores against the god\'s bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver\'s `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both sit behind `DOMINION_PRICES_LIVE` (false) until THR-1750 ships the card chip.',
+    ulTerms: ['Dominion', 'Dominion Band', 'Sphere'],
+    mechanism: { kind: 'function', symbols: ['castTargetBand', 'dominionScaledEssenceCost', 'dominionSphereFactor'] },
+    writeSites: ['src/engine/dominion.ts'],
+    readSites: ['src/engine/targetActions.ts', 'src/engine/playerCastDispatch.ts', 'src/engine/unifiedActionResolution.ts'],
+  },
+  {
+    id: 'dominion-band-scales-thread-yield-and-source-income',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'Threads and sources pay by turf (THR-1748). `computeThreadYield` pays each thread `ESSENCE_PER_THREAD_BY_TIER` × its mortal\'s band multiplier, read by the ledger (`computeEssenceGeneration`) and the essence bar (`computeEssenceIncome`) alike; `sourceIncomeMultiplier` scales each typed source by its host\'s band before diminishing returns (a Hostile host pays nothing).',
+    ulTerms: ['Dominion', 'Dominion Band', 'Essence'],
+    mechanism: { kind: 'function', symbols: ['computeThreadYield', 'sourceIncomeMultiplier'] },
+    writeSites: ['src/engine/dominion.ts'],
+    readSites: ['src/engine/influence.ts', 'src/engine/essenceIncome.ts', 'src/engine/essenceSources.ts'],
+  },
+  {
+    id: 'sphere-points-read-by-dominion',
+    producerSystem: WORLDGEN,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'The god\'s bought spheres decide what its ground is (THR-1748, THR-1749\'s "future" row). The Dominion read takes the bought vector through `getSpherePoints` and the power baseline `dominionPowerBaseline` recorded at world init, so power reads 1.0 at start for every buy.',
+    ulTerms: ['Dominion', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['dominionPowerBaseline'] },
+    writeSites: ['src/engine/gameInit.ts'],
+    readSites: ['src/engine/dominion.ts'],
+  },
+  {
+    id: 'essence-earned-attunes-god-spheres',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'Drawing essence through a bought sphere grows the god in it (THR-1748, THR-1765). Each `DOMINION_ATTUNEMENT_MARKS` mark crossed by the run-long essence-earned counter pushes progress into the god\'s own score through the pressure path (source `attunement`), resolved by `phaseSpherePressure`; the god\'s power on the Dominion read follows, capped at 2.0. THR-1811\'s rungs read `getAttunementMarksCrossed`.',
+    ulTerms: ['Dominion', 'Sphere', 'Essence'],
+    // The push crosses the pressure path (no shared symbol); the god's score it grows is
+    // read back by the power factor, so the producer names the reader it feeds.
+    mechanism: { kind: 'function', symbols: ['ATTUNEMENT_SPHERE_PROGRESS', 'dominionPowerRaw'] },
+    writeSites: ['src/engine/essenceEarned.ts'],
+    readSites: ['src/engine/dominion.ts'],
+  },
+  {
+    id: 'rival-presses-god-turf',
+    producerSystem: 'Rival Gods & Schemes',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'The opposing dominion pushes back (THR-1748, THR-1763). Rivals take their primary sphere from the opposites of the god\'s buy (`opposingSpheresOfBuy`); the probe lands on one of the god\'s Touched-or-better places (untended drawn 3 : 1), throttled to one landing a day per `DOMINION_RAID_PLACES_PER_DAILY_BURST` such places, and schemes prefer the same turf. Before this the probe aimed at the rival\'s own id, which is not a node, so it never landed. A tended place absorbs one burst in `phaseSpherePressure` (`absorbTendedRaid`).',
+    ulTerms: ['Opposing Dominion', 'Dominion'],
+    mechanism: { kind: 'function', symbols: ['raidAllowanceLeft', 'recordRaidLanding', 'absorbTendedRaid'] },
+    writeSites: ['src/engine/phaseDominion.ts', 'src/engine/phaseSpherePressure.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+  },
+  {
+    id: 'control-effects-tend-god-turf',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'Holding a place grows it (THR-1748, THR-1762). `phaseDominion` turns an active Claim Dominion, the seat and every threaded mortal (tier ≥ 1, one tier higher with a bestowed gift) into small pushes of the god\'s bought vector at the place they hold or stand in, and relaxes every untended place toward its seeded scores (neglect). Other sustained holds keep pushing their upkeep sphere, at `CONTROL_PRESSURE_PER_TICK` (now 0.03).',
+    ulTerms: ['Dominion'],
+    mechanism: { kind: 'function', symbols: ['buildTendingIndex', 'phaseDominion'] },
+    writeSites: ['src/engine/dominion.ts', 'src/engine/phaseDominion.ts'],
+    readSites: ['src/engine/orchestrator.ts', 'src/engine/phaseSpherePressure.ts'],
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,
