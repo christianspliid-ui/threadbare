@@ -238,6 +238,59 @@ export const NUDGE_COMMIT_LABEL = 'Play your hand, let fate answer';
 /** The commit verb with nothing staged — silence is a choice with odds (THR-1714). */
 export const NUDGE_COMMIT_LABEL_SILENT = 'Stay silent, let fate answer';
 
+// ── The chapter answering card (THR-1812, plan 2026-10-11-thr-1806) ──
+// A step committed on a paused clock waits for world time. The veil stays up
+// and says so, and offers to run the clock until the step answers.
+// `{chapter}` is the chapter's display name (the veil title); `{cards}` the
+// played cards' names. Neither ever renders an id (Law 43).
+
+/** Under the choice line: why nothing has answered yet. */
+export const CHAPTER_ANSWER_WAITS_LINE = 'The world must turn before this answers.';
+/** The card's primary control: run the clock until this step answers, then stop. */
+export const CHAPTER_ANSWER_RUN_LABEL = 'Let the world turn';
+/** The card's secondary control: close, clock stays paused, the answer waits. */
+export const CHAPTER_ANSWER_BACK_LABEL = 'Back to the map';
+/** TIME readout while an answer run turns the clock. */
+export const CHAPTER_ANSWER_TURNING_STATUS = 'turning · until {chapter} answers';
+/** TIME readout while an answer waits on a paused clock. */
+export const CHAPTER_ANSWER_PAUSED_STATUS = 'paused · {chapter} answers when time runs';
+/** The choice line for a played hand or an authored choice. */
+export const CHAPTER_ANSWER_PLAYED_LINE = 'Played: {cards}.';
+/** The choice line for an empty hand (or one whose names all fail to resolve). */
+export const CHAPTER_ANSWER_SILENT_LINE = 'Stayed silent.';
+/** Toast when an answer run reaches its tick cap without an answer. */
+export const CHAPTER_ANSWER_TIMEOUT_TOAST = '{chapter} did not answer in time. Its record is in the Chapter Ledger.';
+/** Toast when the answer is taken away (mortal gone, thread released, no beat opened). */
+export const CHAPTER_ANSWER_DROPPED_TOAST = '{chapter} ended without an answer on screen. Its record is in the Chapter Ledger.';
+/** `{chapter}` when the chapter's name does not resolve. */
+export const CHAPTER_ANSWER_UNNAMED = 'this chapter';
+
+/** Ticks an answer run waits before giving up (two in-world days; the longest content step is 8). */
+export const CHAPTER_ANSWER_RUN_MAX_TICKS = 24;
+/** Show the answering card even when the clock was running. Off: a running clock answers in seconds. */
+export const CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK = false;
+/** How long the timeout / dropped toasts stay on screen. */
+export const CHAPTER_ANSWER_TOAST_MS = 8000;
+
+/** Fill `{chapter}` in a chapter-answer string; an unresolved name reads "this chapter". */
+export function chapterAnswerText(template: string, chapterName: string | null | undefined): string {
+  const name = chapterName?.trim() || CHAPTER_ANSWER_UNNAMED;
+  // A sentence-initial `{chapter}` capitalises the fallback ("This chapter ended…").
+  const filled = template.replace('{chapter}', name);
+  return template.startsWith('{chapter}') ? filled.charAt(0).toUpperCase() + filled.slice(1) : filled;
+}
+
+/**
+ * The answering card's choice line. Names that fail to resolve are dropped,
+ * never shown as ids; an empty result reads as silence.
+ */
+export function chapterAnswerChoiceLine(names: ReadonlyArray<string | null | undefined>): string {
+  const resolved = names.map(n => n?.trim()).filter((n): n is string => Boolean(n));
+  return resolved.length > 0
+    ? CHAPTER_ANSWER_PLAYED_LINE.replace('{cards}', resolved.join(', '))
+    : CHAPTER_ANSWER_SILENT_LINE;
+}
+
 /**
  * The forecast ladder, worst to best — the order a hand's move is read against
  * when the moved-forecast note names its direction (THR-1791).

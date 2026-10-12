@@ -45,7 +45,13 @@ import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { OpponentHeader } from './encounter-stage/OpponentHeader';
 import { essencePoolLabel, formatEssence, sphereWord } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
-import { NUDGE_BLOCKED_REASONS, NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
+import {
+  CHAPTER_ANSWER_BACK_LABEL,
+  CHAPTER_ANSWER_RUN_LABEL,
+  CHAPTER_ANSWER_WAITS_LINE,
+  NUDGE_BLOCKED_REASONS,
+  NUDGE_COMMIT_LABEL,
+} from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -136,6 +142,18 @@ export interface EncounterVeilProps {
   onCommitNudges?: (nudgeIds: string[], essenceCost: number) => void;
   /** THR-775 — open the motive explainer from the header's motive chip. */
   onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
+  /**
+   * THR-1812 — the step was committed on a paused clock and waits for world
+   * time. The veil keeps its header and replaces the move with the answering
+   * card: the choice line, why nothing has answered yet, *Let the world turn*
+   * and *Back to the map*. Escape is *Back to the map*; the run button takes
+   * focus, so Enter is *Let the world turn*.
+   */
+  answering?: { choiceLine: string };
+  /** THR-1812 — run the clock until this step answers, then pause again. */
+  onLetWorldTurn?: () => void;
+  /** THR-1812 — close; the clock stays paused and the answer waits. */
+  onBackToMap?: () => void;
 }
 
 // ── Design tokens ──────────────────────────────────────────────────
@@ -451,6 +469,9 @@ export function EncounterVeil({
   onOpenMotive,
   followState,
   onToggleFollow,
+  answering,
+  onLetWorldTurn,
+  onBackToMap,
 }: EncounterVeilProps) {
   /**
    * Law 44 (THR-1010). The veil's ceremonial motion is entirely inline, so a
@@ -538,7 +559,10 @@ export function EncounterVeil({
   // aftermath and the watched tier have nothing pending to keep, so they still
   // close the old way.
   const isAttendedPending = !model.aftermath && threadTier !== 'watched';
-  const leaveVeil = isAttendedPending && onMinimize ? onMinimize : onDisregard;
+  // THR-1812 — on the answering card, leaving is *Back to the map*.
+  const leaveVeil = answering && onBackToMap
+    ? onBackToMap
+    : isAttendedPending && onMinimize ? onMinimize : onDisregard;
 
   // THR-1816 — Escape leaves the veil only when it is the topmost surface: a
   // character sheet opened over it (MODAL_Z_ABOVE_INTERRUPT) takes the first
@@ -2479,7 +2503,13 @@ export function EncounterVeil({
             ...entranceStyle(ENTRANCE_DELAYS.choices, 1.0, 16),
           }}
         >
-          {model.nudgePhase ? (
+          {answering ? (
+            <ChapterAnsweringCard
+              choiceLine={answering.choiceLine}
+              onLetWorldTurn={onLetWorldTurn}
+              onBackToMap={onBackToMap ?? leaveVeil}
+            />
+          ) : model.nudgePhase ? (
             // THR-1732 — the shell's hand bar is `position: sticky` against
             // `veil-content-column`. No element between that column and this
             // mount may set `overflow`, or sticky stops working and the
@@ -2589,6 +2619,86 @@ export function EncounterVeil({
       )}
     </div>,
     document.body,
+  );
+}
+
+// ── ChapterAnsweringCard (THR-1812) ────────────────────────────────
+
+/**
+ * What the veil shows after a commit on a paused clock: the move the player
+ * made, named back to them, and that its answer needs world time — with the
+ * one click that gives it. Sits where the move was, in the commit's own
+ * button pattern (`StageCommit`), so the acknowledgement lands on the surface
+ * the player clicked (Law 47) and the readout says why time waits (Law 52).
+ */
+function ChapterAnsweringCard({
+  choiceLine,
+  onLetWorldTurn,
+  onBackToMap,
+}: {
+  choiceLine: string;
+  onLetWorldTurn?: () => void;
+  onBackToMap: () => void;
+}) {
+  return (
+    <div data-testid="chapter-answering-card" role="status" aria-live="polite">
+      <p
+        data-testid="chapter-answering-choice"
+        style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM, margin: 0 }}
+      >
+        {choiceLine}
+      </p>
+      <p
+        data-testid="chapter-answering-waits"
+        style={{ fontFamily: FONT_PROSE, fontSize: 'var(--text-xs)', color: TEXT_WHISPER, margin: '8px 0 0' }}
+      >
+        {CHAPTER_ANSWER_WAITS_LINE}
+      </p>
+      <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 20 }}>
+        <button
+          type="button"
+          className="focus-ring"
+          data-testid="chapter-answer-run"
+          // Focus lands here so Enter lets the world turn.
+          autoFocus
+          onClick={onLetWorldTurn}
+          disabled={!onLetWorldTurn}
+          style={{
+            padding: '10px 22px',
+            borderRadius: 8,
+            border: `1px solid ${GOLD}`,
+            background: 'rgb(var(--veil-gold-rgb) / 0.1)',
+            color: GOLD,
+            fontFamily: FONT_DISPLAY,
+            fontSize: 'var(--text-base)',
+            letterSpacing: '0.06em',
+            cursor: onLetWorldTurn ? 'pointer' : 'default',
+            opacity: onLetWorldTurn ? 1 : 0.4,
+          }}
+        >
+          {CHAPTER_ANSWER_RUN_LABEL}
+        </button>
+        <button
+          type="button"
+          className="focus-ring"
+          data-testid="chapter-answer-back"
+          onClick={onBackToMap}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            color: TEXT_WARM,
+            fontFamily: FONT_PROSE,
+            fontSize: 'var(--text-xs)',
+            textDecoration: 'underline',
+            textUnderlineOffset: 3,
+            cursor: 'pointer',
+          }}
+        >
+          {CHAPTER_ANSWER_BACK_LABEL}
+        </button>
+      </div>
+    </div>
   );
 }
 

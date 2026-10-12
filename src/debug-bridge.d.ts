@@ -262,6 +262,21 @@ export interface DebugGiftDelivery {
   msSinceLastInput: number;
 }
 
+/**
+ * `getChapterAnswer()` (THR-1812) — a chapter step committed on a paused clock and
+ * what its answer is waiting on: the answering card on screen, an answer run
+ * turning the clock, or an answer waiting on a paused clock.
+ */
+export interface DebugChapterAnswer {
+  state: 'none' | 'answering_card' | 'running' | 'waiting';
+  actionId: string | null;
+  stepIndex: number | null;
+  /** The chapter's display name; `null` when it did not resolve. */
+  chapterName: string | null;
+  /** Ticks since *Let the world turn*; 0 outside a run. */
+  ticksRun: number;
+}
+
 export interface DebugActiveUIState {
   view: string;
   selectedAgentId: string | null;
@@ -1821,6 +1836,14 @@ export interface DebugBridge {
   getGiftDelivery(): Promise<DebugGiftDelivery>;
   /** @internal GameView registers the gift-delivery provider here (THR-1809). */
   _registerGiftDeliveryProvider(fn: () => DebugGiftDelivery): void;
+  /**
+   * THR-1812 — the chapter answer: `answering_card` after a commit on a paused clock,
+   * `running` while *Let the world turn* runs the clock until that step answers,
+   * `waiting` while the answer waits on a paused clock. Async.
+   */
+  getChapterAnswer(): Promise<DebugChapterAnswer>;
+  /** @internal GameView registers the chapter-answer provider here (THR-1812). */
+  _registerChapterAnswerProvider(fn: () => DebugChapterAnswer): void;
   /**
    * Both surface records the ref router dispatches on (THR-1490, THR-1491).
    *
