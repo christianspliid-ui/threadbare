@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 23:02 local (21:02 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 23:57 local (21:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,5 +30,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **The heavy simulation tests went red on the Dominion core merge** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38304374382)). Two tests ran past their time limit (`debugTickBatch`, `doomIdentityMilestones`); the other 250 passed. Engine speed is normal (101 ms a tick, 14% faster than the weekly median), so this looks like slow test runs, not a slower game. The builder owes a follow-up; nothing for you.
-- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 22:40. No new messages from you on Discord.
+- **The heavy simulation tests went red on the Dominion core merge** ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/38304374382)). Two tests ran past their time limit (`debugTickBatch`, `doomIdentityMilestones`); the other 250 passed. Engine speed is normal (100 ms a tick, 15% faster than the weekly median), so this looks like slow test runs, not a slower game. The builder owes a follow-up; nothing for you.
+- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 23:40. No new messages from you on Discord.
