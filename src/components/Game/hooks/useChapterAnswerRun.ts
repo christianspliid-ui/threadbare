@@ -110,16 +110,27 @@ export function isChapterStepAnswered(
  * beat carries an `autoResolveTick` and never auto-opens, so it is not an
  * answer on screen — the run ends with the dropped toast instead of a silent
  * stop (review gate, THR-1812).
+ *
+ * Only the *answer* counts: the action's aftermath, or the beat for the step
+ * the action now stands on, past the committed one. Nothing marks a spent step
+ * notification resolved (`encounterNotificationRuntime.ts`), so the earlier
+ * steps' records are still "unresolved" and must not read as pending.
  */
 export function hasPendingAnswerBeat(
   notifications: readonly EncounterNotification[],
-  target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId'>,
+  target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId' | 'stepIndex'>,
+  actions: readonly UnifiedAction[],
 ): boolean {
-  return notifications.some(n =>
-    n.actionId === target.actionId
-      && n.id !== target.notificationId
-      && shouldAutoOpenEncounterNotification(n),
-  );
+  const action = actions.find(a => a.actionId === target.actionId);
+  return notifications.some(n => {
+    if (n.actionId !== target.actionId || n.id === target.notificationId) return false;
+    if (!shouldAutoOpenEncounterNotification(n)) return false;
+    if (n.kind === 'aftermath') return true;
+    return Boolean(action)
+      && !action!.resolved
+      && n.stepIndex === action!.currentStep
+      && n.stepIndex > target.stepIndex;
+  });
 }
 
 /**
@@ -150,7 +161,7 @@ export function stepChapterAnswer(
       if (!isChapterStepAnswered(inputs.unifiedActions, record)) return keep(record);
       // The answer opened (or will open) by itself; a veil records the paused
       // clock as its return state, so nothing more to do.
-      if (inputs.veilOpen || hasPendingAnswerBeat(inputs.encounterNotifications, record)) return none([]);
+      if (inputs.veilOpen || hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) return none([]);
       return none([dropped]);
     }
 
@@ -164,7 +175,7 @@ export function stepChapterAnswer(
         // Some other interrupt holds the clock: stop it there; the beat opens
         // when that surface closes, as today.
         if (inputs.heldRunning !== null) return none([{ kind: 'pause_if_held' }]);
-        if (hasPendingAnswerBeat(inputs.encounterNotifications, record)) {
+        if (hasPendingAnswerBeat(inputs.encounterNotifications, record, inputs.unifiedActions)) {
           const at = answeredAtTick ?? inputs.tick;
           if (inputs.tick - at >= CHAPTER_ANSWER_OPEN_GRACE_TICKS) return none([{ kind: 'stop_clock' }]);
           return keep(current, at);

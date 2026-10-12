@@ -104,16 +104,16 @@ describe('THR-1812 — useChapterAnswerRun', () => {
     expect(view.result.current.answer.answerStatus).toBe("turning · until The Healer's Oath answers");
 
     // Tick 101: step 0 answers; step 1's beat is pending; the scan opens it.
-    view.rerender({ actions: [action(1)], notifications: [notif('n_step0', { resolved: true }), notif('n_step1')], tick: 101, veilOpen: false });
+    view.rerender({ actions: [action(1)], notifications: [notif('n_step0', { resolved: true }), notif('n_step1', { stepIndex: 1 })], tick: 101, veilOpen: false });
     expect(view.result.current.answer.getDebugState().state).toBe('running');
-    view.rerender({ actions: [action(1)], notifications: [notif('n_step0', { resolved: true }), notif('n_step1')], tick: 101, veilOpen: true });
+    view.rerender({ actions: [action(1)], notifications: [notif('n_step0', { resolved: true }), notif('n_step1', { stepIndex: 1 })], tick: 101, veilOpen: true });
 
     expect(view.result.current.answer.getDebugState().state).toBe('none');
     expect(view.result.current.running).toBe(false);
     expect(view.result.current.hold.getWasRunningBeforeInterrupt()).toBe(false);
 
     // The player reads step 1 and closes it: the clock stays paused.
-    view.rerender({ actions: [action(1)], notifications: [notif('n_step1', { resolved: true })], tick: 101, veilOpen: false });
+    view.rerender({ actions: [action(1)], notifications: [notif('n_step1', { stepIndex: 1, resolved: true })], tick: 101, veilOpen: false });
     expect(view.result.current.running).toBe(false);
     expect(view.pushToast).not.toHaveBeenCalled();
   });
@@ -174,7 +174,7 @@ describe('THR-1812 — useChapterAnswerRun', () => {
 
     act(() => view.result.current.setRunning(true));
     expect(view.result.current.answer.answerStatus).toBeUndefined();
-    view.rerender({ actions: [action(1)], notifications: [notif('n_step1')], tick: 101, veilOpen: true });
+    view.rerender({ actions: [action(1)], notifications: [notif('n_step1', { stepIndex: 1 })], tick: 101, veilOpen: true });
 
     expect(view.result.current.answer.getDebugState().state).toBe('none');
     expect(view.pushToast).not.toHaveBeenCalled();
@@ -225,7 +225,7 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
   const running = { ...TARGET, phase: 'running' as const, startedAtTick: 100, sawRunning: true };
   const answeredInputs = {
     unifiedActions: [action(1)],
-    encounterNotifications: [notif('n_step1')],
+    encounterNotifications: [notif('n_step1', { stepIndex: 1 })],
     running: true,
     veilOpen: false,
     heldRunning: null,
@@ -248,10 +248,23 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
   it('a Lives on beat (autoResolveTick set) never auto-opens, so the run ends with the dropped toast, not a silent stop', () => {
     const step = stepChapterAnswer(
       running,
-      { ...answeredInputs, encounterNotifications: [notif('n_step1', { autoResolveTick: 130 })], tick: 101 },
+      { ...answeredInputs, encounterNotifications: [notif('n_step1', { stepIndex: 1, autoResolveTick: 130 })], tick: 101 },
       null,
     );
     expect(step.record).toBeNull();
+    expect(step.effects).toEqual([
+      { kind: 'stop_clock' },
+      { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
+    ]);
+  });
+
+  it('an earlier step\'s spent notification (never marked resolved) is not an answer: action gone → dropped toast', () => {
+    const step1 = { ...running, stepIndex: 1, notificationId: 'n_step1' };
+    const step = stepChapterAnswer(
+      step1,
+      { ...answeredInputs, unifiedActions: [], encounterNotifications: [notif('n_step0', { stepIndex: 0 }), notif('n_step1', { stepIndex: 1 })], tick: 101 },
+      null,
+    );
     expect(step.effects).toEqual([
       { kind: 'stop_clock' },
       { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
