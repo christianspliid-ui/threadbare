@@ -43,12 +43,22 @@ const TOPBAR_INERT_OPACITY = 0.4;
  * THR-1814 — while a veil is open the right group takes no press: its panels open
  * beneath the veil's z-band. Capture-phase, so it covers every control in the group;
  * the focused tooltip ("Opens when this chapter closes.") is the reply.
+ *
+ * Only presses whose DOM target sits inside the group are swallowed. React routes
+ * events from a portal through its owner, so a panel the group already opened
+ * (OmenDetail, the Notables modal — portalled to body above the veil) would
+ * otherwise lose its own close button. `inert` never reached portalled DOM either.
  */
+function pressIsInsideGroup(e: ReactMouseEvent | ReactKeyboardEvent): boolean {
+  return e.target instanceof Node && e.currentTarget.contains(e.target);
+}
 function swallowLockedPress(e: ReactMouseEvent) {
+  if (!pressIsInsideGroup(e)) return;
   e.preventDefault();
   e.stopPropagation();
 }
 function swallowLockedKey(e: ReactKeyboardEvent) {
+  if (!pressIsInsideGroup(e)) return;
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
     e.stopPropagation();

@@ -218,6 +218,27 @@ describe('THR-1814 top bar stays explainable inside a veil', () => {
     expect(setSettingsPanelOpen).not.toHaveBeenCalled();
   });
 
+  it('a panel the group opened before the veil (portalled above it) still closes on a press', () => {
+    // Review-gate finding: React routes portal events through the owner, so the
+    // group's capture guard must leave presses whose DOM target is outside it alone.
+    const world = { ...seededWorld, omenState: {
+      primary: {
+        templateId: 'omen.breach.thin_places', name: 'Thin Places', category: 'doom_echo',
+        startTick: 0, duration: 48, slot: 'primary', lastBeatTick: 0,
+      },
+      secondary: null,
+      history: [],
+    } } as GameState;
+    const { rerender } = render(<GameViewTopBar {...topBarProps({ gameState: world, encounterOpen: false })} />);
+    fireEvent.click(screen.getByLabelText('View world omen details'));
+    expect(screen.getByLabelText('World omen details')).toBeTruthy();
+
+    rerender(<GameViewTopBar {...topBarProps({ gameState: world, encounterOpen: true })} />);
+    // The modal's backdrop is its close control; it is portalled to body, outside the group.
+    fireEvent.click(screen.getByLabelText('World omen details'));
+    expect(screen.queryByLabelText('World omen details')).toBeNull();
+  });
+
   it('without a veil: a press opens the Doom panel and the hover has no locked line', () => {
     const setDoomDetailOpen = vi.fn();
     render(<GameViewTopBar {...topBarProps({ encounterOpen: false, setDoomDetailOpen })} />);
