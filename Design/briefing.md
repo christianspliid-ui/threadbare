@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 04:55 local (02:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 05:57 local (03:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,5 +31,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 14 hours now. Newer commits only touched docs, so they did not re-run them. The builder owes a fix and an impediment row. Not yours.
-- Everything else is green: engine speed is normal (110 ms a tick, 6% under the weekly median), the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 04:40. No new messages from you on Discord.
+- **Heavy background tests are still red on main** ([run on 8f9853c2](https://github.com/christianspliid-ui/threadbare/actions/runs/38142539478), and the commit before, [1b0c5644](https://github.com/christianspliid-ui/threadbare/actions/runs/38139808324)), about 15 hours now. Newer commits only touched docs, so they did not re-run them. The builder owes a fix and an impediment row. Not yours.
+- Everything else is green: engine speed is normal (109 ms a tick, 7% under the weekly median), the live site is up to date, automated checks are normal, no pull requests are stuck, all 11 scheduled lanes are on time, and the cleanup job ran at 05:40. No new messages from you on Discord.
