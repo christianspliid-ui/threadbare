@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-12 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-12 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -26,6 +26,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-12: Doom, Omen, World-Soul and Attention now explain themselves when you hover them** ([THR-1814](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention)). Merged via [#2343](https://github.com/christianspliid-ui/threadbare/pull/2343) and live.
+- **2026-10-12: a chapter choice made while the clock is paused stays on screen** ([THR-1812](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world)). Merged via [#2342](https://github.com/christianspliid-ui/threadbare/pull/2342) and live.
 - **2026-10-11: the map tooltip names land in plain words and hides when you click** ([THR-1818](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and)). Merged via [#2336](https://github.com/christianspliid-ui/threadbare/pull/2336) and live.
 - **2026-10-11: the world map can no longer crash on load** ([THR-1817](https://linear.app/threadbare/issue/THR-1817/the-world-map-can-crash-on-load-hexmapv2-calls-two-usememo-hooks-after)). Merged via [#2334](https://github.com/christianspliid-ui/threadbare/pull/2334) and live.
 - **2026-10-11: Escape closes the sheet on top, not the encounter behind it** ([THR-1816](https://linear.app/threadbare/issue/THR-1816/escape-closes-the-encounter-behind-an-open-sheet-instead-of-the-sheet)). Merged via [#2333](https://github.com/christianspliid-ui/threadbare/pull/2333) and live.
@@ -34,8 +36,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-10: the review gate now judges the push it is actually given** ([THR-1795](https://linear.app/threadbare/issue/THR-1795/review-gate-hook-judges-the-wrong-push-an-armed-pr-merged-before-its)). Merged via [#2312](https://github.com/christianspliid-ui/threadbare/pull/2312) and live.
 - **2026-10-10: the health check no longer calls a test run "failing" after a re-run of the same commit passed** ([THR-1776](https://linear.app/threadbare/issue/THR-1776/the-main-red-probe-ignores-a-green-re-run-of-the-same-commit-the)). Merged via [#2311](https://github.com/christianspliid-ui/threadbare/pull/2311) and live.
 - **2026-10-10: a gift from the opening waits its turn instead of opening over what you just clicked** ([THR-1809](https://linear.app/threadbare/issue/THR-1809/a-ready-opening-gift-waits-for-a-quiet-moment-never-opens-over-a)). You waived the veto window ("go ahead"). Merged via [#2313](https://github.com/christianspliid-ui/threadbare/pull/2313) and live.
-- **2026-10-10: the glossary now defines "The First", "Rite of the Thread" and "the god's mark"** ([THR-1756](https://linear.app/threadbare/issue/THR-1756/ul-proposal-the-first-the-first-mortal-the-god-threads-any-route-add)). Merged via [#2308](https://github.com/christianspliid-ui/threadbare/pull/2308).
-- **2026-10-10: five small faults from cold playtest round 3 fixed** ([THR-1804](https://linear.app/threadbare/issue/THR-1804/five-small-faults-from-cold-playtest-round-3-setup-cards-take-clicks)). Merged via [#2306](https://github.com/christianspliid-ui/threadbare/pull/2306) and live.
 
 ---
 

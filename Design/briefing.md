@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-12 10:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-12 11:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,9 +26,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 jobs ready, 1 being built.** The builder picked up [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world) at 10:41 and is working on it now. Next up: [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) (waits for the paused-choice job) and [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the), both open for building now; [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) opens at 21:00. Nothing is blocked, stale or parked.
+**Healthy but thin: 2 jobs ready, none being built right now.** Two jobs shipped this morning and are live: [a paused choice stays on screen](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world) ([#2342](https://github.com/christianspliid-ui/threadbare/pull/2342)) and [the map's words explain themselves](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention) ([#2343](https://github.com/christianspliid-ui/threadbare/pull/2343)). Next up: [say it before it happens](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the), open for building now; [Dominion core](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods) opens at 21:00. Nothing is blocked, stale or parked.
 
 ## Health
 
-- **Heavy background tests are still red on main**, about 20 hours now. It is one test that ran out of time, not a broken game. The builder owes the fix, and nobody has logged it as an impediment yet. Not yours.
-- Everything else is green: engine speed is normal (120 ms a tick, 3% above the weekly median), the live site is up to date, automated checks are normal, one pull request is waiting on checks and will merge itself, all 11 scheduled lanes are on time, and the cleanup job ran at 10:40. No new messages from you on Discord.
+- **Heavy background tests are still red on main**, about 21 hours now. It is a test that ran out of time, not a broken game. The builder owes the fix, and nobody has logged it as an impediment yet. Not yours.
+- Everything else is green: engine speed is normal (102 ms a tick, 13% below the weekly median), the live site is up to date, automated checks are normal, no pull requests are waiting, all 11 scheduled lanes are on time, and the cleanup job ran at 11:40. No new messages from you on Discord.
