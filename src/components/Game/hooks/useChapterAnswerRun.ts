@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UnifiedAction } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { InterruptAutoPauseHandle } from './useInterruptAutoPause';
+import { shouldAutoOpenEncounterNotification } from '../encounterNotificationRuntime';
 import {
   CHAPTER_ANSWER_DROPPED_TOAST,
   CHAPTER_ANSWER_PAUSED_STATUS,
@@ -103,13 +104,21 @@ export function isChapterStepAnswered(
   return !action || action.resolved || action.currentStep !== target.stepIndex;
 }
 
-/** A beat for this action other than the committed one is waiting to open. */
+/**
+ * A beat for this action, other than the committed one, that the auto-open scan
+ * will open by itself. The scan's own predicate decides: a *Lives on* thread's
+ * beat carries an `autoResolveTick` and never auto-opens, so it is not an
+ * answer on screen — the run ends with the dropped toast instead of a silent
+ * stop (review gate, THR-1812).
+ */
 export function hasPendingAnswerBeat(
   notifications: readonly EncounterNotification[],
   target: Pick<ChapterAnswerTarget, 'actionId' | 'notificationId'>,
 ): boolean {
   return notifications.some(n =>
-    !n.resolved && n.actionId === target.actionId && n.id !== target.notificationId,
+    n.actionId === target.actionId
+      && n.id !== target.notificationId
+      && shouldAutoOpenEncounterNotification(n),
   );
 }
 

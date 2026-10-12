@@ -35,7 +35,8 @@ function action(currentStep: number, resolved = false): UnifiedAction {
 }
 
 function notif(id: string, extra: Partial<EncounterNotification> = {}): EncounterNotification {
-  return { id, actionId: ACTION_ID, resolved: false, ...extra } as unknown as EncounterNotification;
+  // Pause-tier beats carry `autoResolveTick: null` — the auto-open scan's predicate.
+  return { id, actionId: ACTION_ID, resolved: false, autoResolveTick: null, ...extra } as unknown as EncounterNotification;
 }
 
 const TARGET: ChapterAnswerTarget = {
@@ -242,6 +243,19 @@ describe('THR-1812 — stepChapterAnswer (pure)', () => {
   it('another interrupt holding the clock when the step answers re-points its hold to paused', () => {
     const step = stepChapterAnswer(running, { ...answeredInputs, heldRunning: true, running: false, tick: 101 }, null);
     expect(step.effects).toEqual([{ kind: 'pause_if_held' }]);
+  });
+
+  it('a Lives on beat (autoResolveTick set) never auto-opens, so the run ends with the dropped toast, not a silent stop', () => {
+    const step = stepChapterAnswer(
+      running,
+      { ...answeredInputs, encounterNotifications: [notif('n_step1', { autoResolveTick: 130 })], tick: 101 },
+      null,
+    );
+    expect(step.record).toBeNull();
+    expect(step.effects).toEqual([
+      { kind: 'stop_clock' },
+      { kind: 'toast', message: chapterAnswerText(CHAPTER_ANSWER_DROPPED_TOAST, TARGET.chapterName) },
+    ]);
   });
 
   it('the committed beat itself never counts as the answer', () => {
