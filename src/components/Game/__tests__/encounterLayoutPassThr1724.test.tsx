@@ -64,7 +64,7 @@ describe('ReachStanding — the sheet readout as a primitive', () => {
 });
 
 describe('the time control names an encounter auto-pause (Law 52, amended)', () => {
-  it('reads "paused · <encounter>" while an encounter holds the clock', () => {
+  it('reads "held by <encounter> · …" while an encounter holds the clock (THR-1814)', () => {
     render(
       <SimulationControls
         season="spring" year={1} running={false} speed={1}
@@ -72,10 +72,10 @@ describe('the time control names an encounter auto-pause (Law 52, amended)', () 
         compact held heldBy="The Unsafe Bridge"
       />,
     );
-    expect(document.body.textContent).toContain('paused · The Unsafe Bridge');
+    expect(document.body.textContent).toContain('held by The Unsafe Bridge · stays paused');
   });
 
-  it('keeps the generic held wording when nothing names the hold', () => {
+  it('names the fallback holder when nothing names the hold (THR-1814)', () => {
     render(
       <SimulationControls
         season="spring" year={1} running={false} speed={1}
@@ -83,7 +83,7 @@ describe('the time control names an encounter auto-pause (Law 52, amended)', () 
         compact held
       />,
     );
-    expect(document.body.textContent).toContain('held · stays paused');
+    expect(document.body.textContent).toContain('held by this window · stays paused');
   });
 });
 

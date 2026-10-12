@@ -5,6 +5,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { SphereIcon } from '../icons';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
+import { TOPBAR_LOCKED_SUFFIX, getUITooltip } from '../../data/ui-content';
 import {
   DOOM_ARCHETYPE_SPHERE,
   doomArchetypeDisplayName,
@@ -15,6 +16,11 @@ interface DoomBarProps {
   definition: DoomClockDefinition;
   state: DoomClockState;
   journeyLabel?: string;
+  /**
+   * THR-1814 — an encounter veil holds the top bar: the hover stays live and adds
+   * the line that the panel opens when the chapter closes (Law 25).
+   */
+  locked?: boolean;
 }
 
 function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState): string {
@@ -27,7 +33,7 @@ function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState
   return `Next: ${nextStage.name}`;
 }
 
-export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
+export function DoomBar({ definition, state, journeyLabel, locked = false }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
@@ -63,10 +69,14 @@ export function DoomBar({ definition, state, journeyLabel }: DoomBarProps) {
     }
   }, [state.currentStage, stageName]);
 
+  const baseDesc = getUITooltip('ui.doom_bar')?.desc;
+  const lockedDesc = locked && baseDesc ? `${baseDesc} ${TOPBAR_LOCKED_SUFFIX}` : undefined;
+
   return (
     <Tooltip
       id="ui.doom_bar"
       label={`${doomName} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
+      desc={lockedDesc}
     >
       <div className="topbar-tier min-w-0" style={{ minWidth: '170px' }}>
         <span className="topbar-section-label">Doom</span>

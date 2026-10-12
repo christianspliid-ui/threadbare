@@ -1,4 +1,11 @@
-import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 
 import { SimulationControls } from '../SimulationControls';
 import { DoomBar } from '../DoomBar';
@@ -32,6 +39,32 @@ export const TOPBAR_LIVE_HEIGHT_VAR = '--topbar-live-height';
 /** THR-1724 — how far the right group recedes while an encounter veil is open. */
 const TOPBAR_INERT_OPACITY = 0.4;
 
+/**
+ * THR-1814 — while a veil is open the right group takes no press: its panels open
+ * beneath the veil's z-band. Capture-phase, so it covers every control in the group;
+ * the focused tooltip ("Opens when this chapter closes.") is the reply.
+ *
+ * Only presses whose DOM target sits inside the group are swallowed. React routes
+ * events from a portal through its owner, so a panel the group already opened
+ * (OmenDetail, the Notables modal — portalled to body above the veil) would
+ * otherwise lose its own close button. `inert` never reached portalled DOM either.
+ */
+function pressIsInsideGroup(e: ReactMouseEvent | ReactKeyboardEvent): boolean {
+  return e.target instanceof Node && e.currentTarget.contains(e.target);
+}
+function swallowLockedPress(e: ReactMouseEvent) {
+  if (!pressIsInsideGroup(e)) return;
+  e.preventDefault();
+  e.stopPropagation();
+}
+function swallowLockedKey(e: ReactKeyboardEvent) {
+  if (!pressIsInsideGroup(e)) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
+
 export interface GameViewTopBarProps {
   gameState: GameState;
 
@@ -50,8 +83,9 @@ export interface GameViewTopBarProps {
   /**
    * THR-1724 — an encounter veil is open below the bar. The right group's
    * panels (settings, rivals, notables, doom) open beneath the veil's z-band,
-   * so while it is open they go inert and dim rather than take a click that
-   * shows nothing (Laws 21, 25). The time control stays live (THR-1711).
+   * so while it is open they dim and swallow presses rather than take a click
+   * that shows nothing (Laws 21, 25). Hover stays live (THR-1814). The time
+   * control stays live (THR-1711).
    */
   encounterOpen?: boolean;
   speed: number;
@@ -259,11 +293,15 @@ export function GameViewTopBar({
         />
 
         {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug — spacing-only separation */}
+        {/* THR-1814: not `inert` — hover and focus stay live under a veil so Doom and
+            Omen still explain themselves (Laws 17, 25). Presses are swallowed instead,
+            because every panel in this group opens beneath the veil's z-band. */}
         <div
           className="flex items-center flex-shrink-0"
           data-testid="topbar-right-group"
-          inert={encounterOpen}
           aria-disabled={encounterOpen || undefined}
+          onClickCapture={encounterOpen ? swallowLockedPress : undefined}
+          onKeyDownCapture={encounterOpen ? swallowLockedKey : undefined}
           style={{
             gap: 'var(--topbar-gap)',
             opacity: encounterOpen ? TOPBAR_INERT_OPACITY : undefined,
@@ -273,16 +311,18 @@ export function GameViewTopBar({
           {showDoom && (
           <div
             role="button" tabIndex={0}
-            onClick={() => setDoomDetailOpen(true)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDoomDetailOpen(true); } }}
+            onClick={() => { if (!encounterOpen) setDoomDetailOpen(true); }}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!encounterOpen) setDoomDetailOpen(true); } }}
             className="cursor-pointer"
             style={{ minWidth: '140px' }}
             aria-label="View doom clock details"
+            aria-disabled={encounterOpen || undefined}
           >
             <DoomBar
               definition={gameState.doomDefinition}
               state={gameState.doomClock}
               journeyLabel={doomJourneyLabel}
+              locked={encounterOpen}
             />
           </div>
           )}
@@ -292,6 +332,7 @@ export function GameViewTopBar({
               <OmenIndicator
                 omenState={gameState.omenState}
                 currentTick={gameState.tick}
+                locked={encounterOpen}
               />
             </>
           )}

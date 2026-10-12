@@ -17,6 +17,7 @@ import { Modal } from '../shared/Modal';
 import { SphereIcon } from '../shared/SphereIcon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { selectReachRows, selectQuintessenceView } from './ascendant-bar/selectors';
+import { ReachRungMarker } from './ascendant-bar/ReachRungMarker';
 import { REACH_RANK_LABEL, REACH_EMPTY_COPY, QUINTESSENCE_CONCEPT_LABEL } from '../../data/ascendant-bar-content';
 import { reachTierTooltipId } from '../../data/ascendant-reach-register';
 import { ProseKeyword } from '../ProseKeyword';
@@ -435,6 +436,8 @@ export function AscendantSheet({
                         >
                           {row.tierWord}
                         </span>
+                        {/* THR-1814 — the rung marker, inside the word's own tooltip. */}
+                        <ReachRungMarker reach={row.reach} tierWord={row.tierWord} testId={`sheet-reach-rung-${row.reach}`} />
                       </Tooltip>
                     </div>
                     <p

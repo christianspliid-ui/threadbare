@@ -22,13 +22,13 @@ describe('SimulationControls — held by an interrupt (THR-1711)', () => {
   it('a held world that will run on shows Pause and says it is held', () => {
     renderControls(true, true);
     expect(screen.getByLabelText('Pause simulation')).toBeTruthy();
-    expect(document.body.textContent).toContain('held · runs on after');
+    expect(document.body.textContent).toContain('held by this window · runs on when it closes');
   });
 
   it('a held world that will stay paused shows Play and says so', () => {
     renderControls(false, true);
     expect(screen.getByLabelText('Play simulation')).toBeTruthy();
-    expect(document.body.textContent).toContain('held · stays paused');
+    expect(document.body.textContent).toContain('held by this window · stays paused');
   });
 
   it('unheld, the status line is unchanged', () => {

@@ -47,11 +47,59 @@ export const GIFT_WAITS_COPY = {
   tooltip: 'A gift of the opening is ready. It opens when nothing else is open, or open it now.',
 } as const;
 
+/**
+ * THR-1814 — appended to the Doom and Omen hovers while an encounter veil holds the
+ * top bar: the control is not broken, it waits on the chapter (Law 25).
+ */
+export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
+
+/**
+ * THR-1814 — the `ui.clock_held` hover when the clock was already paused before the
+ * hold: the registry copy says it runs again, which is only true on the other branch.
+ */
+export const CLOCK_HELD_STAYS_PAUSED_DESC =
+  'Time stops while you read. It stays paused when this closes, as you left it.';
+
 export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
+  // THR-1814 — says what Doom does to your game, and that it cannot end the world early.
+  // The label stays "Doom Clock": the top bar overrides it with the live stage, and
+  // it is the link text other entries chain to ("slow the {{ui.doom_bar}}").
   'ui.doom_bar': {
     label: 'Doom Clock',
-    desc: 'Tracks the world\'s descent toward the Unmaking. Each stage escalates {{sphere.entropy}} effects.',
+    desc: 'A slow clock toward the world\'s unmaking, in five stages. It wakes when you bond The First and cannot end the world early. Open it to see what it is building toward.',
+  },
+  // THR-1814 — the three top-bar readings that bypassed the registry (Law 17).
+  'ui.omen': {
+    label: 'Omen',
+    desc: 'A passing sign of what presses on the world, most often an echo of the doom. It lasts a few days and colours what the world brings up while it does.',
+  },
+  'ui.world_soul': {
+    label: 'World-Soul',
+    desc: 'The world\'s mood right now: the sphere its people and places lean toward most. It shifts as the world changes. You read it; you do not spend it.',
+  },
+  'ui.attention': {
+    label: 'Attention',
+    desc: 'How much of your notice is free. Attending a moment draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.',
+  },
+  // THR-1814 — side-bar sections that arrive with their first entry (Laws 25, 53).
+  'ui.signatures': {
+    label: 'Signatures',
+    desc: 'The powers your Reaches have settled into. A path settles as you act in its Reach; open one to see what it lets you do.',
+  },
+  'ui.hooks': {
+    label: 'Hooks',
+    desc: 'Marks, clues and vows that tie you to something unfinished. Each one points at a thread you can still pull.',
+  },
+  // THR-1814 — the TIME readout while something holds the clock.
+  'ui.clock_held': {
+    label: 'Held',
+    desc: 'Time stops while you read. It runs again when this closes, at the speed you left it.',
+  },
+  // THR-1814 — the per-step test chip in the encounter layout (THR-1724).
+  'ui.step_test': {
+    label: 'This step\'s test',
+    desc: 'Which of her skills this step tests, and how good she is at it. It is not a change: her skill only moves in the aftermath.',
   },
   'ui.companions': {
     label: 'Companions',

@@ -254,6 +254,57 @@ export const CHAPTER_ANSWER_BACK_LABEL = 'Back to the map';
 export const CHAPTER_ANSWER_TURNING_STATUS = 'turning · until {chapter} answers';
 /** TIME readout while an answer waits on a paused clock. */
 export const CHAPTER_ANSWER_PAUSED_STATUS = 'paused · {chapter} answers when time runs';
+// ─── Who holds the clock (THR-1814) ─────────────────────────────────────────
+// The TIME readout names whatever stops the world, for every interrupt, not
+// only an encounter veil (Law 52). Keyed by the interrupt registry's surface
+// ids — the values `resolveInterrupts().open` returns. An encounter veil uses
+// its own header title first; this row is its fallback.
+
+/** Who the TIME readout names for each interrupt surface. */
+export const INTERRUPT_HOLDER_NAMES: Readonly<Record<string, string>> = {
+  WarmStartOverlay: 'the world settling',
+  EncounterVeil: 'an encounter',
+  MeetTheFirstFlow: 'meeting The First',
+  ThreadingRite: 'the threading rite',
+  PremonitionModal: 'a premonition',
+  JourneyVignetteModal: 'a vision',
+  StoryBeatModal: 'a story beat',
+  AscendantBeatModal: 'a beat of your story',
+  ChoiceSetModal: 'a choice',
+  EmergenceDilemmaModal: 'a new power',
+  DivineReceiptModal: 'what your act bought',
+  ChapterLedger: 'the Chapter Ledger',
+  ScryOverlay: 'your court',
+  MomentCard: 'a moment',
+  EventPopup: 'a message',
+};
+/** TIME readout while held, when the clock was running before the hold. */
+export const CLOCK_HELD_RUNS_ON = 'held by {holder} · runs on when it closes';
+/** TIME readout while held, when the clock was already paused. */
+export const CLOCK_HELD_STAYS_PAUSED = 'held by {holder} · stays paused';
+/** The holder named when no surface resolves to a name. */
+export const CLOCK_HELD_FALLBACK_HOLDER = 'this window';
+
+/**
+ * The name of what holds the clock: the veil's title when an encounter holds it,
+ * else the first open surface's row, else the fallback. Never empty (Law 43).
+ */
+export function resolveClockHolder(open: readonly string[], veilTitle?: string | null): string {
+  const title = veilTitle?.trim();
+  if (title && open.includes('EncounterVeil')) return title;
+  for (const id of open) {
+    const name = INTERRUPT_HOLDER_NAMES[id];
+    if (name) return name;
+  }
+  return CLOCK_HELD_FALLBACK_HOLDER;
+}
+
+/** The TIME readout's held line. `runsOnAfter` is the state the clock returns to. */
+export function clockHeldStatus(holder: string | undefined, runsOnAfter: boolean): string {
+  const template = runsOnAfter ? CLOCK_HELD_RUNS_ON : CLOCK_HELD_STAYS_PAUSED;
+  return template.replace('{holder}', holder?.trim() || CLOCK_HELD_FALLBACK_HOLDER);
+}
+
 /** The choice line for a played hand or an authored choice. */
 export const CHAPTER_ANSWER_PLAYED_LINE = 'Played: {cards}.';
 /** The choice line for an empty hand (or one whose names all fail to resolve). */

@@ -29,6 +29,7 @@ import { ReachIcon } from '../../../icons';
 import { ReachStanding } from '../../../shared/ReachStanding';
 import { OddsPips } from '../../../shared/OddsPips';
 import { FORECAST_TIER_COLORS } from '../../../shared/CardFace';
+import { getUITooltip } from '../../../../data/ui-content';
 import {
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
@@ -140,8 +141,13 @@ export function NudgeReadingMarks({
       </Tooltip>
 
       {/* ── The mortal's standing in the reach (THR-1724) ──────── */}
+      {/* THR-1814 — the chip says it is this step's test, not a change: "Eye · Seer"
+          then "Gold · Naive" reads as two tests, not as her changing (PC-6). */}
       {testPanel.skill && (
-        <Tooltip label={testPanel.skill.sentence}>
+        <Tooltip
+          id="ui.step_test"
+          desc={`${testPanel.skill.sentence} ${getUITooltip('ui.step_test')?.desc ?? ''}`.trim()}
+        >
           <span
             data-testid="nudge-skill-chip"
             aria-label={testPanel.skill.sentence}

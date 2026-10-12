@@ -24,6 +24,7 @@ import {
   REACH_EMPTY_COPY,
 } from '../../../data/ascendant-bar-content';
 import type { ReachRowView } from './selectors';
+import { ReachRungMarker } from './ReachRungMarker';
 
 interface ReachesBlockProps {
   rows: ReachRowView[];
@@ -93,6 +94,8 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
             >
               {row.tierWord}
             </span>
+            {/* THR-1814 — the rung marker, inside the word's own tooltip. */}
+            <ReachRungMarker reach={row.reach} tierWord={row.tierWord} testId={`reach-rung-${row.reach}`} />
             </Tooltip>
           </div>
           {row.pendingDeepening && (

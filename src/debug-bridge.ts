@@ -13,6 +13,12 @@ if (import.meta.env.DEV) {
     queuedPopups: number;
     running: boolean;
   }
+  /** `getClockHold()` shape (THR-1814) — mirrors `DebugClockHold` in debug-bridge.d.ts. */
+  interface DebugClockHold {
+    held: boolean;
+    holder: string | null;
+    runsOnAfter: boolean | null;
+  }
   /** `getGiftDelivery()` shape (THR-1809) — mirrors `DebugGiftDelivery` in debug-bridge.d.ts. */
   interface DebugGiftDelivery {
     pendingBeatId: string | null;
@@ -159,6 +165,7 @@ if (import.meta.env.DEV) {
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
   let _interruptStateProvider: (() => DebugInterruptState) | null = null;
+  let _clockHoldProvider: (() => DebugClockHold) | null = null;
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
   let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
   let _giftDeliveryProvider: (() => DebugGiftDelivery) | null = null;
@@ -1203,6 +1210,8 @@ if (import.meta.env.DEV) {
     getOpenModals: async () => _openModalsProvider?.() ?? [],
     getInterruptState: async () => _interruptStateProvider?.()
       ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false },
+    getClockHold: async () => _clockHoldProvider?.()
+      ?? { held: false, holder: null, runsOnAfter: null },
     getActiveUIState: async () => {
       const openModals = _openModalsProvider?.() ?? [];
       const uiState = _activeUIStateProvider?.() ?? getEmptyActiveUIState();
@@ -1218,6 +1227,7 @@ if (import.meta.env.DEV) {
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
     _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
+    _registerClockHoldProvider: (fn: () => DebugClockHold) => { _clockHoldProvider = fn; },
     _registerOpeningUiProvider: (fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }) => { _openingUiProvider = fn; },
     getGiftDelivery: async () => _giftDeliveryProvider?.()
       ?? { pendingBeatId: null, entered: false, heldBy: [], heldBySurfaces: [], msSinceLastInput: 0 },
