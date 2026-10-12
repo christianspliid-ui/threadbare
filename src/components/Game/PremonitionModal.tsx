@@ -119,8 +119,7 @@ export function premonitionCostLabel(cost: number, sphere: SphereName | undefine
 /**
  * THR-1815 — the "{Reach} draws on {Sphere}" note, split around the sphere word so
  * the caller can wrap it in its registry tooltip. Null when the row did not come
- * from a Reach, or when the pool it bills is not that Reach's sphere (an explicit
- * `targetSphere`): the cost then reads as before.
+ * from a Reach, or when the pool it bills is not that Reach's sphere: the cost then reads as before.
  */
 export function premonitionReachNote(
   reach: ReachDomain | undefined,
@@ -186,7 +185,9 @@ function WhisperOptionRow({
         </span>
         <span className="text-xs ml-2 whitespace-nowrap" style={{ color }} data-testid="premonition-option-cost">
           {premonitionCostLabel(nudge.essenceCost, nudge.sphere)}
-          {!nudge.targetSphere && <PremonitionReachNote reach={nudge.targetReach} sphere={nudge.sphere} />}
+          {/* A reach_bias row carries targetReach (and, from the writer, targetSphere =
+              that Reach's sphere); a sphere_bias row carries no targetReach, so it gets no note. */}
+          <PremonitionReachNote reach={nudge.targetReach} sphere={nudge.sphere} />
         </span>
       </div>
       {/* Law 45: was `opacity-50` over the gradient (~2.9:1). The flavour line

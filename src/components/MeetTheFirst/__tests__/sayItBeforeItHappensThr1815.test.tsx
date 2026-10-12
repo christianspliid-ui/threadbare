@@ -148,7 +148,10 @@ const WHISPER: PremonitionEvent = {
   eligibleUntilTick: 24,
   vignetteProse: 'A road unwalked turns in the sleeping mind.',
   whisperOptions: [
-    { category: 'reach_bias', targetReach: 'gold', essenceCost: 1, sphere: 'life', prose: 'Turn them toward the market', flavorText: 'Coin remembers.' },
+    // The writer's own shape (phaseDivinePremonition.ts): a reach_bias row also carries
+    // targetSphere = REACH_TO_SPHERE[reach]. A fixture without it hid a guard that
+    // blanked the note on every live whisper (review gate, round 1).
+    { category: 'reach_bias', targetReach: 'gold', targetSphere: 'life', essenceCost: 1, sphere: 'life', prose: 'Turn them toward the market', flavorText: 'Coin remembers.' },
     { category: 'sphere_bias', targetSphere: 'mind', essenceCost: 1, sphere: 'mind', prose: 'Turn them inward', flavorText: 'A thought.' },
   ],
 };
@@ -168,7 +171,7 @@ describe('THR-1815 — the premonition cost names the Reach\'s sphere', () => {
     );
     const costs = screen.getAllByTestId('premonition-option-cost');
     expect(costs[0].textContent).toBe('1 Life essence · Gold draws on Life');
-    // A sphere row (explicit targetSphere) keeps today's cost.
+    // A sphere row (no targetReach) keeps today's cost.
     expect(costs[1].textContent).toBe('1 Mind essence');
     const note = screen.getByTestId('premonition-reach-note');
     expect(note.querySelector('[data-tooltip-id="sphere.life"]')).not.toBeNull();
