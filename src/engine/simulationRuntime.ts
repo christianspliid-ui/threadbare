@@ -784,7 +784,11 @@ export function updateDominionDrops(
   if (runtime.dominionDropsReadAt === tick) return runtime.dominionDrops;
   try {
     const ledger = readDominionLedger(graph, ascendantId);
-    runtime.dominionDrops = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops);
+    const next = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops);
+    // Keep the same array when nothing changed, so the map's badge layer is not rebuilt every tick.
+    const same = next.length === runtime.dominionDrops.length
+      && next.every((d, i) => d.placeId === runtime.dominionDrops[i].placeId && d.untilTick === runtime.dominionDrops[i].untilTick);
+    if (!same) runtime.dominionDrops = next;
     runtime.dominionPrevBands = { ...ledger.bands };
   } catch (err) {
     console.warn('[updateDominionDrops] diff failed; badges unchanged', err);

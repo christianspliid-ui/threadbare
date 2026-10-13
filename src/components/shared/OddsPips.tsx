@@ -16,6 +16,7 @@
  * white circle" is worse than silence.
  */
 
+import { DOMINION_GHOST_PIP_OPACITY } from '../../data/dominion-ui-content';
 import { memo } from 'react';
 import {
   ESSENCE_PIP_GLYPH,
@@ -134,6 +135,17 @@ export interface CostPipsProps {
    * `title` (Law 17); `aria-label` stays (Law 11).
    */
   tooltipId?: string;
+  /**
+   * THR-1750 — the par (Foreign-ground) price when this one is **cheaper**: the
+   * difference is drawn as struck, faint pips after the paid ones, so "cheaper
+   * here" is visible before the spend. Ignored unless greater than `cost`.
+   */
+  ghostFrom?: number;
+  /**
+   * THR-1750 — the par price when this one is **dearer**: the pips above par are
+   * drawn in `--negative` (red is loss, Law 31). Ignored unless less than `cost`.
+   */
+  dearFrom?: number;
   'data-testid'?: string;
 }
 
@@ -148,6 +160,8 @@ export const CostPips = memo(function CostPips({
   emphasised = false,
   framed = false,
   tooltipId,
+  ghostFrom,
+  dearFrom,
   'data-testid': dataTestId,
 }: CostPipsProps) {
   const wrap = (node: React.ReactElement) => (tooltipId ? <Tooltip id={tooltipId} fit>{node}</Tooltip> : node);
@@ -189,6 +203,14 @@ export const CostPips = memo(function CostPips({
   const shown = Math.min(rounded, MAX_COST_PIPS);
   const overflowed = rounded > MAX_COST_PIPS;
   const label = `${rounded} essence`;
+  // THR-1750: the band's change against par, inside the same pip budget.
+  const par = ghostFrom ?? dearFrom;
+  const ghostPips = ghostFrom !== undefined && ghostFrom > rounded
+    ? Math.max(0, Math.min(Math.round(ghostFrom) - rounded, MAX_COST_PIPS - shown))
+    : 0;
+  const dearPips = dearFrom !== undefined && dearFrom < rounded && par !== undefined
+    ? Math.max(0, shown - Math.min(shown, Math.round(dearFrom)))
+    : 0;
 
   return wrap(
     <span
@@ -209,8 +231,16 @@ export const CostPips = memo(function CostPips({
       }}
     >
       <span aria-hidden="true">
-        {ESSENCE_PIP_GLYPH.repeat(shown)}
+        {ESSENCE_PIP_GLYPH.repeat(shown - dearPips)}
+        {dearPips > 0 && (
+          <span data-cost-dear={dearPips} style={{ color: 'var(--negative)' }}>{ESSENCE_PIP_GLYPH.repeat(dearPips)}</span>
+        )}
         {overflowed ? COST_OVERFLOW_GLYPH : ''}
+        {ghostPips > 0 && (
+          <span data-cost-ghost={ghostPips} style={{ opacity: DOMINION_GHOST_PIP_OPACITY, textDecoration: 'line-through' }}>
+            {ESSENCE_PIP_GLYPH.repeat(ghostPips)}
+          </span>
+        )}
       </span>
     </span>,
   );

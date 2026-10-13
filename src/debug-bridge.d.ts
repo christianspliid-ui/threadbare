@@ -412,6 +412,27 @@ export interface DebugAscendantSpheresResult {
   source: 'bought' | 'fallback';
 }
 
+/** Result of `getDominionLens()`. THR-1750 */
+export interface DebugDominionLensResult {
+  on: boolean;
+  /** Land hexes per band in the projection. */
+  byBand: Record<'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign', number>;
+  frontierEdges: number;
+  hostileEdges: number;
+  /** Band-drop badges on the map now. */
+  drops: number;
+}
+
+/** Result of `getDominionHex(col, row)`. THR-1750 */
+export interface DebugDominionHexResult {
+  /** 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign' */
+  band: string;
+  /** The top-level place that lent the band; null = terrain fallback past the radius. */
+  placeId: string | null;
+  /** A turf hex with at least one frontier edge. */
+  frontier: boolean;
+}
+
 /** Result of `getDominion(objectId)`. THR-1748 */
 export interface DebugDominionResult {
   /** 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign' */
@@ -2223,6 +2244,18 @@ export interface DebugBridge {
   getAscendantSpheres: () => Promise<DebugAscendantSpheresResult | null>;
   /** THR-1748 — the Dominion band of any object for the god, with the match, power and who tends its place. Null before a game is running or for an unknown id. */
   getDominion: (objectId: string) => Promise<DebugDominionResult | null>;
+  /** THR-1750 — switch the Dominion map lens on/off. Resolves to the new state. */
+  setDominionLens: (on: boolean) => Promise<boolean>;
+  /** THR-1750 — lens on/off plus the projection's band counts, frontier edges and drop badges. Null before a game. */
+  getDominionLens: () => Promise<DebugDominionLensResult | null>;
+  /** THR-1750 — a hex's projected band, the place that lent it, and frontier membership. Null for water or before a game. */
+  getDominionHex: (col: number, row: number) => Promise<DebugDominionHexResult | null>;
+  /** @internal GameView registers the Dominion lens bridge here (THR-1750). */
+  _registerDominionLensBridge: (bridge: {
+    set: (on: boolean) => boolean;
+    get: () => DebugDominionLensResult;
+    hex: (col: number, row: number) => DebugDominionHexResult | null;
+  }) => void;
   /** THR-1748 — how many top-level places stand in each Dominion band. Null before a game is running. */
   getDominionCensus: () => Promise<Record<'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign', number> | null>;
   /** THR-1748 — the god's power factor, its baseline and the attunement marks crossed per bought sphere. Null before a game is running. */

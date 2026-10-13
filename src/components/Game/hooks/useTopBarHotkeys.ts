@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SPEED_STEPS } from '../SimulationControls';
+import { mapLensForKey, type MapLensId } from '../../../data/map-lenses';
 
 interface UseTopBarHotkeysProps {
   running: boolean;
@@ -8,6 +9,8 @@ interface UseTopBarHotkeysProps {
   onSpeedChange: (speed: number) => void;
   onStep: () => void;
   onMoveClick?: () => void;
+  /** THR-1750 — toggle a map lens by its registry key (`1`–`5`, THR-1831). */
+  onToggleLens?: (lens: MapLensId) => void;
 }
 
 function isInputActive(): boolean {
@@ -17,10 +20,17 @@ function isInputActive(): boolean {
   return tag === 'input' || tag === 'textarea' || el.hasAttribute('contenteditable');
 }
 
-export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick }: UseTopBarHotkeysProps) {
+export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens }: UseTopBarHotkeysProps) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (isInputActive()) return;
+
+      // THR-1750 — map lens keys come from the lens registry, never a hard-coded digit.
+      const lens = !e.ctrlKey && !e.metaKey && !e.altKey ? mapLensForKey(e.key) : undefined;
+      if (lens && onToggleLens) {
+        onToggleLens(lens.id);
+        return;
+      }
 
       switch (e.key) {
         case ' ': {
@@ -55,5 +65,5 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [running, speed, onToggle, onSpeedChange, onStep, onMoveClick]);
+  }, [running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens]);
 }

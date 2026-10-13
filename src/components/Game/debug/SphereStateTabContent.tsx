@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { SphereAggregate } from '../../../types/worldSoul';
 import { SPHERE_ICONS } from '../../../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../../../data/sphereTooltips';
@@ -82,6 +82,7 @@ export function DominionDebugRow({ graph, inspectedId, controlEffects }: Pick<Sp
           {' '}| power {dominionPower(graph, ascendantId).toFixed(2)}
         </span>
       </div>
+      <DominionLensDebugLine />
       {read && inspectedId && (
         <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
           <span style={DETAIL_LABEL_STYLE}>Inspected:</span>
@@ -100,6 +101,29 @@ export function DominionDebugRow({ graph, inspectedId, controlEffects }: Pick<Sp
           </span>
         </div>
       )}
+    </div>
+  );
+}
+
+/** THR-1750 — "lens: on/off, n frontier edges", read through the debug bridge (the panel has no runtime). */
+const LENS_DEBUG_POLL_MS = 1000;
+function DominionLensDebugLine() {
+  const [text, setText] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const read = async () => {
+      const lens = await window.__DEBUG?.getDominionLens?.().catch(() => null);
+      if (alive) setText(lens ? `${lens.on ? 'on' : 'off'}, ${lens.frontierEdges} frontier edges (${lens.hostileEdges} against Hostile), ${lens.drops} drop badges` : null);
+    };
+    void read();
+    const id = setInterval(() => { void read(); }, LENS_DEBUG_POLL_MS);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
+  if (!text) return null;
+  return (
+    <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+      <span style={DETAIL_LABEL_STYLE}>Lens:</span>
+      <span style={DETAIL_VALUE_STYLE} data-testid="dominion-lens-debug">{text}</span>
     </div>
   );
 }

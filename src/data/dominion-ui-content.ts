@@ -55,6 +55,8 @@ export const DOMINION_FRONTIER_WIDTH = 2.0;
 export const DOMINION_FRONTIER_HOSTILE_WIDTH_MULT = 1.75;
 /** How long a band-drop badge stays (three days at 12 ticks a day). */
 export const DOMINION_DROP_BADGE_TICKS = 36;
+/** Opacity of the struck "ghost" pips that show the par price on cheaper ground. */
+export const DOMINION_GHOST_PIP_OPACITY = 0.35;
 /** Cap on the legend card height (Law 33). */
 export const DOMINION_LEGEND_MAX_HEIGHT_PX = 180;
 

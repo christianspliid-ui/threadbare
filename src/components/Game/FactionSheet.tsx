@@ -24,6 +24,8 @@ import { PilgrimWayLine } from './PilgrimWayLine';
 import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
+import { DominionBox } from '../shared/DominionBox';
+import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface FactionSheetProps {
   factionId: string;
@@ -31,6 +33,8 @@ interface FactionSheetProps {
   graph?: WorldGraph;
   onClose: () => void;
   onOpenTargetActions?: (factionId: string) => void;
+  /** THR-1750 — the god's band on this faction, prepared by GameView; null hides the box. */
+  dominion?: DominionSheetVM | null;
 }
 
 export const FactionSheet = React.memo(function FactionSheet({
@@ -39,6 +43,7 @@ export const FactionSheet = React.memo(function FactionSheet({
   graph,
   onClose,
   onOpenTargetActions,
+  dominion,
 }: FactionSheetProps) {
   const summary = useMemo(
     () => (graph ? getFactionNetworkSummary(graph, factionId) : null),
@@ -232,6 +237,8 @@ export const FactionSheet = React.memo(function FactionSheet({
               )}
             </div>
           )}
+
+          <DominionBox vm={dominion ?? null} flush />
 
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
             <span

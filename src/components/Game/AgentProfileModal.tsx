@@ -29,9 +29,13 @@ import { ActiveEffectChips, UNDER_YOUR_HAND_HEADING } from './ActiveEffectChips'
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import { AVATAR_SHEET_SUFFIX } from '../../data/avatar-framing';
+import { DominionBox } from '../shared/DominionBox';
+import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 export interface AgentProfileModalProps {
   card: AgentInfoCardData;
+  /** THR-1750 — the god's band on this mortal (her own scores), prepared by GameView. */
+  dominion?: DominionSheetVM | null;
   profile?: AgentFullProfileData;
   onClose: () => void;
   /** When true, auto-switch to the Chronicle tab on open (e.g. from a revelation alert) */
@@ -70,7 +74,7 @@ export interface AgentProfileModalProps {
   mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -241,6 +245,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             </Tooltip>
           </div>
         )}
+        <DominionBox vm={dominion ?? null} variant="row" />
 
         {/* THR-1606: what your hand is doing to this mortal — visible on every tab */}
         {card.activeEffects && card.activeEffects.length > 0 && (

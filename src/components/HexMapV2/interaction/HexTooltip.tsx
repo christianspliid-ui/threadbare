@@ -62,6 +62,13 @@ interface HexTooltipProps {
   avatarLine?: string;
   /** Sphere tint for the avatar line's marker dot. */
   avatarColor?: string;
+  /**
+   * THR-1750 — while the Dominion lens is on: "Held ground, by Hesk Crossing".
+   * The band word in its colour; the place's page explains the same band.
+   */
+  dominionLine?: { prefix: string; placeName: string | null; word: string; color: string };
+  /** THR-1750 — a band-drop badge on this hex: the `ui.dominion.drop` words + the chronicle line. */
+  dominionDrop?: { lead: string; line: string };
 }
 
 // THR-1451 (Class C): `pct()` drew `73%` on the geo row. The reading exists —
@@ -111,6 +118,8 @@ export function HexTooltip({
   tradeRoutes,
   avatarLine,
   avatarColor,
+  dominionLine,
+  dominionDrop,
 }: HexTooltipProps) {
   // THR-1804 — grid coordinates and the raw terrain key are map plumbing; cold
   // playtest round 3 read "Wilderness (18, 11)" as debug info. Designer view only.
@@ -200,6 +209,27 @@ export function HexTooltip({
           </span>
         )}
       </div>
+
+      {/* THR-1750 — the Dominion band of this ground, while the lens is on */}
+      {dominionLine && (
+        <div
+          data-testid="hex-tooltip-dominion"
+          style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}
+        >
+          <span style={{ color: dominionLine.color, fontWeight: 600 }}>{dominionLine.word}</span>
+          {dominionLine.prefix.slice(dominionLine.word.length)}
+          {dominionLine.placeName && <span style={{ color: 'var(--text-primary)' }}>{dominionLine.placeName}</span>}
+        </div>
+      )}
+      {/* THR-1750 — a band drop: news, never an interrupt */}
+      {dominionDrop && (
+        <div
+          data-testid="hex-tooltip-dominion-drop"
+          style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', fontStyle: 'italic', lineHeight: 1.5, whiteSpace: 'normal' }}
+        >
+          {dominionDrop.lead} {dominionDrop.line}
+        </div>
+      )}
 
       {/* Secondary line: coordinates — designer view only (THR-1804) */}
       {designerView && (

@@ -326,6 +326,15 @@ import {
   type AgentStrategicSummary,
   type HexStrategicOverlay,
 } from '../../engine/strategicPresentation';
+import { dominionSheetVM, dominionLensVM, dominionHexLineVM, dominionBandColorVar, godPrimarySphere } from '../../engine/dominionViewModels';
+import { ensureDominionProjection, updateDominionDrops } from '../../engine/simulationRuntime';
+import { countHexBands } from '../../engine/dominionProjection';
+import { hexKey as dominionHexKey } from '../../lib/hexKey';
+import { DOMINION_BANDS, DOMINION_BAND_WORDS } from '../../data/dominion-content';
+import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
+import { getUITooltip } from '../../data/ui-content';
+import type { MapLensId } from '../../data/map-lenses';
+import { MapLensSwitch } from '../HexMapV2/chrome/MapLensSwitch';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -1962,6 +1971,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleOpenEncounterFromNotification, setGameState]);
 
   // ── Keyboard hotkeys ──
+  // THR-1750 — Dominion lens on/off (the rest of the lens block sits with the debug bridges below).
+  const [dominionLensOn, setDominionLensOn] = useState(false);
+  const dominionLensOpenedRef = useRef(false);
+  const setDominionLens = useCallback((on: boolean) => {
+    if (on) dominionLensOpenedRef.current = true;
+    setDominionLensOn(on);
+  }, []);
+  const toggleMapLens = useCallback((lens: MapLensId) => {
+    if (lens !== 'dominion') return;
+    setDominionLensOn(prev => {
+      if (!prev) dominionLensOpenedRef.current = true;
+      return !prev;
+    });
+  }, []);
   useTopBarHotkeys({
     running,
     speed,
@@ -1969,6 +1992,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onSpeedChange: setSpeed,
     onStep: doTick,
     onMoveClick: handleAvatarMoveClick,
+    onToggleLens: toggleMapLens,
   });
 
   // ── Audio volume handlers ──
@@ -2457,6 +2481,83 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return enabled;
     });
   }, [fogDisabled]);
+
+
+  // ── THR-1750 — the Dominion lens: state, projection, view model, tooltip, bridge ──
+  // Session-local, off at the start of a run, kept across view changes. The runtime
+  // owns the projection (`ensureDominionProjection`); this block only re-reads it.
+  const dominionGodSphere = useMemo(
+    () => godPrimarySphere(gameState.graph, gameState.ascendantId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph is mutated in place; worldVersion is the key
+    [gameState.graph, gameState.ascendantId, runtime.worldVersion],
+  );
+  const dominionDrops = useMemo(
+    () => (gameState.ascendantId ? updateDominionDrops(runtime, gameState.graph, gameState.ascendantId, gameState.tick) : []),
+    [runtime, gameState.graph, gameState.ascendantId, gameState.tick],
+  );
+  const dominionProjectionNow = useMemo(() => {
+    if (!dominionLensOn || !gameState.ascendantId) return null;
+    const opened = dominionLensOpenedRef.current;
+    dominionLensOpenedRef.current = false;
+    return ensureDominionProjection(runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick, opened);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- structuralCacheVersion is read off the runtime
+  }, [dominionLensOn, runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick, runtime.structuralCacheVersion]);
+  const dominionLensBase = useMemo(
+    () => dominionLensVM(dominionProjectionNow, dominionGodSphere, [], dominionLensOn),
+    [dominionProjectionNow, dominionGodSphere, dominionLensOn],
+  );
+  const dominionLensForMap = useMemo(
+    () => ({ ...dominionLensBase, drops: dominionDrops }),
+    [dominionLensBase, dominionDrops],
+  );
+  const dominionBandColors = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const band of DOMINION_BANDS) out[band] = dominionBandColorVar(band, dominionGodSphere);
+    return out;
+  }, [dominionGodSphere]);
+  const dominionTooltip = useCallback((col: number, row: number) => {
+    const key = dominionHexKey(col, row);
+    const drop = dominionDrops.find(d => d.hexKey === key);
+    const lineVm = dominionLensOn ? dominionHexLineVM(gameState.graph, dominionProjectionNow, key) : null;
+    if (!drop && !lineVm) return null;
+    return {
+      ...(lineVm ? { line: { prefix: lineVm.prefix, placeName: lineVm.placeName, word: DOMINION_BAND_WORDS[lineVm.band], color: dominionBandColorVar(lineVm.band, dominionGodSphere) } } : {}),
+      ...(drop ? { drop: { lead: getUITooltip(DOMINION_TOOLTIP_IDS.drop)?.desc ?? '', line: drop.line } } : {}),
+    };
+  }, [dominionDrops, dominionLensOn, gameState.graph, dominionProjectionNow, dominionGodSphere]);
+
+  // Debug bridge: setDominionLens / getDominionLens / getDominionHex (THR-1750).
+  const dominionBridgeStateRef = useRef({ on: dominionLensOn, projection: dominionProjectionNow, drops: dominionDrops });
+  dominionBridgeStateRef.current = { on: dominionLensOn, projection: dominionProjectionNow, drops: dominionDrops };
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerDominionLensBridge({
+      set: (on: boolean) => { setDominionLens(on); return on; },
+      get: () => {
+        const { on, drops } = dominionBridgeStateRef.current;
+        const projection = gameState.ascendantId
+          ? ensureDominionProjection(runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick)
+          : null;
+        const edges = projection ? dominionLensVM(projection, null, [], true).edges : [];
+        return {
+          on,
+          byBand: projection ? countHexBands(projection) : { hostile: 0, foreign: 0, touched: 0, held: 0, sovereign: 0 },
+          frontierEdges: edges.length,
+          hostileEdges: edges.filter(e => e.meetsHostile).length,
+          drops: drops.length,
+        };
+      },
+      hex: (col: number, row: number) => {
+        if (!gameState.ascendantId) return null;
+        const projection = ensureDominionProjection(runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick);
+        const key = dominionHexKey(col, row);
+        const band = projection.hexBand.get(key);
+        if (!band) return null;
+        const frontier = dominionLensVM(projection, null, [], true).edges.some(e => e.key === key);
+        return { band, placeId: projection.hexPlaceId.get(key) ?? null, frontier };
+      },
+    });
+  }, [setDominionLens, runtime, gameState.graph, gameState.ascendantId, gameState.tick, tiles]);
 
   // ── Debug bridge: scene snapshot + viewport/hex conversion ────────────────
   useEffect(() => {
@@ -5680,7 +5781,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   spotlightedAgentId={gameState.spotlightedAgent}
                   spotlightThreadColor={spotlightThreadColor}
                   shouldCenterOnAgent={cameraGateCallback}
+                  dominionLens={dominionLensForMap}
+                  dominionTooltip={dominionTooltip}
                 />
+
+                {/* THR-1750 — the map lens switch (lens one: Dominion), key 1 */}
+                {gameState.ascendantId && (
+                  <MapLensSwitch
+                    active={dominionLensOn ? 'dominion' : null}
+                    onToggle={toggleMapLens}
+                    bandColors={dominionBandColors}
+                  />
+                )}
 
                 {/* AvatarHUD superseded by AscendantBar (THR-184) */}
 
@@ -5919,6 +6031,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 strategicState={gameState.strategicState}
                 pastKnowledge={pastKnowledge}
                 familiarityMap={gameState.familiarityMap}
+                dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, focusedLocation.id, gameState.controlEffects, true)}
               />
             )}
           </div>
@@ -6232,6 +6345,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         {agentInfoCard && (
           <AgentProfileModal
             card={agentInfoCard}
+            dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, agentInfoCard.id)}
             profile={agentFullProfile}
             onClose={handleCloseProfile}
             scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
@@ -6389,6 +6503,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   graph={gameState.graph}
                   onClose={onClose}
                   onOpenTargetActions={handleOpenFactionActions}
+                  dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, nodeId)}
                 />
               );
             case 'army':
@@ -6408,6 +6523,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   graph={gameState.graph}
                   worldVersion={runtime.worldVersion}
                   onClose={onClose}
+                  dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, nodeId)}
                 />
               );
             default:

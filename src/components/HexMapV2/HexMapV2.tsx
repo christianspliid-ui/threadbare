@@ -66,6 +66,11 @@ import type { RivalInfluenceLayer } from './scene/RivalInfluenceMesh';
 import type { RivalInfluenceMarker } from '../../engine/rivalInfluenceMarkers';
 import { createTradeRouteLayer } from './scene/TradeRouteMesh';
 import type { TradeRouteLayer } from './scene/TradeRouteMesh';
+import { createDominionLensLayer, DOMINION_LENS_LAYER_NAME } from './scene/DominionLensLayer';
+import type { DominionLensLayer } from './scene/DominionLensLayer';
+import { createDominionDropLayer, DOMINION_DROP_LAYER_NAME } from './scene/DominionDropBadge';
+import type { DominionDropLayer } from './scene/DominionDropBadge';
+import type { DominionLensVM } from '../../engine/dominionViewModels';
 import type { TradeRouteLine, RouteTooltipEntry } from '../../engine/tradeRouteMarkers';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
@@ -351,6 +356,17 @@ export interface HexMapV2Props {
    * false to hold the camera. When omitted, camera always pans (legacy behaviour).
    */
   shouldCenterOnAgent?: (agentId: string) => boolean;
+  /**
+   * THR-1750 — the Dominion lens, prepared by GameView. `on` builds the lens group
+   * (dim, Sovereign glow, gold frontier); off disposes it. `drops` (band-drop
+   * badges) draw whether or not the lens is on.
+   */
+  dominionLens?: DominionLensVM | null;
+  /** THR-1750 — the hex tooltip's Dominion lines for a hovered hex (band line while the lens is on; drop line). */
+  dominionTooltip?: (col: number, row: number) => {
+    line?: { prefix: string; placeName: string | null; word: string; color: string };
+    drop?: { lead: string; line: string };
+  } | null;
 }
 
 export interface HexMapV2Handle {
@@ -530,7 +546,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -558,6 +574,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
     const reachSignatureSignifierLayerRef = useRef<ReachSignatureSignifierLayerGroup | null>(null);
     const rivalInfluenceLayerRef = useRef<RivalInfluenceLayer | null>(null);
+    // THR-1750 — the Dominion lens and its drop badges (built incrementally, below).
+    const dominionLensLayerRef = useRef<DominionLensLayer | null>(null);
+    const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
+    // Bumped after every scene build so incremental layers re-attach to the new scene.
+    const [sceneEpoch, setSceneEpoch] = useState(0);
 
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
@@ -744,6 +765,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (companyClusterLayerRef.current?.group.visible) layersActive.push('companyClusters');
         if (activityIconLayerRef.current?.group.visible) layersActive.push('activityIcons');
         if (fogEnabledRef.current) layersActive.push('fog');
+        if (dominionLensLayerRef.current) layersActive.push(DOMINION_LENS_LAYER_NAME);
+        if ((dominionDropLayerRef.current?.count ?? 0) > 0) layersActive.push(DOMINION_DROP_LAYER_NAME);
 
         return {
           hexCount: fillResultRef.current?.landMesh.count ?? tiles.length,
@@ -847,6 +870,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         cameraRef.current = camera;
         rendererRef.current = renderer;
         sceneRef.current = scene;
+        setSceneEpoch(e => e + 1);
         diagnosticsRef.current.attach(canvas, renderer);
         setCanvasDimensions({ w, h });
 
@@ -1710,6 +1734,41 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     }, [rivalInfluenceMarkers]);
 
     // ── Trade-route lines (THR-670): rebuild on change, roads-band underlay ──
+    // ── Dominion lens (THR-1750): built on toggle, never alpha-hidden ──
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (dominionLensLayerRef.current) {
+        dominionLensLayerRef.current.group.parent?.remove(dominionLensLayerRef.current.group);
+        dominionLensLayerRef.current.dispose();
+        dominionLensLayerRef.current = null;
+      }
+      if (!scene || !dominionLens?.on) return;
+      try {
+        const layer = createDominionLensLayer(dominionLens);
+        scene.add(layer.group);
+        dominionLensLayerRef.current = layer;
+      } catch (err) {
+        console.warn('[HexMapV2] Dominion lens build failed; lens left off', err);
+      }
+      // Keyed on the lens parts, not the VM object: a new drops list must not rebuild the lens.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dominionLens?.on, dominionLens?.hexes, dominionLens?.edges, sceneEpoch]);
+
+    // ── Dominion band-drop badges (THR-1750 § U4): lens on or off ──
+    const dominionDrops = dominionLens?.drops;
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (dominionDropLayerRef.current) {
+        dominionDropLayerRef.current.group.parent?.remove(dominionDropLayerRef.current.group);
+        dominionDropLayerRef.current.dispose();
+        dominionDropLayerRef.current = null;
+      }
+      if (!scene || !dominionDrops || dominionDrops.length === 0) return;
+      const layer = createDominionDropLayer(dominionDrops);
+      scene.add(layer.group);
+      dominionDropLayerRef.current = layer;
+    }, [dominionDrops, sceneEpoch]);
+
     const tradeRouteLayerRef = useRef<TradeRouteLayer | null>(null);
     useEffect(() => {
       const scene = sceneRef.current;
@@ -2010,6 +2069,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               tradeRoutes={tradeRoutes}
               avatarLine={avatarHere ? avatarHoverLine(avatarHere.name ?? '') : undefined}
               avatarColor={avatarHere?.avatarSphereColor}
+              {...(() => {
+                const d = dominionTooltip?.(tooltipHex.col, tooltipHex.row);
+                return { dominionLine: d?.line, dominionDrop: d?.drop };
+              })()}
             />
           );
         })()}
