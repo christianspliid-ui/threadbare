@@ -1,0 +1,168 @@
+# THR-1757 re-measure, origin/main @ bbe2a6c9, 2026-10-13 (design lane dl-20261013-1918)
+# node Docs/audits/2026-09-25-living-world-data/readers/master-band.build.mjs
+
+## node .cache/master-band.mjs 42,99,7 120
+
+=== seed 42 — 120 ticks, traced ===
+ledger sha1 142cdf932c61, inWindowShare 0.5517, freeChoiceCommits 638
+  band novice     n= 228 covered true success 0.548 meanDiff 0.120
+  band journeyman n= 215 covered true success 0.572 meanDiff 0.221
+  band expert     n= 100 covered true success 0.550 meanDiff 0.274
+  band master     n=  56 covered true success 0.643 meanDiff 0.208
+  band unknown    n=  12 covered false success 0.583 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 187 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== seed 99 — 120 ticks, traced ===
+ledger sha1 bab84d9d0359, inWindowShare 0.5201, freeChoiceCommits 646
+  band novice     n= 196 covered true success 0.582 meanDiff 0.113
+  band journeyman n= 234 covered true success 0.560 meanDiff 0.265
+  band expert     n= 122 covered true success 0.648 meanDiff 0.280
+  band master     n=  43 covered true success 0.512 meanDiff 0.279
+  band unknown    n=  24 covered false success 0.625 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 242 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== seed 7 — 120 ticks, traced ===
+ledger sha1 8281367faa6b, inWindowShare 0.4834, freeChoiceCommits 753
+  band novice     n= 263 covered true success 0.544 meanDiff 0.117
+  band journeyman n= 241 covered true success 0.568 meanDiff 0.234
+  band expert     n= 145 covered true success 0.593 meanDiff 0.282
+  band master     n=  56 covered true success 0.554 meanDiff 0.290
+  band unknown    n=  13 covered false success 0.615 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 242 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== pooled seeds 42,99,7 — 166 master free-choice commits ===
+
+-- M1. content band a master chose --
+  novice       60.2%
+  journeyman   24.7%
+  expert        9.0%
+  master        6.0%
+  unknown       0.0%
+
+-- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
+  seed 42   n=  60  chosen 6.7%  outscored 8.3%  cut-top5 3.3%  cut-cooldown 0.0%  cut-filter 81.7%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  47  chosen 2.1%  outscored 6.4%  cut-top5 2.1%  cut-cooldown 0.0%  cut-filter 89.4%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  59  chosen 8.5%  outscored 8.5%  cut-top5 0.0%  cut-cooldown 3.4%  cut-filter 79.7%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 166  chosen 6.0%  outscored 7.8%  cut-top5 1.8%  cut-cooldown 1.2%  cut-filter 83.1%  absent-nearby 0.0%  absent-world 0.0%
+
+-- M2. where any-master work (master band, any reach) was, per master commit --
+  seed 42   n=  60  chosen 6.7%  outscored 11.7%  cut-top5 31.7%  cut-cooldown 0.0%  cut-filter 50.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  47  chosen 2.1%  outscored 6.4%  cut-top5 51.1%  cut-cooldown 0.0%  cut-filter 40.4%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  59  chosen 8.5%  outscored 8.5%  cut-top5 32.2%  cut-cooldown 1.7%  cut-filter 49.2%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 166  chosen 6.0%  outscored 9.0%  cut-top5 37.3%  cut-cooldown 0.6%  cut-filter 47.0%  absent-nearby 0.0%  absent-world 0.0%
+
+-- M3. own-master work on the board and not chosen (13 of 13 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 1; winner÷it score median 1.03
+  forecast: winner median 0.624, own-master median 0.528
+  window fit: winner median 0.826, own-master median 0.873
+  value/tick ratio (winner÷own) median 4.10; desire ratio median 1.93; travel winner 0.00 vs own 0.00
+  winner content band: {"novice":11,"journeyman":2}
+  the outscored own-master templates: {"encounter.town.granary_riot":1,"encounter.town.judicial_duel":6,"encounter.town.forged_charter_inquest":1,"encounter.town.cathedral_vault":3,"encounter.town.restless_ossuary":1,"encounter.town.ducal_nativity":1}
+
+-- M4. own-master work through the funnel (mean count per master commit) --
+  pool 5.25 → filtered 0.17 → eligible 0.16 → scored 0.16 → board 0.14 (n=166)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 15.7%; ON THE BOARD (top list): 13.9%
+  own-master entries surviving each filter stage (mean per commit): awareness 3.23 → visibility 3.23 → prerequisites 3.23 → reputation 3.23 → outgrowth 3.23 → story-breath 3.23 → threat 3.23 → cap 0.17
+  filter cuts by the stage that removed the last own-master entry: {"cap":129,"awareness":9}
+  master reaches per master decider: median 1
+
+-- M5. per-template survival of the cap, and the per-reach count it implies --
+  own-master templates reaching the cap: 185 over 157 commits (median 1 per commit); surviving it: 29 → q = 0.157
+  distinct templates of any band the cap chose among: median 192
+  of commits with own-master work scored, it was also on the board (top list): t = 0.885 (26)
+  K = 1 per reach: P(scored) ≈ 0.16, P(on the board) ≈ 0.14 (q diluted to 0.157; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 0.28, P(on the board) ≈ 0.25 (q diluted to 0.150; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 0.37, P(on the board) ≈ 0.33 (q diluted to 0.145; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 0.45, P(on the board) ≈ 0.40 (q diluted to 0.139; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 0.51, P(on the board) ≈ 0.45 (q diluted to 0.134; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 0.57, P(on the board) ≈ 0.50 (q diluted to 0.130; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 0.61, P(on the board) ≈ 0.54 (q diluted to 0.125; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 0.64, P(on the board) ≈ 0.57 (q diluted to 0.121; t held at the measured value)
+
+## node .cache/master-band-keep.mjs 42,99,7 120   (probe, never shipped)
+    at WorldGraph.addEdge (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:187051:13)
+    at createUndertakingOutcomeNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:216851:13)
+    at advanceStrategicProjects (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:232838:9)
+    at phaseStrategicProjects (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:253199:18)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:271864:65
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:271638:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:271864:19)
+    at runSeed (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:272623:13)
+    at Array.map (<anonymous>)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261013-1918/.cache/master-band-keep.mjs:272695:21
+
+=== seed 42 — 120 ticks, traced ===
+ledger sha1 679ea7cfd54d, inWindowShare 0.5460, freeChoiceCommits 619
+  band novice     n= 220 covered true success 0.477 meanDiff 0.121
+  band journeyman n= 202 covered true success 0.629 meanDiff 0.216
+  band expert     n= 103 covered true success 0.621 meanDiff 0.323
+  band master     n=  62 covered true success 0.532 meanDiff 0.339
+  band unknown    n=  13 covered false success 0.615 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 187 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== seed 99 — 120 ticks, traced ===
+ledger sha1 84278c5ab194, inWindowShare 0.5086, freeChoiceCommits 639
+  band novice     n= 203 covered true success 0.581 meanDiff 0.113
+  band journeyman n= 211 covered true success 0.583 meanDiff 0.252
+  band expert     n= 121 covered true success 0.554 meanDiff 0.280
+  band master     n=  52 covered true success 0.558 meanDiff 0.337
+  band unknown    n=  21 covered false success 0.619 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 242 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== seed 7 — 120 ticks, traced ===
+ledger sha1 9fdcb59cb470, inWindowShare 0.5126, freeChoiceCommits 714
+  band novice     n= 255 covered true success 0.533 meanDiff 0.123
+  band journeyman n= 231 covered true success 0.597 meanDiff 0.233
+  band expert     n= 106 covered true success 0.547 meanDiff 0.263
+  band master     n=  62 covered true success 0.565 meanDiff 0.355
+  band unknown    n=  22 covered false success 0.500 meanDiff 0.000
+  master-band templates instanced in the world at first decision: 8 templates, 242 instances — encounter.town.cathedral_loan, encounter.town.cathedral_vault, encounter.town.coiners_mint, encounter.town.ducal_nativity, encounter.town.forged_charter_inquest, encounter.town.granary_riot, encounter.town.judicial_duel, encounter.town.restless_ossuary
+
+=== pooled seeds 42,99,7 — 193 master free-choice commits ===
+
+-- M1. content band a master chose --
+  novice       49.2%
+  journeyman   18.7%
+  expert       11.9%
+  master       20.2%
+  unknown       0.0%
+
+-- M2. where own-master work (master band, in a reach the decider is a master in) was, per master commit --
+  seed 42   n=  68  chosen 17.6%  outscored 44.1%  cut-top5 27.9%  cut-cooldown 10.3%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  56  chosen 19.6%  outscored 44.6%  cut-top5 23.2%  cut-cooldown 12.5%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  69  chosen 23.2%  outscored 13.0%  cut-top5 20.3%  cut-cooldown 33.3%  cut-filter 10.1%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 193  chosen 20.2%  outscored 33.2%  cut-top5 23.8%  cut-cooldown 19.2%  cut-filter 3.6%  absent-nearby 0.0%  absent-world 0.0%
+
+-- M2. where any-master work (master band, any reach) was, per master commit --
+  seed 42   n=  68  chosen 17.6%  outscored 44.1%  cut-top5 35.3%  cut-cooldown 2.9%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 99   n=  56  chosen 19.6%  outscored 46.4%  cut-top5 32.1%  cut-cooldown 1.8%  cut-filter 0.0%  absent-nearby 0.0%  absent-world 0.0%
+  seed 7    n=  69  chosen 23.2%  outscored 14.5%  cut-top5 39.1%  cut-cooldown 17.4%  cut-filter 5.8%  absent-nearby 0.0%  absent-world 0.0%
+  pooled    n= 193  chosen 20.2%  outscored 34.2%  cut-top5 35.8%  cut-cooldown 7.8%  cut-filter 2.1%  absent-nearby 0.0%  absent-world 0.0%
+
+-- M3. own-master work on the board and not chosen (64 of 64 with the committed entry found): committed winner vs best own-master (rank = place in the board's top list) --
+  best own-master rank median 2; winner÷it score median 1.40
+  forecast: winner median 0.653, own-master median 0.518
+  window fit: winner median 1.000, own-master median 0.813
+  value/tick ratio (winner÷own) median 5.09; desire ratio median 2.18; travel winner 0.00 vs own 0.41
+  winner content band: {"journeyman":14,"novice":42,"expert":8}
+  the outscored own-master templates: {"encounter.town.cathedral_vault":10,"encounter.town.granary_riot":10,"encounter.town.forged_charter_inquest":5,"encounter.town.judicial_duel":32,"encounter.town.restless_ossuary":1,"encounter.town.coiners_mint":5,"encounter.town.cathedral_loan":1}
+
+-- M4. own-master work through the funnel (mean count per master commit) --
+  pool 5.42 → filtered 3.33 → eligible 2.41 → scored 2.41 → board 1.16 (n=193)
+  commits with ≥1 own-master entry in pool: 100.0%; in scored: 77.2%; ON THE BOARD (top list): 53.4%
+  own-master entries surviving each filter stage (mean per commit): awareness 3.33 → visibility 3.33 → prerequisites 3.33 → reputation 3.33 → outgrowth 3.33 → story-breath 3.33 → threat 3.33 → cap 3.33
+  filter cuts by the stage that removed the last own-master entry: {"awareness":7}
+  master reaches per master decider: median 1
+
+-- M5. per-template survival of the cap, and the per-reach count it implies --
+  own-master templates reaching the cap: 213 over 186 commits (median 1 per commit); surviving it: 213 → q = 1.000
+  distinct templates of any band the cap chose among: median 190
+  of commits with own-master work scored, it was also on the board (top list): t = 0.691 (149)
+  K = 1 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 1.000; t held at the measured value)
+  K = 2 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.960; t held at the measured value)
+  K = 3 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.922; t held at the measured value)
+  K = 4 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.888; t held at the measured value)
+  K = 5 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.856; t held at the measured value)
+  K = 6 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.826; t held at the measured value)
+  K = 7 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.798; t held at the measured value)
+  K = 8 per reach: P(scored) ≈ 1.00, P(on the board) ≈ 0.69 (q diluted to 0.772; t held at the measured value)
