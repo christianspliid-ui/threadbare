@@ -105,7 +105,7 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
   });
 
   it('before the bond keeps the bond rows and hides every later row (pre_bond)', () => {
-    const r = selectOpeningReveal(makeState({ bonded: false }));
+    const r = selectOpeningReveal(makeState({ bonded: false, wokeAtTick: null }));
     expect(r.rows.hand).toEqual({ revealed: true, reason: 'pre_bond' });
     expect(r.rows.time_controls.revealed).toBe(true);
     expect(r.rows.doom).toEqual({ revealed: false, reason: 'pre_bond' });
@@ -189,6 +189,15 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
     const r = selectOpeningReveal(broken);
     expect(Object.values(r.rows).every(x => x.revealed && x.reason === 'not_staged')).toBe(true);
     expect(r.direction.show).toBe(false);
+  });
+
+  it('a First lost after the bond keeps the waiting rows and the ceiling, not pre_bond', () => {
+    const lost = selectOpeningReveal(makeState({ bonded: false, wokeAtTick: BOND_TICK }));
+    expect(lost.rows.notables).toEqual({ revealed: false, reason: 'waiting:beat.spine.the_first_word' });
+    expect(lost.direction.show).toBe(false);
+    const late = selectOpeningReveal(makeState({ bonded: false, wokeAtTick: BOND_TICK, tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
+    expect(late.rows.notables).toEqual({ revealed: true, reason: 'ceiling' });
+    expect(late.rows.chapter_ledger.reason).toBe('ceiling');
   });
 
   it('getFirstId reads the the_first thread edge', () => {

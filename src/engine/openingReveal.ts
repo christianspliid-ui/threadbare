@@ -141,8 +141,13 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
     if (!staged) return fullScreen(false, showAll);
 
     const firstId = state.ascendantId ? getFirstId(state.graph, state.ascendantId) : null;
+    // The doom wakes on the first tick after the bond and never sleeps again, so a
+    // First who dies (her thread edge removed) does not send the screen back to
+    // pre-bond: the waiting rows keep their gifts and the ceiling still runs.
+    const rawWoke = state.doomClock?.wokeAtTick;
+    const everBonded = firstId !== null || typeof rawWoke === 'number';
 
-    if (firstId === null) {
+    if (!everBonded) {
       // Pre-bond: THR-1648's quiet screen. Bond rows stay; everything later waits.
       const rows = {} as Record<OpeningRevealSurfaceId, OpeningRevealRowState>;
       for (const row of OPENING_REVEAL_TABLE) {
@@ -157,8 +162,8 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
     const bondTick = woke ?? state.tick;
     const ceilingPassed = state.tick - bondTick >= OPENING_REVEAL_CEILING_TICKS;
 
-    const openChapterId = findOpenFirstChapter(state, firstId);
-    const chapterResolved = hasResolvedFirstChapter(state, firstId, bondTick);
+    const openChapterId = firstId ? findOpenFirstChapter(state, firstId) : null;
+    const chapterResolved = firstId ? hasResolvedFirstChapter(state, firstId, bondTick) : false;
     const firstChapter = openChapterId !== null || chapterResolved;
 
     const beats = state.ascendantBeats;
@@ -173,7 +178,8 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
     }
 
     const direction: OpeningDirection = {
-      show: !chapterResolved && !ceilingPassed,
+      // No First, no one to watch over: the line hides (fail-soft table).
+      show: firstId !== null && !chapterResolved && !ceilingPassed,
       mode: openChapterId ? 'chapter_waiting' : 'let_time_run',
       firstId,
       chapterActionId: openChapterId,
