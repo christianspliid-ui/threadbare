@@ -476,7 +476,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     // Par for every band while DOMINION_PRICES_LIVE is false (§ Decided 13).
     const dominionAscendantId = params.ascendantId ?? controlOwnerId;
     const dominionBand = castTargetBand(graph, dominionAscendantId, target.nodeId);
-    const essenceCost = dominionScaledCost(tierScaledEssenceCost(template, target.properties), dominionBand);
+    const parEssenceCost = tierScaledEssenceCost(template, target.properties);
+    const essenceCost = dominionScaledCost(parEssenceCost, dominionBand);
     const sphere = template.sphereAffinity ?? primarySphere;
     const currentEssence = (pool as Record<string, number>)[sphere] ?? 0;
     const canAffordEssence = essenceCost === 0 || currentEssence >= essenceCost;
@@ -564,6 +565,9 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       lockedReason,
       essenceCost,
       dominionBand,
+      // THR-1750: the Foreign price, so the card can show "cheaper here" against it.
+      // Only for a priced card aimed at a world object — a free card has no chip.
+      ...(parEssenceCost > 0 && target.nodeId ? { dominionParCost: parEssenceCost } : {}),
       sphere: template.sphereAffinity ?? null,
       interventionType: null,
       rangeStatus,

@@ -13,6 +13,7 @@ import { buildReachTierTooltips } from './ascendant-reach-register';
 import { REACH_COPY } from './ascendant-bar-content';
 import { NUDGE_CARD_TYPES } from './nudge-card-library';
 import { SPHERE_POUR_REFILL_SENTENCE } from './sphere-points-content';
+import { DOMINION_BAND_WORDS, DOMINION_BAND_LINES } from './dominion-content';
 
 /**
  * THR-1716 — the first-run Play prompt's caption, shown in the time control's status
@@ -133,6 +134,28 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.attention': {
     label: 'Attention',
     desc: 'How much of your notice is free. Attending a moment draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.',
+  },
+  // THR-1750 — Dominion on screen: the term, its five bands, the lens, the chip, the drop badge.
+  'ui.dominion': {
+    label: 'Dominion',
+    desc: 'How far a place, person or power leans toward the spheres you hold. Your works cost less and land more often on your own ground.',
+  },
+  'ui.dominion.sovereign': { label: DOMINION_BAND_WORDS.sovereign, desc: DOMINION_BAND_LINES.sovereign },
+  'ui.dominion.held': { label: DOMINION_BAND_WORDS.held, desc: DOMINION_BAND_LINES.held },
+  'ui.dominion.touched': { label: DOMINION_BAND_WORDS.touched, desc: DOMINION_BAND_LINES.touched },
+  'ui.dominion.foreign': { label: DOMINION_BAND_WORDS.foreign, desc: DOMINION_BAND_LINES.foreign },
+  'ui.dominion.hostile': { label: DOMINION_BAND_WORDS.hostile, desc: DOMINION_BAND_LINES.hostile },
+  'ui.dominion.lens': {
+    label: 'Dominion lens',
+    desc: 'Show your ground: what is yours, where it ends, and what stands against you. Key 1.',
+  },
+  'ui.dominion.chip': {
+    label: 'Ground and price',
+    desc: 'The ground you aim at changes the price. The faint pip is what neutral ground would cost.',
+  },
+  'ui.dominion.drop': {
+    label: 'Ground slipped',
+    desc: 'Your hold here slipped. Tend it to win it back.',
   },
   // THR-1814 — side-bar sections that arrive with their first entry (Laws 25, 53).
   'ui.signatures': {

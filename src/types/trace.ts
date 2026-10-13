@@ -32,7 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
-import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace } from './traces/dominion-traces';
+import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
@@ -630,6 +630,8 @@ export type TraceCategory =
   | 'dominion.attunement'
   | 'dominion.seat_floor'
   | 'dominion.read'
+  // Dominion lens projection rebuilt (THR-1750)
+  | 'dominion.lens_rebuilt'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -949,6 +951,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'dominion.attunement',
   'dominion.seat_floor',
   'dominion.read',
+  'dominion.lens_rebuilt',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -4837,6 +4840,7 @@ export type TraceEntry =
   | DominionAttunementTrace
   | DominionSeatFloorTrace
   | DominionReadTrace
+  | DominionLensRebuiltTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

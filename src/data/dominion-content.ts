@@ -90,7 +90,7 @@ export const DOMINION_SOURCE_INCOME_MULTIPLIER: Readonly<Record<DominionBand, nu
  * ships the card chip that explains the price (§ Decided 13). Yield and income are
  * live regardless.
  */
-export const DOMINION_PRICES_LIVE = false;
+export const DOMINION_PRICES_LIVE = true;
 
 // ─── How the frontier moves (THR-1762, THR-1764) ─────────────────────
 

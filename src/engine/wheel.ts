@@ -47,6 +47,12 @@ export interface WheelSlot {
    * the card chip that words it; never printed as-is.
    */
   dominionBand?: import('../data/dominion-content').DominionBand;
+  /**
+   * THR-1750: the par (Foreign) price of this card on this target, before the band.
+   * Set only for a priced card aimed at a world object; the card chip compares it
+   * with `essenceCost` to show "cheaper here" / "dearer here" (ghost or red pips).
+   */
+  dominionParCost?: number;
   /** Sphere type for this action (used for essence cost), or null for scry/center */
   sphere: SphereName | null;
   /** Intervention type (dream, persuade, etc.), or null for non-interventions */
