@@ -4382,7 +4382,7 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing.',
     ulTerms: ['Ascendant Beat', 'Offering'],
-    mechanism: { kind: 'function', symbols: ['resolvePendingBeat', 'payment'], module: 'src/engine/ascendantBeat.ts' },
+    mechanism: { kind: 'function', symbols: ['unlockedActionIds'], module: 'src/engine/ascendantBeat.ts' },
     writeSites: ['src/engine/ascendantBeat.ts'],
     readSites: ['src/engine/actionUnlock.ts', 'src/engine/targetActions.ts', 'src/engine/__tests__/godProgression.test.ts'],
     verifiedLive: {
@@ -4398,7 +4398,7 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'A rung opening gives its key cards one at a time. `phaseAscendantProgression` queues `rungGiftsFor(n)` when a rung opens and offers the head as a `rung_gift` beat every `RUNG_GIFT_SPACING` ticks; resolving it unlocks the card into `unlockedActionIds` (`action.unlock.granted` via `rung`). Rung 2 leads with the secondary reach signature. A held key is skipped, never offered (THR-647, THR-1811).',
     ulTerms: ['Ascendant Beat', 'Rung', 'Key card'],
-    mechanism: { kind: 'function', symbols: ['rungGiftsFor', 'rungGiftDefinition'], module: 'src/engine/godProgression.ts' },
+    mechanism: { kind: 'function', symbols: ['unlockedActionIds'], module: 'src/engine/phaseAscendantProgression.ts' },
     writeSites: ['src/engine/phaseAscendantProgression.ts', 'src/engine/ascendantBeat.ts'],
     readSites: ['src/engine/actionUnlock.ts', 'src/engine/__tests__/godProgression.test.ts'],
     verifiedLive: {
@@ -4414,9 +4414,9 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'The god\'s rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811).',
     ulTerms: ['Rung', 'Attunement'],
-    mechanism: { kind: 'function', symbols: ['rungMarks', 'rungForMarks', 'getAttunementMarksCrossed'], module: 'src/engine/godProgression.ts' },
-    writeSites: ['src/engine/essenceEarned.ts'],
-    readSites: ['src/engine/godProgression.ts', 'src/engine/phaseAscendantProgression.ts'],
+    mechanism: { kind: 'function', symbols: ['getAttunementMarksCrossed'], module: 'src/engine/dominion.ts' },
+    writeSites: ['src/engine/dominion.ts'],
+    readSites: ['src/engine/godProgression.ts'],
     verifiedLive: {
       date: '2026-10-14',
       evidence:

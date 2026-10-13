@@ -6,7 +6,7 @@
       "filename": "Cosmology.md",
       "title": "Cosmology",
       "contentAdjacent": true,
-      "termCount": 13,
+      "termCount": 17,
       "blurb": "Content-adjacent shard. Terms covering the cosmic system: Reaches, Spheres, domain capability, prerequisites."
     },
     {
@@ -440,6 +440,120 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Cosmology.md#prerequisite",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "offering",
+      "name": "Offering",
+      "aliases": [
+        "the world's offering; *Three powers stir* (player-facing title)"
+      ],
+      "status": "canonical",
+      "statusNote": "proposed [THR-1838](https://linear.app/threadbare/issue/THR-1838), seated with the build, [THR-1811](https://linear.app/threadbare/issue/THR-1811)",
+      "oneLiner": "The beat in which the world offers a god three cards, about once a day.",
+      "body": "The beat in which the world offers a god three cards, about once a day. The god takes up one, paid in essence it has *earned* through the card's sphere (or from its first sphere at double), or lets them pass; an offering not entered passes when the day turns. Spending on an offering never lowers the earned counter. Code: `beat.offering`, beat kind `offering`; `src/engine/godProgression.ts`.\n\n**Collisions, reconciled:** *Omen* stays the omen track (`[[Omen]]` in Encounters.md), the card `divine.omen` and the Omens panel; the offering is never called an omen on screen. *Within reach* stays the Codex badge (\"you may yet hold this\", `codexRunState.ts`); the offering's price phrases avoid it: *Paid from {sphere}* · *From {primary}, at double* · *Beyond you yet*.",
+      "seeAlso": [
+        {
+          "raw": "Rung",
+          "termName": "Rung",
+          "resolvedSlug": "cosmology#rung"
+        },
+        {
+          "raw": "Card Progression",
+          "termName": "Card Progression",
+          "resolvedSlug": "cosmology#card-progression"
+        },
+        {
+          "raw": "Key Card",
+          "termName": "Key Card",
+          "resolvedSlug": "cosmology#key-card"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#offering",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "rung",
+      "name": "Rung",
+      "aliases": [
+        "the god's ladder step; prose words *touch / hand / will / wonder*"
+      ],
+      "status": "canonical",
+      "statusNote": "THR-1838 / THR-1811",
+      "oneLiner": "One of four steps of a run's card ladder, opened by the god's attunement marks summed over its bought spheres (`PROGRESSION_RUNG_MARKS` 0 / 3 / 6 / 8; rung 1 also waits for the opening spine).",
+      "body": "One of four steps of a run's card ladder, opened by the god's attunement marks summed over its bought spheres (`PROGRESSION_RUNG_MARKS` 0 / 3 / 6 / 8; rung 1 also waits for the opening spine). A rung only rises. It is never shown as a number. Distinct from `rarityTier` (`[[Rarity Band]]`) and from forecast and spotlight tiers. Code anchor: `rungMarks` / `rungForMarks` in `src/engine/godProgression.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Offering",
+          "termName": "Offering",
+          "resolvedSlug": "cosmology#offering"
+        },
+        {
+          "raw": "Key Card",
+          "termName": "Key Card",
+          "resolvedSlug": "cosmology#key-card"
+        },
+        {
+          "raw": "Dominion",
+          "termName": "Dominion",
+          "resolvedSlug": "cosmology#dominion"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#rung",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "key-card",
+      "name": "Key Card",
+      "aliases": [
+        "rung gift"
+      ],
+      "status": "canonical",
+      "statusNote": "THR-1838 / THR-1811",
+      "oneLiner": "A card gifted when a rung opens, because it opens a card family, drives the Dominion loop, or tends the god's threads (`progression.giftBy: 'rung'`).",
+      "body": "A card gifted when a rung opens, because it opens a card family, drives the Dominion loop, or tends the god's threads (`progression.giftBy: 'rung'`). Keys arrive one at a time, `RUNG_GIFT_SPACING` apart; the second rung's first key is the god's secondary reach signature. A key the god already holds is skipped.",
+      "seeAlso": [
+        {
+          "raw": "Rung",
+          "termName": "Rung",
+          "resolvedSlug": "cosmology#rung"
+        },
+        {
+          "raw": "Card Progression",
+          "termName": "Card Progression",
+          "resolvedSlug": "cosmology#card-progression"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#key-card",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "card-progression",
+      "name": "Card Progression",
+      "aliases": [
+        "the `progression` block"
+      ],
+      "status": "canonical",
+      "statusNote": "THR-1838 / THR-1811",
+      "oneLiner": "The data on a god card that places it on the ladder: `tier` (1–4), `offer` (market / gift), `giftBy` (spine / milestone / rung / signature), `generic`, `pricedIn`, `offerWeight`, `flags`.",
+      "body": "The data on a god card that places it on the ladder: `tier` (1–4), `offer` (market / gift), `giftBy` (spine / milestone / rung / signature), `generic`, `pricedIn`, `offerWeight`, `flags`. Required on every ascendant-castable template (`npm run check:god-card-progression`). The distribution is tuned by editing the card, never code.",
+      "seeAlso": [
+        {
+          "raw": "Rung",
+          "termName": "Rung",
+          "resolvedSlug": "cosmology#rung"
+        },
+        {
+          "raw": "Offering",
+          "termName": "Offering",
+          "resolvedSlug": "cosmology#offering"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#card-progression",
       "contentAdjacent": true
     },
     {
