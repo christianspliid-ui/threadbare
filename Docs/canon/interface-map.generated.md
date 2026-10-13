@@ -1189,10 +1189,10 @@ exit
 - **Intent:** "Cheaper here" is visible before the spend (THR-1750). `getTargetActionSlots` carries the par (Foreign) price as `WheelSlot.dominionParCost` beside the band-priced `essenceCost`; `dominionChipFields` turns it into the card chip with ghost or red pips (never on Foreign ground or a free card), and the ActionDrawer cast bar words the band's price and odds.
 - **Producer → Consumer:** Spheres & Quintessence → Essence & Divine Economy
 - **UL terms:** *Dominion*, *Dominion Band*, *Essence*
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/targetActions.ts`
 - **Read sites:** `src/components/Game/actionCardModel.ts`
-- **Other hits:** `src/engine/wheel.ts`
+- **Other hits:** `src/components/Game/ActionDrawer.tsx`, `src/engine/wheel.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-on-sheets` — 🔵 UNVERIFIED-OK
@@ -1210,10 +1210,10 @@ exit
 - **Intent:** Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target's Dominion band — `dominionOf` over the target's sphere scores against the god's bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver's `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip.
 - **Producer → Consumer:** Spheres & Quintessence → Essence & Divine Economy
 - **UL terms:** *Dominion*, *Dominion Band*, *Sphere*
-- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Production hits:** 7 total — 1 write, 3 read, 3 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/playerCastDispatch.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/playerCastReadout.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/momentCardModel.ts`, `src/engine/playerCastReadout.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-projected-to-hex-map` — 🔵 UNVERIFIED-OK
