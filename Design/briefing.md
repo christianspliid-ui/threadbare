@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-13 15:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-13 16:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -9,7 +9,7 @@ It happened again last night: no lane ran from 04:32 this morning until 13:40. T
 
 ## Also waiting (4)
 
-- **New: one click to unblock the next warm playtest.** Say **"close the warm brief ticket"** ([Warm brief v1 tripped its kill criterion](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). It is decided and done, but no lane may close it, and warm round 2 waits on it. Round 2 can run from Thursday 15 Oct. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-13c.md)*
+- **One click to unblock the next warm playtest.** Say **"close the warm brief ticket"** ([Warm brief v1 tripped its kill criterion](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). It is decided and done, but no lane may close it, and warm round 2 waits on it. Round 2 can run from Thursday 15 Oct. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-13c.md)*
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
@@ -31,5 +31,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **The heavy simulation tests are still red, now about 17½ hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). They broke at the Dominion core merge and failed again on today's merge; every run since the break has failed. The game itself is not slower: 103 ms a tick, 13% faster than the weekly median. No fix has been started yet, and the builder has a free window until 21:40. The builder owes a follow-up. Nothing for you.
+- **The heavy simulation tests are still red, now about 18 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). They broke at the Dominion core merge and failed again on today's merge; every run since the break has failed. The game itself is not slower: 102 ms a tick, 14% faster than the weekly median. No fix has been started yet, and the builder has a free window until 21:40. The builder owes a follow-up. Nothing for you.
 - Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, and all scheduled lanes are on time. The cleanup job's last summary has 5 old worktrees waiting for a keep-or-delete decision; that is housekeeping for the agents. No new messages from you on Discord.
