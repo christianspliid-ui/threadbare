@@ -157,3 +157,45 @@ The derived meta-property tracking an actor's integrity-of-self and centrality t
 **Status:** canonical
 
 A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for the Ascendant. Both conditions must pass for the action to appear in the action pool. A prerequisite's capability number is a **reach share** (0–1), read against the actor's full standing in the Reach — training, traits, items and company — never against the raw store or the dice curve (THR-1562; see `[[Domain Capability]]`).
+
+---
+
+### Offering
+
+**Aliases:** the world's offering; *Three powers stir* (player-facing title)
+**Also see:** `[[Rung]]`, `[[Card Progression]]`, `[[Key Card]]`
+**Status:** canonical (proposed [THR-1838](https://linear.app/threadbare/issue/THR-1838), seated with the build, [THR-1811](https://linear.app/threadbare/issue/THR-1811))
+
+The beat in which the world offers a god three cards, about once a day. The god takes up one, paid in essence it has *earned* through the card's sphere (or from its first sphere at double), or lets them pass; an offering not entered passes when the day turns. Spending on an offering never lowers the earned counter. Code: `beat.offering`, beat kind `offering`; `src/engine/godProgression.ts`.
+
+**Collisions, reconciled:** *Omen* stays the omen track (`[[Omen]]` in Encounters.md), the card `divine.omen` and the Omens panel; the offering is never called an omen on screen. *Within reach* stays the Codex badge ("you may yet hold this", `codexRunState.ts`); the offering's price phrases avoid it: *Paid from {sphere}* · *From {primary}, at double* · *Beyond you yet*.
+
+---
+
+### Rung
+
+**Aliases:** the god's ladder step; prose words *touch / hand / will / wonder*
+**Also see:** `[[Offering]]`, `[[Key Card]]`, `[[Dominion]]`
+**Status:** canonical (THR-1838 / THR-1811)
+
+One of four steps of a run's card ladder, opened by the god's attunement marks summed over its bought spheres (`PROGRESSION_RUNG_MARKS` 0 / 3 / 6 / 8; rung 1 also waits for the opening spine). A rung only rises. It is never shown as a number. Distinct from `rarityTier` (`[[Rarity Band]]`) and from forecast and spotlight tiers. Code anchor: `rungMarks` / `rungForMarks` in `src/engine/godProgression.ts`.
+
+---
+
+### Key Card
+
+**Aliases:** rung gift
+**Also see:** `[[Rung]]`, `[[Card Progression]]`
+**Status:** canonical (THR-1838 / THR-1811)
+
+A card gifted when a rung opens, because it opens a card family, drives the Dominion loop, or tends the god's threads (`progression.giftBy: 'rung'`). Keys arrive one at a time, `RUNG_GIFT_SPACING` apart; the second rung's first key is the god's secondary reach signature. A key the god already holds is skipped.
+
+---
+
+### Card Progression
+
+**Aliases:** the `progression` block
+**Also see:** `[[Rung]]`, `[[Offering]]`
+**Status:** canonical (THR-1838 / THR-1811)
+
+The data on a god card that places it on the ladder: `tier` (1–4), `offer` (market / gift), `giftBy` (spine / milestone / rung / signature), `generic`, `pricedIn`, `offerWeight`, `flags`. Required on every ascendant-castable template (`npm run check:god-card-progression`). The distribution is tuned by editing the card, never code.

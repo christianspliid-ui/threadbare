@@ -104,7 +104,7 @@ import { applyEncounterGrowth, recordTierCross } from './capabilityGrowth';
 import { recordArtifactEncounterPresence } from './artifactTraits';
 import { applyChainStageCompletion } from './encounterChains';
 import { handleTierPromotion } from './tierPromotion';
-import { accruePlayerReachPractice } from './phaseAscendantProgression';
+import { accruePlayerReachPractice } from './reachPractice';
 import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';

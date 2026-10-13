@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from '../ascendant-pool-beat-templates';
 import {
-  ASCENDANT_BEAT_POOL,
+  ASCENDANT_BEAT_POOL, RETIRED_POOL_BEATS,
   ASCENDANT_SPINE,
 } from '../ascendant-beat-content';
 import {
@@ -34,7 +34,11 @@ describe('Ascendant pool-beat content templates (THR-514)', () => {
   // Templates whose pool beat was retired but which stay so old saves' histories still
   // resolve for display. THR-1747 moved the Wellspring to a milestone. Only grows when a
   // pool beat leaves the pool on purpose.
-  const RETIRED_POOL_BEAT_TEMPLATE_IDS = new Set(['beat.pool.invest.the_wellspring']);
+  // THR-1811 retired the grant-bearing investment + selection beats (RETIRED_POOL_BEATS).
+  const RETIRED_POOL_BEAT_TEMPLATE_IDS = new Set([
+    'beat.pool.invest.the_wellspring',
+    ...RETIRED_POOL_BEATS.map(b => b.beatId),
+  ]);
 
   it('ships exactly one content template per pool beat, ids matching', () => {
     const live = ASCENDANT_POOL_BEAT_TEMPLATES.filter(t => !RETIRED_POOL_BEAT_TEMPLATE_IDS.has(t.id));

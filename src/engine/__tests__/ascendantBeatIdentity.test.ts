@@ -175,7 +175,8 @@ describe('Ascendant Beat eligibility predicates (THR-516)', () => {
         beats = next;
       }
     }
-    expect(offered.length).toBeGreaterThan(0);
+    // THR-1811: with no group and no open rung the pool may offer nothing at all;
+    // what matters is that no introduction is offered.
     expect(offered.some(id => id.startsWith('beat.pool.intro.'))).toBe(false);
   });
 });
@@ -279,10 +280,6 @@ describe('Ascendant Beat identity bias (THR-516)', () => {
 });
 
 describe('THR-1771 — identity bias on the raw affinity scale; the delivery share is a named target', () => {
-  // The two reference gods (audit 2026-10-06-thr-1769 § 3): the Shepherd (hunger
-  // `gather`) and the showcase god (`DEV_ASCENDANT_IDENTITY`, hunger.witness).
-  const SHEPHERD = { domainAffinities: { heart: 4, stone: 3, star: 2 }, sphereAlignment: { primary: 'life', secondary: 'spirit' } };
-  const SHOWCASE = { domainAffinities: { eye: 4, veil: 3, shadow: 2 }, sphereAlignment: { primary: 'mind', secondary: 'spirit' } };
   const godState = (props: Record<string, unknown>) =>
     stateWith(buildGraph({ ascendantProps: props }), emptyBeats());
   const reachOnly = (reach: string): BeatDefinition => ({
@@ -303,17 +300,8 @@ describe('THR-1771 — identity bias on the raw affinity scale; the delivery sha
       .toBeCloseTo(BEAT_REACH_BIAS_BASE + BEAT_REACH_BIAS_SLOPE * 0.5);
   });
 
-  it('the showcase god no longer draws the_unveiled_eye on 40% of first draws', () => {
-    const eye = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_unveiled_eye')!;
-    const state = godState(SHOWCASE);
-    const bias = computeIdentityBias(eye, state);
-    expect(bias).toBeCloseTo(BEAT_REACH_BIAS_CEILING * BEAT_SPHERE_BIAS_PRIMARY); // 4.5, was 13.5
-    const pool = [...ASCENDANT_BEAT_POOL, ...ALL_DELIVERY_BEATS];
-    const mass = (b: BeatDefinition) =>
-      (BEAT_KIND_WEIGHTS[b.kind] ?? 1) * (b.weight ?? 1) * computeIdentityBias(b, state);
-    const total = pool.reduce((sum, b) => sum + mass(b), 0);
-    expect(mass(eye) / total).toBeLessThan(0.2);
-  });
+  // THR-1811 retired the_unveiled_eye with the other grant-bearing pool beats; the
+  // offering applies the same identity rule per card (godProgression.test.ts).
 
   it('the delivery share of an unbiased first draw equals DELIVERY_FIRST_DRAW_SHARE', () => {
     expect(ALL_DELIVERY_BEATS.length).toBeGreaterThan(0);
@@ -334,42 +322,7 @@ describe('THR-1771 — identity bias on the raw affinity scale; the delivery sha
     expect(deliveryBeatWeightFor(0)).toBe(0); // fail-soft: nothing to weight
   });
 
-  /**
-   * The THR-1769 Monte Carlo, re-run in draw units (audit § 3 recipe: every predicate
-   * holds, an investment beat retires once drawn — THR-1747 E3 — an introduction retires
-   * one group per draw, a delivery beat dedups, a selection stays). Returns the mean draw
-   * index at which each non-identity investment beat first arrives. Deterministic.
-   */
-  function meanInvestmentArrival(props: Record<string, unknown>, runs: number, seed: number): number {
-    const state = godState(props);
-    const rng = mulberry32(seed);
-    const fullPool = [...ASCENDANT_BEAT_POOL, ...ALL_DELIVERY_BEATS];
-    const tracked = ASCENDANT_BEAT_POOL
-      .filter(b => b.kind === 'investment' && !b.identity)
-      .map(b => b.beatId);
-    const MAX_DRAWS = 400;
-    let sum = 0;
-    let n = 0;
-    for (let r = 0; r < runs; r++) {
-      let pool = fullPool.slice();
-      const arrived = new Map<string, number>();
-      for (let d = 1; d <= MAX_DRAWS && arrived.size < tracked.length; d++) {
-        const pick = drawFromPool(pool, rng, b => computeIdentityBias(b, state));
-        if (!pick) break;
-        if (tracked.includes(pick.beatId) && !arrived.has(pick.beatId)) arrived.set(pick.beatId, d);
-        if (pick.kind !== 'selection') pool = pool.filter(b => b !== pick);
-      }
-      for (const id of tracked) {
-        sum += arrived.get(id) ?? MAX_DRAWS;
-        n++;
-      }
-    }
-    return sum / n;
-  }
+  // THR-1811: the THR-1769 investment-arrival Monte Carlo retired with the investment
+  // beats it measured. Distinct hands now come from the offering (godProgression.test.ts).
 
-  it('Monte Carlo: the showcase god\'s investment beats arrive within 20% of the Shepherd\'s', () => {
-    const shepherd = meanInvestmentArrival(SHEPHERD, 300, 1771);
-    const showcase = meanInvestmentArrival(SHOWCASE, 300, 1771);
-    expect(Math.abs(showcase - shepherd) / shepherd).toBeLessThan(0.2);
-  });
 });

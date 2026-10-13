@@ -23,7 +23,6 @@
  */
 
 import type { GameState } from '../types/gameState';
-import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { AscendantProperties } from '../types/influence';
 import type { PendingBeat, GodProgressionState } from '../types/ascendantBeat';
@@ -43,12 +42,9 @@ import { RUNG_GIFT_SPACING, RUNG_BEAT_PRESENTATION } from '../data/god-progressi
 import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
-import { difficultyScaling } from './capabilityGrowth';
+import { rankedAffinityReaches } from './reachPractice';
 import { emitTrace } from './traceBuffer';
 import {
-  PLAYER_PRACTICE_PER_ACTION,
-  PLAYER_DIMINISHING_RETURNS_FACTOR,
-  SECONDARY_REACH_PRACTICE_MULT,
   DEEPENING_BEAT_MAX_PER_TICK,
   MILESTONE_SOURCES_FOR_BEAT,
   MILESTONE_FLOWERING_FOR_BEAT,
@@ -76,66 +72,8 @@ import { isBrokenMortal } from './brokenState';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
-/**
- * The ascendant's permanent reaches, ranked primary-first by affinity value. Stable:
- * ties broken by reach name so the ranking is deterministic across runs.
- */
-function rankedAffinityReaches(props: AscendantProperties): ReachDomain[] {
-  const affinities = props.domainAffinities;
-  if (!affinities) return [];
-  return (Object.entries(affinities) as [ReachDomain, number][])
-    .filter(([, v]) => typeof v === 'number')
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-    .map(([reach]) => reach);
-}
-
-/**
- * Accrue reach practice for one resolved in-domain player action (plan §3.1).
- *
- * Only accrues when `reach` is one of the ascendant's two permanent reaches — a
- * universal (`star`) action fired by an off-domain god does not inflate that reach.
- * Returns the new `reachPractice[reach]` total, or `null` if nothing accrued
- * (missing node, off-domain reach).
- */
-export function accruePlayerReachPractice(
-  graph: WorldGraph,
-  ascendantId: string,
-  reach: ReachDomain,
-  stepDifficulty0to1: number,
-  tick: number,
-): number | null {
-  const node = graph.getNode(ascendantId);
-  if (!node) return null;
-  const props = node.properties as unknown as AscendantProperties;
-  const ranked = rankedAffinityReaches(props);
-  const rank = ranked.indexOf(reach);
-  if (rank < 0) return null; // off-domain: no accrual (plan §3.1)
-
-  // Damping reads the reach share (THR-1580), the same scale the tier reads below, so
-  // practice slows across the whole raw 0–40 range rather than flooring at raw ~15.
-  const currentCap = computeReachShare(graph, ascendantId, reach);
-  const diffScale = difficultyScaling(stepDifficulty0to1 * 100);
-  const diminishing = Math.max(1 - currentCap * PLAYER_DIMINISHING_RETURNS_FACTOR, 0.1);
-  const secondaryMult = rank >= 1 ? SECONDARY_REACH_PRACTICE_MULT : 1;
-  const delta = PLAYER_PRACTICE_PER_ACTION * diffScale * diminishing * secondaryMult;
-
-  const bag: Partial<Record<ReachDomain, number>> = { ...(props.reachPractice ?? {}) };
-  const total = (bag[reach] ?? 0) + delta;
-  bag[reach] = total;
-  node.properties.reachPractice = bag;
-
-  emitTrace({
-    category: 'ascendant.progression.practice',
-    tick,
-    turn: tick,
-    reach,
-    delta,
-    total,
-    summary: `reach practice ${reach} +${delta.toFixed(3)} (now ${total.toFixed(3)})`,
-  } as unknown as EmitInput);
-
-  return total;
-}
+// THR-1811: moved to `reachPractice.ts` (breaks a module cycle); re-exported for existing importers.
+export { accruePlayerReachPractice, rankedAffinityReaches } from './reachPractice';
 
 /**
  * Tick phase: detect god-side tier crossings and enqueue a Deepening beat.
@@ -631,7 +569,7 @@ function stepGodProgression(
         rungMarks: marks,
         queuedGiftIds: gifts,
         summary: `progression.rung_opened: rung ${rung} (${marks} marks), ${gifts.length} key gift(s) queued`,
-      } as unknown as EmitInput);
+      });
     }
 
     let pending: PendingBeat | undefined;
@@ -657,7 +595,7 @@ function stepGodProgression(
           summary: skip
             ? `progression.rung_gift_offered: ${beatId} skipped (${skip})`
             : `progression.rung_gift_offered: ${beatId} → ${cardId}`,
-        } as unknown as EmitInput);
+        });
         if (skip) continue;
         pending = {
           beatId,
@@ -685,11 +623,8 @@ function stepGodProgression(
       ...(chronicle ? { chronicle } : {}),
     };
   } catch (err) {
-    emitTrace({
-      category: 'engine_warning',
-      tick: turn,
-      summary: `stepGodProgression error (turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
-    } as unknown as EmitInput);
+    // Fail-soft (NFP #4): no ladder change this tick; the next tick re-detects.
+    console.warn(`[stepGodProgression] error (turn ${turn}): ${err instanceof Error ? err.message : String(err)}`);
     return {};
   }
 }

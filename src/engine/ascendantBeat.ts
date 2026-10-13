@@ -520,7 +520,9 @@ export function forceOfferBeatById(
     const advanceSpine = spineIdx === beats.spineCursor;
     return { next: offer(beats, def, def.trigger, turn, 0, bound(def), advanceSpine), def };
   }
-  const poolDef = ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId);
+  // THR-1811: a retired grant-bearing pool beat can still be force-offered (debug, old fixtures).
+  const poolDef = ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId)
+    ?? RETIRED_POOL_BEATS.find(b => b.beatId === beatId);
   if (poolDef) {
     return {
       next: offer(beats, poolDef, { kind: 'cadence' }, turn, ASCENDANT_BEAT_POOL.length, bound(poolDef), /*advanceSpine*/ false),
@@ -850,7 +852,7 @@ function offerOffering(
     })),
     expiresTurn,
     summary: `offering.offered: ${picks.join(', ')} (rung ${rung}, ${offerable.length} candidates, passes at ${expiresTurn})`,
-  } as unknown as Parameters<typeof emitTrace>[0]);
+  });
   return offer(beats, OFFERING_BEAT_DEFINITION, { kind: 'cadence' }, turn, poolSize, [], false, {
     offeredActionIds: picks,
     expiresTurn,
@@ -894,7 +896,7 @@ export function phaseAscendantBeatDirector(
           reason: 'expired',
           offeredIds: [...(p.offeredActionIds ?? [])],
           summary: `offering.passed: expired at turn ${turn} (${(p.offeredActionIds ?? []).join(', ')})`,
-        } as unknown as Parameters<typeof emitTrace>[0]);
+        });
         return { ascendantBeats: resolveAscendantBeat(beats, { outcome: 'passed', turn }) };
       }
       emitSkipped(turn, 'pending', p.beatId);
@@ -1148,7 +1150,7 @@ function resolveOffering(
       reason,
       offeredIds,
       summary: `offering.passed: ${reason}${chosenActionId ? ` (${chosenActionId})` : ''}`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
     return {
       state: { ...state, ascendantBeats: resolveAscendantBeat(beats, { outcome: 'passed', turn }) },
       resolved: true,
@@ -1181,7 +1183,7 @@ function resolveOffering(
     actionId: chosenActionId,
     via: 'offering',
     summary: `action.unlock.granted: ${chosenActionId} (via offering)`,
-  } as unknown as Parameters<typeof emitTrace>[0]);
+  });
   emitTrace({
     tick: turn,
     category: 'offering.taken',
@@ -1192,7 +1194,7 @@ function resolveOffering(
     offSphere: pay.word === 'at_double',
     spendableAfter,
     summary: `offering.taken: ${chosenActionId} for ${pay.amount} ${pay.sphere}${pay.word === 'at_double' ? ' (at double)' : ''}`,
-  } as unknown as Parameters<typeof emitTrace>[0]);
+  });
 
   const props = state.graph.getNode(state.ascendantId)?.properties as AscendantProperties | undefined;
   const chronicle = {

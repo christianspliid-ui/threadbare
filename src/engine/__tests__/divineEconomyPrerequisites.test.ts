@@ -25,7 +25,7 @@ import {
   MILESTONE_HELD_GROUND_FLOWERING,
 } from '../../data/player-progression';
 import { getMilestoneBeatById } from '../../data/ascendant-milestone-beats';
-import { ASCENDANT_ACTION_BUCKETS, ASCENDANT_BEAT_POOL } from '../../data/ascendant-beat-content';
+import { ASCENDANT_ACTION_BUCKETS, ASCENDANT_BEAT_POOL, RETIRED_POOL_BEATS } from '../../data/ascendant-beat-content';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { SOURCE_CONTROL_SUSTAIN } from '../../data/essence-sources';
 import { SPHERE_NAMES } from '../../types/index';
@@ -241,7 +241,8 @@ describe('investment beats retire once their grants are held (THR-1747 E3)', () 
   });
 
   it('an investment beat with no eligibility (the_unveiled_eye shape) also retires', () => {
-    const eye = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_unveiled_eye')!;
+    // THR-1811 retired it from the cadence pool; it stays resolvable for old saves.
+    const eye = RETIRED_POOL_BEATS.find(b => b.beatId === 'beat.pool.invest.the_unveiled_eye')!;
     expect(eye.eligibility).toBeUndefined();
     expect(isBeatEligible(eye, stateWith([...(eye.grantsActionIds ?? [])]))).toBe(false);
     expect(isBeatEligible(eye, stateWith([]))).toBe(true);

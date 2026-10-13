@@ -398,7 +398,7 @@ not "fix" ambition display there.
 Contract rows not yet written for: War & Armies (the territorial seam and, since THR-1564, the war news — `war-news-reaches-chronicle` — are covered; the rest audit-on-touch) · Factions & Succession (the territorial seam and, since THR-1448, the held-town standing — `held-town-opens-realm-standing`, `held-town-supplies-keeper-content-past-rank-access` — are covered; the rest audit-on-touch) · Rival Schemes ·
 Doom/Journey (since THR-1774 the archetype is drawn at init: `selectDoomArchetype` in `doomArchetypeSelection.ts` writes `doomDefinition.archetype`, which every identity-matrix and omen reader already keys on, shape unchanged; the doom bar sigil ↔ doom-card sphere seam reads one table, `DOOM_ARCHETYPE_SPHERE` in `doom-archetype-presentation.ts`, held equal to `getDoomCardSpheres` by test; the rest audit-on-touch) · Mandate · Essence & Divine Economy (since THR-1747 the source-upkeep seam is covered: `source-upkeep-debits-primary-pool`, producer `phaseEssenceSources` → consumers the essence bar's `computeEssenceIncome` and the Covenants block's `selectCovenantRows`; since THR-1749 the income split is covered too: `sphere-points-split-essence-income`, producer `createAscendant` writing the bought `spherePoints` → consumers `computeEssenceGeneration` and `computeEssenceIncome` through the one shared `distributeBySpherePoints`; since THR-1748 the Dominion seams are covered: `dominion-band-prices-god-casts` (the target's band → card cost in `getTargetActionSlots` and `preparePlayerCast`, and the player-only `sphereFactor`, both behind `DOMINION_PRICES_LIVE`), `dominion-band-scales-thread-yield-and-source-income` (`computeThreadYield` / `sourceIncomeMultiplier` → ledger and essence bar), `sphere-points-read-by-dominion`, `essence-earned-attunes-god-spheres`, `rival-presses-god-turf` and `control-effects-tend-god-turf` (`phaseDominion`); the rest audit-on-touch) · Encounters & Dilemmas (core) · Culture (the encounter-opening seam is covered since THR-1635; the rest audit-on-touch) ·
 Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
-Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
+Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats (since THR-1811 the card ladder is covered: offering-take-up-unlocks-card, rung-gift-unlocks-key, rung-reads-attunement-marks, offering-respects-reach-gate; the rest audit-on-touch) ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·
 Effects & Conditions (partially covered) · Agent Lifecycle · Intelligence & Knowledge ·
 Spheres & Quintessence — plus the **init-time systems the tick-phase inventory cannot see**:
@@ -432,7 +432,17 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-12 by Claude Code (THR-1815 — say it before it happens). **Added**
+2026-10-14 by Claude Code (THR-1811 — god cards carry their progression as data). **Added** four
+🟢 LIVE rows: `offering-take-up-unlocks-card` and `rung-gift-unlocks-key` (Ascendant Beats &
+Progression → Essence & Divine Economy: the offering and the rung gifts write the one
+`unlockedActionIds` list the drawer reads), `rung-reads-attunement-marks` (Spheres & Quintessence
+→ Ascendant Beats & Progression: the rung sums `getAttunementMarksCrossed`; spending writes
+`offeringSpentBySphere`, never the earned counter) and `offering-respects-reach-gate` (one
+`isWithinGodReaches` predicate, read by the drawer and the offering). **Retired** the grant-bearing
+pool beats (ten investment, two selection, `beat.pool.invest.reach_signature`) from the cadence
+draw; they stay resolvable by id as `RETIRED_POOL_BEATS`. Ascendant Beats leaves the
+unaudited list for the card ladder; the rest stays audit-on-touch.
+Earlier: 2026-10-12 by Claude Code (THR-1815 — say it before it happens). **Added**
 `tier-cross-reaches-the-info-card` (Encounters & Dilemmas → Attention, Chronicle & Narrative:
 both growth sites — `unifiedActionResolution.ts` and the legacy `encounter.ts` road — call
 `recordTierCross` inside their `tierCrossed` branch, writing the agent property

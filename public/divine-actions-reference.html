@@ -278,12 +278,19 @@
     <p>You do not buy them. A signature is <span class="term">permanently reach-gated</span> — a signature for a Reach outside your domains will never be offered — and it arrives as a <span class="term">moment in your story</span>, not a purchase:</p>
     <ul>
       <li>Your <span class="term">primary</span> signature is granted at the culmination of the opening spine — Beat 4, "A Path Opens" — alongside your choice of god-path.</li>
-      <li>Your <span class="term">secondary</span> arrives later, when the living world next calls on your deeper domain.</li>
+      <li>Your <span class="term">secondary</span> arrives when your growth opens the world's deeper works: it is the first gift of your second rung.</li>
     </ul>
     <div class="callout purple">
       <div class="callout-title">Signatures scale with your sphere power</div>
       <p>How hard a signature lands is not fixed. It scales with your <span class="term">sphere power</span> — the same cosmic strength that colours the rest of your expression. A god steeped in their sphere throws a heavier signature than one only lightly aligned; the price rises with the potency, so mastery makes the act <em>mightier</em>, never merely cheaper.</p>
     </div>
+  </section>
+
+  <section class="section">
+    <h2>What the world offers<span class="lead">Most of your powers you take up, one a day, with essence you have earned.</span></h2>
+    <p>The opening gifts and the milestones hand you some powers. Most of the rest you take up from <span class="term">what the world offers</span>. Each day <em>three powers stir</em>, drawn to who you are. You take up one, or let them pass; they pass when the day turns.</p>
+    <p>You pay in essence you have <span class="term">earned</span>: what flowed into a sphere as you spent through it. Your casting pool is untouched. Each card says who pays, never how much: <em>Paid from Spirit</em> (its own sphere covers it), <em>From Life, at double</em> (your first sphere covers it, at twice the price), or <em>Beyond you yet</em>. Taking a card up never lowers your attunement.</p>
+    <p>As your attunement grows across the spheres you bought, you climb four <span class="term">rungs</span>: <em>touch, hand, will, wonder</em>. Each rung lets the world offer deeper works, and gives you its <span class="term">key cards</span> one at a time. Your second reach signature is the second rung's first key.</p>
   </section>
 
   <section class="section">
@@ -383,7 +390,16 @@
       <ul>
         <li>The eight headline powers are the <code>invest.&lt;reach&gt;.&lt;name&gt;</code> templates in <code>REACH_SIGNATURE_CONTENT_TEMPLATES</code> (<code>src/data/reach-signature-content.ts</code>), e.g. <code>invest.gold.patronage_network</code>, <code>invest.shadow.brokers_web</code>, <code>invest.star.beacon_of_fate</code>. Per-reach base cost lives in <code>SIGNATURE_BASE_COST</code>; they are catalogued <code>reach-gated</code> in <code>ASCENDANT_ACTION_BUCKETS</code>.</li>
         <li>Signature magnitude uses <code>SIGNATURE_DEFAULT_BASE_VALUE = 3</code> (composed default) or <code>SIGNATURE_BESPOKE_BASE_VALUE = 5</code> (authored <code>SIGNATURE_MATRIX</code> entries with a richer trigger), then scaled by <code>spherePowerMultiplier</code> at fire time.</li>
-        <li>Acquisition is story-driven, not menu-driven: <code>BeatDefinition.grantsReachSignature</code> resolves per-run from ranked domain affinities in <code>resolvePendingBeat</code>. Primary lands at Beat 4 ("A Path Opens"); secondary via the <code>beat.pool.invest.reach_signature</code> pool beat (<strong>THR-523</strong>).</li>
+        <li>Acquisition is story-driven, not menu-driven: <code>BeatDefinition.grantsReachSignature</code> resolves per-run from ranked domain affinities in <code>resolvePendingBeat</code>. Primary lands at Beat 4 ("A Path Opens"); secondary is the first gift of rung 2, <code>rungGiftsFor(2)</code> (<strong>THR-523</strong>, <strong>THR-1811</strong>; the old <code>beat.pool.invest.reach_signature</code> pool beat is retired).</li>
+      </ul>
+
+      <h3>The card ladder and the offering <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Every god card carries a <code>progression</code> block (<code>CardProgression</code> on <code>UnifiedActionTemplate</code>): <code>tier</code> 1–4, <code>offer</code> market | gift, <code>giftBy</code> spine | milestone | rung | signature, <code>generic</code>, <code>pricedIn</code>, <code>offerWeight</code>, <code>flags</code>. 143 cards: 93 market, 50 gift, 32 generic (the THR-1794 table). Gate: <code>npm run check:god-card-progression</code>; iteration model: <code>npm run model:god-cards</code>.</li>
+        <li>Rungs open at <code>PROGRESSION_RUNG_MARKS</code> 0 / 3 / 6 / 8 attunement marks summed over bought spheres (<code>rungMarks</code>, <code>src/engine/godProgression.ts</code>); rung 1 waits for the spine. Keys queue and arrive <code>RUNG_GIFT_SPACING</code> (36) ticks apart as <code>rung_gift</code> beats; a held key is skipped.</li>
+        <li>The offering is a cadence-draw beat (kind <code>offering</code>, weight <code>OFFERING_BEAT_WEIGHT</code> 8): <code>OFFERING_SIZE</code> 3 cards from <code>offerableCards</code> (market, tier ≤ rung, not held, inside the god's reaches via <code>isWithinGodReaches</code>), weighted by the Director's identity bias × <code>FRESH_RUNG_WEIGHT</code>. It expires at the first day boundary at least <code>OFFERING_MIN_TTL_TICKS</code> (6) later. <code>OFFERING_IN_SPHERE_ONLY</code> (default off) restricts it to in-sphere and sphereless cards.</li>
+        <li>Price <code>PRICE_BY_TIER</code> 20 / 40 / 80 / 120 × (1 + 0.1 × cards already taken at that tier); paid from <code>essenceEarnedBySphere − offeringSpentBySphere</code>, or the primary at <code>OFF_SPHERE_PRICE_MULT</code> 2. The earned counter is never written. Traces: <code>offering.offered | taken | passed</code>, <code>progression.rung_opened</code>, <code>progression.rung_gift_offered</code>. Debug: <code>__DEBUG.getGodProgression()</code>, <code>__DEBUG.forceOffering()</code>.</li>
+        <li>The grant-bearing pool beats (ten investment, two selection, the reach-signature beat) retired from the cadence draw; they stay resolvable by id (<code>RETIRED_POOL_BEATS</code>).</li>
       </ul>
 
       <h3>Rekindle the Thread — the restore verb <span class="flag design">DESIGN</span></h3>
