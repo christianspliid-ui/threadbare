@@ -1,6 +1,7 @@
 /**
  * THR-1748 — Dominion prices and odds with `DOMINION_PRICES_LIVE` ON (module mock;
- * the shipped default is off — THR-1750 flips it with the card chip).
+ * kept so this file pins the live path even if the flag is ever turned off again;
+ * THR-1750 shipped it on with the card chip).
  *
  * Done-when (plan § Done when): over ≥ 300 seeded streams the same card costs less on
  * a Sovereign place than on a Hostile one, and lands more often there by the

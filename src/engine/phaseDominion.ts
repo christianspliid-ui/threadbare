@@ -74,6 +74,12 @@ export interface DominionLedger {
   /** Drops and rises waiting for today's chronicle. */
   dayDrops: DominionDayDrop[];
   dayRises: Record<string, DominionBand>;
+  /**
+   * THR-1750 — the drops the last day-boundary chronicle consumed. The boundary write
+   * clears `dayDrops` in the same tick a drop may land, so the map's band-drop badge
+   * reads its cause here to quote the raid line rather than the untended one.
+   */
+  lastDayDrops?: DominionDayDrop[];
   /** The god's bought-sphere scores at the end of the last tick (power-line diff). */
   godScores: Partial<Record<SphereName, number>>;
   daySpheres: SphereName[];
@@ -489,7 +495,7 @@ export function afterSpherePressure(state: GameState): Partial<GameState> {
         message,
         significance: DOMINION_CHRONICLE_SIGNIFICANCE,
       }));
-      next = { ...next, dayDrops: [], dayRises: {}, daySpheres: [] };
+      next = { ...next, lastDayDrops: next.dayDrops, dayDrops: [], dayRises: {}, daySpheres: [] };
     }
     writeLedger(graph, ascendantId, next);
   } catch {

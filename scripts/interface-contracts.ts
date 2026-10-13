@@ -1637,11 +1637,46 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Essence & Divine Economy',
     intent:
-      'Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target\'s Dominion band — `dominionOf` over the target\'s sphere scores against the god\'s bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver\'s `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both sit behind `DOMINION_PRICES_LIVE` (false) until THR-1750 ships the card chip.',
+      'Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target\'s Dominion band — `dominionOf` over the target\'s sphere scores against the god\'s bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver\'s `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip.',
     ulTerms: ['Dominion', 'Dominion Band', 'Sphere'],
     mechanism: { kind: 'function', symbols: ['castTargetBand', 'dominionScaledEssenceCost', 'dominionSphereFactor'] },
     writeSites: ['src/engine/dominion.ts'],
     readSites: ['src/engine/targetActions.ts', 'src/engine/playerCastDispatch.ts', 'src/engine/unifiedActionResolution.ts'],
+  },
+  {
+    id: 'dominion-band-projected-to-hex-map',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'The player sees their turf and its edge (THR-1750). Hexes are not nodes, so `dominionProjection.ts` lends each land hex the band of the nearest top-level place within `DOMINION_HEX_FILL_RADIUS` (the terrain read past it) — a runtime cache owned by `ensureDominionProjection`, never stored on a tile. `dominionLensVM` feeds the HexMapV2 lens (dim, Sovereign glow, gold frontier) behind the key-1 switch; the band-drop badge reads the ledger `phaseDominion` writes.',
+    ulTerms: ['Dominion', 'Dominion Band'],
+    mechanism: { kind: 'function', symbols: ['buildDominionHexProjection', 'frontierEdges', 'ensureDominionProjection', 'dominionLensVM'] },
+    writeSites: ['src/engine/dominionProjection.ts', 'src/engine/simulationRuntime.ts'],
+    readSites: ['src/components/Game/GameView.tsx', 'src/components/HexMapV2/HexMapV2.tsx'],
+  },
+  {
+    id: 'dominion-band-on-card-and-cast-bar',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      '"Cheaper here" is visible before the spend (THR-1750). `getTargetActionSlots` carries the par (Foreign) price as `WheelSlot.dominionParCost` beside the band-priced `essenceCost`; `dominionChipFields` turns it into the card chip with ghost or red pips (never on Foreign ground or a free card), and the ActionDrawer cast bar words the band\'s price and odds.',
+    ulTerms: ['Dominion', 'Dominion Band', 'Essence'],
+    // The slot field is the seam; `dominionChipFields` (card) and `castBarDominionClause`
+    // (cast bar, reads `dominionBand`) are its two readers.
+    mechanism: { kind: 'property', symbols: ['dominionParCost'] },
+    writeSites: ['src/engine/targetActions.ts'],
+    readSites: ['src/components/Game/actionCardModel.ts'],
+  },
+  {
+    id: 'dominion-band-on-sheets',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'Every sheet says the band in a word (THR-1750). `dominionSheetVM` reads `dominionOf` (and `isTended` for the place tend line); the place, faction and artifact pages show the box and the mortal sheet a row. Components never read the match number.',
+    ulTerms: ['Dominion', 'Dominion Band'],
+    mechanism: { kind: 'function', symbols: ['dominionSheetVM', 'dominionTendLine'] },
+    writeSites: ['src/engine/dominionViewModels.ts'],
+    readSites: ['src/components/Game/GameView.tsx', 'src/components/Game/DominionBox.tsx'],
   },
   {
     id: 'dominion-band-scales-thread-yield-and-source-income',

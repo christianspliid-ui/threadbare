@@ -52,6 +52,8 @@ import { describeItem } from '../../engine/itemGenerator/describeItem';
 import { isAgentGone } from '../../engine/groups/groupQueries';
 import type { GeneratedItemProvenance } from '../../engine/itemGenerator/types';
 import type { AttachmentEffect } from '../../types/effects';
+import { DominionBox } from './DominionBox';
+import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 /** One plain-words block: a small-caps heading, then a sentence per line. */
 function GeneratedBlock({ label, lines }: { label: string; lines: readonly string[] }) {
@@ -93,6 +95,8 @@ interface ArtifactSheetProps {
    * Read-only — never used for anything but invalidation.
    */
   worldVersion?: number;
+  /** THR-1750 — the god's band on this artifact (its bearer's; Foreign unborne). Null hides it. */
+  dominion?: DominionSheetVM | null;
 }
 
 /** Copy shown when the graph holds no prose for this artifact (a designed state, Law 4). */
@@ -120,6 +124,7 @@ export const ArtifactSheet = React.memo(function ArtifactSheet({
   onClose,
   artifactId,
   graph,
+  dominion,
 }: ArtifactSheetProps) {
   const node = artifactId && graph ? graph.getNode(artifactId) : undefined;
   const props = node?.properties ?? {};
@@ -195,6 +200,8 @@ export const ArtifactSheet = React.memo(function ArtifactSheet({
               {kindLine && <span>{kindLine}</span>}
             </div>
           )}
+
+          <DominionBox vm={dominion ?? null} flush />
 
           {/* THR-1570 — who made it, as a link to their sheet (the name alone, unlinked,
               when the maker is gone: never a dead link, Law 21). */}

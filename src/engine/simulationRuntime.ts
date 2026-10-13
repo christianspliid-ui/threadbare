@@ -33,6 +33,11 @@ import { buildAreaProjection } from './areaProjection';
 import type { AreaProjection } from './areaProjection';
 import { buildRealmProjection, emptyRealmProjection, fingerprintFactionControls } from './realmProjection';
 import type { RealmProjection } from './realmProjection';
+import { buildDominionHexAssignment, buildDominionHexProjection, countHexBands, diffDominionDrops, emptyDominionProjection, fingerprintPlaceBands, frontierEdges } from './dominionProjection';
+import type { DominionHexAssignment, DominionHexProjection, DominionDropBadge } from './dominionProjection';
+import type { DominionBand } from '../data/dominion-content';
+import { DOMINION_LENS_REFRESH_TICKS } from '../data/dominion-ui-content';
+import { readDominionLedger } from './phaseDominion';
 import type { HoldStandingLedgerEntry } from './holdStanding';
 import type { RoleCensus } from './binding/roleCensus';
 import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry';
@@ -269,6 +274,20 @@ export interface SimulationRuntime {
   realmProjectionFingerprint: string | null;
 
   /**
+   * The Dominion lens (THR-1750): hex → the nearest places (structure-only) and the
+   * bands applied to it. Runtime-owned like the realm projection; a band is never
+   * stored on a tile or a node. Built only while the lens is on.
+   */
+  dominionAssignment: DominionHexAssignment | null;
+  dominionProjection: DominionHexProjection | null;
+  /** The ledger bands the drop diff last read (null until the first read). */
+  dominionPrevBands: Record<string, DominionBand> | null;
+  /** Band-drop badges still on the map (§ Decided 6). */
+  dominionDrops: DominionDropBadge[];
+  /** The tick the drop diff last ran on — it runs once per tick. */
+  dominionDropsReadAt: number;
+
+  /**
    * Which hold standings this session has announced (THR-1448): stance `controlId`
    * → the Realm node id the standing named, or `null` for a hold in the wilds.
    *
@@ -376,6 +395,11 @@ export function createSimulationRuntime(): SimulationRuntime {
     realmProjection: null,
     realmProjectionBuiltAt: -1,
     realmProjectionFingerprint: null,
+    dominionAssignment: null,
+    dominionProjection: null,
+    dominionPrevBands: null,
+    dominionDrops: [],
+    dominionDropsReadAt: -1,
     holdStandings: new Map(),
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
@@ -679,12 +703,119 @@ export function ensureRealmProjection(
 }
 
 /**
+ * The Dominion lens projection (THR-1750 § E2), owned by the session.
+ *
+ * - The assignment (hex → the nearest places) is rebuilt when `structuralCacheVersion`
+ *   moves.
+ * - The bands are re-read when the lens opens (`lensOpened`), when a place's band in
+ *   the ledger moved since the last build, or every `DOMINION_LENS_REFRESH_TICKS`.
+ *
+ * Only call this while the lens is on; the drop badge reads `updateDominionDrops`.
+ * Fail-soft: a throwing build keeps the previous projection and traces `reason: 'error'`;
+ * this runs after the tick, so the tick loop never sees it.
+ */
+export function ensureDominionProjection(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+  tiles: HexTile[],
+  ascendantId: string,
+  tick: number,
+  lensOpened = false,
+): DominionHexProjection {
+  let reason: 'structure' | 'refresh' | 'band_change' | 'lens_opened' | null = null;
+  try {
+    if (!runtime.dominionAssignment || runtime.dominionAssignment.builtAtStructure < runtime.structuralCacheVersion) {
+      runtime.dominionAssignment = buildDominionHexAssignment(graph, tiles, runtime.structuralCacheVersion);
+      reason = 'structure';
+    }
+    const current = runtime.dominionProjection;
+    if (reason === null) {
+      if (!current || lensOpened) reason = 'lens_opened';
+      else if (tick - current.builtAtTick >= DOMINION_LENS_REFRESH_TICKS || tick < current.builtAtTick) reason = 'refresh';
+      else {
+        const ledgerBands = readDominionLedger(graph, ascendantId).bands;
+        const subset = new Map<string, DominionBand>();
+        for (const id of current.placeBand.keys()) if (ledgerBands[id]) subset.set(id, ledgerBands[id]);
+        if (subset.size > 0 && fingerprintPlaceBands(subset) !== current.placeBandFingerprint) reason = 'band_change';
+      }
+    }
+    if (reason === null) return current!;
+
+    const projection = buildDominionHexProjection(graph, ascendantId, runtime.dominionAssignment, tick);
+    runtime.dominionProjection = projection;
+    const edges = frontierEdges(projection);
+    emitTrace({
+      category: 'dominion.lens_rebuilt',
+      tick,
+      summary: `dominion lens rebuilt (${reason}) — ${projection.placeBand.size} places, ${edges.length} frontier edges`,
+      reason,
+      places: projection.placeBand.size,
+      byBand: countHexBands(projection),
+      frontierEdges: edges.length,
+      terrainFallbackHexes: projection.terrainFallbackHexes,
+    });
+    return projection;
+  } catch (err) {
+    console.warn('[ensureDominionProjection] build failed; keeping the last good projection', err);
+    emitTrace({
+      category: 'dominion.lens_rebuilt',
+      tick,
+      summary: 'dominion lens rebuild failed; previous projection kept',
+      reason: 'error',
+      places: 0,
+      byBand: { hostile: 0, foreign: 0, touched: 0, held: 0, sovereign: 0 },
+      frontierEdges: 0,
+      terrainFallbackHexes: 0,
+    });
+    return runtime.dominionProjection ?? emptyDominionProjection(tick, runtime.structuralCacheVersion);
+  }
+}
+
+/**
+ * Advance the band-drop badges (THR-1750 § Decided 6) once per tick, lens on or off —
+ * the drop is news. Reads the ledger `phaseDominion` writes; never throws.
+ */
+export function updateDominionDrops(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+  ascendantId: string,
+  tick: number,
+): DominionDropBadge[] {
+  if (runtime.dominionDropsReadAt === tick) return runtime.dominionDrops;
+  // The clock went backwards (a cycle restart or a load without a reset): the badges
+  // and the band diff belong to another timeline.
+  if (tick < runtime.dominionDropsReadAt) {
+    runtime.dominionDrops = [];
+    runtime.dominionPrevBands = null;
+  }
+  try {
+    const ledger = readDominionLedger(graph, ascendantId);
+    const next = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops);
+    // Keep the same array when nothing changed, so the map's badge layer is not rebuilt every tick.
+    const same = next.length === runtime.dominionDrops.length
+      && next.every((d, i) => d.placeId === runtime.dominionDrops[i].placeId && d.untilTick === runtime.dominionDrops[i].untilTick);
+    if (!same) runtime.dominionDrops = next;
+    runtime.dominionPrevBands = { ...ledger.bands };
+  } catch (err) {
+    console.warn('[updateDominionDrops] diff failed; badges unchanged', err);
+  }
+  runtime.dominionDropsReadAt = tick;
+  return runtime.dominionDrops;
+}
+
+/**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
  * Does NOT reset balance telemetry — telemetry spans the full session by design.
  */
 export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.encounterCache = null;
+  // THR-1750 — a new cycle restarts the tick at 0, so tick-stamped lens state goes too:
+  // a badge minted late last cycle would otherwise outlive its 36 ticks by a whole cycle.
+  runtime.dominionProjection = null;
+  runtime.dominionDrops = [];
+  runtime.dominionPrevBands = null;
+  runtime.dominionDropsReadAt = -1;
   runtime.distanceMatrix = null;
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;

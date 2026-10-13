@@ -42,6 +42,8 @@ import {
   NARRATIVE_LAYER_ICONS,
   NARRATIVE_LAYER_LOCKED_ICON,
 } from '../../data/action-card-display';
+import type { DominionBand } from '../../data/dominion-content';
+import { DOMINION_CAST_CLAUSE, DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 
 // ─── Layer Filter Types ───────────────────────────────────────────────────
 
@@ -78,6 +80,18 @@ const HAND_GAP_PX = 12;
  * interesting.
  */
 const HAND_MAX_WIDTH_PX = 1400;
+
+/** THR-1750 — the cast-bar clause for the drawer's target band; none on Foreign ground. */
+export function castBarDominionClause(slots: readonly WheelSlot[]): { clause: string; band: DominionBand } | null {
+  const band = slots.find(s => s.dominionBand)?.dominionBand;
+  if (!band || band === 'foreign') return null;
+  // Same rule as the card chip (Law 56, PC-6): say the ground's price only when it
+  // moved a price in this hand — small costs round back to par on mild ground.
+  const moved = slots.some(s => s.dominionParCost !== undefined && s.essenceCost > 0 && s.dominionParCost !== s.essenceCost);
+  if (!moved) return null;
+  const clause = DOMINION_CAST_CLAUSE[band];
+  return clause ? { clause, band } : null;
+}
 
 // ─── Props ────────────────────────────────────────────────────────────────
 
@@ -119,6 +133,12 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
   }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
     const [showLocked, setShowLocked] = useState(false);
+
+    const dominionClause = useMemo(() => castBarDominionClause(slots), [slots]);
+    const castClause = dominionClause?.clause ?? null;
+    // Red is loss (Law 31); every other band in the supporting colour — the
+    // frontier line keeps the one gold emphasis.
+    const castClauseColor = dominionClause?.band === 'hostile' ? 'var(--negative)' : 'var(--text-secondary)';
 
     /** The armed card. Law 48: arming and firing are two acts. */
     const [armedSlotId, setArmedSlotId] = useState<string | null>(null);
@@ -362,6 +382,13 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
               }}
             >
               Casting on <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{targetName}</span>
+              {/* THR-1750 — the ground's price and odds, said before the spend. Every
+                  slot shares the target, so the first band is the drawer's band. */}
+              {castClause && (
+                <Tooltip id={DOMINION_TOOLTIP_IDS.chip} fit>
+                  <span data-testid="action-cast-dominion" style={{ color: castClauseColor }}>{` · ${castClause}`}</span>
+                </Tooltip>
+              )}
             </span>
           )}
           <Button

@@ -66,6 +66,7 @@ export const LAYER_NAMES = [
   'signifiers', 'locations', 'agents_portrait', 'agents_dot',
   'agents_retinue', 'events', 'labels', 'fog',
   'armies', 'battle_indicator', 'siege_ring', 'hex_pulse',
+  'dominion_lens',
 ] as const;
 
 export type LayerName = typeof LAYER_NAMES[number];
@@ -83,6 +84,13 @@ export type LayerName = typeof LAYER_NAMES[number];
  * NFP #2: Complete table — every layer x tier combination is explicit.
  */
 export const ZOOM_VISIBILITY_MATRIX: Record<LayerName, Record<ZoomTier, boolean>> = {
+  /** THR-1750 Dominion lens — visible at every zoom band while the lens is on */
+  dominion_lens: {
+    'hero-local': true,
+    'regional': true,
+    'continental': true,
+    'full-world': true,
+  },
   /** Base terrain fill — always visible */
   hex_fill: {
     'hero-local': true,

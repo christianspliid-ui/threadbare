@@ -98,7 +98,7 @@ type Point2D = { x: number; y: number };
  * @param z - Z offset for the edge
  * @param positions - Output array (flat xyz per vertex)
  */
-function buildThickEdge(
+export function buildThickEdge(
   x0: number, y0: number,
   x1: number, y1: number,
   halfWidth: number,
@@ -154,7 +154,7 @@ function hexVertexWorld(hex: Point2D, vertexIndex: number, size: number): Point2
  * @param dir - Direction index (0-5) from hexNeighbors()
  * @param size - HEX_SIZE
  */
-function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { start: Point2D; end: Point2D } {
+export function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { start: Point2D; end: Point2D } {
   const [v0, v1] = EDGE_VERTICES[dir];
   return {
     start: hexVertexWorld(hexCenter, v0, size),

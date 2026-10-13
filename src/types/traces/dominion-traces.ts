@@ -81,3 +81,16 @@ export interface DominionReadTrace extends TraceBase {
   /** Yield trace only: every thread this tick, with its band. */
   lines?: Array<{ targetId: string; tier: number; band: DominionBand; yield: number }>;
 }
+
+/** The Dominion lens projection rebuilt (THR-1750 § Tracing). */
+export interface DominionLensRebuiltTrace extends TraceBase {
+  category: 'dominion.lens_rebuilt';
+  /** 'error' = the build threw; the previous projection was kept. */
+  reason: 'structure' | 'refresh' | 'band_change' | 'lens_opened' | 'error';
+  /** Places read. */
+  places: number;
+  /** Land hexes per band. */
+  byBand: Record<DominionBand, number>;
+  frontierEdges: number;
+  terrainFallbackHexes: number;
+}

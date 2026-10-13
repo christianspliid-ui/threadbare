@@ -208,15 +208,15 @@ describe('THR-1748 Dominion — the read', () => {
   });
 });
 
-describe('THR-1748 Dominion — consumers (shipped flag off)', () => {
-  it('ships with DOMINION_PRICES_LIVE = false', () => {
-    expect(DOMINION_PRICES_LIVE).toBe(false);
+describe('THR-1748 Dominion — consumers (flag on since THR-1750)', () => {
+  it('ships with DOMINION_PRICES_LIVE = true (THR-1750 flipped it with the card chip)', () => {
+    expect(DOMINION_PRICES_LIVE).toBe(true);
   });
 
   it('with the flag off, the same card costs and rolls the same on every band', () => {
     for (const band of ['hostile', 'foreign', 'touched', 'held', 'sovereign'] as const) {
-      expect(dominionScaledCost(8, band)).toBe(8);
-      expect(dominionSphereFactor(band, 'player')).toBe(0);
+      expect(dominionScaledCost(8, band, false)).toBe(8);
+      expect(dominionSphereFactor(band, 'player', false)).toBe(0);
     }
   });
 

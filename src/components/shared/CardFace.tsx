@@ -67,6 +67,8 @@ import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
 import { sphereWord } from './formatEssence';
+import type { DominionBand } from '../../data/dominion-content';
+import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 import { FORECAST_TIER_WORDS } from '../../data/nudge-stage-content';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
@@ -269,6 +271,13 @@ export interface CardFaceModel {
   readonly costSphere?: SphereName;
   /** Emphasise the price, as an unaffordable card does. */
   readonly costEmphasised?: boolean;
+  /**
+   * THR-1750 — the target's Dominion band against par. Set only when the band
+   * changes the price (never on Foreign ground, never on a free card — Law 56):
+   * a chip after the pips, ghost pips when cheaper, red pips when dearer. The
+   * price itself stays gold.
+   */
+  readonly dominion?: { readonly band: DominionBand; readonly parCost: number; readonly chip: string };
   /** Zone 4. */
   readonly costChannels?: readonly CardFaceCostChannel[];
   /** Zone 5. */
@@ -532,8 +541,29 @@ export function CardFace({
               framed
               emphasised={model.costEmphasised ?? false}
               tooltipId={model.markTooltips ? 'ui.card.cost' : undefined}
+              {...(model.dominion && model.dominion.parCost > model.cost ? { ghostFrom: model.dominion.parCost } : {})}
+              {...(model.dominion && model.dominion.parCost < model.cost ? { dearFrom: model.dominion.parCost } : {})}
               data-testid={`${p}-cost-${id}`}
             />
+            {model.dominion && (
+              <Tooltip id={DOMINION_TOOLTIP_IDS.chip} fit>
+                <span
+                  data-testid={`${p}-dominion-${id}`}
+                  data-dominion-band={model.dominion.band}
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: model.dominion.band === 'hostile'
+                      ? 'var(--negative)'
+                      : (model.costSphere ?? model.sphere) ? sphereBrightToken((model.costSphere ?? model.sphere)!) : 'var(--text-secondary)',
+                    letterSpacing: '0.04em',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {model.dominion.chip}
+                </span>
+              </Tooltip>
+            )}
             {model.costSphere && model.cost > 0 && (
               <span
                 data-testid={`${p}-cost-sphere-${id}`}

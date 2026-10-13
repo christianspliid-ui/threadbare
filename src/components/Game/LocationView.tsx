@@ -39,9 +39,13 @@ import { PastLineText } from './PastLineText';
 import { getSettlementNotable } from '../../engine/settlementNotable';
 import type { FamiliarityMap } from '../../types/familiarity';
 import { NotableLine } from './NotableLine';
+import { DominionBox } from './DominionBox';
+import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface LocationViewProps {
   location: GraphNode;
+  /** THR-1750 — the god's band on this place, prepared by GameView; null hides the box. */
+  dominion?: DominionSheetVM | null;
   agents: GraphNode[];
   hexTerrain: string;
   hexCol: number;
@@ -1085,6 +1089,7 @@ export const LocationView = memo(function LocationView({
   strategicState,
   pastKnowledge,
   familiarityMap,
+  dominion,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1433,6 +1438,7 @@ export const LocationView = memo(function LocationView({
 
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} graph={graph} sublocationIds={sublocationIds} />
+      <DominionBox vm={dominion ?? null} />
       <SourceDrainLine location={location} rivalDefinitions={rivalDefinitions} />
 
       {/* Walls line — fortification state as prose (THR-628) */}

@@ -160,6 +160,12 @@ if (import.meta.env.DEV) {
     | null = null;
   // GameView registers scene and viewport projection callbacks here
   let _sceneSnapshot: (() => SceneSnapshot) | null = null;
+  // THR-1750 — the Dominion lens, registered by GameView.
+  let _dominionLens: {
+    set: (on: boolean) => boolean;
+    get: () => import('./debug-bridge.d').DebugDominionLensResult;
+    hex: (col: number, row: number) => import('./debug-bridge.d').DebugDominionHexResult | null;
+  } | null = null;
   let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
   let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
   // GameView registers modal + UI state providers for playtest assertions
@@ -1086,6 +1092,14 @@ if (import.meta.env.DEV) {
         tendedBy: place ? isTended(index, place.id) : null,
       };
     },
+    /** THR-1750 — switch the Dominion map lens on or off; returns the new state (false before a game). */
+    setDominionLens: async (on: boolean) => _dominionLens?.set(on) ?? false,
+    /** THR-1750 — the lens state and the projection's counts (computed even while the lens is off). */
+    getDominionLens: async () => _dominionLens?.get() ?? null,
+    /** THR-1750 — one hex's projected band, the place that lent it, and whether it sits on the frontier. */
+    getDominionHex: async (col: number, row: number) => _dominionLens?.hex(col, row) ?? null,
+    /** @internal GameView registers the lens here */
+    _registerDominionLensBridge: (bridge) => { _dominionLens = bridge as typeof _dominionLens; },
     /** How many top-level places stand in each band. */
     getDominionCensus: async () => {
       const [{ dominionOf }, { getLocationNodes }] = await Promise.all([

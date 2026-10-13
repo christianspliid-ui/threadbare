@@ -379,6 +379,17 @@ seeded (lairs and elder ruins carry `LOCATION_TYPE_BONUS` in their declared sphe
 place is caught by the backfill sweep). Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**Three contracts added by THR-1750 (2026-10-13), Dominion on the map and on every sheet** —
+`dominion-band-projected-to-hex-map` (each land hex takes the band of the nearest top-level
+place within two hexes; `ensureDominionProjection` owns the cache, the lens and the band-drop
+badge read it), `dominion-band-on-card-and-cast-bar` (`WheelSlot.dominionParCost` beside the
+band price feeds the card chip and the cast-bar clause) and `dominion-band-on-sheets`
+(`dominionSheetVM` → the place, faction and artifact box and the mortal row).
+`dominion-band-prices-god-casts` is **extended**: `DOMINION_PRICES_LIVE` is now true, so card
+cost and cast odds read the band. `BorderMesh` exports its two edge helpers; `createBorderMesh`
+is unchanged (preserved). Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

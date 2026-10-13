@@ -29,6 +29,7 @@ import type { OutcomeBand } from '../../engine/outcomeConsequences';
 import { outcomeBandWord } from '../../data/outcome-band-content';
 import { gradientIndexForId } from '../../data/entity-visual-fallbacks';
 import { getActionArt } from './actionArt';
+import { DOMINION_CHIP_WORDS } from '../../data/dominion-ui-content';
 import {
   ACTION_VERB_WORDS,
   ACTION_CARD_KEYWORD_ICONS,
@@ -181,6 +182,7 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
     markTooltips: true,
     cost: slot.essenceCost,
     costEmphasised,
+    ...dominionChipFields(slot),
     ...(costChannels.length > 0 ? { costChannels } : {}),
     name: slot.spellName ?? slot.label,
     ...(onOpenName ? { onOpenName } : {}),
@@ -227,4 +229,17 @@ function actionDesignerLine(slot: WheelSlot): string {
   if (slot.hexDistance != null) parts.push(`${slot.hexDistance} hex`);
   if (slot.perTickCostLabel) parts.push(slot.perTickCostLabel);
   return parts.join(' · ');
+}
+
+/**
+ * THR-1750 — the card chip's model: only when the target's band moves the price.
+ * Foreign ground, a free card, a card at the cost floor and a card with no world
+ * target get nothing (Law 56: a chip shows only a change).
+ */
+export function dominionChipFields(slot: WheelSlot): { dominion?: { band: NonNullable<WheelSlot['dominionBand']>; parCost: number; chip: string } } {
+  const band = slot.dominionBand;
+  const parCost = slot.dominionParCost;
+  if (!band || band === 'foreign' || parCost === undefined || parCost === slot.essenceCost || slot.essenceCost <= 0) return {};
+  const chip = DOMINION_CHIP_WORDS[band];
+  return chip ? { dominion: { band, parCost, chip } } : {};
 }
