@@ -7,7 +7,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DominionBox } from '../DominionBox';
-import { CostPips } from '../OddsPips';
+import { CostPips } from '../../shared/OddsPips';
 import { MapLensSwitch } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { DominionSheetVM } from '../../../engine/dominionViewModels';
 import { DOMINION_LEGEND_LINES } from '../../../data/dominion-ui-content';

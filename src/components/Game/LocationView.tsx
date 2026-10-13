@@ -39,7 +39,7 @@ import { PastLineText } from './PastLineText';
 import { getSettlementNotable } from '../../engine/settlementNotable';
 import type { FamiliarityMap } from '../../types/familiarity';
 import { NotableLine } from './NotableLine';
-import { DominionBox } from '../shared/DominionBox';
+import { DominionBox } from './DominionBox';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface LocationViewProps {

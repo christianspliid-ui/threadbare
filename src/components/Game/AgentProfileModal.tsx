@@ -29,7 +29,7 @@ import { ActiveEffectChips, UNDER_YOUR_HAND_HEADING } from './ActiveEffectChips'
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import { AVATAR_SHEET_SUFFIX } from '../../data/avatar-framing';
-import { DominionBox } from '../shared/DominionBox';
+import { DominionBox } from './DominionBox';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 export interface AgentProfileModalProps {

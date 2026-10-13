@@ -63,7 +63,7 @@ export const MapLensSwitch = memo(function MapLensSwitch({ active, onToggle, ban
                   color: pressed ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontFamily: 'var(--font-display)',
                   fontSize: 'var(--text-sm)',
-                  textDecoration: pressed ? 'underline' : 'none',
+                  textDecorationLine: pressed ? 'underline' : 'none',
                   textDecorationColor: 'var(--text-primary)',
                   textUnderlineOffset: 4,
                   cursor: 'pointer',

@@ -24,7 +24,7 @@ import { PilgrimWayLine } from './PilgrimWayLine';
 import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
-import { DominionBox } from '../shared/DominionBox';
+import { DominionBox } from './DominionBox';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface FactionSheetProps {

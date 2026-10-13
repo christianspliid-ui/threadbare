@@ -12,7 +12,7 @@
  * Law 13: a word, never the match number. Law 17: both tooltips come from the registry.
  */
 import { memo } from 'react';
-import { Tooltip } from './Tooltip';
+import { Tooltip } from '../shared/Tooltip';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 import { DOMINION_BOX_HEADER } from '../../data/dominion-ui-content';
 

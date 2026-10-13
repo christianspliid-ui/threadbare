@@ -52,7 +52,7 @@ import { describeItem } from '../../engine/itemGenerator/describeItem';
 import { isAgentGone } from '../../engine/groups/groupQueries';
 import type { GeneratedItemProvenance } from '../../engine/itemGenerator/types';
 import type { AttachmentEffect } from '../../types/effects';
-import { DominionBox } from '../shared/DominionBox';
+import { DominionBox } from './DominionBox';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 /** One plain-words block: a small-caps heading, then a sentence per line. */
