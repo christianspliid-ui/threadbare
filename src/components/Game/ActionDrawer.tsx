@@ -85,6 +85,10 @@ const HAND_MAX_WIDTH_PX = 1400;
 export function castBarDominionClause(slots: readonly WheelSlot[]): { clause: string; band: DominionBand } | null {
   const band = slots.find(s => s.dominionBand)?.dominionBand;
   if (!band || band === 'foreign') return null;
+  // Same rule as the card chip (Law 56, PC-6): say the ground's price only when it
+  // moved a price in this hand — small costs round back to par on mild ground.
+  const moved = slots.some(s => s.dominionParCost !== undefined && s.essenceCost > 0 && s.dominionParCost !== s.essenceCost);
+  if (!moved) return null;
   const clause = DOMINION_CAST_CLAUSE[band];
   return clause ? { clause, band } : null;
 }

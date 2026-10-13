@@ -171,3 +171,12 @@ describe('THR-1750 — sheet view models', () => {
     expect(line.band).toBe(dominionSheetVM(g, GOD, 'loc.home')!.band);
   });
 });
+
+describe('THR-1750 review round 2', () => {
+  it('no cast-bar clause when the band moved no price in the hand', () => {
+    const g = makeGraph();
+    const cheap = slotFor(g, 'loc.home', makeTemplate(1));
+    expect(cheap.essenceCost).toBe(cheap.dominionParCost);
+    expect(castBarDominionClause([cheap])).toBeNull();
+  });
+});

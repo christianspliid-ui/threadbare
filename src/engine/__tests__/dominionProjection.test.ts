@@ -207,3 +207,20 @@ describe('band-drop badge on a day-boundary tick (THR-1750 review)', () => {
     expect(drops[0].line).toBe("The Ash King's hand has pressed on Home. It is Touched now.");
   });
 });
+
+describe('drop badges across a cycle restart (THR-1750 review round 2)', () => {
+  it('resetRuntimeCaches and a backwards tick both clear old badges', async () => {
+    const { resetRuntimeCaches } = await import('../simulationRuntime');
+    const rt = createSimulationRuntime();
+    rt.dominionDrops = [{ placeId: 'loc.b_home', hexKey: '1,1', untilTick: 5026, line: 'x' }];
+    rt.dominionPrevBands = { 'loc.b_home': 'touched' };
+    rt.dominionDropsReadAt = 4990;
+    resetRuntimeCaches(rt);
+    expect(rt.dominionDrops).toEqual([]);
+    expect(rt.dominionPrevBands).toBeNull();
+
+    rt.dominionDrops = [{ placeId: 'loc.b_home', hexKey: '1,1', untilTick: 5026, line: 'x' }];
+    rt.dominionDropsReadAt = 4990;
+    expect(updateDominionDrops(rt, makeGraph(), GOD, 0)).toEqual([]);
+  });
+});

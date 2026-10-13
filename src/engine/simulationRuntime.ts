@@ -782,6 +782,12 @@ export function updateDominionDrops(
   tick: number,
 ): DominionDropBadge[] {
   if (runtime.dominionDropsReadAt === tick) return runtime.dominionDrops;
+  // The clock went backwards (a cycle restart or a load without a reset): the badges
+  // and the band diff belong to another timeline.
+  if (tick < runtime.dominionDropsReadAt) {
+    runtime.dominionDrops = [];
+    runtime.dominionPrevBands = null;
+  }
   try {
     const ledger = readDominionLedger(graph, ascendantId);
     const next = diffDominionDrops(graph, runtime.dominionPrevBands, ledger, tick, runtime.dominionDrops);
@@ -804,6 +810,12 @@ export function updateDominionDrops(
  */
 export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.encounterCache = null;
+  // THR-1750 — a new cycle restarts the tick at 0, so tick-stamped lens state goes too:
+  // a badge minted late last cycle would otherwise outlive its 36 ticks by a whole cycle.
+  runtime.dominionProjection = null;
+  runtime.dominionDrops = [];
+  runtime.dominionPrevBands = null;
+  runtime.dominionDropsReadAt = -1;
   runtime.distanceMatrix = null;
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;
