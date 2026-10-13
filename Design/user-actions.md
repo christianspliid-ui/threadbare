@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-13 23:57 local (21:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
-It happened again on the night of 12 to 13 Oct: no lane ran from 04:32 until 13:40 on Tuesday 13 Oct.
+It happened again on the night of 12 to 13 Oct: no lane ran from 03:57 until 13:57 on Tuesday 13 Oct.
 
 ### Close the warm brief ticket, so warm playtest round 2 can run
 
