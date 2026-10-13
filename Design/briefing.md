@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-14 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-14 01:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,9 +28,9 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 ready, all on timed holds; one being built.** [God cards carry their progression as data](https://linear.app/threadbare/issue/THR-1811/god-cards-carry-their-progression-as-data-a-tier-how-a-god-gets-each) left its veto window with no veto and the builder picked it up at 00:51. Next: [Two in five mortals belong to no people](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is) at 03:45 Wednesday, [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday, and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
+**Healthy: 3 ready, all on timed holds; one being built.** [God cards carry their progression as data](https://linear.app/threadbare/issue/THR-1811/god-cards-carry-their-progression-as-data-a-tier-how-a-god-gets-each) is being built (picked up at 00:51, last activity 01:39). Next: [Two in five mortals belong to no people](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is) at 03:45 Wednesday, [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday, and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
 
 ## Health
 
-- **The heavy simulation tests are still red, now about 26 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)); the last 5 runs failed, starting at the Dominion core merge. The game is not slower: 104 ms a tick, 11% faster than the weekly median. This is the builder's to fix before or alongside its next merge. Nothing for you.
+- **The heavy simulation tests are still red, now about 27 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)); every recent run failed, starting at the Dominion core merge. The game is not slower: 104 ms a tick, 11% faster than the weekly median. This is the builder's to fix before or alongside its next merge. Nothing for you.
 - Everything else is green: the live site is current, automated checks are normal, no pull requests are waiting, and all scheduled lanes are on time. The silence check's worst gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, so it is not an ask. 5 old worktrees still wait for a keep-or-delete decision, housekeeping for the agents. No new messages from you on Discord.
