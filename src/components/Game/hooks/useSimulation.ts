@@ -22,6 +22,7 @@ import type { ScryState } from '../../../types/scry';
 import { getScryTargetHexes } from '../../../engine/visibility';
 import { runTickBatch } from '../../../engine/debugTickBatch';
 import { offerArrivalSpineBeat } from '../../../engine/ascendantBeat';
+import { isFirstBonded } from '../../../engine/meetingEncounter';
 import { emitTrace } from '../../../engine/traceBuffer';
 import type { ClockFirstRunTrace } from '../../../types/trace';
 
@@ -90,11 +91,17 @@ export function useSimulation({
       // THR-1716 E2: the arrival is a player event, so the opening beat is offered
       // here — never inside `initializeGameState`, which the CLI and every fixture
       // share. No-op when The First is already bonded (the pre-bonded dev routes).
+      // THR-1837 E2: a world that arrives with The First unbonded fills its screen
+      // one gift at a time. Never set in `initializeGameState` (CLI/fixtures keep
+      // the full screen); the pre-bonded dev routes and warm starts stay unstaged.
+      const staged = !isFirstBonded(result.state.graph, result.state.ascendantId)
+        ? { openingRevealStaged: true as const }
+        : {};
       const arrival = offerArrivalSpineBeat(result.state);
       if (arrival.ascendantBeats) {
-        return { ...result, state: { ...result.state, ...arrival }, arrivalBeatOffered: true };
+        return { ...result, state: { ...result.state, ...arrival, ...staged }, arrivalBeatOffered: true };
       }
-      return { ...result, arrivalBeatOffered: false };
+      return { ...result, state: { ...result.state, ...staged }, arrivalBeatOffered: false };
     },
     [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype]
   );

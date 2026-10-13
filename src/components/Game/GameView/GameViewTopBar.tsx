@@ -2,6 +2,7 @@ import {
   useEffect,
   useRef,
   type Dispatch,
+  type ReactNode,
   type SetStateAction,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
@@ -19,6 +20,8 @@ import { WorldSoulIndicator } from '../../WorldSoulIndicator';
 
 import type { GameState } from '../../../types/gameState';
 import type { FirstScreenReveal } from './firstScreenReveal';
+import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from './openingReveal';
+import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
 import type {
   NotificationPreferences,
   NotificationCategoryKey,
@@ -146,6 +149,17 @@ export interface GameViewTopBarProps {
    * earned. Omitted means everything shows — the pre-S5 behaviour.
    */
   reveal?: FirstScreenReveal;
+
+  /**
+   * THR-1837 — the staged opening reveal: which surfaces have arrived (latched)
+   * and which are inside their gold-ring window. Omitted means everything shows.
+   */
+  opening?: { show: OpeningRevealShow; newly: ReadonlySet<OpeningRevealSurfaceId> };
+  /** THR-1837 — the standing direction line, rendered after the time controls. */
+  directionLine?: ReactNode;
+  /** THR-1837 — the "Show every panel" setting. */
+  showEveryPanel?: boolean;
+  onToggleShowEveryPanel?: () => void;
 }
 
 export function GameViewTopBar({
@@ -195,7 +209,15 @@ export function GameViewTopBar({
   handleSaveSnapshot,
   onExitToTitle,
   reveal,
+  opening,
+  directionLine,
+  showEveryPanel,
+  onToggleShowEveryPanel,
 }: GameViewTopBarProps) {
+  const shown = (id: OpeningRevealSurfaceId) => opening?.show[id] ?? true;
+  /** The gold ring on a panel that just arrived (THR-1837 U4). */
+  const ring = (id: OpeningRevealSurfaceId) =>
+    opening?.newly.has(id) ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {};
   const showDoom = reveal?.doom ?? true;
   const showRivals = reveal?.rivals ?? true;
   const showNotables = reveal?.notables ?? true;
@@ -244,6 +266,7 @@ export function GameViewTopBar({
           {/* IdentityChip superseded by AscendantBar (THR-184) */}
 
           {/* Time controls */}
+          {shown('time_controls') && (
           <SimulationControls
             season={seasonName}
             year={year}
@@ -258,19 +281,25 @@ export function GameViewTopBar({
             onSpeedChange={setSpeed}
             compact
           />
+          )}
+
+          {/* THR-1837 — the one standing direction line, until the first chapter is seen through */}
+          {directionLine}
 
           {/* EssencePanel superseded by AscendantBar (THR-184) */}
 
           {/* WorldSoulIndicator — prose description of dominant sphere */}
-          {gameState.worldSoul?.aggregate && (
+          {shown('world_soul') && gameState.worldSoul?.aggregate && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
+              <div {...ring('world_soul')}>
+                <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
+              </div>
             </>
           )}
 
           {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
-          {(() => {
+          {shown('attention') && (() => {
             const ascNode = gameState.graph.getNode(gameState.ascendantId);
             const attentionRegen = (ascNode?.properties?.attentionRegen as number) ?? 0.4;
             return (
@@ -314,7 +343,8 @@ export function GameViewTopBar({
             onClick={() => { if (!encounterOpen) setDoomDetailOpen(true); }}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!encounterOpen) setDoomDetailOpen(true); } }}
             className="cursor-pointer"
-            style={{ minWidth: '140px' }}
+            data-newly-revealed={opening?.newly.has('doom') ? 'true' : undefined}
+            style={{ minWidth: '140px', ...(opening?.newly.has('doom') ? NEWLY_REVEALED_STYLE : {}) }}
             aria-label="View doom clock details"
             aria-disabled={encounterOpen || undefined}
           >
@@ -329,11 +359,13 @@ export function GameViewTopBar({
           {showOmens && gameState.omenState?.primary && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <OmenIndicator
-                omenState={gameState.omenState}
-                currentTick={gameState.tick}
-                locked={encounterOpen}
-              />
+              <div {...ring('omen')}>
+                <OmenIndicator
+                  omenState={gameState.omenState}
+                  currentTick={gameState.tick}
+                  locked={encounterOpen}
+                />
+              </div>
             </>
           )}
           {/* MandateTracker superseded by AscendantBar (THR-184) */}
@@ -345,8 +377,9 @@ export function GameViewTopBar({
             />
           )}
           {/* Notables intent panel (THR-630) */}
-          {showNotables && <NotablesButton gameState={gameState} />}
+          {showNotables && <div {...ring('notables')}><NotablesButton gameState={gameState} /></div>}
           {/* Read the Threads — divine digest review */}
+          {shown('read_threads') && (
           <IconButton
             icon={<span>📖</span>}
             active={readThreadsOpen}
@@ -354,6 +387,8 @@ export function GameViewTopBar({
             title="Read the Threads"
             aria-label="Read the Threads"
           />
+          )}
+          {shown('settings') && (
           <div className="flex items-center gap-1" style={{ position: 'relative' }}>
             <IconButton
               data-testid="settings-toggle"
@@ -390,8 +425,10 @@ export function GameViewTopBar({
               onToggleIncludeWorld={handleToggleIncludeWorld}
               onSaveSnapshot={handleSaveSnapshot}
               {...(onExitToTitle ? { onExitToTitle } : {})}
+              {...(onToggleShowEveryPanel ? { showEveryPanel, onToggleShowEveryPanel } : {})}
             />
           </div>
+          )}
         </div>
       </div>
   );

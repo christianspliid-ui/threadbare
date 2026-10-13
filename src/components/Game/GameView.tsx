@@ -119,6 +119,10 @@ import { useEscapeLayer, ESCAPE_LAYER_Z_PANEL } from '../shared/useEscapeLayer';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger, countThreadedChapters } from './ChapterLedger';
 import { useFirstScreenReveal, unreadChapterCount } from './GameView/firstScreenReveal';
+import { useOpeningReveal, NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
+import { OpeningDirectionLine } from './OpeningDirectionLine';
+import { getPronouns } from '../../data/domain-prose';
+import { OPENING_REVEAL_TOAST_MS } from '../../data/ui-content';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ChoiceSetModal } from './ChoiceSetModal';
@@ -2024,7 +2028,37 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // THR-1648 (S5): doom, mandate, notables, rivals and omens stay off the first
   // screen until the bond with The First (Law 53 — the HUD is a budget).
-  const firstScreenReveal = useFirstScreenReveal(gameState);
+  // THR-1837: after the bond the screen fills one gift at a time. The staged rows
+  // are a floor under THR-1648 (both need the bond); one merged toast per reveal.
+  const pushOpeningRevealToast = useCallback((message: string, key: string) => {
+    handlePushToast({
+      id: `opening-reveal-${key}`,
+      message,
+      count: 1,
+      createdTick: _gameStateRef.current.tick,
+      expiresAt: Date.now() + OPENING_REVEAL_TOAST_MS,
+    });
+  }, [handlePushToast]);
+  const openingReveal = useOpeningReveal(gameState, runtime.worldVersion, pushOpeningRevealToast);
+  const firstScreenReveal = useFirstScreenReveal(gameState, openingReveal.show);
+
+  /**
+   * The direction line arrow (THR-1837 U3): open The First's waiting chapter
+   * through her unread encounter notification, the path the Threads badge uses.
+   * If none can open (the chapter moved on between render and click), open the
+   * Chapter Ledger instead — already on screen, since a waiting chapter brings it.
+   */
+  const handleOpenFirstChapter = useCallback(() => {
+    const firstId = openingReveal.reveal.direction.firstId;
+    const notif = firstId
+      ? [...(gameState.encounterNotifications ?? [])]
+          .reverse()
+          .find(n => n.agentId === firstId && !n.resolved)
+      : undefined;
+    if (notif && handleOpenEncounterFromNotification(notif)) return;
+    setChapterLedgerSeenCount(countThreadedChapters(gameState));
+    setChapterLedgerOpen(true);
+  }, [openingReveal.reveal.direction.firstId, gameState, handleOpenEncounterFromNotification]);
 
   // ── Non-agent target context (hex-zoom and location views) ──
   const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
@@ -5067,6 +5101,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [firstRunCandidate]);
   const firstRunPrompt = firstRunCandidate && firstRunPromptDue;
 
+  // THR-1837 U3 — the standing direction line. It hides while the THR-1716 Play
+  // caption shows, so the two never stack.
+  const openingDirection = openingReveal.reveal.direction;
+  const openingFirstNode = openingDirection.firstId ? gameState.graph.getNode(openingDirection.firstId) : undefined;
+  const openingDirectionLine = openingDirection.show && !firstRunPrompt ? (
+    <OpeningDirectionLine
+      mode={openingDirection.mode}
+      firstName={openingFirstNode?.name}
+      theirPossessive={getPronouns(openingFirstNode?.properties.gender as string | undefined).their}
+      onOpenChapter={handleOpenFirstChapter}
+    />
+  ) : null;
+
   // ── Moment queue consumer (THR-1299 slice 3) ──
   // Pops the oldest unacknowledged interrupt-tier record into the slot when nothing
   // else is up. Deliberately NOT gated on `interruptsSuppressed`: `suppressBeats`
@@ -5276,10 +5323,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
     window.__DEBUG._registerInterruptStateProvider?.(getDebugInterruptState);
     window.__DEBUG._registerOpeningUiProvider?.(() => ({ arrivalBeatOffered, clockEverRan }));
+    window.__DEBUG._registerOpeningRevealProvider?.(() => openingReveal.reveal);
     window.__DEBUG._registerGiftDeliveryProvider?.(getDebugGiftDelivery);
     window.__DEBUG._registerChapterAnswerProvider?.(chapterAnswer.getDebugState);
     window.__DEBUG._registerClockHoldProvider?.(getDebugClockHold);
-  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan, chapterAnswer.getDebugState, getDebugClockHold]);
+  }, [getDebugActiveUIState, getDebugOpenModals, getDebugInterruptState, getDebugGiftDelivery, arrivalBeatOffered, clockEverRan, chapterAnswer.getDebugState, getDebugClockHold, openingReveal.reveal]);
 
   // ── Incident snapshot (THR-1134) ──
   // `getDebugActiveUIState` is composed outside the `import.meta.env.DEV` guard
@@ -5538,6 +5586,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleSaveSnapshot={incidentCapture.captureSnapshot}
         {...(onExitToTitle ? { onExitToTitle } : {})}
         reveal={firstScreenReveal}
+        opening={openingReveal}
+        showEveryPanel={openingReveal.showAll}
+        onToggleShowEveryPanel={() => openingReveal.setShowAll(!openingReveal.showAll)}
+        directionLine={openingDirectionLine}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -5559,6 +5611,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // same concept class is what Law 3 exists to prevent.
           onOpenAttachment={setAttachmentSheetId}
           showMandate={firstScreenReveal.mandate}
+          opening={openingReveal}
           onCenterOnSeat={handleCenterOnHex}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
@@ -6013,6 +6066,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               }}
             >
               <div style={{ padding: 'var(--panel-padding)' }}>
+                {openingReveal.show.threads && (
                 <ThreadsPanel
                   threadedNodes={threadedNodes}
                   selectedNodeId={selectedThreadNode?.nodeId ?? null}
@@ -6042,7 +6096,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   // mortal's sheet under the champion's id (Laws 1, 21, 33).
                   onChampionChipClick={openAgentSheetForId}
                 />
-                {/* THR-603: open the Chapter Ledger — every encounter, always readable */}
+                )}
+                {/* THR-603: open the Chapter Ledger — every encounter, always readable.
+                    THR-1837: it arrives with The First's first chapter. */}
+                {openingReveal.show.chapter_ledger && (
                 <button
                   ref={chapterLedgerButtonRef}
                   type="button"
@@ -6051,7 +6108,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     setChapterLedgerSeenCount(countThreadedChapters(gameState));
                     setChapterLedgerOpen(true);
                   }}
+                  data-newly-revealed={openingReveal.newly.has('chapter_ledger') ? 'true' : undefined}
                   style={{
+                    ...(openingReveal.newly.has('chapter_ledger') ? NEWLY_REVEALED_STYLE : {}),
                     marginTop: 'var(--panel-padding)',
                     width: '100%',
                     display: 'flex',
@@ -6080,7 +6139,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     {unreadChapterCount(countThreadedChapters(gameState), chapterLedgerSeenCount)}
                   </span>
                 </button>
-                <div style={{ marginTop: 'var(--panel-padding)' }}>
+                )}
+                {/* THR-1837: World Pulse arrives with A Path Opens. */}
+                {openingReveal.show.world_pulse && (
+                <div
+                  data-newly-revealed={openingReveal.newly.has('world_pulse') ? 'true' : undefined}
+                  style={{ marginTop: 'var(--panel-padding)', ...(openingReveal.newly.has('world_pulse') ? NEWLY_REVEALED_STYLE : {}) }}
+                >
                   <WorldPulse
                     gameState={gameState}
                     season={seasonName}
@@ -6089,8 +6154,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                     onSpeedChange={setSpeed}
                   />
                 </div>
+                )}
                 {/* THR-1656: the chronicle mounts from minute one when the world has a past. */}
-                {(gameState.chronicleEntries.length > 0 || beforeYouWoke.length > 0) && (
+                {openingReveal.show.chronicle && (gameState.chronicleEntries.length > 0 || beforeYouWoke.length > 0) && (
                   <div style={{ marginTop: 'var(--panel-padding)' }}>
                     <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} past={beforeYouWoke} />
                   </div>

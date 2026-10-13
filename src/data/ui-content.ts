@@ -22,6 +22,51 @@ import { SPHERE_POUR_REFILL_SENTENCE } from './sphere-points-content';
 export const FIRST_RUN_PROMPT_CAPTION = 'Time is still. Press Play or Space to let the world move.';
 
 /**
+ * THR-1837 — the one standing direction line from the bond until The First's
+ * first chapter is seen through. `{firstName}` is The First's name;
+ * `{theirPossessive}` comes from `getPronouns`, "their" when unknown.
+ */
+export const OPENING_DIRECTION_CHAPTER_WAITING = 'Watch over {firstName}. A chapter of {theirPossessive} story is waiting →';
+export const OPENING_DIRECTION_LET_TIME_RUN = 'Watch over {firstName}. Let time run, and {theirPossessive} next chapter will come to you.';
+/** Said in place of The First's name when none resolves. */
+export const OPENING_DIRECTION_FIRST_FALLBACK = 'The First';
+
+/** THR-1837 — the toast-tier line when panels arrive. `{labels}` joins with ", " and a final " and ". */
+export const OPENING_REVEAL_TOAST = 'New beside the map: {labels}.';
+/** Appended when the 200-tick ceiling, not a gift, revealed the rows (PC-4). */
+export const OPENING_REVEAL_CEILING_SUFFIX = ' Nothing more is hidden.';
+/** How long the reveal toast stays. */
+export const OPENING_REVEAL_TOAST_MS = 7000;
+
+/** THR-1837 — the Settings toggle that turns the staged reveal off. */
+export const OPENING_REVEAL_SHOW_ALL_LABEL = 'Show every panel';
+export const OPENING_REVEAL_SHOW_ALL_HELP = 'Skip the slow reveal and put every panel on screen now.';
+
+/** "a", "a and b", "a, b and c" — the reveal toast's label list. */
+export function joinRevealLabels(labels: readonly string[]): string {
+  if (labels.length <= 1) return labels[0] ?? '';
+  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+}
+
+/** The rendered reveal line, or null when no row brought a label. */
+export function formatOpeningRevealToast(labels: readonly string[], byCeiling: boolean): string | null {
+  if (labels.length === 0) return null;
+  const line = OPENING_REVEAL_TOAST.replace('{labels}', () => joinRevealLabels(labels));
+  return byCeiling ? line + OPENING_REVEAL_CEILING_SUFFIX : line;
+}
+
+/** The rendered direction line; never shows a raw `{…}` token. */
+export function formatOpeningDirection(
+  mode: 'chapter_waiting' | 'let_time_run',
+  firstName: string | undefined,
+  theirPossessive: string,
+): string {
+  const template = mode === 'chapter_waiting' ? OPENING_DIRECTION_CHAPTER_WAITING : OPENING_DIRECTION_LET_TIME_RUN;
+  const name = firstName?.trim() || OPENING_DIRECTION_FIRST_FALLBACK;
+  return template.replace('{firstName}', () => name).replace('{theirPossessive}', () => theirPossessive);
+}
+
+/**
  * THR-1788 — the stage of a threaded mortal's story, as the journey vignette footer names it.
  * A word with its article, never the engine's beat index (Law 13): "Beat 1" read as a tutorial
  * step. Not "chapter" — in the glossary a Chapter is an encounter's readable record.

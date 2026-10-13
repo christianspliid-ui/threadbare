@@ -378,6 +378,14 @@ export interface GameState {
   ascendantBeats?: AscendantBeatState;
 
   /**
+   * THR-1837 — this session's god screen fills one gift at a time
+   * (`selectOpeningReveal`). Set only by the UI arrival when The First is not yet
+   * bonded; never by `initializeGameState`, so the CLI and fixtures keep the
+   * full screen. Never unset. Absent means not staged.
+   */
+  openingRevealStaged?: boolean;
+
+  /**
    * Divine Receipts — resolution-time outcome feedback for player-sourced actions
    * (THR-727). Enqueued by `processPlayerReceipts` when a player action resolves;
    * consumed by `DivineReceiptModal` (modal tier) and the ToastStack click-through
