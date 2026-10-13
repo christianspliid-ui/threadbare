@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-13 14:55 local (12:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-13 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,6 +9,10 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 It happened again on the night of 12 to 13 Oct: no lane ran from 04:32 until 13:40 on Tuesday 13 Oct.
+
+### Close the warm brief ticket, so warm playtest round 2 can run
+
+[Warm brief v1 tripped its kill criterion](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage) is decided and its done-when is met. It is the last open ticket in the *Warm playtest · round 1* milestone. The playtest lane will not start round 2 while that milestone is open, and no lane may mark this kind of ticket Done. Say **"close the warm brief ticket"**. Round 2 can then run from Thursday 15 Oct. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-13c.md)*
 
 ### Was the Claude app closed on Thursday 1 Oct afternoon and Friday 2 Oct morning? (lane silence, ended)
 
@@ -28,6 +32,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-13: after the bond, the god's screen fills one gift at a time** ([THR-1837](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the)). Merged via [#2355](https://github.com/christianspliid-ui/threadbare/pull/2355) and live.
 - **2026-10-12: Dominion core: one graded read of how much a place or thing is yours, used by prices and checks** ([THR-1748](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods)). Merged via [#2351](https://github.com/christianspliid-ui/threadbare/pull/2351) and live.
 - **2026-10-12: a long vignette on the Meet-The-First picker no longer runs off the bottom of the screen** ([THR-1836](https://linear.app/threadbare/issue/THR-1836/meet-the-first-picker-a-long-vignette-runs-past-the-bottom-of-the)). Merged via [#2345](https://github.com/christianspliid-ui/threadbare/pull/2345) and live.
 - **2026-10-12: pouring a Sphere says what it will change before you commit** ([THR-1815](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the)). Merged via [#2344](https://github.com/christianspliid-ui/threadbare/pull/2344) and live.
@@ -37,7 +42,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-11: the world map can no longer crash on load** ([THR-1817](https://linear.app/threadbare/issue/THR-1817/the-world-map-can-crash-on-load-hexmapv2-calls-two-usememo-hooks-after)). Merged via [#2334](https://github.com/christianspliid-ui/threadbare/pull/2334) and live.
 - **2026-10-11: Escape closes the sheet on top, not the encounter behind it** ([THR-1816](https://linear.app/threadbare/issue/THR-1816/escape-closes-the-encounter-behind-an-open-sheet-instead-of-the-sheet)). Merged via [#2333](https://github.com/christianspliid-ui/threadbare/pull/2333) and live.
 - **2026-10-11: encounter lines no longer show a raw `{are}` instead of the word** ([THR-1810](https://linear.app/threadbare/issue/THR-1810/encounter-prose-leaks-raw-are-two-lines-use-a-verb-token-only)). Merged via [#2332](https://github.com/christianspliid-ui/threadbare/pull/2332) and live.
-- **2026-10-11: every skill reader now uses the new Reach share, last one was encounter awareness** ([THR-1580](https://linear.app/threadbare/issue/THR-1580/re-fit-the-non-dice-capability-readers-sight-tiers-growth-gates-one-at)). Merged via [#2331](https://github.com/christianspliid-ui/threadbare/pull/2331) and live.
 
 ---
 
