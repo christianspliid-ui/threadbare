@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Type specimen — THR-1833</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Cinzel:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+/* Specimen for THR-1833 (The Map Is the Table). Faces and roles are the decision;
+   the sizes below are illustrative — THR-1819 owns the type scale per breakpoint.
+   1080p uses today's scale (16/17/18/21/26/31). 1440p shows a 1.125 root step-up. */
+:root {
+  --font-display: 'Cinzel', serif;
+  --font-ui: 'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-prose: 'Alegreya', Georgia, serif;
+  --bg-abyss: #0a0a0e; --bg-deep: #111114; --bg-panel: #17171c; --bg-raised: #1f1f26;
+  --line: #2c2c36; --text-primary: #ece6d8; --text-secondary: #c9c0ae; --text-tertiary: #9a917f;
+  --gold: #d8b45a; --spirit: #9fb8e8; --life: #8fcf8a; --mind: #c7a0e8; --force: #e89a7a; --doom: #e84038;
+  font-size: 16px;
+}
+@media (min-width: 2400px) { :root { font-size: 18px; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { background: var(--bg-abyss); color: var(--text-primary); font-family: var(--font-ui); font-size: 1.125rem; line-height: 1.4; }
+.sheet { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 0.75rem; padding: 1rem 1.25rem; }
+header { display: flex; align-items: baseline; gap: 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; }
+header h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.9375rem; letter-spacing: 0.02em; }
+header p { color: var(--text-tertiary); font-size: 1rem; }
+.grid { display: grid; grid-template-columns: 1fr 1.35fr 1.6fr 1.2fr; gap: 0.75rem; min-height: 0; }
+.panel { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 0.75rem; }
+.role { font-size: 1rem; color: var(--gold); font-weight: 500; }
+.role b { font-weight: 700; }
+
+/* Roles */
+.title-xl { font-family: var(--font-display); font-weight: 600; font-size: 1.625rem; line-height: 1.1; letter-spacing: 0.02em; }
+.title-lg { font-family: var(--font-display); font-weight: 600; font-size: 1.375rem; line-height: 1.15; letter-spacing: 0.02em; }
+.label { font-family: var(--font-ui); font-weight: 700; font-size: 1rem; color: var(--text-tertiary); }
+.meta { font-size: 1rem; color: var(--text-secondary); }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+.prose { font-family: var(--font-prose); font-size: 1.1875rem; line-height: 1.6; color: var(--text-primary); max-width: 34em; }
+.prose p + p { margin-top: 0.6em; }
+.afterimage { font-family: var(--font-prose); font-style: italic; font-size: 1.1875rem; line-height: 1.5; color: var(--text-secondary); }
+.name-inline { font-weight: 700; color: var(--text-primary); }
+
+/* Vara's panel */
+.ident { display: flex; gap: 0.75rem; align-items: center; }
+.portrait { width: 3.5rem; height: 3.5rem; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #6d5a8a, #2a2236); border: 2px solid var(--gold); flex: none; }
+.ess { display: grid; grid-template-columns: auto 1fr auto; gap: 0.25rem 0.75rem; align-items: baseline; }
+.ess .v { text-align: right; font-weight: 500; }
+.dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
+.fold { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 0.4rem; }
+
+/* Chronicle */
+.entry { border-left: 2px solid var(--line); padding-left: 0.75rem; }
+.entry .when { font-size: 1rem; color: var(--text-tertiary); }
+
+/* Stage */
+.stage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.choices { display: grid; gap: 0.5rem; }
+.choice { background: var(--bg-raised); border: 1px solid var(--line); border-left: 3px solid var(--mind); border-radius: 6px; padding: 0.6rem 0.75rem; }
+.choice .ct { font-weight: 700; font-size: 1.125rem; }
+.choice .ce { font-size: 1.0625rem; color: var(--text-secondary); }
+
+/* Card */
+.card { background: linear-gradient(180deg, #232031, #18161f); border: 1px solid #4a3f6a; border-radius: 10px; padding: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.card .cost { display: flex; justify-content: space-between; font-size: 1rem; color: var(--text-secondary); }
+.flavour { font-family: var(--font-prose); font-style: italic; font-size: 1.0625rem; line-height: 1.5; color: var(--text-secondary); }
+.rules { font-size: 1.0625rem; line-height: 1.45; }
+.hand-row { display: flex; justify-content: space-between; align-items: baseline; background: var(--bg-raised); border-radius: 6px; padding: 0.4rem 0.6rem; }
+.hand-row .n { font-weight: 700; font-size: 1.0625rem; }
+
+/* Map */
+.map { position: relative; flex: 1; min-height: 9rem; border-radius: 6px; overflow: hidden;
+  background: radial-gradient(ellipse at 30% 40%, #8a7a44 0, #6f6a3c 30%, #4f6a46 55%, #3c5a6a 80%, #2d4660 100%); }
+.ml { position: absolute; font-family: var(--font-ui); color: #f6f0e2; text-shadow: 0 0 3px #000, 0 0 6px rgba(0,0,0,.8); white-space: nowrap; }
+.realm { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.02em; color: #f3e6c4; }
+
+/* Today strip */
+.today { display: grid; grid-template-columns: auto repeat(4, 1fr); gap: 1rem; align-items: center; border-top: 1px solid var(--line); padding-top: 0.6rem; }
+.today .t-label { font-family: var(--font-display); font-size: 0.5625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
+.today .t-mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.8125rem; color: var(--text-secondary); }
+.today .t-prose { font-family: Georgia, 'Times New Roman', serif; font-size: 1.125rem; line-height: 1.6; }
+.today .t-cinzel { font-family: var(--font-display); font-size: 0.8125rem; font-weight: 700; }
+.vs { font-size: 1rem; color: var(--text-tertiary); }
+.vs b { color: var(--text-primary); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>The type system</h1>
+    <p>Cinzel names things · Alegreya tells the story · Alegreya Sans runs the game · sizes illustrative (THR-1819 owns the scale)</p>
+  </header>
+
+  <div class="grid">
+    <!-- 1. Vara's panel (god rail) -->
+    <section class="panel">
+      <div class="role"><b>God rail</b> · name in Cinzel, labels sentence case</div>
+      <div class="ident">
+        <div class="portrait"></div>
+        <div>
+          <div class="title-xl">Vara</div>
+          <div class="meta">Rooted · Your First is <span class="name-inline">Kael Thorne</span></div>
+        </div>
+      </div>
+      <div class="label">Essence</div>
+      <div class="ess num">
+        <span class="dot" style="background:var(--spirit)"></span><span>Spirit</span><span class="v">12</span>
+        <span class="dot" style="background:var(--life)"></span><span>Life</span><span class="v">7</span>
+        <span class="dot" style="background:var(--mind)"></span><span>Mind</span><span class="v">104</span>
+        <span class="dot" style="background:var(--force)"></span><span>Force</span><span class="v">3</span>
+      </div>
+      <div class="label">Attention</div>
+      <div class="meta num">3 of 5 · refills at the day's turn</div>
+      <div class="label">Quintessence</div>
+      <div class="meta">Faith-touched · the world leans to Spirit</div>
+      <div style="margin-top:auto; display:grid; gap:0.4rem">
+        <div class="fold"><span>Reaches</span><span class="meta num">Heart 2 · Mind 1</span></div>
+        <div class="fold"><span>Mandate</span><span class="meta">Shelter the faithful</span></div>
+        <div class="fold"><span>Covenants</span><span class="meta num">1 sworn</span></div>
+      </div>
+    </section>
+
+    <!-- 2. Chronicle -->
+    <section class="panel">
+      <div class="role"><b>Chronicle</b> · story in Alegreya, names bold inline</div>
+      <div class="title-lg">Chronicle</div>
+      <div class="entry">
+        <div class="when num">Spring, year 3 · day 14</div>
+        <p class="prose"><span class="name-inline">The Ashen Concord</span> took <span class="name-inline">the Bone Coast</span> after a long siege.</p>
+      </div>
+      <div class="entry">
+        <div class="when num">Spring, year 3 · day 12</div>
+        <p class="prose"><span class="name-inline">Kael Thorne</span> left <span class="name-inline">the Temple Quarter</span> with two companions.</p>
+      </div>
+      <div class="entry">
+        <div class="when num">Winter, year 2 · day 88</div>
+        <p class="prose">Of <span class="name-inline">the Shadow-Kept Dunes</span>, many temples, vaults and battlefields remain.</p>
+      </div>
+      <div class="entry">
+        <div class="when num">Winter, year 2 · day 81</div>
+        <p class="afterimage">A sworn blade of the Concord who has started to dream in your colours.</p>
+      </div>
+    </section>
+
+    <!-- 3. Encounter step (Stage) -->
+    <section class="panel">
+      <div class="role"><b>Encounter step</b> · title Cinzel, prose Alegreya, choices Alegreya Sans</div>
+      <div class="stage-head">
+        <div class="title-xl">The Beast in the Granary</div>
+        <div class="meta num">Step 1 of 3 · Cross the floor</div>
+      </div>
+      <div class="prose">
+        <p>There the store is barred, and the keeper of the watch will not open it. A bear has denned inside, asleep on the bins of winter grain. Two men who went in were carried out.</p>
+        <p>Kael's pack went behind that bar at dusk, by local rule. Rouse the settlement and they burn the store to be rid of it. Go in quiet, and the bear lies between Kael and the door.</p>
+      </div>
+      <div class="choices">
+        <div class="choice">
+          <div class="ct">Dread</div>
+          <div class="ce">Fill them with dread of the sleeping animal. They move carefully, and they will want the door.</div>
+        </div>
+        <div class="choice" style="border-left-color:var(--spirit)">
+          <div class="ct">Open the far door</div>
+          <div class="ce">Open the far door from the inside and let the night in — the bear will go toward the cold.</div>
+        </div>
+      </div>
+      <p class="afterimage">They crossed without a board speaking and had a hand on the pack before the animal shifted.</p>
+    </section>
+
+    <!-- 4. Action card + map labels -->
+    <section class="panel">
+      <div class="role"><b>Card and map</b> · rules in Sans, flavour in Alegreya italic</div>
+      <div class="card">
+        <div class="title-lg">Inspire</div>
+        <div class="cost num"><span>Spirit · 3 essence</span><span>a threaded mortal</span></div>
+        <div class="rules">The mortal pursues their goal with extraordinary energy for 2 days.</div>
+        <div class="flavour">Kindles divine fire within a mortal spirit, igniting a sense of calling that seems to come from within.</div>
+      </div>
+      <div class="hand-row num"><span class="n">Persuade</span><span class="meta">Mind · 4</span></div>
+      <div class="hand-row num"><span class="n">Dream</span><span class="meta">Mind · 2</span></div>
+      <div class="map">
+        <div class="ml realm" style="left:8%; top:8%; font-size:1.75rem">The Bone Coast</div>
+        <div class="ml" style="left:12%; top:42%; font-size:1.375rem; font-weight:800">Ashenmoor</div>
+        <div class="ml" style="left:56%; top:38%; font-size:1.1875rem; font-weight:700">Temple Quarter</div>
+        <div class="ml" style="left:30%; top:62%; font-size:1rem; font-weight:500">Harrow's Ford</div>
+        <div class="ml" style="left:62%; top:66%; font-size:0.875rem; font-weight:400">Saltlick</div>
+        <div class="ml" style="left:8%; top:84%; font-size:0.875rem; font-weight:700">Shadow-Kept Dunes</div>
+      </div>
+      <div class="meta">Places: capital 800 · city 700 · town 500 · small 400</div>
+    </section>
+  </div>
+
+  <div class="today">
+    <div class="vs"><b>Today</b> →</div>
+    <div><span class="t-label">Quintessence</span> <span class="vs">→ <b>Quintessence</b> (16 px, bold, sentence case)</span></div>
+    <div><span class="t-mono">ESS 104 +3/d</span> <span class="vs">→ <b class="num">104 · +3 a day</b></span></div>
+    <div><span class="t-prose">A bear has denned inside.</span> <span class="vs">→ <b style="font-family:var(--font-prose);font-weight:400">A bear has denned inside.</b></span></div>
+    <div><span class="t-cinzel">Temple Quarter</span> <span class="vs">→ <b>Temple Quarter</b> (Sans below 22 px)</span></div>
+  </div>
+</div>
+</body>
+</html>
