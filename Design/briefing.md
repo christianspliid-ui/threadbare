@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-13 18:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-13 19:55 local (17:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,5 +32,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **The heavy simulation tests are still red, now about 20 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). They broke at the Dominion core merge; all of the last 4 runs failed, the newest at 15:37. The game itself is not slower: 106 ms a tick, 10% faster than the weekly median. No fix has been started (no pull request, nothing being built), and the builder has a free window until 21:40. The builder owes a follow-up. Nothing for you.
-- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, and all scheduled lanes are on time. The cleanup job ran at 18:40; 5 old worktrees still wait for a keep-or-delete decision, which is housekeeping for the agents. No new messages from you on Discord.
+- **The heavy simulation tests are still red, now about 21 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). They broke at the Dominion core merge; all of the last 4 runs failed, the newest at 15:37. The game itself is not slower: 101 ms a tick, 15% faster than the weekly median. No fix has been started (no pull request, nothing being built), and no impediment row records it yet; the builder has a free window until 21:40. The builder owes a follow-up. Nothing for you.
+- Everything else is green: the live site is up to date, automated checks are normal, no pull requests are waiting, and all scheduled lanes are on time. 5 old worktrees still wait for a keep-or-delete decision, which is housekeeping for the agents. No new messages from you on Discord.
