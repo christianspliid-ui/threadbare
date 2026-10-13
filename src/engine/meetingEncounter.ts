@@ -1448,9 +1448,15 @@ export const MEETING_SETTLED_LOCATION_SUBTYPES: readonly string[] = [
  * through here rather than re-scanning thread edges inline.
  */
 export function isFirstBonded(graph: WorldGraph, ascendantId: string): boolean {
-  return graph.getOutgoingEdges(ascendantId, 'thread').some(e =>
+  return getFirstId(graph, ascendantId) !== null;
+}
+
+/** The First's node id — the target of the god's `the_first` thread — or null before the bond (THR-1837). */
+export function getFirstId(graph: WorldGraph, ascendantId: string): string | null {
+  const edge = graph.getOutgoingEdges(ascendantId, 'thread').find(e =>
     (e.properties.courtPosition as string) === 'the_first',
   );
+  return edge ? edge.target : null;
 }
 
 /** Result of {@link pickMeetingLocation}: the settlement and why it won. */

@@ -37,6 +37,8 @@ import {
   selectHomeSeat,
 } from './selectors';
 import styles from './styles.module.css';
+import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from '../GameView/openingReveal';
+import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
 
 // ── Default section open/closed state (NFP #1: tunability) ──────────────────
 const ASCENDANT_BAR_SECTION_DEFAULT_OPEN = {
@@ -83,6 +85,11 @@ interface AscendantBarProps {
   showMandate?: boolean;
   /** THR-1792 — centre the map on the god's seat (the Seat line's link). */
   onCenterOnSeat?: (locationId: string) => void;
+  /**
+   * THR-1837 — the staged opening reveal: which rail surfaces have arrived and
+   * which carry the gold ring. Omitted means everything shows.
+   */
+  opening?: { show: OpeningRevealShow; newly: ReadonlySet<OpeningRevealSurfaceId> };
 }
 
 export function AscendantBar({
@@ -100,6 +107,7 @@ export function AscendantBar({
   onOpenAttachment,
   showMandate = true,
   onCenterOnSeat,
+  opening,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -157,7 +165,13 @@ export function AscendantBar({
     [gameState, worldVersion],
   );
 
-  const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
+  const shown = (id: OpeningRevealSurfaceId) => opening?.show[id] ?? true;
+  const ring = (id: OpeningRevealSurfaceId) =>
+    opening?.newly.has(id) ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {};
+  // THR-1837: Investiture arrives with The Seat.
+  const showInvestiture = shown('investiture');
+  const coreCount = showInvestiture ? 2 : 1;
+  const actionCount = coreCount + actionTray.self.length + actionTray.rare.length; // core = Move (+ Investiture)
   // THR-1307: counted off the same walk that renders the chips. It used to count
   // `has_attachment` edges — an edge type with no writer, so the number was zero in
   // every world — and even had it been live, counting raw edges would have disagreed
@@ -171,14 +185,18 @@ export function AscendantBar({
   return (
     <aside className={styles.bar} aria-label="Ascendant status">
       {/* 1. Identity + Quintessence (merged) */}
+      {shown('identity') && (
       <IdentityStrip
         identity={identity}
         quintessence={quintessence}
         treatment="breathe"
         onOpen={onOpenSheet}
       />
+      )}
 
       {/* 2. Reaches (two permanent domains + depth) */}
+      {shown('reaches') && (
+      <div {...ring('reaches')}>
       <BarSection
         label="Reaches"
         // THR-1713 D7 — what Reaches are, and that Spheres are a separate axis.
@@ -190,11 +208,13 @@ export function AscendantBar({
       >
         <ReachesBlock rows={reachRows} />
       </BarSection>
+      </div>
+      )}
 
       {/* 2b. Signatures (the eight reach powers — yours vs. another incarnation's).
           THR-1814: renders only once one is yours — a section with nothing in it
           does not render (Laws 25, 53); the term arrives with its first entry. */}
-      {yourSignatureCount > 0 && (
+      {shown('reaches') && yourSignatureCount > 0 && (
       <BarSection
         label="Signatures"
         tooltipId="ui.signatures"
@@ -210,6 +230,7 @@ export function AscendantBar({
           tally of things you hold; here it was the number of sphere rows (12),
           which sits beside the per-sphere balances and reads as an essence
           amount. Three of three cold testers took it for one. */}
+      {shown('essence') && (
       <BarSection
         label="Essence"
         open={open.essence}
@@ -219,8 +240,10 @@ export function AscendantBar({
         <SeatLine seat={homeSeat} onCenter={onCenterOnSeat} />
         <EssenceBlock rows={essenceRows} />
       </BarSection>
+      )}
 
       {/* 4. Actions */}
+      {shown('hand') && (
       <BarSection
         label="Actions"
         count={actionCount}
@@ -228,8 +251,15 @@ export function AscendantBar({
         onToggle={() => toggle('actions')}
         placeholder="No innate actions available."
       >
-        <ActionsBlock tray={actionTray} onMove={onMove} onInvestiture={onInvestiture} />
+        <ActionsBlock
+          tray={actionTray}
+          onMove={onMove}
+          onInvestiture={onInvestiture}
+          showInvestiture={showInvestiture}
+          investitureNewlyRevealed={opening?.newly.has('investiture') ?? false}
+        />
       </BarSection>
+      )}
 
       {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A).
           THR-1814: renders only while one is held (Laws 25, 53). */}
@@ -247,6 +277,7 @@ export function AscendantBar({
 
       {/* 5. Mandate — hidden until the bond (THR-1648) */}
       {showMandate && (
+      <div {...ring('mandate')}>
       <BarSection
         label="Mandate"
         open={open.mandate}
@@ -257,6 +288,7 @@ export function AscendantBar({
           <MandateBlock mandate={mandateRow} onOpen={onOpenMandate} />
         ) : null}
       </BarSection>
+      </div>
       )}
 
       {/* 6. Hooks (conditions / clues / vows). THR-1814: renders only once one

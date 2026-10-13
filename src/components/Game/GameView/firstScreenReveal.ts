@@ -13,6 +13,9 @@
  *
  * `?seeded` pre-bonds The First, so every dev URL shows the full HUD unchanged.
  *
+ * THR-1837 extends this: `useFirstScreenReveal` takes the staged opening rows
+ * (`useOpeningReveal`) and ANDs doom, mandate, notables and omens with them.
+ *
  * Pure selector here; {@link useFirstScreenReveal} latches it so a surface, once
  * shown, never disappears again (a First who dies does not re-quiet the screen).
  */
@@ -20,6 +23,7 @@
 import { useRef } from 'react';
 import { isFirstBonded } from '../../../engine/meetingEncounter';
 import type { GameState } from '../../../types/gameState';
+import type { OpeningRevealShow } from './openingReveal';
 
 export interface FirstScreenReveal {
   /** The ascendant holds a `thread` edge at `the_first`. */
@@ -62,7 +66,7 @@ export function selectFirstScreenReveal(gameState: GameState): FirstScreenReveal
  * Omens are the exception — the indicator still hides between omens, exactly as
  * it did before this slice, because it has nothing to show without a primary.
  */
-export function useFirstScreenReveal(gameState: GameState): FirstScreenReveal {
+export function useFirstScreenReveal(gameState: GameState, staged?: OpeningRevealShow): FirstScreenReveal {
   const latch = useRef({ bonded: false, doom: false, mandate: false, notables: false, rivals: false });
   const live = selectFirstScreenReveal(gameState);
   const l = latch.current;
@@ -71,13 +75,15 @@ export function useFirstScreenReveal(gameState: GameState): FirstScreenReveal {
   l.mandate ||= live.mandate;
   l.notables ||= live.notables;
   l.rivals ||= live.rivals;
+  // THR-1837: the staged opening reveal adds a floor. Both gates require the bond,
+  // so they cannot disagree; the staged rows are already latched.
   return {
     bonded: l.bonded,
-    doom: l.doom,
-    mandate: l.mandate,
-    notables: l.notables,
+    doom: l.doom && (staged?.doom ?? true),
+    mandate: l.mandate && (staged?.mandate ?? true),
+    notables: l.notables && (staged?.notables ?? true),
     rivals: l.rivals,
-    omens: l.bonded && !!gameState.omenState?.primary,
+    omens: l.bonded && !!gameState.omenState?.primary && (staged?.omen ?? true),
   };
 }
 

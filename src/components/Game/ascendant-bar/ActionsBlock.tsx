@@ -3,6 +3,7 @@ import { TRAY_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import type { ActionTrayView, ActionTrayItem } from './selectors';
 import { Tooltip } from '../../shared/Tooltip';
 import styles from './styles.module.css';
+import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
 import { formatEssenceLabel } from '../../shared/formatEssence';
 
 const TIER_LABEL: Record<string, string> = { core: 'Core', self: 'Self', rare: 'Rare' };
@@ -159,7 +160,13 @@ function CoreActionButton({ label, description, onClick, tooltipId }: CoreAction
   );
 }
 
-function CoreTierGroup({ onMove, onInvestiture }: { onMove?: () => void; onInvestiture?: () => void }) {
+function CoreTierGroup({ onMove, onInvestiture, showInvestiture = true, investitureNewlyRevealed = false }: {
+  onMove?: () => void;
+  onInvestiture?: () => void;
+  /** THR-1837 — Investiture arrives with The Seat. */
+  showInvestiture?: boolean;
+  investitureNewlyRevealed?: boolean;
+}) {
   const [open, setOpen] = useState(true);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -177,7 +184,7 @@ function CoreTierGroup({ onMove, onInvestiture }: { onMove?: () => void; onInves
           color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.22em',
         }}>Core</span>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-          · 2
+          · {showInvestiture ? 2 : 1}
         </span>
         <span style={{
           fontFamily: 'var(--font-body)', fontSize: 10, color: 'var(--text-muted)',
@@ -187,7 +194,14 @@ function CoreTierGroup({ onMove, onInvestiture }: { onMove?: () => void; onInves
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingLeft: 14 }}>
           <CoreActionButton label="Move" description="Navigate through the world" onClick={onMove} />
-          <CoreActionButton label="Investiture" description="Manage your divine court" onClick={onInvestiture} tooltipId="ui.investiture" />
+          {showInvestiture && (
+            <div
+              data-newly-revealed={investitureNewlyRevealed ? 'true' : undefined}
+              style={investitureNewlyRevealed ? NEWLY_REVEALED_STYLE : undefined}
+            >
+              <CoreActionButton label="Investiture" description="Manage your divine court" onClick={onInvestiture} tooltipId="ui.investiture" />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -199,12 +213,20 @@ interface ActionsBlockProps {
   onFire?: (templateId: string) => void;
   onMove?: () => void;
   onInvestiture?: () => void;
+  /** THR-1837 — false until The Seat brings Investiture. Omitted means shown. */
+  showInvestiture?: boolean;
+  investitureNewlyRevealed?: boolean;
 }
 
-export function ActionsBlock({ tray, onFire, onMove, onInvestiture }: ActionsBlockProps) {
+export function ActionsBlock({ tray, onFire, onMove, onInvestiture, showInvestiture, investitureNewlyRevealed }: ActionsBlockProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <CoreTierGroup onMove={onMove} onInvestiture={onInvestiture} />
+      <CoreTierGroup
+        onMove={onMove}
+        onInvestiture={onInvestiture}
+        showInvestiture={showInvestiture}
+        investitureNewlyRevealed={investitureNewlyRevealed}
+      />
       {/* THR-501: Self/Rare tiers are unlock-gated in selectActionTray. When a tier holds
           no revealed actions (e.g. the turn-1 floor) its group is hidden entirely, so the
           opening shows Core only. The group reappears once a beat unlocks an action in it. */}

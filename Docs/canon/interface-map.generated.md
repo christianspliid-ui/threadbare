@@ -1209,10 +1209,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/doomClock.ts`
-- **Production hits:** 10 total — 2 write, 1 read, 7 unclassified
+- **Production hits:** 11 total — 2 write, 1 read, 8 unclassified
 - **Write sites:** `src/engine/doomClock.ts`, `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/game-config.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/phaseAscendantProgression.ts`, `src/engine/phaseOmenAgenda.ts` +2 more
+- **Other hits:** `src/data/game-config.ts`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAscendantProgression.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `doom-progress-paces-first-journey` — 🔵 UNVERIFIED-OK
@@ -1221,10 +1221,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 47 total — 1 write, 1 read, 45 unclassified
+- **Production hits:** 49 total — 1 write, 1 read, 47 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx` +40 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +42 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -1683,10 +1683,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Doom Clock & Journey
 - **UL terms:** *The First*, *Doom Clock*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`
 - **Read sites:** `src/engine/phaseDoom.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/debug-bridge.ts`, `src/engine/threadingRite.ts`
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/hooks/useSimulation.ts`, `src/debug-bridge.ts`, `src/engine/threadingRite.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `first-mark-raises-reach` — 🔵 UNVERIFIED-OK
@@ -2073,10 +2073,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 37 total — 2 write, 1 read, 34 unclassified
+- **Production hits:** 38 total — 2 write, 1 read, 35 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +29 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +30 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
@@ -2536,10 +2536,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 9 total — 1 write, 4 read, 4 unclassified
+- **Production hits:** 10 total — 1 write, 4 read, 5 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/components/Game/ChapterLedger.tsx`, `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/phaseAttention.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAttention.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE

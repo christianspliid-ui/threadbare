@@ -169,6 +169,8 @@ if (import.meta.env.DEV) {
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
   let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
   let _giftDeliveryProvider: (() => DebugGiftDelivery) | null = null;
+  // THR-1837: the live opening reveal (GameView holds the "Show every panel" setting).
+  let _openingRevealProvider: (() => import('./engine/openingReveal').OpeningReveal) | null = null;
   let _chapterAnswerProvider: (() => DebugChapterAnswer) | null = null;
   let _refRouterOpen:
     | ((ref: { kind: string; id: string }, mode: 'card' | 'sheet') => void)
@@ -1282,6 +1284,7 @@ if (import.meta.env.DEV) {
     _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
     _registerClockHoldProvider: (fn: () => DebugClockHold) => { _clockHoldProvider = fn; },
     _registerOpeningUiProvider: (fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }) => { _openingUiProvider = fn; },
+    _registerOpeningRevealProvider: (fn: () => import('./engine/openingReveal').OpeningReveal) => { _openingRevealProvider = fn; },
     getGiftDelivery: async () => _giftDeliveryProvider?.()
       ?? { pendingBeatId: null, entered: false, heldBy: [], heldBySurfaces: [], msSinceLastInput: 0 },
     _registerGiftDeliveryProvider: (fn: () => DebugGiftDelivery) => { _giftDeliveryProvider = fn; },
@@ -2994,6 +2997,15 @@ if (import.meta.env.DEV) {
      *
      * **Async** (`await` it) — the engine helper is pulled in on call.
      */
+    /** THR-1837 — see `debug-bridge.d.ts`. Falls back to the selector with the setting off. */
+    getOpeningReveal: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      if (_openingRevealProvider) return _openingRevealProvider();
+      const { selectOpeningReveal } = await import('./engine/openingReveal');
+      return selectOpeningReveal(state);
+    },
+
     getOpeningState: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

@@ -1872,6 +1872,8 @@ export interface DebugBridge {
   _registerClockHoldProvider(fn: () => DebugClockHold): void;
   /** THR-1716 — GameView registers the UI-session half of `getOpeningState()`. */
   _registerOpeningUiProvider(fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }): void;
+  /** THR-1837 — GameView registers the live opening reveal (it holds the "Show every panel" setting). */
+  _registerOpeningRevealProvider(fn: () => import('./engine/openingReveal').OpeningReveal): void;
   /**
    * THR-1809 — the opening-gift delivery: whether a ready spine gift (beats 1–4) is on
    * screen, and if not, what holds it — a player-opened surface, input within
@@ -2351,7 +2353,7 @@ export interface DebugBridge {
    *    come), `first_not_bonded`, `min_gap` (`BEAT_MIN_GAP` since the last gift),
    *    `awaiting_player_act` (no act since the last gift and `SPINE_IDLE_FALLBACK_TICKS`
    *    not yet run). `null` when it may be offered now, or when the spine is exhausted.
-   *    A gift already pending on screen is not "held" — read `getAscendantBeats()`.
+   *    A gift already pending on screen is not "held" — read `beatSchedule().pending`.
    *
    *  - `arrivalBeatOffered` — THR-1716: the opening beat ("Reach Down") was offered at
    *    arrival, before any tick (an unbonded First). `false` on the pre-bonded dev routes.
@@ -2382,6 +2384,24 @@ export interface DebugBridge {
       clockEverRan: boolean;
     }
   >;
+
+  /** THR-1837 — the god's screen fills one gift at a time.
+   *
+   *  - `staged` — this session arrived with The First unbonded, so the post-bond screen
+   *    is staged. `false` on the pre-bonded dev routes (`?seeded`, `?spawn=`, warm starts)
+   *    and in the CLI: every row then reads `not_staged`.
+   *  - `showAll` — the player's "Show every panel" setting.
+   *  - `rows[surface]` — whether each dashboard surface in `OPENING_REVEAL_TABLE` shows
+   *    and why: `at_bond`, `gift:<beatId>`, `waiting:<beatId>`, `first_chapter`,
+   *    `waiting:first_chapter`, `ceiling` (200 ticks after the bond), `spine_done`,
+   *    `pre_bond`, `not_staged`, `no_beat_state`, `unknown_beat`. Live values: the
+   *    screen latches a surface once shown, so a `revealed: true` row never hides again.
+   *  - `direction` — the standing top-bar line: `show` until The First's first
+   *    non-routine post-bond chapter resolves; `mode` `chapter_waiting` while one of hers
+   *    is open (its id in `chapterActionId`), else `let_time_run`.
+   *
+   *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
+  getOpeningReveal: () => Promise<{ error: string } | import('./engine/openingReveal').OpeningReveal>;
 
   /** THR-1632 — faith and politics at game start.
    *

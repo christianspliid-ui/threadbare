@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
 import { Button } from '../shared/Button';
+import { OPENING_REVEAL_SHOW_ALL_LABEL, OPENING_REVEAL_SHOW_ALL_HELP } from '../../data/ui-content';
 import type { NotificationPreferences, NotificationCategoryKey, NotificationMode } from '../../types/notification';
 import { NOTIFICATION_CATEGORY_ORDER, NOTIFICATION_CATEGORY_LABELS } from '../../types/notification';
 import {
@@ -48,6 +49,10 @@ interface SettingsPanelProps {
   // Leave the game (THR-1604). Optional: the section renders only when wired.
   /** End this world and return to the title screen. */
   onExitToTitle?: () => void;
+  // THR-1837 — "Show every panel": turns the staged opening reveal off. Optional:
+  // the row renders only when wired.
+  showEveryPanel?: boolean;
+  onToggleShowEveryPanel?: () => void;
 }
 
 export function SettingsPanel({
@@ -77,6 +82,8 @@ export function SettingsPanel({
   onToggleIncludeWorld,
   onSaveSnapshot,
   onExitToTitle,
+  showEveryPanel,
+  onToggleShowEveryPanel,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
@@ -278,6 +285,23 @@ export function SettingsPanel({
               <div style={toggleDotStyle(!fogDisabled)} />
             </button>
           </div>
+          {onToggleShowEveryPanel && (
+            <div style={settingRowStyle} data-testid="setting-show-every-panel">
+              <div style={{ flex: 1 }}>
+                <label style={settingLabelStyle}>{OPENING_REVEAL_SHOW_ALL_LABEL}</label>
+                <div style={settingHintStyle}>{OPENING_REVEAL_SHOW_ALL_HELP}</div>
+              </div>
+              <button
+                onClick={onToggleShowEveryPanel}
+                style={toggleStyle(!!showEveryPanel)}
+                aria-pressed={!!showEveryPanel}
+                aria-label={OPENING_REVEAL_SHOW_ALL_LABEL}
+                title={showEveryPanel ? "Every panel is on screen" : "Panels arrive with the gifts that bring them"}
+              >
+                <div style={toggleDotStyle(!!showEveryPanel)} />
+              </button>
+            </div>
+          )}
           <div style={settingRowStyle}>
             <label style={settingLabelStyle}>Map Palette</label>
             <select
