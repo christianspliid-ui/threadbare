@@ -206,3 +206,26 @@ describe('buildMomentCardModel', () => {
     expect(bereft.actorName).toBe('actor_1');
   });
 });
+
+describe('THR-1750 — the moment card prices on the target mortal\'s Dominion band', () => {
+  it('shows and checks the price the cast charges, not the authored par', async () => {
+    const { dominionScaledEssenceCost } = await import('../../../engine/dominion');
+    const { getUnifiedTemplateById } = await import('../../../data/unified-action-templates');
+    const { createDefaultSphereAffinity } = await import('../../../types/sphereAffinity');
+    const graph = buildGraph();
+    const hostile = createDefaultSphereAffinity();
+    hostile.scores.force = 5; hostile.scores.energy = 5;
+    graph.updateNode('ascendant', { properties: {
+      spherePoints: { mind: 3, spirit: 2 }, sphereAlignment: { primary: 'mind', secondary: 'spirit' }, dominionPowerBaseline: 3,
+    } });
+    graph.updateNode('actor_1', { properties: { sphereAffinity: hostile } });
+    const model = buildMomentCardModel(buildState(graph), record());
+    for (const action of model.divineActions) {
+      const template = getUnifiedTemplateById(action.templateId)!;
+      const charged = dominionScaledEssenceCost(graph, 'ascendant', template, 'actor_1');
+      expect(charged.band).toBe('hostile');
+      expect(action.essenceCost).toBe(charged.cost);
+      expect(action.essenceCost).toBeGreaterThan(template.essenceCost ?? 0);
+    }
+  });
+});

@@ -251,7 +251,7 @@ export interface DominionDropBadge {
 export function diffDominionDrops(
   graph: WorldGraph,
   prevBands: Readonly<Record<string, DominionBand>> | null,
-  ledger: Pick<DominionLedger, 'bands' | 'dayDrops'>,
+  ledger: Pick<DominionLedger, 'bands' | 'dayDrops' | 'lastDayDrops'>,
   tick: number,
   existing: readonly DominionDropBadge[],
 ): DominionDropBadge[] {
@@ -270,7 +270,9 @@ export function diffDominionDrops(
       placeId,
       hexKey: hexKey(col, row),
       untilTick: tick + DOMINION_DROP_BADGE_TICKS,
-      line: dropLine(graph, placeId, from, to, ledger.dayDrops),
+      // Today's drops first; on a day-boundary tick the chronicle has already moved
+      // them to `lastDayDrops`.
+      line: dropLine(graph, placeId, from, to, [...(ledger.lastDayDrops ?? []), ...ledger.dayDrops]),
     });
   }
   return [...byPlace.values()].sort((a, b) => (a.placeId < b.placeId ? -1 : 1));

@@ -192,3 +192,18 @@ describe('band-drop badges (THR-1750 § Decided 6)', () => {
     expect(rt.dominionPrevBands).toEqual({});
   });
 });
+
+describe('band-drop badge on a day-boundary tick (THR-1750 review)', () => {
+  it('quotes the raid line from lastDayDrops after the chronicle cleared dayDrops', () => {
+    const g = makeGraph();
+    g.addNode({ id: 'rival.ash', type: 'actor', name: 'The Ash King', properties: { actorType: 'rival' } });
+    const drops = diffDominionDrops(
+      g,
+      { 'loc.b_home': 'held' },
+      { bands: { 'loc.b_home': 'touched' }, dayDrops: [], lastDayDrops: [{ placeId: 'loc.b_home', from: 'held', to: 'touched', cause: 'rival', rivalId: 'rival.ash' }] },
+      120,
+      [],
+    );
+    expect(drops[0].line).toBe("The Ash King's hand has pressed on Home. It is Touched now.");
+  });
+});

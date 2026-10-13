@@ -45,6 +45,7 @@ import {
 } from '../../data/moment-card-content';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { canAfford } from '../../engine/influence';
+import { dominionScaledEssenceCost } from '../../engine/dominion';
 import { UNDERTAKING_EVENT_NODE_ID_PREFIX } from '../../engine/grievance/undertakingOutcomeNode';
 
 export type MomentChipTone = 'gain' | 'loss' | 'neutral' | 'divine';
@@ -205,12 +206,14 @@ function buildChips(
   return chips;
 }
 
-function buildDivineActions(state: GameState): MomentDivineAction[] {
+function buildDivineActions(state: GameState, targetId: string): MomentDivineAction[] {
   return MOMENT_DIVINE_ACTIONS.flatMap(entry => {
     const template = getUnifiedTemplateById(entry.templateId);
     if (!template) return [];
     const sphere = (template.sphereAffinity as SphereName | null | undefined) ?? null;
-    const essenceCost = template.essenceCost ?? 0;
+    // THR-1750: the price the cast charges — tier-scaled, then the target's Dominion
+    // band — so the card shows and checks what `preparePlayerCast` takes.
+    const essenceCost = dominionScaledEssenceCost(state.graph, state.ascendantId, template, targetId).cost;
     return [{
       templateId: entry.templateId,
       verb: entry.verb,
@@ -268,7 +271,7 @@ export function buildMomentCardModel(state: GameState, record: UndertakingMoment
     checkpoints,
     progressWord,
     chips: buildChips(record, project, forward),
-    divineActions: buildDivineActions(state),
+    divineActions: buildDivineActions(state, record.actorId),
     actionable: !!project && project.status === 'active' && !!actorNode,
     forward,
   };

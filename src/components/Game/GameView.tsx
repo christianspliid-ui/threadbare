@@ -326,6 +326,7 @@ import {
   type AgentStrategicSummary,
   type HexStrategicOverlay,
 } from '../../engine/strategicPresentation';
+import { dominionScaledEssenceCost } from '../../engine/dominion';
 import { dominionSheetVM, dominionLensVM, dominionHexLineVM, dominionBandColorVar, godPrimarySphere } from '../../engine/dominionViewModels';
 import { ensureDominionProjection, updateDominionDrops } from '../../engine/simulationRuntime';
 import { countHexBands } from '../../engine/dominionProjection';
@@ -4016,7 +4017,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const template = getUnifiedTemplateById(templateId);
     if (!template) return { success: false, message: 'No such working.' };
     const sphere = template.sphereAffinity ?? null;
-    const essenceCost = template.essenceCost ?? 0;
+    // THR-1750: check the price the cast will charge (tier-scaled, then the target's band).
+    const essenceCost = dominionScaledEssenceCost(gameState.graph, gameState.ascendantId, template, targetAgentId).cost;
     if (sphere && !canAfford(gameState.essencePool, sphere, essenceCost)) {
       return { success: false, message: `Not enough ${sphere} essence.` };
     }
