@@ -168,6 +168,18 @@ export function isRungOpeningGift(beatId: string): boolean {
   return !!parsed && rungGiftsFor(parsed.rung)[0] === beatId;
 }
 
+/**
+ * True when `beatId` is the first gift of its rung the god is actually given: no earlier
+ * gift of that rung is in the beat history. A skipped head (held, or no secondary reach)
+ * therefore hands the rung's opening words to the next key instead of opening silently.
+ */
+export function isRungOpeningOffer(state: Pick<GameState, 'ascendantBeats'>, beatId: string): boolean {
+  const parsed = parseRungGiftBeatId(beatId);
+  if (!parsed) return false;
+  const prefix = `${RUNG_GIFT_BEAT_PREFIX}${parsed.rung}.`;
+  return !(state.ascendantBeats?.history ?? []).some(h => h.beatId.startsWith(prefix) && h.beatId !== beatId);
+}
+
 /** The catalogue entry a rung-gift beat resolves through (built from its id; never stored). */
 export function rungGiftDefinition(beatId: string): BeatDefinition | null {
   const parsed = parseRungGiftBeatId(beatId);

@@ -252,7 +252,7 @@ import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal'
 import { ASCENDANT_SPINE, isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
-import { describeOffering } from '../../engine/godProgression';
+import { describeOffering, isRungOpeningOffer } from '../../engine/godProgression';
 import {
   resolveGiftDelivery,
   openPlayerSurfaces,
@@ -6769,6 +6769,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           offering={pendingBeat.kind === 'offering'
             ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
             : undefined}
+          rungOpening={pendingBeat.kind === 'rung_gift' ? isRungOpeningOffer(gameState, pendingBeat.beatId) : undefined}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

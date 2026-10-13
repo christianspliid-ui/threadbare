@@ -58,6 +58,8 @@ export interface UnreachableActionReport {
     starter: number;
     /** Count of player-reachable templates reachable via a dynamic reach-signature grant (invest.*). */
     dynamicSignature: number;
+    /** THR-1811: market cards (the offering) and rung keys, reachable through the card ladder. */
+    ladder: number;
     /** entries.length — orphaned player-reachable templates. */
     unreachable: number;
   };
@@ -126,8 +128,12 @@ export function reportUnreachableActions(): UnreachableActionReport {
   );
 
   const isStarter = (t: UnifiedActionTemplate): boolean => t.starter === true || starter.has(t.id);
+  // THR-1811: the world's offering grants every market card, and the rung gifts every
+  // giftBy 'rung' card — both read off the card's own progression block.
+  const isLadderReachable = (t: UnifiedActionTemplate): boolean =>
+    t.progression?.offer === 'market' || t.progression?.giftBy === 'rung';
   const isReachable = (t: UnifiedActionTemplate): boolean =>
-    granted.has(t.id) || isStarter(t) || dynamicSignatures.has(t.id);
+    granted.has(t.id) || isStarter(t) || dynamicSignatures.has(t.id) || isLadderReachable(t);
 
   const universe = UNIFIED_ACTION_TEMPLATES.filter(isPlayerReachableTemplate);
 
@@ -149,6 +155,7 @@ export function reportUnreachableActions(): UnreachableActionReport {
       granted: universe.filter((t) => granted.has(t.id)).length,
       starter: universe.filter(isStarter).length,
       dynamicSignature: universe.filter((t) => dynamicSignatures.has(t.id)).length,
+      ladder: universe.filter(isLadderReachable).length,
       unreachable: entries.length,
     },
     ...(warning ? { warning } : {}),

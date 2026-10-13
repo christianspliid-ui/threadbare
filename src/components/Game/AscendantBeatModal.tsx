@@ -75,6 +75,8 @@ interface AscendantBeatModalProps {
    * GameView computes it from live state, so the price words match `getGodProgression()`.
    */
   offering?: readonly OfferedCardView[];
+  /** THR-1811: a rung gift is its rung's first given key (isRungOpeningOffer), so it carries the rung's words. */
+  rungOpening?: boolean;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -138,10 +140,10 @@ const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
  * growth line; a later key says "a further gift" and names the card. Null for any
  * other beat id.
  */
-function rungGiftPresentation(beatId: string, cardName: string | undefined): SpineBeatPresentation | null {
+function rungGiftPresentation(beatId: string, cardName: string | undefined, opening?: boolean): SpineBeatPresentation | null {
   const parsed = parseRungGiftBeatId(beatId);
   if (!parsed) return null;
-  const words = isRungOpeningGift(beatId) ? RUNG_BEAT_PRESENTATION[parsed.rung] : undefined;
+  const words = (opening ?? isRungOpeningGift(beatId)) ? RUNG_BEAT_PRESENTATION[parsed.rung] : undefined;
   const base = words ?? RUNG_LATER_KEY_PRESENTATION;
   return { ...base, prose: base.prose.replace('{card}', cardName ?? 'a new work') };
 }
@@ -426,6 +428,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   proseOverride,
   avatarName,
   offering,
+  rungOpening,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
   const isOffering = pending.kind === 'offering';
@@ -435,7 +438,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   // table (templates carry only title + body).
   const firstGrant = def?.grantsActionIds?.[0];
   const authored = AUTHORED_BEAT_PRESENTATION[pending.beatId]
-    ?? rungGiftPresentation(pending.beatId, firstGrant ? getUnifiedTemplateById(firstGrant)?.name : undefined)
+    ?? rungGiftPresentation(pending.beatId, firstGrant ? getUnifiedTemplateById(firstGrant)?.name : undefined, rungOpening)
     ?? undefined;
   const kindPresentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
   const presentation = authored ?? kindPresentation;

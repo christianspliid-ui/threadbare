@@ -21,12 +21,14 @@ import {
   drawOffering,
   offeringWeight,
   getGodProgressionReadout,
+  isRungOpeningOffer,
   type OfferingIdentity,
 } from '../godProgression';
 import { phaseAscendantBeatDirector, resolvePendingBeat, forceOffering, computeIdentityBias } from '../ascendantBeat';
 import { phaseAscendantProgression } from '../phaseAscendantProgression';
 import { isWithinGodReaches } from '../targetActions';
 import { checkGodCardProgression } from '../godCardProgressionCheck';
+import { reportUnreachableActions } from '../content-eval/unreachableActions';
 import { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } from '../../data/ascendant-beat-content';
 import { ASCENDANT_MILESTONE_BEATS } from '../../data/ascendant-milestone-beats';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../../data/reach-signature-content';
@@ -37,6 +39,7 @@ import {
   OFFERING_MIN_TTL_TICKS,
   RUNG_GIFT_SPACING,
   OFFERING_BEAT_ID,
+  RUNG_BEAT_PRESENTATION,
 } from '../../data/god-progression-content';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
@@ -182,6 +185,15 @@ describe('THR-1811 — rungs', () => {
     const state = makeState({ tick: 200, earned: { life: 60, spirit: 20 }, unlocked: ['invest.heart.sworn_oath', 'invest.stone.great_work', 'action.bestow'] });
     const patch = phaseAscendantProgression(state);
     expect(patch.ascendantBeats?.pending?.beatId).toBe('beat.rung.2.hex.shift_dominion');
+  });
+
+  it('when the rung head is skipped, the next key carries the rung\'s opening words', () => {
+    // The god already holds its secondary signature (an old save from the retired pool beat).
+    const state = makeState({ tick: 200, earned: { life: 60, spirit: 20 }, unlocked: ['invest.stone.great_work'] });
+    const patch = phaseAscendantProgression(state);
+    expect(patch.ascendantBeats?.pending?.beatId).toBe('beat.rung.2.action.bestow');
+    expect(isRungOpeningOffer(state, 'beat.rung.2.action.bestow')).toBe(true);
+    expect(patch.chronicleEntries?.some(c => c.title === RUNG_BEAT_PRESENTATION[2].title)).toBe(true);
   });
 
   it('a rung-gift resolves with via: rung', () => {
@@ -332,6 +344,13 @@ describe('THR-1811 — prices and taking one up', () => {
 });
 
 describe('THR-1811 — retirements', () => {
+  it('the orphan report counts offered and rung-gifted cards as reachable', () => {
+    const ids = reportUnreachableActions().entries.map(e => e.id);
+    for (const id of ['action.secrets.reveal_secret', 'action.consecrate', 'action.bestow', 'action.anoint']) {
+      expect(ids).not.toContain(id);
+    }
+  });
+
   it('no grant-bearing beat is left in the cadence pool', () => {
     for (const b of ASCENDANT_BEAT_POOL) {
       expect(b.grantsActionIds ?? []).toEqual([]);

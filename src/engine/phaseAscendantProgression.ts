@@ -34,7 +34,7 @@ import {
   rungGiftsFor,
   parseRungGiftBeatId,
   rungGiftDefinition,
-  isRungOpeningGift,
+  isRungOpeningOffer,
 } from './godProgression';
 import { resolveReachSignatureGrant } from './ascendantBeat';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -604,7 +604,7 @@ function stepGodProgression(
           boundNodeIds: [state.ascendantId],
           trigger: { kind: 'turn', minTurn: turn },
         };
-        if (isRungOpeningGift(beatId)) {
+        if (isRungOpeningOffer(state, beatId)) {
           const words = RUNG_BEAT_PRESENTATION[parsed!.rung];
           if (words) {
             chronicle = { id: `rung-${parsed!.rung}-${turn}`, tier: 'chronicle', title: words.title, prose: words.prose, tick: turn };
