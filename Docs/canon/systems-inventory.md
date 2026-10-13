@@ -358,7 +358,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-1606`, `THR-666`, `THR-667`, `THR-727` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
 | `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1248`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
-| `opening` (1) | `openingColoration.ts` | `THR-1635` |
+| `opening` (2) | `openingColoration.ts`, `openingReveal.ts` | `THR-1635`, `THR-1648`, `THR-1837` |
 | `orchestrator` (4) | `orchestrator.ts`, `orchestrator/phaseAscendantHandFilter.ts`, `orchestrator/phaseDetectionPressure.ts`, `orchestrator/phaseDriftDecay.ts` | `THR-528` |
 | `outcome` (1) | `outcomeConsequences.ts` | `Phase 6` |
 | `pacing` (1) | `pacingGovernor.ts` | — |
@@ -447,4 +447,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 107 tick phases · 212 engine domains · 660 modules._
+_Counts: 28 registered subsystems (2 dormant) · 107 tick phases · 212 engine domains · 661 modules._
