@@ -1340,6 +1340,14 @@ export interface DebugBridge {
    * Player action progression readout (THR-613): per permanent reach, accrued reach
    * practice, live Domain Capability + tier, tier snapshot, and pending-Deepening flag.
    */
+  /**
+   * God-card ladder readout (THR-1811): rung, summed attunement marks, queued key gifts,
+   * spendable earned essence per sphere, the spend ledger, cards taken per tier, and the
+   * pending offering (card ids, prices, price words, expiry).
+   */
+  getGodProgression: () => Promise<import('./engine/godProgression').GodProgressionReadout | { error: string }>;
+  /** Draw an offering now, replacing any pending beat (THR-1811). Fails when no rung is open or nothing can be offered. */
+  forceOffering: () => DebugFireBeatResult;
   getAscendantProgression: () => Promise<
     | {
         reaches: import('./engine/phaseAscendantProgression').AscendantReachProgress[];
@@ -2238,6 +2246,7 @@ export interface DebugBridge {
     fireBeat: (beatId: string) => DebugFireBeatResult;
     grantUnlock: (actionId: string) => DebugGrantUnlockResult;
     resolveBeat: (chosenActionId?: string) => DebugResolveBeatResult;
+    forceOffering?: () => DebugFireBeatResult;
   }) => void;
 
   /** THR-1749 — the god's bought sphere points, derived primary / secondary, and whether bought or fallback. Null before a game is running. */

@@ -25,6 +25,7 @@ import type { ReachDomain } from '../types/traits';
 // Value import; `ascendant-milestone-beats.ts` imports only the `SpineBeatPresentation`
 // *type* back from here, which erases at compile — so there is no runtime cycle.
 import { ASCENDANT_MILESTONE_BEATS } from './ascendant-milestone-beats';
+import { OFFERING_BEAT_WEIGHT } from './god-progression-content';
 
 // ─── Cadence constants (NFP #1) ──────────────────────────────────────────────
 
@@ -105,6 +106,8 @@ export const BEAT_KIND_WEIGHTS: Partial<Record<BeatKind, number>> = {
   investment: 4,
   selection: 1,
   delivery: 2,
+  // THR-1811: the world's offering (plan § Decided 2; OFFERING_BEAT_WEIGHT).
+  offering: OFFERING_BEAT_WEIGHT,
 };
 /**
  * Initial `lastBeatTurn`. Lower than any real turn so the cadence gate never
@@ -334,6 +337,10 @@ export function isSpineBeatId(beatId: string): boolean {
  * Per-beat `identity` reach/sphere tags remain unauthored (a separate content decision);
  * the draw honours them the moment they are set, and falls back to unbiased until then.
  *
+ * THR-1811: the pool now holds introduction beats only; the grant-bearing investment and
+ * selection beats retired to {@link RETIRED_POOL_BEATS}, and the world's offering joins
+ * the draw in the Director (kind weight {@link OFFERING_BEAT_WEIGHT}).
+ *
  * TEMPLATE-BACKED (THR-514). Each pool beat now sets `templateId === beatId`, naming the
  * matching content template in `ASCENDANT_POOL_BEAT_TEMPLATES`
  * (`ascendant-pool-beat-templates.ts`). `resolvePendingBeat`'s template resolver uses it
@@ -394,6 +401,17 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     // An ancient culture's buried memory stirs and surfaces.
   },
 
+];
+
+/**
+ * THR-1811 — the grant-bearing pool beats, retired from the cadence draw (plan § Decided 3).
+ * They were the cookie cutter THR-1770 measured: every god drew Consecrate, Bestow and
+ * Anoint on the same schedule. Their cards now come from the world's offering, the rung
+ * gifts (`godProgression.rungGiftsFor`) or the spine; the secondary reach signature is
+ * the first gift of rung 2. Kept here, resolvable by id, so an old save with one of
+ * them pending or in `history` still resolves (`findBeatDefinition`).
+ */
+export const RETIRED_POOL_BEATS: readonly BeatDefinition[] = [
   // — Investment beats (BEAT_KIND_WEIGHTS.investment): "the world calls" — offer an
   //   initial investment into an actor / location / item. Grants one real card. —
   {

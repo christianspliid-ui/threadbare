@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'r
 type BeatCatalogueEntry = import('../../../debug-bridge.d').DebugBeatCatalogueEntry;
 type BeatSchedule = import('../../../debug-bridge.d').DebugBeatScheduleResult;
 type SignaturesResult = import('../../../debug-bridge.d').DebugListSignaturesResult;
+type GodProgressionReadout = import('../../../engine/godProgression').GodProgressionReadout;
 
 const PANEL_STYLE: CSSProperties = {
   padding: '10px 12px',
@@ -78,6 +79,7 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
   const [catalogue, setCatalogue] = useState<BeatCatalogueEntry[]>([]);
   const [schedule, setSchedule] = useState<BeatSchedule | null>(null);
   const [signatures, setSignatures] = useState<SignaturesResult | null>(null);
+  const [ladder, setLadder] = useState<GodProgressionReadout | null>(null);
   const [fireReach, setFireReach] = useState('');
   const [fireBeatId, setFireBeatId] = useState('');
   const [grantId, setGrantId] = useState('');
@@ -89,11 +91,13 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
     if (!window.__DEBUG) return;
     setLoading(true);
     try {
-      const [beats, sched, sigs] = await Promise.all([
+      const [beats, sched, sigs, gp] = await Promise.all([
         window.__DEBUG.listBeats(),
         window.__DEBUG.beatSchedule(),
         window.__DEBUG.listSignatures(),
+        window.__DEBUG.getGodProgression(),
       ]);
+      setLadder('error' in gp ? null : gp);
       setCatalogue(beats);
       setSchedule(sched);
       setSignatures(sigs);
@@ -179,6 +183,39 @@ export function BeatsDebugTab({ currentTick }: BeatsDebugTabProps) {
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
             Beat state not loaded {loading ? '(refreshing…)' : ''}
           </div>
+        )}
+      </div>
+
+      {/* THR-1811: the card ladder — rung, marks, key gifts, the spend ledger, the offering. */}
+      <div style={BLOCK_STYLE} data-testid="beats-debug-progression">
+        <div style={TITLE_STYLE}>Progression</div>
+        {ladder ? (
+          <>
+            <div style={ROW_STYLE}>
+              <span>Rung: <strong>{ladder.rung}</strong></span>
+              <span>Marks: <strong>{ladder.rungMarks}</strong></span>
+              <span>Offerable: <strong>{ladder.offerableCount}</strong></span>
+              <span>Next key gift tick: <strong>{ladder.nextRungGiftTick}</strong></span>
+              <span>Taken by tier: <strong>{JSON.stringify(ladder.boughtByTier)}</strong></span>
+            </div>
+            <div style={ROW_STYLE}>
+              <span>Spendable: <strong>{JSON.stringify(ladder.spendableBySphere)}</strong></span>
+              <span>Spent: <strong>{JSON.stringify(ladder.spentBySphere)}</strong></span>
+            </div>
+            <div style={ROW_STYLE}>
+              <span>Key gifts queued: <strong>{ladder.rungGiftQueue.join(', ') || '—'}</strong></span>
+            </div>
+            {ladder.pendingOffering && (
+              <div style={ROW_STYLE}>
+                <span>Offering: <strong>{ladder.pendingOffering.cardIds.map((id, i) => id + ' (' + ladder.pendingOffering!.prices[i] + ', ' + ladder.pendingOffering!.words[i] + ')').join(' · ')}</strong> — passes at {ladder.pendingOffering.expiresTurn}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <button type="button" style={BUTTON_STYLE} onClick={async () => { const r = window.__DEBUG?.forceOffering(); if (r) setStatusMessage(r.message); await refresh(); }}>Force offering</button>
+            </div>
+          </>
+        ) : (
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>No ladder state.</div>
         )}
       </div>
 

@@ -240,7 +240,7 @@ import { isAutonomousDecisionActor } from '../../engine/strategicKindReachabilit
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat, settleOpeningSpineBeats } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, forceOffering, getBeatDefinitionById, resolvePendingBeat, settleOpeningSpineBeats } from '../../engine/ascendantBeat';
 import {
   findDeliverySubject,
   prepareDeliveryEncounter,
@@ -252,6 +252,7 @@ import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal'
 import { ASCENDANT_SPINE, isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
+import { describeOffering } from '../../engine/godProgression';
 import {
   resolveGiftDelivery,
   openPlayerSurfaces,
@@ -3261,6 +3262,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerBeatBridge({
+      // THR-1811: draw an offering now (debug path; seeded by the tick so it repeats).
+      forceOffering: () => {
+        const state = _gameStateRef.current;
+        if (!state?.ascendantBeats) return { success: false, message: 'Game not loaded' };
+        const next = forceOffering(state, mulberry32(state.tick + 1811));
+        if (!next) return { success: false, message: 'Nothing can be offered (no open rung or no offerable card)' };
+        setGameState(prev => ({ ...prev, ascendantBeats: next }));
+        return { success: true, beatId: next.pending?.beatId, kind: 'offering', message: 'Offered: ' + (next.pending?.offeredActionIds ?? []).join(', ') };
+      },
       fireBeat: (beatId: string) => {
         const state = _gameStateRef.current;
         if (!state) return { success: false, message: 'Game not loaded' };
@@ -6755,6 +6765,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           proseOverride={beatProseOverride}
           // THR-1609: Beat 0 names the avatar as the player's own shape.
           avatarName={avatarName}
+          // THR-1811: the offering's cards with what each costs now.
+          offering={pendingBeat.kind === 'offering'
+            ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
+            : undefined}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

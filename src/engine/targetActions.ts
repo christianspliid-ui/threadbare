@@ -282,6 +282,29 @@ interface FilterCounts {
  * Returns an empty array (never throws) when no templates pass all filters.
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
+/**
+ * The reach gate (THR-503) as one predicate (THR-1811): a card requiring a reach
+ * outside the god's permanent two is hidden for the whole run. The drawer and the
+ * world's offering (`godProgression.offerableCards`) both read this, so the offering
+ * never offers a card the drawer would hide.
+ *
+ * Fail-open: no affinities supplied (tests, old fixtures) → visible; an unknown
+ * `requiresReach` → warned and treated as ungated (NFP #4).
+ */
+export function isWithinGodReaches(
+  template: Pick<UnifiedActionTemplate, 'id' | 'requiresReach'>,
+  ascendantDomainAffinities: Partial<Record<ReachDomain, number>> | undefined,
+): boolean {
+  if (!template.requiresReach || !ascendantDomainAffinities) return true;
+  const reachIsKnown = (REACH_DOMAINS as readonly string[]).includes(template.requiresReach);
+  if (!reachIsKnown) {
+    console.warn(`[targetActions] template ${template.id} declares unknown requiresReach "${template.requiresReach}" — ungating.`);
+    return true;
+  }
+  const affinity = ascendantDomainAffinities[template.requiresReach] ?? 0;
+  return affinity >= REACH_GATE_MIN_AFFINITY;
+}
+
 export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
   const {
     target,
@@ -441,18 +464,10 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     //    run, so a card requiring a reach outside that set is hidden entirely
     //    (like the unlock gate), never surfaced as aspiration. Skipped when no
     //    affinities are supplied (e.g. tests) → fail-open for visibility.
-    if (template.requiresReach && ascendantDomainAffinities) {
-      const reachIsKnown = (REACH_DOMAINS as readonly string[]).includes(template.requiresReach);
-      if (!reachIsKnown) {
-        // Fail-soft (NFP #4): unknown reach → treat as ungated rather than hiding.
-        console.warn(`[targetActions] template ${template.id} declares unknown requiresReach "${template.requiresReach}" — ungating.`);
-      } else {
-        const affinity = ascendantDomainAffinities[template.requiresReach] ?? 0;
-        if (affinity < REACH_GATE_MIN_AFFINITY) {
-          counts.byReach++;
-          continue;
-        }
-      }
+    //    THR-1811: one predicate, read here and by the world's offering.
+    if (!isWithinGodReaches(template, ascendantDomainAffinities)) {
+      counts.byReach++;
+      continue;
     }
 
     // 4. Sphere gate

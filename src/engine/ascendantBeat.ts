@@ -45,6 +45,7 @@ import type {
 import {
   ASCENDANT_SPINE,
   ASCENDANT_BEAT_POOL,
+  RETIRED_POOL_BEATS,
   BEAT_BASE_INTERVAL,
   BEAT_INTERVAL_JITTER,
   BEAT_MIN_GAP,
@@ -69,6 +70,20 @@ import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascenda
 import { ASCENDANT_MILESTONE_BEATS, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
 import { bindDeliverySubject, eligibleDeliveryBeats, getDeliveryBeatById, type DeliveryBindFailure } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
+import {
+  OFFERING_BEAT_DEFINITION,
+  currentRung,
+  offerableCards,
+  offeringWeight,
+  drawOffering,
+  offeringExpiresTurn,
+  describeOffering,
+  rungGiftDefinition,
+  payment,
+  type OfferingIdentity,
+} from './godProgression';
+import { OFFERING_MIN_CANDIDATES, OFFERING_COPY } from '../data/god-progression-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { touchWorld, touchStructure, type SimulationRuntime } from './simulationRuntime';
 import type {
@@ -439,6 +454,7 @@ function offer(
   poolSize: number,
   boundNodeIds: readonly string[],
   advanceSpine: boolean,
+  extra?: Pick<PendingBeat, 'offeredActionIds' | 'expiresTurn'>,
 ): AscendantBeatState {
   const pending: PendingBeat = {
     beatId: def.beatId,
@@ -446,6 +462,7 @@ function offer(
     offeredTurn: turn,
     boundNodeIds: [...boundNodeIds],
     trigger,
+    ...(extra ?? {}),
   };
   // Delivery beats wrap a branching encounter; `def.templateId` names it so the
   // trace identifies the otherwise-unreachable content the vision hosts (THR-506).
@@ -797,6 +814,63 @@ function noteSpineDeferral(
 }
 
 /**
+ * Offer the world's offering (THR-1811): draw up to OFFERING_SIZE cards from
+ * `offerable` weighted by `offeringWeight` (the Director's identity bias through an
+ * adapter), stamp the day-boundary expiry, and trace `offering.offered`. One rng call
+ * per pick (NFP #3).
+ */
+function offerOffering(
+  beats: AscendantBeatState,
+  state: GameState,
+  rng: () => number,
+  rung: number,
+  offerable: readonly UnifiedActionTemplate[],
+  turn: number,
+  poolSize: number,
+): AscendantBeatState {
+  const bias = (identity: OfferingIdentity) => computeIdentityBias(
+    { ...OFFERING_BEAT_DEFINITION, identity }, state,
+  );
+  const weightOf = (t: UnifiedActionTemplate) => offeringWeight(t, state, rung, bias);
+  const picks = drawOffering(offerable, weightOf, rng);
+  const expiresTurn = offeringExpiresTurn(turn);
+  const views = describeOffering(state, picks);
+  emitTrace({
+    tick: turn,
+    category: 'offering.offered',
+    rung,
+    candidateCount: offerable.length,
+    offered: views.map(v => ({
+      actionId: v.actionId,
+      tier: v.tier,
+      weight: weightOf(offerable.find(t => t.id === v.actionId)!),
+      price: v.price,
+      paySphere: v.paySphere,
+      word: v.word,
+    })),
+    expiresTurn,
+    summary: `offering.offered: ${picks.join(', ')} (rung ${rung}, ${offerable.length} candidates, passes at ${expiresTurn})`,
+  } as unknown as Parameters<typeof emitTrace>[0]);
+  return offer(beats, OFFERING_BEAT_DEFINITION, { kind: 'cadence' }, turn, poolSize, [], false, {
+    offeredActionIds: picks,
+    expiresTurn,
+  });
+}
+
+/**
+ * Force an offering now (THR-1811, `__DEBUG.forceOffering`). Replaces any pending beat.
+ * Returns null when no rung is open or nothing can be offered.
+ */
+export function forceOffering(state: GameState, rng: () => number): AscendantBeatState | null {
+  const beats = state.ascendantBeats;
+  if (!beats) return null;
+  const rung = Math.max(1, currentRung(state));
+  const offerable = offerableCards(state, rung);
+  if (offerable.length === 0) return null;
+  return offerOffering({ ...beats, pending: null }, state, rng, rung, offerable, state.tick, 0);
+}
+
+/**
  * The Director phase. Returns a partial GameState (merged by the orchestrator).
  * No-ops to `{}` when there is no beat to offer or when the state is uninitialized
  * (old saves / fixtures without `ascendantBeats`).
@@ -809,9 +883,21 @@ export function phaseAscendantBeatDirector(
   if (!beats) return {}; // fail-soft: uninitialized
   const turn = state.tick;
   try {
-    // 1. max-one-pending invariant
+    // 1. max-one-pending invariant. THR-1811: an unentered offering passes at its day
+    //    boundary, freeing the slot (never a chronicle line — plan § Decided 4a).
     if (beats.pending) {
-      emitSkipped(turn, 'pending', beats.pending.beatId);
+      const p = beats.pending;
+      if (p.kind === 'offering' && p.expiresTurn !== undefined && turn >= p.expiresTurn) {
+        emitTrace({
+          tick: turn,
+          category: 'offering.passed',
+          reason: 'expired',
+          offeredIds: [...(p.offeredActionIds ?? [])],
+          summary: `offering.passed: expired at turn ${turn} (${(p.offeredActionIds ?? []).join(', ')})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        return { ascendantBeats: resolveAscendantBeat(beats, { outcome: 'passed', turn }) };
+      }
+      emitSkipped(turn, 'pending', p.beatId);
       return {};
     }
 
@@ -860,6 +946,11 @@ export function phaseAscendantBeatDirector(
     // Drop beats whose eligibility predicate fails against current world state, then draw
     // weighted by ascendant identity (reach/sphere) on top of the kind-mix weights.
     const eligible = pool.filter(b => isBeatEligible(b, state));
+    // THR-1811: the world's offering joins the same draw (plan § Decided 2), eligible once
+    // a rung is open and at least OFFERING_MIN_CANDIDATES cards may be offered.
+    const rung = currentRung(state);
+    const offerable = offerableCards(state, rung);
+    if (rung >= 1 && offerable.length >= OFFERING_MIN_CANDIDATES) eligible.push(OFFERING_BEAT_DEFINITION);
     if (eligible.length === 0) {
       emitSkipped(turn, 'empty_pool');
       return {};
@@ -871,6 +962,9 @@ export function phaseAscendantBeatDirector(
     }
     // Bind the specific subject (the un-introduced culture/faction for introduction beats)
     // so the offered beat can name it; other beats bind nothing (THR-522).
+    if (def.kind === 'offering') {
+      return { ascendantBeats: offerOffering(beats, state, rng, rung, offerable, turn, eligible.length) };
+    }
     const boundNodeIds = bindBeatSubject(def, state);
     // poolSize reflects the *eligible* pool (plan §3.2) for inspectability.
     return {
@@ -941,6 +1035,10 @@ function findBeatDefinition(beatId: string): BeatDefinition | null {
     getDeliveryBeatById(beatId) ??
     getDeepeningBeatById(beatId) ??
     getMilestoneBeatById(beatId) ??
+    // THR-1811: the offering, rung gifts, and retired pool beats (old saves' pending/history).
+    (beatId === OFFERING_BEAT_DEFINITION.beatId ? OFFERING_BEAT_DEFINITION : null) ??
+    rungGiftDefinition(beatId) ??
+    RETIRED_POOL_BEATS.find(b => b.beatId === beatId) ??
     null
   );
 }
@@ -1026,6 +1124,107 @@ function runBeatTemplateAftermath(
   return { state: working, touchedWorld, touchedStructure };
 }
 
+/**
+ * Take up an offered card, or let the offering pass (THR-1811, plan E5).
+ *
+ * No choice → passed (`let_pass`). A choice not among the offered ids, or one the god can
+ * no longer pay for, also resolves as passed and traces why — never throws, never moves
+ * essence. A valid choice adds the price to `offeringSpentBySphere` (never the earned
+ * counter), counts the tier, unlocks the card (`via: 'offering'`) and writes one
+ * chronicle line. Passing writes none (plan § Decided 4a).
+ */
+function resolveOffering(
+  state: GameState,
+  beats: AscendantBeatState,
+  pending: PendingBeat,
+  chosenActionId: string | undefined,
+  turn: number,
+): PendingBeatResolution {
+  const offeredIds = [...(pending.offeredActionIds ?? [])];
+  const pass = (reason: 'let_pass' | 'not_offered' | 'unaffordable'): PendingBeatResolution => {
+    emitTrace({
+      tick: turn,
+      category: 'offering.passed',
+      reason,
+      offeredIds,
+      summary: `offering.passed: ${reason}${chosenActionId ? ` (${chosenActionId})` : ''}`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+    return {
+      state: { ...state, ascendantBeats: resolveAscendantBeat(beats, { outcome: 'passed', turn }) },
+      resolved: true,
+      beatId: pending.beatId,
+      grantedActionIds: [],
+      outcome: 'passed',
+      message: `Offering passed (${reason}).`,
+    };
+  };
+  if (!chosenActionId) return pass('let_pass');
+  const template = getUnifiedTemplateById(chosenActionId);
+  if (!offeredIds.includes(chosenActionId) || !template) return pass('not_offered');
+  const pay = payment(template, state);
+  if (!pay) return pass('unaffordable');
+
+  const tier = (template.progression?.tier ?? 1) as 1 | 2 | 3 | 4;
+  const spent = { ...(state.offeringSpentBySphere ?? {}) };
+  spent[pay.sphere] = (spent[pay.sphere] ?? 0) + pay.amount;
+  const bought = { ...(state.offeringBoughtByTier ?? {}) };
+  bought[tier] = (bought[tier] ?? 0) + 1;
+  const unlocked = [...(state.unlockedActionIds ?? [])];
+  if (!unlocked.includes(chosenActionId)) unlocked.push(chosenActionId);
+  const earned = Number(state.essenceEarnedBySphere?.[pay.sphere]) || 0;
+  const spendableAfter = Math.max(0, earned - spent[pay.sphere]!);
+
+  emitTrace({
+    tick: turn,
+    category: 'action.unlock.granted',
+    turn,
+    actionId: chosenActionId,
+    via: 'offering',
+    summary: `action.unlock.granted: ${chosenActionId} (via offering)`,
+  } as unknown as Parameters<typeof emitTrace>[0]);
+  emitTrace({
+    tick: turn,
+    category: 'offering.taken',
+    actionId: chosenActionId,
+    tier,
+    price: pay.amount,
+    paidFrom: pay.sphere,
+    offSphere: pay.word === 'at_double',
+    spendableAfter,
+    summary: `offering.taken: ${chosenActionId} for ${pay.amount} ${pay.sphere}${pay.word === 'at_double' ? ' (at double)' : ''}`,
+  } as unknown as Parameters<typeof emitTrace>[0]);
+
+  const props = state.graph.getNode(state.ascendantId)?.properties as AscendantProperties | undefined;
+  const chronicle = {
+    id: `offering-taken-${chosenActionId}-${turn}`,
+    tier: 'chronicle' as const,
+    title: OFFERING_COPY.chronicleTitle,
+    prose: OFFERING_COPY.chronicleTaken.replace('{card}', template.name),
+    promptContext: {
+      actors: [state.ascendantId],
+      location: '',
+      sphere: props?.sphereAlignment?.primary ?? pay.sphere,
+      mood: 'reverent' as const,
+    },
+    tick: turn,
+  };
+  return {
+    state: {
+      ...state,
+      offeringSpentBySphere: spent,
+      offeringBoughtByTier: bought,
+      unlockedActionIds: unlocked,
+      chronicleEntries: [...(state.chronicleEntries ?? []), chronicle],
+      ascendantBeats: resolveAscendantBeat(beats, { outcome: 'taken', grantedActionIds: [chosenActionId], turn }),
+    },
+    resolved: true,
+    beatId: pending.beatId,
+    grantedActionIds: [chosenActionId],
+    outcome: 'taken',
+    message: `Took up '${chosenActionId}' for ${pay.amount} ${pay.sphere}.`,
+  };
+}
+
 /** Result of {@link resolvePendingBeat}. `state` is the input state unchanged on no-op. */
 export interface PendingBeatResolution {
   /** Next state: grants applied to `unlockedActionIds`, `pending` cleared. */
@@ -1105,6 +1304,10 @@ export function resolvePendingBeat(
       };
     }
 
+    if (pending.kind === 'offering') {
+      return resolveOffering(state, beats, pending, opts.chosenActionId, turn);
+    }
+
     const allGrants = def.grantsActionIds ?? [];
     let granted: readonly string[];
     if (pending.kind === 'selection') {
@@ -1148,7 +1351,7 @@ export function resolvePendingBeat(
         category: 'action.unlock.granted',
         turn,
         actionId: id,
-        via: 'beat',
+        via: pending.kind === 'rung_gift' ? 'rung' : 'beat',
         summary: `action.unlock.granted: ${id} (via beat ${pending.beatId})`,
       } as unknown as Parameters<typeof emitTrace>[0]);
     }

@@ -2411,11 +2411,39 @@ export interface ContextFragmentSet {
   readonly variants: Readonly<Record<string, string>>;
 }
 
+/**
+ * THR-1811 (decided THR-1794) — where a god card sits on the run's ladder and how a
+ * god comes to hold it. Data on the card, so the distribution is tuned by editing the
+ * template, never code. Not `rarityTier` (that is visual weight, with 30+ readers).
+ */
+export interface CardProgression {
+  /** Rung (1–4) from which the card can be offered or gifted. */
+  readonly tier: 1 | 2 | 3 | 4;
+  /** 'market' = the world may offer it for a price; 'gift' = it arrives only by a beat. */
+  readonly offer: 'market' | 'gift';
+  /** For a gift: the beat that gives it. 'rung' = the rung beats; 'signature' = the reach-signature path. */
+  readonly giftBy?: 'spine' | 'milestone' | 'rung' | 'signature';
+  /** true = the same card for every god: no identity weighting, priced in the god's primary. */
+  readonly generic: boolean;
+  /** Sphere whose earned essence pays. Defaults to `sphereAffinity`. Required on a sphereless, non-generic market card. */
+  readonly pricedIn?: SphereName;
+  /** Scales how often the card is offered. Default 1. */
+  readonly offerWeight?: number;
+  /** Review flags for content passes (e.g. 'merge', 'whispers'). Read by no game system. */
+  readonly flags?: readonly string[];
+}
+
 export interface UnifiedActionTemplate {
   // Identity
   readonly id: string;
-  /** Narrative significance tier. Drives visual treatment and TB-100 unlock system. */
+  /** Narrative significance tier. Drives visual treatment. Not the progression ladder (see `progression`, THR-1811). */
   readonly rarityTier: RarityTier;
+  /**
+   * THR-1811: where a god card sits on the run's ladder and how a god comes to hold it.
+   * Required on every ascendant-castable template by `check:god-card-progression`;
+   * absent on mortal-only templates. Read by `src/engine/godProgression.ts`.
+   */
+  readonly progression?: CardProgression;
   /** Attention tier classification — controls how this action surfaces to the player. */
   readonly intrinsicTier: AttentionTier;
   /**

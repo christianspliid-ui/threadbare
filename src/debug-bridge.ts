@@ -131,6 +131,7 @@ if (import.meta.env.DEV) {
     fireBeat: (beatId: string) => import('./debug-bridge.d').DebugFireBeatResult;
     grantUnlock: (actionId: string) => import('./debug-bridge.d').DebugGrantUnlockResult;
     resolveBeat: (chosenActionId?: string) => import('./debug-bridge.d').DebugResolveBeatResult;
+    forceOffering?: () => import('./debug-bridge.d').DebugFireBeatResult;
   }
   // GameView registers the synchronous tick batch here (THR-689)
   let _tickBridge: ((n: number) => import('./debug-bridge.d').DebugTickResult) | null = null;
@@ -677,6 +678,18 @@ if (import.meta.env.DEV) {
      * tier snapshot, and whether a Deepening beat is pending. Read-only; returns
      * { reaches, pendingBeatId } or { error }.
      */
+    /**
+     * God-card ladder readout (THR-1811): rung, summed marks, queued key gifts, spendable
+     * earned essence per sphere, spend ledger, cards taken per tier, and the pending
+     * offering's cards with their prices and price words. Read-only.
+     */
+    getGodProgression: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { getGodProgressionReadout } = await import('./engine/godProgression');
+      return getGodProgressionReadout(state);
+    },
+
     getAscendantProgression: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
@@ -1044,6 +1057,8 @@ if (import.meta.env.DEV) {
     },
     fireBeat: (beatId: string) =>
       _beatBridge?.fireBeat(beatId) ?? { success: false, message: 'Game not loaded' },
+    forceOffering: () =>
+      _beatBridge?.forceOffering?.() ?? { success: false, message: 'Game not loaded' },
     grantUnlock: (actionId: string) =>
       _beatBridge?.grantUnlock(actionId) ?? { success: false, message: 'Game not loaded' },
     resolveBeat: (chosenActionId?: string) =>

@@ -26,7 +26,20 @@ import type { GameState } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { AscendantProperties } from '../types/influence';
-import type { PendingBeat } from '../types/ascendantBeat';
+import type { PendingBeat, GodProgressionState } from '../types/ascendantBeat';
+import {
+  createInitialGodProgression,
+  rungMarks,
+  rungForMarks,
+  spineDone,
+  rungGiftsFor,
+  parseRungGiftBeatId,
+  rungGiftDefinition,
+  isRungOpeningGift,
+} from './godProgression';
+import { resolveReachSignatureGrant } from './ascendantBeat';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { RUNG_GIFT_SPACING, RUNG_BEAT_PRESENTATION } from '../data/god-progression-content';
 import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
@@ -547,10 +560,26 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
     }
   }
 
+  // THR-1811: the card ladder. Rungs open on summed attunement marks; each opening queues
+  // its key gifts, which take an empty slot one per RUNG_GIFT_SPACING. Checked after the
+  // milestones (they name rarer moments) and before the Director, so a key gift wins an
+  // empty slot over an offering.
+  const ladder = stepGodProgression(state, canEnqueue && !pending, turn);
+  if (ladder.pending) {
+    pending = ladder.pending;
+    if (ladder.chronicle) {
+      newChronicle.push({
+        ...ladder.chronicle,
+        promptContext: { actors: [ascId], location: '', sphere: primarySphere, mood: 'reverent' },
+      });
+    }
+  }
+
   if (snapshotChanged) {
     node.properties.reachTierSnapshot = snapshot;
   }
   const patch: Partial<GameState> = {};
+  if (ladder.godProgression) patch.godProgression = ladder.godProgression;
   if (pending && beats) {
     patch.ascendantBeats = { ...beats, pending, lastBeatTurn: turn };
   }
@@ -559,6 +588,110 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
     patch.chronicleEntries = [...(state.chronicleEntries ?? []), ...newChronicle];
   }
   return patch;
+}
+
+/**
+ * THR-1811 — one tick of the card ladder.
+ *
+ *  1. Open every rung the summed marks now reach (the stored rung only rises), tracing
+ *     `progression.rung_opened` and queueing that rung's key gifts.
+ *  2. When `canOffer` and `turn ≥ nextRungGiftTick`, pop the queue head into the slot as a
+ *     `rung_gift` beat. A held card (or a signature already held / unresolvable) is skipped
+ *     at once and the next one taken (THR-647: never offer a held card).
+ *
+ * Returns the next `godProgression` only when it changed. Fail-soft: any error → no change.
+ */
+function stepGodProgression(
+  state: GameState,
+  canOffer: boolean,
+  turn: number,
+): {
+  godProgression?: GodProgressionState;
+  pending?: PendingBeat;
+  chronicle?: Omit<ChronicleEntry, 'promptContext'>;
+} {
+  try {
+    const prev = state.godProgression ?? createInitialGodProgression();
+    let gp: GodProgressionState = prev;
+    const marks = rungMarks(state);
+    const target = rungForMarks(marks, spineDone(state));
+    while (gp.rung < target) {
+      const rung = gp.rung + 1;
+      const gifts = rungGiftsFor(rung);
+      gp = {
+        ...gp,
+        rung,
+        rungOpenedTick: { ...gp.rungOpenedTick, [rung]: turn },
+        rungGiftQueue: [...gp.rungGiftQueue, ...gifts],
+      };
+      emitTrace({
+        category: 'progression.rung_opened',
+        tick: turn,
+        rung,
+        rungMarks: marks,
+        queuedGiftIds: gifts,
+        summary: `progression.rung_opened: rung ${rung} (${marks} marks), ${gifts.length} key gift(s) queued`,
+      } as unknown as EmitInput);
+    }
+
+    let pending: PendingBeat | undefined;
+    let chronicle: Omit<ChronicleEntry, 'promptContext'> | undefined;
+    if (canOffer && gp.rungGiftQueue.length > 0 && turn >= gp.nextRungGiftTick) {
+      const queue = [...gp.rungGiftQueue];
+      const held = new Set(state.unlockedActionIds ?? []);
+      while (queue.length > 0 && !pending) {
+        const beatId = queue.shift()!;
+        const parsed = parseRungGiftBeatId(beatId);
+        const def = rungGiftDefinition(beatId);
+        const cardId = def?.grantsReachSignature
+          ? resolveReachSignatureGrant(state, def.grantsReachSignature)
+          : def?.grantsActionIds?.[0] ?? null;
+        const missing = !parsed || !cardId || (!def?.grantsReachSignature && !getUnifiedTemplateById(cardId));
+        const skip: 'held' | 'missing' | null = missing ? 'missing' : held.has(cardId) ? 'held' : null;
+        emitTrace({
+          category: 'progression.rung_gift_offered',
+          tick: turn,
+          rung: parsed?.rung ?? 0,
+          actionId: cardId ?? beatId,
+          ...(skip ? { skipped: skip } : {}),
+          summary: skip
+            ? `progression.rung_gift_offered: ${beatId} skipped (${skip})`
+            : `progression.rung_gift_offered: ${beatId} → ${cardId}`,
+        } as unknown as EmitInput);
+        if (skip) continue;
+        pending = {
+          beatId,
+          kind: 'rung_gift',
+          offeredTurn: turn,
+          boundNodeIds: [state.ascendantId],
+          trigger: { kind: 'turn', minTurn: turn },
+        };
+        if (isRungOpeningGift(beatId)) {
+          const words = RUNG_BEAT_PRESENTATION[parsed!.rung];
+          if (words) {
+            chronicle = { id: `rung-${parsed!.rung}-${turn}`, tier: 'chronicle', title: words.title, prose: words.prose, tick: turn };
+          }
+        }
+      }
+      gp = {
+        ...gp,
+        rungGiftQueue: queue,
+        nextRungGiftTick: pending ? turn + RUNG_GIFT_SPACING : gp.nextRungGiftTick,
+      };
+    }
+    return {
+      ...(gp !== prev || !state.godProgression ? { godProgression: gp } : {}),
+      ...(pending ? { pending } : {}),
+      ...(chronicle ? { chronicle } : {}),
+    };
+  } catch (err) {
+    emitTrace({
+      category: 'engine_warning',
+      tick: turn,
+      summary: `stepGodProgression error (turn ${turn}): ${err instanceof Error ? err.message : String(err)}`,
+    } as unknown as EmitInput);
+    return {};
+  }
 }
 
 /** One reach's live progression readout — for the debug bridge + (Slice 3+) UI. */
