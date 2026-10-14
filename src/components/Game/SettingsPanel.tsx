@@ -142,7 +142,7 @@ export function SettingsPanel({
     top: '52px',
     right: '8px',
     width: '280px',
-    maxHeight: '85vh',
+    maxHeight: 'var(--modal-max-h)',
     backgroundColor: 'rgba(10, 10, 14, 0.95)',
     border: '1px solid rgba(212, 175, 55, 0.3)',
     borderRadius: '8px',

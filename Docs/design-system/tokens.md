@@ -123,6 +123,26 @@ spacing grid. Use it only inside ceremonial surfaces; use `--space-5` everywhere
 
 ---
 
+## Layout tokens (THR-1819)
+
+The 1440p layout contract. **Frame** tokens are px and restated per tier in `index.css`'s `@media (min-width: 1920px | 2560px | 3440px)` blocks; **text-container** tokens are rem, declared once, and follow the root step-up (`html { font-size: 112.5% }` at ≥2560×1200). Mirrored in `src/components/shared/layoutContract.ts` and locked by `layoutContract.test.ts`. Full table with sources: `layout.md`.
+
+| Token | 1920×1080 | 2560×1440 | Use |
+|-------|-----------|-----------|-----|
+| `--topbar-height` | 48px | 56px | Top bar |
+| `--rail-left-w` | 320px | 400px | God rail (`AscendantBar`) |
+| `--rail-right-w` | 340px | 420px | Ledger rail (`GameView` right column) |
+| `--rail-strip-w` | 56px | 56px | A folded rail |
+| `--inspector-w` / `--inspector-wide-w` | 560 / 960px | 717 / 1280px | Inspector docked / wide (THR-1827) |
+| `--stage-window-w` / `--stage-left-col-w` | 280 / 340px | 520 / 560px | The Stage (THR-1829); 3440 window 1400px |
+| `--tooltip-max-w` | 17.5rem = 280px | 315px | `Tooltip` |
+| `--hovercard-w` | 26.25rem = 420px | 472.5px | `HoverCard` |
+| `--toast-w` | 20rem = 320px | 360px | `ToastStack` |
+| `--measure-prose` | 34em = 680px | 765px | Story-column measure |
+| `--modal-max-h` | 85vh | 85vh | Every dialog (Law 33) |
+
+---
+
 ## Ceremonial Utilities (THR-799)
 
 Two classes carrying the ceremonial presentation tier. Both are additive — no
@@ -197,7 +217,7 @@ tinted. Tinted cards carry `data-sphere-tint`.
 ## Forbidden Patterns
 
 - ❌ Hardcoded hex colors in components (e.g. `color: '#d4a040'`) — use tokens
-- ❌ Hardcoded pixel sizes for layout (e.g. `width: '280px'`) — use `var(--sidebar-width)`
+- ❌ Hardcoded pixel sizes for layout (e.g. `width: '280px'`) — use the layout tokens (`var(--rail-right-w)`, `var(--rail-left-w)`, `var(--tooltip-max-w)` …; § Layout tokens)
 - ❌ Sub-`--text-xs` font sizes in UI (e.g. `font-size: 0.65rem`) — badges/labels minimum `--text-xs`
 - ❌ `background: white` or any light background
 - ❌ Using `--accent-gold` for every heading — gold means important, use sparingly

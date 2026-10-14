@@ -7,13 +7,14 @@
  * No game state dependency — all sample data is hardcoded.
  */
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
 import { ListRow } from '../shared/ListRow';
 import { Modal, modalPanelStyle } from '../shared/Modal';
 import { dialogContextClass, type DialogContext } from '../shared/dialogContext';
+import { FRAME_TOKENS_PX, TYPE_SCALE_REM, layoutTierFor, remToPx, rootFontPx } from '../shared/layoutContract';
 import { Medallion } from '../shared/Medallion';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { RevealCard } from '../shared/RevealCard';
@@ -596,6 +597,7 @@ export default function StyleGuide() {
                 </div>
               </div>
             </div>
+            <LayoutContractColumns />
           </section>
 
           {/* ── Button ─────────────────────────────────────────── */}
@@ -722,7 +724,7 @@ export default function StyleGuide() {
                       A distant tremor passes through the web of fate. Something ancient has noticed your intervention.
                     </p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                      Modal uses <code>createPortal</code> — renders at z:60. Max-height: 75vh. Escape or backdrop click closes.
+                      Modal uses <code>createPortal</code> — renders at z:60. Max-height: 85vh (<code>--modal-max-h</code>). Escape or backdrop click closes.
                     </p>
                   </Modal.Body>
                   <Modal.Footer>
@@ -1644,6 +1646,68 @@ function SamplePhoneticInspector() {
   return (
     <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
       <CulturePhoneticsInspector graph={graph} />
+    </div>
+  );
+}
+
+// ── The 1440p layout contract, live (THR-1819) ───────────────────────────────
+
+/** What each type step is for (sizes only; faces and roles are THR-1833 / THR-1879). */
+const TYPE_STEP_ROLES: Record<keyof typeof TYPE_SCALE_REM, string> = {
+  xs: 'The floor — labels, metadata, chips',
+  sm: 'UI text — values, rows, buttons',
+  base: 'Story prose',
+  lg: 'Section headings (Cinzel minimum)',
+  xl: 'Panel and dialog titles',
+  '2xl': 'Screen titles',
+};
+
+/** The text-container and height tokens shown beside the frame geometry. */
+const TEXT_LAYOUT_TOKENS = [
+  '--panel-padding', '--tooltip-max-w', '--hovercard-w', '--toast-w',
+  '--stage-compact-w', '--measure-prose', '--modal-max-h',
+] as const;
+
+/** Re-read on resize so a designer dragging the window sees the tier change. */
+function useViewportWidth(): number {
+  const [width, setWidth] = useState(() => (typeof window === 'undefined' ? 0 : window.innerWidth));
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return width;
+}
+
+function LayoutContractColumns() {
+  const width = useViewportWidth();
+  const tier = layoutTierFor(width);
+  const rootPx = rootFontPx();
+  const rootStyle = typeof document === 'undefined' ? null : getComputedStyle(document.documentElement);
+  const live = (name: string) => rootStyle?.getPropertyValue(name).trim() || '—';
+  const rowStyle = { display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '6px' } as const;
+  const codeStyle = { fontSize: 'var(--text-xs)', color: 'var(--text-muted)' } as const;
+  return (
+    <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} data-testid="styleguide-layout-contract">
+      <div>
+        <Label>Type scale — root {rootPx}px, tier {tier}</Label>
+        {(Object.keys(TYPE_SCALE_REM) as (keyof typeof TYPE_SCALE_REM)[]).map((step) => (
+          <div key={step} style={rowStyle}>
+            <span style={{ fontSize: `var(--text-${step})`, color: 'var(--text-primary)' }}>{TYPE_STEP_ROLES[step]}</span>
+            <code style={codeStyle}>--text-{step} · {TYPE_SCALE_REM[step]}rem · {remToPx(TYPE_SCALE_REM[step])}px</code>
+          </div>
+        ))}
+      </div>
+      <div>
+        <Label>Layout — {width}px wide, tier {tier}</Label>
+        {[...Object.keys(FRAME_TOKENS_PX.base), ...TEXT_LAYOUT_TOKENS].map((name) => (
+          <div key={name} style={rowStyle}>
+            <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{name}</code>
+            <span style={codeStyle}>{live(name)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

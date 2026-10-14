@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-14
 validated_doctrine: ui-laws@1
 ---
 
@@ -61,14 +61,21 @@ Ground truth: `src/index.css` `:root` block. Deep dive: `Docs/design-system/toke
 | `--accent-gold-dim` | Subtle gold — borders, icons at rest |
 | `--accent-gold-glow` | Background tint for active elements |
 
-### Layout scaling
+### Layout scaling (the 1440p layout contract, THR-1819)
 
-| Property | Default | 1920px+ | 2560px+ | 3440px+ |
+2560×1440 is the primary screen, 1920×1080 the supported floor. Frame tokens are px, restated per tier in `index.css`; text containers are rem and follow the root step-up (`html { font-size: 112.5% }` at ≥2560×1200). JS reads the same numbers from `src/components/shared/layoutContract.ts`. Full table: `Docs/design-system/layout.md`.
+
+| Token | Default (<1920) | 1920px+ | 2560px+ | 3440px+ |
 |----------|---------|---------|---------|---------|
-| `--topbar-height` | 44px | 48px | 52px | 52px |
-| `--sidebar-width` | 280px | 360px | 400px | 420px |
-| `--panel-padding` | 1rem | 1.25rem | 1.5rem | 1.75rem |
-| `--topbar-padding-x` | 12px | 16px | 20px | 24px |
+| `--topbar-height` | 44px | 48px | 56px | 56px |
+| `--topbar-padding-x` / `--topbar-gap` | 12px | 16px | 20px | 20px |
+| `--rail-left-w` (god rail) | 320px | 320px | 400px | 400px |
+| `--rail-right-w` (Ledger rail) | 280px | 340px | 420px | 420px |
+| `--rail-strip-w` | 56px | 56px | 56px | 56px |
+| `--inspector-w` | 560px | 560px | 717px | 717px |
+| `--stage-window-w` | 280px | 280px | 520px | 1400px |
+| `--panel-padding` | 1rem | 1.25rem | (rem steps) | — |
+| `--modal-max-h` | 85vh | — | — | — |
 
 ---
 
@@ -105,7 +112,7 @@ Full decision tree: `Docs/design-system/component-selection.md`. Here are the mo
 
 ### Show a modal
 
-**Default:** Use `Modal` (shared primitive) with custom body content. Max-height 75vh, default max-width 600px. Escape to close.
+**Default:** Use `Modal` (shared primitive) with custom body content. Max-height `var(--modal-max-h)` = 85vh (Law 33), default max-width 600px. Escape to close.
 
 **Only create custom modals** for fundamentally different interaction patterns (encounter branching, full-screen vignettes).
 
@@ -122,17 +129,17 @@ Full decision tree: `Docs/design-system/component-selection.md`. Here are the mo
 
 ## 4. Layout Zones — "Where does new UI go?"
 
-Full reference: `Docs/design-system/layout-zones.md`. Viewport is 1920×1080, nothing scrolls, nothing renders below the fold.
+Full reference: `Docs/design-system/layout-zones.md`. The game fills one viewport at 2560×1440 (primary) and 1920×1080 (floor) — nothing scrolls, nothing renders below the fold.
 
 ```
 +------------------------------------------------------------------+
 |                        Top Bar (48px)                        z:30 |
 +------+-------------------------------------------+---------------+
-| Left |                                           |   Right       |
-| Side |           Hex Map Canvas                  |   Sidebar     |
-| bar  |           (Three.js / flex-1)             |  (360px @FHD) |
-| 60-  |                                           |               |
-| 220  |                                           |               |
+| God  |                                           |   Ledger      |
+| rail |           Hex Map Canvas                  |   rail        |
+| 320  |           (Three.js / flex-1)             |  (340px @FHD, |
+| @FHD |                                           |   420 @QHD)   |
+| 400  |                                           |               |
 +------+-------------------------------------------+---------------+
 |                   Action Drawer (~142px)                    z:40 |
 +------------------------------------------------------------------+
@@ -176,7 +183,7 @@ All live in `src/components/shared/`. Full spec: `Docs/design-system/primitives.
 | `Button` | 4 variants (primary, secondary, ghost, danger), 3 sizes |
 | `IconButton` | Icon-only compact button. Has badge slot. |
 | `Card` | Content wrapper. Compound: Header, Body, Footer |
-| `Modal` | Dialog overlay. Escape/backdrop close. max-height 75vh |
+| `Modal` | Dialog overlay. Escape/backdrop close. max-height `var(--modal-max-h)` = 85vh |
 | `Tooltip` | Smart-positioned hover info. Viewport-aware, nested hover support |
 | `Dropdown` | Portal-based menu. Escape/outside-click close |
 | `ListRow` | Interactive list item. Compound: Title, Subtitle, Leading |
@@ -245,7 +252,7 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 - [ ] **How does it handle missing data?** — Placeholder states, loading indicators, graceful fallbacks (NFP #4).
 - [ ] **What interaction states?** — Rest, hover, active, selected, disabled, focus-visible (see §6).
 - [ ] **Does it emit events?** — Does clicking/interacting dispatch to other systems (map navigation, encounter trigger, action fire)?
-- [ ] **Responsive behavior?** — How does it adapt at 1280px, 2560px, 3440px?
+- [ ] **Responsive behavior?** — How does it adapt at 1920 / 2560 / 3440 (the three tier blocks)? Below 1920 must not break.
 - [ ] **Debug visibility?** — Can the debug panel inspect the relevant state/traces?
 - [ ] **HexMap presence?** — If spatial, does it need a map signifier, overlay, or label?
 - [ ] **Notification surface?** — Does the system produce events the player should see? AlertBar toast? EventPopup? Chronicle entry?
@@ -259,7 +266,7 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 - **Don't put HTML directly in the Three.js canvas** — use the HTML overlay layer.
 - **Don't nest `Card` inside `Card`** — use `SectionHeading` to divide.
 - **Don't use `ProgressBar` for discrete steps** — use `StepDots`.
-- **Don't hardcode pixel widths** that duplicate CSS custom properties — use `var(--sidebar-width)` etc.
+- **Don't hardcode pixel widths** that duplicate CSS custom properties — use `var(--rail-right-w)`, `var(--rail-left-w)`, `var(--tooltip-max-w)` etc.
 - **Don't show numeric stats to the player** — use verbal word scales from `domain-words.ts`.
 - **Don't assume a magnitude is safe because the engine produced it** *(THR-1004)*. The words-never-numerals rule is broken most often not by a component but by an engine template literal whose output the component renders faithfully — `${delta.toFixed(2)}`, or a raw internal key like `star.positive`, arriving as a `detail` string. **Band it at the source**, the way `engine/aftermathWords.ts` does for the aftermath and `difficultyWord` does for the nudge stage; the number stays on the trace. When you find one, ask what *else* that producer emits — the two Christian quoted in THR-1004 were instances, not the membership predicate.
 - **Don't render a bare entity name and call the UI Law satisfied.** A name in a sentence is text; the concept is only present when it carries its image, its tooltip, and its link. If the surface cannot guess which words are concepts, have the **producer declare them** (see `EncounterAftermathChange.concepts`) rather than parsing English at the surface.
@@ -296,7 +303,7 @@ Load these only when doing specialized work in that domain:
 
 ## 10. Verification
 
-After implementing, verify at 1920×1080 with the Playwright MCP:
+After implementing, verify at 1920×1080 with the Playwright MCP. A change to the layout or type tokens (`src/index.css` `:root` and its breakpoint blocks) also captures 2560×1440, the primary screen — read `innerWidth`/`innerHeight` back in the same pass (THR-1819):
 ```
 browser_navigate('http://localhost:5173/?view=game&seeded&size=medium')
 browser_resize(1920, 1080)
