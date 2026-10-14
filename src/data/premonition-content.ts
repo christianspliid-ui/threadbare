@@ -197,6 +197,12 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
   ],
 };
 
+/**
+ * THR-1852 — the noun a God's Will option, and both its toasts, show when the
+ * target encounter has no resolvable name. Never the template id.
+ */
+export const COMPULSION_UNNAMED_ENCOUNTER_NOUN = 'a task nearby';
+
 // ─── Compulsion Vignette Templates ──────────────────────────────
 
 export const COMPULSION_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]> = {

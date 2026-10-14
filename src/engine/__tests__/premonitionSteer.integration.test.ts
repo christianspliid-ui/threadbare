@@ -19,6 +19,7 @@ import { createSimulationRuntime } from '../simulationRuntime';
 import { resetReputationTraitInit } from '../phaseReputationTraits';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
 import { applyCompulsionChoice } from '../premonitionActions';
+import { resolveCompulsionEncounterName } from '../premonitionCompulsion';
 import { MULTI_WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 import type { GameState } from '../../types/gameState';
 import type { CompulsionCandidate } from '../../types/premonition';
@@ -72,7 +73,8 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
         const target = lastBoard[1];
         const pick: CompulsionCandidate = {
           templateId: target.templateId,
-          encounterName: target.templateId,
+          // THR-1852 — the real name, as the builder resolves it; never the id.
+          encounterName: resolveCompulsionEncounterName(target.templateId),
           encounterHook: '',
           encounterType: 'explore',
           reach: 'iron',

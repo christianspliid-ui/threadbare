@@ -13,7 +13,7 @@ import type { PremonitionEvent, CompulsionCandidate } from '../types/premonition
 import type { ScoredCandidate } from './encounterScoring';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
-import { getAnyEncounterById } from '../data/encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import {
   COMPULSION_CANDIDATE_COUNT,
   COMPULSION_COOLDOWN_TICKS,
@@ -28,6 +28,7 @@ import {
   getQuintessenceProseTier,
   composeRetconLine,
   resolveAgentPronouns,
+  COMPULSION_UNNAMED_ENCOUNTER_NOUN,
 } from '../data/premonition-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
@@ -48,6 +49,24 @@ function threatToNorm(rating: string): number {
     case 'deadly':  return 1;
     default:        return 0.25;
   }
+}
+
+/** A dotted template id such as `encounter.town.oath_breaker_rite` — never player-facing. */
+export const TEMPLATE_ID_SHAPE = /^[a-z0-9_]+\.[a-z0-9_.]+$/;
+
+/**
+ * THR-1852 — the player-facing name of a compulsion target. Resolves through
+ * `getUnifiedTemplateById` (the unified index, then every encounter pool), because
+ * `getAnyEncounterById` alone misses the authored encounters registered only in
+ * `UNIFIED_ACTION_TEMPLATES` and the id leaked into the God's Will modal and toasts.
+ * A miss, or a name that is itself id-shaped, falls back to a generic noun.
+ */
+export function resolveCompulsionEncounterName(templateId: string): string {
+  const name = getUnifiedTemplateById(templateId)?.name?.trim();
+  if (!name || name === templateId || TEMPLATE_ID_SHAPE.test(name)) {
+    return COMPULSION_UNNAMED_ENCOUNTER_NOUN;
+  }
+  return name;
 }
 
 // ─── Compulsion Eligibility ─────────────────────────────────────
@@ -158,8 +177,7 @@ export function buildCompulsionEvent(
 
   // Build CompulsionCandidate entries
   const compulsionCandidates: CompulsionCandidate[] = candidates.map(c => {
-    const template = getAnyEncounterById(c.entry.templateId);
-    const encounterName = template?.name ?? c.entry.templateId;
+    const encounterName = resolveCompulsionEncounterName(c.entry.templateId);
     const reach = c.entry.reachPrimary;
     const sphere = c.entry.sphereAffinity ?? REACH_TO_SPHERE[reach] ?? 'force';
     const locationNode = graph.getNode(c.entry.locationId);
