@@ -1282,6 +1282,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/fights/opposedRoll.ts',
       'src/engine/rewardPool.ts',
     ],
+    verifiedLive: { date: '2026-10-14', evidence: 'Seeds 42 and 7 (medium, the First bonded by devSeedTheFirst), 300 ticks: the First\'s d100 was dealt from its bag 71 and 113 times (`luck.bag_roll` traces; `properties.luck.bagDraws` agrees), and on seed 7 a Legendary cycle closed naturally after 12 wins against a deadline of 45 (`luck.legendary_cycle`, tick 188). Every traced bag roll belonged to the First, the one threaded mortal.' },
   },
   {
     id: 'attachment-worldgen-starters',

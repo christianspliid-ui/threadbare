@@ -14,7 +14,7 @@ status: current
 
 ## Why this is load-bearing
 
-Christian shared three videos from the candlesan channel (loot tables, the marble bag, four ways to control randomness) and asked what Threadbearer could learn. Checking them against the code found four concrete problems. The reward draw folded the tier curve into every item's weight, so the tier with the most items won: a success's Legendary was set at 5% and paid about 2.6%. Every new common item quietly makes Legendaries rarer, and each encounter's filters make the real rate swing. Nothing stops a long Legendary drought. The First's dice are stateless, so long losing streaks are possible, and the forecast window (THR-1575: mortals engage at 50–65%) puts the First at the odds where streaks are worst. World-generation rarity seeding handed any shortfall in a distribution to Legendary. Christian's ruling, in chat 2026-10-14: *"fix and add the relevant game design principles to our relevant game design laws."* He approved the proposal as framed: keep today's loot feel but make it stable, a marble bag for the First's rolls, and predetermination for the Legendary drought. The principles became a new law book, [`Docs/game-design/laws.md`](../game-design/laws.md) § I.
+Christian shared three videos from the candlesan channel (loot tables, the marble bag, four ways to control randomness) and asked what Threadbearer could learn. Checking them against the code found four concrete problems. The reward draw folded the tier curve into every item's weight, so the tier with the most items won: a success's Legendary was set at 5% and paid about 1.5% in live play. Every new common item quietly makes Legendaries rarer, and each encounter's filters make the real rate swing. Nothing stops a long Legendary drought. The First's dice are stateless, so long losing streaks are possible, and the forecast window (THR-1575: mortals engage at 50–65%) puts the First at the odds where streaks are worst. World-generation rarity seeding handed any shortfall in a distribution to Legendary. Christian's ruling, in chat 2026-10-14: *"fix and add the relevant game design principles to our relevant game design laws."* He approved the proposal as framed: keep today's loot feel but make it stable, a marble bag for the First's rolls, and predetermination for the Legendary drought. The principles became a new law book, [`Docs/game-design/laws.md`](../game-design/laws.md) § I.
 
 ## Substrate inventory
 
@@ -68,16 +68,18 @@ No new phase. Rolls happen where they already happened (encounter resolution, fi
 
 ### Data tables
 
-The four outcome tier curves are re-tuned so the tier-first draw pays what players actually got from the flat draw, averaged over all 200 recipes (seeds 42/99/7, identical to one decimal across seeds). This keeps today's feel and makes it stable. Christian chose that over the old curves' face values, which would have roughly doubled Legendaries.
+The four outcome tier curves are re-tuned so the tier-first draw pays what players actually got from the flat draw in live play. This keeps today's feel and makes it stable. Christian chose that over the old curves' face values: at face value a success's Legendary would have gone from 1.5% to about 3.4%.
 
-| Curve | Old authored | Old as experienced | New (= rate now) |
-|---|---|---|---|
-| Critical success | 10 / 40 / 40 / 10 | 20.0 / 48.0 / 28.0 / 4.0 | 20 / 48 / 28 / 4 |
-| Success | 40 / 40 / 15 / 5 | 45.1 / 40.1 / 12.2 / 2.6 | 45 / 40 / 12 / 3 |
-| Failure | 57 / 29 / 14 / 0 (as shares of 0.35) | 56.7 / 30.1 / 13.2 / 0 | 57 / 30 / 13 / 0 |
-| Critical failure | 33 / 33 / 33 / 0 (as shares of 0.15) | 41.4 / 35.1 / 23.5 / 0 | 41 / 35 / 24 / 0 |
+The fit is draw-weighted, not recipe-weighted. A first pass averaged the 200 recipes equally and overshot live play (Legendary ~2.0% against ~1.5%, Mythic ~10% against ~8%), because the recipes that fire most have the biggest, most Mundane-heavy pools. The re-run of the master-band invariant (`engagementWindow.invariant.test.ts`, seed 99 at 0.704 against a 0.70 ceiling) flagged the stronger item economy. So the curves were fitted on **5,356 live draws** (seeds 42/99/7, 600 ticks, the First bonded): every draw's pool was logged by tier, and the curve was solved so the new draw, cascade included, reproduces the old per-draw tier mix.
 
-(Percent by tier, Mundane / Storied / Mythic / Legendary.)
+| Curve | Old authored | Old, as live play paid | New curve | New, as live play pays |
+|---|---|---|---|---|
+| Critical success (n=374) | 10 / 40 / 40 / 10 | 22.8 / 51.8 / 21.3 / 4.0 | 22.5 / 46.5 / 25.5 / 5.5 | 22.6 / 51.8 / 21.6 / 4.1 |
+| Success (n=3,514) | 40 / 40 / 15 / 5 | 53.6 / 38.2 / 6.8 / 1.5 | 55 / 35 / 8 / 2 | 53.5 / 38.2 / 6.8 / 1.5 |
+| Failure (n=1,257) | 57 / 29 / 14 / 0 (shares of 0.35) | 74.4 / 21.2 / 4.4 / 0 | 77 / 18.5 / 4.5 / 0 | 74.5 / 21.2 / 4.3 / 0 |
+| Critical failure (n=152) | 33 / 33 / 33 / 0 (shares of 0.15) | 62.0 / 26.8 / 11.3 / 0 | 62 / 26 / 12 / 0 | 61.8 / 26.6 / 11.5 / 0 |
+
+(Percent by tier, Mundane / Storied / Mythic / Legendary.) A curve value sits slightly above what live play pays, because a scene with nothing eligible at a tier hands out the tier below (Law 3). What changes is the swing between scenes: the per-draw spread of the Legendary chance falls from 5.4 to 2.4 points on a critical success and from 4.6 to 3.8 on a success.
 
 Encounter templates, prose tables and attachment content: N/A. No authored content changes.
 
@@ -87,13 +89,15 @@ UI: N/A — Game Design Law 7: no surface names the bag or the deadline. The for
 
 ## Measurements
 
-- **Loot (static, 200 recipes, the First as recipient):** see the curve table above. Category drift: on a success, 18% of prize draws on the 132 multi-category recipes land in a different category than authored (deferred, see below).
+- **Loot, static (200 recipes, the First as recipient, each recipe weighted equally):** Legendary on a success set at 5%, paid 2.6% per recipe on average; a critical success set at 10%, paid 4.0%. Category drift: on a success, 18% of prize draws on the 132 multi-category recipes land in a different category than authored (deferred, see below).
+- **Loot, live (5,356 draws, draw-weighted):** see the curve table above; this is what the curves are fitted to. World-wide, all outcomes together, before and after: 56.6 / 34.8 / 7.3 / 1.3 and 56.6 / 34.8 / 7.4 / 1.2.
+- **The First's rewards (600 ticks):** 18–46 prize draws per run (2–10 of them harm draws); 0–1 Legendary per run before the change.
 - **The First's dice (dynamic, 300 ticks, seeds 42/99/7):** 46–97 step rolls per run at mean odds 0.74–0.83, success 73–84%, longest losing streak 2–3. Today the dev First is strong, so streaks are short. They lengthen as the forecast window (THR-1582) moves the First's odds toward 50–65%. Simulated at even odds over 30 rolls: 6+ losses in a row at least once is 19.0% with plain dice and 3.1% with a bag of 10, the worst streak drops from 20 to 10, and the success rate is unchanged (50.0%).
 - **Legendary cadence:** see § Calibration of the deadline.
 
 ## Calibration of the deadline
 
-The window [30, 50] wins is the "few dozen wins" Christian approved. At the new success curve (3% Legendary per win), the chance of a natural Legendary within 30 wins is 1 − 0.97³⁰ ≈ 60%, and within 50 wins ≈ 78%. So the deadline catches roughly the unluckiest quarter to two-fifths of cycles. The protected mortal's long-run Legendary rate rises from 1 in about 33 wins to about 1 in 24. That is the honest cost of a drought cap, and it applies only to the player's own mortals. Both bounds are named constants (`LEGENDARY_DEADLINE_MIN_WINS`, `LEGENDARY_DEADLINE_MAX_WINS`).
+The window [30, 50] wins is the "few dozen wins" Christian approved. At the success curve's 2% Legendary per win, the chance of a natural Legendary within 30 wins is 1 − 0.98³⁰ ≈ 45%, and within 50 wins ≈ 64%. So the deadline catches roughly the unluckiest third to half of cycles. For a protected mortal, a Legendary comes about once every 28 wins instead of once every 50, and critical successes bring it sooner. The First wins 16–42 prizes in a 600-tick run, so in practice a long run now almost always holds one Legendary for the First, where before it held one about half the time. That is the honest cost of a drought cap, and it applies only to the player's own mortals; the background world is unchanged. Both bounds are named constants (`LEGENDARY_DEADLINE_MIN_WINS`, `LEGENDARY_DEADLINE_MAX_WINS`). Widening them (say 50–80) keeps the cap but brings the rate closer to the plain one.
 
 ## Wiring
 

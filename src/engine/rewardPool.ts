@@ -15,7 +15,7 @@
  * an item inside that tier ({@link drawTierFirst}). The curve is therefore the rate
  * the player gets: adding, retiring or filtering items never moves it. Before this,
  * the curve was multiplied into every item's weight, so the tier with the most items
- * won — a success's Legendary was set at 5% and landed near 2.6% across the corpus.
+ * won — a success's Legendary was set at 5% and paid about 1.5% in live play.
  * A tier with nothing eligible falls one tier down, so the rarest tier's chance is
  * never inflated by an empty tier below it.
  *
@@ -514,20 +514,23 @@ export function drawTierFirst(
 // that does not sum to 1 still reads as shares — but an authored curve should
 // say its percentages outright, Law 1).
 //
-// Re-tuned with the tier-first draw (2026-10-14) to the rates players actually
-// got from the old flat draw, averaged over all 200 authored reward recipes on
-// seeds 42/99/7 — Christian's call was to keep today's feel and make it stable,
-// not to hand out the old curves' face values (which would have roughly doubled
-// Legendaries). Plan § Measurements has the before/after table.
+// Re-tuned with the tier-first draw (2026-10-14) so live play pays what the old
+// flat draw actually paid. Fitted on 5,356 live draws (seeds 42/99/7, 600 ticks,
+// draw-weighted, cascade included): the new draw reproduces the old per-outcome
+// tier mix within 0.3 points. Christian's call was to keep today's feel and make it
+// stable, not to hand out the old curves' face values: at face value a success's
+// Legendary would have gone from the 1.5% players got to about 3.4%. A curve value
+// sits a little above the rate players see, because a scene with nothing eligible at
+// a tier hands out the tier below (Law 3). Plan § Measurements has the table.
 
 /** @range each 0–1; sums to 1 */
-export const TIER_CURVE_CRITICAL_SUCCESS: Record<AttachmentTier, number> = { 1: 0.20, 2: 0.48, 3: 0.28, 4: 0.04 };
+export const TIER_CURVE_CRITICAL_SUCCESS: Record<AttachmentTier, number> = { 1: 0.225, 2: 0.465, 3: 0.255, 4: 0.055 };
 /** @range each 0–1; sums to 1 */
-export const TIER_CURVE_SUCCESS: Record<AttachmentTier, number> = { 1: 0.45, 2: 0.40, 3: 0.12, 4: 0.03 };
+export const TIER_CURVE_SUCCESS: Record<AttachmentTier, number> = { 1: 0.55, 2: 0.35, 3: 0.08, 4: 0.02 };
 /** @range each 0–1; sums to 1. No Legendary on a failure. */
-export const TIER_CURVE_FAILURE: Record<AttachmentTier, number> = { 1: 0.57, 2: 0.30, 3: 0.13, 4: 0.0 };
+export const TIER_CURVE_FAILURE: Record<AttachmentTier, number> = { 1: 0.77, 2: 0.185, 3: 0.045, 4: 0.0 };
 /** @range each 0–1; sums to 1. No Legendary on a critical failure. */
-export const TIER_CURVE_CRITICAL_FAILURE: Record<AttachmentTier, number> = { 1: 0.41, 2: 0.35, 3: 0.24, 4: 0.0 };
+export const TIER_CURVE_CRITICAL_FAILURE: Record<AttachmentTier, number> = { 1: 0.62, 2: 0.26, 3: 0.12, 4: 0.0 };
 
 export const BAD_OUTCOME_CHANCE_CRIT_SUCCESS = 0.0;
 export const BAD_OUTCOME_CHANCE_SUCCESS = 0.05;
