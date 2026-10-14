@@ -2,7 +2,7 @@
 > **linear_issue:** THR-1879
 > **author:** Claude Code (design session, 2026-10-14, spawned from the attended map carve-up session)
 > **created:** 2026-10-14
-> **three_pillars:** Engine N/A — no tick, graph, trace or rule change; one presentation field under `src/engine/` changes type (§ Interface impact) · Content done — the concept → shape table (228 ideas), the vendored carved subset with licence metadata, the font files, the credits words · UI done
+> **three_pillars:** Engine N/A — no tick, graph, trace or rule change; one presentation field under `src/engine/` changes type (§ Interface impact) · Content done — the concept → shape table (229 ideas), the vendored carved subset with licence metadata, the font files, the credits words · UI done
 
 # Type and icons rollout — Alegreya, the label rule, and the carved icon registry with its credits (THR-1879)
 
@@ -34,7 +34,7 @@ Law 58 (Christian, today) adds the shape the result must have: the concept → s
 | [`Docs/plans/2026-10-14-thr-1819-1440p-layout-contract.md`](2026-10-14-thr-1819-1440p-layout-contract.md) § 3 | Six type steps; **story prose is `--text-base` = 20 px at 1080p** (22.5 px at 1440p), line-height 1.6, `--measure-prose: 34em`. Its feed to this plan: *"when it switches the face it also moves every `--font-prose` site to `--text-base`, so the face never ships without its step."* Faces and the typography.md roles rewrite are this plan's |
 | [`Docs/plans/2026-10-14-thr-1821-component-library-and-ui-debt-ratchet.md`](2026-10-14-thr-1821-component-library-and-ui-debt-ratchet.md) § Icon, § Content pillar, § rows | `Icon` (name → shape, named sizes, `currentColor`, label-or-decorative), one resolver `iconShape.ts`, the registry format `{ meaning, shape: { viewBox, paths }, source }`, `fallback` (ours), `ICON_CREDITS` generated from the registry, the uniqueness tests. **The credits line ships in the same PR as the first carved shape.** Class maps are total `Record`s keyed on live unions, each beside the data it labels. Ratchet rows `glyph-icon` (325/74), `glyph-icon-data` (171/30), `lucide-import` (5/5), `uppercase` (205/82), `monospace` (26/16), `font-face-literal` (17/11). Its measured sweep input (shared primitives first; skip what THR-1827/1828 retire) |
 | `Docs/design-system/laws.md` Laws 9–12, 15, 57, **58** | One vocabulary per class; distinct meanings, distinct shapes; legible sizes; legends at first contact; the sanctioned magnitude marks; grow before scroll; **one list per kind, a missing entry fails a named test, an unknown kind shows a plain fallback, every list has a row in `extending.md`** |
-| Feeds posted on THR-1879 by the sibling plans (2026-10-14) | **Frame (THR-1875):** top-bar names (pause, play, faster, slower, needs-you, find, doom, omen, rivals, notables, read-the-threads, settings, close); rails (disclosure, threads, chronicle, chapter-ledger, move, investiture); one icon per Needs-you group (waiting, held, news) and per `AlertIcon` kind (12). **Map (THR-1878):** a total place table its texture builder reads through `iconShape()`; lens icons (Dominion, Threads, Trouble, Trade); map controls (zoom in, zoom out, centre on my First, show known land, minimap); Trouble marks (unrest, battle, siege, scheme, drain, omen, lair); THR-1878's build edits `locationIconTextures.ts`, `LocationIconMesh.ts` and drops the drawings from `LOCATION_ICON_REGISTRY`. Every name is in Appendix B; zoom in and out stay typographic "+" and "−" on their buttons |
+| Feeds posted on THR-1879 by the sibling plans (2026-10-14) | **Frame (THR-1875):** top-bar names (pause, play, faster, slower, needs-you, find, doom, omen, rivals, notables, read-the-threads, settings, close); rails (disclosure, threads, chronicle, chapter-ledger, move, investiture); one icon per Needs-you group (waiting, held, news) and per `AlertIcon` kind (12). **Map (THR-1878):** a total place table its texture builder reads through `iconShape()`; lens icons (Dominion, Threads, Trouble, Trade); map controls (zoom in, zoom out, centre on my First, show known land, minimap); Trouble marks (unrest, strife, battle, siege, scheme, drain, omen, lair; strife was added in its merged plan); THR-1878's build edits `locationIconTextures.ts`, `LocationIconMesh.ts` and drops the drawings from `LOCATION_ICON_REGISTRY`. Every name is in Appendix B. Zoom in and out stay typographic "+" and "−" on their buttons: no carved period object reads as plus or minus, and the one that reads as "look closer", the spyglass, is Discovery |
 | Christian, chat 2026-10-14 (map carve-up brief) | Places carved on the map and in panels; Disease, Ambition, Poison swaps; labels bold sentence case; Laws 57/58 ratified; the Inspector and frame own their surfaces; **icon registry contents, the concept → shape table, vendoring and the credits line belong to THR-1879**; place icons on the map (texture path, size classes, lair tints) belong to [THR-1878](https://linear.app/threadbare/issue/THR-1878) and read this registry |
 
 ## Substrate inventory
@@ -66,9 +66,9 @@ Encounter templates, prose tables and attachment content: N/A — no words, temp
 
 | Table | File | Contents | Slice |
 |---|---|---|---|
-| **The icon registry** (the one icon list) | `src/data/icons/iconRegistry.ts` (format by THR-1885) | 235 entries: `IconName` → `{ meaning, shape, source }`. The 228 carved ideas of Appendix A (a `carved('<slug>')` helper fills `shape` and `source` from the vendored file), plus `fallback` (ours, THR-1885) and the six temporary own place entries of § 6 | S2 |
+| **The icon registry** (the one icon list) | `src/data/icons/iconRegistry.ts` (format by THR-1885) | 236 entries: `IconName` → `{ meaning, shape, source }`. The 229 carved ideas of Appendix A (a `carved('<slug>')` helper fills `shape` and `source` from the vendored file), plus `fallback` (ours, THR-1885) and the six temporary own place entries of § 6 | S2 |
 | **The vendored shapes** | `src/data/icons/carvedShapes.generated.ts` | One record per carved slug: `{ slug, authorDir, author, d }`, plus `GAME_ICONS_SOURCE` (repo, pinned commit, licence name and URL, the date vendored). Generated, never edited by hand | S2 |
-| **The class maps** | `src/data/icons/conceptIcons.ts` (maps keyed on a type-only union) and an `icon` field on rows of tables that already exist | `ICON_FOR_WORLD_REF_KIND`, `ICON_FOR_LOCATION_SUBTYPE`, `ICON_FOR_SUBLOCATION_TYPE`, `ICON_FOR_ATTACHMENT_CATEGORY`, `ICON_FOR_ATTACHMENT_SUBCATEGORY`, `ICON_FOR_ACTIVITY`, `ICON_FOR_ALERT`, `ICON_FOR_CONSEQUENCE`, `ICON_FOR_UNDERTAKING_OBJECT`, `ICON_FOR_RESOURCE_CLASS`, `ICON_FOR_AMBITION`, `ICON_FOR_SEASON`, `ICON_FOR_OMEN`; `icon` fields on the calling rows, the nudge card types, `MAP_LENSES`, the Codex `catDefs` and the chartered card groups. The map controls and Trouble marks are lists THR-1878 owns; they name entries of this registry | S2 (additive); S4 moves readers and deletes glyph columns |
+| **The class maps** | `src/data/icons/conceptIcons.ts` (maps keyed on a type-only union) and an `icon` field on rows of tables that already exist | `ICON_FOR_WORLD_REF_KIND`, `PLACE_ICON` (the name THR-1878's merged plan reads), `ICON_FOR_LENS` (likewise), `ICON_FOR_SUBLOCATION_TYPE`, `ICON_FOR_ATTACHMENT_CATEGORY`, `ICON_FOR_ATTACHMENT_SUBCATEGORY`, `ICON_FOR_ACTIVITY`, `ICON_FOR_ALERT`, `ICON_FOR_CONSEQUENCE`, `ICON_FOR_UNDERTAKING_OBJECT`, `ICON_FOR_RESOURCE_CLASS`, `ICON_FOR_AMBITION`, `ICON_FOR_SEASON`, `ICON_FOR_OMEN`; `icon` fields on the calling rows, the nudge card types, the Codex `catDefs` and the chartered card groups. The map commands and markers are lists THR-1878 owns (`MAP_COMMANDS`, `MAP_MARKERS`, whose `icon: IconConcept` is this registry's `IconName`); they name entries of this registry | S2 (additive); S4 moves readers and deletes glyph columns |
 | **The font files** | `public/fonts/alegreya-variable.woff2`, `alegreya-400-italic.woff2`, `alegreya-sans-800-regular.woff2`, `public/fonts/OFL.txt` | § 1 | S1 |
 | **The credits words** | `src/components/StartPage/CreditsModal.tsx` | § 8 | S1 (fonts), S2 (icons) |
 
@@ -76,15 +76,15 @@ Encounter templates, prose tables and attachment content: N/A — no words, temp
 
 This is the one icon list. It has three layers, and only the first holds shapes:
 
-1. **The registry** names each *idea* once, with its meaning and its one shape (Appendix A, 228 entries). Two ideas never share a shape; one idea (`forward`) is another's shape mirrored, which is a different shape.
-2. **The class maps** say which idea each game key draws (Appendix B, 301 keys in 15 classes). Several keys may draw the same idea when they mean the same thing: `debt` and `bargain` are one idea (THR-1834 grouped them), the card type `kindled_ambition` draws `ambition`, the activity `boot` and the toast target `journey` both draw `journey`. That is Law 10 kept, not bent: one meaning, one shape, used wherever the meaning appears.
+1. **The registry** names each *idea* once, with its meaning and its one shape (Appendix A, 229 entries). Two ideas never share a shape; one idea (`forward`) is another's shape mirrored, which is a different shape.
+2. **The class maps** say which idea each game key draws (Appendix B, 302 keys in 15 classes). Several keys may draw the same idea when they mean the same thing: `debt` and `bargain` are one idea (THR-1834 grouped them), the card type `kindled_ambition` draws `ambition`, the activity `boot` and the toast target `journey` both draw `journey`. That is Law 10 kept, not bent: one meaning, one shape, used wherever the meaning appears.
 3. **Open classes** (Appendix C, 28 ideas in five classes) have no obvious period object. Their candidates go to Christian; until he picks, those surfaces keep today's glyph (and the map keeps today's drawing for the places among them, § 6).
 
-**How the picks were made.** The 54 shapes THR-1834 and Christian settled are kept exactly. Every other pick was chosen from the game-icons.net set (4,133 names at Iconify, 4,176 files upstream) as a fantasy-period object a player would name at 18 px, then checked by eye on the sheet below in the game's gold at 40 px and 18 px and, for places, in the map's ink on map colours. Picks that read as modern were replaced before the sheet was published (a camper van for *trade route*, an org chart for *legacy*, a fedora spy for *someone will notice*, a rank chevron for *boost*). **114 picks are proposed with confidence and 60 are marked unsure**; an unsure pick is still the plan's choice, and swapping it later is one registry entry.
+**How the picks were made.** The 54 shapes THR-1834 and Christian settled are kept exactly. Every other pick was chosen from the game-icons.net set (4,133 names at Iconify, 4,176 files upstream) as a fantasy-period object a player would name at 18 px, then checked by eye on the sheet below in the game's gold at 40 px and 18 px and, for places, in the map's ink on map colours. Picks that read as modern were replaced before the sheet was published (a camper van for *trade route*, an org chart for *legacy*, a fedora spy for *someone will notice*, a rank chevron for *boost*). **114 picks are proposed with confidence and 61 are marked unsure**; an unsure pick is still the plan's choice, and swapping it later is one registry entry.
 
 **The sheet:** [`Docs/audits/2026-10-14-thr-1879-icon-table/icon-table.html`](../audits/2026-10-14-thr-1879-icon-table/icon-table.html), published for review at <https://claude.ai/artifact/X9woLDsYia4iP3uQkk6QjN>. It shows every class beside today's glyph, the places in map ink, the classes that stay ours, the dead tables, the open classes with three candidates each, and the credits line the picks would ship.
 
-**Coverage of the inventory.** The ~330 concepts THR-1826 counted are all accounted for: 301 keys in Appendix B (the inventory's keys plus the names the frame and map plans asked for on this ticket), 28 open ideas in Appendix C, the 12 spheres, 8 reaches and 20 faction marks that stay ours (§ 9), and the dead tables (§ 9). Classes the inventory listed that retire with their surface (the ActionDrawer's narrative layers, `LiveLocationBar`'s pulses, the AgentProfileModal tabs' journey and chronicle marks) are not mapped; they leave with the surface.
+**Coverage of the inventory.** The ~330 concepts THR-1826 counted are all accounted for: 302 keys in Appendix B (the inventory's keys plus the names the frame and map plans asked for on this ticket), 28 open ideas in Appendix C, the 12 spheres, 8 reaches and 20 faction marks that stay ours (§ 9), and the dead tables (§ 9). Classes the inventory listed that retire with their surface (the ActionDrawer's narrative layers, `LiveLocationBar`'s pulses, the AgentProfileModal tabs' journey and chronicle marks) are not mapped; they leave with the surface.
 
 ## Interface impact
 
@@ -155,7 +155,7 @@ The ceremonies (Meet the First, Remembrance, the Threading Rite) are full screen
 
 The shapes are fetched **once, by a script, from the game-icons repository at a pinned commit**, stored as single-path data with licence metadata, and checked in. Nothing is fetched at runtime; no icon font and no npm icon package ship.
 
-**Why the upstream repository and not Iconify.** Iconify's game-icons collection carries the paths but not each icon's author, and the credits must name authors. The upstream repository (`github.com/game-icons/icons`) stores every icon as `<author-dir>/<slug>.svg`, so the author is the directory. Pinned commit: `82d948812bfe3f269ef8f731dcdb07b08160edc4` (the tree read on 2026-10-14: 4,176 files by 37 authors). 63 slugs exist under two authors; an entry for one of those must name its author, and the script stops and names both otherwise. Eleven of the 228 picks are among them: `crown`, `cog`, `anvil`, `sun`, `spade`, `book-cover`, `dragon-head`, `horse-head` and `fairy` take the Lorc file, `tombstone` and `clover` the Sbed file. In each case that is the file whose path Iconify serves, so the vendored shape is the one on the sheet (compared path by path on 2026-10-14), and the entry names its author: `carved('crown', { author: 'lorc' })`.
+**Why the upstream repository and not Iconify.** Iconify's game-icons collection carries the paths but not each icon's author, and the credits must name authors. The upstream repository (`github.com/game-icons/icons`) stores every icon as `<author-dir>/<slug>.svg`, so the author is the directory. Pinned commit: `82d948812bfe3f269ef8f731dcdb07b08160edc4` (the tree read on 2026-10-14: 4,176 files by 37 authors). 63 slugs exist under two authors; an entry for one of those must name its author, and the script stops and names both otherwise. Eleven of the 229 picks are among them: `crown`, `cog`, `anvil`, `sun`, `spade`, `book-cover`, `dragon-head`, `horse-head` and `fairy` take the Lorc file, `tombstone` and `clover` the Sbed file. In each case that is the file whose path Iconify serves, so the vendored shape is the one on the sheet (compared path by path on 2026-10-14), and the entry names its author: `carved('crown', { author: 'lorc' })`.
 
 **`scripts/vendor-game-icons.ts`** (`npm run icons:vendor`, `node --experimental-strip-types`, never in CI because it needs the network):
 
@@ -163,7 +163,7 @@ The shapes are fetched **once, by a script, from the game-icons repository at a 
 2. Read the pinned tree once (`GET /repos/game-icons/icons/git/trees/<sha>?recursive=1`) to map slug → author directory.
 3. For each slug not yet in the generated file, fetch `raw.githubusercontent.com/game-icons/icons/<sha>/<author>/<slug>.svg`. Each upstream file is a 512 × 512 SVG with a black background square (`M0 0h512v512H0z`) and one white glyph path. The script drops the square, keeps the one path's `d`, and **fails** if there is not exactly one glyph path or the view box is not `0 0 512 512`.
 4. Apply the one transform the registry may ask for, a horizontal mirror (`carved('return-arrow', { mirror: true })` for `forward`): absolute x becomes 512 − x, relative dx becomes −dx, and each arc's sweep flag flips. The mirrored path is stored as its own path, so the registry stays one path per entry.
-5. Round every coordinate to `ICON_PATH_DECIMALS` = 1 decimal place. Measured on the 227 distinct files: path data 314 KB raw / 141 KB gzip as published, **248 KB / 104 KB** at one decimal (0.1 of a 512 unit is 1/150 of a pixel at 34 px; integer rounding would halve the size again but drifts on relative path commands).
+5. Round every coordinate to `ICON_PATH_DECIMALS` = 1 decimal place. Measured on the 228 distinct files: path data 314 KB raw / 141 KB gzip as published, **248 KB / 104 KB** at one decimal (0.1 of a 512 unit is 1/150 of a pixel at 34 px; integer rounding would halve the size again but drifts on relative path commands).
 6. Map the author directory to the name the authors use on game-icons.net through `GAME_ICONS_AUTHOR_NAMES` (`lorc` → *Lorc*, `delapouite` → *Delapouite*, `caro-asercion` → *Caro Asercion*, `heavenly-dog` → *HeavenlyDog*, `lucasms` → *Lucas*, …). An unknown directory stops the script and names it.
 7. Write `src/data/icons/carvedShapes.generated.ts`, sorted by slug, with a header naming the source, the commit, the licence and the rounding, and drop slugs no entry uses. Print the total size and warn above `ICON_SHAPES_GZIP_BUDGET_KB` = 150.
 
@@ -175,18 +175,18 @@ The shapes are fetched **once, by a script, from the game-icons repository at a 
 
 ### 5. The uniqueness test and the coverage tests (S2)
 
-- **Uniqueness** (THR-1885's registry test, now on real data): no two registry entries have the same shape; every `meaning` is a non-empty sentence fragment; every carved entry is one path. On the 228 picks: 228 distinct shapes from 227 files (checked; `forward` is `back` mirrored).
+- **Uniqueness** (THR-1885's registry test, now on real data): no two registry entries have the same shape; every `meaning` is a non-empty sentence fragment; every carved entry is one path. On the 229 picks: 229 distinct shapes from 228 files (checked; `forward` is `back` mirrored).
 - **A missing entry fails a test that names it** (Law 58):
   - A map keyed on a union (`Record<WorldRefKind, IconName>` and the rest) is a type error when a member is added without an icon (the THR-890 pattern).
-  - An `icon` field on a row (callings, card types, lenses, Codex categories) is a required `IconName`; a new row without one does not type-check.
+  - An `icon` field on a row (callings, card types, Codex categories) is a required `IconName`; a new row without one does not type-check.
   - String-keyed content that can grow at runtime gets a test that walks the live source and names any key without an entry: sublocation types (every `sublocation-type.*` id the world model and the sublocation templates can produce) and omen categories as stored in saves.
 - **Carved coverage:** `carvedShapes.test.ts` as above.
 
 ### 6. The place shapes (S2; the map switch is THR-1878's)
 
-Every `LocationSubtype` member (49 map types plus `farmland`, `oasis`, `bridge`, `wilderness`, `wilderness_waypoint`, `elder_ruin`, `trade_route`) has a key in `ICON_FOR_LOCATION_SUBTYPE`; the twelve sublocation types with their own art have keys in `ICON_FOR_SUBLOCATION_TYPE`, and every other sublocation takes its parent's place shape (THR-1834 call 2b). The 11 settled shapes are in Appendix A; the others are proposed there and shown in map ink on the sheet.
+Every `LocationSubtype` member (49 map types plus `farmland`, `oasis`, `bridge`, `wilderness`, `wilderness_waypoint`, `elder_ruin`, `trade_route`) has a key in `PLACE_ICON`; the twelve sublocation types with their own art have keys in `ICON_FOR_SUBLOCATION_TYPE`, and every other sublocation takes its parent's place shape (THR-1834 call 2b). The 11 settled shapes are in Appendix A; the others are proposed there and shown in map ink on the sheet.
 
-- **The map's key type.** THR-1878 asked (comment on THR-1879) for one total table over the 49-member `LocationType`. `ICON_FOR_LOCATION_SUBTYPE` is total over `LocationSubtype`, which contains every `LocationType` member, so the map indexes it with a `LocationType` key and no cast; `conceptIcons.test.ts` also asserts that every `LocationType` member has an entry, so a new map type without a shape fails a test that names it. If THR-1878 moves `LocationType` to `src/types/`, nothing here changes.
+- **The map's key type.** THR-1878 asked (comment on THR-1879) for one total table over the 49-member `LocationType`. `PLACE_ICON` is total over `LocationSubtype`, which contains every `LocationType` member, so the map indexes it with a `LocationType` key and no cast; `conceptIcons.test.ts` also asserts that every `LocationType` member has an entry, so a new map type without a shape fails a test that names it. If THR-1878 moves `LocationType` to `src/types/`, nothing here changes.
 - **A cleared lair is the lair's shape with the muted fill**, as the map draws it today (`CLEARED_LAIR_FILL_COLOR`). State is carried by the fill and the words ("cleared"), not by a second cave.
 - **Resource anomalies get their own shapes** (gems, honey, ammonite, ore, oyster, mushrooms…) instead of today's reuse of the grove, ruins and wreck drawings, so each reads at a glance; their sphere tint stays.
 - **The seven open places** (convergence, time scar, ley nexus, shadow hollow, place of power, corruption, elder ruin) are an open class (Appendix C). Until Christian picks, S2 copies today's map drawings for the six that have one into the registry as temporary `own` entries (`place-convergence`, …), and `elder_ruin` draws `fallback`. Each becomes carved by swapping its one entry. These are the only `own` place entries, and they exist only until the pick.
@@ -207,7 +207,7 @@ Every `LocationSubtype` member (49 map types plus `farmland`, `oasis`, `bridge`,
 
   > Icons by Caro Asercion, Cathelineau, DarkZaitzev, Delapouite, Faithtoken, Guard13007, HeavenlyDog, Lorc, Lucas, Quoting, Sbed and Skoll, from game-icons.net, used under the Creative Commons Attribution 3.0 licence (creativecommons.org/licenses/by/3.0). Recoloured for this game.
 
-  The author list is rendered from `ICON_CREDITS`, so it changes with the vendored set; this is the list the 228 carved picks produce. *game-icons.net* and the licence address are links. "Recoloured" is THR-1834's wording; the coordinate rounding (§ 4) is recorded in `GAME_ICONS_SOURCE.changes`.
+  The author list is rendered from `ICON_CREDITS`, so it changes with the vendored set; this is the list the 229 carved picks produce. *game-icons.net* and the licence address are links. "Recoloured" is THR-1834's wording; the coordinate rounding (§ 4) is recorded in `GAME_ICONS_SOURCE.changes`.
 - **Fonts** (S1): "Cinzel, Alegreya and Alegreya Sans, under the SIL Open Font Licence 1.1."
 
 **The DRM clause.** CC BY 3.0 § 4(a) says a licensee may not impose effective technological measures on the work that restrict a recipient's rights under the licence. The web build has none, so nothing changes now. **Before any build ships on a storefront that wraps the game in DRM** (for example Steam's optional DRM wrapper), whoever handles legal checks this clause (THR-1834 call 1; many Steam games ship these icons). Shipping without the wrapper avoids the question. This note sits in `GAME_ICONS_SOURCE` and in `Docs/design-system/icons.md` (§ Docs), so a future port finds it.
@@ -287,7 +287,7 @@ N/A — no game events are added. Toasts keep their words; their navigation mark
 ### Debug inspection (DebugPanel)
 
 - `window.__DEBUG.getIconReport(): Promise<{ registry: number; carved: number; own: number; fallbacksDrawn: { classId: string; key: string }[]; credits: string[] }>` (S2) — counts and every key that fell back since load, from the `iconForKey` warn-once set. Declared in `src/debug-bridge.d.ts`. It is the assertion behind the S2 and S4 browser evidence ("no fallbacks drawn on the seeded screen").
-- `?view=styleguide` § Icon (THR-1885) shows every entry at four sizes with its meaning and source; it iterates the registry, so the 235 entries appear with no styleguide edit.
+- `?view=styleguide` § Icon (THR-1885) shows every entry at four sizes with its meaning and source; it iterates the registry, so the 236 entries appear with no styleguide edit.
 
 ### Visual presence (HexMapV2)
 
@@ -304,7 +304,7 @@ Six tickets share this plan doc. THR-1879 is S1.
 | Slice | Ticket | Contents | Blocked by |
 |---|---|---|---|
 | **S1 — Alegreya and the type tokens** | [THR-1879](https://linear.app/threadbare/issue/THR-1879) | § 1 (files, licence, tokens, the 61 `--font-prose` sites), the shared label classes of § 2, § 3 (figures, monospace), the Fonts credit line, the `display-face-small` row, `typography.md` | [THR-1821](https://linear.app/threadbare/issue/THR-1821) (the ratchet the rows re-baseline). [THR-1819](https://linear.app/threadbare/issue/THR-1819), the type steps the face must ship with, merged on 2026-10-14 ([PR #2382](https://github.com/christianspliid-ui/threadbare/pull/2382)) |
-| **S2 — the carved registry and its credits** | [THR-1904](https://linear.app/threadbare/issue/THR-1904) | § 4–8: the vendoring script, the generated shapes, the 228 entries plus the open places as temporary `own` entries, the class maps (additive), the coverage tests, `getIconReport`, the Icons credit line, `icons.md`, the `extending.md` row | [THR-1885](https://linear.app/threadbare/issue/THR-1885) (registry format, `Icon`), [THR-1874](https://linear.app/threadbare/issue/THR-1874) (same file) |
+| **S2 — the carved registry and its credits** | [THR-1904](https://linear.app/threadbare/issue/THR-1904) | § 4–8: the vendoring script, the generated shapes, the 229 entries plus the open places as temporary `own` entries, the class maps (additive), the coverage tests, `getIconReport`, the Icons credit line, `icons.md`, the `extending.md` row | [THR-1885](https://linear.app/threadbare/issue/THR-1885) (registry format, `Icon`), [THR-1874](https://linear.app/threadbare/issue/THR-1874) (same file) |
 | **S3 — the label sweep** | [THR-1905](https://linear.app/threadbare/issue/THR-1905) | § 2 and § 10 labels on kept surfaces; `uppercase` and `display-face-small` go down | S1 |
 | **S4a — icons: primitives, chrome and the Law 9 duplicates** | [THR-1906](https://linear.app/threadbare/issue/THR-1906) | § 10 icons 1–4, § 9 (duplicates, dead tables, lucide) | S2 |
 | **S4b — icons: the data tables and the Codex** | [THR-1907](https://linear.app/threadbare/issue/THR-1907) | § 10 icons 5; the calling presentation field; the Law 15 homes line | S2 |
@@ -331,7 +331,7 @@ Player controls: none added. Prose pipeline: not involved (the face changes, not
 |----------|---------|---------|
 | `GAME_ICONS_REPO_COMMIT` | `82d948812bfe3f269ef8f731dcdb07b08160edc4` | The upstream commit every carved shape is vendored from |
 | `ICON_PATH_DECIMALS` | 1 | Decimal places kept in vendored path coordinates |
-| `ICON_SHAPES_GZIP_BUDGET_KB` | 150 | The vendoring script warns when the generated shapes pass this size (measured 104 at 228 shapes) |
+| `ICON_SHAPES_GZIP_BUDGET_KB` | 150 | The vendoring script warns when the generated shapes pass this size (measured 104 at 229 shapes) |
 | `GAME_ICONS_AUTHOR_NAMES` | 12 entries for the shipped authors (+ the rest of the 37 directories as names are needed) | Directory → credited name |
 | `--font-prose` | `'Alegreya', Georgia, 'Times New Roman', serif` | The story face |
 | `--type-section-label` | `700 var(--text-xs)/1.2 var(--font-body)` | The label rule |
@@ -482,14 +482,14 @@ The technical *how* of agreed outcomes (process.md rule 4), each open to Christi
 1. **Fonts:** one variable Alegreya roman file (it covers 400 and 500) plus italic 400 and Alegreya Sans 800; +88.5 KB; an `OFL.txt` beside them; no Reserved Font Names, so the Unity port may rename.
 2. **The label rule enters through the shared classes first**, then sweeps the kept surfaces; sentence case is written in the strings; a new ratchet row stops small Cinzel.
 3. **Vendoring from the upstream repository at a pinned commit**, not Iconify, because the credits need each icon's author; coordinates rounded to one decimal. Eleven picks exist under two authors upstream; each names the author whose file matches the sheet. One registry transform exists, a horizontal mirror, for `forward`.
-4. **The table has 228 ideas, one shape each,** with class maps saying which keys draw which idea; 54 shapes settled, 114 proposed, 60 unsure; dead tables are deleted, not mapped.
+4. **The table has 229 ideas, one shape each,** with class maps saying which keys draw which idea; 54 shapes settled, 114 proposed, 61 unsure; dead tables are deleted, not mapped.
 5. **Five classes are left open for Christian** (28 ideas): doom kinds, strands, card verbs, places of power, rival tempers.
 6. **A cleared lair keeps the lair's shape with its muted fill;** resource anomalies get their own shapes.
 7. **The unknown-concept mark is an empty ring** with the thing's own name beside it.
 8. **Six tickets:** S1 is this ticket; [THR-1904](https://linear.app/threadbare/issue/THR-1904) (S2, registry and credits), [THR-1905](https://linear.app/threadbare/issue/THR-1905) (S3, labels), [THR-1906](https://linear.app/threadbare/issue/THR-1906) and [THR-1907](https://linear.app/threadbare/issue/THR-1907) (S4a and S4b, icons) follow on this plan; [THR-1908](https://linear.app/threadbare/issue/THR-1908) holds Christian's pick of the open classes.
 9. **The effect-type glyph table is dead code.** Nothing imports `EFFECT_TYPE_GLYPHS`, so the six broken escapes of THR-1874 never reach a screen today. THR-1874 stays as filed (it is cheap and lands first); S4a deletes the table.
 
-## Appendix A — the registry (228 ideas, one shape each)
+## Appendix A — the registry (229 ideas, one shape each)
 
 *Status:* **settled** = THR-1834 or Christian chose it; **proposed** = this plan, confident; **unsure** = this plan, low confidence (dashed on the sheet). *Author dir* is the upstream directory; the credited names are in § 4.
 
@@ -720,11 +720,12 @@ The technical *how* of agreed outcomes (process.md rule 4), each open to Christi
 | 223 | `cultural-omen` | A cultural omen | `totem` | delapouite | **unsure** |
 | 224 | `show-known-land` | Show all the land you know | `globe` | lorc | **unsure** |
 | 225 | `minimap` | The minimap | `treasure-map` | lorc | proposed |
-| 226 | `drain` | A drain on a source | `leeching-worm` | lorc | proposed |
-| 227 | `lens-dominion` | Dominion lens: your ground | `hill-conquest` | delapouite | proposed |
-| 228 | `lens-trouble` | Trouble lens | `burning-embers` | lorc | **unsure** |
+| 226 | `strife` | Strife: tempers drawn, or blows | `pitchfork` | delapouite | **unsure** |
+| 227 | `drain` | A drain on a source | `leeching-worm` | lorc | proposed |
+| 228 | `lens-dominion` | Dominion lens: your ground | `hill-conquest` | delapouite | proposed |
+| 229 | `lens-trouble` | Trouble lens | `burning-embers` | lorc | **unsure** |
 
-## Appendix B — the class maps (301 keys in 15 classes)
+## Appendix B — the class maps (302 keys in 15 classes)
 
 Each line reads `key (today's glyph) → IconName`. A key that names the same idea as another class draws the same entry.
 
@@ -736,7 +737,7 @@ Each line reads `key (today's glyph) → IconName`. A key that names the same id
 
 `agent` (→ (initial)) → `person` · `faction` (⚑ ⚜) → `faction` · `location` (🏘 ⌂) → `place` · `area` (⛰) → `area` · `sublocation` (◈) → `place-within` · `hex` (⬡) → `hex` · `artifact` (◈ ◆) → `artifact` · `attachment` (❖) → `attachment` · `companion` (♟) → `companion` · `army` (⚔) → `army` · `encounter` (⚔ ✦) → `encounter` · `journey` (↝) → `journey` · `receipt` (✦) → `receipt` · `monster` (☠) → `monster` · `unknown` (◇) → *fallback mark (ours)*
 
-**Places (map and panels)** — kept: the map (THR-1878 switches textures), the land page, Find. Source today: LocationSubtype (src/types/index.ts) — 49 map types + 7 more. Map: `ICON_FOR_LOCATION_SUBTYPE: Record<LocationSubtype, IconName>`.
+**Places (map and panels)** — kept: the map (THR-1878 switches textures), the land page, Find. Source today: LocationSubtype (src/types/index.ts) — 49 map types + 7 more. Map: `PLACE_ICON: Record<LocationSubtype, IconName> (THR-1878 reads it by LocationType)`.
 
 `capital` (👑 (map: keep)) → `place-capital` · `city` (🏙) → `place-city` · `town` (🏘) → `place-town` · `hamlet` (🏘) → `place-hamlet` · `castle` (🏰) → `place-castle` · `temple` (🕍 🕌) → `place-temple` · `shrine` (⛩) → `place-shrine` · `ruins` (🏚) → `place-ruins` · `mining` (⛏) → `place-mine` · `camp` (⛺) → `place-camp` · `lair` ((map drawing)) → `place-lair` · `cleared_lair` ((map drawing)) → `place-lair` · `fort` (🛡) → `place-fort` · `tower` (🗼) → `place-tower` · `ruined_city` (🏚) → `place-ruined-city` · `ruined_tower` (🏚) → `place-ruined-tower` · `ruined_village` (🏚) → `place-ruined-village` · `battleground` (⚔) → `place-battleground` · `unexplored_poi` (❓) → `place-unexplored` · `healing_spring` ((map)) → `place-healing-spring` · `master_forge` ((map)) → `place-master-forge` · `living_archive` ((map)) → `place-living-archive` · `fey_crossing` ((map)) → `place-fey-crossing` · `sacrifice_site` ((map)) → `place-sacrifice-site` · `standing_stones` ((map)) → `place-standing-stones` · `cavern` ((map)) → `place-cavern` · `grove` ((map)) → `place-grove` · `hot_spring` ((map)) → `place-hot-spring` · `shipwreck` ((map)) → `place-shipwreck` · `ancient_road` ((map)) → `road` · `monument` ((map)) → `place-monument` · `gem_deposit` ((map)) → `place-gem-deposit` · `golden_grove` ((map, grove)) → `place-golden-grove` · `crystal_cavern` ((map)) → `place-crystal-cavern` · `ancient_vault` ((map, ruins)) → `place-ancient-vault` · `sunken_treasury` ((map, wreck)) → `place-sunken-treasury` · `herb_garden` ((map, grove)) → `place-herb-garden` · `fossil_bed` ((map, gem)) → `place-fossil-bed` · `iron_seep` ((map, mine)) → `place-iron-seep` · `pearl_shoal` ((map, gem)) → `place-pearl-shoal` · `glowcap_hollow` ((map, fey)) → `place-glowcap-hollow` · `nest` ((map)) → `place-nest` · `haunted_ground` ((map)) → `place-haunted-ground` · `farmland` (🌾) → `place-farmland` · `oasis` (🌴) → `place-oasis` · `bridge` (—) → `place-bridge` · `wilderness` (🌿) → `place-wilderness` · `wilderness_waypoint` (—) → `place-waypoint` · `trade_route` (—) → `place-trade-route`
 
@@ -780,11 +781,11 @@ Each line reads `key (today's glyph) → IconName`. A key that names the same id
 
 `doom_echo` (⊘) → `doom` · `sphere_surge` (◈) → *its sphere’s SphereIcon* · `cultural` (⬡) → `cultural-omen` · `seasonal` (◇) → *its season’s icon*
 
-**Map controls and Trouble marks** — new: the map chrome and the Trouble lens (THR-1878 names them and owns the lists). Source today: THR-1878 plan (map controls, Trouble marks). Map: `THR-1878 lists; shapes from this registry`.
+**Map controls and Trouble marks** — new: the map chrome and the Trouble lens (THR-1878 names them and owns the lists). Source today: THR-1878 plan (map controls, Trouble marks). Map: `THR-1878 lists (MAP_COMMANDS, MAP_MARKERS icon: IconConcept = IconName); shapes from this registry`.
 
-`zoom-in` (+) → *typographic + / − on the button (THR-1878)* · `zoom-out` (−) → *typographic + / − on the button (THR-1878)* · `centre-on-first` (—) → `show-on-map` · `show-known-land` (—) → `show-known-land` · `minimap` (—) → `minimap` · `trouble-unrest` (—) → `unrest` · `trouble-battle` (—) → `battle` · `trouble-siege` (—) → `siege` · `trouble-scheme` (—) → `scheme` · `trouble-drain` (—) → `drain` · `trouble-omen` (—) → `omen` · `trouble-lair` (—) → `place-lair`
+`zoom-in` (+) → *typographic + / − on the button (THR-1878)* · `zoom-out` (−) → *typographic + / − on the button (THR-1878)* · `centre-on-first` (—) → `show-on-map` · `show-known-land` (—) → `show-known-land` · `minimap` (—) → `minimap` · `trouble-unrest` (—) → `unrest` · `trouble-battle` (—) → `battle` · `trouble-siege` (—) → `siege` · `trouble-scheme` (—) → `scheme` · `trouble-strife` (—) → `strife` · `trouble-drain` (—) → `drain` · `trouble-omen` (—) → `omen` · `trouble-lair` (—) → `place-lair`
 
-**Map lenses** — new: the lens bar (THR-1878). Source today: MAP_LENSES (src/data/map-lenses.ts). Map: `an icon field on each MapLensDef`.
+**Map lenses** — new: the lens bar (THR-1878). Source today: MAP_LENSES (src/data/map-lenses.ts). Map: `ICON_FOR_LENS: Record<MapLensId, IconName> (THR-1878)`.
 
 `dominion` (—) → `lens-dominion` · `threads` (—) → `threads` · `trouble` (—) → `lens-trouble` · `trade` (—) → `trade`
 
@@ -850,6 +851,8 @@ Not decided. Three candidates per idea, drawn side by side on the [sheet](https:
 **Pass 1 (2026-10-14): Revise**, impact class corrected to External. Dimensions 1, 2, 4–11 PASS; dimension 3 GAP (names the frame and map plans posted on THR-1879 were missing; `disclosure` was an own drawing; `held` merged into `waiting`; Appendix C candidates collided with picks and with each other; S1's blocker was stale) and dimension 12 GAP (music toggle named the wrong shape; badge, pill and "Unmade" words not quoted; unclear whether the player reads the call-site label or the registry meaning). All fixed in this revision: see the proposal's revision notes.
 
 **Pass 2 (2026-10-14): Allow**, impact class External confirmed; all twelve dimensions PASS (11 N/A), 0 GAPs. Its non-blocking recommendations were applied before commit: Appendix C candidates that read as modern were replaced (`wrecking-ball`, `recycle`, `cycle`, `orbital`, `eye-target`) along with candidates that twinned a pick or each other (`candle-light`, `crystal-growth`, `egyptian-temple`, `imperial-crown`, `banging-gavel`, `beams-aura`, `world`, `magic-gate`, `cracked-glass`); more near twins joined the sheet's strip; stale counts fixed; the S1 row's cells split; S2's Done-when restated as predicates; the reach PNGs given an owner; the IconName `spymaster` renamed `spider` to match the UL calling; the "Enter ▸" row added to Player-facing text.
+
+**After pass 2:** THR-1878's plan merged while this PR was open. It reads this registry through `PLACE_ICON` and `ICON_FOR_LENS` and added a `strife` Trouble mark, so this plan adopted those two names and added `strife` (`pitchfork`, unsure). No other change; not re-judged, as it aligns names with a merged consumer and adds one entry under the same rules.
 
 ## Forked-audit verdicts
 
