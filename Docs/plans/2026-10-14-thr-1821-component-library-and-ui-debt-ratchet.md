@@ -56,7 +56,7 @@ No engine subsystem is touched, so `Docs/canon/systems-inventory.md` has no row 
 | `shared/EntityVisual.tsx` + `entityVisualResolver.ts` (Law 3) | 🟢 live | **reused** by `Chip role="identity"` for its leading image |
 | `contexts/RefRouterContext.tsx` (`useRefRouterContext`, Law 21) | 🟢 live | **reused** by identity chips for their click |
 | `icons/SphereIcon`, `icons/ReachIcon`, `icons/CoatOfArms` | 🟢 live drawn sets | **kept** — THR-1834's three own-drawing families |
-| `HexMapV2/locations/locationIconRegistry.ts` + `locationIconTextures.ts` | 🟢 live (map place icons) | **retires for places** (THR-1834 as amended): places take carved shapes from the Icon registry. The registry's `paths: { d, opacity? }[]` shape is what `locationIconTextures.ts` already rasterises, so the map's texture builder reads a carved shape as one path at opacity 1. That switch is THR-1879's rollout; this plan only fixes the shape so it fits |
+| `HexMapV2/locations/locationIconRegistry.ts` + `locationIconTextures.ts` | 🟢 live (map place icons) | **retires for places** (THR-1834 as amended): places take carved shapes from the Icon registry. The registry's `paths: { d, opacity? }[]` shape is what `locationIconTextures.ts` already rasterises, so the map's texture builder reads a carved shape as one path at opacity 1. That switch belongs to the rollout THR-1834's amendment feeds ([THR-1879](https://linear.app/threadbare/issue/THR-1879) for the shapes, [THR-1878](https://linear.app/threadbare/issue/THR-1878) for the map chrome and markers — they settle which ticket edits the texture builder); this plan only fixes the shape so it fits |
 | `shared/sphereTint.ts` | 🟢 live | **extended** with `glowShadow()` — the one sanctioned tinted glow |
 | `scripts/check-typecheck-ratchet.ts`, `scripts/chip-referent-ratchet.ts` | 🟢 live ratchets | **pattern source** for the new script (blocking verdicts, suspect drop, advisory per-file map) |
 | `scripts/gate.ts` (THR-1717) | 🟢 live | **extended** — one more gate in the code track |
@@ -613,7 +613,7 @@ Not required: no file with ≥ 100 importers is edited. The widest are `Tooltip.
 
 **Blocks:** [THR-1820](https://linear.app/threadbare/issue/THR-1820) — it registers its `modal-maxwidth` row after S1 lands, and records itself as blocked by THR-1821 for that reason (its cross-plan comment, 2026-10-14). [THR-1822](https://linear.app/threadbare/issue/THR-1822) likewise adds `graph-query-in-ui` and `graph-write-in-ui` after S1 (see Mutex).
 
-**Parallel-safe with:** [THR-1819](https://linear.app/threadbare/issue/THR-1819) — it adds its `font-size-literal` row only after S1 lands (brief). It and THR-1820 also edit `src/index.css`; S1 adds one new `@theme` block after the Tailwind import and one alias line, a region neither of them changes, so a merge is mechanical. Parallel-safe with [THR-1881](https://linear.app/threadbare/issue/THR-1881) (GameView split — S1 touches no component). (The S2 and S3 slice tickets are blocked by S1, so they never run beside it.)
+**Parallel-safe with:** [THR-1819](https://linear.app/threadbare/issue/THR-1819) — it adds its `literal-font-size` row only after S1 lands (brief), or posts it on THR-1821 for S1's executor if it runs first (its § 11). It and THR-1820 also edit `src/index.css`; S1 adds one new `@theme` block after the Tailwind import and one alias line, a region neither of them changes, so a merge is mechanical. Parallel-safe with [THR-1881](https://linear.app/threadbare/issue/THR-1881) (GameView split — S1 touches no component). (The S2 and S3 slice tickets are blocked by S1, so they never run beside it.)
 
 **Mutex with:** [THR-1822](https://linear.app/threadbare/issue/THR-1822) — both edit the ratchet script and the `npm run gate` wiring (brief); S1 lands the script first, then THR-1822 adds its two rows. Also any ticket editing `scripts/gate.ts` or the CI `Test · Typecheck · Build` job.
 
@@ -647,7 +647,7 @@ Technical *how* of an agreed outcome (process.md rule 4), each open to Christian
 4. **`Card` stays, as the titled `Panel`;** a bounded surface is a Panel, a playing card is `CardFace`.
 5. **Tabs are never gold** — the lens ruling, applied to every tab row.
 6. **Chip is one component whose role decides what it must carry;** zero counts render nothing; opening a count never clears it.
-7. **Icon is registry data plus one resolver;** a meaning-bearing icon cannot be unlabelled; the credit list is generated from the vendored set. **Split with THR-1879:** this plan ships the primitive, the registry format, `fallback` and `ICON_CREDITS`; THR-1879 vendors the carved shapes (places included, per THR-1834's amendment) and moves the map's place textures onto them, writes the credits line (in the same PR as the first shape), fills the concept → shape table and sets the legacy sweep order.
+7. **Icon is registry data plus one resolver;** a meaning-bearing icon cannot be unlabelled; the credit list is generated from the vendored set. **Split with THR-1879:** this plan ships the primitive, the registry format, `fallback` and `ICON_CREDITS`; THR-1879 vendors the carved shapes (places included, per THR-1834's amendment; the map's place textures move onto them in THR-1879 or THR-1878, whichever owns the map markers), writes the credits line (in the same PR as the first shape), fills the concept → shape table and sets the legacy sweep order.
 8. **Each surface moves once (with THR-1880):** S2 leaves the six dialogs THR-1880 owns alone and only swaps the Escape listeners it must; the Divine Court and the Codex are dialogs, not ceremonies.
 9. **Count chips always show their number,** even at 1 — THR-1834's rule that an icon in a chip carries a word or a count.
 10. **Three tickets:** S1 is this ticket; S2 Overlay + Panel and S3 Icon + Chip + Tabs follow, all on this plan doc.
@@ -656,7 +656,7 @@ Technical *how* of an agreed outcome (process.md rule 4), each open to Christian
 
 *Generated by design-audit-pipeline — 2026-10-14. The auditors read revision 2; the two notes they raised (glass blur budget, Vision citations) are answered in the NFP table row 7 and § Vision audit. Revisions 3–5 narrowed S3's live migrations, added the count chip's badge form and a debug reader, and folded in THR-1834's amendment (places carved); none adds an engine pillar, a tunable without a constant, or a player-facing premise, so the verdicts below were not re-run.*
 
-*Intent-judge: Revise (rev 1, 2, 3) → Allow (rev 4); rev 5 confirmation below the audits.*
+*Intent-judge (opus, cold context): Revise (rev 1, 2, 3) → Allow (rev 4) → Escalate (rev 5: the places amendment was not yet recorded where the judge could read it) → Allow (rev 5, once THR-1834's "Places carved" comment and PR #2379 were cited). Impact class External.*
 
 ### NFP audit
 
