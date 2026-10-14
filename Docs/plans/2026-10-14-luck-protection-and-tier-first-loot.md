@@ -85,7 +85,7 @@ Encounter templates, prose tables and attachment content: N/A. No authored conte
 
 ## UI pillar
 
-UI: N/A — Game Design Law 7: no surface names the bag or the deadline. The forecast already shows the true odds, and the bag delivers exactly those odds over every bag. Debug visibility comes through the two new traces.
+UI: N/A — Game Design Law 7: no surface names the bag or the deadline. The forecast already shows the true odds, and the bag keeps the mortal's luck level with those odds (exactly, at steady odds, over every bag). Debug visibility comes through the two new traces.
 
 ## Measurements
 
@@ -161,7 +161,7 @@ interface LuckLegendaryCycleTrace { category: 'luck.legendary_cycle'; wins: numb
 
 ## Vision audit
 
-- [x] This plan does not contradict any Vision premise. The north star's "sometimes the world resolves against them" still holds: failures happen at exactly the forecast rate, and Law 6 keeps short bad runs. The rulebook's cool-failure rule ("failure is plot, not punishment") is untouched.
+- [x] This plan does not contradict any Vision premise. The north star's "sometimes the world resolves against them" still holds: failures still happen at the forecast rate, and Law 6 keeps short bad runs. The rulebook's cool-failure rule ("failure is plot, not punishment") is untouched.
 - [x] No Vision edit is needed. One premise is new and lives in the Game Design Laws rather than Vision/: fate is fairer to the player's own mortals than to the rest of the world (Law 4). It is recorded there as a law because it constrains code; if a later pass finds it is really a Vision premise, promoting it is that pass's scope.
 
 ## Rulebook impact
@@ -185,7 +185,7 @@ interface LuckLegendaryCycleTrace { category: 'luck.legendary_cycle'; wins: numb
 
 - [x] A draw's tier lands at its outcome curve's share whatever the pool holds (`rewardTierFirst.test.ts`)
 - [x] A protected mortal gets a Legendary no later than its cycle's deadline when one is eligible (test)
-- [x] Over every full bag a protected mortal's rolls deliver the forecast odds exactly; the shared stream spends the same count of values (`luck.test.ts`)
+- [x] Over every full bag a protected mortal's rolls land once in each tenth of the d100 (so at steady odds they deliver the forecast exactly); the shared stream spends the same count of values (`luck.test.ts`)
 - [x] Unprotected rollers unchanged (`stepResolutionGolden.test.ts` green)
 - [ ] `npm run gate` green; closing commit body carries `Fixes THR-1889`
 - [x] `Browser-verify exempt: no UI change (Law 7 — protections are invisible)`

@@ -13,9 +13,10 @@
  * **The marble bag.** A protected mortal's d100 is dealt from a bag of
  * {@link LUCK_BAG_SLICES} slices of the range, each slice once per bag, in a
  * seeded order, with a seeded position inside the slice. Over every bag the rolls
- * cover the range evenly, so the forecast's odds are exactly what the bag
- * delivers; the long losing streaks plain dice allow are cut. Short bad runs stay
- * — answering those is the nudge cards' job (Law 6).
+ * cover the range evenly, so the mortal's luck evens out to the odds it was shown:
+ * at steady odds a bag delivers the forecast exactly, and over a run the success
+ * rate tracks it. The long losing streaks plain dice allow are cut. Short bad runs
+ * stay — answering those is the nudge cards' job (Law 6).
  *
  * **The Legendary deadline (predetermination).** Each Legendary cycle fixes, up
  * front and in secret, the win by which the next Legendary will have arrived.

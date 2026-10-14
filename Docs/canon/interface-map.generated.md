@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 170 |
+| 🟢 LIVE | 171 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 72 |
-| **Total** | **250** |
+| **Total** | **251** |
 
 ## Contracts by producing subsystem
 
@@ -85,6 +85,7 @@ remediation ticket or the build fails.
 | `player-acts-pace-spine-gifts` | The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted. | state-field: `playerActCount` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `rung-gift-unlocks-key` | A rung opening gives its key cards one at a time. `phaseAscendantProgression` queues `rungGiftsFor(n)` when a rung opens and offers the head as a `rung_gift` beat every `RUNG_GIFT_SPACING` ticks; resolving it unlocks the card into `unlockedActionIds` (`action.unlock.granted` via `rung`). Rung 2 leads with the secondary reach signature. A held key is skipped, never offered (THR-647, THR-1811). | function: `unlockedActionIds` | Essence & Divine Economy | 🟢 LIVE | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
+| `thread-luck-protection` | A thread from the player's god marks a mortal as the player's own, and the player's own mortals get fair luck: their d100 comes from a marble bag and a hidden deadline ends any Legendary drought (Game Design Laws § I). | function: `drawLuckRoll`, `isLegendaryDue`, `recordLegendaryWin`, `isLuckProtected` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
 
@@ -1663,10 +1664,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **UL terms:** *Reward Pool*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/rewardPool.ts`, `src/types/contentQuery.ts`
-- **Other hits:** `src/data/fight-ending-content.ts`, `src/engine/encounterAftermath.ts`, `src/engine/itemGenerator/rewardMinting.ts`, `src/engine/unifiedActionResolution.ts`, `src/types/traces/item-generator-traces.ts` +1 more
+- **Other hits:** `src/data/fight-ending-content.ts`, `src/engine/encounterAftermath.ts`, `src/engine/itemGenerator/rewardMinting.ts`, `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-victory-earns-gratitude-and-standing` — 🔵 UNVERIFIED-OK
@@ -2542,10 +2543,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Attachment*, *Outcome Band*
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
+- **Production hits:** 13 total — 2 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
-- **Other hits:** `src/data/encounters/bell-at-the-exchange.ts`, `src/data/fight-ending-content.ts`, `src/engine/contentQuery.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/itemGenerator/rewardMinting.ts` +4 more
+- **Other hits:** `src/data/encounters/bell-at-the-exchange.ts`, `src/data/fight-ending-content.ts`, `src/engine/contentQuery.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/itemGenerator/rewardMinting.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ring-is-a-group-that-stays` — 🔵 UNVERIFIED-OK
@@ -2951,6 +2952,16 @@ exit
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +106 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
+
+### `thread-luck-protection` — 🟢 LIVE
+
+- **Intent:** A thread from the player's god marks a mortal as the player's own, and the player's own mortals get fair luck: their d100 comes from a marble bag and a hidden deadline ends any Legendary drought (Game Design Laws § I).
+- **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
+- **Module:** `src/engine/luck.ts`
+- **Production hits:** 5 total — 1 write, 4 read, 0 unclassified
+- **Write sites:** `src/engine/luck.ts`
+- **Read sites:** `src/engine/fights/opposedRoll.ts`, `src/engine/rewardPool.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
+- **Verdict:** Verified 2026-10-14: Seeds 42 and 7 (medium, the First bonded by devSeedTheFirst), 300 ticks: the First's d100 was dealt from its bag 71 and 113 times (`luck.bag_roll` traces; `properties.luck.bagDraws` agrees), and on seed 7 a Legendary cycle closed naturally after 12 wins against a deadline of 45 (`luck.legendary_cycle`, tick 188). Every traced bag roll belonged to the First, the one threaded mortal.
 
 ### `thread-write-resolves-first` — 🔵 UNVERIFIED-OK
 

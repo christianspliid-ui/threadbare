@@ -25,8 +25,8 @@ export const LUCK_BAG_ENABLED = true;
 /**
  * How many slices of the d100 one bag holds. Each bag deals every slice once,
  * in a seeded order, so over any full bag the rolls cover the whole range
- * evenly — the odds the forecast shows are exactly what the bag delivers — while
- * the order inside the bag stays random.
+ * evenly — at steady odds a bag delivers the forecast exactly, and over a run
+ * the success rate tracks it — while the order inside the bag stays random.
  *
  * Smaller bags cut streaks harder and feel more predictable; larger bags feel
  * more like plain dice. At 10 and even odds the longest losing run a bag can

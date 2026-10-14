@@ -61,7 +61,7 @@ describe('the marble bag (Laws 4, 8)', () => {
     expect(other).not.toEqual(a);
   });
 
-  it('delivers the forecast odds exactly over every full bag, and caps the losing streak', () => {
+  it('at steady odds, delivers the forecast exactly over every full bag and caps the losing streak', () => {
     // At even odds (threshold 50) every bag holds exactly half winning slices.
     let longest = 0;
     let run = 0;
