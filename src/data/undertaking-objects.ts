@@ -42,6 +42,7 @@ import type {
   WorkLexiconId,
 } from '../types/strategicAction';
 import type { SimulationRuntime } from '../engine/simulationRuntime';
+import { takeFringeCulture, fringeReachOf } from '../engine/cultureFringe';
 import {
   type GraphOpResult,
   mintMasterwork,
@@ -1230,9 +1231,14 @@ const LOCATION: UndertakingObjectType = {
       if (!LOCATION_CLASSES.settlement.includes(subtype)) return fail('create_location', `not_a_settlement_subtype:${subtype}`);
       const name = typeof ctx.params?.name === 'string'
         ? ctx.params.name : `${ctx.graph.getNode(ctx.actorId)?.name ?? 'New'} ${subtype}`;
-      return createLocation(ctx.graph, { col, row }, ctx.actorId, name, subtype, ctx.tick, {
+      const founded = createLocation(ctx.graph, { col, row }, ctx.actorId, name, subtype, ctx.tick, {
         prosperity: FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
       });
+      // THR-1839: a founded settlement belongs to the nearest people — worldgen's fringe rule.
+      if (founded.success && founded.createdId) {
+        takeFringeCulture(ctx.graph, founded.createdId, fringeReachOf(ctx.state));
+      }
+      return founded;
     },
     'change:raise': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);

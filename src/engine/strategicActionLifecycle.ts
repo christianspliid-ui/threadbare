@@ -53,6 +53,7 @@ import {
   holdStandingOpenedMessage,
 } from '../data/strategic-action-constants';
 import { joinFaction, findMembershipEdge } from './factionMembership';
+import { takeFringeCulture, fringeReachOf } from './cultureFringe';
 import { groundRealmNodeId, type HoldStandingLedgerEntry } from './holdStanding';
 import type { RealmProjection } from './realmProjection';
 import {
@@ -1903,17 +1904,21 @@ function executeInstantMutation(
 
         const actorNode = graph.getNode(candidate.actorId);
         const anchorNode = anchorLocId ? graph.getNode(anchorLocId) : undefined;
-        ops.push(
-          createLocation(
-            graph,
-            site,
-            candidate.actorId,
-            renderNameTemplate(hint.nameTemplate, actorNode?.name, anchorNode?.name),
-            hint.locationSubtype,
-            tick,
-            { prosperity: hint.prosperity ?? FOUNDED_SETTLEMENT_INITIAL_PROSPERITY },
-          ),
+        const founded = createLocation(
+          graph,
+          site,
+          candidate.actorId,
+          renderNameTemplate(hint.nameTemplate, actorNode?.name, anchorNode?.name),
+          hint.locationSubtype,
+          tick,
+          { prosperity: hint.prosperity ?? FOUNDED_SETTLEMENT_INITIAL_PROSPERITY },
         );
+        // THR-1839: a place founded during play belongs to the nearest people, by the
+        // same draw-free fringe rule worldgen applies.
+        if (founded.success && founded.createdId) {
+          takeFringeCulture(graph, founded.createdId, fringeReachOf(state));
+        }
+        ops.push(founded);
         break;
       }
 

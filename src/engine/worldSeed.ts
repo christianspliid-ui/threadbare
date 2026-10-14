@@ -42,6 +42,7 @@ import { generatePhoneticName } from './culturePhonetics';
 import { detectRegionsBorderCost, TERRAIN_TO_FEATURE, type RegionCluster } from './regionDetection';
 import { emitTrace } from './traceBuffer';
 import { hexDistance } from '../lib/hexMath';
+import { pickNearestHeartland, type HeartlandSite } from './cultureFringe';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
 import { stampRealmSeat } from './realmSeat';
@@ -1745,9 +1746,10 @@ export function seedWorld(
   // historical link. It runs *after* promotion and Realm holding and is never added to
   // `locationCultureMap`, so a fringe town is neither promoted nor annexed — nothing
   // political changes. Draw-free: nearest by hex distance, ties by culture id, then id.
+  // The picker is shared with places founded during play (`cultureFringe.ts`, THR-1839).
   const fringeStats = { linked: 0, outOfRange: 0 };
   if (scenario.cultureFringeMaxHexes > 0 && locationCultureMap.size > 0) {
-    const heartland: Array<{ id: string; cultureId: string; col: number; row: number }> = [];
+    const heartland: HeartlandSite[] = [];
     for (const [locId, { cultureId }] of locationCultureMap) {
       const node = graph.getNode(locId);
       if (!node) continue;
@@ -1760,16 +1762,8 @@ export function seedWorld(
       if (!CULTURE_FRINGE_SUBTYPES.has(node.properties.locationSubtype as string)) continue;
       if (graph.getOutgoingEdges(locId, 'belongs_to').length > 0) continue;
       const here = { col: node.properties.hexCol as number, row: node.properties.hexRow as number };
-      let best: { cultureId: string; id: string; dist: number } | null = null;
-      for (const h of heartland) {
-        const dist = hexDistance(here, h);
-        if (!best || dist < best.dist
-          || (dist === best.dist && (h.cultureId < best.cultureId
-            || (h.cultureId === best.cultureId && h.id < best.id)))) {
-          best = { cultureId: h.cultureId, id: h.id, dist };
-        }
-      }
-      if (!best || best.dist > scenario.cultureFringeMaxHexes) {
+      const best = pickNearestHeartland(here, heartland, scenario.cultureFringeMaxHexes);
+      if (!best) {
         fringeStats.outOfRange++;
         continue;
       }
