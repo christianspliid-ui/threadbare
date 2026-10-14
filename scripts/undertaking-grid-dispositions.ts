@@ -291,10 +291,9 @@ export const UNTOUCHED_BY_DESIGN: readonly UntouchedByDesign[] = [
     subsystem: 'Essence & Divine Economy',
     reason: 'Essence is the god\'s currency and the divine receipt is the god\'s ledger. Mortals neither earn nor spend it — a mortal who could move the essence economy by working would be a second god, which is the one thing the ascendant fantasy cannot share.',
   },
-  {
-    subsystem: 'Culture',
-    reason: 'Culture is a property of regions and peoples that worldgen seeds and long drift moves, on a timescale no single undertaking reaches. One mortal\'s work changes what a culture *holds* — its prosperity, its holdings, its factions — never the culture itself. A verb that let one person edit a people would make the slowest layer in the game the most volatile.',
-  },
+  // `Culture` left this list in THR-1839: founding a settlement now gives it the nearest
+  // people as a fringe (`cultureFringe.ts`), so a mortal's work adds a place to a people.
+  // The old reason's substance still holds — no verb edits the culture itself.
   {
     subsystem: 'Stealth, Detection & Hidden Marks',
     reason: 'These are the god\'s fingerprints: the layer exists to track how visible the *player\'s* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer\'s business, and routing it here would charge the god for work they did not do.',
