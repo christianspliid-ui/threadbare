@@ -17,10 +17,14 @@ import { resolveFactionNodeId } from '../factionMembership';
 import { applyFactionReputationGain } from '../factionReputation';
 import { selectWorldScenarioCensus } from '../worldScenarioCensus';
 import { EncounterCacheManager } from '../encounterCache';
+import { getLocationNodes, resolveToParentLocation } from '../sublocationShape';
+import { hexDistance } from '../../lib/hexMath';
 import {
   DEFAULT_WORLD_SCENARIO,
   WORLD_SCENARIO_TODAY,
   CULTURE_FRINGE_STRENGTH,
+  CULTURE_FRINGE_MAX_HEXES_MAX,
+  CULTURE_FRINGE_SUBTYPES,
   TEMPLE_OF_SPHERES_DEF_ID,
   formatCongregationName,
   resolveWorldScenario,
@@ -231,6 +235,48 @@ describe('fringe culture (S1d)', () => {
     const now = selectWorldScenarioCensus(g).unheldSettlements;
     const then = selectWorldScenarioCensus(todayWorld.graph).unheldSettlements;
     expect(Math.abs(now - then)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('every town has a people (THR-1793)', () => {
+  // Plan: Docs/plans/2026-10-13-thr-1793-every-town-has-a-people.md. The fringe default
+  // reaches the setting's ceiling, so every settlement within it carries a culture and
+  // every NPC minted there inherits it. Predicates, not counts (THR-688 Rule A).
+  const g = defaultWorld.graph;
+
+  it('defaults the fringe reach to its ceiling, and today\'s world keeps it off', () => {
+    expect(DEFAULT_WORLD_SCENARIO.cultureFringeMaxHexes).toBe(CULTURE_FRINGE_MAX_HEXES_MAX);
+    expect(WORLD_SCENARIO_TODAY.cultureFringeMaxHexes).toBe(0);
+  });
+
+  it('leaves no settlement cultureless within reach of a heartland, except the god\'s starting shrine', () => {
+    const heartland = getLocationNodes(g).filter(n => g.getOutgoingEdges(n.id, 'belongs_to')
+      .some(e => e.properties.fringe !== true));
+    expect(heartland.length).toBeGreaterThan(0);
+    const coord = (n: { properties: Record<string, unknown> }) =>
+      ({ col: n.properties.hexCol as number, row: n.properties.hexRow as number });
+    const strays: string[] = [];
+    for (const loc of getLocationNodes(g)) {
+      if (loc.id === 'loc.start') continue;
+      if (!CULTURE_FRINGE_SUBTYPES.has(loc.properties.locationSubtype as string)) continue;
+      if (g.getOutgoingEdges(loc.id, 'belongs_to').length > 0) continue;
+      const nearest = Math.min(...heartland.map(h => hexDistance(coord(loc), coord(h))));
+      if (nearest <= CULTURE_FRINGE_MAX_HEXES_MAX) strays.push(`${loc.id} (${nearest} hexes)`);
+    }
+    expect(strays).toEqual([]);
+  });
+
+  it('gives every NPC whose home settlement has a culture that culture too', () => {
+    const npcs = g.getNodesByType('actor').filter(n => n.id.startsWith('npc_'));
+    expect(npcs.length).toBeGreaterThan(0);
+    const missing: string[] = [];
+    for (const npc of npcs) {
+      const at = g.getOutgoingEdges(npc.id, 'located_at')[0];
+      const home = resolveToParentLocation(g, g.getNode(at?.target ?? ''));
+      if (!home || g.getOutgoingEdges(home.id, 'belongs_to').length === 0) continue;
+      if (g.getOutgoingEdges(npc.id, 'belongs_to').length === 0) missing.push(`${npc.id} @ ${home.id}`);
+    }
+    expect(missing).toEqual([]);
   });
 });
 
