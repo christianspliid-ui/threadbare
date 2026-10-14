@@ -140,7 +140,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom like one seeded at tick 0. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom too (as a fringe, even inside a province). | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Diagnostics & Incident Capture
 
@@ -1132,7 +1132,7 @@ exit
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
 
-- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom like one seeded at tick 0.
+- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom too (as a fringe, even inside a province).
 - **Producer → Consumer:** Culture → Encounters & Dilemmas
 - **UL terms:** *Culture*, *Location*, *Fringe*
 - **Module:** `src/engine/openingColoration.ts`

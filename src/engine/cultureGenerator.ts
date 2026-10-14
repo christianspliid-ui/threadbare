@@ -346,7 +346,9 @@ export interface HeartlandPlace {
 
 /**
  * The fringe rule, shared by the worldgen pass and the runtime pass so a hamlet founded
- * at tick 200 takes its people exactly as one seeded at tick 0 does. Draw-free: nearest
+ * at tick 200 takes its fringe by the rule worldgen uses. A place founded inside a
+ * province still gets a fringe, not a heartland link: the province map is worldgen-only
+ * (TODO(THR-1849): founded inside a province takes the heartland). Draw-free: nearest
  * heartland by hex distance, ties by culture id, then by Location id. `null` when there
  * is no heartland at all; the caller compares `dist` against the scenario's reach.
  */
