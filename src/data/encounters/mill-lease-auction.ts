@@ -50,6 +50,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['asceticism_extravagance', 'honesty_cunning'],
   tags: ['#trade'],
+  // Stands alone on the board; The Salt Monopoly (THR-1757) also seeds it by id (THR-1526).
+  drawable: true,
   settings: ['rural', 'urban'],
   openings: {
     rural: '{actor} comes into {location} on market day, sent for by the millers\' fellowship.',

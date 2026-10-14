@@ -266,6 +266,10 @@ const DECLARED_QUERY_PLANTERS: Readonly<Record<string, readonly string[]>> = {
   // THR-1664 — the ruin visit's two branches: `#ruin_lead` and `#lead_gone_cold`, one bearer each.
   'ruins.lead.visit': ['cell.observe.location'],
   'ruins.lead.cold': ['cell.observe.location'],
+  // THR-1757 — The Poisoned Feast plants `#rival_strike` on purpose: whoever paid for the
+  // poison sends people after the master. The family has one member, The Hired Knives, whose
+  // own opening stands without the feast (its brief records this as an accepted limit).
+  'encounter.rival.hired_knives': ['encounter.town.poisoned_feast'],
 };
 
 const NON_DRAWABLE = CORPUS.filter(t => t.drawable === false);

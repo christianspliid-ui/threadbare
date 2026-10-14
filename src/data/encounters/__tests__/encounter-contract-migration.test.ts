@@ -116,6 +116,15 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.restless_ossuary',
   // THR-1703 — nudge-native, seed-only rival strike.
   'encounter.rival.hired_knives',
+  // THR-1757, the second master everyday batch — nudge-native, same shape.
+  'encounter.town.poisoned_feast',
+  'encounter.town.salt_monopoly',
+  'encounter.town.hostage_exchange',
+  'encounter.town.tourney_marshal',
+  'encounter.town.guildhall_spy',
+  'encounter.town.easter_reckoning',
+  'encounter.town.hill_conduit',
+  'encounter.town.witch_trial',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {
