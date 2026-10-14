@@ -185,8 +185,9 @@ export function ChroniclePanel({ entries, currentTick, past }: ChroniclePanelPro
         gap: '12px',
       }}
     >
-      {/* Header + toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Header + toggle. Wraps rather than overflowing: the Ledger rail is 340px at
+          1080p (THR-1819), which leaves the title and three toggles ~30px short of one row. */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 8px' }}>
         <span
           style={{
             fontFamily: 'var(--font-display)',
