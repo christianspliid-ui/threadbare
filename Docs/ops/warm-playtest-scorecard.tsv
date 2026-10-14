@@ -2,3 +2,6 @@ round	date	briefVersion	deployedCommit	persona	verdict	metFirst	firstQuitAtActio
 1	2026-10-08	1	b20e5003	story	maybe	y		13	9	53	13	3.19	—	—	—	reached	true
 1	2026-10-08	1	b20e5003	veteran	maybe	y		14	8	70	12	3.97	—	reached-empty	reached	reached	false
 1	2026-10-08	1	b20e5003	skimmer	no	y		14	9	55	11	3.28	—	—	—	reached	true
+2	2026-10-14	1	667869d2	story	maybe	y		16	11	53	13	3.63	—	—	—	reached	true
+2	2026-10-14	1	667869d2	veteran	maybe	y		11	7	57	13	3.48	—	—	—	reached	true
+2	2026-10-14	1	667869d2	skimmer	maybe	y	33	9	10	56	12	3.62	—	—	—	reached	true
