@@ -1,0 +1,180 @@
+THR-1917 crown and fealty — observer sketch over the THR-1867 purse ledger (THROWAWAY, never merged)
+seed 42 medium · 1080 ticks · one cycle per day (TICKS_PER_DAY 12) · 90 days
+CAVEAT: the world runs unmodified. Oaths, purses, gifts and loyalty never feed back into the world.
+The world was simulated once (about 10 minutes); calibration passes replayed the daily snapshots with --cached.
+
+Crown constants: {"ARMY_UPKEEP_PER_DAY":{"warband":1.5,"regiment":2.5,"host":3.5},"CROWN_MIN_OATHS":2,"FEALTY_TAX_SHARE":0.3,"LOYALTY_FAIL_DEFENCE":0.15,"LOYALTY_FALL_BANKRUPT":0.01,"LOYALTY_FALL_OUTGROWN":0.02,"LOYALTY_FALL_RIVAL_OFFER":0.02,"LOYALTY_FALL_STRAINED":0.005,"LOYALTY_RISE_FLUSH":0.01,"LOYALTY_START":{"persuaded":0.7,"bought":0.6,"coerced":0.35},"NEVER_SWEAR_DEF_IDS":["thieves_guild","underking_court"],"NEVER_SWEAR_GUILD_TYPES":["thieves"],"OATH_ACCEPT_THRESHOLD":0.85,"OATH_BREAK_THRESHOLD":0.2,"OATH_COERCE_MIN_SIEGE_TICKS":36,"OATH_COERCE_WINDOW_DAYS":5,"OATH_GIFT_DAYS":30,"OATH_GIFT_RESERVE":150,"OATH_GIFT_W":0.8,"OATH_NO_THREAT_PROTECTION":0.5,"OATH_PRIDE_CAP":2,"OATH_PRIDE_W":0.3,"OATH_PROTECTION_W":1,"OATH_RESWEAR_COOLDOWN_DAYS":20,"OATH_RIVAL_MARGIN":0.1,"OATH_STANDING_W":0.3,"OATH_THREAT_RADIUS_HEXES":6,"REBELLION_INCOME_RATIO":0.5}
+
+== Oath event log (SWEAR / BREAK; a refusal is logged the first time a realm is refused by that candidate) ==
+  day  1  refused guild_25 (The Dawn-gleam Commerce House) ← faction_0 (hold of Witness Skyfield): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.02 → 0.49
+  day  1  refused guild_31 (The Pale Hollow Trading Company) ← faction_1 (march of Shadow-Kept Dawn): prot 0.50 (own 7660 vs threat 0) gift 0.00 stand 0 pride 0.05 → 0.48
+  day  1  refused guild_10 (The Crystalspire Ironmongers Guild) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.22 → 0.43
+  day  2  refused guild_14 (The Great Silverhold Craftworkers Guild) ← faction_1 (march of Shadow-Kept Dawn): prot 0.54 (own 5320 vs threat 4520) gift 0.00 stand 0 pride 0.13 → 0.50
+  day  3  SWEAR faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) → faction_1 (march of Shadow-Kept Dawn) [coerced] income 1.75 vs 4.01: prot 0.99 (own 2980 vs threat 20) gift 0.00 stand 0 pride 0.44 → 0.86
+  day  4  SWEAR faction_def_arcane_circle (The Arcane Circle) → faction_1 (march of Shadow-Kept Dawn) [coerced] income 1.40 vs 4.45: prot 0.50 (own 640 vs threat 0) gift 0.00 stand 0 pride 0.32 → 0.41
+  day  5  refused guild_29 (The Golden Wraith Fields Mining Consortium) ← faction_0 (hold of Witness Skyfield): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.04 → 0.49
+  day  5  refused faction_def_lorekeepers_covenant (The Lorekeepers Covenant) ← faction_1 (march of Shadow-Kept Dawn): prot 0.78 (own 9050 vs threat 2500) gift 0.00 stand 0 pride 0.02 → 0.78
+  day  8  refused faction_def_holy_order_dawn (The Ironfast Order) ← faction_1 (march of Shadow-Kept Dawn): prot 0.91 (own 8830 vs threat 898) gift 0.00 stand 0 pride 0.62 → 0.72
+  day  8  SWEAR faction_def_rangers_brotherhood (The Rangers Brotherhood) → faction_2 (sovereignty of Stone-Set Hollow) [persuaded] income 1.01 vs 3.91: prot 0.96 (own 898 vs threat 36) gift 0.00 stand 0 pride 0.26 → 0.88
+  day  9  refused guild_2 (The Shattered Sanctum Mining Consortium) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.86 (own 488 vs threat 83) gift 0.00 stand 0 pride 0.09 → 0.83
+  day 11  refused faction_def_merchant_consortium (The Merchant Consortium) ← faction_1 (march of Shadow-Kept Dawn): prot 0.75 (own 9610 vs threat 3220) gift 0.00 stand 0 pride 0.61 → 0.57
+  day 15  refused guild_27 (The Horseford Merchants Guild) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.66 (own 488 vs threat 250) gift 0.00 stand 0 pride 0.14 → 0.62
+  day 18  BREAK faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced, sworn day 3] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 18  SWEAR guild_22 (The Silverborough Mining Consortium) → faction_0 (hold of Witness Skyfield) [bought, gift 8.3] income 0.39 vs 8.84: prot 0.50 (own 0 vs threat 0) gift 0.71 stand 0 pride 0.04 → 1.06
+  day 19  BREAK faction_def_arcane_circle (The Arcane Circle) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced, sworn day 4] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 19  SWEAR guild_23 (The Silverborough Mining Consortium) → faction_0 (hold of Witness Skyfield) [bought, gift 9.0] income 0.39 vs 8.96: prot 0.50 (own 0 vs threat 0) gift 0.77 stand 0 pride 0.04 → 1.10
+  day 20  SWEAR guild_29 (The Golden Wraith Fields Mining Consortium) → faction_0 (hold of Witness Skyfield) [bought, gift 9.1] income 0.38 vs 9.08: prot 0.50 (own 0 vs threat 0) gift 0.80 stand 0 pride 0.04 → 1.13
+  day 20  refused guild_33 (The Frost Clearing Merchants Guild) ← faction_1 (march of Shadow-Kept Dawn): prot 0.81 (own 9525 vs threat 2170) gift 0.00 stand 0 pride 0.05 → 0.80
+  day 21  SWEAR guild_30 (The Golden Wraith Fields Ironmongers Guild) → faction_0 (hold of Witness Skyfield) [bought, gift 9.2] income 0.38 vs 9.19: prot 0.50 (own 0 vs threat 0) gift 0.81 stand 0 pride 0.04 → 1.14
+  day 22  SWEAR guild_25 (The Dawn-gleam Commerce House) → faction_0 (hold of Witness Skyfield) [bought, gift 6.0] income 0.20 vs 9.30: prot 0.50 (own 0 vs threat 0) gift 1.00 stand 0 pride 0.02 → 1.29
+  day 23  SWEAR guild_8 (The Wraithwood Ironmongers Guild) → faction_0 (hold of Witness Skyfield) [bought, gift 12.7] income 0.86 vs 9.36: prot 0.50 (own 0 vs threat 0) gift 0.49 stand 0 pride 0.09 → 0.86
+  day 24  SWEAR guild_26 (The Dawn-gleam Merchants Guild) → faction_0 (hold of Witness Skyfield) [bought, gift 6.0] income 0.20 vs 9.62: prot 0.50 (own 0 vs threat 0) gift 1.00 stand 0 pride 0.02 → 1.29
+  day 25  SWEAR guild_9 (The Forge of Sorrow Stone Cutters Brotherhood) → faction_0 (hold of Witness Skyfield) [bought, gift 13.3] income 0.70 vs 9.68: prot 0.50 (own 0 vs threat 0) gift 0.64 stand 0 pride 0.07 → 0.99
+  day 26  refused faction_def_lorekeepers_covenant (The Lorekeepers Covenant) ← faction_0 (hold of Witness Skyfield): prot 0.00 (own 0 vs threat 9335) gift 1.00 stand -1 pride 0.01 → 0.50
+  day 27  refused faction_def_mercenary_company_1 (The Scarlet Company) ← faction_0 (hold of Witness Skyfield): prot 0.00 (own 0 vs threat 7715) gift 0.73 stand 0 pride 0.09 → 0.55
+  day 29  refused faction_def_temple_of_spheres_0 (The Witness Skyfield Congregation of the Spheres) ← faction_0 (hold of Witness Skyfield): prot 0.50 (own 855 vs threat 0) gift 0.00 stand -1 pride 0.40 → 0.08
+  day 29  refused faction_def_mercenary_company_1 (The Scarlet Company) ← faction_1 (march of Shadow-Kept Dawn): prot 0.90 (own 7990 vs threat 855) gift 0.00 stand 0 pride 0.23 → 0.84
+  day 30  SWEAR faction_def_mercenary_company_1 (The Scarlet Company) → faction_1 (march of Shadow-Kept Dawn) [persuaded] income 0.91 vs 4.04: prot 0.95 (own 5650 vs threat 275) gift 0.00 stand 0 pride 0.23 → 0.89
+  day 34  refused faction_def_founded_ind_2_407 (Nasuuhuuru's Quarried Order) ← faction_0 (hold of Witness Skyfield): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50
+  day 34  refused faction_def_founded_ind_2_407 (Nasuuhuuru's Quarried Order) ← faction_1 (march of Shadow-Kept Dawn): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50
+  day 42  SWEAR faction_def_temple_of_spheres_0 (The Witness Skyfield Congregation of the Spheres) → faction_0 (hold of Witness Skyfield) [bought, gift 111.5] income 3.72 vs 9.89: prot 0.50 (own 0 vs threat 0) gift 1.00 stand -1 pride 0.38 → 0.89
+  day 46  refused faction_def_founded_ind_13_523 (The Deepset Order) ← faction_1 (march of Shadow-Kept Dawn): prot 0.62 (own 8635 vs threat 5380) gift 0.00 stand 0 pride 0.00 → 0.62
+  day 49  SWEAR faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) → faction_1 (march of Shadow-Kept Dawn) [coerced] income 1.79 vs 4.49: prot 0.50 (own 1615 vs threat 0) gift 0.00 stand 0 pride 0.40 → 0.38
+  day 50  SWEAR faction_def_arcane_circle (The Arcane Circle) → faction_1 (march of Shadow-Kept Dawn) [coerced] income 1.29 vs 5.03: prot 0.50 (own 10000 vs threat 0) gift 0.00 stand -1 pride 0.26 → 0.12
+  day 51  refused faction_def_mercenary_company_0 (The Iron Wolves) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.16 → 0.45
+  day 53  refused guild_11 (The Bone Coast Ironmongers Guild) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.17 → 0.45
+  day 64  BREAK faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced, sworn day 49] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 65  BREAK faction_def_arcane_circle (The Arcane Circle) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced, sworn day 50] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 70  refused faction_def_founded_ind_13_566 (The Quarried Order) ← faction_1 (march of Shadow-Kept Dawn): prot 0.65 (own 10000 vs threat 5355) gift 0.00 stand 0 pride 0.00 → 0.65
+  day 71  refused faction_def_founded_ind_13_523 (The Deepset Order) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.00 (own 0 vs threat 7760) gift 0.00 stand 0 pride 0.00 → 0.00
+  day 72  refused guild_20 (The Hawkgate Ironmongers Guild) ← faction_2 (sovereignty of Stone-Set Hollow): prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.29 → 0.41
+  day 74  SWEAR faction_def_adventuring_guild (The Adventurers Guild) → faction_1 (march of Shadow-Kept Dawn) [coerced] income 1.17 vs 4.28: prot 0.89 (own 740 vs threat 91) gift 0.00 stand -1 pride 0.27 → 0.51
+  day 75  SWEAR faction_def_founded_ind_4_828 (The Gravebound Order) → faction_1 (march of Shadow-Kept Dawn) [persuaded] income 0.00 vs 4.64: prot 0.99 (own 9125 vs threat 53) gift 0.00 stand 0 pride 0.00 → 0.99
+  day 76  SWEAR faction_def_founded_ind_13_687 (The Shadow-shade Order) → faction_1 (march of Shadow-Kept Dawn) [persuaded] income 0.00 vs 4.64: prot 1.00 (own 6785 vs threat 15) gift 0.00 stand 0 pride 0.00 → 1.00
+  day 78  BREAK faction_def_mercenary_company_1 (The Scarlet Company) ✗ faction_1 (march of Shadow-Kept Dawn) [persuaded, sworn day 30] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 83  SWEAR faction_def_mercenary_company_1 (The Scarlet Company) → faction_0 (hold of Witness Skyfield) [bought, gift 27.3] income 0.91 vs 10.86: prot 0.50 (own 0 vs threat 0) gift 1.00 stand -1 pride 0.08 → 0.97
+  day 89  BREAK faction_def_adventuring_guild (The Adventurers Guild) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced, sworn day 74] loyalty 0.20 — liege bankrupt (−0.10 over 10 days)
+  day 89  SWEAR faction_def_lorekeepers_covenant (The Lorekeepers Covenant) → faction_0 (hold of Witness Skyfield) [bought, gift 3.0] income 0.10 vs 11.13: prot 0.50 (own 0 vs threat 0) gift 1.00 stand -1 pride 0.01 → 1.00
+  (250 refused courtings in all)
+
+== Town changes of hands (controls edges, place tier) ==
+  day 38  loc_2 (Thornhaven) ind_9 (?) → ind_4 (?)
+  day 43  loc_7 (The Bone Coast) faction_2 (sovereignty of Stone-Set Hollow) → faction_def_civic_guard (Wender's Anvil Order)
+
+== Crown status over time (oaths held per liege; Crown = ≥ 2) ==
+  faction_0 (hold of Witness Skyfield): first crowned day 19
+    d1-17: 0 · d18-18: 1 · d19-19: 2 CROWN · d20-20: 3 CROWN · d21-21: 4 CROWN · d22-22: 5 CROWN · d23-23: 6 CROWN · d24-24: 7 CROWN · d25-41: 8 CROWN · d42-82: 9 CROWN · d83-88: 10 CROWN · d89-90: 11 CROWN
+  faction_1 (march of Shadow-Kept Dawn): first crowned day 4
+    d1-2: 0 · d3-3: 1 · d4-17: 2 CROWN · d18-18: 1 · d19-29: 0 · d30-48: 1 · d49-49: 2 CROWN · d50-63: 3 CROWN · d64-64: 2 CROWN · d65-73: 1 · d74-74: 2 CROWN · d75-75: 3 CROWN · d76-77: 4 CROWN · d78-88: 3 CROWN · d89-90: 2 CROWN
+  faction_2 (sovereignty of Stone-Set Hollow): first crowned never
+    d1-7: 0 · d8-90: 1
+
+== Income split for every liege (own vs oath), day value and trailing 10-day mean ==
+  liege        day   own/day  oath/day  oath%  | 10d own  10d oath  10d oath%  oaths
+  faction_0     30     8.84      1.05  10.6%  |    8.84      0.82       8.5%  8
+  faction_0     60     8.98      2.41  21.1%  |    8.88      2.27      20.4%  9
+  faction_0     90     8.70      2.48  22.2%  |    8.69      2.36      21.4%  11
+  faction_1     30     4.04      0.00   0.0%  |    4.04      0.00       0.0%  1
+  faction_1     60     4.04      1.20  22.9%  |    4.03      1.20      22.9%  3
+  faction_1     90     4.01      0.00   0.0%  |    4.01      0.32       7.3%  2
+  faction_2     30     3.89      0.30   7.2%  |    3.89      0.30       7.2%  1
+  faction_2     60     2.33      0.30  11.5%  |    2.33      0.30      11.5%  1
+  faction_2     90     2.33      0.30  11.5%  |    2.33      0.30      11.5%  1
+
+== Loyalty traces (every 5 days from swearing; final value) ==
+  faction_def_temple_of_spheres_1 → faction_1 [coerced] sworn d3, broke d18 · tax paid 6.2 · gift 0.0
+    d3:0.35 d8:0.30 d13:0.25 d18:0.20
+  faction_def_arcane_circle → faction_1 [coerced] sworn d4, broke d19 · tax paid 6.3 · gift 0.0
+    d4:0.35 d9:0.30 d14:0.25 d19:0.20
+  faction_def_rangers_brotherhood → faction_2 [persuaded] sworn d8, holding · tax paid 24.9 · gift 0.0
+    d8:0.70 d13:0.65 d18:0.60 d23:0.55 d28:0.50 d33:0.45 d38:0.40 d43:0.36 d48:0.34 d53:0.34 d58:0.34 d63:0.34 d68:0.38 d73:0.43 d78:0.48 d83:0.53 d88:0.58 d90:0.60
+  guild_22 → faction_0 [bought] sworn d18, holding · tax paid 8.4 · gift 8.3
+    d18:0.60 d23:0.65 d28:0.70 d33:0.75 d38:0.80 d43:0.85 d48:0.90 d53:0.95 d58:1.00 d63:1.00 d68:1.00 d73:1.00 d78:1.00 d83:1.00 d88:1.00 d90:1.00
+  guild_23 → faction_0 [bought] sworn d19, holding · tax paid 8.3 · gift 9.0
+    d19:0.60 d24:0.65 d29:0.70 d34:0.75 d39:0.80 d44:0.85 d49:0.90 d54:0.95 d59:1.00 d64:1.00 d69:1.00 d74:1.00 d79:1.00 d84:1.00 d89:1.00 d90:1.00
+  guild_29 → faction_0 [bought] sworn d20, holding · tax paid 7.9 · gift 9.1
+    d20:0.60 d25:0.65 d30:0.70 d35:0.75 d40:0.80 d45:0.85 d50:0.90 d55:0.95 d60:1.00 d65:1.00 d70:1.00 d75:1.00 d80:1.00 d85:1.00 d90:1.00
+  guild_30 → faction_0 [bought] sworn d21, holding · tax paid 7.8 · gift 9.2
+    d21:0.60 d26:0.65 d31:0.70 d36:0.75 d41:0.80 d46:0.85 d51:0.90 d56:0.95 d61:1.00 d66:1.00 d71:1.00 d76:1.00 d81:1.00 d86:1.00 d90:1.00
+  guild_25 → faction_0 [bought] sworn d22, holding · tax paid 4.1 · gift 6.0
+    d22:0.60 d27:0.65 d32:0.70 d37:0.75 d42:0.80 d47:0.85 d52:0.90 d57:0.95 d62:1.00 d67:1.00 d72:1.00 d77:1.00 d82:1.00 d87:1.00 d90:1.00
+  guild_8 → faction_0 [bought] sworn d23, holding · tax paid 17.4 · gift 12.7
+    d23:0.60 d28:0.65 d33:0.70 d38:0.75 d43:0.80 d48:0.85 d53:0.90 d58:0.95 d63:1.00 d68:1.00 d73:1.00 d78:1.00 d83:1.00 d88:1.00 d90:1.00
+  guild_26 → faction_0 [bought] sworn d24, holding · tax paid 4.0 · gift 6.0
+    d24:0.60 d29:0.65 d34:0.70 d39:0.75 d44:0.80 d49:0.85 d54:0.90 d59:0.95 d64:1.00 d69:1.00 d74:1.00 d79:1.00 d84:1.00 d89:1.00 d90:1.00
+  guild_9 → faction_0 [bought] sworn d25, holding · tax paid 13.6 · gift 13.3
+    d25:0.60 d30:0.65 d35:0.70 d40:0.75 d45:0.80 d50:0.85 d55:0.90 d60:0.95 d65:1.00 d70:1.00 d75:1.00 d80:1.00 d85:1.00 d90:1.00
+  faction_def_mercenary_company_1 → faction_1 [persuaded] sworn d30, broke d78 · tax paid 13.1 · gift 0.0
+    d30:0.70 d35:0.65 d40:0.60 d45:0.53 d50:0.48 d55:0.43 d60:0.38 d65:0.33 d70:0.28 d75:0.23 d78:0.20
+  faction_def_temple_of_spheres_0 → faction_0 [bought] sworn d42, holding · tax paid 56.5 · gift 111.5
+    d42:0.60 d47:0.65 d52:0.70 d57:0.75 d62:0.80 d67:0.85 d72:0.88 d77:0.93 d82:0.98 d87:1.00 d90:1.00
+  faction_def_temple_of_spheres_1 → faction_1 [coerced] sworn d49, broke d64 · tax paid 8.1 · gift 0.0
+    d49:0.35 d54:0.30 d59:0.25 d64:0.20
+  faction_def_arcane_circle → faction_1 [coerced] sworn d50, broke d65 · tax paid 5.8 · gift 0.0
+    d50:0.35 d55:0.30 d60:0.25 d65:0.20
+  faction_def_adventuring_guild → faction_1 [coerced] sworn d74, broke d89 · tax paid 5.3 · gift 0.0
+    d74:0.35 d79:0.30 d84:0.25 d89:0.20
+  faction_def_founded_ind_4_828 → faction_1 [persuaded] sworn d75, holding · tax paid 0.0 · gift 0.0
+    d75:0.70 d80:0.65 d85:0.60 d90:0.55
+  faction_def_founded_ind_13_687 → faction_1 [persuaded] sworn d76, holding · tax paid 0.0 · gift 0.0
+    d76:0.70 d81:0.65 d86:0.60 d90:0.56
+  faction_def_mercenary_company_1 → faction_0 [bought] sworn d83, holding · tax paid 1.9 · gift 27.3
+    d83:0.60 d88:0.59 d90:0.61
+  faction_def_lorekeepers_covenant → faction_0 [bought] sworn d89, holding · tax paid 0.0 · gift 3.0
+    d89:0.60 d90:0.59
+
+== Breaks ==
+  day 18: faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced] — liege bankrupt (−0.10 over 10 days)
+  day 19: faction_def_arcane_circle (The Arcane Circle) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced] — liege bankrupt (−0.10 over 10 days)
+  day 64: faction_def_temple_of_spheres_1 (The Shadow-Kept Dawn Congregation of the Spheres) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced] — liege bankrupt (−0.10 over 10 days)
+  day 65: faction_def_arcane_circle (The Arcane Circle) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced] — liege bankrupt (−0.10 over 10 days)
+  day 78: faction_def_mercenary_company_1 (The Scarlet Company) ✗ faction_1 (march of Shadow-Kept Dawn) [persuaded] — liege bankrupt (−0.10 over 10 days)
+  day 89: faction_def_adventuring_guild (The Adventurers Guild) ✗ faction_1 (march of Shadow-Kept Dawn) [coerced] — liege bankrupt (−0.10 over 10 days)
+  by kind: persuaded 1/4 broke · bought 0/11 broke · coerced 5/5 broke
+
+== Swear-eligible factions still independent on day 90 (best realm offer and why it fails) ==
+  guild_0                            inc  0.57 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_1                            inc  0.57 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_2                            inc  0.40 · best faction_2: prot 0.50 (own 0 vs threat 0) gift 0.00 stand -1 pride 0.15 → 0.15 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 12)
+  guild_3                            inc  0.40 · best faction_2: prot 0.50 (own 0 vs threat 0) gift 0.00 stand -1 pride 0.15 → 0.15 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 12)
+  guild_4                            inc  0.25 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_5                            inc  0.25 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_6                            inc  0.86 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_7                            inc  0.86 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_10                           inc  0.86 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand -1 pride 0.32 → -0.40 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 26)
+  guild_11                           inc  0.44 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand 0 pride 0.17 → -0.05 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 13)
+  guild_12                           inc  0.13 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_13                           inc  0.13 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_14                           inc  0.71 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.18 → 0.45 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 21)
+  guild_15                           inc  0.71 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.18 → 0.45 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 21)
+  guild_16                           inc  0.56 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.14 → 0.46 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 17)
+  guild_17                           inc  0.56 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.14 → 0.46 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 17)
+  guild_18                           inc  0.50 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_19                           inc  1.02 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_20                           inc  0.77 · best faction_2: prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.29 → 0.41 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 23)
+  guild_21                           inc  0.77 · best faction_2: prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.29 → 0.41 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 23)
+  guild_24                           inc  1.60 · no realm counts it a candidate (no hall, holding or member inside any realm border)
+  guild_27                           inc  0.20 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand 0 pride 0.08 → -0.02 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 6)
+  guild_28                           inc  0.20 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand 0 pride 0.08 → -0.02 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 6)
+  guild_31                           inc  0.20 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.05 → 0.49 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 6)
+  guild_32                           inc  0.20 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.05 → 0.49 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 6)
+  guild_33                           inc  0.20 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.05 → 0.49 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 6)
+  faction_def_adventuring_guild      inc  1.17 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand -1 pride 0.44 → -0.43 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 35)
+  faction_def_mercenary_company_0    inc  0.43 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand 0 pride 0.16 → -0.05 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 13)
+  faction_def_merchant_consortium    inc  2.15 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand -1 pride 0.54 → 0.04 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 65)
+  faction_def_temple_of_spheres_1    inc  1.79 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand -1 pride 0.45 → 0.07 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 54)
+  faction_def_temple_of_spheres_2    inc  0.74 · best faction_2: prot 0.00 (own 0 vs threat 7450) gift 0.00 stand -1 pride 0.28 → -0.38 — below 0.85; gift only 0.00 affordable (purse 128, reserve 150, full gift 22)
+  faction_def_arcane_circle          inc  0.75 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand -1 pride 0.19 → 0.14 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 22)
+  faction_def_civic_guard            inc  2.25 · best faction_0: prot 0.00 (own 0 vs threat 7450) gift 1.00 stand -1 pride 0.20 → 0.44 — below 0.85
+  faction_def_holy_order_dawn        inc  2.93 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand -1 pride 0.73 → -0.02 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 88)
+  faction_def_builders_fellowship    inc  3.57 · best faction_0: prot 0.00 (own 0 vs threat 7450) gift 1.00 stand -1 pride 0.32 → 0.40 — below 0.85
+  faction_def_founded_ind_2_407      inc  0.00 · best faction_0: prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50 — below 0.85; gift only 0.00 affordable (purse 542, reserve 150, full gift 0)
+  faction_def_founded_ind_13_523     inc  0.00 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 0)
+  faction_def_founded_ind_13_566     inc  0.00 · best faction_1: prot 0.50 (own 7450 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50 — below 0.85; gift only 0.00 affordable (purse -812, reserve 150, full gift 0)
+  faction_def_founded_agent_garrison_culture_2_970 inc  0.00 · best faction_0: prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50 — below 0.85; gift only 0.00 affordable (purse 542, reserve 150, full gift 0)
+  faction_def_founded_ind_13_1078    inc  0.00 · best faction_0: prot 0.50 (own 0 vs threat 0) gift 0.00 stand 0 pride 0.00 → 0.50 — below 0.85; gift only 0.00 affordable (purse 542, reserve 150, full gift 0)
+
+== Final purses of the realms ==
+  faction_0 (hold of Witness Skyfield): balance 541.9 · income/day 11.17 · upkeep/day 0.00 · Overflowing
+  faction_1 (march of Shadow-Kept Dawn): balance -812.0 · income/day 4.01 · upkeep/day 3.50 · Bankrupt
+  faction_2 (sovereignty of Stone-Set Hollow): balance 128.0 · income/day 2.64 · upkeep/day 0.00 · Flush
