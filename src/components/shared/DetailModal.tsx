@@ -357,7 +357,7 @@ function DetailModalPanel({
  * `Modal` owns beyond the contract is a *layout* this one contradicts in four places:
  * panels here are an exact per-kind `width`×`height` (`Modal` is `width: 90%` under a
  * `maxWidth`, with no height at all, so the fixed-height scroll region would be lost);
- * they cap at 85vh rather than 75vh; they stack, each backdrop dimming by depth and
+ * they cap at a literal 85vh rather than `--modal-max-h`; they stack, each backdrop dimming by depth and
  * going `pointerEvents: none` beneath the topmost; and they sit in their own `70 + 2·depth`
  * band rather than the modal band. Composing would mean giving the primitive panel-style,
  * backdrop-style and pointer-events escape hatches — which is how a primitive stops being

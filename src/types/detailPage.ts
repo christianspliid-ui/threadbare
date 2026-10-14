@@ -69,8 +69,9 @@ export const HOVER_CARD_DELAY_MS = 350;
 /** Sections shown in the hover variant beyond the header. */
 export const HOVER_CARD_MAX_SECTIONS = 1;
 
-/** Hover card width in px — narrower than a card, because it is a glance, not a read. */
-export const HOVER_CARD_W = 420;
+/* The hover card's width is a rem token since THR-1819 — `--hovercard-w` (26.25rem:
+   420px at 1080p, 472.5px at 1440p), narrower than a card because it is a glance, not
+   a read. Its one TS copy is `TEXT_TOKENS_REM.hovercardW` in layoutContract.ts. */
 
 /** Default prose tier for authored showcase sections. */
 export const DETAIL_AUTHORED_DEFAULT_TIER: ProseTier = 'notable';
