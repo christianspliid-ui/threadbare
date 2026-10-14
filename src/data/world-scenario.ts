@@ -40,6 +40,12 @@ export interface WorldScenario {
   labelSettlementGuilds: boolean;
 }
 
+/**
+ * Upper bound on fringe reach, in hexes. Declared above the default because the default
+ * references it (THR-1793) — a `const` read before its line is a TDZ throw at import.
+ */
+export const CULTURE_FRINGE_MAX_HEXES_MAX = 24;
+
 /** The first default: the world that puts the most systems in contact (THR-1596, decided 2026-09-26). */
 export const DEFAULT_WORLD_SCENARIO: Readonly<WorldScenario> = Object.freeze({
   templeCongregationsPerCulture: 1,
@@ -52,7 +58,11 @@ export const DEFAULT_WORLD_SCENARIO: Readonly<WorldScenario> = Object.freeze({
   // off entirely is ~+10%, so the rest is congregations and holy places). Seed 42 swings
   // ±20% run to run on unchanged code and shows no reliable difference. THR-1632 kill
   // criterion: lower the reach first.
-  cultureFringeMaxHexes: 4,
+  // THR-1793 (2026-10-13 re-measure on main, same route, three pairs): the full reach (the
+  // ceiling) costs +5.6% steady over 4 hexes (210.6 → 222.4 ms/tick), inside the +10% line,
+  // and links every settlement within it — cultureless mortals at t0 fall 216 → 13 (seed 42)
+  // and 187 → 12 (seed 99). Plan: Docs/plans/2026-10-13-thr-1793-every-town-has-a-people.md.
+  cultureFringeMaxHexes: CULTURE_FRINGE_MAX_HEXES_MAX,
   seedCongregationPilgrimRoutes: true,
   labelSettlementGuilds: true,
 });
@@ -80,8 +90,6 @@ export const HOLY_PLACES_MIN_PER_CULTURE_MAX = 6;
 export const WILDERNESS_PROVINCE_COUNT_MAX = 30;
 /** The map has four corners. */
 export const CORNER_WILDERNESS_COUNT_MAX = 4;
-/** Upper bound on fringe reach, in hexes. */
-export const CULTURE_FRINGE_MAX_HEXES_MAX = 24;
 
 // ─── Constants the scenario's passes read (NFP #1) ─────────────────────────────
 

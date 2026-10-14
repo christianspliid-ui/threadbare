@@ -327,7 +327,9 @@ producer was a legacy strategic template never offered under the cells model, so
 seeds one route per Temple congregation to its seat capital and the encounter cache pools the
 pilgrimage there. `culture-custom-reaches-encounter-opening` is **extended**: its producer now
 includes fringe links (a settlement outside every heartland taking the nearest culture, current
-layer, half strength), which are never Realm ground. `authored-faction-ids-resolve-to-seeded-faction-nodes`
+layer, half strength), which are never Realm ground. Since THR-1793 (2026-10-14) the default
+fringe reach is the setting's 24-hex ceiling (`CULTURE_FRINGE_MAX_HEXES_MAX`, was 4), so the producer
+covers every settlement within it — same edge shape, more towns. `authored-faction-ids-resolve-to-seeded-faction-nodes`
 is **preserved** — a Temple reputation effect lands on the actor's own congregation, asserted on a
 generated world. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
 

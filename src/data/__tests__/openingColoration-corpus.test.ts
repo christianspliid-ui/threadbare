@@ -141,10 +141,13 @@ function generate(seed: number): WorldGraph {
  * their declared sphere, so most of them clear SPHERE_FACT_MIN_SHARE — strong-sphere
  * 35 → 59 on seed 42, 24 → 70 on seed 99. Culture counts unchanged. That plan names
  * this opening line's contract as preserved, with more places seeded.
+ * Re-measured 2026-10-14 for THR-1793: the fringe default reaches its 24-hex ceiling (was
+ * 4), so every settlement within it carries a culture — 44 → 71 on seed 42, 81 → 104 on
+ * seed 99. Strong-sphere counts unchanged. Plan names this reader as reached, not changed.
  */
 const REMEASURE: Record<number, { withCulture: number; withStrongSphere: number }> = {
-  42: { withCulture: 44, withStrongSphere: 59 },
-  99: { withCulture: 81, withStrongSphere: 70 },
+  42: { withCulture: 71, withStrongSphere: 59 },
+  99: { withCulture: 104, withStrongSphere: 70 },
 };
 const CENSUS_TOLERANCE = 0.1;
 
