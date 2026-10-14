@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -36,6 +36,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: God's Will names the deed, not a raw id** ([THR-1852](https://linear.app/threadbare/issue/THR-1852/recurs-after-fix-gods-will-prints-raw-ids-compelled-toward)). Merged via [#2394](https://github.com/christianspliid-ui/threadbare/pull/2394) and live.
 - **2026-10-14: the component library and the UI-debt ratchet shipped** ([THR-1821](https://linear.app/threadbare/issue/THR-1821/design-finish-the-component-library-tabs-chip-overlay-panel-card)). Merged via [#2393](https://github.com/christianspliid-ui/threadbare/pull/2393) and live.
 - **2026-10-14: fair luck and the Game Design Laws book shipped** ([THR-1889](https://linear.app/threadbare/issue/THR-1889/fair-luck-tier-first-loot-a-hidden-legendary-deadline-and-a-marble-bag), [THR-1891](https://linear.app/threadbare/issue/THR-1891/game-design-laws-collate-the-games-ratified-design-fundamentals-into)). Merged via [#2387](https://github.com/christianspliid-ui/threadbare/pull/2387) and live.
 - **2026-10-14: the five UI build plans are written** — the screen frame, the Inspector, the encounter Stage, map lenses, and type and icons ([#2388](https://github.com/christianspliid-ui/threadbare/pull/2388)–[#2392](https://github.com/christianspliid-ui/threadbare/pull/2392)). Their build tickets are in the queue.
@@ -45,7 +46,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: towns founded during play now belong to a people** ([THR-1839](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick)). Merged via [#2366](https://github.com/christianspliid-ui/threadbare/pull/2366).
 - **2026-10-14: hovering a besieged town or a battle now says what it is in words** ([THR-1847](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering)). Merged via [#2365](https://github.com/christianspliid-ui/threadbare/pull/2365) and live.
 - **2026-10-14: every town now has a people, so no mortal is left without a culture** ([THR-1793](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is)). Merged via [#2364](https://github.com/christianspliid-ui/threadbare/pull/2364) and live.
-- **2026-10-14: a siege now draws as a siege on the map, not a field battle** ([THR-1846](https://linear.app/threadbare/issue/THR-1846/every-siege-draws-as-a-field-battle-on-the-map-gameview-passes-battle)). Merged via [#2363](https://github.com/christianspliid-ui/threadbare/pull/2363) and live.
 
 ---
 
