@@ -6,7 +6,9 @@
 
 The game gets **one carved icon family** for everything that is not already drawn by hand: a curated subset of **game-icons.net** (CC BY 3.0), recoloured through `currentColor`, used for world and story concepts **and** for the top bar and controls. The game's **own drawings stay** for the four classes that already have them (spheres, reaches, heraldry and map places), and they replace the emoji and symbol copies that sit beside them today, so a castle looks the same on the map and in the panel next to it. **lucide leaves the player surfaces.** Emoji and symbol characters used as icons may only go down, counted by the THR-1821 ratchet.
 
-**Assets:** the comparison sheet Christian judged — [published page](https://claude.ai/artifact/W3kwE3ZamWQNC3QBVKwV9r) · source [`icon-family.html`](2026-10-14-thr-1834-icon-family/icon-family.html) · render at 1440 wide [`sheet-1440.png`](2026-10-14-thr-1834-icon-family/sheet-1440.png). It shows 32 world concepts, 9 places, 6 spheres, 4 reaches and 12 controls, each next to the glyph it replaces, plus the top bar drawn in both candidate styles.
+**Assets:** the comparison sheet Christian judged — [published page](https://claude.ai/artifact/W3kwE3ZamWQNC3QBVKwV9r) · source [`icon-family.html`](2026-10-14-thr-1834-icon-family/icon-family.html) · render at 1440 wide [`sheet-1440.png`](2026-10-14-thr-1834-icon-family/sheet-1440.png). It shows 33 world concepts, 9 places, 6 spheres, 4 reaches and 12 controls, each next to the glyph it replaces, plus the top bar drawn in both candidate styles.
+
+**Swaps after review (Christian, chat 2026-10-14):** the first sheet's *Disease* (`virus`, a bacteriophage) and *Ambition* (`summits`) read wrong for the world. Christian picked from shown alternatives: **Disease → `plague-doctor-profile`**, **Ambition → `holy-grail`**. The crown stays with Notables (one shape per concept). Disease and Poison shared ☠ today, so **Poison** now gets its own shape, `poison-bottle`. The sheet (version 2) and its render show the swaps.
 
 ## What the game has today
 
@@ -64,7 +66,7 @@ Christian picked the carved set for the top bar (option A on the sheet: one look
 
 ### 6. Coverage
 
-The sheet fixes the family and proves it on 44 concepts. Mapping the remaining concepts to shapes is executor work inside the migration, under the rules above: one shape per concept, chosen from the family, recorded in the registry. An executor may swap a shape the sheet picked when a better one reads more clearly at 18 px (the sheet's *Rivals* pick, `duel`, is the weakest), as long as the shape stays unique. The picks on the sheet:
+The sheet fixes the family and proves it on 45 concepts. Mapping the remaining concepts to shapes is executor work inside the migration, under the rules above: one shape per concept, chosen from the family, recorded in the registry. An executor may swap a shape the sheet picked when a better one reads more clearly at 18 px (the sheet's *Rivals* pick, `duel`, is the weakest), as long as the shape stays unique. The picks on the sheet:
 
 | Concept | Shape | Concept | Shape |
 |---|---|---|---|
@@ -77,9 +79,10 @@ The sheet fixes the family and proves it on 44 concepts. Mapping the remaining c
 | Blessing | `angel-wings` | Debt, bargain | `scales` |
 | Pact, oath | `shaking-hands` | Mandate | `scroll-quill` |
 | Reveal | `all-seeing-eye` | Compel | `puppet` |
-| Undertaking | `compass` | Ambition | `summits` |
+| Undertaking | `compass` | Ambition | `holy-grail` |
 | Faction (generic) | `flying-flag` | Spell | `magic-swirl` |
-| Disease | `virus` | Wound | `bleeding-wound` |
+| Disease | `plague-doctor-profile` | Poison | `poison-bottle` |
+| Wound | `bleeding-wound` | | |
 | Companion | `hooded-figure` | Tome | `scroll-unfurled` |
 | Omen | `crystal-ball` | Doom | `sands-of-time` |
 | Spring / Summer | `sprout` / `sun` | Autumn / Winter | `falling-leaf` / `snowflake-1` |
