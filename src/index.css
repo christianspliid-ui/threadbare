@@ -46,13 +46,19 @@
        way two golds did: the copies here already disagreed on quoting. */
     --font-prose: Georgia, 'Times New Roman', serif;
 
-    /* Type Scale — minimum 16px body, generous for readability */
-    --text-xs: 1rem;        /* 16px — smallest readable size */
-    --text-sm: 1.0625rem;   /* 17px — secondary text */
-    --text-base: 1.125rem;  /* 18px — primary body text */
-    --text-lg: 1.3125rem;   /* 21px — section headings */
-    --text-xl: 1.625rem;    /* 26px — panel titles */
-    --text-2xl: 1.9375rem;  /* 31px — page titles */
+    /* Type Scale (THR-1819) — six real steps, no two adjacent steps closer
+       than 2px at a 16px root. px values are at 1920×1080; at 2560×1440 the
+       root step-up below multiplies every rem by 1.125. Mirrored by
+       TYPE_SCALE_REM in src/components/shared/layoutContract.ts and locked by
+       layoutContract.test.ts. Faces and roles are THR-1833 / THR-1879. */
+    --text-xs: 1rem;        /* 16px — the floor: labels, metadata, chips, captions */
+    --text-sm: 1.125rem;    /* 18px — UI text and the body default */
+    --text-base: 1.25rem;   /* 20px — story prose, one step above UI text */
+    --text-lg: 1.375rem;    /* 22px — section headings; Cinzel's minimum */
+    --text-xl: 1.625rem;    /* 26px — panel and dialog titles */
+    --text-2xl: 2rem;       /* 32px — screen titles */
+    /* Story-column reading measure (THR-1833 § 4): 680px at 20px prose. */
+    --measure-prose: 34em;
 
     /* ── Colors ───────────────────────────────────────────────── */
     /* Background layers — deep to surface */
@@ -281,10 +287,10 @@
     --type-display-lg:    600 var(--text-xl)/1.1   var(--font-display);
     --type-display-md:    600 var(--text-lg)/1.15  var(--font-display);
     --type-section-label: 700 var(--text-xs)/1.2   var(--font-display);
-    --type-body-prose:    400 var(--text-base)/1.7 var(--font-body);
+    --type-body-prose:    400 var(--text-base)/1.6 var(--font-body);
     --type-body:          400 var(--text-sm)/1.4   var(--font-body);
     --type-body-small:    400 var(--text-xs)/1.4   var(--font-body);
-    --type-flavor:  italic 400 var(--text-base)/1.7 var(--font-body);
+    --type-flavor:  italic 400 var(--text-base)/1.6 var(--font-body);
 
     /* ── Sublocation & Persistence ────────────────────────────── */
     /* Persistence badges */
@@ -306,13 +312,34 @@
     --step-current-glow: #d4a04088;
     --step-pending: var(--bg-hover);
 
-    /* ── Layout ───────────────────────────────────────────────── */
-    --sidebar-width: 280px;
+    /* ── Layout (THR-1819 — the 1440p layout contract) ─────────── */
+    /* Two families. FRAME geometry is px and restated in every tier block
+       below, because it is budgeted against the screen (THR-1828's map-share
+       floors). TEXT containers are rem and declared once, so they follow the
+       root step-up. Every value is mirrored in layoutContract.ts and locked
+       by layoutContract.test.ts. This block is the 'base' tier (<1920). */
     --topbar-height: 44px;
     --topbar-padding-x: 12px;
     --topbar-gap: 12px;
+    --rail-left-w: 320px;            /* god rail — THR-1828 call 2 */
+    --rail-right-w: 280px;           /* Ledger rail — THR-1828 call 3 */
+    --rail-strip-w: 56px;            /* folded rail strip — THR-1828 call 3 */
+    --inspector-w: 560px;            /* Inspector docked — THR-1827 call 2 */
+    --inspector-wide-w: 960px;       /* Inspector wide — THR-1827 call 2 */
+    --inspector-full-trail-w: 240px; /* Inspector full, trail column — THR-1827 */
+    --inspector-full-aside-w: 360px; /* Inspector full, Connections column — THR-1827 */
+    --stage-gutter: 24px;            /* THR-1829 */
+    --stage-window-w: 280px;         /* THR-1829 STAGE_WINDOW_PX */
+    --stage-left-col-w: 340px;       /* THR-1829 STAGE_LEFT_COL_PX */
     --panel-radius: 0.5rem;
     --panel-padding: 1rem;
+    --tooltip-max-w: 17.5rem;        /* 280px at 1080p */
+    --hovercard-w: 26.25rem;         /* 420px at 1080p */
+    --toast-w: 20rem;                /* 320px at 1080p */
+    --stage-compact-w: 53.75rem;     /* 860px at 1080p — THR-1829 compact tier */
+    /* The one dialog height cap (Law 33). Containers (Inspector, Stage) are
+       not dialogs; drop-down caps (NotablesPanel, Find) are outside it. */
+    --modal-max-h: 85vh;
 
     /* ── Grain texture ────────────────────────────────────────── */
     --grain-opacity: 0.03;
@@ -345,28 +372,73 @@
     }
   }
 
-  /* ── Responsive layout scaling ───────────────────────────── */
+  /* ── Responsive layout scaling (THR-1819) ───────────────────── */
+  /* Tiers: fhd ≥1920 (the supported floor, 1920×1080), qhd ≥2560 (the primary
+     screen, 2560×1440), uwqhd ≥3440 (width only — the extra goes to the map
+     and the Stage window). Every frame token is restated in every block so
+     each tier reads as one complete row. Breakpoints for JS live in
+     layoutContract.ts (LAYOUT_BREAKPOINTS_PX): custom properties cannot drive
+     media queries. */
   @media (min-width: 1920px) {
     :root {
-      --sidebar-width: 360px;
       --topbar-height: 48px;
       --topbar-padding-x: 16px;
       --topbar-gap: 16px;
+      --rail-left-w: 320px;
+      --rail-right-w: 340px;
+      --rail-strip-w: 56px;
+      --inspector-w: 560px;
+      --inspector-wide-w: 960px;
+      --inspector-full-trail-w: 240px;
+      --inspector-full-aside-w: 360px;
+      --stage-gutter: 24px;
+      --stage-window-w: 280px;
+      --stage-left-col-w: 340px;
       --panel-padding: 1.25rem;
     }
   }
   @media (min-width: 2560px) {
     :root {
-      --sidebar-width: 400px;
-      --topbar-height: 52px;
+      --topbar-height: 56px;
       --topbar-padding-x: 20px;
       --topbar-gap: 20px;
+      --rail-left-w: 400px;
+      --rail-right-w: 420px;
+      --rail-strip-w: 56px;
+      --inspector-w: 717px;
+      --inspector-wide-w: 1280px;
+      --inspector-full-trail-w: 300px;
+      --inspector-full-aside-w: 440px;
+      --stage-gutter: 24px;
+      --stage-window-w: 520px;
+      --stage-left-col-w: 560px;
     }
   }
   @media (min-width: 3440px) {
     :root {
-      --sidebar-width: 420px;
+      --topbar-height: 56px;
+      --topbar-padding-x: 20px;
+      --topbar-gap: 20px;
+      --rail-left-w: 400px;
+      --rail-right-w: 420px;
+      --rail-strip-w: 56px;
+      --inspector-w: 717px;
+      --inspector-wide-w: 1280px;
+      --inspector-full-trail-w: 300px;
+      --inspector-full-aside-w: 440px;
+      --stage-gutter: 24px;
+      --stage-window-w: 1400px;
+      --stage-left-col-w: 560px;
     }
+  }
+
+  /* ── The root step-up (THR-1819) ───────────────────────────── */
+  /* 112.5% (not 18px) so a player who raised the browser's default font size
+     keeps it on top of the step. The height guard keeps a 2560×1080 ultrawide
+     at 1080p type; every supported screen behaves as the contract says.
+     Mirrored by ROOT_FONT_STEP in layoutContract.ts. */
+  @media (min-width: 2560px) and (min-height: 1200px) {
+    html { font-size: 112.5%; }
   }
 
   /* Base styles — viewport-locked: game fills exactly one screen, no scroll */
@@ -383,7 +455,7 @@
 
   body {
     font-family: var(--font-body);
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

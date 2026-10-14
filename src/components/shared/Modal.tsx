@@ -67,7 +67,7 @@ export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px var(--border-gold-strong)',
     maxWidth: `${maxWidth}px`,
     width: '90%',
-    maxHeight: '75vh',
+    maxHeight: 'var(--modal-max-h)', // 85vh — the one dialog cap (Law 33, THR-1819)
     display: 'flex',
     flexDirection: 'column',
   };

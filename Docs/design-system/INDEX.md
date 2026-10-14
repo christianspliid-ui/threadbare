@@ -29,9 +29,12 @@ This folder is the single source of truth for all UI decisions. It is structured
 
 ## Core Constraints
 
-- **Primary target:** 1920×1080 — all layout decisions optimized here
-- **Expand to:** 3440×1440 (ultrawide) — layout reflows, not just stretches
-- **Minimum support:** 1280×720 — must not break, may use scroll
+- **Primary screen:** 2560×1440 landscape (Christian, 2026-10-11 — THR-1823; THR-1819)
+- **Supported floor:** 1920×1080 — the tightest fit, and the contract screenshot
+- **Ultrawide:** 3440 wide and more adds width only (the map and the Stage window take it), no further type step
+- **Below 1920:** earlier behaviour; 1280×720 must not break, may use scroll
+- **Dialogs:** every dialog caps at 85vh (`--modal-max-h`) — one rule (Law 33)
+- **Layout and type tokens:** `src/index.css` `:root` + the 1920 / 2560 / 3440 blocks; breakpoints and the same numbers for JS in `src/components/shared/layoutContract.ts`
 - **Theme:** Always dark. No light mode. Background never brighter than `--bg-surface`.
 - **Ground truth tokens:** `src/index.css` `:root` block — these files document intent, CSS is authoritative
 

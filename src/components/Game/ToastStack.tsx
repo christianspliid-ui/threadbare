@@ -92,7 +92,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
     <div
       data-testid="toast-stack"
       className="absolute right-4 top-4 z-50 flex flex-col gap-2 pointer-events-none"
-      style={{ maxWidth: '320px' }}
+      style={{ maxWidth: 'var(--toast-w)' }}
       aria-live="polite"
       aria-label="Notifications"
     >

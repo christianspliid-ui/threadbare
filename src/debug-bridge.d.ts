@@ -1958,6 +1958,23 @@ export interface DebugBridge {
     open: string[];
   }>;
   /**
+   * The 1440p layout contract (THR-1819): live tier, root font size, every layout and
+   * type token as `:root` resolves it, the rendered top bar / god rail / Ledger rail
+   * (null when not mounted), and the map share at this viewport from the token table.
+   */
+  getLayoutContract(): Promise<{
+    tier: 'base' | 'fhd' | 'qhd' | 'uwqhd';
+    viewport: { width: number; height: number };
+    rootFontPx: number;
+    tokens: Record<string, string>;
+    measured: {
+      topBarPx: number | null;
+      godRailPx: number | null;
+      ledgerRailPx: number | null;
+    };
+    mapShare: { railsOpen: number; inspectorDocked: number };
+  }>;
+  /**
    * Open a reference through the live router, headlessly.
    *
    * `kind` may be a `WorldRefKind` **or** a `ContentObjectKindId` (THR-1491) — the two
