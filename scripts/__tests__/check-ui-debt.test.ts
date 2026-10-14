@@ -140,6 +140,8 @@ describe('detectors', () => {
     expect(countRadiusLiterals(tsx('export const A = () => <div className="rounded-full rounded-none rounded-panel" />;'))).toBe(0);
     expect(countRadiusLiterals(css('.a { border-radius: var(--panel-radius); }'))).toBe(0);
     expect(countRadiusLiterals(tsx(`export const s = { borderRadius: 'var(--radius-md)' };`))).toBe(1);
+    expect(countRadiusLiterals(tsx(`export const s = { borderRadius: open ? 'var(--radius-panel)' : 0 };`))).toBe(0);
+    expect(countRadiusLiterals(tsx('export const A = () => <div className="rounded-[var(--radius-panel)]" />;'))).toBe(0);
   });
 
   it('shadow-literal: counts literal shadows; tokens, none and glowShadow() are legal', () => {
@@ -153,6 +155,14 @@ describe('detectors', () => {
     expect(countShadowLiterals(tsx('export const A = () => <div className="p-2 shadow" />;'))).toBe(1);
     // Tailwind's default scale through var() is not one of our tokens.
     expect(countShadowLiterals(tsx(`export const s = { boxShadow: 'var(--shadow-lg)' };`))).toBe(1);
+    // A conditional is judged branch by branch, so a sanctioned migration lowers the row.
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: glow ? glowShadow(sphereBrightToken(x), 'soft') : undefined };`))).toBe(0);
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: on ? 'var(--shadow-panel)' : 'none' };`))).toBe(0);
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: on ? glowShadow(c, 'soft') : '0 0 4px red' };`))).toBe(1);
+    // The token must be the whole value: a literal layer after it still counts.
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: 'var(--shadow-panel), 0 0 40px #f00' };`))).toBe(1);
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: glowShadow(a, 'soft') + ', 0 0 1px red' };`))).toBe(1);
+    expect(countShadowLiterals(tsx('export const A = () => <div className="shadow-[var(--shadow-panel)]" />;'))).toBe(0);
   });
 
   it('uppercase and monospace', () => {

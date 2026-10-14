@@ -287,6 +287,58 @@ export function countEscapeListeners(source: CleanSource): number {
  */
 const LEGAL_RADIUS = /^(?:var\(--radius-(?:page|panel|control|chip)\)|var\(--panel-radius\)|0(?:px)?|50%)$/;
 
+/** "No value here" — the other branch of a conditional style. */
+const ABSENT_VALUE = /^(?:undefined|null|false|)$/;
+
+/** Split `a ? b : c` at its top-level `?` and matching `:`; null when there is none. */
+function splitTernary(value: string): [string, string, string] | null {
+  let depth = 0;
+  let quote: string | null = null;
+  let q = -1;
+  let nested = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (quote) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+    else if (ch === '(' || ch === '[' || ch === '{') depth += 1;
+    else if (ch === ')' || ch === ']' || ch === '}') depth -= 1;
+    else if (depth === 0 && ch === '?') {
+      // `?.` and `??` are not the conditional operator.
+      if (value[i + 1] === '.' || value[i + 1] === '?' || value[i - 1] === '?') continue;
+      if (q < 0) q = i;
+      else nested += 1;
+    } else if (depth === 0 && ch === ':' && q >= 0) {
+      if (nested > 0) nested -= 1;
+      else return [value.slice(0, q), value.slice(q + 1, i), value.slice(i + 1)];
+    }
+  }
+  return null;
+}
+
+/**
+ * True when every value a declaration can take is sanctioned. A conditional
+ * (`glow ? glowShadow(c, 'soft') : undefined`) is judged branch by branch, so a
+ * migration written the sanctioned way lowers the row; its condition is never a
+ * value. One unsanctioned branch makes the whole declaration count once.
+ */
+export function everyBranchLegal(value: string, legal: (leaf: string) => boolean): boolean {
+  const parts = splitTernary(value.trim());
+  if (parts) return everyBranchLegal(parts[1], legal) && everyBranchLegal(parts[2], legal);
+  const leaf = unquote(value.trim().replace(/^\((.*)\)$/s, '$1'));
+  return ABSENT_VALUE.test(leaf) || legal(leaf);
+}
+
+/** An arbitrary-value class that names one of our tokens (`rounded-[var(--radius-panel)]`) is the token. */
+const TOKEN_ARBITRARY = /\[var\(--(?:radius|shadow)-(?:page|panel|control|chip)\)\]$|\[var\(--panel-radius\)\]$/;
+
+function countClasses(s: string, pattern: RegExp): number {
+  return (s.match(pattern) ?? []).filter((m) => !TOKEN_ARBITRARY.test(m)).length;
+}
+
 /** Tailwind default-scale radius classes, any side; `rounded-full`/`-none` and tokens stay legal. */
 export const TAILWIND_RADIUS =
   /(?<![\w-])rounded(?:-(?:t|r|b|l|s|e|x|y|tl|tr|br|bl|ss|se|es|ee))?(?:-(?:xs|sm|md|lg|xl|2xl|3xl|4xl|\[[^\]\s]*\]))?(?![\w-])/g;
@@ -295,9 +347,10 @@ export const TAILWIND_RADIUS =
 export function countRadiusLiterals(source: CleanSource): number {
   let total = 0;
   for (const value of declarationValues(source.text, ['borderRadius', 'border-radius'])) {
-    if (!LEGAL_RADIUS.test(unquote(value))) total += 1;
+    if (!everyBranchLegal(value, (leaf) => LEGAL_RADIUS.test(leaf))) total += 1;
   }
-  return total + countInStrings(source.strings, TAILWIND_RADIUS);
+  for (const s of source.strings) total += countClasses(s, TAILWIND_RADIUS);
+  return total;
 }
 
 /** Tailwind default-scale shadow classes. `shadow-black/50` (a colour) and `drop-shadow-*` do not count. */
@@ -311,17 +364,36 @@ export const TAILWIND_SHADOW = /(?<![\w-])shadow(?:-(?:2xs|xs|sm|md|lg|xl|2xl|in
  */
 export function countShadowClasses(s: string): number {
   if (s.trim() === 'shadow') return 0;
-  return countMatches(s, TAILWIND_SHADOW);
+  return countClasses(s, TAILWIND_SHADOW);
 }
 
-/** Shadow values the token set sanctions: the four levels, `none`, and the glow helper. */
-const LEGAL_SHADOW = /^(?:var\(--shadow-(?:page|panel|control|chip)\)|none\b|glowShadow\()/;
+/**
+ * Shadow values the token set sanctions: one of the four levels, `none`, or
+ * one `glowShadow(…)` call — each the WHOLE value, so a literal layer after a
+ * token (`var(--shadow-panel), 0 0 40px #f00`) still counts.
+ */
+const LEGAL_SHADOW = /^(?:var\(--shadow-(?:page|panel|control|chip)\)|none)$/;
+
+/** True when `leaf` is exactly one call `name(…)`, its closing paren the last character. */
+export function isSingleCall(leaf: string, name: string): boolean {
+  const s = leaf.replace(/^\$\{(.*)\}$/s, '$1').trim();
+  if (!s.startsWith(`${name}(`)) return false;
+  let depth = 0;
+  for (let i = name.length; i < s.length; i += 1) {
+    if (s[i] === '(') depth += 1;
+    else if (s[i] === ')') {
+      depth -= 1;
+      if (depth === 0) return i === s.length - 1;
+    }
+  }
+  return false;
+}
 
 /** `shadow-literal` — a shadow not on the token set. */
 export function countShadowLiterals(source: CleanSource): number {
   let total = 0;
   for (const value of declarationValues(source.text, ['boxShadow', 'box-shadow'])) {
-    if (!LEGAL_SHADOW.test(unquote(value))) total += 1;
+    if (!everyBranchLegal(value, (leaf) => LEGAL_SHADOW.test(leaf) || isSingleCall(leaf, 'glowShadow'))) total += 1;
   }
   for (const s of source.strings) total += countShadowClasses(s);
   return total;
