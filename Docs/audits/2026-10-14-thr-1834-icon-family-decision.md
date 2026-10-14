@@ -4,11 +4,13 @@
 
 ## The decision in one paragraph
 
-The game gets **one carved icon family** for everything that is not already drawn by hand: a curated subset of **game-icons.net** (CC BY 3.0), recoloured through `currentColor`, used for world and story concepts **and** for the top bar and controls. The game's **own drawings stay** for the four classes that already have them (spheres, reaches, heraldry and map places), and they replace the emoji and symbol copies that sit beside them today, so a castle looks the same on the map and in the panel next to it. **lucide leaves the player surfaces.** Emoji and symbol characters used as icons may only go down, counted by the THR-1821 ratchet.
+The game gets **one carved icon family** for everything that is not already drawn by hand: a curated subset of **game-icons.net** (CC BY 3.0), recoloured through `currentColor`, used for world and story concepts **and** for the top bar and controls. **Places are carved too**, on the map and in every panel, so a castle looks the same everywhere and each kind of place reads at a glance. The game's **own drawings stay** for the three classes that have them (spheres, reaches, heraldry), and they replace the emoji and symbol copies that sit beside them today. **lucide leaves the player surfaces.** Emoji and symbol characters used as icons may only go down, counted by the THR-1821 ratchet.
 
-**Assets:** the comparison sheet Christian judged — [published page](https://claude.ai/artifact/W3kwE3ZamWQNC3QBVKwV9r) · source [`icon-family.html`](2026-10-14-thr-1834-icon-family/icon-family.html) · render at 1440 wide [`sheet-1440.png`](2026-10-14-thr-1834-icon-family/sheet-1440.png). It shows 33 world concepts, 9 places, 6 spheres, 4 reaches and 12 controls, each next to the glyph it replaces, plus the top bar drawn in both candidate styles.
+**Assets:** the comparison sheet Christian judged — [published page](https://claude.ai/artifact/W3kwE3ZamWQNC3QBVKwV9r) · source [`icon-family.html`](2026-10-14-thr-1834-icon-family/icon-family.html) · render at 1440 wide [`sheet-1440.png`](2026-10-14-thr-1834-icon-family/sheet-1440.png). It shows 33 world concepts, 11 places, 6 spheres, 4 reaches and 12 controls, each next to the glyph it replaces, plus the top bar drawn in both candidate styles.
 
 **Swaps after review (Christian, chat 2026-10-14):** the first sheet's *Disease* (`virus`, a bacteriophage) and *Ambition* (`summits`) read wrong for the world. Christian picked from shown alternatives: **Disease → `plague-doctor-profile`**, **Ambition → `holy-grail`**. The crown stays with Notables (one shape per concept). Disease and Poison shared ☠ today, so **Poison** now gets its own shape, `poison-bottle`. The sheet (version 2) and its render show the swaps.
+
+**Places carved (Christian, chat 2026-10-14):** he found the map's place drawings "very alike at a glance and a bit too abstract". Version 3 of the sheet adds a glance test: all 11 place types in the map's near-black ink on map colours, at 30 px and 20 px, today's drawings above the carved picks ([`places-glance.png`](2026-10-14-thr-1834-icon-family/places-glance.png)). He chose **carved everywhere**: on the map and in every panel. The other two options were carved in panels only, which would bring back two looks per place (Law 9), and redrawing our own more distinctly. This replaces the earlier call that the map's place registry wins its class. The ask conforms to Laws 10 and 11 (distinct shapes, legible at size).
 
 ## What the game has today
 
@@ -36,12 +38,32 @@ From the THR-1826 inventory unless marked *measured*:
 |---|---|---|
 | Spheres | `SphereIcon` (`src/components/icons/SphereIcon.tsx`) | `SPHERE_ICONS.symbol` in `src/data/sphereIcons.ts`; PNG `public/icons/spheres` |
 | Reaches | `ReachIcon` | `REACH_GLYPHS` in `codexRegistry.ts` and its copy in `CodexTagFilter`; tiered PNG `public/assets/reaches/*` |
-| Places | the map's `LOCATION_ICON_REGISTRY` (`src/components/HexMapV2/locations/locationIconRegistry.ts`) | emoji in `HexPoiPanel.tsx`, `sublocation-concept-art.ts`, ⌂ / 🏘 in codex and toasts |
 | Factions | `CoatOfArms` heraldry | emoji `iconGlyph` in the faction definitions |
 | Odds, cost, forecast, difficulty | the THR-972 drawn set (`ForecastDie`, `DifficultyScales`, pips) | none; already separated |
 | Terrain | `signifierRegistry` | none |
 
-The place registry renders in panels as well as on the map (it is `{d, opacity}[]` path data already). Places with no drawn icon yet fall back to a carved icon until drawn; a missing place icon is never an emoji.
+### 2b. Places: carved, on the map and in panels
+
+Each place type gets one carved shape, used by the map and by every panel. The emoji in `HexPoiPanel.tsx`, `sublocation-concept-art.ts` and the ⌂ / 🏘 in codex and toasts all retire, and so do the drawings in `LOCATION_ICON_REGISTRY` (`src/components/HexMapV2/locations/locationIconRegistry.ts`).
+
+| Place | Shape | Also tried |
+|---|---|---|
+| Capital | `tower-flag` | `medieval-gate` |
+| City | `medieval-gate` | `triple-gate` |
+| Town | `village` | `medieval-village-01` |
+| Hamlet | `wood-cabin` | `huts-village` |
+| Castle | `white-tower` | `stone-tower` |
+| Temple | `greek-temple` | `church`, `byzantin-temple` |
+| Shrine | `fire-shrine` | `star-altar`, `obelisk` |
+| Ruins | `ancient-ruins` | `castle-ruins` |
+| Mine | `mine-wagon` | `gold-mine` |
+| Camp | `camping-tent` | `barracks-tent` |
+| Lair | `cave-entrance` | `mountain-cave` |
+
+- **On the map:** the same near-black ink and outline pass as today (`locationIconTextures.ts`). A carved shape is one SVG path (viewBox `0 0 512 512`), so the texture builder takes it as `{ d, opacity: 1 }`. The size classes stay, so a capital still draws larger than a town.
+- **Lair tints** by sphere (`LAIR_SPHERE_FILL_COLORS`) carry over unchanged. A cleared lair keeps its muted fill.
+- **The other registry types** (fort, tower, ruined city/tower/village, battleground, unexplored point of interest, cleared lair) get carved shapes in the rollout under the same rules. A missing place shape is never an emoji.
+- **Sublocations** use their parent type's shape unless they have their own.
 
 ### 3. lucide leaves the player surfaces
 
@@ -107,4 +129,6 @@ Every icon is one flat path. The registry stores path data, not React components
 | THR-1828 (frame) | Top-bar and Ledger-strip icons |
 | THR-1819 (layout contract) | The size constants scale with the root step-up |
 | THR-1874 (bug) | Fix the six broken escapes before the migration |
+| THR-1878 (map lenses and chrome plan doc) | Place icons on the map switch to the carved shapes (call 2b) |
+| THR-1879 (type and icons rollout plan doc) | The place shapes join the registry; the map's `LOCATION_ICON_REGISTRY` drawings and the place emoji retire |
 | The map's plan docs | Every new surface draws from this registry from day one |
