@@ -41,6 +41,9 @@ import type { WorldGraph } from './graph';
 import type { FundamentState } from '../types/worldSoul';
 import { generateCultureFlag } from './cultureFlag';
 import { CULTURE_CUSTOM_VARIANTS } from '../data/culture-sphere-lines';
+import { hexDistance } from '../lib/hexMath';
+import { CULTURE_FRINGE_SUBTYPES, CULTURE_FRINGE_STRENGTH } from '../data/world-scenario';
+import { getLocationNodes } from './sublocationShape';
 
 /** Merge arrays and deduplicate */
 function mergeUnique(...arrays: string[][]): string[] {
@@ -329,6 +332,109 @@ export function assignCultureToLocation(
       });
     }
   }
+}
+
+// ─── Fringe culture (THR-1632 S1d, THR-1839) ───────────────────────
+
+/** A heartland Location: one inside a culture's province, carrying a full-strength current link. */
+export interface HeartlandPlace {
+  id: string;
+  cultureId: string;
+  col: number;
+  row: number;
+}
+
+/**
+ * The fringe rule, shared by the worldgen pass and the runtime pass so a hamlet founded
+ * at tick 200 takes its people exactly as one seeded at tick 0 does. Draw-free: nearest
+ * heartland by hex distance, ties by culture id, then by Location id. `null` when there
+ * is no heartland at all; the caller compares `dist` against the scenario's reach.
+ */
+export function pickNearestHeartland(
+  here: { col: number; row: number },
+  heartland: readonly HeartlandPlace[],
+): { cultureId: string; id: string; dist: number } | null {
+  let best: { cultureId: string; id: string; dist: number } | null = null;
+  for (const h of heartland) {
+    const dist = hexDistance(here, h);
+    if (!best || dist < best.dist
+      || (dist === best.dist && (h.cultureId < best.cultureId
+        || (h.cultureId === best.cultureId && h.id < best.id)))) {
+      best = { cultureId: h.cultureId, id: h.id, dist };
+    }
+  }
+  return best;
+}
+
+/**
+ * The heartland as the live graph records it: every place-tier Location with a
+ * current, non-fringe culture link. Worldgen reads its own `locationCultureMap`
+ * instead; after worldgen this is the same set, since no runtime writer mints
+ * a heartland link.
+ */
+export function collectHeartlandPlaces(graph: WorldGraph): HeartlandPlace[] {
+  const out: HeartlandPlace[] = [];
+  for (const node of getLocationNodes(graph)) {
+    const col = node.properties.hexCol;
+    const row = node.properties.hexRow;
+    if (typeof col !== 'number' || typeof row !== 'number') continue;
+    for (const edge of graph.getOutgoingEdges(node.id, 'belongs_to')) {
+      const p = edge.properties ?? {};
+      if (p.cultureLayer !== 'current' || p.fringe === true) continue;
+      out.push({ id: node.id, cultureId: edge.target, col, row });
+    }
+  }
+  return out;
+}
+
+/**
+ * The god's own starting shrine (`gameInit` mints it after worldgen). It is the player's
+ * holy place, not a people's town, so it stays cultureless (THR-1793 plan, § leftovers).
+ */
+export const FRINGE_EXEMPT_LOCATION_IDS: ReadonlySet<string> = new Set(['loc.start']);
+
+/** A Location that can take a fringe and has no culture link of any kind yet. */
+function needsFringeCulture(graph: WorldGraph, node: { id: string; properties: Record<string, unknown> }): boolean {
+  if (FRINGE_EXEMPT_LOCATION_IDS.has(node.id)) return false;
+  if (!CULTURE_FRINGE_SUBTYPES.has(node.properties.locationSubtype as string)) return false;
+  if (typeof node.properties.hexCol !== 'number' || typeof node.properties.hexRow !== 'number') return false;
+  return !graph.getOutgoingEdges(node.id, 'belongs_to').some((e) => e.properties?.cultureLayer !== undefined);
+}
+
+/**
+ * THR-1839 — a settlement founded during play takes its people by the worldgen fringe
+ * rule. Runs every tick; on a tick when nothing new was founded it reads each Location's
+ * subtype and edges once and writes nothing. A Location beyond `maxHexes` of every
+ * heartland stays cultureless (as at worldgen) and is re-checked next tick for free —
+ * heartlands never move after worldgen, so the answer never changes.
+ *
+ * Returns each link written, for the caller's trace. NFP #4: never throws.
+ */
+export function assignFringeCultureToFoundedPlaces(
+  graph: WorldGraph,
+  maxHexes: number,
+): Array<{ locationId: string; cultureId: string; dist: number }> {
+  const linked: Array<{ locationId: string; cultureId: string; dist: number }> = [];
+  if (!(maxHexes > 0)) return linked;
+  try {
+    const candidates = getLocationNodes(graph).filter((n) => needsFringeCulture(graph, n));
+    if (candidates.length === 0) return linked;
+    const heartland = collectHeartlandPlaces(graph);
+    if (heartland.length === 0) return linked;
+    for (const node of candidates) {
+      const here = { col: node.properties.hexCol as number, row: node.properties.hexRow as number };
+      const best = pickNearestHeartland(here, heartland);
+      if (!best || best.dist > maxHexes) continue;
+      assignCultureToLocation(graph, node.id, best.cultureId, 'current', {
+        strength: CULTURE_FRINGE_STRENGTH,
+        fringe: true,
+      });
+      linked.push({ locationId: node.id, cultureId: best.cultureId, dist: best.dist });
+    }
+  } catch {
+    // Fail-soft: a place that does not take its people this tick tries again next tick.
+  }
+  return linked;
 }
 
 // ─── Pre-Generation (before worldgen) ──────────────────────────────

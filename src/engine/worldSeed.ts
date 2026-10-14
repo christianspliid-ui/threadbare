@@ -22,7 +22,7 @@ import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { FundamentState } from '../types/worldSoul';
-import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation, assignCultureToActor, stampCultureCustomVariants } from './cultureGenerator';
+import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation, assignCultureToActor, stampCultureCustomVariants, pickNearestHeartland } from './cultureGenerator';
 import type { PregenCulture } from './cultureGenerator';
 import type { Province } from './worldgen/types';
 import {
@@ -1760,15 +1760,8 @@ export function seedWorld(
       if (!CULTURE_FRINGE_SUBTYPES.has(node.properties.locationSubtype as string)) continue;
       if (graph.getOutgoingEdges(locId, 'belongs_to').length > 0) continue;
       const here = { col: node.properties.hexCol as number, row: node.properties.hexRow as number };
-      let best: { cultureId: string; id: string; dist: number } | null = null;
-      for (const h of heartland) {
-        const dist = hexDistance(here, h);
-        if (!best || dist < best.dist
-          || (dist === best.dist && (h.cultureId < best.cultureId
-            || (h.cultureId === best.cultureId && h.id < best.id)))) {
-          best = { cultureId: h.cultureId, id: h.id, dist };
-        }
-      }
+      // THR-1839: the same picker the runtime pass uses for places founded during play.
+      const best = pickNearestHeartland(here, heartland);
       if (!best || best.dist > scenario.cultureFringeMaxHexes) {
         fringeStats.outOfRange++;
         continue;

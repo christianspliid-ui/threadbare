@@ -253,7 +253,9 @@ import {
   touchStructure,
   ensureEncounterCache,
   ensureDistanceMatrix,
+  applyEncounterCacheUpdate,
 } from './simulationRuntime';
+import { assignFringeCultureToFoundedPlaces } from './cultureGenerator';
 import { expireOverlays } from './effects/effectOverlayStore';
 import { applySuppressions } from './effects/effectSuppression';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -3830,6 +3832,29 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // touchStructure removed (THR-187): phaseSettlementPromotion now calls applyEncounterCacheUpdate
   // per-promotion inside the phase, which syncs encounterCacheBuiltAt to prevent full rebuilds.
   prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6355: Founded places take their people (THR-1839) — a settlement founded during
+  // play gets the nearest heartland's culture as a fringe, by the worldgen rule and reach.
+  {
+    const maxHexes = s.worldScenario?.cultureFringeMaxHexes ?? 0;
+    const linked = assignFringeCultureToFoundedPlaces(s.graph, maxHexes);
+    if (linked.length > 0) {
+      // A culture link carries a culture trait, which can gate encounters there — re-index
+      // each place the way the promotion phase does, not a full rebuild.
+      if (runtime) {
+        for (const l of linked) {
+          applyEncounterCacheUpdate(runtime, (cache) => cache.onLocationTypeChanged(s.graph, l.locationId));
+        }
+      }
+      emitTrace({
+        category: 'founded_place_culture',
+        tick: s.tick,
+        summary: `${linked.length} founded place(s) took their people: ${linked.map((l) => `${l.locationId}→${l.cultureId}`).join(', ')}`,
+        maxHexes,
+        linked,
+      });
+    }
+  }
 
   // Phase 6.636: Settlement Genome Reassessment (re-evaluate genome on tier changes or reach shifts)
   {
