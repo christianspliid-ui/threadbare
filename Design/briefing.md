@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-10-14 04:55 local (02:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-14 08:50 local (06:50 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Set the Claude app to open when Windows starts.** Every recent lane silence began when the computer started or woke and the app did not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-The newest gap: no lane ran from 03:57 until 13:57 on Tuesday 13 Oct. Every lane has run on time since.
+This morning showed it again in a small way: no lane ran from about 05:30 until 08:40 local. That was overnight, so it is not a new ask.
 
 ## Also waiting (4)
 
@@ -28,9 +28,10 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 2 ready, 1 being built.** Since the last brief, [sieges draw as sieges on the map](https://linear.app/threadbare/issue/THR-1846/every-siege-draws-as-a-field-battle-on-the-map-gameview-passes-battle) and [every town now has a people](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is) both merged and are live. Being built now: [hovering a besieged town says "under siege" in words](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering). Then [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
+**Healthy: 4 ready, none being built this minute.** Since the last brief, [hovering a besieged town now says "under siege" in words](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering) merged and is live. Two small fixes can be picked up now: [towns founded during play belong to a people](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick) and [long place names stay inside the map's hover box](https://linear.app/threadbare/issue/THR-1848/the-hex-tooltips-place-name-spills-past-its-box-on-long-names-the). Then [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
 
 ## Health
 
-- **The heavy simulation tests are still red, now about 30 hours** ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)); the last 4 runs all failed, starting at the Dominion core merge. The game is not slower: 117 ms a tick, level with the weekly median. This is the builder's to fix. Nothing for you.
-- Everything else is green: the live site is current, automated checks are normal, no pull request is waiting, and all scheduled lanes are on time. The silence check's worst gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, so it is not an ask. 5 old worktrees still wait for a keep-or-delete decision, housekeeping for the agents. No new messages from you on Discord.
+- **The heavy simulation tests look fixed.** The run on the latest main passed ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). The daily scheduled run is still red from before the fix, so the check still reports it; the next scheduled run (about 12:30 local) should clear it. This is the builder's. Nothing for you.
+- The repo cleaner last ran at 04:40 local, four hours ago, because the computer was idle overnight. It should resume on its own. 5 old worktrees still wait for a keep-or-delete decision, housekeeping for the agents.
+- Everything else is green: the live site is current, automated checks are normal, no pull request is waiting, all scheduled lanes are on time, and the game runs at 127 ms a tick (+8% on the weekly median, within range). The silence check's worst gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, so it is not an ask. No new messages from you on Discord.
