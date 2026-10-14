@@ -1,0 +1,40 @@
+## day 0
+  fish     bearing 1, held 0, holders 0, best - | A - B - C -
+  grain    bearing 17, held 3, holders 3, best The Scarlet Company 1 | A - B - C -
+  grazing  bearing 38, held 22, holders 11, best hold of Witness Skyfield 9 | A - B - C Y hold of Witness Skyfield 6/10 near loc_105
+  ore      bearing 24, held 9, holders 3, best hold of Witness Skyfield 5 | A - B - C -
+  peat     bearing 3, held 0, holders 0, best - | A - B - C -
+  stone    bearing 40, held 25, holders 7, best hold of Witness Skyfield 14 | A - B - C Y sovereignty of Stone-Set Hollow 4/5 near loc_96
+  timber   bearing 13, held 4, holders 3, best march of Shadow-Kept Dawn 2 | A - B - C Y march of Shadow-Kept Dawn 2/3 near loc_97
+  water    bearing 4, held 0, holders 0, best - | A - B - C -
+  monopolies: A (60% of held) 0, B (sole holder) 0, C (60% regional, 8 hexes) 3
+## day 10
+  fish     bearing 1, held 0, holders 0, best - | A - B - C -
+  grain    bearing 17, held 3, holders 3, best The Scarlet Company 1 | A - B - C -
+  grazing  bearing 38, held 22, holders 11, best hold of Witness Skyfield 9 | A - B - C Y hold of Witness Skyfield 6/10 near loc_105
+  ore      bearing 24, held 9, holders 3, best hold of Witness Skyfield 5 | A - B - C -
+  peat     bearing 3, held 0, holders 0, best - | A - B - C -
+  stone    bearing 40, held 25, holders 7, best hold of Witness Skyfield 14 | A - B - C Y sovereignty of Stone-Set Hollow 4/5 near loc_96
+  timber   bearing 13, held 4, holders 3, best march of Shadow-Kept Dawn 2 | A - B - C Y march of Shadow-Kept Dawn 2/3 near loc_97
+  water    bearing 4, held 0, holders 0, best - | A - B - C -
+  monopolies: A (60% of held) 0, B (sole holder) 0, C (60% regional, 8 hexes) 3
+## day 25
+  fish     bearing 1, held 0, holders 0, best - | A - B - C -
+  grain    bearing 17, held 3, holders 3, best The Scarlet Company 1 | A - B - C -
+  grazing  bearing 38, held 22, holders 11, best hold of Witness Skyfield 9 | A - B - C Y hold of Witness Skyfield 6/10 near loc_105
+  ore      bearing 24, held 9, holders 3, best hold of Witness Skyfield 5 | A - B - C -
+  peat     bearing 3, held 0, holders 0, best - | A - B - C -
+  stone    bearing 40, held 25, holders 7, best hold of Witness Skyfield 14 | A - B - C Y sovereignty of Stone-Set Hollow 4/5 near loc_96
+  timber   bearing 13, held 4, holders 2, best march of Shadow-Kept Dawn 3 | A Y B - C Y march of Shadow-Kept Dawn 3/3 near loc_97
+  water    bearing 4, held 0, holders 0, best - | A - B - C -
+  monopolies: A (60% of held) 1, B (sole holder) 0, C (60% regional, 8 hexes) 3
+## day 50
+  fish     bearing 1, held 0, holders 0, best - | A - B - C -
+  grain    bearing 17, held 3, holders 3, best The Scarlet Company 1 | A - B - C -
+  grazing  bearing 38, held 22, holders 11, best hold of Witness Skyfield 9 | A - B - C Y hold of Witness Skyfield 6/10 near loc_105
+  ore      bearing 24, held 9, holders 3, best hold of Witness Skyfield 5 | A - B - C -
+  peat     bearing 3, held 0, holders 0, best - | A - B - C -
+  stone    bearing 40, held 25, holders 7, best hold of Witness Skyfield 14 | A - B - C Y sovereignty of Stone-Set Hollow 4/5 near loc_96
+  timber   bearing 13, held 4, holders 2, best march of Shadow-Kept Dawn 3 | A Y B - C Y march of Shadow-Kept Dawn 3/3 near loc_97
+  water    bearing 4, held 0, holders 0, best - | A - B - C -
+  monopolies: A (60% of held) 1, B (sole holder) 0, C (60% regional, 8 hexes) 3

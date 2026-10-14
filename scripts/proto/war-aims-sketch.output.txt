@@ -1,0 +1,52 @@
+THR-1868 war aims — observer sketch, seed 42, medium, 600 ticks (50 days)
+Value = purse income the attacker would collect if it held the target (town tax + place yield of the town and its
+sublocations + share of unsettled resource fields within 3 hexes). Score = value × (1 + bonuses) / (1 + dist/6).
+Distance is hex distance (today's engine ranks by path hops; hex distance is the proxy here).
+
+## Monopolies (engine field faction.monopolies, world-wide 60% of bearing places, min 2)
+resources: 8; bearing places per resource: stone 40, grazing 38, ore 24, grain 17, timber 13, water 4, peat 3, fish 1
+no monopoly held on any day
+best share per resource at the end (holder, held/bearing):
+  fish         none held of 1
+  grain        faction_def_mercenary_company_1 (The Scarlet Company) 1/17
+  grazing      faction_0 (hold of Witness Skyfield) 9/38
+  ore          faction_0 (hold of Witness Skyfield) 5/24
+  peat         none held of 3
+  stone        faction_0 (hold of Witness Skyfield) 14/40
+  timber       faction_1 (march of Shadow-Kept Dawn) 3/13
+  water        none held of 4
+
+## Army objectives
+armies seen: 37; with an objective: 20
+today's target held by: hostile 0, rival 1, ally 0, no relation 19, self 0, unheld 0
+distinct targets today: 6 for 20 armies; top: Great Silverhold×9, The Bone Coast×6, Crystalspire×2, Wraithwood×1, The Shattered Sanctum×1
+value pick: no enemy settlement for 5 of 20 armies (they would hold, defend or stand down)
+compared 15: value pick = nearest enemy in 7 (47%); distinct value targets 4
+mean value of target: today 0.89/day, value pick 1.27/day
+mean distance: today 0.73 hexes, value pick 9.80 hexes
+value picks that complete a monopoly 0, break one 11, feed a staple the attacker lacks 0
+armies raised while an enemy army marched on their own or an ally's holding within 8 hexes: 1
+
+## Per army (first day an objective is seen)
+  day  0 faction_0 (hold of Witness Skyfield) → today Wraithwood [none] | value pick: none (no enemy settlement)
+  day  0 faction_1 (march of Shadow-Kept Dawn) → today Great Silverhold [none] | value pick: none (no enemy settlement)
+  day  0 faction_2 (sovereignty of Stone-Set Hollow) → today The Shattered Sanctum [none] | value pick: none (no enemy settlement)
+  day  1 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [none, v 0.98, d 0] | value pick Golden Wraith Fields of faction_def_thieves_guild (The Thieves Guild) [v 1.16 = tax 0.79 + yield 0.13 + fields 0.25, d 8]
+  day  5 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [none, v 0.97, d 0] | value pick Golden Wraith Fields of faction_def_thieves_guild (The Thieves Guild) [v 1.32 = tax 0.95 + yield 0.13 + fields 0.25, d 8]
+  day  8 faction_2 (sovereignty of Stone-Set Hollow) → today Crystalspire [none] | value pick: none (no enemy settlement) | DEFEND
+  day  9 faction_1 (march of Shadow-Kept Dawn) → today Great Silverhold [none, v 0.93, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 15, breaks grazing]
+  day 10 faction_def_civic_guard (The Civic Guard) → today Great Silverhold [none, v 0.93, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 15, breaks grazing]
+  day 13 faction_1 (march of Shadow-Kept Dawn) → today Great Silverhold [none, v 0.93, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.25 = tax 0.88 + yield 0.13 + fields 0.24, d 15, breaks grazing]
+  day 13 faction_def_civic_guard (The Civic Guard) → today Great Silverhold [none, v 0.93, d 0] | value pick Shadow-shade of faction_1 (march of Shadow-Kept Dawn) [v 1.16 = tax 0.94 + yield 0.23 + fields 0.00, d 6, breaks timber]
+  day 14 faction_def_civic_guard (The Civic Guard) → today Great Silverhold [none, v 0.93, d 0] | value pick Shadow-shade of faction_1 (march of Shadow-Kept Dawn) [v 1.16 = tax 0.94 + yield 0.23 + fields 0.00, d 6, breaks timber]
+  day 14 faction_2 (sovereignty of Stone-Set Hollow) → today Crystalspire [none] | value pick: none (no enemy settlement)
+  day 14 faction_def_merchant_consortium (The Merchant Consortium) → today Long Den [none, v 0.00, d 5] | value pick Solacetown of faction_0 (hold of Witness Skyfield) [v 1.48 = tax 0.92 + yield 0.30 + fields 0.26, d 5]
+  day 16 faction_1 (march of Shadow-Kept Dawn) → today Great Silverhold [none, v 0.95, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.26 = tax 0.89 + yield 0.13 + fields 0.24, d 15, breaks grazing]
+  day 17 faction_def_civic_guard (The Civic Guard) → today Great Silverhold [none, v 0.93, d 0] | value pick Shadow-shade of faction_1 (march of Shadow-Kept Dawn) [v 1.16 = tax 0.94 + yield 0.23 + fields 0.00, d 6, breaks timber]
+  day 19 faction_1 (march of Shadow-Kept Dawn) → today Great Silverhold [none, v 0.93, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 15, breaks grazing]
+  day 20 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [none, v 0.94, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 10, breaks grazing]
+  day 23 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [none, v 0.94, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 10, breaks grazing]
+  day 25 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [none, v 0.94, d 0] | value pick Silverborough of faction_0 (hold of Witness Skyfield) [v 1.27 = tax 0.90 + yield 0.13 + fields 0.24, d 10, breaks grazing]
+  day 38 faction_def_civic_guard (The Civic Guard) → today The Bone Coast [rival, v 1.02, d 6] | value pick Solacetown of faction_0 (hold of Witness Skyfield) [v 1.48 = tax 0.92 + yield 0.30 + fields 0.26, d 3]
+
+## Relations at the end: hostile_to 0, rival 64, alliance 13 (directed edges); realms holding land: 3
