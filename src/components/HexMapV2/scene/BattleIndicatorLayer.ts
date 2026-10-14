@@ -18,6 +18,7 @@
 
 import * as THREE from 'three';
 import type { WorldGraph } from '../../../engine/graph';
+import { getFactionMembershipEdges } from '../../../engine/graphQueries';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -60,6 +61,10 @@ export interface BattleIndicatorData {
   hexRow: number;
   /** Whether this is a siege (true) or field battle (false) */
   isSiege: boolean;
+  /** THR-1847 — the attacking army's faction name, for the hex tooltip's words. */
+  attackerName?: string;
+  /** THR-1847 — the defending army's faction name (field battles; a siege's defender is the town). */
+  defenderName?: string;
 }
 
 // ── Texture factory ───────────────────────────────────────────────────────────
@@ -211,7 +216,9 @@ export function battleIndicatorForNode(
   graph: WorldGraph,
   battle: { id: string; properties: Record<string, unknown> },
 ): BattleIndicatorData | null {
-  const battleState = battle.properties.battleState as { battleType?: string } | undefined;
+  const battleState = battle.properties.battleState as
+    | { battleType?: string; attackerArmyId?: string; defenderArmyId?: string }
+    | undefined;
   if (battleState == null) return null;
 
   // Resolve hex position via located_at edge
@@ -225,7 +232,22 @@ export function battleIndicatorForNode(
   const hexRow = locationNode.properties.hexRow as number | undefined;
   if (hexCol == null || hexRow == null) return null;
 
-  return { id: battle.id, hexCol, hexRow, isSiege: battleState.battleType === 'siege' };
+  const isSiege = battleState.battleType === 'siege';
+  const attackerName = armyFactionName(graph, battleState.attackerArmyId);
+  const defenderName = isSiege ? undefined : armyFactionName(graph, battleState.defenderArmyId);
+  return {
+    id: battle.id, hexCol, hexRow, isSiege,
+    ...(attackerName ? { attackerName } : {}),
+    ...(defenderName ? { defenderName } : {}),
+  };
+}
+
+/** An army's faction name (faction targets only, as the army sprite reads it); undefined when it has none (fail-soft). */
+function armyFactionName(graph: WorldGraph, armyId: string | undefined): string | undefined {
+  if (!armyId) return undefined;
+  const factionId = getFactionMembershipEdges(graph, armyId)[0]?.target;
+  const name = factionId ? graph.getNode(factionId)?.name : undefined;
+  return typeof name === 'string' && name.length > 0 ? name : undefined;
 }
 
 // ── Scene group ───────────────────────────────────────────────────────────────

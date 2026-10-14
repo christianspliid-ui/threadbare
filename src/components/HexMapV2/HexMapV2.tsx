@@ -38,6 +38,7 @@ import type { ArmyRenderData } from './scene/ArmySpriteMesh';
 import { createBattleIndicatorLayer, tickBattleIndicators, rebuildBattleIndicatorLayer, battleIndicatorSignature, countRenderedBattleIndicators } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
+import { battleHexLines } from './interaction/battleHexLine';
 import { createThreadLineMesh } from './scene/ThreadLineMesh';
 import type { ThreadLineData, ThreadLineLayer } from './scene/ThreadLineMesh';
 import { createCompanyClusterMesh } from './scene/CompanyClusterMesh';
@@ -2082,6 +2083,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               tradeRoutes={tradeRoutes}
               avatarLine={avatarHere ? avatarHoverLine(avatarHere.name ?? '') : undefined}
               avatarColor={avatarHere?.avatarSphereColor}
+              battleLines={battleHexLines(battles, tooltipHex.col, tooltipHex.row)}
               {...(() => {
                 const d = dominionTooltip?.(tooltipHex.col, tooltipHex.row);
                 return { dominionLine: d?.line, dominionDrop: d?.drop };
