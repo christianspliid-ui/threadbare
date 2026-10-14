@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 09:05 local (07:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -10,9 +10,9 @@
 
 It happened again on the night of 12 to 13 Oct: no lane ran from 03:57 until 13:57 on Tuesday 13 Oct.
 
-### Close the warm brief ticket, so warm playtest round 2 can run
+### Set the TypeSafe key, when convenient
 
-[Warm brief v1 tripped its kill criterion](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage) is decided and its done-when is met. It is the last open ticket in the *Warm playtest · round 1* milestone. The playtest lane will not start round 2 while that milestone is open, and no lane may mark this kind of ticket Done. Say **"close the warm brief ticket"**. Round 2 can then run from Thursday 15 Oct. *— from the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-13c.md)*
+Add `TYPESAFE_API_KEY` as a Windows user environment variable on the home computer. The key comes from [the TypeSafe console](https://console.typesafe.ai/). **Do not paste it into chat.** Checked 14 Oct: it is not set. The coverage tool ([THR-1723](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage)) can be built without it, but [the first coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) waits on it. Say "done" when it is set. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-14d.md) and the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-14c.md)*
 
 ### Was the Claude app closed on Thursday 1 Oct afternoon and Friday 2 Oct morning? (lane silence, ended)
 
@@ -32,6 +32,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: the warm brief ticket is closed and warm round 2 ran** ([THR-1785](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). [Round 2 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2.md).
+- **2026-10-14: towns founded during play now belong to a people** ([THR-1839](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick)). Merged via [#2366](https://github.com/christianspliid-ui/threadbare/pull/2366).
 - **2026-10-14: hovering a besieged town or a battle now says what it is in words** ([THR-1847](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering)). Merged via [#2365](https://github.com/christianspliid-ui/threadbare/pull/2365) and live.
 - **2026-10-14: every town now has a people, so no mortal is left without a culture** ([THR-1793](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is)). Merged via [#2364](https://github.com/christianspliid-ui/threadbare/pull/2364) and live.
 - **2026-10-14: a siege now draws as a siege on the map, not a field battle** ([THR-1846](https://linear.app/threadbare/issue/THR-1846/every-siege-draws-as-a-field-battle-on-the-map-gameview-passes-battle)). Merged via [#2363](https://github.com/christianspliid-ui/threadbare/pull/2363) and live.
@@ -40,8 +42,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-13: after the bond, the god's screen fills one gift at a time** ([THR-1837](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the)). Merged via [#2355](https://github.com/christianspliid-ui/threadbare/pull/2355) and live.
 - **2026-10-12: Dominion core: one graded read of how much a place or thing is yours, used by prices and checks** ([THR-1748](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods)). Merged via [#2351](https://github.com/christianspliid-ui/threadbare/pull/2351) and live.
 - **2026-10-12: a long vignette on the Meet-The-First picker no longer runs off the bottom of the screen** ([THR-1836](https://linear.app/threadbare/issue/THR-1836/meet-the-first-picker-a-long-vignette-runs-past-the-bottom-of-the)). Merged via [#2345](https://github.com/christianspliid-ui/threadbare/pull/2345) and live.
-- **2026-10-12: pouring a Sphere says what it will change before you commit** ([THR-1815](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the)). Merged via [#2344](https://github.com/christianspliid-ui/threadbare/pull/2344) and live.
-- **2026-10-12: Doom, Omen, World-Soul and Attention now explain themselves when you hover them** ([THR-1814](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention)). Merged via [#2343](https://github.com/christianspliid-ui/threadbare/pull/2343) and live.
 
 ---
 
