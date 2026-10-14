@@ -3,7 +3,7 @@ tags: [vision, taste, aesthetic]
 aliases: [Taste Profile, Design Taste, Aesthetic Voice]
 status: draft
 created: 2026-04-23
-updated: 2026-08-29
+updated: 2026-10-14
 ---
 <!-- frontmatter `updated` was stuck at 2026-05-07 while the body carried amendments through 2026-08-25 (THR-868, THR-1247, prose-doctrine v2) — corrected at THR-1335; keep this date honest when amending the body. -->
 
@@ -104,8 +104,10 @@ spends it to nothing.
 
 ### Austere, Malazan-adjacent voice
 
-Sentence-case body prose. ALL CAPS letter-spaced section labels. Title Case
-for names. No emoji in the UI. No decorative flourishes. The prose does
+Sentence-case body prose. Small labels in bold sentence case, never
+letter-spaced capitals (Christian, chat 2026-10-14, confirming THR-1833; this
+replaced the earlier "ALL CAPS letter-spaced section labels"). Big titles keep
+Cinzel's carved capitals. Title Case for names. No emoji in the UI. No decorative flourishes. The prose does
 the emotional work; ornamentation competes with it.
 
 - **Example:** a section header reads `THE FIRST`, not `🌑 The First ✨`.

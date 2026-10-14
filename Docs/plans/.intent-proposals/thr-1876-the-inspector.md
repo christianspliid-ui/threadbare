@@ -41,7 +41,7 @@ Specifies the Inspector: one docked panel beside the map that every link, card, 
 
 ## impact_class
 
-External — it replaces every player-facing detail surface and the card-casting surface, and deletes about 11,000 lines in a later slice; reversible per slice, but player-visible.
+External — it replaces every player-facing detail surface and the card-casting surface, and deletes about 14,000 lines in a later slice; reversible per slice, but player-visible.
 
 ## evidence cited
 

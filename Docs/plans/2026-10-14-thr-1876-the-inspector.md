@@ -23,7 +23,7 @@
 
 ## Why this is load-bearing
 
-Today a thing in the world has nine homes: a 280 px column, six centred sheets, a stack of cards, and two whole-screen views that hide the map. The same router arm opens four different behaviours (an agent opens the card drawer, a location swaps the screen, a hex only moves the camera, a faction opens a modal), the chain city → temple → priest → faction breaks in four places, and two of the game's card kinds (places within a city, artifacts) have no surface to be cast from at all. Every new field so far meant editing one of nine components. The Inspector replaces all of them with one panel that every link, card, search and map click opens, built from **one page-layout table** — so adding a field, moving a section or deciding which width shows it is one table row, visible in the lab the moment the file is saved (Law 58). It is also the largest single deletion in the overhaul (the retiring files are about 11,000 lines), and the surface the screen frame, the lenses, Find and the Stage all hand off to.
+Today a thing in the world has nine homes: a 280 px column, six centred sheets, a stack of cards, and two whole-screen views that hide the map. The same router arm opens four different behaviours (an agent opens the card drawer, a location swaps the screen, a hex only moves the camera, a faction opens a modal), the chain city → temple → priest → faction breaks in four places, and two of the game's card kinds (places within a city, artifacts) have no surface to be cast from at all. Every new field so far meant editing one of nine components. The Inspector replaces all of them with one panel that every link, card, search and map click opens, built from **one page-layout table** — so adding a field, moving a section or deciding which width shows it is one table row, visible in the lab the moment the file is saved (Law 58). It is also the largest single deletion in the overhaul (the retiring files are about 14,000 lines), and the surface the screen frame, the lenses, Find and the Stage all hand off to.
 
 ## Substrate inventory
 
@@ -120,7 +120,7 @@ interface ArmedCardState { actionId: string; origin: ArmOrigin; target: WorldRef
 - **Pin** (call 4). While pinned, a map click does not replace the subject: it highlights the clicked thing and shows its hover card. Links inside the Inspector still navigate. **Find replaces a pinned subject** (THR-1832 § 3: a search is a deliberate ask). **While a card is armed, map clicks choose a target instead** (§ D9).
 - **Show on map** (the eye, Law 22) calls the map handle's `focusOn(hex)`, which flies to `CAMERA_CONSTANTS.FOCUS_ZOOM` (10 — THR-1831's one centring zoom; THR-1878's camera slice adds both, and if S3 lands first it adds them in the same place under the same names). The Inspector never uses `RETINUE_EYE_ZOOM_SCALE`. Moving subjects (people, armies) also get **Follow**, the profile's existing camera follow (`followState`), as a toggle beside the eye.
 - **Escape order** (THR-1827, with THR-1875's flyout): armed card → Ledger flyout → top dialog → Find box → full → wide → docked → closed. Bands through THR-1821's `useEscapeLayer(active, onEscape, band, label)`: the armed card registers **above the modal band** (THR-1821 adds one `armedCard` entry to `Z_BAND`); the flyout is THR-1875's; the Find box at the popover band; the Inspector's three steps at the panel band.
-- **Focus** (Law 50, non-modal): opening moves focus to the page heading; closing returns it to the invoker (the element `open` was called from, kept in the reducer entry). Tab order stays in the document; the Inspector does not trap focus.
+- **Focus** (Law 50, non-modal): opening moves focus to the page heading; closing returns it to the invoker (`document.activeElement` when the Inspector opened, kept in a ref in the host — never in the reducer, which holds only plain data). Tab order stays in the document; the Inspector does not trap focus.
 - **Hotkeys**, skipped while an input has focus (the `isInputActive()` guard of `useTopBarHotkeys.ts:23`): `W`, Alt+←/→, Esc; Find's Ctrl+K and `/` (§ D11). Handled in `inspector/useInspectorHotkeys.ts`; each key is also declared as an entry in THR-1875's frame key list so the frame's duplicate-key test sees it (THR-1875 coordination comment).
 
 ### D4 — The router: build on `useRefRouter`, never replace it
@@ -183,7 +183,7 @@ export const INSPECTOR_TAB_LABELS: Record<InspectorTabId, string>;              
 | Shape (`kind`) | Law 58 name | Carries | Renders through |
 |---|---|---|---|
 | `prose` | prose | finished prose, `termRefs` for linked words; optional `variant: 'body' \| 'quote' \| 'lede'` (additive) | Alegreya at `--text-base` (THR-1833) |
-| `panel` | facts | rows `{ left, right, sentiment? }` + **additive** `ref?: WorldRef`, `tooltipId?`, `meter?: number` (0–1, drawn as a bar beside the word — the word always present, Law 13's unitless-proportion ruling) | label/value rows |
+| `panel` | facts | rows `{ left, right, sentiment? }` + **additive** `ref?: WorldRef`, `tooltipId?`, `meter?: number` (0–1, drawn as a bar beside the word — the word always present, never a numeral; Law 13's unitless-proportion ruling, THR-1424). **A `meter` is allowed only where a retiring surface draws that bar today** (faction standing, core tracks, condition timers, sphere strengths, mandate progress, essence), never added to a new field (see § Vision audit for the taste profile's "Numbers in UI" entry) | label/value rows |
 | `links` (new) | links | `rows: RefRow[]` (THR-1822's row), optional `groups: { label, rows, total }[]`, `foldAfter` | `Chip role="identity"` + fact + eye |
 | `chips` | chips | `ChipDescriptor[]` | `Chip`: identity when `clickRef`, keyword for tags, state otherwise |
 | `cards` (new) | cards | `tiles: { ref?, visual?, title, kindWord, lines: string[], meter?, durationWord? }[]` | `Card` + `EntityVisual` at the card's 16:9 band (Law 5) |
@@ -593,7 +593,7 @@ A tester who clicks a city, then a place within it, then a person there, then th
 
 ### Event notifications
 
-None new. Casting keeps its existing feedback toast and particle burst (`useCastOnTarget` moves them unchanged). The Inspector emits no toast.
+Casting keeps its existing feedback toast and particle burst (`useCastOnTarget` moves them unchanged). One new toast: when an armed card leaves the hand while the Inspector is closed, "Illuminating Whisper left your hand. Nothing was spent." (with the Inspector open, the same line shows in its banner instead). No chronicle line or alert is added.
 
 ### Debug inspection (DebugPanel)
 
@@ -609,7 +609,7 @@ None new. Casting keeps its existing feedback toast and particle burst (`useCast
 
 - The subject's hex carries the existing selection ring.
 - Place labels become clickable (`LocationLabelOverlay`).
-- Armed lighting renders through THR-1878's lit/dim layer from `MapHighlightVM` (S6); no new mesh in this plan.
+- Armed lighting (S6): one new scene layer, `ArmedTargetsLayer`, built from `MapHighlightVM` on THR-1878's lens plate builder (no second dim grammar); it mounts only while a card is armed, with `lensSuppressed` hiding the active lens.
 
 ## Interface impact
 
@@ -661,6 +661,8 @@ Prose pipeline: no `enrichProse()` call is added; moved prose keeps its own asse
 | `--find-box-w` (`src/index.css`, text family) | 35rem | Find box width (560 / 630 px) |
 | `FIND_RESULTS_PER_GROUP`, `FIND_RECENT_COUNT`, `FIND_MIN_QUERY_CHARS`, `FIND_BOX_MAX_VH` | 6, 5, 1, 60 (THR-1832) | Find |
 | `HOVER_CARD_MAX_SECTIONS` | 1 (existing) | Sections the hover card shows (those visible at `'hover'`) |
+| `CARDS_PER_ROW` | 4 (existing, `NudgePhaseShell.tsx:70`; Law 33) | Cards per row on the Act row and in a tray before the row wraps |
+| `INSPECTOR_VIEW_BUDGET_MS` | 16 | One frame: the measured ceiling for `actOnCounts` over a docked page's rendered rows and for `buildArmedTargets` on the seed-42 medium world (S5 / S6 Done-when); over it, the kill criterion below applies |
 
 ## Tracing
 
@@ -683,7 +685,10 @@ interface UiCardArmTrace {
   summary: string;            // "ui_card_arm: action.illuminating_whisper cast on agent npc_98 (hand)"
 }
 // UiRefOpenedTrace gains: inspectorSize?: 'docked' | 'wide' | 'full'
+// RefOpenAdapter (ui-traces.ts:34) gains: 'find' | 'map' | 'inspector-link' | 'act-row' | 'tray'
 ```
+
+Size changes, pin and history moves are not traced (they are view state, and every one of them is readable at any moment through `getInspectorState()`); every *open* is traced, with its adapter and size.
 
 ## Fail-soft table
 
@@ -697,7 +702,7 @@ interface UiCardArmTrace {
 | The land has no Area and no notable place | name falls back to the terrain word ("Open plateau"); *Around it* omits empty groups |
 | `openInspector` not wired (style guide, tests, before S3) | the router pushes the legacy card as today |
 | A pause-tier interrupt opens while Full is open | Full steps to docked; the clock hold transfers to the interrupt |
-| The armed card leaves the hand (cast elsewhere, essence spent) | the arm clears itself; trace `refused` with `card_left_hand` |
+| The armed card leaves the hand (cast elsewhere, essence spent) | the arm clears itself; the banner (or a toast, with the Inspector closed) reads "Illuminating Whisper left your hand. Nothing was spent." for `ARMED_CLEARED_LINE_MS`; trace `refused` with `card_left_hand` |
 | The armed card's target becomes invalid between choosing and casting | the cast re-reads the slot; if unavailable, the commit line shows the reason and nothing is spent |
 | A drop lands on nothing | the arm stays, unchanged; no stage |
 | A target category without a builder | impossible by type (`Record<TargetCategory, …>`); at runtime an unknown category renders the card locked with "This card has nowhere to land yet." and warns once |
@@ -723,8 +728,10 @@ Every other file is below 100 importers (`types/detailPage.ts` 26, `data/surface
 
 ## Vision audit
 
-- [x] This plan does not contradict any Vision premise (files under `TheFantasyWorldSimulator/Vision/`). `02-non-negotiables.md` #3 (*mechanics through prose, never numbers*) is strengthened: § What exists lists every number and key the retiring sheets print, and each is banded at its source or dropped; #4 (*everything is a graph node*) and #6 (*additive*) hold — the land page is a page kind, not a node, and every type change is additive. `01-core-loop.md`'s "one story at a time" is kept: Full yields to any moment that needs the god, and a docked Inspector never holds a gift. `03-design-tensions.md` *legibility vs. mystery* is held where Christian left it: gating is deferred, Find keeps the seen floor, armed lighting respects fog. The taste profile's prose-first UI and "sphere-tinted cards are loved" hold (the tint is kept on every card surface).
-- [x] No Vision edit is needed.
+- [x] This plan does not contradict any Vision premise once the one amendment below is made (files under `TheFantasyWorldSimulator/Vision/`). `02-non-negotiables.md` #3 (*mechanics through prose, never numbers*) is strengthened: § What exists lists every number and key the retiring sheets print, and each is banded at its source or dropped; #4 (*everything is a graph node*) and #6 (*additive*) hold — the land page is a page kind, not a node, and every type change is additive. `01-core-loop.md`'s "one story at a time" is kept: Full yields to any moment that needs the god, and a docked Inspector never holds a gift. `03-design-tensions.md` *legibility vs. mystery* is held where Christian left it: gating is deferred, Find keeps the seen floor, armed lighting respects fog. The taste profile's prose-first UI and "sphere-tinted cards are loved" hold (the tint is kept on every card surface).
+- [x] **One Vision edit is in this ticket's scope, and is made in this PR.** `taste-profile.md`'s strong opinion "Austere, Malazan-adjacent voice" said "ALL CAPS letter-spaced section labels"; § D5 renders section labels bold and sentence case. That is Christian's own ruling: [THR-1833](https://linear.app/threadbare/issue/THR-1833)'s comment of 2026-10-14 08:56 records "Confirmed by Christian, chat 2026-10-14 … He was shown both treatments and chose bold sentence case for small labels … with big titles keeping Cinzel's carved capitals. This is now a human ruling", and says the vault's taste profile was corrected. The vault copy (`$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/Vision/taste-profile.md`) already carries the amended entry; **this PR copies that entry, word for word, into the repo's `TheFantasyWorldSimulator/Vision/taste-profile.md`**, which still had the old wording. (THR-1819's Vision auditor found the same divergence and named THR-1879 as the rollout owner; if THR-1879's PR makes the same copy, the second to merge keeps the vault's wording.)
+- [x] The taste profile's "Numbers in UI" anti-pattern lists "percentages, bars with labels, stat blocks". Law 13's later ruling (THR-1424, attended session 2026-09-10) sanctions a bar as the non-numeric reading of a proportion where the surface already draws one. The plan keeps only the bars the retiring surfaces draw today (standing, core tracks, condition timers, sphere strengths, mandate, essence), each beside its word, never with a numeral, and adds none to a new field (§ D6) — so it introduces nothing new of what the anti-pattern names and removes no reading the player has today. Recorded here as a tension, not resolved by this plan.
+- [x] The core loop's "the clock halts for every moment that matters" holds as Christian decided it (call 11): Full holds the clock; a docked or wide page is a glance beside a running world, like the rails.
 
 ## Rulebook impact
 
@@ -742,8 +749,8 @@ Every other file is below 100 importers (`types/detailPage.ts` 26, `data/surface
 | 3. Determinism | PASS | No randomness; the moved prose keeps its seeded picks (golden test); sorts are THR-1822's (ties by name then id) |
 | 4. Fail-soft | PASS | Fail-soft table above; nothing here runs in the tick; a gone subject, a throwing resolver, a missing builder or a missing measurement each has a designed state |
 | 5. Narrative over mechanical perfection | PASS | Pages lead with prose and words; numbers on the sheets are banded or dropped; the land page keeps the chronicle's prose |
-| 6. Additive over destructive | PASS with note | All type and table changes are additive; the destructive part — deleting ~11,000 lines of retired surfaces — is Christian's approved decision (THR-1827 § Retires) and waits (S4) until parity tests prove nothing is lost |
-| 7. Performance budget | PASS | Pages are world-keyed VMs: rebuilt at most once per tick and only when open; zero cost while paused; card counts only for rendered rows; armed lighting enumerates one target category over visible hexes; Find's index measured at 0.59 ms on a 2.8k-node world (THR-1822) |
+| 6. Additive over destructive | PASS with note | All type and table changes are additive; the destructive part — deleting ~14,000 lines of retired surfaces — is Christian's approved decision (THR-1827 § Retires) and waits (S4) until parity tests prove nothing is lost |
+| 7. Performance budget | PASS with note | Pages are world-keyed VMs: rebuilt at most once per tick and only when open; zero cost while paused; card counts only for rendered rows; armed lighting enumerates one target category over visible hexes; Find's index measured at 0.59 ms on a 2.8k-node world (THR-1822). Card counts and armed lighting are not yet measured: S5 and S6 each measure theirs against `INSPECTOR_VIEW_BUDGET_MS` on the seed-42 medium world as a Done-when, and kill criterion 6 covers a miss |
 
 ## Done when
 
@@ -797,11 +804,76 @@ THR-1876's own build is **S1** (§ D16). Predicates (THR-688 rule A):
   3. The parity test finds a sheet field with no lawful home → stop S4 for that sheet and file it; never delete a field silently.
   4. Fit-then-fold measurement causes visible layout thrash (folds flipping on resize) → fold once per subject open and per size change only, and report.
   5. The lab shows a docked page that is unreadable even with per-width visibility and Connections (a person page that is mostly "More when widened") → revise this plan to give that kind a wider opening size through its `opensAt` row; never let the Inspector widen itself (Law 57).
+  6. `actOnCounts` for a docked page's rows, or `buildArmedTargets`, measures over `INSPECTOR_VIEW_BUDGET_MS` on the seed-42 medium world → compute counts lazily per row as it scrolls into view, and armed lighting for visible hexes only; if still over, report on the ticket before shipping.
 
 ## Intent-judge verdicts
 
-*(appended after the gate runs)*
+- Pass 1 (2026-10-14): **Revise** — GAPs on wiring (the THR-1878 coordination comment was not taken in: lens click routing, `focusOn` / `FOCUS_ZOOM`, `lensSuppressed`), NFP 1 (one centring zoom under two names) and player legibility (the land-name PC-6 claim named Find, which lists no hexes; "too far" samples on people, whom range never binds; the armed-card-cleared line, the chip tooltips and the after-cast receipt unquoted). All fixed; THR-1875's coordination comment taken in at the same time.
+- Pass 2: **Allow** — 12/12 PASS, impact class External confirmed. Its three recommendations (the cleared toast under Event notifications, the new scene layer under Visual presence, the cleared line in the fail-soft row) were applied. Its fourth — ask Christian the range question in chat — is carried to the handoff as the open question.
 
 ## Forked-audit verdicts
 
-*(appended after the gate runs)*
+*Generated by design-audit-pipeline — 2026-10-14*
+
+### NFP audit
+
+| NFP | Verdict | Evidence |
+|-----|---------|----------|
+| 1. Tunability | PASS-with-note | The constants table covers history, trail, folds, `FOCUS_ZOOM`, `ARMED_LOCKED_LIT`, lab, Find, and the section order, tab and width are table rows. `CARDS_PER_ROW` (§ D9) is not in the constants table. |
+| 2. Inspectability | PASS-with-note | `getInspectorState`, `getArmedTargets`, `getInspectorLab`, `getEscapeLayers`, the lab, and the new `ui_card_arm` trace are all specified. The Wiring table lists `ui_ref_opened (via: 'find')`, but the Tracing section declares only `inspectorSize`, not `via`. Size changes, pin and history have no trace of their own. |
+| 3. Determinism | PASS | "No randomness"; the moved land prose keeps its seeded `hashString` → `pickFromArray`, pinned by a golden test; ties sort by name then id. |
+| 4. Fail-soft | PASS | The fail-soft table has 15 cases: missing subject, throwing resolver, no `state`, no builder, no `ResizeObserver`, card leaves hand, no minimap. |
+| 5. Narrative over mechanical | PASS | Raw numbers and keys are banded or dropped (§ What exists, Law 13/14); pages lead with prose; "N turns ago" becomes `elapsedLabel`. |
+| 6. Additive over destructive | PASS-with-note | Type and table changes are additive, and S3 re-routes callers before S4 deletes. The ~14,000-line deletion is gated on parity tests. Several `ui.*` ids are deleted or renamed, rows retire (`allied_with`, `who_gave_it`, `notable_capabilities`), and `viewLevel` narrows to `'world'`. |
+| 7. Performance budget | PASS-with-note | Pages are claimed "rebuilt at most once per tick and only when open"; only Find has a measurement (0.59 ms). `actOnCounts` (one `getTargetActionSlots` per rendered row), the Act row and `buildArmedTargets` have no measured budget. |
+
+NFP AUDIT: PASS-with-notes (see rows above)
+
+*Author response:* `CARDS_PER_ROW` joined the constants table; `RefOpenAdapter` gains `'find'`, `'map'`, `'inspector-link'`, `'act-row'`, `'tray'` in § Tracing, with the reason size, pin and history are read through `getInspectorState()` rather than traced; `INSPECTOR_VIEW_BUDGET_MS` (one frame) is now the measured ceiling S5 and S6 must meet as a Done-when, with kill criterion 6 for a miss. The retirements in NFP 6 are Christian's approved decision (THR-1827 § Retires), gated on parity.
+
+### Three-pillar audit
+
+| Pillar | Verdict | Finding |
+|--------|---------|---------|
+| Engine | present-and-substantive | E1-E5 name the page-layout table, subject view models, inverse helper, Find and the single cast path. Graph nodes/edges, tick phases, resolution logic and PRNG are each stated as "none" with a reason. This is a read/view-model plan with no tick change. |
+| Content | present-and-substantive | The page-layout table rows (C2) and the moved land prose are the content. C1, C3 and C4 give the words, holder name and tooltips one data home. Encounter and attachment content are N/A with reasons. |
+| UI | present-and-substantive | The plan covers the Inspector at three sizes, the land page, cards three ways, Find and the lab. It names the screenshot tools, 24 engaged laws, a full quoted player-facing text table with PC classes, a playtest signal, notifications, debug accessors and map presence. |
+
+**Missing required sections:** No missing required sections. Every `_template.md` section is present: Why load-bearing, Substrate inventory, the three pillars with their subsections, Wiring, Constants, Tracing, Fail-soft, Blast Radius, Three-pillar check, Vision, Rulebook, NFP, Done when, Coordination block, Notes, and the audit-verdict placeholders. A brainstorm companion is declared.
+
+**Wiring check:** The Wiring table links each module to an orchestrator phase ("none", with reasons), a UI component, a GameState field (React-state slices; `gameState.ts` is explicitly not edited), a trace (`view_fallback`, `ui_ref_opened`, `ui_card_arm`) and a debug accessor. This covers every active pillar.
+
+**Substrate check:** The plan opens with a `## Substrate inventory` section. It states "extends" or "moved" for each row, and for the PLANNED THR-1822 seam it says "builds". It also gives the population counts (254 Locations, 830 Places and so on). `systems-inventory.md` has no subsystem for detail pages, the Inspector, Find, armed targets or the land page. It lists only the `detail` domain (`detailPageGenerator.ts`, `detailPageResolvers.ts`) and the `target` domain (`targetActions.ts`, `targetContextBuilders.ts`). The plan extends both. It also acknowledges the dormant sublocation and artifact builders and activates them rather than rebuilding them. No green-field duplication found.
+
+PILLAR AUDIT: PASS
+
+### Vision audit
+
+*Pass 1 returned BLOCK: the taste profile's strong opinion "ALL CAPS letter-spaced section labels" contradicted § D5 while the plan said no Vision edit was needed. Pass 2 returned REVISE: the amendment's attribution was not yet tied to a record. Both fixed — the entry is copied word for word from the vault's corrected copy, sourced to THR-1833's 2026-10-14 comment recording Christian's confirmation. Pass 3, verbatim:*
+
+**Vision premises touched**
+- `00-north-star.md` → not referenced.
+- `01-core-loop.md` → "time halts for every moment that matters" — confirmed. Full holds the clock; docked and wide are glances. "One story front-of-stage" — confirmed.
+- `02-non-negotiables.md` → #3 "mechanics through prose, never numbers" — extended. Numerals are banded or dropped, but word-plus-bar meters are kept. #1 god not protagonist — confirmed: card targets, prices and range are unchanged. #4 and #6 — confirmed.
+- `03-design-tensions.md` → legibility vs. mystery — silent. Gating is deferred and Find keeps the seen floor.
+- `taste-profile.md` → "Prose-first UI" — confirmed. "Austere, Malazan-adjacent voice" — extended (bold sentence-case labels). "Numbers in UI" anti-pattern — at tension (see below).
+
+**Vision contradictions**
+- `taste-profile.md` "Numbers in UI" (~l.325), "bars with labels… all forbidden" — plan l.186, 214, 217, 263, 329 (`panel (+meter)`: "a word and a bar"). This is a literal tension, not a clear contradiction. The plan limits meters to bars the retiring sheets already draw and discloses the tension (l.733).
+- No other contradictions found.
+
+**Amendment sourcing: properly sourced.**
+- Lines 105–115 of the repo's `taste-profile.md` are byte-identical to the vault copy.
+- The THR-1833 comment is dated 2026-10-14 08:56Z, under Christian's account. It says "Confirmed by Christian, chat 2026-10-14", bold sentence case for small labels, big titles keeping Cinzel's carved capitals, and "now a human ruling". The plan's quote matches it.
+- Caveats: the comment is an agent's record of a chat, which is the only form THR-608 allows; the vault's frontmatter `updated` still reads 2026-08-29, though the entry text matches; outside the amended entry, the profile still has the `THE FIRST` all-caps example (l.113) and a soft pattern putting "labels in Cinzel" (l.230). The soft pattern is non-binding.
+
+**Five checks**
+- North star: moves toward it. Prose-led pages and the mortal as a person, not a unit.
+- Core loop: preserved. Scan, encounter and aftermath untouched; the Stage is deferred to THR-1877.
+- Non-negotiables: stay inside. Casting is unchanged. The essence numerals in the god rail are existing chrome, not new.
+- Design tensions: legibility leans open until gating lands, a deferral Christian chose.
+- Taste profile: respected. Sphere tint kept, no emoji, labels follow the amended entry. The meters note above stands.
+
+VISION AUDIT: PASS-with-notes
+
+*Author response:* the meters tension is recorded in § Vision audit and left for Christian rather than resolved here; the `THE FIRST` example and the soft "labels in Cinzel" pattern sit outside this plan's touch and are THR-1879's rollout to align (named on THR-1879 at handoff).
