@@ -18,7 +18,7 @@ From the spawning session's brief (attended session, 2026-10-14, relaying Christ
 
 ## scope (what this plan does)
 
-Specifies the type-and-icons rollout for the map-first screen: the Alegreya font files, licence and tokens (repointing `--font-prose`, the prose shorthands, the label token and classes, a tabular-figures token), the classification of every `--font-prose` site, the monospace removal, the label rule and its sweep order; the vendoring script that fetches game-icons.net shapes once from the upstream repository at a pinned commit with per-icon authors; the concept → shape table (219 ideas, one shape each, 285 game keys mapped across 15 classes, settled/proposed/unsure marked); five open classes (28 ideas) with three candidates each for Christian; the place shapes and their boundary with the map build (THR-1878); the unknown-concept fallback mark and resolver; the credits lines (icons, fonts) and the DRM note; the Law 9 retirements and dead-table deletions; the legacy sweep order and skip list; the new `extending.md` row. It carves the build into S1 (this ticket) plus four slice tickets and one ticket reserved for Christian's pick, and commits an HTML review sheet under `Docs/audits/`.
+Specifies the type-and-icons rollout for the map-first screen: the Alegreya font files, licence and tokens (repointing `--font-prose`, the prose shorthands, the label token and classes, a tabular-figures token), the classification of every `--font-prose` site, the monospace removal, the label rule and its sweep order; the vendoring script that fetches game-icons.net shapes once from the upstream repository at a pinned commit with per-icon authors; the concept → shape table (228 ideas, one shape each, 301 game keys mapped across 15 classes, settled/proposed/unsure marked); five open classes (28 ideas) with three candidates each for Christian; the place shapes and their boundary with the map build (THR-1878); the unknown-concept fallback mark and resolver; the credits lines (icons, fonts) and the DRM note; the Law 9 retirements and dead-table deletions; the legacy sweep order and skip list; the new `extending.md` row. It carves the build into S1 (this ticket) plus four slice tickets and one ticket reserved for Christian's pick, and commits an HTML review sheet under `Docs/audits/`.
 
 ## scope (what this plan does NOT do — explicit non-goals)
 
@@ -32,7 +32,7 @@ Specifies the type-and-icons rollout for the map-first screen: the Alegreya font
 
 ## impact_class
 
-Reversible. Docs-only in this PR (plan doc, companion, proposal, the review sheet, one `extending.md` status cell). The build it specifies changes presentation only; any pick is swappable as one entry.
+External (corrected from Reversible after the first judgment). This PR is docs-only, but the build adds a `display-face-small` row to the `check:ui-debt` ratchet that gates other agents' PRs, splits the work into six tickets with mutex lines, and supplies the closed `IconName` union the frame, Inspector, Stage and map builds wait on. Any single pick stays swappable as one entry.
 
 ## evidence cited
 
@@ -60,12 +60,20 @@ None with ≥ 100 importers. `src/index.css` is imported once; `shared/Modal.tsx
 
 ## explicit user sign-off
 
-Not required (Reversible). Christian asked in chat on 2026-10-14 for this plan to be written now; the decisions it builds on are THR-1833 (label rule confirmed by Christian in chat 2026-10-14) and THR-1834 (human gate satisfied via chat review 2026-10-14).
+Not required (External, not High-risk). Christian asked in chat on 2026-10-14 for this plan to be written now; the decisions it builds on are THR-1833 (label rule confirmed by Christian in chat 2026-10-14) and THR-1834 (human gate satisfied via chat review 2026-10-14).
+
+## revision notes (after the first judgment: Revise)
+
+- Added the names the frame and map plans asked for on THR-1879: `forward` (the back arrow mirrored, baked by the vendoring script), `disclosure` (now carved, not ours), `held` (separate from `waiting`), `chapter-ledger`, `move`, `investiture`, `minimap`, `show-known-land`, `drain`; `centre-on-first` reuses `show-on-map`; zoom in/out stay typographic and are listed with that disposition.
+- Appendix C candidates are now unique across the appendix and never a shape already picked; two are explicit reuses of an existing idea.
+- Near twins removed (lyre/harp, three laurels, three scrolls, two chests) and a near-twins strip added to the sheet.
+- S1's blocker corrected (THR-1819 merged; THR-1821 is the blocker; Linear relation set at handoff); player-facing text corrected (harp is music, lips is read aloud) with the badge, pill and "Unmade" words quoted and the call-site-label rule stated; sphere PNGs decided; `faction.ts` named in Blast Radius.
+- Counts now: 228 ideas (227 files + one mirror), 301 keys in 15 classes, 54 settled / 114 proposed / 60 unsure, 12 credited authors (eleven picks are slugs with two upstream authors; each names the one the sheet shows).
 
 ## author notes for the judge
 
-- The concept table has two layers on purpose: ideas (one shape each, 219) and keys (285, many pointing at the same idea). "One shape per concept" is read as one shape per idea, which is how THR-1834 already grouped "Debt, bargain" under one shape.
-- "Covers all ~330 concepts" is met by: 285 mapped keys, 28 open ideas, 40 own-drawn concepts (spheres, reaches, faction marks) and the dead tables, each with an explicit disposition. Retiring surfaces' marks are not mapped.
-- Fifty-four picks are marked unsure. That is deliberate: the brief asked for low-confidence picks to be marked, and Christian reviews on the sheet; the build ships them unless he vetoes, and a swap is one entry.
+- The concept table has two layers on purpose: ideas (one shape each, 228) and keys (301, many pointing at the same idea). "One shape per concept" is read as one shape per idea, which is how THR-1834 already grouped "Debt, bargain" under one shape.
+- "Covers all ~330 concepts" is met by: 301 mapped keys, 28 open ideas, 40 own-drawn concepts (spheres, reaches, faction marks) and the dead tables, each with an explicit disposition. Retiring surfaces' marks are not mapped.
+- Sixty picks are marked unsure (54 are settled, 114 proposed). That is deliberate: the brief asked for low-confidence picks to be marked, and Christian reviews on the sheet; the build ships them unless he vetoes, and a swap is one entry.
 - Uncertainties: the 18 px legibility of several unsure picks in the real UI; whether `public/the-game.html` still ships (it holds the sphere PNGs); the exact ratchet baseline for the new `display-face-small` row (measured at landing).
 - An authoring-session waiver applies: Christian asked for the five carve-up plans in parallel today, which waives the lane's one-day veto window on THR-1828..1833; recorded in the plan.
