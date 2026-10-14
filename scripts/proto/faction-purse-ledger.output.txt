@@ -1,0 +1,389 @@
+THR-1867 faction purse — observer ledger (THROWAWAY prototype, never merged)
+seed 42 medium · 600 ticks · cycle 12 ticks = 1 day (TICKS_PER_DAY 12) · 50 cycles
+CAVEAT: the world runs unmodified. Spending never feeds back: ledger treasuries are not engine wealth.
+
+Constants: {"FACTION_TREASURY_CAP":1000,"TOWN_TAX_BASE":0.8,"YIELD_RATE":{"staple":0.1,"strategic":0.2,"luxury":0.4,"arcane":0.6},"STOCK_TIER_MULT":{"scarce":0.5,"adequate":1,"surplus":1.25},"HEX_RENT":{"staple":0.015,"timber":0.012,"stone":0.008,"wetland":0.003,"none":0},"GUILD_RATE":1,"GUILD_SUBLOCATION_UNITS":50,"GUILD_LANE_UNITS":50,"BANKER_TAX_BASE_SHARE":1,"LANDHOLDER_TAX_RATE":0.2,"ARMY_UPKEEP_SCALE":0.6,"ARMY_UPKEEP_PER_DAY":{"warband":1.2,"regiment":3,"host":6},"ARMY_CREATION_GOLD_COST":50,"COMMISSION_QUEST_COST":5,"BOUNTY_COST":12,"GUILD_WAREHOUSE_THRESHOLD":30,"GUILD_COUNTING_HOUSE_THRESHOLD":50}
+
+== Hex rent census (realm projection, day 0 and final day) ==
+-- day 0
+  faction_0   180 hexes {"staple":24,"stone":142,"timber":3,"none":11} rent/day 1.53
+  faction_1    60 hexes {"stone":1,"staple":28,"timber":19,"none":12} rent/day 0.66
+  faction_2   135 hexes {"wetland":1,"stone":109,"timber":3,"none":5,"staple":17} rent/day 1.17
+  unclaimed   393 hexes {"none":118,"timber":52,"stone":109,"wetland":10,"staple":104} potential rent/day 3.09
+-- day 50
+  faction_0   180 hexes {"staple":24,"stone":142,"timber":3,"none":11} rent/day 1.53
+  faction_1    60 hexes {"stone":1,"staple":28,"timber":18,"none":13} rent/day 0.64
+  faction_2   124 hexes {"wetland":1,"stone":98,"timber":3,"none":5,"staple":17} rent/day 1.08
+  unclaimed   404 hexes {"none":119,"timber":52,"stone":120,"wetland":10,"staple":103} potential rent/day 3.16
+
+== Armies raised during the run (charged ARMY_CREATION_GOLD_COST unless warhost) ==
+  day 1: army_faction_def_holy_order_dawn_5 (warband) for faction_def_holy_order_dawn
+  day 1: army_faction_def_civic_guard_10 (host) for faction_def_civic_guard
+  day 3: army_faction_def_holy_order_dawn_25 (warband) for faction_def_holy_order_dawn
+  day 4: army_faction_def_holy_order_dawn_45 (warband) for faction_def_holy_order_dawn
+  day 5: army_faction_1_55 (host) for faction_1
+  day 5: army_faction_def_civic_guard_60 (host) for faction_def_civic_guard
+  day 6: army_faction_def_holy_order_dawn_65 (warband) for faction_def_holy_order_dawn
+  day 8: army_faction_def_holy_order_dawn_85 (warband) for faction_def_holy_order_dawn
+  day 8: army_faction_1_90 (host) for faction_1
+  day 8: army_faction_2_93 (regiment) for faction_2
+  day 9: army_faction_def_holy_order_dawn_105 (warband) for faction_def_holy_order_dawn
+  day 10: army_faction_def_civic_guard_110 (host) for faction_def_civic_guard
+  day 11: army_faction_1_130 (host) for faction_1
+  day 12: army_faction_def_civic_guard_140 (host) for faction_def_civic_guard
+  day 14: army_faction_2_165 (regiment) for faction_2
+  day 15: army_faction_def_civic_guard_175 (host) for faction_def_civic_guard
+  day 16: army_faction_1_185 (host) for faction_1
+  day 17: army_faction_2_201 (regiment) for faction_2
+  day 18: army_faction_def_civic_guard_210 (host) for faction_def_civic_guard
+  day 20: army_faction_1_235 (host) for faction_1
+  day 21: army_faction_def_civic_guard_250 (host) for faction_def_civic_guard
+  day 25: army_faction_1_295 (host) for faction_1
+  day 25: army_faction_def_civic_guard_295 (host) for faction_def_civic_guard
+  day 26: army_faction_def_civic_guard_305 (host) for faction_def_civic_guard
+  day 28: army_faction_1_330 (host) for faction_1
+  day 29: army_faction_0_345 (regiment) for faction_0
+  day 29: army_faction_def_civic_guard_345 (host) for faction_def_civic_guard
+  day 32: army_faction_def_civic_guard_375 (host) for faction_def_civic_guard
+  day 35: army_faction_def_civic_guard_410 (host) for faction_def_civic_guard
+  day 37: army_faction_def_civic_guard_440 (host) for faction_def_civic_guard
+  day 38: army_faction_def_temple_of_spheres_0_453 (host) for faction_def_temple_of_spheres_0
+  day 40: army_faction_def_civic_guard_475 (host) for faction_def_civic_guard
+  day 43: army_faction_1_505 (host) for faction_1
+  day 43: army_faction_def_civic_guard_510 (host) for faction_def_civic_guard
+  day 44: army_faction_0_525 (regiment) for faction_0
+  day 46: army_faction_1_545 (host) for faction_1
+  day 50: army_faction_1_600 (host) for faction_1
+  fielded at day 0: army_faction_def_mercenary_company_0_0=host, army_faction_def_mercenary_company_1_0=host, army_faction_0_0=regiment, army_faction_1_0=host, army_faction_2_0=regiment
+  fielded at final: army_faction_def_civic_guard_510=host, army_faction_1_600=host
+
+== Ledger: faction_0 hold of Witness Skyfield (per day; armies W/R/H fielded; Means = treasury ÷ upkeep/day, * = absolute fallback, upkeep 0) ==
+ day    town   place    land guildTx guildOwn  tolls | income  upkeep  raise | balance  armies means
+   1     3.5     2.6     1.5     0.5     0.0     0.0 |     8.1     0.0     0.0 |     8.1  -      Strained*
+   2     3.6     2.6     1.5     0.5     0.0     0.0 |     8.2     0.0     0.0 |    16.3  -      Solvent*
+   3     3.7     2.6     1.5     0.5     0.0     0.0 |     8.3     0.0     0.0 |    24.6  -      Solvent*
+   4     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    33.0  -      Solvent*
+   5     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    41.4  -      Solvent*
+   6     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    49.9  -      Solvent*
+   7     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    58.3  -      Solvent*
+   8     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    66.7  -      Flush*
+   9     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    75.2  -      Flush*
+  10     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    83.6  -      Flush*
+  11     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |    92.1  -      Flush*
+  12     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   100.5  -      Flush*
+  13     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   108.9  -      Flush*
+  14     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   117.4  -      Flush*
+  15     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   125.8  -      Flush*
+  16     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   134.3  -      Flush*
+  17     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   142.7  -      Flush*
+  18     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   151.2  -      Flush*
+  19     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   159.6  -      Flush*
+  20     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   168.1  -      Flush*
+  21     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   176.5  -      Flush*
+  22     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   184.9  -      Flush*
+  23     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   193.4  -      Flush*
+  24     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   201.8  -      Flush*
+  25     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   210.3  -      Flush*
+  26     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   218.7  -      Flush*
+  27     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   227.2  -      Flush*
+  28     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   235.6  -      Flush*
+  29     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     3.0    50.0 |   191.1  R      Overflowing
+  30     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     3.0     0.0 |   196.5  R      Overflowing
+  31     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   204.9  -      Flush*
+  32     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   213.4  -      Flush*
+  33     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   221.8  -      Flush*
+  34     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   230.3  -      Flush*
+  35     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   238.7  -      Flush*
+  36     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   247.2  -      Flush*
+  37     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   255.6  -      Overflowing*
+  38     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   264.1  -      Overflowing*
+  39     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   272.5  -      Overflowing*
+  40     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   280.9  -      Overflowing*
+  41     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   289.4  -      Overflowing*
+  42     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   297.8  -      Overflowing*
+  43     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   306.3  -      Overflowing*
+  44     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     3.0    50.0 |   261.7  R      Overflowing
+  45     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     3.0     0.0 |   267.2  R      Overflowing
+  46     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   275.6  -      Overflowing*
+  47     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   284.1  -      Overflowing*
+  48     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   292.5  -      Overflowing*
+  49     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   300.9  -      Overflowing*
+  50     3.8     2.6     1.5     0.5     0.0     0.0 |     8.4     0.0     0.0 |   309.4  -      Overflowing*
+  split over run (guild tax folded into towns, tolls/own-guild excluded): towns 51.0% · places 30.8% · land 18.2%
+
+== Ledger: faction_1 march of Shadow-Kept Dawn (per day; armies W/R/H fielded; Means = treasury ÷ upkeep/day, * = absolute fallback, upkeep 0) ==
+ day    town   place    land guildTx guildOwn  tolls | income  upkeep  raise | balance  armies means
+   1     2.0     0.5     0.7     0.4     0.0     0.0 |     3.6     6.0     0.0 |    -2.4  H      Bankrupt
+   2     2.1     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |    -4.7  H      Bankrupt
+   3     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |    -7.0  H      Bankrupt
+   4     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |    -9.3  H      Bankrupt
+   5     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0    50.0 |   -61.5  H      Bankrupt
+   6     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |   -63.8  H      Bankrupt
+   7     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |   -66.1  H      Bankrupt
+   8     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -118.3  H      Bankrupt
+   9     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -120.6  H      Bankrupt
+  10     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -122.9  H      Bankrupt
+  11     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -175.1  H      Bankrupt
+  12     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -177.4  H      Bankrupt
+  13     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -179.6  H      Bankrupt
+  14     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -181.9  H      Bankrupt
+  15     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -184.2  H      Bankrupt
+  16     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -236.5  H      Bankrupt
+  17     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -238.7  H      Bankrupt
+  18     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -241.0  H      Bankrupt
+  19     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -243.2  H      Bankrupt
+  20     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -295.5  H      Bankrupt
+  21     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -297.7  H      Bankrupt
+  22     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -300.0  H      Bankrupt
+  23     2.2     0.5     0.7     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -302.2  H      Bankrupt
+  24     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -304.5  H      Bankrupt
+  25     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -356.8  H      Bankrupt
+  26     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -359.0  H      Bankrupt
+  27     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -361.3  H      Bankrupt
+  28     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -413.6  H      Bankrupt
+  29     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -415.8  H      Bankrupt
+  30     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -418.1  H      Bankrupt
+  31     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -420.3  H      Bankrupt
+  32     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     0.0     0.0 |  -416.6  -      Bankrupt*
+  33     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     0.0     0.0 |  -412.9  -      Bankrupt*
+  34     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     0.0     0.0 |  -409.1  -      Bankrupt*
+  35     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     0.0     0.0 |  -405.4  -      Bankrupt*
+  36     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     0.0     0.0 |  -401.7  -      Bankrupt*
+  37     1.5     0.5     0.6     0.4     0.0     0.0 |     3.0     0.0     0.0 |  -398.6  -      Bankrupt*
+  38     1.8     0.5     0.6     0.4     0.0     0.0 |     3.4     0.0     0.0 |  -395.3  -      Bankrupt*
+  39     2.0     0.5     0.6     0.4     0.0     0.0 |     3.5     0.0     0.0 |  -391.7  -      Bankrupt*
+  40     1.8     0.5     0.6     0.4     0.0     0.0 |     3.3     0.0     0.0 |  -388.4  -      Bankrupt*
+  41     2.0     0.5     0.6     0.4     0.0     0.0 |     3.5     0.0     0.0 |  -384.9  -      Bankrupt*
+  42     2.1     0.5     0.6     0.4     0.0     0.0 |     3.6     0.0     0.0 |  -381.2  -      Bankrupt*
+  43     2.1     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -433.6  H      Bankrupt
+  44     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -435.9  H      Bankrupt
+  45     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -438.1  H      Bankrupt
+  46     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -490.4  H      Bankrupt
+  47     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -492.7  H      Bankrupt
+  48     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -494.9  H      Bankrupt
+  49     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0     0.0 |  -497.2  H      Bankrupt
+  50     2.2     0.5     0.6     0.4     0.0     0.0 |     3.7     6.0    50.0 |  -549.5  H      Bankrupt
+  split over run (guild tax folded into towns, tolls/own-guild excluded): towns 68.6% · places 13.8% · land 17.6%
+
+== Ledger: faction_2 sovereignty of Stone-Set Hollow (per day; armies W/R/H fielded; Means = treasury ÷ upkeep/day, * = absolute fallback, upkeep 0) ==
+ day    town   place    land guildTx guildOwn  tolls | income  upkeep  raise | balance  armies means
+   1     0.9     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |     3.5  -      Strained*
+   2     0.9     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |     7.0  -      Strained*
+   3     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |    10.5  -      Strained*
+   4     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |    14.0  -      Strained*
+   5     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |    17.5  -      Solvent*
+   6     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |    21.0  -      Solvent*
+   7     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |    24.5  -      Solvent*
+   8     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0    50.0 |   -25.0  R      Bankrupt
+   9     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |   -24.5  R      Bankrupt
+  10     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |   -24.0  R      Bankrupt
+  11     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -20.5  -      Bankrupt*
+  12     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -17.0  -      Bankrupt*
+  13     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -13.5  -      Bankrupt*
+  14     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0    50.0 |   -63.0  R      Bankrupt
+  15     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |   -62.5  R      Bankrupt
+  16     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |   -62.0  R      Bankrupt
+  17     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0    50.0 |  -111.6  R      Bankrupt
+  18     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |  -111.1  R      Bankrupt
+  19     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     3.0     0.0 |  -110.6  R      Bankrupt
+  20     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |  -107.1  -      Bankrupt*
+  21     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |  -103.7  -      Bankrupt*
+  22     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |  -100.2  -      Bankrupt*
+  23     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -96.7  -      Bankrupt*
+  24     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -93.2  -      Bankrupt*
+  25     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -89.8  -      Bankrupt*
+  26     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -86.3  -      Bankrupt*
+  27     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -82.8  -      Bankrupt*
+  28     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -79.3  -      Bankrupt*
+  29     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -75.9  -      Bankrupt*
+  30     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -72.4  -      Bankrupt*
+  31     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -68.9  -      Bankrupt*
+  32     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -65.4  -      Bankrupt*
+  33     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -62.0  -      Bankrupt*
+  34     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -58.5  -      Bankrupt*
+  35     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -55.0  -      Bankrupt*
+  36     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -51.5  -      Bankrupt*
+  37     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -48.0  -      Bankrupt*
+  38     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -44.6  -      Bankrupt*
+  39     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -41.1  -      Bankrupt*
+  40     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -37.6  -      Bankrupt*
+  41     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -34.1  -      Bankrupt*
+  42     0.8     1.3     1.2     0.2     0.0     0.0 |     3.5     0.0     0.0 |   -30.7  -      Bankrupt*
+  43     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -28.4  -      Bankrupt*
+  44     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -26.2  -      Bankrupt*
+  45     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -24.0  -      Bankrupt*
+  46     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -21.7  -      Bankrupt*
+  47     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -19.5  -      Bankrupt*
+  48     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -17.3  -      Bankrupt*
+  49     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -15.0  -      Bankrupt*
+  50     0.0     1.2     1.1     0.0     0.0     0.0 |     2.2     0.0     0.0 |   -12.8  -      Bankrupt*
+  split over run (guild tax folded into towns, tolls/own-guild excluded): towns 26.6% · places 38.4% · land 35.1%
+
+== Ledger: faction_def_merchant_consortium The Merchant Consortium (per day; armies W/R/H fielded; Means = treasury ÷ upkeep/day, * = absolute fallback, upkeep 0) ==
+ day    town   place    land guildTx guildOwn  tolls | income  upkeep  raise | balance  armies means
+   1     0.6     0.0     0.0     0.1     0.3     0.0 |     0.9     0.0     0.0 |     0.9  -      Bankrupt*
+   2     0.5     0.0     0.0     0.1     0.3     0.0 |     0.8     0.0     0.0 |     1.7  -      Strained*
+   3     0.4     0.0     0.0     0.1     0.3     0.0 |     0.7     0.0     0.0 |     2.4  -      Strained*
+   4     0.4     0.0     0.0     0.1     0.3     0.0 |     0.7     0.0     0.0 |     3.1  -      Strained*
+   5     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     3.7  -      Strained*
+   6     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     4.4  -      Strained*
+   7     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     5.0  -      Strained*
+   8     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     5.6  -      Strained*
+   9     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     6.2  -      Strained*
+  10     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     6.8  -      Strained*
+  11     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     7.5  -      Strained*
+  12     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     8.1  -      Strained*
+  13     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     8.7  -      Strained*
+  14     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     9.3  -      Strained*
+  15     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |     9.9  -      Strained*
+  16     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    10.6  -      Strained*
+  17     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    11.2  -      Strained*
+  18     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    11.8  -      Strained*
+  19     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    12.4  -      Strained*
+  20     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    13.0  -      Strained*
+  21     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    13.7  -      Strained*
+  22     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    14.3  -      Strained*
+  23     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    14.9  -      Strained*
+  24     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    15.5  -      Solvent*
+  25     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    16.1  -      Solvent*
+  26     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    16.8  -      Solvent*
+  27     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    17.4  -      Solvent*
+  28     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    18.0  -      Solvent*
+  29     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    18.6  -      Solvent*
+  30     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    19.2  -      Solvent*
+  31     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    19.9  -      Solvent*
+  32     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    20.5  -      Solvent*
+  33     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    21.1  -      Solvent*
+  34     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    21.7  -      Solvent*
+  35     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    22.3  -      Solvent*
+  36     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    23.0  -      Solvent*
+  37     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    23.6  -      Solvent*
+  38     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    24.2  -      Solvent*
+  39     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    24.8  -      Solvent*
+  40     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    25.4  -      Solvent*
+  41     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    26.1  -      Solvent*
+  42     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    26.7  -      Solvent*
+  43     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    27.3  -      Solvent*
+  44     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    27.9  -      Solvent*
+  45     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    28.5  -      Solvent*
+  46     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    29.2  -      Solvent*
+  47     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    29.8  -      Solvent*
+  48     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    30.4  -      Solvent*
+  49     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    31.0  -      Solvent*
+  50     0.3     0.0     0.0     0.1     0.3     0.0 |     0.6     0.0     0.0 |    31.6  -      Solvent*
+  split over run (guild tax folded into towns, tolls/own-guild excluded): towns 100.0% · places 0.0% · land 0.0%
+
+== First day each treasury could afford ==
+  faction_0                        quest(5): 1 · bounty(12): 2 · warehouse(30): 4 · army(50): 7 · counting house(50): 7
+  faction_1                        quest(5): never · bounty(12): never · warehouse(30): never · army(50): never · counting house(50): never
+  faction_2                        quest(5): 2 · bounty(12): 4 · warehouse(30): never · army(50): never · counting house(50): never
+  faction_def_merchant_consortium  quest(5): 8 · bounty(12): 19 · warehouse(30): 48 · army(50): never · counting house(50): never
+
+== T2 faction_0: mean income/day 8.43; fielded an army on 4/50 days
+     net after upkeep on what it actually fielded 8.19/day → a new army (50) every 6.1 days
+     net with one regiment fielded every day 5.43/day → a new army every 9.2 days
+== T3 faction_1: mean income/day 3.69; mean net/day with what it fields -0.99; min balance -549.5
+     sustains one warband (1.2/day)? yes
+     sustains one regiment (3/day)? yes
+     sustains one host (6/day)? no
+== T3 faction_2 counterfactual: loses loc_7 at day 25, keeps fielding one army ==
+  income/day without the town 2.23 vs one regiment 3/day, warband 1.2/day · start balance day 25 -89.8 (ledger, includes the world's own raises) · goes broke on day 26 · end balance -108.9
+  clean runway (one regiment fielded from day 1, no raise charges): banked 12.2 by day 25; after the loss net -0.77/day → broke 16 days later
+  actual holders of loc_7 (The Bone Coast) by day: 0:faction_2 → 43:faction_def_civic_guard
+
+== T5 town guilds (factionClass guild, guild_N): treasury on day 10 ==
+  guild_0   artisans  home loc_0   day10    5.8 · day50   27.9
+  guild_1   artisans  home loc_0   day10    5.8 · day50   27.9
+  guild_2   miners    home loc_1   day10    4.0 · day50   19.8
+  guild_3   miners    home loc_1   day10    4.0 · day50   19.8
+  guild_4   merchants home loc_2   day10    2.5 · day50   11.3
+  guild_5   merchants home loc_2   day10    2.5 · day50   11.3
+  guild_6   miners    home loc_3   day10    8.7 · day50   43.3
+  guild_7   miners    home loc_3   day10    8.7 · day50   43.3
+  guild_8   miners    home loc_4   day10    8.6 · day50   43.2
+  guild_9   miners    home loc_5   day10    7.0 · day50   34.8
+  guild_10  miners    home loc_6   day10    8.6 · day50   42.8
+  guild_11  miners    home loc_7   day10    8.4 · day50   38.8
+  guild_12  merchants home loc_8   day10    2.0 · day50   10.0
+  guild_13  merchants home loc_8   day10    2.0 · day50   10.0
+  guild_14  artisans  home loc_9   day10    5.1 · day50   32.2
+  guild_15  artisans  home loc_9   day10    5.1 · day50   32.2
+  guild_16  artisans  home loc_10  day10    5.6 · day50   28.0
+  guild_17  artisans  home loc_10  day10    5.6 · day50   28.0
+  guild_18  artisans  home loc_11  day10    5.0 · day50   25.0
+  guild_19  artisans  home loc_12  day10   10.2 · day50   50.8
+  guild_20  miners    home loc_13  day10    7.7 · day50   38.6
+  guild_21  miners    home loc_13  day10    7.7 · day50   38.6
+  guild_22  miners    home loc_15  day10    3.9 · day50   19.4
+  guild_23  miners    home loc_15  day10    3.9 · day50   19.4
+  guild_24  miners    home loc_16  day10   16.0 · day50   79.4
+  guild_25  merchants home loc_17  day10    2.0 · day50   10.0
+  guild_26  merchants home loc_17  day10    2.0 · day50   10.0
+  guild_27  merchants home loc_19  day10    6.0 · day50   30.0
+  guild_28  merchants home loc_19  day10    6.0 · day50   30.0
+  guild_29  miners    home loc_32  day10    3.8 · day50   18.8
+  guild_30  miners    home loc_32  day10    3.8 · day50   18.8
+  guild_31  merchants home loc_43  day10    2.0 · day50   10.0
+  guild_32  merchants home loc_43  day10    2.0 · day50   10.0
+  guild_33  merchants home loc_58  day10    2.0 · day50   10.0
+  → 19/34 town guilds can afford commission_quest (5) by day 10
+
+== T6 highest treasury anywhere in the run: 309.4 (faction_0) vs cap 1000
+
+== Every faction with any income or balance, final day (monster lairs and unhoused factions omitted) ==
+  faction_0                          income/day   8.44 balance   309.4 Overflowing*
+  faction_def_builders_fellowship    income/day   1.95 balance    97.8 Flush*
+  faction_def_temple_of_spheres_1    income/day   1.72 balance    89.6 Flush*
+  guild_24                           income/day   1.60 balance    79.4 Flush*
+  faction_def_adventuring_guild      income/day   1.41 balance    69.9 Flush*
+  faction_def_thieves_guild          income/day   1.27 balance    63.2 Flush*
+  faction_def_underking_court        income/day   1.23 balance    61.8 Flush*
+  faction_def_arcane_circle          income/day   1.12 balance    59.6 Solvent*
+  guild_19                           income/day   1.02 balance    50.8 Solvent*
+  faction_def_rangers_brotherhood    income/day   1.01 balance    50.6 Solvent*
+  guild_6                            income/day   0.86 balance    43.3 Solvent*
+  guild_7                            income/day   0.86 balance    43.3 Solvent*
+  guild_8                            income/day   0.86 balance    43.2 Solvent*
+  guild_10                           income/day   0.86 balance    42.8 Solvent*
+  guild_11                           income/day   0.44 balance    38.8 Solvent*
+  guild_20                           income/day   0.77 balance    38.6 Solvent*
+  guild_21                           income/day   0.77 balance    38.6 Solvent*
+  guild_9                            income/day   0.70 balance    34.8 Solvent*
+  guild_14                           income/day   0.71 balance    32.2 Solvent*
+  guild_15                           income/day   0.71 balance    32.2 Solvent*
+  faction_def_temple_of_spheres_2    income/day   0.48 balance    32.0 Solvent*
+  faction_def_merchant_consortium    income/day   0.62 balance    31.6 Solvent*
+  guild_27                           income/day   0.60 balance    30.0 Solvent*
+  guild_28                           income/day   0.60 balance    30.0 Solvent*
+  guild_16                           income/day   0.56 balance    28.0 Solvent*
+  guild_17                           income/day   0.56 balance    28.0 Solvent*
+  guild_0                            income/day   0.57 balance    27.9 Solvent*
+  guild_1                            income/day   0.57 balance    27.9 Solvent*
+  faction_def_mercenary_company_1    income/day   0.91 balance    26.9 Solvent*
+  guild_18                           income/day   0.50 balance    25.0 Solvent*
+  guild_2                            income/day   0.40 balance    19.8 Solvent*
+  guild_3                            income/day   0.40 balance    19.8 Solvent*
+  guild_22                           income/day   0.39 balance    19.4 Solvent*
+  guild_23                           income/day   0.39 balance    19.4 Solvent*
+  guild_29                           income/day   0.38 balance    18.8 Solvent*
+  guild_30                           income/day   0.38 balance    18.8 Solvent*
+  faction_def_temple_of_spheres_0    income/day   2.16 balance    12.7 Strained*
+  guild_4                            income/day   0.25 balance    11.3 Strained*
+  guild_5                            income/day   0.25 balance    11.3 Strained*
+  guild_12                           income/day   0.20 balance    10.0 Strained*
+  guild_13                           income/day   0.20 balance    10.0 Strained*
+  guild_25                           income/day   0.20 balance    10.0 Strained*
+  guild_26                           income/day   0.20 balance    10.0 Strained*
+  guild_31                           income/day   0.20 balance    10.0 Strained*
+  guild_32                           income/day   0.20 balance    10.0 Strained*
+  guild_33                           income/day   0.20 balance    10.0 Strained*
+  faction_def_lorekeepers_covenant   income/day   0.10 balance     5.0 Strained*
+  agent_mc_cmdr_0                    income/day   0.23 balance     2.3 Strained*
+  ind_4                              income/day   0.10 balance     1.3 Strained*
+  agent_garrison_culture_2           income/day   0.10 balance     0.5 Bankrupt*
+  ind_9                              income/day   0.10 balance     0.5 Bankrupt*
+  faction_2                          income/day   2.23 balance   -12.8 Bankrupt*
+  faction_def_mercenary_company_0    income/day   0.43 balance   -14.6 Bankrupt*
+  faction_def_holy_order_dawn        income/day   0.48 balance  -277.6 Bankrupt*
+  faction_1                          income/day   3.74 balance  -549.5 Bankrupt
+  faction_def_civic_guard            income/day   1.88 balance  -961.4 Bankrupt
