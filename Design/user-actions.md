@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 13:56 local (11:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 14:55 local (12:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -36,6 +36,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: fair luck and the Game Design Laws book shipped** ([THR-1889](https://linear.app/threadbare/issue/THR-1889/fair-luck-tier-first-loot-a-hidden-legendary-deadline-and-a-marble-bag), [THR-1891](https://linear.app/threadbare/issue/THR-1891/game-design-laws-collate-the-games-ratified-design-fundamentals-into)). Merged via [#2387](https://github.com/christianspliid-ui/threadbare/pull/2387) and live.
 - **2026-10-14: the five UI build plans are written** — the screen frame, the Inspector, the encounter Stage, map lenses, and type and icons ([#2388](https://github.com/christianspliid-ui/threadbare/pull/2388)–[#2392](https://github.com/christianspliid-ui/threadbare/pull/2392)). Their build tickets are in the queue.
 - **2026-10-14: the layout contract now targets 1440p, scaling down to 1080p** ([THR-1819](https://linear.app/threadbare/issue/THR-1819/design-move-the-layout-contract-to-1440p-landscape-scaling-width)). Merged via [#2382](https://github.com/christianspliid-ui/threadbare/pull/2382) and live.
 - **2026-10-14: factions are reachable from a world card again** ([THR-1851](https://linear.app/threadbare/issue/THR-1851/factions-are-still-out-of-reach-the-links-on-a-world-card-render-as)), the top fix from warm round 2.
@@ -45,7 +46,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: every town now has a people, so no mortal is left without a culture** ([THR-1793](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is)). Merged via [#2364](https://github.com/christianspliid-ui/threadbare/pull/2364) and live.
 - **2026-10-14: a siege now draws as a siege on the map, not a field battle** ([THR-1846](https://linear.app/threadbare/issue/THR-1846/every-siege-draws-as-a-field-battle-on-the-map-gameview-passes-battle)). Merged via [#2363](https://github.com/christianspliid-ui/threadbare/pull/2363) and live.
 - **2026-10-14: god cards carry their progression as data, and the world offers them** ([THR-1811](https://linear.app/threadbare/issue/THR-1811/god-cards-carry-their-progression-as-data-a-tier-how-a-god-gets-each)). Merged via [#2361](https://github.com/christianspliid-ui/threadbare/pull/2361) and live.
-- **2026-10-13: Dominion shows on the map and on every sheet, so you can see your turf** ([THR-1750](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf)). Merged via [#2359](https://github.com/christianspliid-ui/threadbare/pull/2359) and live.
 
 ---
 
