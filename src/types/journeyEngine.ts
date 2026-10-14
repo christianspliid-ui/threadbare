@@ -9,6 +9,7 @@
 import type { CampbellianPhase } from './influence';
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
+import type { ValuePair } from './agent';
 import {
   JOURNEY_CALL_PHASE_END,
   JOURNEY_TRIALS_PHASE_END,
@@ -44,6 +45,14 @@ export const ORDEAL_FORCE_FIRE_THRESHOLD = 0.90;
 
 /** Maximum number of pending vignettes in queue */
 export const MAX_PENDING_VIGNETTES = 5;
+
+/**
+ * THR-1854: a beat choice declares `reachChanges` on the 0–1 scale the meeting's
+ * dilemmas use; the First's `domainCapabilities` are raw (10–40). The meeting converts
+ * with the same ×100 when it mints the First (`createAgentFromMeeting`), so a journey
+ * choice's +0.05 is +5 raw — one scale for both moments that shape her.
+ */
+export const JOURNEY_REACH_CHANGE_RAW_SCALE = 100;
 
 // ─── Ordeal Outcome ─────────────────────────────────────────────────
 
@@ -137,8 +146,11 @@ export interface BeatChoice {
 
 /** Effects of a beat choice — applied to the First and/or the world. */
 export interface BeatChoiceEffects {
-  /** Axiological profile shifts */
-  axiologicalShifts?: Partial<Record<string, number>>;
+  /**
+   * Axiological profile shifts, keyed by a canonical `ValuePair` (THR-1854: the content
+   * named five pairs the engine never had, so a typo now fails the build).
+   */
+  axiologicalShifts?: Partial<Record<ValuePair, number>>;
   /** Reach capability changes */
   reachChanges?: Partial<Record<ReachDomain, number>>;
   /** Intervention type: did the god step in or step back? */

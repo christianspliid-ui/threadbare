@@ -80,6 +80,12 @@ export const JOURNEY_STAGE_LABELS: Record<CampbellianPhase, string> = {
   return: 'The Return',
 };
 
+/** THR-1854 — the button that closes a journey moment once its answer has been read. */
+export const JOURNEY_CONTINUE_LABEL = 'Continue';
+
+/** THR-1854 — beside a journey choice's cost when the paying pool cannot cover it. */
+export const JOURNEY_CHOICE_UNAFFORDABLE = 'not enough essence';
+
 /** THR-1716 — the remembrance's undo while a chosen picture holds before the flow moves on. */
 export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
 
