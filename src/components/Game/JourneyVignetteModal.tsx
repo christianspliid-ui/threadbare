@@ -3,14 +3,20 @@
  *
  * Displays the beat's setup prose, tension prose, and player choices.
  * Special treatment for the Ordeal (higher stakes UI).
+ *
+ * THR-1854: a choice is answered before the moment closes — its `consequenceProse`
+ * replaces the choices with a Continue button, and the choice is committed on
+ * Continue (or on any close once answered). Focus opens on the scene, not on the
+ * first choice, so no answer reads as pre-selected.
  */
 
 import { memo, useState, useCallback } from 'react';
 import { Modal } from '../shared/Modal';
+import { Button } from '../shared/Button';
 import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
 import { formatPhaseName } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
-import { JOURNEY_STAGE_LABELS } from '../../data/ui-content';
+import { JOURNEY_STAGE_LABELS, JOURNEY_CONTINUE_LABEL, JOURNEY_CHOICE_UNAFFORDABLE } from '../../data/ui-content';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -19,6 +25,11 @@ interface JourneyVignetteModalProps {
   onClose: () => void;
   onChoice: (choiceId: string) => void;
   vignette: JourneyVignetteData;
+  /**
+   * Essence in the pool that pays for a journey choice (the god's primary sphere).
+   * A choice costing more renders disabled. Omitted = unknown, nothing disabled.
+   */
+  essenceAvailable?: number;
 }
 
 // ─── Phase Badge ────────────────────────────────────────────────────
@@ -61,11 +72,13 @@ function ChoiceButton({
   onSelect,
   isOrdeal,
   disabled,
+  unaffordable,
 }: {
   choice: BeatChoice;
   onSelect: (id: string) => void;
   isOrdeal: boolean;
   disabled: boolean;
+  unaffordable: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -120,7 +133,7 @@ function ChoiceButton({
           fontSize: 'var(--text-xs)',
           marginTop: '4px',
         }}>
-          Cost: {formatEssence(essenceCost)} essence
+          Cost: {formatEssence(essenceCost)} essence{unaffordable ? ` · ${JOURNEY_CHOICE_UNAFFORDABLE}` : ''}
         </div>
       )}
     </button>
@@ -134,25 +147,36 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   onClose,
   onChoice,
   vignette,
+  essenceAvailable,
 }: JourneyVignetteModalProps) {
-  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+  // The answered choice, while its consequence line is showing (THR-1854).
+  const [answered, setAnswered] = useState<BeatChoice | null>(null);
 
   const handleChoice = useCallback((choiceId: string) => {
-    if (selectedChoice) return; // Prevent double-click
-    setSelectedChoice(choiceId);
-    // Small delay for visual feedback
-    setTimeout(() => {
+    if (answered) return; // Prevent double-click
+    const choice = vignette.choices.find(c => c.id === choiceId);
+    if (!choice) return;
+    // Fail-soft: a choice with no reply line commits at once, as before.
+    if (!choice.effects.consequenceProse) {
       onChoice(choiceId);
-      setSelectedChoice(null);
-    }, 300);
-  }, [onChoice, selectedChoice]);
+      return;
+    }
+    setAnswered(choice);
+  }, [answered, onChoice, vignette.choices]);
+
+  const handleContinue = useCallback(() => {
+    if (answered) onChoice(answered.id);
+  }, [answered, onChoice]);
+
+  // Once answered, any close commits the answer — the god has already spoken.
+  const handleClose = answered ? handleContinue : onClose;
 
   const phaseName = formatPhaseName(vignette.phase);
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       size="md"
       context="story"
     >
@@ -172,8 +196,8 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       <Modal.Body>
         <PhaseBadge phase={phaseName} />
 
-        {/* Setup prose */}
-        <div style={{
+        {/* Setup prose — the scene takes focus on open, not the first choice (THR-1854) */}
+        <div tabIndex={0} aria-label="The scene" style={{
           color: 'var(--text-secondary)',
           fontSize: 'var(--text-xs)',
           lineHeight: 1.7,
@@ -211,18 +235,56 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           </div>
         )}
 
-        {/* Choices */}
-        <div style={{ marginTop: 'var(--space-2)' }}>
-          {vignette.choices.map(choice => (
-            <ChoiceButton
-              key={choice.id}
-              choice={choice}
-              onSelect={handleChoice}
-              isOrdeal={vignette.isOrdeal}
-              disabled={selectedChoice !== null}
-            />
-          ))}
-        </div>
+        {/* Choices — or, once one is picked, its answer (THR-1854) */}
+        {answered ? (
+          <div data-testid="journey-consequence" style={{ marginTop: 'var(--space-2)' }}>
+            <div style={{
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-xs)',
+              marginBottom: 'var(--space-1)',
+            }}>
+              {answered.text}
+            </div>
+            <div style={{
+              color: 'var(--text-primary)',
+              fontSize: 'var(--text-xs)',
+              lineHeight: 1.7,
+              fontStyle: 'italic',
+              paddingLeft: 'var(--space-3)',
+              borderLeft: '2px solid var(--accent-gold)',
+              marginBottom: 'var(--space-3)',
+            }}>
+              {answered.effects.consequenceProse}
+            </div>
+            <Button
+              variant="primary"
+              size="md"
+              fullWidth
+              autoFocus
+              data-testid="journey-continue"
+              onClick={handleContinue}
+            >
+              {JOURNEY_CONTINUE_LABEL}
+            </Button>
+          </div>
+        ) : (
+          <div style={{ marginTop: 'var(--space-2)' }}>
+            {vignette.choices.map(choice => {
+              const unaffordable = essenceAvailable !== undefined
+                && (choice.effects.essenceCost ?? 0) > essenceAvailable;
+              return (
+                <ChoiceButton
+                  key={choice.id}
+                  choice={choice}
+                  onSelect={handleChoice}
+                  isOrdeal={vignette.isOrdeal}
+                  disabled={unaffordable}
+                  unaffordable={unaffordable}
+                />
+              );
+            })}
+          </div>
+        )}
       </Modal.Body>
 
       <Modal.Footer>

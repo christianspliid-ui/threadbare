@@ -90,6 +90,7 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
+  | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
@@ -671,6 +672,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
+  'journey.choice_applied',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
@@ -1835,6 +1837,20 @@ export interface FoundedPlaceCultureTrace extends TraceBase {
   category: 'founded_place_culture';
   maxHexes: number;
   linked: Array<{ locationId: string; cultureId: string; dist: number }>;
+}
+
+/**
+ * Trace: a journey beat choice landed on the First (THR-1854) — one per choice. The
+ * deltas are the ones that applied after clamping; empty maps mean the choice moved
+ * nothing on her (a withdrawal, or a value already at its pole).
+ */
+export interface JourneyChoiceAppliedTrace extends TraceBase {
+  category: 'journey.choice_applied';
+  templateId: string;
+  variantKey: string;
+  choiceId: string;
+  axiological: Partial<Record<ValuePair, number>>;
+  reaches: Partial<Record<ReachDomain, number>>;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -4579,6 +4595,7 @@ export type TraceEntry =
   | TradeRouteUpkeepTrace
   | SettlementTierChangeTrace
   | FoundedPlaceCultureTrace
+  | JourneyChoiceAppliedTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace

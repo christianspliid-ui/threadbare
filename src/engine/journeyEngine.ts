@@ -28,7 +28,10 @@ import {
   ORDEAL_PHASE_END,
   ORDEAL_FORCE_FIRE_THRESHOLD,
   MAX_PENDING_VIGNETTES,
+  JOURNEY_REACH_CHANGE_RAW_SCALE,
 } from '../types/journeyEngine';
+import type { ValuePair } from '../types/agent';
+import type { ReachDomain } from '../types/traits';
 import {
   getThreadsFrom,
   getActorTraits,
@@ -216,9 +219,10 @@ export function selectTemplate(
   phase: CampbellianPhase,
   snapshot: StateSnapshot,
   seed: number,
+  played: readonly BeatOutcome[] = [],
 ): { template: JourneyBeatTemplate; variant: BeatVariant } | null {
-  // Filter templates valid for this phase
-  const validTemplates = templates.filter(t => t.validPhases.includes(phase));
+  // Filter templates valid for this phase, minus the moments already lived (THR-1854)
+  const validTemplates = excludePlayed(templates.filter(t => t.validPhases.includes(phase)), played);
 
   if (validTemplates.length === 0) {
     // Try fallback template
@@ -258,6 +262,31 @@ export function selectTemplate(
 
   // Fallback to highest scorer
   return { template: scored[0].template, variant: scored[0].variant };
+}
+
+/**
+ * THR-1854: a moment the First has already lived is not offered again. The scorer
+ * favours the same variant while her state holds still, so without this the weighted
+ * pick served `trials_temptation` twice in one Road of Trials, word for word.
+ *
+ * Narrowest exclusion that still leaves a candidate (fail-soft, NFP #4): drop every
+ * template already played; if that empties the phase, drop only the played variants;
+ * if that empties it too, repeat rather than skip the beat.
+ */
+function excludePlayed(
+  phaseTemplates: JourneyBeatTemplate[],
+  played: readonly BeatOutcome[],
+): JourneyBeatTemplate[] {
+  if (played.length === 0) return phaseTemplates;
+  const playedTemplates = new Set(played.map(b => b.templateId));
+  const unplayed = phaseTemplates.filter(t => !playedTemplates.has(t.id));
+  if (unplayed.length > 0) return unplayed;
+
+  const playedVariants = new Set(played.map(b => `${b.templateId}::${b.variantKey}`));
+  const freshVariants = phaseTemplates
+    .map(t => ({ ...t, variants: t.variants.filter(v => !playedVariants.has(`${t.id}::${v.key}`)) }))
+    .filter(t => t.variants.length > 0);
+  return freshVariants.length > 0 ? freshVariants : phaseTemplates;
 }
 
 // ─── Beat Execution ─────────────────────────────────────────────────
@@ -356,6 +385,97 @@ export function applyBeatChoice(
   }
 
   return { updatedProps, beatOutcome };
+}
+
+/** What a beat choice actually moved on the First, after clamping (THR-1854). */
+export interface BeatChoiceEffectResult {
+  agentId: string;
+  choiceId: string;
+  /** Applied axiological deltas — the change that landed, not the one declared. */
+  axiological: Partial<Record<ValuePair, number>>;
+  /** Applied raw `domainCapabilities` deltas. */
+  reaches: Partial<Record<ReachDomain, number>>;
+  /** The choice's reply line, shown to the player as the answer to the click. */
+  consequenceProse: string | null;
+}
+
+/**
+ * Apply a beat choice's declared shifts to the First (THR-1854).
+ *
+ * `applyBeatChoice` records the beat on the thread edge; this writes what the choice
+ * does to the mortal herself, which nothing did before: `axiologicalShifts` move her
+ * `axiologicalProfile` (clamped to [-1, 1], the meeting's rule), and `reachChanges`
+ * move her raw `domainCapabilities` at the meeting's ×100 conversion
+ * (`JOURNEY_REACH_CHANGE_RAW_SCALE`), floored at 0. Writes in place on the graph; the
+ * caller bumps `worldVersion`.
+ *
+ * Emits one `journey.choice_applied` trace naming every delta that landed.
+ *
+ * Fail-soft (NFP #4): an unknown choice or a missing agent changes nothing and
+ * returns null; a non-finite declared delta is skipped.
+ */
+export function applyBeatChoiceEffects(
+  graph: WorldGraph,
+  vignetteData: JourneyVignetteData,
+  choiceId: string,
+  tick: number,
+): BeatChoiceEffectResult | null {
+  const choice = vignetteData.choices.find(c => c.id === choiceId);
+  const agent = graph.getNode(vignetteData.agentId);
+  if (!choice || !agent) return null;
+
+  const axiological: Partial<Record<ValuePair, number>> = {};
+  const profile = { ...((agent.properties.axiologicalProfile as Partial<Record<ValuePair, number>>) ?? {}) };
+  for (const [pair, shift] of Object.entries(choice.effects.axiologicalShifts ?? {})) {
+    if (typeof shift !== 'number' || !Number.isFinite(shift)) continue;
+    const key = pair as ValuePair;
+    const before = profile[key] ?? 0;
+    const after = Math.max(-1, Math.min(1, before + shift));
+    profile[key] = after;
+    if (after !== before) axiological[key] = after - before;
+  }
+
+  const reaches: Partial<Record<ReachDomain, number>> = {};
+  const capabilities = { ...((agent.properties.domainCapabilities as Partial<Record<ReachDomain, number>>) ?? {}) };
+  for (const [reach, change] of Object.entries(choice.effects.reachChanges ?? {})) {
+    if (typeof change !== 'number' || !Number.isFinite(change)) continue;
+    const key = reach as ReachDomain;
+    const before = capabilities[key] ?? 0;
+    const after = Math.max(0, before + change * JOURNEY_REACH_CHANGE_RAW_SCALE);
+    capabilities[key] = after;
+    if (after !== before) reaches[key] = after - before;
+  }
+
+  const changed = Object.keys(axiological).length > 0 || Object.keys(reaches).length > 0;
+  if (changed) {
+    graph.updateNode(agent.id, {
+      properties: { axiologicalProfile: profile, domainCapabilities: capabilities },
+    });
+  }
+
+  emitTrace({
+    category: 'journey.choice_applied',
+    tick,
+    agentId: agent.id,
+    summary: `${agent.name}'s journey choice "${choice.id}" (${vignetteData.templateId}/${vignetteData.variantKey}) `
+      + (changed
+        ? `moved ${[...Object.entries(axiological), ...Object.entries(reaches)]
+          .map(([k, d]) => `${k} ${d > 0 ? '+' : ''}${Number(d).toFixed(2)}`).join(', ')}`
+        : 'moved nothing on the First'),
+    templateId: vignetteData.templateId,
+    variantKey: vignetteData.variantKey,
+    choiceId: choice.id,
+    axiological,
+    reaches,
+  });
+
+  return {
+    agentId: agent.id,
+    choiceId: choice.id,
+    axiological,
+    reaches,
+    consequenceProse: choice.effects.consequenceProse ?? null,
+  };
 }
 
 // ─── Orchestrator Phase ─────────────────────────────────────────────
@@ -459,7 +579,7 @@ export function phaseJourneyBeat(
 
     // Select template + variant
     const beatSeed = hashSeed(seed, threadEdge.target, beatCheck.phase, beatCheck.beatIndex);
-    const selection = selectTemplate(templates, beatCheck.phase, snapshot, beatSeed);
+    const selection = selectTemplate(templates, beatCheck.phase, snapshot, beatSeed, beatHistory);
 
     if (!selection) {
       // Fail-soft: no template available, skip this beat

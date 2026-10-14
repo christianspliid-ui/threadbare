@@ -79,7 +79,7 @@ const CALL_AWAKENING: JourneyBeatTemplate = {
           godVoice: 'Yes. Rise, and let the world see what I have chosen.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { courage_cowardice: 0.1 },
+            axiologicalShifts: { courage_prudence: 0.1 },
             consequenceProse: 'The First steps forward with divine confidence. Their eyes burn with purpose.',
           },
         },
@@ -117,7 +117,7 @@ const CALL_AWAKENING: JourneyBeatTemplate = {
           godVoice: 'See yourself through my eyes. You are not small.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { courage_cowardice: 0.15 },
+            axiologicalShifts: { courage_prudence: 0.15 },
             consequenceProse: 'The First glimpses a future self — powerful, purposeful. The vision fades, but the warmth remains.',
           },
         },
@@ -127,7 +127,7 @@ const CALL_AWAKENING: JourneyBeatTemplate = {
           godVoice: 'No more hiding. The world needs you whether you agree or not.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { courage_cowardice: 0.1, mercy_ruthlessness: -0.05 },
+            axiologicalShifts: { courage_prudence: 0.1, mercy_ruthlessness: -0.05 },
             consequenceProse: 'Circumstance conspires. The First is thrust into action not by choice but by necessity — and discovers they can rise to meet it.',
           },
         },
@@ -203,7 +203,7 @@ const TRIALS_RISING_STAR: JourneyBeatTemplate = {
           godVoice: 'Show them what divine favor looks like.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { courage_cowardice: 0.1 },
+            axiologicalShifts: { courage_prudence: 0.1 },
             reachChanges: { iron: 0.05 },
             consequenceProse: 'The First stands their ground. Whether through force or sheer presence, the rival learns the cost of opposition.',
           },
@@ -276,7 +276,7 @@ const TRIALS_TEMPTATION: JourneyBeatTemplate = {
           godVoice: 'What is freely given is rarely free. Look deeper.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { honesty_deception: 0.1 },
+            axiologicalShifts: { honesty_cunning: 0.1 },
             consequenceProse: 'The First hesitates, then looks past the gleaming surface. The trap reveals itself.',
           },
         },
@@ -296,7 +296,7 @@ const TRIALS_TEMPTATION: JourneyBeatTemplate = {
           godVoice: 'Not that way. This way — and trust me.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { sacrifice_selfishness: 0.1 },
+            axiologicalShifts: { sacrifice_survival: 0.1 },
             reachChanges: { star: 0.03 },
             consequenceProse: 'The First turns away from the easy answer. The harder path opens before them, unmarked but honest.',
           },
@@ -365,7 +365,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           godVoice: 'Pain is a teacher I cannot replace.',
           effects: {
             interventionType: 'withdrawn',
-            axiologicalShifts: { preservation_transformation: 0.15, sacrifice_selfishness: 0.05 },
+            axiologicalShifts: { preservation_transformation: 0.15, sacrifice_survival: 0.05 },
             consequenceProse: 'The tower crumbles. The First learns what foundations really hold.',
           },
         },
@@ -395,7 +395,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           effects: {
             interventionType: 'supportive',
             essenceCost: 3,
-            axiologicalShifts: { courage_cowardice: 0.15 },
+            axiologicalShifts: { courage_prudence: 0.15 },
             consequenceProse: 'Light pours through the thread. The First gasps, steadies, and stands. Not strong — but alive. Enough.',
           },
         },
@@ -405,7 +405,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           godVoice: 'You have always been enough. Remember.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { preservation_transformation: -0.05, courage_cowardice: 0.1 },
+            axiologicalShifts: { preservation_transformation: -0.05, courage_prudence: 0.1 },
             consequenceProse: 'The words echo in the dark. The First reaches inward and finds a flame that was never quite extinguished.',
           },
         },
@@ -622,7 +622,7 @@ const CALL_DIVINE_SPARK: JourneyBeatTemplate = {
           godVoice: 'I have watched worlds rise and fall. This one — your world — matters to me.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { sacrifice_selfishness: 0.1 },
+            axiologicalShifts: { sacrifice_survival: 0.1 },
             reachChanges: { star: 0.05 },
             consequenceProse: 'The First glimpses the cosmic tapestry. They see their own thread, small but bright, woven into something immense.',
           },
@@ -670,7 +670,7 @@ const CALL_BURDEN: JourneyBeatTemplate = {
           godVoice: 'You cannot serve two masters. Choose.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { sacrifice_selfishness: 0.15 },
+            axiologicalShifts: { sacrifice_survival: 0.15 },
             consequenceProse: 'The ultimatum hangs in the air. The First stares at everything they built and wonders what it was all for.',
           },
         },
@@ -763,7 +763,7 @@ const TRIALS_BOND_TEST: JourneyBeatTemplate = {
           godVoice: 'You were chosen for a reason. That reason is not friendship.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { sacrifice_selfishness: 0.1 },
+            axiologicalShifts: { sacrifice_survival: 0.1 },
             consequenceProse: 'The First turns away from the companion. The thread hums with purpose — but something within the First goes quiet.',
           },
         },
@@ -808,7 +808,7 @@ const TRIALS_DISCOVERY: JourneyBeatTemplate = {
           godVoice: 'Let go.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { courage_cowardice: 0.1 },
+            axiologicalShifts: { courage_prudence: 0.1 },
             consequenceProse: 'The power erupts. The trial ends in devastation — the enemy, the terrain, and something inside the First are all remade.',
           },
         },
@@ -836,7 +836,7 @@ const TRIALS_DISCOVERY: JourneyBeatTemplate = {
           effects: {
             interventionType: 'supportive',
             reachChanges: { eye: 0.05 },
-            axiologicalShifts: { honesty_deception: 0.05 },
+            axiologicalShifts: { honesty_cunning: 0.05 },
             consequenceProse: 'The First learns to hold a secret that could reshape the world — and begins to understand why some truths are kept hidden.',
           },
         },
@@ -846,7 +846,7 @@ const TRIALS_DISCOVERY: JourneyBeatTemplate = {
           godVoice: 'Secrets are chains. Break them.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { honesty_deception: 0.15 },
+            axiologicalShifts: { honesty_cunning: 0.15 },
             consequenceProse: 'The First speaks the truth aloud. The world shifts. Allies appear. So do enemies.',
           },
         },
@@ -930,7 +930,7 @@ const CRISIS_FAITH: JourneyBeatTemplate = {
           godVoice: 'I have guided you. Sometimes poorly. But never with malice.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { honesty_deception: 0.15, preservation_transformation: 0.1 },
+            axiologicalShifts: { honesty_cunning: 0.15, preservation_transformation: 0.1 },
             consequenceProse: 'The honesty rings true. The First does not forgive — not yet — but the thread holds.',
           },
         },
@@ -976,7 +976,7 @@ const CRISIS_ISOLATION: JourneyBeatTemplate = {
           effects: {
             interventionType: 'supportive',
             essenceCost: 3,
-            axiologicalShifts: { courage_cowardice: 0.15 },
+            axiologicalShifts: { courage_prudence: 0.15 },
             consequenceProse: 'The thread ignites. In the absolute darkness, divine light pours through like dawn. The First weeps — and stands.',
           },
         },
@@ -986,7 +986,7 @@ const CRISIS_ISOLATION: JourneyBeatTemplate = {
           godVoice: '...',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { courage_cowardice: 0.1 },
+            axiologicalShifts: { courage_prudence: 0.1 },
             consequenceProse: 'A warmth. Almost imperceptible. But in the total dark, even a spark is a sun.',
           },
         },
@@ -1108,7 +1108,7 @@ const RETURN_TRANSFORMATION: JourneyBeatTemplate = {
           godVoice: 'These wounds are proof that you stood where others would have fled.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { courage_cowardice: 0.1 },
+            axiologicalShifts: { courage_prudence: 0.1 },
             consequenceProse: 'The scars begin to shimmer — not healed, but transformed into something that commands respect rather than pity.',
           },
         },

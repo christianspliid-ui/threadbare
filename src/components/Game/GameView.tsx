@@ -208,7 +208,7 @@ import {
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
-import { applyBeatChoice } from '../../engine/journeyEngine';
+import { applyBeatChoice, applyBeatChoiceEffects } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
@@ -5553,18 +5553,46 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     const threadProps = threadEdge.properties as ThreadEdgeProperties;
 
+    // THR-1854 — a journey choice's essence cost is charged, all-or-nothing, against
+    // the pool every encounter choice bills (THR-1720). The modal disables a choice the
+    // pool cannot cover; this re-check covers a pool that moved since it rendered.
+    const choice = vignetteData.choices.find(c => c.id === choiceId);
+    const essenceCost = choice?.effects.essenceCost ?? 0;
+    const payingSphere = archetype.sphereAlignment.primary;
+    if (essenceCost > 0 && !spendAuthoredChoiceEssence(gameState.essencePool, essenceCost, payingSphere).ok) {
+      handlePushToast({
+        id: `journey-reject-${activeVignette.id}-${gameState.tick}`,
+        message: `Not enough ${sphereWord(payingSphere)} essence for that.`,
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+        sphere: payingSphere,
+      });
+      return;
+    }
+
     // Apply beat choice — updates thread edge properties + records outcome
     const { updatedProps } = applyBeatChoice(threadProps, vignetteData, choiceId);
 
     // Update the thread edge in the graph
     gameState.graph.updateEdge(threadEdge.id, { properties: updatedProps });
 
-    // Remove this vignette from the queue
-    setGameState(prev => ({
-      ...prev,
-      pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
-    }));
-  }, [activeVignette, gameState.graph, gameState.ascendantId, setGameState]);
+    // THR-1854 — and what the choice does to the First herself: her values and reaches.
+    applyBeatChoiceEffects(gameState.graph, vignetteData, choiceId, gameState.tick);
+    touchWorld(runtime);
+
+    // Remove this vignette from the queue, paying its cost in the same update
+    setGameState(prev => {
+      const spend = essenceCost > 0
+        ? spendAuthoredChoiceEssence(prev.essencePool, essenceCost, payingSphere)
+        : null;
+      return {
+        ...prev,
+        ...(spend?.ok ? withEssenceSpend(prev, spend.pool, 'spend_nudge') : {}),
+        pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+      };
+    });
+  }, [activeVignette, gameState.graph, gameState.ascendantId, gameState.essencePool, gameState.tick, archetype.sphereAlignment.primary, handlePushToast, runtime, setGameState]);
 
   // ── THR-1019: narrative-interrupt levers for browser verification ──────────
   // Browser-verify runs must reach surfaces *behind* the game's beats, and seven
@@ -6751,7 +6779,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       {/* Journey vignette modal (auto-interrupt for The First) */}
       {activeVignette && interruptResolution.open.includes('JourneyVignetteModal') && (
         <JourneyVignetteModal
+          key={activeVignette.id}
           open={true}
+          essenceAvailable={encounterPayingEssence}
           onClose={() => {
             // Dismissing = step back choice (withdrawn)
             const fallbackChoice = activeVignette.data.choices.find(c => c.effects.interventionType === 'withdrawn');
