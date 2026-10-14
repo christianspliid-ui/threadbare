@@ -1,0 +1,881 @@
+/**
+ * The Witch Trial (slug witch-trial) - slot 8 of the master-everyday-2 batch (THR-1757).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-2-brief.md`.
+ * Revised packet: `Docs/plans/encounters/witch-trial-revised.md`. Draft: `witch-trial-draft.md`.
+ * plotHookRolled: hook.grief_absorption, hook.death_and_return, hook.trial_by_combat
+ * plotHookTaken:  hook.death_and_return - the miller's boy was laid out for dead at harvest and woke under
+ *                 the healer's hands; the lane says what woke is not the boy. The truth is spoiled rye: the
+ *                 fits and burning hands are the sickness in the bread, and the boy is the boy.
+ * Seed dice: p3 unmitigated_risk (the pyre is built) - opposition terrain (indifference), read as the
+ *            sickness in the rye, which cares nothing for whom the town blames - agentRole client_who_is_owed,
+ *            realised as the favour the magistrate may come to owe (a reaction), never asserted as history
+ *            (prose rule 7) - scale settlement - system traits (advisory: two trait variants).
+ * 
+ * --- The narrator's 12 questions, answered ---
+ *   1 P1 arrival?      Yes: {actor} arrives in {location}, sent for by the magistrate. Graph names.
+ *   2 P2 events?       A healer is in the stocks; a pyre is built; the boy was laid out for dead and woke;
+ *                      he has fits and burning hands since.
+ *   3 P3 one stake?    Unmitigated risk (rolled): say whether the healer is touched before the pyre is lit.
+ *   4 <=80 words?      75 / 80 (opening + step-0 spine).
+ *   5 Read aloud?      Report throughout; no interior sensation.
+ *   6 Stated?          "The lane says what woke is not the boy." States the town's belief plainly.
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? Stocks, pyre, miller, boy, healer, magistrate in the step-0 spine; the mill house,
+ *                      the loft and the household in step 1's spine; the square and the crowd in step 2's.
+ *   9 One named person? {cast:accused} in step 0, nobody named in step 1, {cast:magistrate} in step 2.
+ *  10 Stake in a sentence? Can {actor} say whether the healer is touched, and what made the boy
+ *                      sick, before the town lights the pyre?
+ *  11 Cards verb+noun? Settle Frightened Breath, Uncover True Spirit, Remember Wet Harvest, Quicken Hidden Rot,
+ *                      Silence Angry Square, Wake Old Gratitude.
+ *  12 Opening per class? urban, written.
+ * 
+ * --- Mechanical design block ---
+ *   Crux            A healer is in the stocks for witchcraft and the pyre is built; the boy's sickness is in the rye.
+ *   Shape           Query prize on a three-step read -> read -> rule spine. veil 0.74 (continue_weakened)
+ *                   -> veil 0.80 (continue_weakened) -> veil 0.84 (fail_action). Linear, branch count 0.
+ *   Consequence hand (binding): relationship (bond_change $cast:accused +0.12 on step 2 success; bond_change
+ *                   $cast:magistrate -0.12 on step 2 failure, -0.04 on step 0 and step 1 failure) + secret
+ *                   (hidden_mark secret_knowledge on $actor, step 2 success: the miller knew the rye was spoiled;
+ *                   favor_creation, debtor $cast:magistrate, on the 'leave the miller to the magistrate'
+ *                   reaction). No swap.
+ *   Query prize     Step 2 rewardPool { possession: 1 } tagFilters [#healing, #provision]: a remedy (poultice, incense, cup) from the healer's
+ *                   house, given in thanks.
+ *   Standing        reputation_with $here +0.05 / -0.06 on step 2; -0.02 on step 0 and step 1 failure (backs
+ *                   the critical_failure chips on every route: a critical failure at any step ends the action).
+ *   Cost channels   All specials essence-priced. No Heavy Hand, no rider, no Undertow.
+ *   Cool failure    The mortal is not killed, jailed or branded. Failure: the healer is held in chains and
+ *                   the magistrate is left unsettled. Critical failure: the crowd burns the house; chains. No assize
+ *                   or later trial is promised (rule 34): the engine performs none. Stated plainly in the overviews.
+ *   Gender          The accused and the magistrate are bound cast (reuse-first), so prose never genders
+ *                   either: 'the healer', 'the magistrate', or the token.
+ *   Accepted limit  No band-keyed step write: critical_success and success_at_cost differ from success by
+ *                   prose. The miller's anger on success_at_cost is told, unchipped.
+ *   Not colliding   Veil master: lay an ossuary's dead. Veil experts: hear a drowned man, judge an
+ *                   oath-breaker. This one reads a living accused and a sick house; no card questions the dead.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.witch_trial',
+  stakes: {
+    goal: 'clear the accused healer before the pyre is lit',
+    risk: 'see the healer\'s house burned and the healer chained',
+    won: 'cleared the accused healer before the pyre was lit',
+    lost: 'stayed the pyre but left the healer in chains',
+    lostBadly: 'saw the healer\'s house burned and the healer chained',
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Witch Trial',
+  reach: 'veil',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['mercy_ruthlessness', 'revelation_discretion'],
+  settings: ['urban'],
+  openings: {
+    urban: '{actor} arrives in {location}, sent for by the magistrate.',
+  },
+  steps: [
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.74,
+      purposeLine: 'Read the accused healer',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'A healer is in the stocks for witchcraft, and a pyre stands built in the square. At harvest the '
+        + 'miller\'s boy was laid out for dead and woke under the healer\'s hands. He has had fits since, '
+        + 'and his hands burn. The lane says what woke is not the boy.\n\n'
+        + 'The magistrate asks {actor} to say whether {cast:accused} is touched, before the town lights the '
+        + 'pyre.',
+      criticalSuccessAfterimage: 'By noon {actor} was sure. No mark of the unseen was on {cast:accused}, and the healer named the '
+        + 'day the boy first ate the new bread.',
+      successAfterimage: 'No mark of the unseen was on {cast:accused}. The healer was frightened and tired, and told the '
+        + 'same account of the boy\'s waking each time.',
+      successAtCostAfterimage: 'No mark of the unseen was on {cast:accused}, but the crowd watched {actor} sit at the stocks all '
+        + 'morning and began to say the master was bewitched too.',
+      failureAfterimage: 'They could not tell. {cast:accused} was too frightened to answer plainly, and {actor} left the '
+        + 'stocks without a reading.',
+      criticalFailureAfterimage: '{cast:accused} would not speak to them at all. The magistrate called off the reading, and the '
+        + 'crowd took that for an answer.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:magistrate',
+            sentimentDelta: -0.04,
+            trustDelta: -0.05,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['lore', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'witch.settle_frightened_breath',
+          name: 'Settle Frightened Breath',
+          sphere: 'life',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.vigor',
+          effectLine: 'Slow the prisoner\'s racing heart, so the answers given in the stocks come steady and plain.',
+          bandProse: {
+            critical_success: '{cast:accused} stopped shaking and answered every question in a level voice.',
+            success: 'The healer\'s breathing slowed, and the answers came plain.',
+            near_miss: 'The healer grew calm only by noon, after a morning too frightened to answer.',
+            failure: 'The healer grew calm enough to talk, and talked only of the pyre.',
+          },
+        },
+        {
+          id: 'witch.uncover_true_spirit',
+          name: 'Uncover True Spirit',
+          sphere: 'spirit',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.light',
+          effectLine: 'Bring any mark of the unseen on the prisoner into plain view, if a mark is there.',
+          bandProse: {
+            success: 'No mark of the unseen showed on {cast:accused}, and {actor} could say so plainly.',
+            success_at_cost: 'No mark showed, but the crowd watched {actor} lay hands on the healer and muttered about it.',
+            failure: 'A faint mark showed on the healer, left by years of setting bones with old charms.',
+            critical_failure: 'The crowd saw a light pass over the healer\'s face and shouted that the witch was proven.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.8,
+      purposeLine: 'Read the mill house',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The harm began at the mill house, where the boy lies. The miller keeps the door and wants the '
+        + 'healer burned. The household says the boy was cold for a night and a day before he woke. Their '
+        + 'grain is stored in the loft above. The sickness in the house does not care what the town '
+        + 'believes, and it will show its cause only to a careful reading.',
+      criticalSuccessAfterimage: 'They found the cause before dark. The rye in the mill loft came in black from the low field, and '
+        + 'the household has eaten bread from it since harvest.',
+      successAfterimage: 'They found black, spoiled rye in the mill loft. The household has eaten bread from it since '
+        + 'harvest.',
+      successAtCostAfterimage: 'They found the spoiled rye in the loft, but the miller caught them at the sacks and threw them '
+        + 'out of the house.',
+      failureAfterimage: 'They read the house until dark and found no cause they could name. They will have to rule '
+        + 'without one.',
+      criticalFailureAfterimage: 'The boy had a fit while they were in the room, and the miller ran into the street shouting that '
+        + 'the witch\'s friend had brought it on. The magistrate called the reading off.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They are sure the healer is not touched.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They found no mark of the unseen on the healer.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The crowd says they are bewitched too.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They read the healer only after a long morning.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They could not tell whether the healer is touched.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:magistrate',
+            sentimentDelta: -0.04,
+            trustDelta: -0.05,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['insight', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'witch.remember_wet_harvest',
+          name: 'Remember Wet Harvest',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.memory',
+          effectLine: 'Bring back to the household the rainy weeks at reaping, so they can say which field each sack of '
+            + 'grain came from.',
+          bandProse: {
+            critical_success: 'The household remembered at once which sacks came from the low field, and went straight to them.',
+            success: 'The household remembered the rainy reaping, and the sacks from the low field.',
+            near_miss: 'The household remembered the low field only at dusk, after a day of wrong answers.',
+            failure: 'The household remembered the rain, and blamed the healer for it.',
+          },
+        },
+        {
+          id: 'witch.quicken_hidden_rot',
+          name: 'Quicken Hidden Rot',
+          sphere: 'entropy',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.decay',
+          effectLine: 'Hasten the decay already in the stored grain, so the spoiled sacks turn black where anyone can '
+            + 'see.',
+          bandProse: {
+            success: 'The spoiled sacks in the loft turned black overnight, and the rest stayed clean.',
+            success_at_cost: 'The spoiled sacks turned black, and the miller saw them first and swore they had been cursed.',
+            failure: 'The decay spread to the good sacks too, and the whole loft looked cursed.',
+            critical_failure: 'The whole loft went black in a night, and the lane said the healer had cursed the mill.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.84,
+      purposeLine: 'Rule before the magistrate',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: '{cast:magistrate} hears the ruling in the square at noon, with the crowd around the pyre. '
+        + '{actor} must say whether the healer is touched, and what made the boy sick. If the ruling names '
+        + 'the wrong cause, the boy will still have fits, and the town will still want a witch.',
+      criticalSuccessAfterimage: '{cast:magistrate} tasted the black rye in front of the square and spat it out. The crowd let the '
+        + 'healer out of the stocks and pulled down the pyre. A mill hand told {actor} the miller had known '
+        + 'the rye was bad.',
+      successAfterimage: '{cast:magistrate} ruled that the healer was not touched and that the rye made the boy sick. '
+        + 'Afterwards a mill hand told {actor} the miller knew the rye was bad and ground it anyway.',
+      successAtCostAfterimage: '{cast:magistrate} freed the healer on the ruling, but the miller swore before the whole square '
+        + 'that {actor} had lied to save a witch. A mill hand told {actor} the miller had known the rye was '
+        + 'bad.',
+      failureAfterimage: 'The crowd would not hear the ruling. {cast:magistrate} would not burn the healer on {actor}\'s '
+        + 'doubt, and would not free the healer either.',
+      criticalFailureAfterimage: 'The ruling fell apart in front of the square, and the crowd stopped listening. {cast:magistrate} '
+        + 'held the pyre, and could not hold the crowd.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They know the spoiled rye made the boy sick.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They found the spoiled rye in the mill loft.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The miller threw them out of the mill house.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They found the spoiled rye only at dusk.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They do not know what made the boy sick.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: {
+            possession: 1,
+          },
+          tagFilters: ['#healing', '#provision'],
+        },
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:accused',
+            sentimentDelta: 0.12,
+            trustDelta: 0.12,
+          },
+          {
+            kind: 'hidden_mark',
+            category: 'secret_knowledge',
+            severity: 0.3,
+            label: 'the miller ground the spoiled rye knowing it was bad, then named the healer',
+            targetAgentId: '$actor',
+            revealFamilies: ['investigation'],
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.05,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:magistrate',
+            sentimentDelta: -0.12,
+            trustDelta: -0.12,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['presence', 'social'],
+      },
+      nudges: [
+        {
+          id: 'witch.silence_angry_square',
+          name: 'Silence Angry Square',
+          sphere: 'order',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.crowd',
+          effectLine: 'Quiet the shouting around the pyre, so the ruling is heard to its last word.',
+          bandProse: {
+            critical_success: 'The crowd went quiet, and the ruling was heard to the end.',
+            success: 'The shouting died down long enough for the ruling to be heard.',
+            near_miss: 'The crowd quieted only after the ruling had been read twice.',
+            failure: 'The crowd went quiet, and in the quiet the miller called the ruling a lie.',
+            critical_failure: 'The crowd went silent, then broke into shouting all at once.',
+          },
+        },
+        {
+          id: 'witch.wake_old_gratitude',
+          name: 'Wake Old Gratitude',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.warmth',
+          effectLine: 'Bring back to the crowd every fever and broken bone the healer once tended, so each weighs on '
+            + 'them as the ruling is read.',
+          bandProse: {
+            success: 'Faces in the crowd remembered fevers the healer had nursed, and turned away from the pyre.',
+            success_at_cost: 'The crowd remembered the healer\'s help, and the miller shouted that a witch would be helpful.',
+            failure: 'The crowd remembered the healer\'s help, and the children the healer could not save.',
+            critical_failure: 'The crowd remembered every patient the healer had lost, and called each name aloud.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_warmth.virtue',
+      forecastDelta: 0.05,
+      factorLine: 'Being Warm, they can get a frightened healer to talk.',
+    },
+    {
+      traitId: 'trait.core.core_humility.vice',
+      forecastDelta: -0.05,
+      factorLine: 'Being Proud, they want a ruling the crowd will cheer.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'accused',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['healer'],
+      supportRole: 'witch_trial_accused_healer',
+      spawnNpcRole: 'healer',
+      spawnName: 'Maud Ellery',
+    },
+    {
+      kind: 'actor',
+      key: 'magistrate',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['clerk', 'noble'],
+      supportRole: 'witch_trial_magistrate',
+      spawnNpcRole: 'noble',
+      spawnName: 'Aldous Renn',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A healer is in a town\'s stocks for witchcraft, and the magistrate sends for a master to say '
+      + 'whether the healer is touched.',
+    success: 'The healer was cleared, and the pyre came down.',
+    failure: 'The healer was not cleared, and the town still wants a witch.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: '{actor} has given the magistrate a ruling, and {location} waits to see what it does with the '
+        + 'healer.',
+      changes: [],
+      reactions: [
+        {
+          id: 'witch.name_the_miller',
+          label: 'Name the miller in the square',
+          intent: 'The mortal tells the whole square what the miller did. The town is grateful; the magistrate '
+            + 'wanted it kept quiet.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.04,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:magistrate',
+              sentimentDelta: -0.08,
+            },
+          ],
+        },
+        {
+          id: 'witch.leave_the_miller_to_the_court',
+          label: 'Leave the miller to the magistrate',
+          intent: 'The mortal tells only the magistrate, and keeps the miller\'s part out of the square. The '
+            + 'magistrate owes them for the quiet.',
+          effects: [
+            {
+              kind: 'favor_creation',
+              magnitudeRange: [0.15, 0.3],
+              context: 'Kept the miller\'s spoiled rye out of the square',
+              debtorAgentId: '$cast:magistrate',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: '{cast:accused} is cleared, and the whole lane saw it done. The healer presses a remedy from the '
+            + 'house into {actor}\'s hands in thanks.',
+          changes: [
+            {
+              id: 'witch.crit.healer_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:accused}',
+                  entityId: '$cast:accused',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Healer\'s Trust',
+              detail: '{cast:accused} trusts {actor} now.',
+            },
+            {
+              id: 'witch.crit.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'witch.crit.the_millers_rye',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              concepts: [
+                {
+                  text: 'the miller ground the rye',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+              title: 'The Miller\'s Rye',
+              detail: '{actor} knows the miller ground the rye knowing it was spoiled.',
+            },
+          ],
+        },
+        success: {
+          overview: '{cast:accused} is out of the stocks, and the pyre comes down. The healer gives {actor} a remedy '
+            + 'from the house in thanks.',
+          changes: [
+            {
+              id: 'witch.win.healer_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:accused}',
+                  entityId: '$cast:accused',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Healer\'s Trust',
+              detail: '{cast:accused} trusts {actor} now.',
+            },
+            {
+              id: 'witch.win.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'witch.win.the_millers_rye',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              concepts: [
+                {
+                  text: 'the miller ground the rye',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+              title: 'The Miller\'s Rye',
+              detail: '{actor} knows the miller ground the rye knowing it was spoiled.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: '{cast:accused} is out of the stocks and gives {actor} a remedy from the house in thanks. The '
+            + 'miller is still calling {actor} a liar to anyone who will listen.',
+          changes: [
+            {
+              id: 'witch.cost.healer_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:accused}',
+                  entityId: '$cast:accused',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Healer\'s Trust',
+              detail: '{cast:accused} trusts {actor} now.',
+            },
+            {
+              id: 'witch.cost.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+            {
+              id: 'witch.cost.the_millers_rye',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'hidden mark',
+                tooltipId: 'ui.hidden_mark',
+              },
+              concepts: [
+                {
+                  text: 'the miller ground the rye',
+                  tooltipId: 'ui.hidden_mark',
+                },
+              ],
+              title: 'The Miller\'s Rye',
+              detail: '{actor} knows the miller ground the rye knowing it was spoiled.',
+            },
+          ],
+        },
+        failure: {
+          overview: 'The healer is alive and held in chains, and the pyre still stands in the square. The magistrate '
+            + 'sent for a master to settle this, and it is not settled.',
+          changes: [
+            {
+              id: 'witch.fail.magistrate_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:magistrate}',
+                  entityId: '$cast:magistrate',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Magistrate\'s Trust',
+              detail: '{cast:magistrate} trusts {actor} less now.',
+            },
+            {
+              id: 'witch.fail.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Found Wanting',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'witch.fail.sit_with_the_healer',
+              label: 'Sit with the healer in chains',
+              intent: 'The mortal sits by the healer through the night, where the town can see. The healer will '
+                + 'remember it, and the town will too.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:accused',
+                  sentimentDelta: 0.12,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.02,
+                },
+              ],
+            },
+            {
+              id: 'witch.fail.stay_clear_of_the_healer',
+              label: 'Stay clear of the healer',
+              intent: 'The mortal keeps away from the healer that night, so the crowd has no reason to turn on them '
+                + 'too. The healer sees who did not come.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:accused',
+                  sentimentDelta: -0.1,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The crowd burned the healer\'s house and every remedy in it, and the healer is held in chains. A '
+            + 'master was sent for to stop this, and it happened anyway.',
+          changes: [
+            {
+              id: 'witch.critfail.magistrate_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:magistrate}',
+                  entityId: '$cast:magistrate',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Magistrate\'s Trust',
+              detail: '{cast:magistrate} trusts {actor} less now.',
+            },
+            {
+              id: 'witch.critfail.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Out of Favour',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'witch.critfail.sit_with_the_healer',
+              label: 'Sit with the healer in chains',
+              intent: 'The mortal sits by the healer through the night, where the town can see. The healer will '
+                + 'remember it, and the town will too.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:accused',
+                  sentimentDelta: 0.12,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.02,
+                },
+              ],
+            },
+            {
+              id: 'witch.critfail.stay_clear_of_the_healer',
+              label: 'Stay clear of the healer',
+              intent: 'The mortal keeps away from the healer that night, so the crowd has no reason to turn on them '
+                + 'too. The healer sees who did not come.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:accused',
+                  sentimentDelta: -0.1,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A healer sits in a town\'s stocks for witchcraft, with a pyre built in the square. Someone has '
+    + 'to say, before the magistrate and the crowd, whether the healer is touched and what made the '
+    + 'miller\'s boy sick.',
+  locationSubtypes: expandSettings(['urban']),
+  consequenceDraw: ['relationship', 'secret'],
+};
+
+export const WITCH_TRIAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

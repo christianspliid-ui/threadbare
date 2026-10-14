@@ -137,12 +137,13 @@ export const KPI_FORECAST_PARITY_MAX = 0.02;
 /**
  * Per-reach floor of everyday encounters a band needs before its authoring ticket
  * may close as not needed (the brief's stop rule). Novice has no floor — it is the
- * catalogue's bulk. Floors shrink with the band's share of engagements.
+ * catalogue's bulk. Floors shrink with the band's share of engagements. `master` rises
+ * one per master batch, to the lowest per-reach count landed (THR-1757 plan § D2).
  */
 export const EVERYDAY_FLOOR_BY_BAND: Readonly<Record<'journeyman' | 'expert' | 'master', number>> = {
   journeyman: 3,
   expert: 2,
-  master: 1,
+  master: 2,
 };
 /** Location subtypes that count as "where mortals stand" for the everyday board. */
 export const EVERYDAY_SETTLEMENT_SUBTYPES: readonly string[] = ['hamlet', 'village', 'town', 'city', 'capital'];

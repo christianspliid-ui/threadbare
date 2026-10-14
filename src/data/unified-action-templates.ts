@@ -261,6 +261,7 @@ import { BOUNDARY_SURVEY_SEQUELS } from './encounters/boundary-survey-sequels';
 import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
 import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
 import { CHARTER_INQUEST_SEQUELS } from './encounters/charter-inquest-sequels';
+import { EASTER_RECKONING_SEQUELS } from './encounters/easter-reckoning-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
@@ -273,6 +274,14 @@ import { COINERS_MINT_TEMPLATE } from './encounters/coiners-mint';
 import { CATHEDRAL_VAULT_TEMPLATE } from './encounters/cathedral-vault';
 import { GRANARY_RIOT_TEMPLATE } from './encounters/granary-riot';
 import { CATHEDRAL_LOAN_TEMPLATE } from './encounters/cathedral-loan';
+import { HOSTAGE_EXCHANGE_TEMPLATE } from './encounters/hostage-exchange';
+import { GUILDHALL_SPY_TEMPLATE } from './encounters/guildhall-spy';
+import { SALT_MONOPOLY_TEMPLATE } from './encounters/salt-monopoly';
+import { WITCH_TRIAL_TEMPLATE } from './encounters/witch-trial';
+import { TOURNEY_MARSHAL_TEMPLATE } from './encounters/tourney-marshal';
+import { HILL_CONDUIT_TEMPLATE } from './encounters/hill-conduit';
+import { EASTER_RECKONING_TEMPLATE } from './encounters/easter-reckoning';
+import { POISONED_FEAST_TEMPLATE } from './encounters/poisoned-feast';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -6013,6 +6022,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...MILL_LEASE_SEQUELS,
   // THR-1688 — the forged charter appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
   ...CHARTER_INQUEST_SEQUELS,
+  // THR-1757 — the Easter reckoning appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...EASTER_RECKONING_SEQUELS,
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
@@ -6025,6 +6036,14 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   CATHEDRAL_VAULT_TEMPLATE,
   GRANARY_RIOT_TEMPLATE,
   CATHEDRAL_LOAN_TEMPLATE,
+  HOSTAGE_EXCHANGE_TEMPLATE,
+  GUILDHALL_SPY_TEMPLATE,
+  SALT_MONOPOLY_TEMPLATE,
+  WITCH_TRIAL_TEMPLATE,
+  TOURNEY_MARSHAL_TEMPLATE,
+  HILL_CONDUIT_TEMPLATE,
+  EASTER_RECKONING_TEMPLATE,
+  POISONED_FEAST_TEMPLATE,
 ];
 
 /**
@@ -6191,6 +6210,14 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   CATHEDRAL_VAULT_TEMPLATE,
   GRANARY_RIOT_TEMPLATE,
   CATHEDRAL_LOAN_TEMPLATE,
+  HOSTAGE_EXCHANGE_TEMPLATE,
+  GUILDHALL_SPY_TEMPLATE,
+  SALT_MONOPOLY_TEMPLATE,
+  WITCH_TRIAL_TEMPLATE,
+  TOURNEY_MARSHAL_TEMPLATE,
+  HILL_CONDUIT_TEMPLATE,
+  EASTER_RECKONING_TEMPLATE,
+  POISONED_FEAST_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

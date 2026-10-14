@@ -167,6 +167,8 @@ To aim content at a band, author the template's **mean step difficulty** in its 
 
 **The coverage scoreboard** is `npm run measure:roll-spread -- --coverage-only`: content banded by window fit (with the at-par row kept for continuity) and the **everyday settlement board** by band × primary reach, each reach marked `<` where it sits under its band's floor (`EVERYDAY_FLOOR_BY_BAND`). The everyday board is what a mortal meets where it stands — settlement-drawable, rarity ≤ 2, not a guild, army, monster, fight or confront template. Content above novice is authored against that board, one factory batch at a time (THR-1676…THR-1682). "Window fit" and "everyday board" are KPI-internal labels, never player-facing.
 
+**A thin band loses reach whenever any other band grows (THR-1757).** Under the cap’s fair own-hex draw (THR-1687) each template has about the same chance of a slot, so a band reaches the board in proportion to its share of the catalogue. Between 6 and 13 October the master band’s on-board share fell from 19.5% to 13.9% with no cap change, because other bands’ batches diluted the draw. Size a band’s brief with `npm run measure:master-band` (masters) or the coverage scoreboard, and re-measure after other bands’ batches land. The fix for a thin band is more of its content, never a band reserve in the cap: preference lives in scoring (plan `Docs/plans/2026-10-13-thr-1757-master-work-reaches-masters.md` § D1).
+
 ## Content references content by kind and tags, not by id (THR-1487/THR-1488)
 
 An encounter carries `tags` — the `family` word another piece of content finds it by —

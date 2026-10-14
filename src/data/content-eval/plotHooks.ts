@@ -208,7 +208,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'betrayal'],
     reaches: ['shadow', 'gold'],
     source: 'Hook #206 — vertical-slice.ts (A Bargain at the Crossroads)',
-    usedBy: ['encounter.slice.bargain_at_crossroads', 'encounter.town.inheritance_wake'],
+    usedBy: ['encounter.slice.bargain_at_crossroads', 'encounter.town.inheritance_wake', 'encounter.town.guildhall_spy'],
   },
   {
     id: 'hook.followed_on_the_road',
@@ -217,7 +217,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'discovery'],
     reaches: ['eye', 'shadow'],
     source: 'Hook #207 — vertical-slice.ts (Riders Behind the Caravan)',
-    usedBy: ['encounter.slice.riders_behind_caravan', 'encounter.rival.hired_knives'],
+    usedBy: ['encounter.slice.riders_behind_caravan', 'encounter.rival.hired_knives', 'encounter.town.poisoned_feast'],
   },
 
   // ── Adventure & Quest archetypes (vault) ──────────────────────────
@@ -255,7 +255,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['protection', 'scarcity'],
     reaches: ['iron', 'stone'],
     source: 'vault: Archetypes/Adventure & Quest — Siege and Hold',
-    usedBy: [],
+    usedBy: ['encounter.town.tourney_marshal'],
   },
   {
     id: 'hook.rivals_challenge',
@@ -287,7 +287,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['power', 'discovery'],
     reaches: ['gold', 'eye'],
     source: 'vault: Archetypes/Adventure & Quest — Artifact Recovery',
-    usedBy: [],
+    usedBy: ['encounter.town.salt_monopoly'],
   },
   {
     id: 'hook.prophetic_investigation',
@@ -295,7 +295,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'discovery'],
     reaches: ['star', 'eye'],
     source: 'vault: Archetypes/Adventure & Quest — Prophetic Investigation',
-    usedBy: [],
+    usedBy: ['encounter.town.easter_reckoning'],
   },
   {
     id: 'hook.civil_unrest',
@@ -343,7 +343,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['discovery', 'power'],
     reaches: ['shadow', 'stone'],
     source: 'vault: Archetypes/Adventure & Quest — The Underground City Intrigue',
-    usedBy: ['encounter.town.comet_disputation'],
+    usedBy: ['encounter.town.comet_disputation', 'encounter.town.hill_conduit'],
   },
   {
     id: 'hook.stronghold_raid',
@@ -603,7 +603,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['betrayal', 'transformation'],
     reaches: ['heart', 'veil'],
     source: 'vault: Archetypes/Ordeal — Betrayal & Redemption',
-    usedBy: [],
+    usedBy: ['encounter.town.hostage_exchange'],
   },
   {
     id: 'hook.descent_into_darkness',
@@ -723,7 +723,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['transformation', 'faith'],
     reaches: ['veil', 'star'],
     source: 'vault: Archetypes/Ordeal — Unmaking & Resurrection',
-    usedBy: [],
+    usedBy: ['encounter.town.witch_trial'],
   },
 
   // ── Unshipped drafts ──────────────────────────────────────────────

@@ -1,0 +1,522 @@
+{
+  "slug": "guildhall-spy",
+  "doc": [
+    "The Spy in the Guildhall (slug guildhall-spy) - slot 5 of the master-everyday-2 batch (THR-1757).",
+    "",
+    "Brief: `Docs/plans/encounters/master-everyday-2-brief.md`.",
+    "Revised packet: `Docs/plans/encounters/guildhall-spy-revised.md` (draft: `guildhall-spy-draft.md`).",
+    "plotHookRolled: hook.stranger_bargain, hook.stronghold_mobilization, hook.assassination_succeeded",
+    "plotHookTaken:  hook.stranger_bargain - a stranger is asked to clean the council's house, and the price",
+    "                is a place inside it. Mobilization survives as the vote to close the gates.",
+    "Seed dice: p3 opportunity - opposition own_trait (True, Bitter) - disposition neutral -",
+    "           agentRole judge_asked_to_rule - scale region - system conditions (advisory, not taken).",
+    "",
+    "--- The narrator's 12 questions, answered ---",
+    "  1 P1 arrival?      Yes: {actor} is at an inn in {location} where the councillors drink; {cast:warden} sits down.",
+    "  2 P2 events?       The council votes at the next bell on closing the gates; one councillor is the rival city's spy.",
+    "  3 P3 one stake?    Opportunity (rolled): whoever names the spy, quietly, is taken in by the Merchant Consortium.",
+    "  4 <=80 words?      73 / 80 (opening + step-0 spine).",
+    "  5 Read aloud?      Report throughout; no interior sensation.",
+    "  6 Stated?          The vote, the spy, the quiet ask and the prize each take one plain sentence.",
+    "  7 Every sentence works? Challenge, test or outcome.",
+    "  8 Nothing unintroduced? The keeper of the minutes and the letters are revealed only behind the test.",
+    "  9 One named person? {cast:warden}; the spy, the councillors and the watch are role nouns.",
+    " 10 Stake in a sentence? Can {actor} name the spy before the bell without the council knowing?",
+    " 11 Cards verb+noun? Send A Guilty Dream, Show An Honest Face.",
+    " 12 Opening per class? urban, written.",
+    "",
+    "--- Mechanical design block ---",
+    "  Crux            A rival city has an agent on the town council, and the guildhall's warden asks {actor} to",
+    "                  name the spy quietly before the vote.",
+    "  Shape           Single Test. shadow 0.78 (fail_action). Linear, branch count 0. Mean 0.78, window fit 0.92.",
+    "  Consequence hand (binding): story_seed + membership, no swap. Both on step success:",
+    "                  membership - membership_change join merchant_consortium ($actor, chronicle): the guild that",
+    "                  keeps the guildhall takes in the one who found its spy.",
+    "                  story_seed - placeless encounter_seed query #consortium_errand, delay 48: the council's quiet",
+    "                  gratitude comes back as Consortium work. Same side as the join, so the errand's premise",
+    "                  (the Consortium sent them) is true when it ripens (prose rule 7).",
+    "  Standing        reputation_with $here -0.06 on step failure (backs the failure and critical_failure chips).",
+    "  Opposition      The mortal's own trait, read from the graph: True (trait.core.core_integrity.virtue, -0.05,",
+    "                  unlocks the trait card Show An Honest Face) and Bitter (trait.core.core_hope.vice, -0.05).",
+    "                  False (trait.core.core_integrity.vice, +0.05) is the one variant for.",
+    "  Cost channels   Whisper at essence 2; trait card at cost 0. No Heavy Hand, no rider, no darkness Undertow.",
+    "  Cool failure    Nobody is killed, jailed or branded. The vote goes the rival city's way and the town that",
+    "                  sent for a master did not get one; at critical failure the master calls an honest councillor",
+    "                  a traitor in open hall - the name before the purse.",
+    "  Reactions       Success side only: name the spy in open hall (reputation_with $here +0.03, bond_change",
+    "                  $cast:warden -0.10) or keep the name inside the council (bond_change $cast:warden +0.10).",
+    "  Systems         cast, seeds, factions, reputation = 4.",
+    "  Accepted limits No band-keyed step write: success_at_cost (and near_miss, which counts as success and",
+    "                  lands in the success_at_cost aftermath band) takes the same join + seed as success. Its cost",
+    "                  is that the spy escapes: a scene fact about a role noun, claimed by no chip and asserting",
+    "                  no standing on the mortal (cold critic, rules 31/34). A mortal already on the Consortium's rolls gets no new membership",
+    "                  (already_member). The #consortium_errand query keeps the family eligibility filter, so the",
+    "                  errand withers outside a town, city or capital; the chip claims only that word reaches",
+    "                  the Consortium.",
+    "  Expert collision Shadow on the board: find the coiners (master), raid a tithe barn, crack a strongroom",
+    "                  (experts). This verb unmasks a person and takes nothing."
+  ],
+  "template": {
+    "id": "encounter.town.guildhall_spy",
+    "stakes": {
+      "goal": "name the spy on the council before the vote",
+      "risk": "name an honest councillor as the traitor",
+      "won": "named the spy on the council before the vote",
+      "lost": "let the spy sit through the vote unnamed",
+      "lostBadly": "named an honest councillor as the traitor"
+    },
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Spy in the Guildhall",
+    "reach": "shadow",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "honesty_cunning",
+      "revelation_discretion"
+    ],
+    "settings": [
+      "urban"
+    ],
+    "openings": {
+      "urban": "{actor} is at an inn in {location} where the town councillors drink before each sitting. {cast:warden}, warden of the guildhall, sits down at their table."
+    },
+    "steps": [
+      {
+        "reach": "shadow",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.78,
+        "purposeLine": "Name the spy quietly",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "The council votes at the next bell on closing the gates to a rival city's trade. One of the councillors is that city's spy.\n\n{cast:warden} asks {actor} to name the spy before the bell, and to do it without the council knowing. The Merchant Consortium will take in whoever does it.",
+        "criticalSuccessAfterimage": "The spy is the councillor who keeps the minutes. {actor} found the rival city's letters sewn into the minute book's cover and gave them to {cast:warden} before the bell.",
+        "successAfterimage": "The spy is the councillor who keeps the minutes. {actor} matched the hand in the minutes to a letter bound for the rival city.",
+        "nearMissAfterimage": "{actor} named the keeper of the minutes as the bell was ringing. The spy was out of the hall before the watch reached the door.",
+        "successAtCostAfterimage":"{actor} named the keeper of the minutes before the bell, but asked too many councillors on the way. The spy heard of it and fled the town.",
+        "failureAfterimage": "{actor} still had no proof when the bell rang. The spy took a seat in the hall and voted.",
+        "criticalFailureAfterimage": "{actor} named the wrong councillor before the whole hall. The real spy sat quiet and voted with the rest.",
+        "successMetadata": {
+          "effects": [
+            {
+              "kind": "membership_change",
+              "factionId": "merchant_consortium",
+              "op": "join",
+              "targetAgentId": "$actor",
+              "chronicle": true
+            },
+            {
+              "kind": "encounter_seed",
+              "query": {
+                "kind": "encounter_template",
+                "tags": [
+                  "#consortium_errand"
+                ]
+              },
+              "targetAgentId": "$actor",
+              "delayTicks": 48,
+              "priority": 0.8,
+              "seedLabel": "Word of the spy reaches the Merchant Consortium, which has work for {actor}."
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.06
+            }
+          ]
+        },
+        "deal": {
+          "count": 3,
+          "tags": [
+            "shadow",
+            "social"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "spy.send_a_guilty_dream",
+            "name": "Send A Guilty Dream",
+            "sphere": "mind",
+            "essenceCost": 2,
+            "forecastDelta": 0.1,
+            "imageTag": "generic.memory",
+            "effectLine": "Fill one sleeper's night with being found out, so they wake afraid and show it.",
+            "bandProse": {
+              "critical_success": "The keeper of the minutes woke the inn in the night, shouting the rival city's name.",
+              "success": "The keeper of the minutes came down pale at dawn and would not meet {actor}'s eye.",
+              "success_at_cost": "The keeper of the minutes woke from the dream and was packing before dawn.",
+              "near_miss": "Half the council slept badly that night, and every one of them looked guilty at dawn.",
+              "failure": "The dream fell on an honest councillor, who told the whole inn about it at breakfast.",
+              "critical_failure": "The dream fell on an honest councillor, and {actor} took the councillor's fear for guilt."
+            }
+          },
+          {
+            "id": "spy.show_an_honest_face",
+            "libraryCardId": "card.trait_card.core",
+            "name": "Show An Honest Face",
+            "requiredTrait": "trait.core.core_integrity.virtue",
+            "essenceCost": 0,
+            "forecastDelta": 0.07,
+            "imageTag": "generic.oath",
+            "effectLine": "Let their plain dealing disarm suspicion, so the guilty answer them without guarding their words.",
+            "bandProse": {
+              "success": "{actor} asked every councillor straight out, and the keeper of the minutes was the only one who lied.",
+              "failure": "{actor} asked straight out, and the councillors took offence and stopped talking."
+            }
+          }
+        ]
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_integrity.virtue",
+        "forecastDelta": -0.05,
+        "factorLine": "Being True, they cannot hide what they are asking about.",
+        "addNudgeIds": [
+          "spy.show_an_honest_face"
+        ]
+      },
+      {
+        "traitId": "trait.core.core_hope.vice",
+        "forecastDelta": -0.05,
+        "factorLine": "Being Bitter, they suspect every councillor alike."
+      },
+      {
+        "traitId": "trait.core.core_integrity.vice",
+        "forecastDelta": 0.05,
+        "factorLine": "Being False, they lie to the council as easily as the spy."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "warden",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "merchant"
+        ],
+        "supportRole": "guild_warden",
+        "spawnNpcRole": "merchant",
+        "spawnName": "Odile Marchbank"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "The warden of a town's guildhall asks {actor} to name the rival city's spy on the council before the vote.",
+      "success": "The spy on the council was named, and the vote closed the gates to the rival city.",
+      "failure": "The spy on the council was not named, and the gates stay open to the rival city."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The council has voted on the gates.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The council voted to close the gates to the rival city once the letters were read to the inner council.",
+            "changes": [
+              {
+                "id": "spy.crit.consortium_rolls",
+                "kind": "faction_reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "a membership",
+                  "entityId": "$faction:merchant_consortium",
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ],
+                "title": "Taken In",
+                "causeClause": "Vouched for by {cast:warden}",
+                "detail": "{actor} is on the rolls of the Merchant Consortium now."
+              },
+              {
+                "id": "spy.crit.consortium_work",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Consortium",
+                "detail": "Word of the spy reaches the Merchant Consortium, which has work for {actor}.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "spy.name_in_hall.crit",
+                "label": "Name the spy in open hall",
+                "intent": "The whole council hears who betrayed it. The warden wanted it kept quiet, and will hold that against the mortal.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.03
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": -0.1
+                  }
+                ]
+              },
+              {
+                "id": "spy.keep_name_quiet.crit",
+                "label": "Keep the name inside the council",
+                "intent": "Only the inner council keeps the name. The warden will remember the discretion.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": 0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The council voted to close the gates to the rival city, with its spy held.",
+            "changes": [
+              {
+                "id": "spy.win.consortium_rolls",
+                "kind": "faction_reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "a membership",
+                  "entityId": "$faction:merchant_consortium",
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ],
+                "title": "Taken In",
+                "causeClause": "Vouched for by {cast:warden}",
+                "detail": "{actor} is on the rolls of the Merchant Consortium now."
+              },
+              {
+                "id": "spy.win.consortium_work",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Consortium",
+                "detail": "Word of the spy reaches the Merchant Consortium, which has work for {actor}.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "spy.name_in_hall.win",
+                "label": "Name the spy in open hall",
+                "intent": "The whole council hears who betrayed it. The warden wanted it kept quiet, and will hold that against the mortal.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.03
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": -0.1
+                  }
+                ]
+              },
+              {
+                "id": "spy.keep_name_quiet.win",
+                "label": "Keep the name inside the council",
+                "intent": "Only the inner council keeps the name. The warden will remember the discretion.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": 0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "The council voted to close the gates to the rival city, with its spy gone and nobody held for it.",
+            "changes": [
+              {
+                "id": "spy.cost.consortium_rolls",
+                "kind": "faction_reputation",
+                "category": "bond",
+                "direction": "gain",
+                "polarity": "gain",
+                "stateNoun": {
+                  "text": "a membership",
+                  "entityId": "$faction:merchant_consortium",
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ],
+                "title": "Taken In",
+                "causeClause": "Vouched for by {cast:warden}",
+                "detail": "{actor} is on the rolls of the Merchant Consortium now."
+              },
+              {
+                "id": "spy.cost.consortium_work",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "info",
+                "title": "Work From the Consortium",
+                "detail": "Word of the spy reaches the Merchant Consortium, which has work for {actor}.",
+                "stateNoun": {
+                  "text": "seed",
+                  "tooltipId": "ui.aftermath_seed"
+                },
+                "concepts": [
+                  {
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "spy.name_in_hall.cost",
+                "label": "Name the spy in open hall",
+                "intent": "The whole council hears who fled and why. The warden wanted it kept quiet, and will hold that against {actor}.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.03
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": -0.1
+                  }
+                ]
+              },
+              {
+                "id": "spy.keep_name_quiet.cost",
+                "label": "Keep the name inside the council",
+                "intent": "The town hears only that a councillor has left. The warden will remember the discretion.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:warden",
+                    "sentimentDelta": 0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The vote to close the gates failed by the spy's own vote. {location} asked {actor} for a name and never got one.",
+            "changes": [
+              {
+                "id": "spy.fail.distrusted",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Not Trusted",
+                "detail": "{location} thinks less of {actor} now.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "The council spent the sitting on the wrong name, and the gates stay open to the rival city. {location} asked {actor} for the spy and was handed an honest councillor instead.",
+            "changes": [
+              {
+                "id": "spy.critfail.named_wrongly",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Named Wrongly",
+                "detail": "{location} thinks less of {actor} now.",
+                "stateNoun": {
+                  "text": "reputation with {location}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "thinks less of",
+                    "tooltipId": "ui.standing"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A rival city has a spy on the town council, and the council votes at the next bell on closing the gates to its trade. The warden of the guildhall wants the spy named quietly before the vote."
+  }
+}

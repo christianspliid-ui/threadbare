@@ -1,0 +1,633 @@
+/**
+ * The Wrong Feast Day (id stays encounter.town.easter_reckoning) — slot 6 of master-everyday-2 (THR-1757), the batch's appointment slot.
+ * Two-step master Star job: reckon the true day of the spring feast from the full moon and the
+ * equinox, then prove it before the canons in the chapter house, with the dean answering for the
+ * cathedral's tables. On a proved reckoning it is read before the whole synod in the chapter house
+ * on synod day, in three days, with the dean there to answer it — an `encounter_seed` carrying an
+ * `appointment` block (THR-1479), so the step-1 spine may name the place and time (prose rule 7b's
+ * one lawful exception). Kept → `town.easter_reckoning_heard` (seed-only), missed →
+ * `town.easter_reckoning_defaulted` (seed-only), both hand-authored in `easter-reckoning-sequels.ts`.
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-2-brief.md` (slot 6, binding).
+ * Pipeline: `Docs/plans/encounters/easter-reckoning-draft.md` → `easter-reckoning-revised.md`.
+ * plotHookRolled: hook.gods_fall, hook.prophetic_investigation, hook.builders_dilemma.
+ * plotHookTaken: hook.prophetic_investigation — drifted: the old priests' saying that a year begun on
+ * a false feast goes badly circulates, and the town argues whether the bad year has begun. It rides
+ * the failure-side omen. gods_fall fought a calendar dispute (no god is gone); builders_dilemma
+ * fought it too (nothing is built). Seed dice: p3 mystery (nobody can say whether the tables or the
+ * priests are right) · opposition faction (doctrine: the canons hold the tables cannot be wrong) ·
+ * disposition hostile (the canons will hear no word against the tables) · agentRole competitor (the
+ * master's reckoning against the cathedral's own tables) · scale region (the feast day of the whole
+ * diocese; the template field stays `local`, per the brief). Rolled setting stronghold → the
+ * chapter house, inside the town (brief override).
+ * 
+ * ─── Mechanical design block (designed before the prose) ─────────────
+ *   Crux            The cathedral's tables put this year's spring feast a week late, and the bishop
+ *                   has sent for {actor} to reckon the true day and prove it before the canons.
+ *   Whose problem?  The agent's: their reckoning, their proof, their name as the master the bishop
+ *                   sent for. Scene-local; no prior tie to the cathedral asserted (rule 7).
+ *   Reach = theme?  Star throughout. Step 0 (0.74) reads the full moon and the equinox from the sky.
+ *                   Step 1 (0.82) proves a reckoning of the sky against two hundred years of
+ *                   copied tables. Mean 0.78, window fit 0.92 (master). Words: severe, severe.
+ *   Shape           Appointment (Seeded Sequel, placed/timed, THR-1479) on a linear two-step.
+ *                   Step 0 continue_weakened; step 1 fail_action. Step 1 carries
+ *                   carryoverFactorLines keyed on step 0 (no critical_failure row: a step-0
+ *                   critical failure ends the action).
+ *   Consequence hand (binding, THR-1145): drive + omen — no swap.
+ *     drive         assign_ambition ambition_spread_faith on $actor, step 1 success. PATH chip.
+ *     omen          emit_omen cultural/global on step 1 success (time) and step 1 failure (entropy).
+ *                   Unchipped: an omen is dressing and has no anchor kind (the restless-ossuary
+ *                   precedent). Told as a good or bad sign in every step-1 afterimage and in the failure overview.
+ *   Appointment     step 1 success: encounter_seed templateId town.easter_reckoning_heard,
+ *                   delayTicks 36, inheritContext, appointment { locationId $here, counterpartyId
+ *                   $cast:dean, missed { templateId town.easter_reckoning_defaulted } }. PATH chip.
+ *   Extras          reputation_with $here +0.06 step 1 success, -0.06 step 1 failure, -0.03 step 0
+ *                   failure (backs the critical_failure SCAR on the step-0 route).
+ *   Cool failure?   Nobody is hurt, jailed or branded. The cost is the master's name: the feast is
+ *                   proclaimed a week late, which is what the bishop sent a master to stop.
+ *   Trait hooks     Gate: none. Variant: none — the reckoning is the sky and the sums; no live
+ *                   trait reads either better than the reach does. Trait-only nudge: none.
+ *                   Trait fragment: none.
+ *   Systems quota   cast (dean) · seeds (the appointment) · reputation · ambition · omen.
+ *   Cards           Step 0: Deepen The Dark (Signature, darkness), Clear The Dawn (Signature,
+ *                   force) + deal 3. Step 1: Crack The Binding (Signature, entropy), Rouse The Elder
+ *                   (Signature, life) + deal 3. No libraryCardId bound; no Heavy Hand; no rider.
+ *                   Spheres avoid both star models and both star experts (light, time, order,
+ *                   chaos, mind, spirit).
+ * 
+ * ─── The narrator's 12 questions, answered ───────────────────────────
+ *   1 P1 arrival?      {actor} arrives in {location}, sent for by the bishop.
+ *   2 P2 events?       The tables set the feast for the diocese; old priests say they are a week
+ *                      late; the dean keeps them and the canons will hear no word against them.
+ *   3 P3 one stake?    Mystery: nobody can say whether the tables or the priests are right.
+ *   4 ≤80 words?       Opening 9 + P2 40 + P3 27 = 76.
+ *   5 Read aloud?      Every sentence is a report.
+ *   6 Stated?          The disputed day, the dean's hold on the tables and the canons' refusal.
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? The tables, the moon, the equinox, the old priests and the dean
+ *                      precede step 0's cards; the copied tables and the chapter house precede
+ *                      step 1's cards.
+ *   9 One named person? {cast:dean} on both spines.
+ *  10 Stake in a sentence? 'Can the bishop's master reckon the true feast day and prove it
+ *                      against the cathedral's own tables, and keep their name?'
+ *  11 Cards verb+noun? Deepen, Clear, Crack, Rouse — all in the lexicon; no effect line repeats
+ *                      a word of its name; no digits.
+ *  12 Opening per class? urban, the only class, written.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.easter_reckoning',
+  stakes: {
+    goal: 'reckon the true day of the spring feast and prove it',
+    risk: 'have the dean find an error in the reckoning',
+    won: 'reckoned the true day of the spring feast and proved it',
+    lost: 'could not prove the cathedral\'s tables wrong',
+    lostBadly: 'had the dean find an error in the reckoning',
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Wrong Feast Day',
+  reach: 'star',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['tradition_novelty', 'honesty_cunning'],
+  tags: ['#sacred'],
+  settings: ['urban'],
+  openings: {
+    urban: '{actor} arrives in {location}, sent for by the bishop.',
+  },
+  steps: [
+    {
+      reach: 'star',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.74,
+      purposeLine: 'Reckon the true day',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The cathedral\'s tables set the day of the spring feast for the whole diocese. This year, old '
+        + 'priests say the tables put it a week late. The dean, {cast:dean}, keeps the tables, and the '
+        + 'canons will hear no word against them.\n\n'
+        + 'The bishop asks {actor} to reckon the true day from the moon and the equinox. Nobody in '
+        + '{location} can say whether the tables or the priests are right.',
+      criticalSuccessAfterimage: 'They fixed the equinox to the morning and the full moon to the hour, and the true feast falls a '
+        + 'week before the tables\' day.',
+      successAfterimage: 'They fixed the equinox and the full moon after it, and the true feast falls a week before the '
+        + 'tables\' day.',
+      successAtCostAfterimage: 'They fixed the true day, a week before the tables\' day, but the dean\'s clerks saw them on the '
+        + 'cathedral tower at night.',
+      failureAfterimage: 'Cloud hid the full moon, and they could say only that the tables might be a week out.',
+      criticalFailureAfterimage: 'They reckoned the full moon a night early, and the dean\'s clerks wrote the mistake down.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.03,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['lore', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'reckoning.deepen_the_dark',
+          name: 'Deepen The Dark',
+          sphere: 'darkness',
+          essenceCost: 2,
+          forecastDelta: 0.11,
+          imageTag: 'generic.dark',
+          effectLine: 'Put out every lamp in the cathedral close tonight, so the moon\'s edge and the faint stars show '
+            + 'plainly.',
+          bandProse: {
+            critical_success: 'Every lamp in the close went out, and the moon rose clear of the roofs to its full.',
+            success: 'The lamps in the close went out, and the edge of the full moon showed plainly.',
+            near_miss: 'The lamps went out, but a tavern fire kept the low sky bright.',
+            failure: 'The lamps went out, and cloud came over the moon anyway.',
+          },
+        },
+        {
+          id: 'reckoning.clear_the_dawn',
+          name: 'Clear The Dawn',
+          sphere: 'force',
+          essenceCost: 1,
+          forecastDelta: 0.09,
+          imageTag: 'generic.strength',
+          effectLine: 'Drive the haze off the eastern hills at sunrise, so the morning the sun rises straight down the '
+            + 'cathedral\'s aisle shows plainly.',
+          bandProse: {
+            success_at_cost: 'The haze lifted at sunrise, and the sun rose straight down the aisle while the dean\'s sexton '
+              + 'watched.',
+            failure: 'The haze lifted, but the sun rose behind the bell tower and could not be read.',
+            critical_failure: 'The haze lifted a day too soon, and they took the wrong morning for the equinox.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'star',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.82,
+      purposeLine: 'Prove the reckoning',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The canons meet in the chapter house to hear the reckoning. {cast:dean} answers for the '
+        + 'cathedral\'s tables, which have been copied from book to book for two hundred years, and says a '
+        + 'copy that old cannot be wrong. If {actor} proves the reckoning, it is read before the whole '
+        + 'synod in the chapter house on synod day, in three days, with the dean there to answer it. If '
+        + 'not, {location} will think less of {actor}.',
+      criticalSuccessAfterimage: 'The canons checked every row of the tables against the reckoning and asked {actor} to stand '
+        + 'beside them at the synod. The town takes it for a good sign for the year.',
+      successAfterimage: 'The canons checked the reckoning against the tables row by row and agreed the synod must hear '
+        + 'it. The town takes it for a good sign for the year.',
+      successAtCostAfterimage: 'The canons agreed the synod must hear it, but {cast:dean} told the bishop that {actor} had '
+        + 'shamed the chapter. The town still takes it for a good sign for the year.',
+      failureAfterimage: 'The canons would not see the fault, and {cast:dean} had the tables read out as they stand.',
+      criticalFailureAfterimage: '{cast:dean} found an error in {actor}\'s own sums and read it out to the canons. The town takes '
+        + 'it for a bad sign for the year.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They can name the hour of the full moon.',
+          polarity: 'for',
+          forecastDelta: 0.05,
+        },
+        success: {
+          text: 'They know the true feast falls a week early.',
+          polarity: 'for',
+          forecastDelta: 0.03,
+        },
+        success_at_cost: {
+          text: 'The dean knows they read the sky from the cathedral tower.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They know the full moon only to the night.',
+          polarity: 'for',
+          forecastDelta: 0.01,
+        },
+        failure: {
+          text: 'They can say only that the tables might be wrong.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+          {
+            kind: 'assign_ambition',
+            templateId: 'ambition_spread_faith',
+            targetAgentId: '$actor',
+            narrativeHook: 'Proved the cathedral\'s feast tables a week wrong before the canons, and means every parish to '
+              + 'keep the true day.',
+          },
+          {
+            kind: 'emit_omen',
+            category: 'cultural',
+            intensity: 0.3,
+            narrativeHook: 'A master proved a cathedral\'s feast tables a week wrong, and the town began to say the year '
+              + 'will go well if the feast is kept on its true day.',
+            scope: {
+              kind: 'global',
+            },
+            sphereAlignment: 'time',
+          },
+          {
+            kind: 'encounter_seed',
+            templateId: 'town.easter_reckoning_heard',
+            targetAgentId: '$actor',
+            delayTicks: 36,
+            inheritContext: true,
+            seedLabel: 'The reckoning is read before the synod in the chapter house on synod day, with the dean there to '
+              + 'answer it.',
+            appointment: {
+              locationId: '$here',
+              counterpartyId: '$cast:dean',
+              missed: {
+                templateId: 'town.easter_reckoning_defaulted',
+                seedLabel: 'The reckoning was not read on synod day, and the dean comes looking for the master who made it.',
+              },
+            },
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+          {
+            kind: 'emit_omen',
+            category: 'cultural',
+            intensity: 0.3,
+            narrativeHook: 'A cathedral will keep the spring feast a week late, the old priests say a year begun on a false '
+              + 'feast goes badly, and the town argues whether the bad year has begun.',
+            scope: {
+              kind: 'global',
+            },
+            sphereAlignment: 'entropy',
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['social', 'presence'],
+      },
+      nudges: [
+        {
+          id: 'reckoning.crack_the_binding',
+          name: 'Crack The Binding',
+          sphere: 'entropy',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          opposes: 'dean',
+          imageTag: 'generic.decay',
+          effectLine: 'Split the spine of the dean\'s copy of the tables, so its loose leaves show where a copyist '
+            + 'skipped a line.',
+          bandProse: {
+            critical_success: 'The dean\'s copy split at the spine, and the leaf with the skipped line fell open in front of '
+              + 'the canons.',
+            success: 'The old spine split, and the canons saw where a copyist had skipped a line.',
+            near_miss: 'The old spine split, but the dean gathered up the loose leaves before the canons read them.',
+            failure: 'The old spine split, and the dean blamed the damp in the chapter house.',
+          },
+        },
+        {
+          id: 'reckoning.rouse_the_elder',
+          name: 'Rouse The Elder',
+          sphere: 'life',
+          essenceCost: 1,
+          forecastDelta: 0.07,
+          imageTag: 'generic.vigor',
+          effectLine: 'Give the oldest of the doubting priests the strength to climb the chapter house stair and speak.',
+          bandProse: {
+            success_at_cost: 'The oldest priest climbed the stair and spoke for the reckoning, and the dean sent him back to '
+              + 'his parish for it.',
+            failure: 'The oldest priest climbed the stair, but his voice was too weak to carry across the chapter '
+              + 'house.',
+            critical_failure: 'The oldest priest climbed the stair and could not remember which year the tables went wrong.',
+          },
+        },
+      ],
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'dean',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['priest'],
+      supportRole: 'cathedral dean',
+      spawnNpcRole: 'priest',
+      spawnName: 'Osric Fenwold',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'The cathedral in {location} has the spring feast a week wrong, and the bishop has sent for a '
+      + 'master to reckon it.',
+    success: 'The reckoning was proved before the canons, and the synod hears it on synod day.',
+    failure: 'The reckoning was not proved.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The cathedral\'s tables in {location} have been reckoned against the sky.',
+      changes: [],
+      reactions: [],
+      byOutcome: {
+        critical_success: {
+          overview: 'The bishop has told the diocese to wait for the synod before proclaiming the feast.',
+          changes: [
+            {
+              id: 'reckoning.crit.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A reckoning heard',
+              causeClause: 'The chapter\'s word on it',
+              detail: '{location} thinks well of their reckoning.',
+            },
+            {
+              id: 'reckoning.crit.ambition',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'ambition',
+                tooltipId: 'ui.ambition',
+              },
+              concepts: [
+                {
+                  text: 'Spread the Faith',
+                  tooltipId: 'ui.ambition',
+                },
+              ],
+              title: 'A new ambition',
+              causeClause: 'Every parish on the true day',
+              detail: '{actor} is pursuing Spread the Faith now.',
+            },
+            {
+              id: 'reckoning.crit.synod_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'answers the reckoning',
+                },
+              ],
+              title: 'The synod',
+              causeClause: 'Synod day in the chapter house',
+              detail: '{cast:dean} answers the reckoning in {location} in three days.',
+            },
+          ],
+        },
+        success: {
+          overview: 'The chapter has the reckoning in writing, under {actor}\'s hand.',
+          changes: [
+            {
+              id: 'reckoning.win.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A reckoning heard',
+              causeClause: 'The chapter\'s word on it',
+              detail: '{location} thinks well of their reckoning.',
+            },
+            {
+              id: 'reckoning.win.ambition',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'ambition',
+                tooltipId: 'ui.ambition',
+              },
+              concepts: [
+                {
+                  text: 'Spread the Faith',
+                  tooltipId: 'ui.ambition',
+                },
+              ],
+              title: 'A new ambition',
+              causeClause: 'Every parish on the true day',
+              detail: '{actor} is pursuing Spread the Faith now.',
+            },
+            {
+              id: 'reckoning.win.synod_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'answers the reckoning',
+                },
+              ],
+              title: 'The synod',
+              causeClause: 'Synod day in the chapter house',
+              detail: '{cast:dean} answers the reckoning in {location} in three days.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'Half the chapter now sides with {cast:dean} against {actor}.',
+          changes: [
+            {
+              id: 'reckoning.cost.the_towns_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A reckoning heard',
+              causeClause: 'The chapter\'s word on it',
+              detail: '{location} thinks well of their reckoning.',
+            },
+            {
+              id: 'reckoning.cost.ambition',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'ambition',
+                tooltipId: 'ui.ambition',
+              },
+              concepts: [
+                {
+                  text: 'Spread the Faith',
+                  tooltipId: 'ui.ambition',
+                },
+              ],
+              title: 'A new ambition',
+              causeClause: 'Every parish on the true day',
+              detail: '{actor} is pursuing Spread the Faith now.',
+            },
+            {
+              id: 'reckoning.cost.synod_day',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'appointment',
+                entityId: '$appointment',
+                visualKind: 'location',
+              },
+              concepts: [
+                {
+                  text: 'answers the reckoning',
+                },
+              ],
+              title: 'The synod',
+              causeClause: 'Synod day in the chapter house',
+              detail: '{cast:dean} answers the reckoning in {location} in three days.',
+            },
+          ],
+        },
+        failure: {
+          overview: 'The cathedral will proclaim the feast a week late, which the bishop sent a master to stop, and '
+            + 'the old priests say a year begun on a false feast goes badly.',
+          changes: [
+            {
+              id: 'reckoning.lost.the_towns_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A reckoning unproved',
+              causeClause: 'The tables stand',
+              detail: '{location} thinks less of their reckoning.',
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The dean now has a master\'s own error to set against the old priests.',
+          changes: [
+            {
+              id: 'reckoning.broke.the_towns_regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'A wrong sum',
+              causeClause: 'An error in their own reckoning',
+              detail: '{location} thinks less of their reckoning.',
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'The cathedral\'s tables put this year\'s spring feast a week late, and the canons will hear no '
+    + 'word against them. Someone has to reckon the true day from the moon and the equinox, and prove '
+    + 'it before the canons and their dean.',
+  locationSubtypes: expandSettings(['urban']),
+  consequenceDraw: ['drive', 'omen'],
+};
+
+export const EASTER_RECKONING_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

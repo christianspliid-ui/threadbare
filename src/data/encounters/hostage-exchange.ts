@@ -1,0 +1,844 @@
+/**
+ * The Hostage Exchange (slug hostage-exchange) - slot 3 of master-everyday-2 (THR-1757).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-2-brief.md`.
+ * Packet: `Docs/plans/encounters/hostage-exchange-revised.md` (draft: `hostage-exchange-draft.md`).
+ * Model package: `granary-riot` (heart, master batch 1) - structure only.
+ * plotHookRolled: hook.mentors_test, hook.oath_breaking_scandal, hook.rebuilding_trust
+ * plotHookTaken:  hook.rebuilding_trust - two houses that ended a feud must trust each other for one walk
+ *                 across a bridge. The oath-breaking scandal survives as the captain's move: breaking a
+ *                 sworn peace's terms for money at the last hour.
+ * Seed dice: p3 choice - opposition rival_agent (greed), the captain - disposition wary -
+ *            agentRole bystander_pulled_in - scale settlement - system items (advisory; read as the companion).
+ * Setting override: rolled battlefield -> urban + rural (brief); it survives as the bridge with both houses'
+ *            armed men drawn up at either end.
+ * 
+ * --- The narrator's 12 questions, answered ---
+ *   1 P1 arrival?      Yes: {actor} arrives at / walks into {location}. Graph names.
+ *   2 P2 events?       A feud ended; each house holds the other's heir as surety; the heirs go home at noon;
+ *                      both houses' armed men wait at either end of the bridge.
+ *   3 P3 one stake?    Choice (rolled): {cast:captain} holds one heir for a ransom, and both houses have put
+ *                      the exchange in {actor}'s hands. First {actor} must learn what each side wants.
+ *   4 <=80 words?      77 (opening + step-0 spine), both classes.
+ *   5 Read aloud?      Report throughout; no interior sensation, no camera work.
+ *   6 Stated?          "{cast:captain} holds one of the heirs and will not release them without a ransom."
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? Captain, heirs, houses, bridge and armed men in step 0; the sergeant in step 1's
+ *                      spine before its hand and before the companion it becomes.
+ *   9 One named person? Step 0 names {cast:captain}; step 1 names {cast:heir}. The heads of the houses and
+ *                      the sergeant are role nouns.
+ *  10 Stake in a sentence? Can {actor} bring both heirs across the bridge before the captain's greed starts
+ *                      a fight between two houses' armed men?
+ *  11 Cards verb+noun? Loosen Guarded Tongues, Reveal The Price, Still Ready Blades, Stand As Surety.
+ *  12 Opening per class? urban and rural, written.
+ * 
+ * --- Mechanical design block ---
+ *   Crux            Two houses are exchanging the heirs they hold as surety for a peace, and the captain
+ *                   keeping one heir wants a ransom first. Both houses send for {actor} to make the exchange.
+ *   Shape           Puzzle - Investigation - Resolution. heart 0.74 (continue_weakened) -> heart 0.80
+ *                   (fail_action). Linear, branch count 0. Mean 0.77, window fit 0.91 (master). Step 1's
+ *                   carryover lines key on the band step 0 rolled, so the exchange uses what the questions found.
+ *   Consequence hand (binding): relationship + companion, no swap.
+ *                   relationship - bond_change with $cast:heir on both sides of step 1, and on step 0 failure
+ *                   (the questions reached the captain and the held heir stopped trusting the go-between).
+ *                   companion - grant_companion companion.sellsword-band to $actor on step 1 success: the
+ *                   captain's sergeant and the men who would not back the ransom hire on with {actor}.
+ *                   The band is a CONTRACT (durationTicks 10, MERCENARY_COMPANION_DURATION_TICKS): the
+ *                   chip says "a short contract", never "travels with {actor} now" (critic 2026-10-14).
+ *   Captain grudge  bond_change $cast:captain -0.08 / -0.06 on step 1 success: every success band costs the
+ *                   captain his ransom and his men, so the master carries an enemy (brief s@c row). Chipped on
+ *                   all three success bands; the +0.04 'let the captain go quietly' reaction leaves it true.
+ *                   There is no $companion sentinel (#1115); the chip anchors on the plain `companion` noun
+ *                   (the feud-mediation shape).
+ *   Standing        reputation_with $here +0.06 on step 1 success, -0.06 on step 1 failure, -0.02 on step 0
+ *                   failure (backs the critical_failure town chip on both routes).
+ *   Chips (THR-1685) Person bond chips use the plain noun `reputation` with the cast member as a concept
+ *                   anchor, no {target}. The only `reputation with {location}` chips are anchored on $here.
+ *   Reactions       Success side on fallback (discretion vs open truth); failure side on both failure bands
+ *                   (comfort the heir vs accuse the captain). Heir deltas held at +0.04; the captain's
+ *                   success-side grudge (-0.08) survives the +0.04 reaction, so no band chip is false after either pick.
+ *   Tone            Ends warm on the success side: both heirs cross, the peace holds, and the honest men
+ *                   walk away from the greedy one.
+ *   Cool failure    Nobody dies, is jailed or branded. Failure is the master's name: both houses sent for a
+ *                   master because a master's terms should end the haggling, and the captain's greed won.
+ *   Cost channels   All specials essence-priced except the True trait card (cost 0). No Heavy Hand, no rider,
+ *                   no grants, no over-exposed library card as a special.
+ *   Expert collision The Heart master is granary_riot (rule at a riot); the experts are feud_mediation (make
+ *                   peace between two houses) and inheritance_wake (settle a will). This verb is broker a
+ *                   handover against one greedy keeper: the peace is already made.
+ * 
+ * --- Trait hooks (mandatory four questions) ---
+ *   Gate? No - everyday board, no rule gates by brief. Variant? Yes - True (trait.core.core_integrity.virtue)
+ *   +0.04 and False (trait.core.core_integrity.vice) -0.04. Trait-only nudge? Yes - hostage.stand_as_surety
+ *   on step 1, cost 0, unlocked by the True variant. Trait fragment? The trait card's own band fragments.
+ * 
+ * --- Hands ---
+ *   Step 0: Whisper (mind, Loosen Guarded Tongues) + light card (Reveal The Price), deal 3 insight/social.
+ *   Step 1: order card (Still Ready Blades) + Trait card (True, Stand As Surety), deal 3 presence/social.
+ * 
+ * --- Pass record (2026-10-14) ---
+ *   Draft -> self-edit against the 35 editorial REVISE triggers (seam echoes on step 0 afterimages and the
+ *   step-1 carryover, an afterimage/overview contradiction over whose heirs went home, a crit overview echo)
+ *   -> revised. Gated with check:encounter --package.
+ *   Cold critic (editorial + systems + package) -> PASS WITH REVISIONS / READY / connected; fixes in
+ *   hostage-exchange-editorial.md, applied here; final packet hostage-exchange-final.md.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.hostage_exchange',
+  stakes: {
+    goal: 'make the hostage exchange on the bridge',
+    risk: 'see the peace between the two houses broken',
+    won: 'made the hostage exchange on the bridge',
+    lost: 'left both heirs hostages when the captain held out',
+    lostBadly: 'saw the peace between the two houses broken',
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Hostage Exchange',
+  reach: 'heart',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['loyalty_ambition'],
+  settings: ['urban', 'rural'],
+  openings: {
+    urban: '{actor} arrives at {location} in the morning.',
+    rural: '{actor} walks into {location} at first light.',
+  },
+  steps: [
+    {
+      reach: 'heart',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.74,
+      purposeLine: 'Learn what each wants',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'Two houses ended a feud, and each gave the other an heir as surety. Today the heirs go home '
+        + 'across the bridge at noon. Both houses\' armed men wait at either end.\n\n'
+        + '{cast:captain} holds one of the heirs and will not release them without a ransom. Both houses '
+        + 'have sent for {actor} to make the exchange. First {actor} must learn what the captain, the '
+        + 'houses and the heirs each want.',
+      criticalSuccessAfterimage: 'Both houses named terms they could live with, and even the captain\'s own men called the ransom '
+        + 'a disgrace.',
+      successAfterimage: 'Both houses named terms they could live with, and the captain\'s men refused to back the ransom.',
+      successAtCostAfterimage: 'Both houses named their terms, but the captain heard of the questions and raised the price.',
+      failureAfterimage: 'The captain heard of the questions and raised the price. The held heir stopped answering '
+        + '{actor}.',
+      criticalFailureAfterimage: 'The captain heard of the questions and called the exchange off, and both houses took it as the '
+        + 'peace broken.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:heir',
+            sentimentDelta: -0.06,
+            trustDelta: -0.06,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['insight', 'social'],
+      },
+      nudges: [
+        {
+          id: 'hostage.loosen_guarded_tongues',
+          name: 'Loosen Guarded Tongues',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.rumor',
+          effectLine: 'Ease the wariness of everyone being questioned, so they say what they want instead of what they '
+            + 'were told.',
+          bandProse: {
+            critical_success: 'The captain\'s own men spoke first, and both houses followed.',
+            success: 'The two houses stopped repeating their terms and said what they feared.',
+            near_miss: 'The heirs spoke freely, but only once the morning was nearly gone.',
+            failure: 'The captain\'s men talked as freely as anyone, and carried every word back to their captain.',
+          },
+        },
+        {
+          id: 'hostage.reveal_the_price',
+          name: 'Reveal The Price',
+          sphere: 'light',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.light',
+          effectLine: 'Bring a hidden demand into the open, so the one who made it cannot pretend it was never asked.',
+          bandProse: {
+            success: 'The captain named the sum out loud, and both houses refused it on the spot.',
+            success_at_cost: 'The captain\'s price came out, and the captain insulted the held heir\'s house in naming it.',
+            failure: 'The captain\'s price came out in front of the held heir\'s house, which took it as an insult.',
+            critical_failure: 'The captain\'s price came out in front of both houses, and the captain walked away from the '
+              + 'bridge.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'heart',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.8,
+      purposeLine: 'Make the exchange',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'At noon the bridge is clear between the two lines of armed men. {cast:heir} waits at the far end '
+        + 'beside the captain\'s sergeant. The captain will not let {cast:heir} cross unpaid, and the other '
+        + 'house will not send its own heir over first. {actor} must bring both heirs across before either '
+        + 'side draws steel.',
+      criticalSuccessAfterimage: 'Both heirs crossed together, and the heads of the two houses met in the middle of the bridge.',
+      successAfterimage: 'Both heirs crossed together, and the armed men at both ends stood down.',
+      successAtCostAfterimage: 'Both heirs crossed, but the men at the far end came to blows first.',
+      failureAfterimage: 'The captain would not give up {cast:heir}, and each house led its hostage back off the bridge.',
+      criticalFailureAfterimage: 'Steel was drawn on the bridge, and each house dragged its hostage away.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'The captain stands alone in asking for a ransom.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'The go-between knows what will satisfy each side.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The captain now asks more than either house will pay.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'Both lines of men grew restless during the questions.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The held heir no longer trusts the go-between.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:heir',
+            sentimentDelta: 0.12,
+            trustDelta: 0.1,
+          },
+          {
+            kind: 'grant_companion',
+            companionTemplateId: 'companion.sellsword-band',
+            targetAgentId: '$actor',
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:captain',
+            sentimentDelta: -0.08,
+            trustDelta: -0.06,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:heir',
+            sentimentDelta: -0.12,
+            trustDelta: -0.1,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['presence', 'social'],
+      },
+      nudges: [
+        {
+          id: 'hostage.still_ready_blades',
+          name: 'Still Ready Blades',
+          sphere: 'order',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.blade',
+          effectLine: 'Calm the armed men on both sides, so no hand leaves a hilt while the exchange is made.',
+          bandProse: {
+            critical_success: 'Not one man on either end touched a hilt while the heirs crossed.',
+            success: 'The men at both ends kept their hands away from their swords.',
+            success_at_cost: 'The men at the near end kept still, and the far end shoved and shouted.',
+            near_miss: 'The men kept their swords sheathed, but only after a long shouting match across the bridge.',
+            failure: 'The men kept their swords sheathed, and the captain kept the heir anyway.',
+            critical_failure: 'The men held still until the captain drew, and then both lines drew.',
+          },
+        },
+        {
+          id: 'hostage.stand_as_surety',
+          name: 'Stand As Surety',
+          requiredTrait: 'trait.core.core_integrity.virtue',
+          essenceCost: 0,
+          forecastDelta: 0.08,
+          imageTag: 'generic.oath',
+          effectLine: 'Lend their own good name to the terms, so both houses believe the exchange will be kept.',
+          bandProse: {
+            success: '{actor} gave {their} own word for the terms, and both houses took it.',
+            failure: '{actor} gave {their} own word for the terms, and the captain laughed at it.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.core.core_integrity.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being True, they are believed when they name the terms.',
+      addNudgeIds: ['hostage.stand_as_surety'],
+    },
+    {
+      traitId: 'trait.core.core_integrity.vice',
+      forecastDelta: -0.04,
+      factorLine: 'Being False, they are not believed when they name the terms.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'captain',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['guard_captain', 'mercenary', 'guard'],
+      supportRole: 'hostage_keeping_captain',
+      spawnNpcRole: 'mercenary',
+      spawnName: 'Bram Hollis',
+    },
+    {
+      kind: 'actor',
+      key: 'heir',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      supportRole: 'held_heir',
+      spawnNpcRole: 'noble',
+      spawnName: 'Edric Marrow',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'Two houses exchange the heirs they hold as surety, and a greedy captain holds one heir back.',
+    success: 'Both heirs crossed the bridge, and the peace between the houses held.',
+    failure: 'The exchange failed on the bridge, and both heirs stayed hostages.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The bridge empties, and {location} talks about the exchange.',
+      changes: [],
+      reactions: [
+        {
+          id: 'hostage.let_the_captain_go_quietly',
+          label: 'Let the captain go quietly',
+          intent: 'The mortal keeps the captain\'s demand out of the town\'s talk. The captain will remember the '
+            + 'kindness.',
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:captain',
+              sentimentDelta: 0.04,
+            },
+          ],
+        },
+        {
+          id: 'hostage.tell_the_town',
+          label: 'Tell the town what the captain asked',
+          intent: 'The mortal tells the town what the captain demanded on the bridge. The town will think better of '
+            + 'the mortal for refusing it.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.03,
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: 'The two houses renewed their peace in front of the town that evening, with {actor} standing '
+            + 'between them.',
+          changes: [
+            {
+              id: 'hostage.crit.town_thanks',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Thanks',
+              detail: '{location} thinks better of {actor} now.',
+            },
+            {
+              id: 'hostage.crit.heir_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:heir}',
+                  entityId: '$cast:heir',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Trust',
+              detail: '{cast:heir} trusts {actor} now.',
+            },
+            {
+              id: 'hostage.crit.sergeant_band',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'companion',
+                tooltipId: 'ui.companions',
+              },
+              concepts: [
+                {
+                  text: 'sellsword band',
+                  tooltipId: 'ui.companions',
+                },
+              ],
+              title: 'The Sergeant\'s Band',
+              detail: 'The sergeant\'s men quit the captain for a short contract with {actor}.',
+            },
+            {
+              id: 'hostage.crit.captain_grudge',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:captain}',
+                  entityId: '$cast:captain',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'blames',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Captain\'s Grudge',
+              detail: '{cast:captain} blames {actor} for the lost ransom.',
+            },
+          ],
+        },
+        success: {
+          overview: 'Both heirs are home, and the peace between the two houses holds.',
+          changes: [
+            {
+              id: 'hostage.win.town_thanks',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Thanks',
+              detail: '{location} thinks better of {actor} now.',
+            },
+            {
+              id: 'hostage.win.heir_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:heir}',
+                  entityId: '$cast:heir',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Trust',
+              detail: '{cast:heir} trusts {actor} now.',
+            },
+            {
+              id: 'hostage.win.sergeant_band',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'companion',
+                tooltipId: 'ui.companions',
+              },
+              concepts: [
+                {
+                  text: 'sellsword band',
+                  tooltipId: 'ui.companions',
+                },
+              ],
+              title: 'The Sergeant\'s Band',
+              detail: 'The sergeant\'s men quit the captain for a short contract with {actor}.',
+            },
+            {
+              id: 'hostage.win.captain_grudge',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:captain}',
+                  entityId: '$cast:captain',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'blames',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Captain\'s Grudge',
+              detail: '{cast:captain} blames {actor} for the lost ransom.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'Both heirs are home, but the exchange came close to blows before it was done.',
+          changes: [
+            {
+              id: 'hostage.cost.town_thanks',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Thanks',
+              detail: '{location} thinks better of {actor} now.',
+            },
+            {
+              id: 'hostage.cost.heir_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:heir}',
+                  entityId: '$cast:heir',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Trust',
+              detail: '{cast:heir} trusts {actor} now.',
+            },
+            {
+              id: 'hostage.cost.sergeant_band',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'companion',
+                tooltipId: 'ui.companions',
+              },
+              concepts: [
+                {
+                  text: 'sellsword band',
+                  tooltipId: 'ui.companions',
+                },
+              ],
+              title: 'The Sergeant\'s Band',
+              detail: 'The sergeant\'s men quit the captain for a short contract with {actor}.',
+            },
+            {
+              id: 'hostage.cost.captain_grudge',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:captain}',
+                  entityId: '$cast:captain',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'blames',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Captain\'s Grudge',
+              detail: '{cast:captain} blames {actor} for the lost ransom.',
+            },
+          ],
+        },
+        failure: {
+          overview: 'Both heirs are still hostages, and the two houses are counting the days again. They sent for a '
+            + 'master so the haggling would end, and the captain outlasted {actor}.',
+          changes: [
+            {
+              id: 'hostage.fail.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Terms Refused',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'hostage.fail.heir_doubt',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:heir}',
+                  entityId: '$cast:heir',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Doubt',
+              detail: '{cast:heir} trusts {actor} less now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'hostage.fail.stand_by_the_heir',
+              label: 'Stand by the held heir',
+              intent: 'The mortal stays at the held heir\'s side until the houses part. The heir will remember it '
+                + 'kindly.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:heir',
+                  sentimentDelta: 0.04,
+                },
+              ],
+            },
+            {
+              id: 'hostage.fail.blame_the_captain',
+              label: 'Blame the captain openly',
+              intent: 'The mortal names the captain\'s greed before both houses. The captain will not forgive it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:captain',
+                  sentimentDelta: -0.04,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The peace between the two houses is broken, and both heirs are still hostages. Both houses sent '
+            + 'for {actor}, and both now blame {actor} for it.',
+          changes: [
+            {
+              id: 'hostage.critfail.town_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Blamed for the Peace',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'hostage.critfail.heir_blame',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:heir}',
+                  entityId: '$cast:heir',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Blame',
+              detail: '{cast:heir} trusts {actor} less now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'hostage.critfail.stand_by_the_heir',
+              label: 'Stand by the held heir',
+              intent: 'The mortal stays at the held heir\'s side until the houses part. The heir will remember it '
+                + 'kindly.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:heir',
+                  sentimentDelta: 0.04,
+                },
+              ],
+            },
+            {
+              id: 'hostage.critfail.blame_the_captain',
+              label: 'Blame the captain openly',
+              intent: 'The mortal names the captain\'s greed before both houses. The captain will not forgive it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:captain',
+                  sentimentDelta: -0.04,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'Two houses are exchanging the heirs they hold as surety for a peace, and the captain keeping one '
+    + 'heir wants a ransom first. Someone has to learn what each side wants, then bring both heirs '
+    + 'across the bridge before steel is drawn.',
+  locationSubtypes: expandSettings(['urban', 'rural']),
+  consequenceDraw: ['relationship', 'companion'],
+};
+
+export const HOSTAGE_EXCHANGE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

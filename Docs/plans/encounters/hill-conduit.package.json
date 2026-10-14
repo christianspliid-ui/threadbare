@@ -1,0 +1,1778 @@
+{
+  "slug": "hill-conduit",
+  "doc": [
+    "The Hill Conduit — slot 7 of master-everyday-2 (THR-1757).",
+    "",
+    "Brief: `Docs/plans/encounters/master-everyday-2-brief.md` (slot 7, binding).",
+    "Pipeline: hill-conduit-draft / -revised (self-edit against the 35 REVISE triggers) / package (gated GREEN, check:encounter --package).",
+    "Model package (structure only): cathedral-vault (master batch 1, stone, opt-in).",
+    "",
+    "plotHookRolled: hook.followed_on_the_road, hook.underground_city, hook.shifting_shape",
+    "plotHookTaken:  hook.underground_city (drifted: the ground the water must cross has its own keepers)",
+    "",
+    "─── Mechanical design block (designed before the prose) ─────────────",
+    "Brief row       reach stone · steps stone 0.76 → stone 0.82 (mean 0.79, window fit 0.93) ·",
+    "                shape opt-in complication · settings rural + urban · consequence hand",
+    "                condition + drive (binding, no swap) · rarityTier 2 · scale local ·",
+    "                intrinsicTier shaping · id encounter.town.hill_conduit (final)",
+    "Rolled          plotHookTaken hook.underground_city, drifted — \"another place under the",
+    "                known one, with its own politics and no interest in yours\" becomes the",
+    "                lord's high pasture: ground the water must pass under, kept by herdsmen",
+    "                with no interest in the town's wells. followed_on_the_road and",
+    "                shifting_shape set aside (no pursuer, no shape-change in a water job).",
+    "                p3Shape obstruction · opposition beast (territory), read as a herd and its",
+    "                herdsmen guarding their grazing (brief override: no monster gate) ·",
+    "                disposition wary · agentRole trespasser (on the cut arm) · scale personal",
+    "                (the outcome touches the whole settlement: its water) · system movement",
+    "                (advisory, not taken — brief override)",
+    "Crux            The town's wells have gone foul, and {actor} must bring clean spring water",
+    "                down from the hill, either across a lord's guarded pasture or the long way",
+    "                round it.",
+    "Title           The Hill Conduit — the objective (a conduit, down a hill).",
+    "Whose problem?  The agent's: they are the master builder the reeve sent for, and the",
+    "                conduit is their work. Scene-local (the summons is why they came; no",
+    "                prior graph tie asserted — prose rule 7).",
+    "Reach = theme?  Stone throughout — building and endurance. Step 0 (stone 0.76) surveys a",
+    "                line that falls all the way from the springs. The fork, on Stone's own",
+    "                axis preservation_transformation: the Shaper (negative) cuts the short",
+    "                line straight across the pasture (stone 0.82, the brief's step 2) and",
+    "                lays it while the herd presses in; the Guardian (positive) leaves the",
+    "                pasture whole and lays the long line round its edge (stone 0.78), where",
+    "                the fall is slight and a flat stretch fouls the water. Both arms are",
+    "                master tests (0.72–0.85 band).",
+    "Shape           Opt-in Complication. Step 0 is taken by every mortal. Then an agent-decided",
+    "                fork on preservation_transformation. The decline arm (round the pasture)",
+    "                is LEGIBLE (no trench across the lord's grazing, no herd, a slower job)",
+    "                and CHEAPER IN WHAT IT RISKS (smaller reputation swing, no quarrel with",
+    "                the herdsmen), but priced in the master band, because declining the",
+    "                pasture does not make the long line easy. The two step-0 specials carry",
+    "                opposite pole leans; the player never picks.",
+    "Carryover       Step 0 continue_weakened. Both arms author carryoverFactorLines keyed on",
+    "                step 0 (critical_failure omitted: a step-0 critical failure ends the",
+    "                action — the debt-arbitration caveat).",
+    "Forecast sums   step 0: 0.76 + 0.06 + 0.06 = 0.88 · cut: 0.82 + 0.10 + 0.08 = 1.00 ·",
+    "                long line: 0.78 + 0.10 + 0.08 = 0.96 — every step ≤ 1.",
+    "Opposition      The herd and its herdsmen on the cut arm (they guard their grazing and",
+    "                the bull); the slight fall of the hill on the long arm. No villain.",
+    "Consequence hand (binding, THR-1145): condition + drive — no swap.",
+    "  condition     condition_attachment trait.condition.inspired on $actor, every success",
+    "                side of both arms: the water came down by their hand, and they are eager",
+    "                for new work (ends warm: brief, slot 7). A success-side condition, so it",
+    "                is not the defaulted failure penalty the brief warns against, and it is",
+    "                not apply_condition. (A location condition on $here counts as the `place`",
+    "                family in the gate, not `condition` — consequenceDraw.ts splits them by",
+    "                targetLocationId — so the person-borne condition is what wires the hand.)",
+    "Place extra     apply_condition trait.condition.location.plague_scare on $here, every",
+    "                failure side: the wells stay foul and word of sickness keeps travellers",
+    "                away. What the (missing) water leaves true of the town.",
+    "  drive         Success side: assign_ambition ambition_great_work (secondary) — the",
+    "                water came down, and the master means to build more for people who need",
+    "                it. Failure side: plant_compulsion encounterBias { build } — the work is",
+    "                unfinished, and they keep going back to building work.",
+    "Extras          reputation_with $here on failure sides (master failure is the name before",
+    "                the purse); reactions add bond_change with $cast:herdsman (cut arm) and",
+    "                $cast:reeve (both arms), and reputation_with $here.",
+    "Cool failure?   None killed, jailed or branded. Cut-arm critical failure: the bull scatters",
+    "                the diggers and the lord closes his pasture to the work. Long-arm critical",
+    "                failure: the long conduit silts up and the reeve sends for another",
+    "                builder. The cost is the master's name and the town's water.",
+    "Trait hooks     Gate: none. Variant: Careful (trait.personality.stone.virtue) +0.04 —",
+    "                \"Being Careful, they take every level twice.\" Trait-only nudge: none.",
+    "                Trait fragment: none.",
+    "Systems quota   cast (reeve, herdsman) + conditions (Inspired on $actor, Plague Scare on $here) +",
+    "                reputation (reputation_with $here, bond_change) + rewards (persistent",
+    "                conditions, ambition) — four.",
+    "Heavy Hand      none. No card grants. No libraryCardId bound on any special.",
+    "",
+    "─── The narrator's 12 questions, answered ───────────────────────────",
+    "1. P1 arrival with graph names — {actor}, {location}, and why they came (sent for as master builder). Yes.",
+    "2. P2 events with costs — the wells foul, two children already sick, the springs above, the pasture between.",
+    "3. P3 one stake — Obstruction (the guarded pasture between the springs and the town), with the survey asked first.",
+    "4. ≤80 words — 75 (urban opening) / 78 (rural opening).",
+    "5. Read aloud as report — yes.",
+    "6. Facts stated, not encoded — the sickness, the guard on the pasture and the ask are stated.",
+    "7. Every sentence works — yes.",
+    "8. Nothing unintroduced — reeve, springs, pasture, herdsmen, bull and conduit introduced before any card or chip uses them.",
+    "9. One named person per beat — step 0 the reeve; cut arm the herdsman; long arm the reeve.",
+    "10. Stake in a sentence — \"Bring clean water down from the hill springs before more of the town falls sick, across the lord's guarded pasture or round it.\"",
+    "11. Cards verb+noun — yes, all six on the imperative lexicon.",
+    "12. Opening per class — rural, urban.",
+    "",
+    "─── Known caveats ─────────────────────────────────────────────────────",
+    "  Pre-fork critical failure (critic fix, Law 56): a step-0 critical_failure ends the",
+    "  action after the fork pole is recorded, so the chosen arm's critical_failure page is",
+    "  read on two routes — step 0 (route A) and the arm (route J). Step 0 now writes",
+    "  reputation_with $here −0.03 on failure, and every critical_failure page carries only",
+    "  the Lost Trust chip, which both routes back. Plague Scare and the compulsion still",
+    "  fire on route J, unchipped there (the sibling pattern). Overviews and reactions on",
+    "  those pages are true on both routes. Engine BACKLOG (debt-arbitration-systems § 9)",
+    "  unchanged; the fallback critical_failure band is ready for it.",
+    "  Measurement: the fork carries no top-level difficulty, so measure:roll-spread reads",
+    "  step 0 only (stone 0.76, window fit 0.90, inside the master band)."
+  ],
+  "template": {
+    "id": "encounter.town.hill_conduit",
+    "stakes": {
+      "goal": "bring clean water down from the hill springs",
+      "risk": "leave the foul wells as the only water",
+      "won": "brought clean water down from the hill springs",
+      "lost": "laid the long conduit too flat to carry clean water",
+      "lostBadly": "let the long conduit silt up before any water came",
+      "arms": {
+        "negative": {
+          "won": "brought clean water down across the lord's pasture",
+          "lost": "let the herd break the open trench",
+          "lostBadly": "was driven off the lord's pasture by the bull"
+        }
+      }
+    },
+    "rarityTier": 2,
+    "intrinsicTier": "shaping",
+    "name": "The Hill Conduit",
+    "reach": "stone",
+    "crudType": "create",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "preservation_transformation"
+    ],
+    "settings": [
+      "rural",
+      "urban"
+    ],
+    "openings": {
+      "rural": "{actor} comes by farm track to {location}, sent for as a master builder.",
+      "urban": "{actor} arrives at {location}, sent for as a master builder."
+    },
+    "steps": [
+      {
+        "reach": "stone",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.76,
+        "purposeLine": "Survey the fall",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "continue_weakened",
+        "narrativeTemplate": "The wells have gone foul, and two children are sick from the water. Clean springs rise on the hill above. Between the springs and the wells lies the lord's high pasture, guarded by his herdsmen and a bull.\n\nReeve {cast:reeve} wants the water brought down in a buried conduit. First {actor} must survey the hill for a line that falls all the way.",
+        "criticalSuccessAfterimage": "They found a clean fall from the springs, both across the pasture and round it.",
+        "successAfterimage": "They found a fall that will carry the water down.",
+        "successAtCostAfterimage": "They found a fall, but the survey took most of the week.",
+        "failureAfterimage": "They could not be sure the water would reach the foot of the hill.",
+        "criticalFailureAfterimage": "They marked a line that rises again halfway down the hill.",
+        "deal": {
+          "count": 4,
+          "tags": [
+            "craft",
+            "wild"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "conduit.show_the_straight_course",
+            "name": "Show The Straight Course",
+            "sphere": "mind",
+            "essenceCost": 1,
+            "forecastDelta": 0.06,
+            "poleLean": {
+              "axis": "preservation_transformation",
+              "toward": "negative"
+            },
+            "imageTag": "generic.focus",
+            "effectLine": "Fix the shortest line down the hill in their mind. They lean toward cutting across the pasture.",
+            "bandProse": {
+              "success": "The short line stayed in their mind, and they levelled it first.",
+              "success_at_cost": "The short line held their eye, and they had to level the long one twice.",
+              "near_miss": "The short line held their eye, and they hurried the stretch below the springs.",
+              "failure": "The short line held their eye, and they never levelled the ground round the pasture."
+            }
+          },
+          {
+            "id": "conduit.mark_the_boundary",
+            "name": "Mark The Boundary",
+            "sphere": "order",
+            "essenceCost": 1,
+            "forecastDelta": 0.06,
+            "poleLean": {
+              "axis": "preservation_transformation",
+              "toward": "positive"
+            },
+            "imageTag": "generic.ward",
+            "effectLine": "Bring the lord's marker stones to their notice at every turn. They lean toward keeping off his ground.",
+            "bandProse": {
+              "critical_success": "They walked every marker stone, and found the fall on both sides of the line.",
+              "success": "They kept to the marker stones, and found the fall along them.",
+              "failure": "They kept to the marker stones, and lost the fall where the wall turns.",
+              "critical_failure": "They followed the marker stones down, and marked a line that climbs."
+            }
+          }
+        ],
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.03
+            }
+          ]
+        }
+      },
+      {
+        "branchOnStep": 0,
+        "decidedBy": {
+          "axis": "preservation_transformation"
+        },
+        "variants": {
+          "positive": {
+            "reach": "stone",
+            "duration": {
+              "min": 2,
+              "max": 3
+            },
+            "difficulty": 0.78,
+            "purposeLine": "Lay the long conduit",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. There the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
+            "criticalSuccessAfterimage": "The long conduit fell evenly all the way, and the water ran clear.",
+            "successAfterimage": "The long conduit was laid, and the water came down clean.",
+            "successAtCostAfterimage": "The water came down, but one flat stretch had to be dug up and laid again.",
+            "failureAfterimage": "One stretch was laid too flat, and the water stood in it and spoiled.",
+            "criticalFailureAfterimage": "The long conduit silted up along half its length, and no water came down.",
+            "carryoverFactorLines": {
+              "critical_success": {
+                "text": "They know where the long line falls least.",
+                "polarity": "for",
+                "forecastDelta": 0.05
+              },
+              "success": {
+                "text": "They know the long line will carry the water.",
+                "polarity": "for",
+                "forecastDelta": 0.03
+              },
+              "success_at_cost": {
+                "text": "Most of the week went on the survey.",
+                "polarity": "against",
+                "forecastDelta": -0.02
+              },
+              "near_miss": {
+                "text": "They know most of the long line will fall.",
+                "polarity": "for",
+                "forecastDelta": 0.02
+              },
+              "failure": {
+                "text": "They do not know which stretch lies too flat.",
+                "polarity": "against",
+                "forecastDelta": -0.03
+              }
+            },
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "condition_attachment",
+                  "templateId": "trait.condition.inspired",
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "assign_ambition",
+                  "templateId": "ambition_great_work",
+                  "priority": "secondary",
+                  "targetAgentId": "$actor",
+                  "narrativeHook": "Brought clean water down the long way, and means to build more where it is needed."
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "apply_condition",
+                  "conditionTraitId": "trait.condition.location.plague_scare",
+                  "targetLocationId": "$here",
+                  "intensity": 0.5,
+                  "durationTicks": 36
+                },
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.05
+                },
+                {
+                  "kind": "plant_compulsion",
+                  "targetAgentId": "$actor",
+                  "encounterBias": {
+                    "build": 0.5
+                  },
+                  "durationTicks": 72,
+                  "narrativeHook": "Could not bring the water down, and keeps going back to building work."
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "craft",
+                "labor"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "conduit.quicken_the_flow",
+                "name": "Quicken The Flow",
+                "sphere": "energy",
+                "essenceCost": 2,
+                "forecastDelta": 0.1,
+                "imageTag": "generic.energy",
+                "effectLine": "Hurry the water through the flat stretches. It runs on before it can stand and spoil.",
+                "bandProse": {
+                  "critical_success": "The water ran fast through every flat stretch, and none of it stood.",
+                  "success": "The water ran on through the flat stretches.",
+                  "near_miss": "The water ran on, but slowed where the line turns past the wall.",
+                  "failure": "The water ran fast at first, then stood in the flattest stretch."
+                }
+              },
+              {
+                "id": "conduit.even_the_levels",
+                "name": "Even The Levels",
+                "sphere": "order",
+                "essenceCost": 2,
+                "forecastDelta": 0.08,
+                "imageTag": "generic.oath",
+                "effectLine": "Give every stretch of the conduit the same small drop. No length lies flatter than the rest.",
+                "bandProse": {
+                  "success": "Every stretch took the same small drop, and the water never slowed.",
+                  "success_at_cost": "Every stretch took the same drop, but only after one was laid twice.",
+                  "failure": "The drop held on most stretches, and failed on the one past the wall.",
+                  "critical_failure": "Every stretch took the same drop, and the whole line lay too flat."
+                }
+              }
+            ]
+          },
+          "negative": {
+            "reach": "stone",
+            "duration": {
+              "min": 1,
+              "max": 2
+            },
+            "difficulty": 0.82,
+            "purposeLine": "Cut the conduit",
+            "onSuccess": [],
+            "onFailure": [],
+            "failBehavior": "fail_action",
+            "narrativeTemplate": "{actor} marks the short line straight across the lord's pasture and sets the diggers on. Herdsman {cast:herdsman} drives the herd up to the line, with the bull in front. The herdsmen will not let a trench split their grazing. The conduit must be dug, laid in stone and covered while the cattle press in, or they will trample it.",
+            "criticalSuccessAfterimage": "The conduit was laid and covered in a day, and the herd grazed over it by evening.",
+            "successAfterimage": "The conduit was laid across the pasture, and clean water ran down to {location}.",
+            "successAtCostAfterimage": "The conduit was laid, but the bull broke the trench twice and the work ran on for days.",
+            "failureAfterimage": "The herd broke the open trench, and the herdsmen filled it in.",
+            "criticalFailureAfterimage": "The bull scattered the diggers, and the lord forbade any work on his ground.",
+            "carryoverFactorLines": {
+              "critical_success": {
+                "text": "They know the short line falls clean across the pasture.",
+                "polarity": "for",
+                "forecastDelta": 0.06
+              },
+              "success": {
+                "text": "They know the water will carry down the hill.",
+                "polarity": "for",
+                "forecastDelta": 0.04
+              },
+              "success_at_cost": {
+                "text": "Most of the week went on the survey.",
+                "polarity": "against",
+                "forecastDelta": -0.02
+              },
+              "near_miss": {
+                "text": "They know most of the line will fall.",
+                "polarity": "for",
+                "forecastDelta": 0.02
+              },
+              "failure": {
+                "text": "They are not sure the line reaches the foot of the hill.",
+                "polarity": "against",
+                "forecastDelta": -0.03
+              }
+            },
+            "successMetadata": {
+              "effects": [
+                {
+                  "kind": "condition_attachment",
+                  "templateId": "trait.condition.inspired",
+                  "targetAgentId": "$actor"
+                },
+                {
+                  "kind": "assign_ambition",
+                  "templateId": "ambition_great_work",
+                  "priority": "secondary",
+                  "targetAgentId": "$actor",
+                  "narrativeHook": "Brought clean water across a lord's pasture, and means to build more where it is needed."
+                }
+              ]
+            },
+            "failureMetadata": {
+              "effects": [
+                {
+                  "kind": "apply_condition",
+                  "conditionTraitId": "trait.condition.location.plague_scare",
+                  "targetLocationId": "$here",
+                  "intensity": 0.5,
+                  "durationTicks": 36
+                },
+                {
+                  "kind": "reputation_with",
+                  "targetLocationId": "$here",
+                  "delta": -0.08
+                },
+                {
+                  "kind": "plant_compulsion",
+                  "targetAgentId": "$actor",
+                  "encounterBias": {
+                    "build": 0.5
+                  },
+                  "durationTicks": 72,
+                  "narrativeHook": "Could not bring the water down, and keeps going back to building work."
+                }
+              ]
+            },
+            "deal": {
+              "count": 4,
+              "tags": [
+                "labor",
+                "peril"
+              ]
+            },
+            "nudges": [
+              {
+                "id": "conduit.calm_the_bull",
+                "name": "Calm The Bull",
+                "sphere": "life",
+                "essenceCost": 2,
+                "forecastDelta": 0.1,
+                "imageTag": "generic.warmth",
+                "effectLine": "Settle the beast at the head of the herd. It grazes on and leaves the diggers be.",
+                "bandProse": {
+                  "success": "The bull put its head down to graze, and the diggers worked round it.",
+                  "success_at_cost": "The bull grazed through the morning, then broke the trench at noon.",
+                  "failure": "The bull grazed for a while, then the herd came on behind it.",
+                  "critical_failure": "The bull grazed until the trench reached it, then charged the diggers."
+                }
+              },
+              {
+                "id": "conduit.harden_the_lining",
+                "name": "Harden The Lining",
+                "sphere": "matter",
+                "essenceCost": 2,
+                "forecastDelta": 0.08,
+                "imageTag": "generic.matter",
+                "effectLine": "Make each stone set firm as soon as it goes in. Hooves cannot break a finished stretch.",
+                "bandProse": {
+                  "critical_success": "Each stone set as it went in, and the herd walked over finished work.",
+                  "success": "The stones set fast, and the cattle could not break the laid stretches.",
+                  "near_miss": "The stones set fast, but the herd broke the stretch still open.",
+                  "failure": "The stones set fast, but the cattle trampled the trench ahead of them."
+                }
+              }
+            ]
+          }
+        },
+        "fallback": {
+          "reach": "stone",
+          "duration": {
+            "min": 2,
+            "max": 3
+          },
+          "difficulty": 0.78,
+          "purposeLine": "Lay the long conduit",
+          "onSuccess": [],
+          "onFailure": [],
+          "failBehavior": "fail_action",
+          "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. There the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
+          "criticalSuccessAfterimage": "The long conduit fell evenly all the way, and the water ran clear.",
+          "successAfterimage": "The long conduit was laid, and the water came down clean.",
+          "successAtCostAfterimage": "The water came down, but one flat stretch had to be dug up and laid again.",
+          "failureAfterimage": "One stretch was laid too flat, and the water stood in it and spoiled.",
+          "criticalFailureAfterimage": "The long conduit silted up along half its length, and no water came down.",
+          "carryoverFactorLines": {
+            "critical_success": {
+              "text": "They know where the long line falls least.",
+              "polarity": "for",
+              "forecastDelta": 0.05
+            },
+            "success": {
+              "text": "They know the long line will carry the water.",
+              "polarity": "for",
+              "forecastDelta": 0.03
+            },
+            "success_at_cost": {
+              "text": "Most of the week went on the survey.",
+              "polarity": "against",
+              "forecastDelta": -0.02
+            },
+            "near_miss": {
+              "text": "They know most of the long line will fall.",
+              "polarity": "for",
+              "forecastDelta": 0.02
+            },
+            "failure": {
+              "text": "They do not know which stretch lies too flat.",
+              "polarity": "against",
+              "forecastDelta": -0.03
+            }
+          },
+          "successMetadata": {
+            "effects": [
+              {
+                "kind": "condition_attachment",
+                "templateId": "trait.condition.inspired",
+                "targetAgentId": "$actor"
+              },
+              {
+                "kind": "assign_ambition",
+                "templateId": "ambition_great_work",
+                "priority": "secondary",
+                "targetAgentId": "$actor",
+                "narrativeHook": "Brought clean water down the long way, and means to build more where it is needed."
+              }
+            ]
+          },
+          "failureMetadata": {
+            "effects": [
+              {
+                "kind": "apply_condition",
+                "conditionTraitId": "trait.condition.location.plague_scare",
+                "targetLocationId": "$here",
+                "intensity": 0.5,
+                "durationTicks": 36
+              },
+              {
+                "kind": "reputation_with",
+                "targetLocationId": "$here",
+                "delta": -0.05
+              },
+              {
+                "kind": "plant_compulsion",
+                "targetAgentId": "$actor",
+                "encounterBias": {
+                  "build": 0.5
+                },
+                "durationTicks": 72,
+                "narrativeHook": "Could not bring the water down, and keeps going back to building work."
+              }
+            ]
+          },
+          "deal": {
+            "count": 4,
+            "tags": [
+              "craft",
+              "labor"
+            ]
+          },
+          "nudges": [
+            {
+              "id": "conduit.quicken_the_flow",
+              "name": "Quicken The Flow",
+              "sphere": "energy",
+              "essenceCost": 2,
+              "forecastDelta": 0.1,
+              "imageTag": "generic.energy",
+              "effectLine": "Hurry the water through the flat stretches. It runs on before it can stand and spoil.",
+              "bandProse": {
+                "critical_success": "The water ran fast through every flat stretch, and none of it stood.",
+                "success": "The water ran on through the flat stretches.",
+                "near_miss": "The water ran on, but slowed where the line turns past the wall.",
+                "failure": "The water ran fast at first, then stood in the flattest stretch."
+              }
+            },
+            {
+              "id": "conduit.even_the_levels",
+              "name": "Even The Levels",
+              "sphere": "order",
+              "essenceCost": 2,
+              "forecastDelta": 0.08,
+              "imageTag": "generic.oath",
+              "effectLine": "Give every stretch of the conduit the same small drop. No length lies flatter than the rest.",
+              "bandProse": {
+                "success": "Every stretch took the same small drop, and the water never slowed.",
+                "success_at_cost": "Every stretch took the same drop, but only after one was laid twice.",
+                "failure": "The drop held on most stretches, and failed on the one past the wall.",
+                "critical_failure": "Every stretch took the same drop, and the whole line lay too flat."
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.personality.stone.virtue",
+        "forecastDelta": 0.04,
+        "factorLine": "Being Careful, they take every level twice."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "reeve",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "elder",
+          "clerk"
+        ],
+        "supportRole": "reeve",
+        "spawnNpcRole": "elder",
+        "spawnName": "Edith Marlow"
+      },
+      {
+        "kind": "actor",
+        "key": "herdsman",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "supportRole": "head_herdsman",
+        "spawnNpcRole": "hunter",
+        "spawnName": "Hob Fenner"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "The wells of {location} have gone foul. {actor} may bring spring water down across a lord's guarded pasture, or the long way round it.",
+      "success": "{actor} brought clean water down to {location}.",
+      "failure": "{actor} could not bring clean water down to {location}."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {
+        "positive": {
+          "overview": "{actor} laid the conduit the long way round the pasture.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "The lord's pasture was never touched, and {location} has its spring water within the month.",
+              "changes": [
+                {
+                  "id": "conduit.pos.crit.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.crit.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.pos.crit.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.crit.accept_thanks",
+                  "label": "Accept The Thanks",
+                  "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.04
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The work ran a month long, and the lord's grazing is whole. The sick children are mending.",
+              "changes": [
+                {
+                  "id": "conduit.pos.succ.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.succ.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.pos.succ.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.succ.accept_thanks",
+                  "label": "Accept The Thanks",
+                  "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.04
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "{location} spent another week on its old wells, but the spring water runs now.",
+              "changes": [
+                {
+                  "id": "conduit.pos.cost.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.cost.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.pos.cost.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.cost.accept_thanks",
+                  "label": "Accept The Thanks",
+                  "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.04
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "The long conduit runs, but what reaches {location} is no better than its wells. A master sent for by name is judged by whether the water came.",
+              "changes": [
+                {
+                  "id": "conduit.pos.fail.doubt",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Lost Trust",
+                  "detail": "{location} no longer trusts {actor} with its water.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.fail.plague",
+                  "kind": "trait",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Word Of Sickness",
+                  "detail": "Travellers now steer clear of {location} for fear of sickness.",
+                  "stateNoun": {
+                    "text": "Plague Scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.fail.compulsion",
+                  "kind": "shell_state",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Unfinished Work",
+                  "detail": "For a while {actor} is drawn to building work over all else.",
+                  "stateNoun": {
+                    "text": "compulsion",
+                    "tooltipId": "ui.compulsion"
+                  },
+                  "concepts": [
+                    {
+                      "text": "building work",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.pos.fail.cart_water",
+                  "label": "Cart The Water",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.06,
+                      "trustDelta": 0.04
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.fail.blame_hill",
+                  "label": "Blame The Hill",
+                  "intent": "The mortal tells {location} the hill falls too little for a long line. Its people hear them out; {cast:reeve} does not believe it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.03
+                    },
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": -0.06
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "No clean water came down to {location}, and {cast:reeve} has sent for another builder in {actor}'s place.",
+              "changes": [
+                {
+                  "id": "conduit.pos.critfail.doubt",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Lost Trust",
+                  "detail": "{location} no longer trusts {actor} with its water.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.pos.critfail.cart_water",
+                  "label": "Cart The Water",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.06,
+                      "trustDelta": 0.04
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.pos.critfail.blame_hill",
+                  "label": "Blame The Hill",
+                  "intent": "The mortal tells {location} the hill falls too little for a long line. Its people hear them out; {cast:reeve} does not believe it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.03
+                    },
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": -0.06
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "negative": {
+          "overview": "{actor} cut the conduit across the lord's pasture.",
+          "changes": [],
+          "byOutcome": {
+            "critical_success": {
+              "overview": "Clean water reached {location} within days, and the herdsmen have made their peace with the line under their grass.",
+              "changes": [
+                {
+                  "id": "conduit.neg.crit.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.crit.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.neg.crit.pay_grazing",
+                  "label": "Pay For The Grazing",
+                  "intent": "The mortal pays the herdsmen for the grass the trench cost. {cast:herdsman} remembers it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:herdsman",
+                      "sentimentDelta": 0.12
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.crit.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                }
+              ]
+            },
+            "success": {
+              "overview": "The sick children of {location} are mending, and the old wells are being filled in.",
+              "changes": [
+                {
+                  "id": "conduit.neg.succ.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.succ.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.neg.succ.pay_grazing",
+                  "label": "Pay For The Grazing",
+                  "intent": "The mortal pays the herdsmen for the grass the trench cost. {cast:herdsman} remembers it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:herdsman",
+                      "sentimentDelta": 0.12
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.succ.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                }
+              ]
+            },
+            "success_at_cost": {
+              "overview": "The water came down at last. The herdsmen cursed every day the trench lay open in their grass.",
+              "changes": [
+                {
+                  "id": "conduit.neg.cost.inspired",
+                  "kind": "trait",
+                  "category": "boon",
+                  "direction": "gain",
+                  "polarity": "gain",
+                  "title": "High Spirits",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
+                  "stateNoun": {
+                    "text": "Inspired",
+                    "entityId": "trait.condition.inspired",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{actor}",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.cost.ambition",
+                  "kind": "growth",
+                  "category": "path",
+                  "direction": "opens",
+                  "polarity": "gain",
+                  "title": "More To Build",
+                  "detail": "{actor} is pursuing Build a Great Work now.",
+                  "stateNoun": {
+                    "text": "ambition",
+                    "tooltipId": "ui.ambition"
+                  },
+                  "concepts": [
+                    {
+                      "text": "Build a Great Work",
+                      "tooltipId": "ui.ambition"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.neg.cost.pay_grazing",
+                  "label": "Pay For The Grazing",
+                  "intent": "The mortal pays the herdsmen for the grass the trench cost. {cast:herdsman} remembers it.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:herdsman",
+                      "sentimentDelta": 0.12
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.cost.teach_upkeep",
+                  "label": "Teach The Upkeep",
+                  "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.08,
+                      "trustDelta": 0.06
+                    }
+                  ]
+                }
+              ]
+            },
+            "failure": {
+              "overview": "{location} still draws its water from the old wells. A master sent for by name is judged by whether the water came.",
+              "changes": [
+                {
+                  "id": "conduit.neg.fail.doubt",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Lost Trust",
+                  "detail": "{location} no longer trusts {actor} with its water.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.fail.plague",
+                  "kind": "trait",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Word Of Sickness",
+                  "detail": "Travellers now steer clear of {location} for fear of sickness.",
+                  "stateNoun": {
+                    "text": "Plague Scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.fail.compulsion",
+                  "kind": "shell_state",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Unfinished Work",
+                  "detail": "For a while {actor} is drawn to building work over all else.",
+                  "stateNoun": {
+                    "text": "compulsion",
+                    "tooltipId": "ui.compulsion"
+                  },
+                  "concepts": [
+                    {
+                      "text": "building work",
+                      "entityId": "$actor",
+                      "visualKind": "agent"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.neg.fail.cart_water",
+                  "label": "Cart The Water",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.06,
+                      "trustDelta": 0.04
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.fail.blame_herd",
+                  "label": "Blame The Herdsmen",
+                  "intent": "The mortal tells {location} the herdsmen broke the work. Its people hear them out; {cast:herdsman} does not forgive it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.03
+                    },
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:herdsman",
+                      "sentimentDelta": -0.08
+                    }
+                  ]
+                }
+              ]
+            },
+            "critical_failure": {
+              "overview": "{location} still has only its foul wells, and {cast:reeve} has sent for another builder in {actor}'s place.",
+              "changes": [
+                {
+                  "id": "conduit.neg.critfail.doubt",
+                  "kind": "reputation",
+                  "category": "scar",
+                  "direction": "loss",
+                  "polarity": "loss",
+                  "title": "Lost Trust",
+                  "detail": "{location} no longer trusts {actor} with its water.",
+                  "stateNoun": {
+                    "text": "reputation with {target}",
+                    "entityId": "$here",
+                    "visualKind": "location",
+                    "tooltipId": "ui.reputation_with"
+                  },
+                  "concepts": [
+                    {
+                      "text": "{location}",
+                      "entityId": "$here",
+                      "visualKind": "location"
+                    }
+                  ]
+                }
+              ],
+              "reactions": [
+                {
+                  "id": "conduit.neg.critfail.cart_water",
+                  "label": "Cart The Water",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                  "effects": [
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:reeve",
+                      "sentimentDelta": 0.06,
+                      "trustDelta": 0.04
+                    }
+                  ]
+                },
+                {
+                  "id": "conduit.neg.critfail.blame_pasture",
+                  "label": "Blame The Pasture",
+                  "intent": "The mortal tells {location} the lord's guarded pasture stood in the way. Its people hear them out; {cast:herdsman} does not forgive it.",
+                  "effects": [
+                    {
+                      "kind": "reputation_with",
+                      "targetLocationId": "$here",
+                      "delta": 0.03
+                    },
+                    {
+                      "kind": "bond_change",
+                      "withAgentId": "$cast:herdsman",
+                      "sentimentDelta": -0.08
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "fallback": {
+        "overview": "{actor} surveyed the hill for {location}.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "The lord's pasture was never touched, and {location} has its spring water within the month.",
+            "changes": [
+              {
+                "id": "conduit.fb.crit.inspired",
+                "kind": "trait",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "High Spirits",
+                "detail": "Bringing the water down has left {actor} Inspired.",
+                "stateNoun": {
+                  "text": "Inspired",
+                  "entityId": "trait.condition.inspired",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.crit.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "More To Build",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.crit.teach_upkeep",
+                "label": "Teach The Upkeep",
+                "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.08,
+                    "trustDelta": 0.06
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.crit.accept_thanks",
+                "label": "Accept The Thanks",
+                "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.04
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "The work ran a month long, and the lord's grazing is whole. The sick children are mending.",
+            "changes": [
+              {
+                "id": "conduit.fb.succ.inspired",
+                "kind": "trait",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "High Spirits",
+                "detail": "Bringing the water down has left {actor} Inspired.",
+                "stateNoun": {
+                  "text": "Inspired",
+                  "entityId": "trait.condition.inspired",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.succ.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "More To Build",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.succ.teach_upkeep",
+                "label": "Teach The Upkeep",
+                "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.08,
+                    "trustDelta": 0.06
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.succ.accept_thanks",
+                "label": "Accept The Thanks",
+                "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.04
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "{location} spent another week on its old wells, but the spring water runs now.",
+            "changes": [
+              {
+                "id": "conduit.fb.cost.inspired",
+                "kind": "trait",
+                "category": "boon",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "High Spirits",
+                "detail": "Bringing the water down has left {actor} Inspired.",
+                "stateNoun": {
+                  "text": "Inspired",
+                  "entityId": "trait.condition.inspired",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "{actor}",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.cost.ambition",
+                "kind": "growth",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "More To Build",
+                "detail": "{actor} is pursuing Build a Great Work now.",
+                "stateNoun": {
+                  "text": "ambition",
+                  "tooltipId": "ui.ambition"
+                },
+                "concepts": [
+                  {
+                    "text": "Build a Great Work",
+                    "tooltipId": "ui.ambition"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.cost.teach_upkeep",
+                "label": "Teach The Upkeep",
+                "intent": "The mortal shows {cast:reeve} how to clear the conduit each spring. The reeve trusts their work.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.08,
+                    "trustDelta": 0.06
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.cost.accept_thanks",
+                "label": "Accept The Thanks",
+                "intent": "The mortal takes the thanks of {location} in person. Its people think better of them.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.04
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "The long conduit runs, but what reaches {location} is no better than its wells. A master sent for by name is judged by whether the water came.",
+            "changes": [
+              {
+                "id": "conduit.fb.fail.doubt",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Lost Trust",
+                "detail": "{location} no longer trusts {actor} with its water.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.fail.plague",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Word Of Sickness",
+                "detail": "Travellers now steer clear of {location} for fear of sickness.",
+                "stateNoun": {
+                  "text": "Plague Scare",
+                  "entityId": "trait.condition.location.plague_scare",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.fail.compulsion",
+                "kind": "shell_state",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Unfinished Work",
+                "detail": "For a while {actor} is drawn to building work over all else.",
+                "stateNoun": {
+                  "text": "compulsion",
+                  "tooltipId": "ui.compulsion"
+                },
+                "concepts": [
+                  {
+                    "text": "building work",
+                    "entityId": "$actor",
+                    "visualKind": "agent"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.fail.cart_water",
+                "label": "Cart The Water",
+                "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.04
+                  }
+                ]
+              },
+              {
+                "id": "conduit.fb.fail.blame_hill",
+                "label": "Blame The Hill",
+                "intent": "The mortal tells {location} the hill falls too little for a long line. Its people hear them out; {cast:reeve} does not believe it.",
+                "effects": [
+                  {
+                    "kind": "reputation_with",
+                    "targetLocationId": "$here",
+                    "delta": 0.03
+                  },
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": -0.06
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "The survey line rises halfway down, and {location} has stopped all work on the conduit.",
+            "changes": [
+              {
+                "id": "conduit.fb.critfail.doubt",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Lost Trust",
+                "detail": "{location} no longer trusts {actor} with its water.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.critfail.cart_water",
+                "label": "Cart The Water",
+                "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.04
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "The wells have gone foul, and clean springs rise on the hill above, past a lord's guarded pasture and its bull. Someone has to survey the hill and bring the water down in a buried conduit, across the pasture or the long way round it."
+  }
+}
