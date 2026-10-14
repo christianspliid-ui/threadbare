@@ -1,0 +1,49 @@
+THR-1869 hunger and unrest — observer sketch, seed 7, medium, 50 days, 59 settlements
+Bands: 30 / 50 / 70 / 90 = Restless (THR-1923) / Lawless (existing trait) / on the edge / rising
+
+## What towns lived through (settlement-days / towns ever)
+scarce staple:     84 / 4
+scarcity arc open: 83 / 3  (flashpoint 74 / 3)
+prosperity < 35:  1687 / 47
+under siege:       67 / 11
+health < 40:      0 / 0
+unrest jumps:      49 days with a jump, in 14 towns
+
+## Today (the engine's own unrest)
+peak unrest per town, quartiles: 0/0/0/0/99
+end-of-day unrest, all settlement-days, quartiles: 0/0/0/0/99
+  towns ever ≥ 30 (any tick): 3; settlement-days ending ≥ 30: 97
+  towns ever ≥ 50 (any tick): 3; settlement-days ending ≥ 50: 95
+  towns ever ≥ 70 (any tick): 3; settlement-days ending ≥ 70: 93
+  towns ever ≥ 90 (any tick): 3; settlement-days ending ≥ 90: 91
+  The Sunken Library: flashpoint 13 days; unrest at end of those days median 0
+  Wraithwood: flashpoint 47 days; unrest at end of those days median 0
+  Ravenvale: flashpoint 14 days; unrest at end of those days median 0
+
+## Pressure model, hunger read from the scarcity-arc phase (jammed cap, as today)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/5/7/20/100
+  ≥ 30: 14 towns, 183 settlement-days
+  ≥ 50: 6 towns, 95 settlement-days — The Sunken Library, Wraithwood, The Forge of Sorrow, Free Hill-shroud, Ravenvale, Frostton
+  ≥ 70: 3 towns, 30 settlement-days — The Forge of Sorrow, Free Hill-shroud, Frostton
+  ≥ 90: 3 towns, 14 settlement-days — The Forge of Sorrow, Free Hill-shroud, Frostton
+  what drives targets ≥ 30 (188 settlement-days): hunger 50%, poverty 8%, siege 41%, sickness 0%
+  The Forge of Sorrow (city, holder none, 30 residents): ≥70 day 20 [hunger 0, poverty 1, siege 0, sick 0]; ≥90 day 20
+  Free Hill-shroud (hamlet, holder faction_1, 27 residents): ≥70 day 23 [hunger 0, poverty 0, siege 0, sick 0]; ≥90 day 24
+  Frostton (hamlet, holder faction_def_mercenary_company_1, 24 residents): ≥70 day 15 [hunger 0, poverty 7, siege 0, sick 0]; ≥90 day 15
+
+## Pressure model, hunger read from days in a row with a scarce staple (arc cap unjammed)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/5/7/20/100
+  ≥ 30: 14 towns, 183 settlement-days
+  ≥ 50: 6 towns, 90 settlement-days — The Sunken Library, Wraithwood, The Forge of Sorrow, Free Hill-shroud, Ravenvale, Frostton
+  ≥ 70: 3 towns, 30 settlement-days — The Forge of Sorrow, Free Hill-shroud, Frostton
+  ≥ 90: 3 towns, 14 settlement-days — The Forge of Sorrow, Free Hill-shroud, Frostton
+  what drives targets ≥ 30 (173 settlement-days): hunger 43%, poverty 10%, siege 47%, sickness 0%
+  The Forge of Sorrow (city, holder none, 30 residents): ≥70 day 20 [hunger 0, poverty 1, siege 0, sick 0]; ≥90 day 20
+  Free Hill-shroud (hamlet, holder faction_1, 27 residents): ≥70 day 23 [hunger 0, poverty 0, siege 0, sick 0]; ≥90 day 24
+  Frostton (hamlet, holder faction_def_mercenary_company_1, 24 residents): ≥70 day 15 [hunger 0, poverty 7, siege 0, sick 0]; ≥90 day 15
+
+## Who lives in a town on the edge (residents on days the streak model is ≥ 50)
+towns ≥ 50 at some point: 6; resident-days in them: 2232
+total residents on day 50: 1073

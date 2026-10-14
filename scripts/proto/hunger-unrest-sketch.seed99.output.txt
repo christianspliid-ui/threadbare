@@ -1,0 +1,51 @@
+THR-1869 hunger and unrest — observer sketch, seed 99, medium, 50 days, 56 settlements
+Bands: 30 / 50 / 70 / 90 = Restless (THR-1923) / Lawless (existing trait) / on the edge / rising
+
+## What towns lived through (settlement-days / towns ever)
+scarce staple:     375 / 8
+scarcity arc open: 199 / 4  (flashpoint 187 / 4)
+prosperity < 35:  2364 / 54
+under siege:       56 / 8
+health < 40:      0 / 0
+unrest jumps:      91 days with a jump, in 16 towns
+
+## Today (the engine's own unrest)
+peak unrest per town, quartiles: 0/0/0/5/31
+end-of-day unrest, all settlement-days, quartiles: 0/0/0/0/31
+  towns ever ≥ 30 (any tick): 3; settlement-days ending ≥ 30: 21
+  towns ever ≥ 50 (any tick): 0; settlement-days ending ≥ 50: 0
+  towns ever ≥ 70 (any tick): 0; settlement-days ending ≥ 70: 0
+  towns ever ≥ 90 (any tick): 0; settlement-days ending ≥ 90: 0
+  The Shattered Sanctum: flashpoint 47 days; unrest at end of those days median 19
+  The Sunken Library: flashpoint 47 days; unrest at end of those days median 0
+  Greater Blade-watch: flashpoint 46 days; unrest at end of those days median 0
+  Dawnborough: flashpoint 47 days; unrest at end of those days median 0
+
+## Pressure model, hunger read from the scarcity-arc phase (jammed cap, as today)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 2/7/14/20/88
+  ≥ 30: 11 towns, 227 settlement-days
+  ≥ 50: 6 towns, 129 settlement-days — Ardenmor Keep, The Shattered Sanctum, The Sunken Library, The Forge of Sorrow, Clay-shade, Dawnborough
+  ≥ 70: 3 towns, 27 settlement-days — The Shattered Sanctum, The Sunken Library, Dawnborough
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (245 settlement-days): hunger 77%, poverty 4%, siege 19%, sickness 0%
+  The Shattered Sanctum (city, holder faction_def_holy_order_dawn, 26 residents): ≥70 day 18 [hunger 55, poverty 4, siege 0, sick 0]
+  The Sunken Library (city, holder faction_def_arcane_circle, 25 residents): ≥70 day 17 [hunger 55, poverty 0, siege 30, sick 0]
+  Dawnborough (capital, holder faction_def_temple_of_spheres_1, 25 residents): ≥70 day 7 [hunger 55, poverty 5, siege 30, sick 0]
+
+## Pressure model, hunger read from days in a row with a scarce staple (arc cap unjammed)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 4/7/16/30/85
+  ≥ 30: 14 towns, 356 settlement-days
+  ≥ 50: 9 towns, 254 settlement-days
+  ≥ 70: 4 towns, 31 settlement-days — The Shattered Sanctum, The Sunken Library, The Forge of Sorrow, Dawnborough
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (378 settlement-days): hunger 83%, poverty 4%, siege 13%, sickness 0%
+  The Shattered Sanctum (city, holder faction_def_holy_order_dawn, 26 residents): ≥70 day 18 [hunger 55, poverty 4, siege 0, sick 0]
+  The Sunken Library (city, holder faction_def_arcane_circle, 25 residents): ≥70 day 17 [hunger 55, poverty 0, siege 30, sick 0]
+  The Forge of Sorrow (hamlet, holder faction_1, 27 residents): ≥70 day 16 [hunger 55, poverty 4, siege 0, sick 0]
+  Dawnborough (capital, holder faction_def_temple_of_spheres_1, 24 residents): ≥70 day 9 [hunger 34, poverty 4, siege 30, sick 0]
+
+## Who lives in a town on the edge (residents on days the streak model is ≥ 50)
+towns ≥ 50 at some point: 9; resident-days in them: 6249
+total residents on day 50: 1007

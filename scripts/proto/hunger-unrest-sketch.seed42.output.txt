@@ -1,0 +1,45 @@
+THR-1869 hunger and unrest — observer sketch, seed 42, medium, 50 days, 44 settlements
+Bands: 30 / 50 / 70 / 90 = Restless (THR-1923) / Lawless (existing trait) / on the edge / rising
+
+## What towns lived through (settlement-days / towns ever)
+scarce staple:     295 / 6
+scarcity arc open: 171 / 4  (flashpoint 156 / 4)
+prosperity < 35:  629 / 22
+under siege:       38 / 4
+health < 40:      0 / 0
+unrest jumps:      36 days with a jump, in 11 towns
+
+## Today (the engine's own unrest)
+peak unrest per town, quartiles: 0/0/0/0/25
+end-of-day unrest, all settlement-days, quartiles: 0/0/0/0/25
+  towns ever ≥ 30 (any tick): 0; settlement-days ending ≥ 30: 0
+  towns ever ≥ 50 (any tick): 0; settlement-days ending ≥ 50: 0
+  towns ever ≥ 70 (any tick): 0; settlement-days ending ≥ 70: 0
+  towns ever ≥ 90 (any tick): 0; settlement-days ending ≥ 90: 0
+  Ardenmor Keep: flashpoint 39 days; unrest at end of those days median 0
+  Meadowcity: flashpoint 47 days; unrest at end of those days median 0
+  West Fieldvale: flashpoint 47 days; unrest at end of those days median 0
+  Downswick: flashpoint 23 days; unrest at end of those days median 0
+
+## Pressure model, hunger read from the scarcity-arc phase (jammed cap, as today)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/0/6/8/57
+  ≥ 30: 7 towns, 184 settlement-days — Ardenmor Keep, Wraithwood, The Bone Coast, Great Silverhold, Meadowcity, West Fieldvale, Downswick
+  ≥ 50: 4 towns, 124 settlement-days — Ardenmor Keep, Meadowcity, West Fieldvale, Downswick
+  ≥ 70: 0 towns, 0 settlement-days
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (222 settlement-days): hunger 83%, poverty 0%, siege 17%, sickness 0%
+
+## Pressure model, hunger read from days in a row with a scarce staple (arc cap unjammed)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/0/6/9/85
+  ≥ 30: 8 towns, 276 settlement-days — Ardenmor Keep, Wraithwood, The Bone Coast, Great Silverhold, Meadowcity, West Fieldvale, Downswick, Greenvale
+  ≥ 50: 6 towns, 202 settlement-days — Ardenmor Keep, The Bone Coast, Meadowcity, West Fieldvale, Downswick, Greenvale
+  ≥ 70: 1 towns, 13 settlement-days — The Bone Coast
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (287 settlement-days): hunger 87%, poverty 0%, siege 12%, sickness 0%
+  The Bone Coast (city, holder faction_2, 22 residents): ≥70 day 24 [hunger 55, poverty 0, siege 30, sick 0]
+
+## Who lives in a town on the edge (residents on days the streak model is ≥ 50)
+towns ≥ 50 at some point: 6; resident-days in them: 4050
+total residents on day 50: 775

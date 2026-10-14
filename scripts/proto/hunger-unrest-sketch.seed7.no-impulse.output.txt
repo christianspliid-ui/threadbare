@@ -1,0 +1,43 @@
+THR-1869 hunger and unrest — observer sketch, seed 7, medium, 50 days, 59 settlements
+Bands: 30 / 50 / 70 / 90 = Restless (THR-1923) / Lawless (existing trait) / on the edge / rising
+
+## What towns lived through (settlement-days / towns ever)
+scarce staple:     84 / 4
+scarcity arc open: 83 / 3  (flashpoint 74 / 3)
+prosperity < 35:  1687 / 47
+under siege:       67 / 11
+health < 40:      0 / 0
+unrest jumps:      49 days with a jump, in 14 towns
+
+## Today (the engine's own unrest)
+peak unrest per town, quartiles: 0/0/0/0/99
+end-of-day unrest, all settlement-days, quartiles: 0/0/0/0/99
+  towns ever ≥ 30 (any tick): 3; settlement-days ending ≥ 30: 97
+  towns ever ≥ 50 (any tick): 3; settlement-days ending ≥ 50: 95
+  towns ever ≥ 70 (any tick): 3; settlement-days ending ≥ 70: 93
+  towns ever ≥ 90 (any tick): 3; settlement-days ending ≥ 90: 91
+  The Sunken Library: flashpoint 13 days; unrest at end of those days median 0
+  Wraithwood: flashpoint 47 days; unrest at end of those days median 0
+  Ravenvale: flashpoint 14 days; unrest at end of those days median 0
+
+## Pressure model, hunger read from the scarcity-arc phase (jammed cap, as today)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/4/6/9/64
+  ≥ 30: 12 towns, 125 settlement-days
+  ≥ 50: 3 towns, 48 settlement-days — The Sunken Library, Wraithwood, Ravenvale
+  ≥ 70: 0 towns, 0 settlement-days
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (188 settlement-days): hunger 50%, poverty 8%, siege 41%, sickness 0%
+
+## Pressure model, hunger read from days in a row with a scarce staple (arc cap unjammed)
+drift 4/day toward target = hunger + poverty + siege + sickness − contentment
+peak unrest per town, quartiles: 0/4/6/9/58
+  ≥ 30: 12 towns, 125 settlement-days
+  ≥ 50: 3 towns, 43 settlement-days — The Sunken Library, Wraithwood, Ravenvale
+  ≥ 70: 0 towns, 0 settlement-days
+  ≥ 90: 0 towns, 0 settlement-days
+  what drives targets ≥ 30 (173 settlement-days): hunger 43%, poverty 10%, siege 47%, sickness 0%
+
+## Who lives in a town on the edge (residents on days the streak model is ≥ 50)
+towns ≥ 50 at some point: 3; resident-days in them: 862
+total residents on day 50: 1073
