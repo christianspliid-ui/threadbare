@@ -35,7 +35,11 @@ What this unblocks: one honest read of a threaded mortal's mind across both fami
 | [THR-1781](https://linear.app/threadbare/issue/THR-1781) — a paid steer is held until the mortal's next full decision and always answers | The lean's hold, lapse and toast reuse that shape | Shipped |
 | [THR-1876](https://linear.app/threadbare/issue/THR-1876) — the Inspector replaces the thread detail column | The UI lands as one Inspector row, not on `ThreadDetailView` | Christian, THR-1827 |
 
-## Decided by this session (veto invited in chat, 2026-10-14)
+## Christian's answer
+
+Asked in chat on 2026-10-14: *"Should the lean replace God's Will, or sit beside it?"* Christian's reply, the same day: **"yes please replace. the old experience suck"**. Decision 1 below is therefore Christian's ruling, not a delegated call. Human gate satisfied via chat review, 2026-10-14. The flag stays in the code as a tuning lever only; flipping it back would need a new ruling.
+
+## Decided by this session (2026-10-14; decision 1 ruled by Christian)
 
 1. **The lean replaces the forced pick.** God's Will stops being offered (`COMPULSION_PREMONITION_ENABLED = false`) **in slice B, the same change that ships the Crossroads row**, so there is never a build with neither surface. Slice A adds the flag at `true`. A compulsion already held in a save still resolves through the existing path. *Why:* Law 9. The forced pick is the only god power left that sets a mortal's choice. *Veto path:* flip the flag back on to keep God's Will beside the Crossroads (one constant; no code reverts). Christian was asked in chat *"Replace the forced God's Will pick with the lean?"*; this plan builds the recommended answer and the flag keeps the other answer one number away.
 2. **The reading is free; the lean costs essence.** The thread page already shows what a threaded mortal weighs at no cost (rulebook §9, *Threads are your intelligence*). The Crossroads makes that list honest rather than selling it. Law 36 binds the *intervention*, the lean.
