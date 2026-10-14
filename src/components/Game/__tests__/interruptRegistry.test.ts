@@ -208,10 +208,10 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
     expect(after.heldArrivals).toEqual([{ id: 'JourneyVignetteModal', heldBy: ['interrupt'] }]);
   });
 
-  it('an arrival waits out the quiet window after a click, and the clock runs meanwhile', () => {
+  it('an arrival waits out the quiet window after a click, and holds the clock meanwhile so it cannot expire unseen', () => {
     const r = resolveInterrupts(snap({ premonitionPending: true, recentInput: true }));
     expect(r.open).toEqual([]);
-    expect(r.anyOpen).toBe(false);
+    expect(r.anyOpen).toBe(true);
     expect(r.heldArrivals).toEqual([{ id: 'PremonitionModal', heldBy: ['recent_input'] }]);
   });
 
@@ -259,7 +259,7 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
     const held = resolveInterrupts(snap({ momentPending: true, popupQueued: true, recentInput: true }));
     expect(held.momentMayRender).toBe(false);
     expect(held.popupMayRender).toBe(false);
-    expect(held.anyOpen).toBe(false);
+    expect(held.anyOpen).toBe(true);
     const showing = resolveInterrupts(snap({ popupQueued: true, playerSurfaceOpen: true, alreadyShown: ['EventPopup'] }));
     expect(showing.popupMayRender).toBe(true);
   });

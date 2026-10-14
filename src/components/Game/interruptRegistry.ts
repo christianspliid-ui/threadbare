@@ -177,11 +177,13 @@ export interface InterruptResolution {
   momentMayRender: boolean;
   /** The head popup may render. */
   popupMayRender: boolean;
-  /** Anything stops the world. */
+  /** Anything stops the world — an open surface, or an arrival waiting to mount. */
   anyOpen: boolean;
   /**
    * THR-1853 — arrivals the world wants on screen that wait their turn, and why.
-   * A held arrival does not stop the world: the clock runs on until it mounts.
+   * A held arrival still stops the world: it is due now, only its mount waits. A
+   * premonition expires a few ticks after it becomes showable, so a clock that ran on
+   * behind a held one could drop it unseen.
    */
   heldArrivals: HeldArrival[];
 }
@@ -265,7 +267,7 @@ export function resolveInterrupts(
     otherThanMomentOpen: blockingOpen || popupMayRender,
     momentMayRender,
     popupMayRender,
-    anyOpen: open.length > 0,
+    anyOpen: open.length > 0 || heldArrivals.length > 0,
     heldArrivals,
   };
 }

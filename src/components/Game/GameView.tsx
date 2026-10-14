@@ -5408,7 +5408,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const clockHeldNow = interruptAutoPause.heldRunning !== null;
   const clockHolder = clockHeldNow
     ? resolveClockHolder(
-        interruptResolution.open,
+        // THR-1853: a held arrival holds the clock too, so the readout names it.
+        [...interruptResolution.open, ...interruptResolution.heldArrivals.map(h => h.id)],
         tieredEncounterState && encounterVeilModel ? encounterVeilModel.header.title : null,
       )
     : null;
