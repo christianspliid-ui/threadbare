@@ -17,6 +17,7 @@ import { WorldGraph } from '../../engine/graph';
 import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { NavigationTarget } from '../../types/notification';
 import type { WorldRef } from '../../types/worldRef';
+import type { NodeRef } from '../../types/detailPage';
 import { useRefRouter, type RefRouter } from '../useRefRouter';
 import { useDetailNodeRefOpener, worldRefForNodeId } from '../useDetailNodeRefOpener';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
@@ -52,14 +53,17 @@ function Harness({
   graph,
   openSheet,
   onRouter,
+  onOpener,
 }: {
   graph: WorldGraph;
   openSheet: (t: NavigationTarget) => boolean;
   onRouter: (r: RefRouter) => void;
+  onOpener?: (o: (ref: NodeRef) => void) => void;
 }) {
   const router = useRefRouter({ graph, tick: 6, seed: 42, protagonistId: 'protag', openSheet });
   onRouter(router);
   const opener = useDetailNodeRefOpener(router, () => graph);
+  onOpener?.(opener);
   return (
     <DetailModalStackValueProvider value={router.stack}>
       <RefRouterProvider router={router}>
@@ -158,5 +162,18 @@ describe('a culture opens the Realm over it (THR-1851)', () => {
     g.addNode(n({ id: 'culture_9', type: 'actor', name: 'The Lonely', properties: { actorType: 'culture' } }));
     expect(worldRefForNodeId(g, 'culture_9')).toBeUndefined();
     expect(worldRefForNodeId(g, 'nobody')).toBeUndefined();
+  });
+});
+
+describe('a link with no sheet-bearing ref still opens its card (Law 25, THR-1851)', () => {
+  it('an event link opens the event card rather than nothing', () => {
+    const graph = worldGraph();
+    graph.addNode(n({ id: 'evt', type: 'event', name: 'A meeting in the market', properties: { eventType: 'encounter_outcome', tick: 5, locationId: 'market', participantIds: ['aethel'], summary: 'They met under the arch.' } }));
+    let opener!: (ref: NodeRef) => void;
+    const { getByTestId } = render(
+      <Harness graph={graph} openSheet={() => true} onRouter={() => {}} onOpener={o => { opener = o; }} />,
+    );
+    act(() => { opener({ nodeId: 'evt', pageKind: 'event' }); });
+    expect(getByTestId('detail-panel-0').textContent).toContain('A meeting in the market');
   });
 });

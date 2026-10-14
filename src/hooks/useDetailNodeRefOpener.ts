@@ -8,8 +8,9 @@
  * callback this hook returns.
  *
  * A link names a node (`NodeRef`); the router speaks `WorldRef`, so the node is read
- * from the live graph and named by {@link worldRefForNodeId}. A node no `WorldRefKind`
- * names opens nothing (fail-soft, NFP #4).
+ * from the live graph and named by {@link worldRefForNodeId}. A node with no
+ * sheet-bearing ref (an event, a culture with no Realm) opens the card its page kind
+ * describes, so a link drawn as clickable is never a dead click (Law 25).
  *
  * **A faction opens its sheet, not a card.** The faction card is a short stub; the sheet
  * holds the agenda, the people and the standing the player went looking for. The card
@@ -18,8 +19,8 @@
  * kind stacks as a card, which is what a card's links have always meant.
  */
 import { useCallback } from 'react';
-import type { NodeRef } from '../types/detailPage';
-import type { WorldRef } from '../types/worldRef';
+import type { GraphPageKind, NodeRef } from '../types/detailPage';
+import type { WorldRef, WorldRefKind } from '../types/worldRef';
 import { fromGraphNode, type GraphNodeLike } from '../types/worldRefAdapters';
 import type { RefRouter } from './useRefRouter';
 
@@ -60,6 +61,22 @@ export function worldRefForNodeId(graph: NodeLookup, nodeId: string): WorldRef |
   }
 }
 
+/**
+ * A `WorldRefKind` whose *card* is each page kind — the fallback address for a link whose
+ * node names no sheet-bearing ref (an event node; a culture with no Realm over it).
+ * `Section` draws every `NodeRef` as clickable once an opener is in scope, so the opener
+ * must always open *something*: the card the link's own page kind already describes,
+ * which is what the link meant before it had a router (Law 25 — never a dead click).
+ */
+const CARD_KIND_BY_PAGE_KIND: Readonly<Record<GraphPageKind, WorldRefKind>> = {
+  actor: 'agent',
+  faction: 'faction',
+  place: 'location',
+  item: 'artifact',
+  event: 'encounter',
+  group: 'army',
+};
+
 export function useDetailNodeRefOpener(
   router: Pick<RefRouter, 'open' | 'stack'>,
   getGraph: () => NodeLookup,
@@ -67,7 +84,10 @@ export function useDetailNodeRefOpener(
   return useCallback(
     (ref: NodeRef) => {
       const worldRef = worldRefForNodeId(getGraph(), ref.nodeId);
-      if (!worldRef) return;
+      if (!worldRef) {
+        router.open({ kind: CARD_KIND_BY_PAGE_KIND[ref.pageKind], id: ref.nodeId }, 'card', { via: 'detail-link' });
+        return;
+      }
       if (worldRef.kind === 'faction') {
         router.stack.popTo(-1);
         router.open(worldRef, 'sheet', { via: 'detail-link' });
