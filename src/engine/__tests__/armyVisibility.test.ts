@@ -293,6 +293,29 @@ describe('battleIndicatorForNode (GameView adapter)', () => {
     expect(entries.filter(e => !e.isSiege)).toHaveLength(1);
   });
 
+  // THR-1847: the hex tooltip names who is fighting, so the entry carries the sides.
+  it('carries the besieger\'s faction name on a siege, and no defender name', () => {
+    addLocation(graph, 'loc1', 4, 9);
+    addFaction(graph, 'f1');
+    addArmy(graph, 'army1', 'loc1', 'f1');
+    addBattle(graph, 'siege1', 'loc1', true);
+    expect(battleIndicatorForNode(graph, graph.getNode('siege1')!)).toEqual({
+      id: 'siege1', hexCol: 4, hexRow: 9, isSiege: true, attackerName: 'Faction-f1',
+    });
+  });
+
+  it('carries both sides\' faction names on a field battle', () => {
+    addLocation(graph, 'loc1', 1, 2);
+    addFaction(graph, 'f1');
+    addFaction(graph, 'f2');
+    addArmy(graph, 'army1', 'loc1', 'f1');
+    addArmy(graph, 'army2', 'loc1', 'f2');
+    addBattle(graph, 'battle1', 'loc1', false);
+    const entry = battleIndicatorForNode(graph, graph.getNode('battle1')!);
+    expect(entry?.attackerName).toBe('Faction-f1');
+    expect(entry?.defenderName).toBe('Faction-f2');
+  });
+
   it('returns null for an actor with no battleState', () => {
     addLocation(graph, 'loc1', 1, 2);
     graph.addNode({ id: 'plain', type: 'actor', name: 'Plain', properties: {} });

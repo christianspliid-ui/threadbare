@@ -157,6 +157,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Ground slipped',
     desc: 'Your hold here slipped. Tend it to win it back.',
   },
+  // THR-1847 — the words behind the map's siege ring and crossed swords (Laws 1, 17).
+  'ui.siege': {
+    label: 'Under siege',
+    desc: 'An army has ringed this town to take it. The siege ends when the town falls, the besiegers break, or both sides are spent.',
+  },
+  'ui.battle': {
+    label: 'Battle',
+    desc: 'Two armies are fighting on this ground. A battle in the open is short: it ends when one side breaks.',
+  },
   // THR-1814 — side-bar sections that arrive with their first entry (Laws 25, 53).
   'ui.signatures': {
     label: 'Signatures',

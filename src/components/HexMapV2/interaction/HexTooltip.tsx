@@ -6,6 +6,7 @@ import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
 import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../../../data/geo-word-bands';
 import { MAP_OVERLAY_Z } from '../overlay/mapOverlayZ';
 import { terrainDisplayName } from '../palette/terrainPalette';
+import type { BattleHexLine } from './battleHexLine';
 import { useSyncExternalStore } from 'react';
 import {
   isNudgeDesignerViewEnabled,
@@ -69,6 +70,11 @@ interface HexTooltipProps {
   dominionLine?: { prefix: string; placeName: string | null; word: string; color: string };
   /** THR-1750 — a band-drop badge on this hex: the `ui.dominion.drop` words + the chronicle line. */
   dominionDrop?: { lead: string; line: string };
+  /**
+   * THR-1847 — a siege or battle on this hex, in words: the `ui.siege` / `ui.battle`
+   * label in the marker's colour, then who is fighting. Built by `battleHexLines`.
+   */
+  battleLines?: BattleHexLine[];
 }
 
 // THR-1451 (Class C): `pct()` drew `73%` on the geo row. The reading exists —
@@ -120,6 +126,7 @@ export function HexTooltip({
   avatarColor,
   dominionLine,
   dominionDrop,
+  battleLines,
 }: HexTooltipProps) {
   // THR-1804 — grid coordinates and the raw terrain key are map plumbing; cold
   // playtest round 3 read "Wilderness (18, 11)" as debug info. Designer view only.
@@ -142,16 +149,17 @@ export function HexTooltip({
   const routeOverflow = Math.max(0, (tradeRoutes?.length ?? 0) - TOOLTIP_MAX_ROUTES);
   const routeSectionHeight = namedRouteCount > 0 ? 8 + namedRouteCount * 16 + (routeOverflow > 0 ? 14 : 0) : 0;
 
-  const estimatedWidth  = hasLocationData || namedRouteCount > 0 || avatarLine ? 240 : 180;
+  const estimatedWidth  = hasLocationData || namedRouteCount > 0 || avatarLine || battleLines?.length ? 240 : 180;
   const estimatedHeight = geoParams ? 100
     : hasLocationData
       ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8 + routeSectionHeight
       : 46 + routeSectionHeight;
   const avatarLineHeight = avatarLine ? 20 : 0;
+  const battleLineHeight = (battleLines?.length ?? 0) * 18;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
   let left = screenX - estimatedWidth / 2;
-  let top  = screenY - offsetY - estimatedHeight - avatarLineHeight;
+  let top  = screenY - offsetY - estimatedHeight - avatarLineHeight - battleLineHeight;
 
   if (left < 4) left = 4;
   if (left + estimatedWidth > canvasWidth - 4) left = canvasWidth - estimatedWidth - 4;
@@ -209,6 +217,18 @@ export function HexTooltip({
           </span>
         )}
       </div>
+
+      {/* THR-1847 — the siege ring / crossed swords on this hex, in words */}
+      {battleLines?.map(line => (
+        <div
+          key={line.id}
+          data-testid={line.isSiege ? 'hex-tooltip-siege' : 'hex-tooltip-battle'}
+          style={{ color: 'var(--text-primary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', lineHeight: 1.5, whiteSpace: 'normal' }}
+        >
+          <span style={{ color: line.color, fontWeight: 600 }}>{line.word}</span>
+          {line.rest}
+        </div>
+      ))}
 
       {/* THR-1750 — the Dominion band of this ground, while the lens is on */}
       {dominionLine && (
