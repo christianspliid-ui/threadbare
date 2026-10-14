@@ -243,7 +243,11 @@ describe('the level-success invariant (THR-1575)', () => {
   // master work is near every master and passes every gate, then the cap's fair draw keeps it
   // on 19.5% of master boards (one template per reach, q ≈ 0.215). A probe putting it on ~56%
   // separates the rung on 42 / 99 / 7; 34–46% flips on noise.
-  // TODO(THR-1757): un-skip once master work reaches masters' boards (content or cap route).
+  // THR-1757 (master batch 2, K = 1 → 2 per reach) took own-master work onto 34.9% of master
+  // boards (from 16.7%) and master-band choices to 20.9% (from 7.1%). Seeds 42 / 99 / 7:
+  // master 0.236 / 0.352 / 0.391 against expert 0.342 / 0.269 / 0.291 — harder on 99 and 7,
+  // not on 42, so the clause stays skipped (never tuned to pass).
+  // TODO(THR-1840): un-skip once master batch 3 lifts seed 42 (plan 2026-10-13-thr-1757 § D2).
   it.skip('masters attempt harder content than experts', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
