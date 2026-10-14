@@ -34,6 +34,16 @@ Companion to [`2026-10-14-thr-1878-map-lenses-and-chrome.md`](2026-10-14-thr-187
 | Hide the plain sprites while Trouble is on and draw badges instead | Rejected — a lens never removes plain-map content; the player would lose the news view's look |
 | **Light the hexes, add no badge, and switch the plain sprites to the carved shapes** | **Chosen** — one shape, and the legend matches the map |
 
+### What "Unrest" means in the Trouble lens
+
+THR-1830 and THR-1824 called the hex pulse (conflict-reach activity, tense or volatile) "unrest". The engine also keeps a per-place Unrest value (phase 6.637, 0–100) that the player's "Incite Unrest" card raises and the hex survey reads as calm / restless / agitated / boiling.
+
+| Option | Verdict |
+|---|---|
+| Keep "Unrest" for the pulse | Rejected — a player who casts Incite Unrest would look for its effect under "Unrest" and not find it (PC-6, one fact told two ways) |
+| Show only the Unrest value | Rejected — drops the live conflict signal THR-1830 put in the lens |
+| **Both: "Unrest" from the value, read the two ways the game already shows it (a Location with the Lawless chip; or the hex survey's average at agitated or boiling), "Strife" from the pulse (mortals coming to blows, not armies — "Fighting" was dropped because the Battle tooltip already says armies are fighting)** | **Chosen** — one word, one meaning, and the lens agrees with the survey |
+
 ### The map keys
 
 THR-1831 (2026-10-11) bound `+`/`−` to zoom and WASD to pan. THR-1828 (2026-10-12) kept `+`/`=`/`-` for speed and gave `W` to widen.
