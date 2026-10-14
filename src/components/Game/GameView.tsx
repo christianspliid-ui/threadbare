@@ -2203,13 +2203,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     threadedAgentIds: threadedAgentIdsForActivity,
     telemetryVersion: runtime.balanceTelemetryVersion,
     actionsVersion: activityActionsVersion,
-    lensId: 'dominion',
-    stamp: dominionProjectionStamp(dominionProjectionNow, dominionGodSphere),
   };
+  // The lens the screen drew — off, on, or on with no god — returned as is, so a
+  // debug read never builds a projection the screen did not ask for.
+  const screenLensRef = useRef(dominionLensBase);
+  screenLensRef.current = dominionLensBase;
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerViewBridge({
       get: (id: string, args?: unknown) => {
+        if (id === 'lens' && args === undefined) return screenLensRef.current;
         const sel = getViewSelector(id);
         if (!sel) return null;
         const src = viewSourceRef.current;

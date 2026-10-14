@@ -2306,7 +2306,8 @@ export interface DebugBridge {
   /**
    * THR-1822 — the view model a screen is given, read off the same per-session cache.
    * `args` default to the screen's own (map and lens selectors), so
-   * `await getView('map.agents')` returns the rows the map drew. `hexContents` takes
+   * `await getView('map.agents')` returns the rows the map drew, and `getView('lens')`
+   * the lens view model the map drew (off or on). `hexContents` takes
    * `{ hexKey: 'col,row' }`. Null before a game or for an unknown id.
    */
   getView: (id: string, args?: unknown) => Promise<unknown>;
