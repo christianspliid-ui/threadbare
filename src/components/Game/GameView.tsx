@@ -27,7 +27,7 @@ import type { GameState } from '../../types/gameState';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { CardPlayTallyEntry } from '../../types/gameState';
-import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
+import { getEncountersForLocation } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useLocationActivities } from './hooks/useLocationActivities';
@@ -42,7 +42,17 @@ import { useScry } from './hooks/useScry';
 import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
-import { hexToWorld } from '../../lib/worldPosition';
+import { readView, viewCacheStats } from '../../engine/views/readView';
+import { getViewSelector, listViewSelectors } from '../../engine/views/selectors';
+import { mapAgentsSelector } from '../../engine/views/map/agents';
+import { mapThreadLinesSelector } from '../../engine/views/map/threadLines';
+import { mapCompaniesSelector } from '../../engine/views/map/companies';
+import { mapActivitySelector } from '../../engine/views/map/activityIcons';
+import { mapPlacesSelector } from '../../engine/views/map/places';
+import { mapArmiesAndBattlesSelector } from '../../engine/views/map/armiesAndBattles';
+import { lensViewSelector, dominionProjectionStamp } from '../../engine/views/lenses/lensView';
+import { toAgentRenderData, toArmyRenderData, toActivityIconData, type AvatarPaint } from './map/mapViewAdapters';
+import { ViewSourceContext, type ViewSource } from '../../contexts/ViewSourceContext';
 import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
 import { avatarGodTitleLine } from '../../data/avatar-framing';
 import { AFTERMATH_REACTION_REFUSAL_COPY } from '../../data/aftermath-reaction-copy';
@@ -54,24 +64,13 @@ import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
-import { FACTION_HERALDIC_COLORS } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
 import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
-import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
 import type { BattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
-import { battleIndicatorForNode } from '../HexMapV2/scene/BattleIndicatorLayer';
 import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
 import type { CompanyRenderData } from '../HexMapV2/scene/CompanyClusterMesh';
-import { getActiveGroups, getGroupPosition, getGroupMembers, isGroupThreaded, isAgentGone } from '../../engine/groups/groupQueries';
 import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
-import {
-  ACTIVITY_ICON_OPACITY_BACKGROUND,
-  ACTIVITY_ICON_OPACITY_SHAPING,
-  ACTIVITY_ICON_OPACITY_STORY,
-  ATTENTION_BASE_CAPACITY,
-} from '../../data/attention-constants';
-import type { ArmyState } from '../../types/army';
-import type { BattleState } from '../../types/battle';
+import { ATTENTION_BASE_CAPACITY } from '../../data/attention-constants';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
 import {
@@ -79,12 +78,11 @@ import {
   buildRivalSchemeTargets,
 } from '../../engine/rivalInfluenceMarkers';
 import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
-import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
+import { getSustainedControlNodes } from '../../engine/retinue';
 import { buildAppointmentBadges, type AppointmentBadgeModel } from './appointmentBadgeModel';
 import { resolveAxiologicalProfile } from '../../engine/encounterScoring';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction, ThreadCategory, SustainedControlNode } from '../../engine/retinue';
-import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
@@ -208,8 +206,9 @@ import {
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
-import { applyBeatChoice, applyBeatChoiceEffects } from '../../engine/journeyEngine';
-import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
+import { recordJourneyChoice } from '../../engine/journeyEngine';
+import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
+import { getThreadsFrom, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { bondFirstFromMeeting } from './meetingBond';
@@ -269,7 +268,6 @@ import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { isStarterActionId } from '../../engine/actionUnlock';
-import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { withEssenceSpend, recordEssenceMovement } from '../../engine/essenceMovement';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
@@ -318,12 +316,6 @@ import { DelveProgressPanel } from '../ruins/DelveProgressPanel';
 import { EmergenceDilemmaModal } from '../ruins/EmergenceDilemmaModal';
 import { resolveEmergenceDecision } from '../../engine/ruins/delveVariant';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
-import type { SpotlightTier } from '../../types/npc';
-import { shouldRenderIndividualOnHexMap } from './hexMapAgentVisibility';
-import {
-  getEncounterActivityIconKey,
-  getSelectedEncounterPoolCandidate,
-} from './encounterActivityPresentation';
 import {
   getHexStrategicOverlays,
   getAgentStrategicSummary,
@@ -874,14 +866,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // can actually reach the deal. The identity-less path builds its own stub in
   // `MeetingEncounterModal`, at the one call site that needs it.
 
-  // ── Shared actor + faction lookups (single graph traversal per tick) ──
-  // TB-086: Key off runtime.worldVersion, not graph identity (graph is mutated in place)
-  const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, runtime.worldVersion]);
-  const factionNodes = useMemo(
-    () => actors.filter(node => node.properties.actorType === 'faction'),
-    [actors],
-  );
-
   // ── Camera interaction gate (THR-463) ──
   // Stable callback that the HexMapV2 follow-mode checks on every hex change.
   // Re-computed only when the inputs that affect the decision change.
@@ -901,169 +885,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gameState.tick,
   ]);
 
-  // ── Agent render data adapter (graph → AgentRenderData[]) ──
-  const agentRenderData = useMemo<AgentRenderData[]>(() => {
-    const retinueIds = new Set(
-      getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.id)
-    );
-    const threadedAgentIds = new Set(
-      gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread').map(e => e.target)
-    );
-    const result: AgentRenderData[] = [];
-    for (let i = 0; i < actors.length; i++) {
-      const n = actors[i];
-      // Only render notable-or-higher individuals and army groups on the hex map.
-      // Factions, cultures, gods, ascendants are not map-positioned entities.
-      // Ambient NPCs stay in rosters; promoted NPCs become visible on the map.
-      const actorType = n.properties.actorType as string | undefined;
-      if (actorType !== 'individual' && actorType !== 'group') continue;
-      // Army nodes are rendered by the army layer, not the agent sprite system.
-      if (n.properties.armyState != null) continue;
-      if (actorType === 'individual') {
-        // Commanders are represented by their army's icon while on campaign.
-        const commandedByEdges = gameState.graph.getIncomingEdges(n.id, 'commanded_by');
-        const tier = n.properties.spotlightTier as SpotlightTier | undefined;
-        if (!shouldRenderIndividualOnHexMap(tier, commandedByEdges.length)) continue;
-        // Only the avatar and agents threaded by the ascendant appear on the map.
-        if (n.id !== avatarNodeId && !threadedAgentIds.has(n.id)) continue;
-      }
-      let hexCol = n.properties.hexCol as number | undefined;
-      let hexRow = n.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(n.id, 'located_at');
-        const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
-        if (locationId) {
-          const loc = gameState.graph.getNode(locationId);
-          if (loc) {
-            hexCol = loc.properties.hexCol as number | undefined;
-            hexRow = loc.properties.hexRow as number | undefined;
-          }
-        }
-      }
-      if (hexCol == null || hexRow == null) continue;
+  // ── Map view models (THR-1822) ──
+  // The map's always-on data is read off the view-model seam (`src/engine/views/map/`),
+  // cached on the runtime per world/structure version. Rows carry semantic keys; the
+  // scene's render constants are applied by `map/mapViewAdapters.ts` after the read.
+  const mapAgentRows = readView(runtime, gameState, mapAgentsSelector, { avatarNodeId: avatarNodeId ?? null }, tiles);
+  const avatarPaint = useMemo<AvatarPaint>(() => ({
+    portraitUrl: getOriginPortraitUrl(ascendantIdentity?.originFragmentId ?? ''),
+    sphereColor,
+    sigil: getSphereSymbol(archetype.sphereAlignment.primary),
+  }), [ascendantIdentity?.originFragmentId, sphereColor, archetype.sphereAlignment.primary]);
+  const agentRenderData = useMemo<AgentRenderData[]>(
+    () => toAgentRenderData(mapAgentRows, avatarPaint),
+    [mapAgentRows, avatarPaint],
+  );
 
-      const movState = n.properties.movementState as
-        | { currentHexPosition?: { col: number; row: number }; currentRoadType?: string; roadHexQueue?: unknown[] }
-        | undefined;
-      if (movState?.currentHexPosition) {
-        hexCol = movState.currentHexPosition.col;
-        hexRow = movState.currentHexPosition.row;
-      }
+  // ── Thread line render data (ascendant → threaded agents) — map.threadLines ──
+  const threadLineData: ThreadLineData[] = readView(
+    runtime, gameState, mapThreadLinesSelector,
+    { avatarNodeId: avatarNodeId ?? null, hexSize: HEX_CONSTANTS.HEX_SIZE }, tiles,
+  );
 
-      const isAvatar = n.id === avatarNodeId;
-      result.push({
-        id: n.id,
-        hexCol,
-        hexRow,
-        portraitUrl: isAvatar
-          ? getOriginPortraitUrl(ascendantIdentity?.originFragmentId ?? '')
-          : (getAgentPortraitUrlFromProperties(n.properties as Record<string, unknown>) ?? undefined),
-        factionIndex: i % 6,
-        isRetinue: retinueIds.has(n.id),
-        isAvatar,
-        avatarSphereColor: isAvatar ? sphereColor : undefined,
-        // THR-1609: the god's sigil marks the avatar as the player's own shape.
-        avatarSigil: isAvatar ? getSphereSymbol(archetype.sphereAlignment.primary) : undefined,
-        name: n.name,
-        currentRoadType: movState?.currentRoadType as 'major' | 'trail' | undefined,
-        roadHexQueueLength: Array.isArray(movState?.roadHexQueue) ? movState.roadHexQueue.length : undefined,
-      });
-    }
-    return result;
-  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, ascendantIdentity?.originFragmentId, archetype.sphereAlignment.primary]);
-
-  // ── Thread line render data (ascendant → threaded agents) ──
-  // Rebuilds on every worldVersion tick so line positions track moving agents.
-  const threadLineData = useMemo<ThreadLineData[]>(() => {
-    const avatarPos = avatarNodeId
-      ? (() => {
-          const n = gameState.graph.getNode(avatarNodeId);
-          if (!n) return null;
-          let col = n.properties.hexCol as number | undefined;
-          let row = n.properties.hexRow as number | undefined;
-          if (col == null || row == null) {
-            const locEdges = gameState.graph.getOutgoingEdges(avatarNodeId, 'located_at');
-            if (locEdges.length > 0) {
-              const loc = gameState.graph.getNode(locEdges[0].target);
-              col = loc?.properties.hexCol as number | undefined;
-              row = loc?.properties.hexRow as number | undefined;
-            }
-          }
-          return col != null && row != null ? { col, row } : null;
-        })()
-      : null;
-
-    if (!avatarPos) return [];
-    const fromWorld = hexToWorld(avatarPos, HEX_CONSTANTS.HEX_SIZE);
-    const threadEdges = gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread');
-    const result: ThreadLineData[] = [];
-
-    for (const edge of threadEdges) {
-      const agentNode = gameState.graph.getNode(edge.target);
-      if (!agentNode) continue;
-      let hexCol = agentNode.properties.hexCol as number | undefined;
-      let hexRow = agentNode.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(edge.target, 'located_at');
-        if (locEdges.length > 0) {
-          const loc = gameState.graph.getNode(locEdges[0].target);
-          hexCol = loc?.properties.hexCol as number | undefined;
-          hexRow = loc?.properties.hexRow as number | undefined;
-        }
-      }
-      if (hexCol == null || hexRow == null) continue;
-
-      const toWorld = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
-      const courtPosition = (edge.properties as Record<string, unknown>)['courtPosition'] as string | undefined;
-      result.push({
-        agentId: edge.target,
-        courtPosition: courtPosition ?? 'watched',
-        fromX: fromWorld.x,
-        fromY: fromWorld.y,
-        toX: toWorld.x,
-        toY: toWorld.y,
-      });
-    }
-    return result;
-  }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
-
-  // ── Company cluster render data (active companies → CompanyRenderData[]) ──
-  // Rebuilds on worldVersion so the ring + bond glyph track companies as they
-  // form, travel, and dissolve. Position derives from the leader (companies carry
-  // no located_at edge); a positionless company is skipped (fail-soft).
-  const companyRenderData = useMemo<CompanyRenderData[]>(() => {
-    const graph = gameState.graph;
-    const result: CompanyRenderData[] = [];
-    for (const group of getActiveGroups(graph)) {
-      const positionId = getGroupPosition(graph, group.id);
-      if (!positionId) continue;
-      // Resolve the position node up to hex granularity (sublocation → location → hex).
-      let node = graph.getNode(positionId) ?? null;
-      let hexCol: number | undefined;
-      let hexRow: number | undefined;
-      for (let depth = 0; depth < 3 && node; depth++) {
-        const p = node.properties as Record<string, unknown>;
-        if (typeof p.hexCol === 'number' && typeof p.hexRow === 'number') {
-          hexCol = p.hexCol;
-          hexRow = p.hexRow;
-          break;
-        }
-        const parentId = p.parentLocationId as string | undefined;
-        node = parentId ? (graph.getNode(parentId) ?? null) : null;
-      }
-      if (hexCol == null || hexRow == null) continue;
-      const world = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
-      const memberCount = getGroupMembers(graph, group.id).filter(m => !isAgentGone(m)).length;
-      result.push({
-        id: group.id,
-        worldX: world.x,
-        worldY: world.y,
-        threaded: isGroupThreaded(graph, group.id, gameState.ascendantId),
-        memberCount,
-      });
-    }
-    return result;
-  }, [gameState.graph, gameState.ascendantId, runtime.worldVersion]);
+  // ── Company cluster render data — map.companies ──
+  const companyRenderData: CompanyRenderData[] = readView(
+    runtime, gameState, mapCompaniesSelector, { hexSize: HEX_CONSTANTS.HEX_SIZE }, tiles,
+  );
 
   // ── Attention pool/capacity — component-level so they're in scope everywhere ──
   const { attentionPool, attentionCapacity } = useMemo(() => {
@@ -1079,122 +925,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return attentionCapacity > 0 ? Math.min(1, attentionPool / attentionCapacity) : 1;
   }, [attentionPool, attentionCapacity]);
 
-  // ── Activity icon render data (active encounters → per-agent reach icons) ──
-  // Rebuilds on worldVersion so icons appear/disappear as encounters start/end.
-  const activityIconData = useMemo<ActivityIconData[]>(() => {
-    const resultByAgent = new Map<string, ActivityIconData & { __priority__: number }>();
-
-    const getAgentWorldPosition = (agentId: string): { worldX: number; worldY: number } | null => {
-      const agentNode = gameState.graph.getNode(agentId);
-      if (!agentNode) return null;
-
-      let hexCol = agentNode.properties.hexCol as number | undefined;
-      let hexRow = agentNode.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(agentId, 'located_at');
-        if (locEdges.length > 0) {
-          const loc = gameState.graph.getNode(locEdges[0].target);
-          hexCol = loc?.properties.hexCol as number | undefined;
-          hexRow = loc?.properties.hexRow as number | undefined;
-        }
-      }
-      if (hexCol == null || hexRow == null) return null;
-
-      const worldPos = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
-      return { worldX: worldPos.x, worldY: worldPos.y };
-    };
-
-    const upsertIcon = (
-      agentId: string,
-      iconData: Omit<ActivityIconData, 'agentId' | 'worldX' | 'worldY'>,
-      priority: number,
-    ) => {
-      const worldPosition = getAgentWorldPosition(agentId);
-      if (!worldPosition) return;
-      const storedPriority = resultByAgent.get(agentId)?.__priority__ ?? -1;
-      if (storedPriority > priority) return;
-
-      const entry = {
-        agentId,
-        worldX: worldPosition.worldX,
-        worldY: worldPosition.worldY,
-        ...iconData,
-        __priority__: priority,
-      } as ActivityIconData & { __priority__: number };
-      resultByAgent.set(agentId, entry);
-    };
-
-    for (const [agentId, decision] of latestThreadEncounterDecisions.entries()) {
-      if (decision.decisionType === 'idle') continue;
-      const selectedCandidate = getSelectedEncounterPoolCandidate(decision);
-      if (!selectedCandidate) continue;
-      upsertIcon(
-        agentId,
-        {
-          iconKey: getEncounterActivityIconKey(selectedCandidate.encounterType, decision.decisionType),
-          tierOpacity: ACTIVITY_ICON_OPACITY_SHAPING,
-        },
-        0,
-      );
-    }
-
-    for (const action of gameState.unifiedActions) {
-      if (action.resolved) continue;
-      const template = getUnifiedTemplateById(action.templateId);
-      if (!template) continue;
-      const tier = action.effectiveTier ?? template.intrinsicTier;
-      const tierOpacity =
-        tier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
-        tier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
-        ACTIVITY_ICON_OPACITY_BACKGROUND;
-      upsertIcon(
-        action.actorId,
-        {
-          iconKey: getEncounterActivityIconKey(template.encounterType, 'start_local'),
-          tierOpacity,
-        },
-        2,
-      );
-    }
-
-    // Also scan legacy encounterProgress so agents in old-system encounters show icons too.
-    for (const ep of gameState.encounterProgress) {
-      if (ep.status !== 'active') continue;
-      const legacyTemplate = getAnyEncounterById(ep.encounterId);
-      const unifiedTemplate = legacyTemplate ? undefined : getUnifiedTemplateById(ep.encounterId);
-      if (!legacyTemplate && !unifiedTemplate) continue;
-      const encounterType = legacyTemplate
-        ? legacyTemplate.encounterType
-        : CRUD_TO_ENCOUNTER_TYPE[unifiedTemplate!.crudType] ?? 'assist';
-      const epTier = ep.effectiveTier;
-      const epTierOpacity =
-        epTier === 'story_beat'  ? ACTIVITY_ICON_OPACITY_STORY :
-        epTier === 'shaping'     ? ACTIVITY_ICON_OPACITY_SHAPING :
-        ACTIVITY_ICON_OPACITY_BACKGROUND;
-      upsertIcon(
-        ep.actorId,
-        {
-          iconKey: getEncounterActivityIconKey(encounterType, 'start_local'),
-          tierOpacity: epTierOpacity,
-        },
-        2,
-      );
-    }
-
-    return [...resultByAgent.values()].map((entry) => ({
-      agentId: entry.agentId,
-      worldX: entry.worldX,
-      worldY: entry.worldY,
-      iconKey: entry.iconKey,
-      tierOpacity: entry.tierOpacity,
-    }));
-  }, [
-    gameState.unifiedActions,
-    gameState.encounterProgress,
-    gameState.graph,
-    latestThreadEncounterDecisions,
-    runtime.worldVersion,
-  ]);
+  // ── Activity icon render data (active encounters → per-agent reach icons) — map.activity ──
+  const threadedAgentIdsForActivity = useMemo(
+    () => threadedNodes.filter(node => node.category === 'agent').map(node => node.id),
+    [threadedNodes],
+  );
+  const mapActivityRows = readView(runtime, gameState, mapActivitySelector, {
+    hexSize: HEX_CONSTANTS.HEX_SIZE,
+    threadedAgentIds: threadedAgentIdsForActivity,
+    telemetryVersion: runtime.balanceTelemetryVersion,
+  }, tiles);
+  const activityIconData = useMemo<ActivityIconData[]>(
+    () => toActivityIconData(mapActivityRows),
+    [mapActivityRows],
+  );
 
   // ── Strategic overlay data (hex map dots + ThreadsPanel summaries) ──
   // Rebuilds when strategicState changes (each tick where agents take strategic actions).
@@ -1248,31 +992,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     runtime.worldVersion,
   ]);
 
-  // ── Location render data adapter (graph → LocationNode[]) ──
-  // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
-  // changes from settlement promotion call touchStructure(), so structuralCacheVersion
-  // is the correct dependency. worldVersion bumps every tick and would rebuild the
-  // entire Three.js scene on each tick (zoom reset + visual artifacts).
-  const locationNodes = useMemo<LocationNode[]>(() => {
-    // Home seat (throne) — flag the matching location so HexMapV2 renders the
-    // seat signifier (THR-502). Read from the ascendant node's properties.
-    const homeSeatLocationId = gameState.graph.getNode(gameState.ascendantId)
-      ?.properties.homeSeatLocationId as string | undefined;
-    return gameState.graph.getNodesByType('location')
-      .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
-      .filter(n => !n.properties.sublocationTypeId)
-      .map(n => ({
-        locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
-        hexCol: n.properties.hexCol as number,
-        hexRow: n.properties.hexRow as number,
-        name: n.name,
-        rarityTier: n.properties.rarityTier as number | undefined,
-        isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
-        isAnomalyLocation: n.properties.isAnomalyLocation === true,
-        discoveredByExploration: n.properties.discoveredByExploration === true,
-        isHomeSeat: homeSeatLocationId != null && n.id === homeSeatLocationId,
-      }));
-  }, [gameState.graph, gameState.ascendantId, runtime.structuralCacheVersion]);
+  // ── Location render data — map.places ──
+  // Structure-keyed on the seam: a settlement promotion calls touchStructure(), while
+  // worldVersion moves every tick and would rebuild the whole icon layer each tick.
+  const locationNodes: LocationNode[] = readView(runtime, gameState, mapPlacesSelector, undefined, tiles);
 
   // ── Anomaly shimmer data (all anomalies including undiscovered) ──
   const anomalyNodes = useMemo(() => {
@@ -1321,65 +1044,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.tick, runtime.worldVersion],
   );
 
-  // ── Military render data adapters (graph → ArmyRenderData[], BattleIndicatorData[]) ──
-  // Single pass over actors for army + battle/siege data (was 3 separate getNodesByType calls)
-  const { armyRenderData, battleRenderData } = useMemo(() => {
-    // Build faction ID → index map once (was inside army loop)
-    const factionIdxMap = new Map<string, number>();
-    for (let i = 0; i < factionNodes.length; i++) {
-      factionIdxMap.set(factionNodes[i].id, i);
-    }
-
-    const armies: ArmyRenderData[] = [];
-    const battles: BattleIndicatorData[] = [];
-
-    for (const node of actors) {
-      const armyState = node.properties.armyState as ArmyState | undefined;
-      const battleState = node.properties.battleState as BattleState | undefined;
-
-      // Army data
-      if (armyState != null) {
-        let hexCol = node.properties.hexCol as number | undefined;
-        let hexRow = node.properties.hexRow as number | undefined;
-        if (hexCol == null || hexRow == null) {
-          const locEdges = gameState.graph.getOutgoingEdges(node.id, 'located_at');
-          if (locEdges.length > 0) {
-            const loc = gameState.graph.getNode(locEdges[0].target);
-            hexCol = loc?.properties.hexCol as number | undefined;
-            hexRow = loc?.properties.hexRow as number | undefined;
-          }
-        }
-        if (hexCol != null && hexRow != null) {
-          // THR-74: faction targets only — heraldic color keys off the faction, and a
-          // company membership would otherwise hijack the lookup.
-          const memberEdges = getFactionMembershipEdges(gameState.graph, node.id);
-          const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-          const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
-          const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
-          // Extract faction definition ID for coat of arms lookup
-          // factionId format: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
-          let factionDefId: string | null = null;
-          if (factionId) {
-            const defMatch = factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
-            if (defMatch) factionDefId = defMatch[1];
-          }
-          armies.push({
-            armyId: node.id, hexCol, hexRow, factionColor, factionDefId,
-            armySize: armyState.headcount ?? ARMY_SIZE_SMALL_MAX,
-            isInBattle: battleState != null,
-          });
-        }
-      }
-
-      // Battle/siege data. THR-1846: the node sits on its hex via located_at (it has
-      // no hexCol of its own), and isSiege rides along so a siege draws its ring.
-      if (battleState != null) {
-        const entry = battleIndicatorForNode(gameState.graph, node);
-        if (entry) battles.push(entry);
-      }
-    }
-    return { armyRenderData: armies, battleRenderData: battles };
-  }, [actors, factionNodes, gameState.graph]);
+  // ── Military render data — map.armiesAndBattles (one pass over the actors) ──
+  const mapArmiesAndBattles = readView(runtime, gameState, mapArmiesAndBattlesSelector, undefined, tiles);
+  const armyRenderData = useMemo<ArmyRenderData[]>(
+    () => toArmyRenderData(mapArmiesAndBattles.armies),
+    [mapArmiesAndBattles],
+  );
+  const battleRenderData: BattleIndicatorData[] = mapArmiesAndBattles.battles;
 
   // ── Notification preferences hook ──
   const {
@@ -2475,9 +2146,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return ensureDominionProjection(runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick, opened);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- structuralCacheVersion is read off the runtime
   }, [dominionLensOn, runtime, gameState.graph, tiles, gameState.ascendantId, gameState.tick, runtime.structuralCacheVersion]);
+  // THR-1822: with the lens on, its view model is read off the seam (`views/lenses/lensView.ts`),
+  // which calls `ensureDominionProjection` + `dominionLensVM` unchanged.
+  const dominionLensFromSeam = dominionLensOn && dominionProjectionNow
+    ? readView(runtime, gameState, lensViewSelector,
+      { lensId: 'dominion', stamp: dominionProjectionStamp(dominionProjectionNow) }, tiles)
+    : null;
   const dominionLensBase = useMemo(
-    () => dominionLensVM(dominionProjectionNow, dominionGodSphere, [], dominionLensOn),
-    [dominionProjectionNow, dominionGodSphere, dominionLensOn],
+    () => dominionLensFromSeam ?? dominionLensVM(dominionProjectionNow, dominionGodSphere, [], dominionLensOn),
+    [dominionLensFromSeam, dominionProjectionNow, dominionGodSphere, dominionLensOn],
   );
   const dominionLensForMap = useMemo(
     () => ({ ...dominionLensBase, drops: dominionDrops }),
@@ -2498,6 +2175,41 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       ...(drop ? { drop: { lead: getUITooltip(DOMINION_TOOLTIP_IDS.drop)?.desc ?? '', line: drop.line } } : {}),
     };
   }, [dominionDrops, dominionLensOn, gameState.graph, dominionProjectionNow, dominionGodSphere]);
+
+  // ── The view-model seam's source and debug bridge (THR-1822) ──
+  // Components below read view models through `useView`; `__DEBUG.getView(id, args)`
+  // returns exactly the view model a screen is given (same cache, same args).
+  const viewSource = useMemo<ViewSource>(
+    () => ({ runtime, state: gameState, tiles }),
+    [runtime, gameState, tiles],
+  );
+  const viewSourceRef = useRef(viewSource);
+  viewSourceRef.current = viewSource;
+  // The args this screen reads the map and lens selectors with — one superset object,
+  // each selector reads its own fields — so `getView('map.agents')` with no args
+  // returns the very object the map drew (a cache hit, same key).
+  const screenViewArgsRef = useRef<Record<string, unknown>>({});
+  screenViewArgsRef.current = {
+    avatarNodeId: avatarNodeId ?? null,
+    hexSize: HEX_CONSTANTS.HEX_SIZE,
+    threadedAgentIds: threadedAgentIdsForActivity,
+    telemetryVersion: runtime.balanceTelemetryVersion,
+    lensId: 'dominion',
+    stamp: dominionProjectionStamp(dominionProjectionNow),
+  };
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerViewBridge({
+      get: (id: string, args?: unknown) => {
+        const sel = getViewSelector(id);
+        if (!sel) return null;
+        const src = viewSourceRef.current;
+        return readView(src.runtime, src.state, sel, args ?? screenViewArgsRef.current, src.tiles);
+      },
+      list: () => listViewSelectors(),
+      stats: () => viewCacheStats(viewSourceRef.current.runtime),
+    });
+  }, []);
 
   // Debug bridge: setDominionLens / getDominionLens / getDominionHex (THR-1750).
   const dominionBridgeStateRef = useRef({ on: dominionLensOn, projection: dominionProjectionNow, drops: dominionDrops });
@@ -5105,14 +4817,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleStoryBeatDismiss = useCallback(() => {
     setGameState(prev => {
-      const ascNode = prev.graph.getNode(prev.ascendantId);
-      if (!ascNode) return prev;
-      const props = ascNode.properties as Record<string, unknown>;
-      props.pacingActiveStoryBeat   = null;
-      props.pacingLastCompletedTick = prev.tick;
+      // THR-1822 § D15: the engine writes the dismissal and bumps worldVersion.
+      if (!recordStoryBeatDismissed(prev.graph, runtime, prev.ascendantId, prev.tick)) return prev;
       return { ...prev, worldVersion: (prev.worldVersion ?? 0) + 1 };
     });
-  }, [setGameState]);
+  }, [setGameState, runtime]);
 
   // ── Player-opened surfaces (THR-1809) ──
   // One list for the gift hold, the arrival hold (THR-1853) and the debug open-modals
@@ -5551,8 +5260,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const threadEdge = threads.find(e => e.target === vignetteData.agentId);
     if (!threadEdge) return;
 
-    const threadProps = threadEdge.properties as ThreadEdgeProperties;
-
     // THR-1854 — a journey choice's essence cost is charged, all-or-nothing, against
     // the pool every encounter choice bills (THR-1720). The modal disables a choice the
     // pool cannot cover; this re-check covers a pool that moved since it rendered.
@@ -5571,15 +5278,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return;
     }
 
-    // Apply beat choice — updates thread edge properties + records outcome
-    const { updatedProps } = applyBeatChoice(threadProps, vignetteData, choiceId);
-
-    // Update the thread edge in the graph
-    gameState.graph.updateEdge(threadEdge.id, { properties: updatedProps });
-
-    // THR-1854 — and what the choice does to the First herself: her values and reaches.
-    applyBeatChoiceEffects(gameState.graph, vignetteData, choiceId, gameState.tick);
-    touchWorld(runtime);
+    // THR-1822 § D15: the engine records the beat on the thread edge, applies what the
+    // choice does to the First herself (THR-1854), and bumps worldVersion.
+    recordJourneyChoice(gameState.graph, runtime, gameState.ascendantId, vignetteData, choiceId, gameState.tick);
 
     // Remove this vignette from the queue, paying its cost in the same update
     setGameState(prev => {
@@ -5701,6 +5402,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   return (
     <GameErrorBoundary>
+      <ViewSourceContext.Provider value={viewSource}>
       <DetailModalStackValueProvider value={refRouter.stack}>
       <RefRouterProvider router={refRouter}>
       <DetailPageOpenerProvider value={openDetailNodeRef}>
@@ -6965,6 +6667,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       </DetailPageOpenerProvider>
       </RefRouterProvider>
       </DetailModalStackValueProvider>
+      </ViewSourceContext.Provider>
     </GameErrorBoundary>
   );
 }

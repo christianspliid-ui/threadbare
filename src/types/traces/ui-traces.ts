@@ -75,7 +75,25 @@ export interface UiRefUnroutableTrace extends TraceBase {
   summary: string;
 }
 
-export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace;
+/**
+ * Emitted when a view-model selector cannot build its view model and hands the
+ * surface its typed fallback instead (THR-1822, `src/engine/views/readView.ts`).
+ * Once per (selector, reason, key) per session, so a render loop cannot flood
+ * the buffer.
+ */
+export interface ViewFallbackTrace extends TraceBase {
+  category: 'view_fallback';
+  /** The selector's registry id: `map.agents`, `hexContents`, `lens`, … */
+  selector: string;
+  /** The selector's cache key for these args. */
+  key: string;
+  reason: 'missing_node' | 'kind_mismatch' | 'no_hex' | 'resolver_threw';
+  /** The error message, for `resolver_threw`. */
+  detail?: string;
+  summary: string;
+}
+
+export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace;
 
 /** The categories this module registers, for the vocabulary gate. */
-export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable'] as const;
+export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback'] as const;

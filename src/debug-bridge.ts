@@ -168,6 +168,12 @@ if (import.meta.env.DEV) {
     get: () => import('./debug-bridge.d').DebugDominionLensResult;
     hex: (col: number, row: number) => import('./debug-bridge.d').DebugDominionHexResult | null;
   } | null = null;
+  // THR-1822 — the view-model seam, registered by GameView.
+  let _viewBridge: {
+    get: (id: string, args?: unknown) => unknown;
+    list: () => import('./debug-bridge.d').DebugViewListing[];
+    stats: () => import('./debug-bridge.d').DebugViewCacheStats;
+  } | null = null;
   let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
   let _hexAtViewport: ((x: number, y: number) => { col: number; row: number } | null) | null = null;
   // GameView registers modal + UI state providers for playtest assertions
@@ -1116,6 +1122,14 @@ if (import.meta.env.DEV) {
     getDominionHex: async (col: number, row: number) => _dominionLens?.hex(col, row) ?? null,
     /** @internal GameView registers the lens here */
     _registerDominionLensBridge: (bridge) => { _dominionLens = bridge as typeof _dominionLens; },
+    /** THR-1822 — the view model a screen is given, by selector id (args default to the screen's own). */
+    getView: async (id: string, args?: unknown) => _viewBridge?.get(id, args) ?? null,
+    /** THR-1822 — every registered view-model selector with its invalidation class. */
+    listViews: async () => _viewBridge?.list() ?? [],
+    /** THR-1822 — the view cache's entries and per-selector hits, misses, rebuilds and fallbacks. */
+    getViewCacheStats: async () => _viewBridge?.stats() ?? null,
+    /** @internal GameView registers the view-model seam here */
+    _registerViewBridge: (bridge) => { _viewBridge = bridge; },
     /** How many top-level places stand in each band. */
     getDominionCensus: async () => {
       const [{ dominionOf }, { getLocationNodes }] = await Promise.all([

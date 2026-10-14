@@ -44,6 +44,7 @@ import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry
 import type { DistanceMatrix } from './distanceMatrix';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
+import { createViewCache, clearViewCache, type ViewCache } from './views/readView';
 import { clearTimelines } from './encounterTimeline';
 import { clearRewardHistory } from './rewardHistory';
 import type { BalanceTelemetry } from './balanceTelemetry';
@@ -288,6 +289,13 @@ export interface SimulationRuntime {
   dominionDropsReadAt: number;
 
   /**
+   * The view-model seam's cache (THR-1822, `views/readView.ts`): one entry per
+   * (selector, args), valid while the counter it was built at holds. Optional so a
+   * hand-built runtime stays valid; `readView` creates it on first use.
+   */
+  viewCache?: ViewCache;
+
+  /**
    * Which hold standings this session has announced (THR-1448): stance `controlId`
    * → the Realm node id the standing named, or `null` for a hold in the wilds.
    *
@@ -400,6 +408,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     dominionPrevBands: null,
     dominionDrops: [],
     dominionDropsReadAt: -1,
+    viewCache: createViewCache(),
     holdStandings: new Map(),
     bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
@@ -816,6 +825,7 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.dominionDrops = [];
   runtime.dominionPrevBands = null;
   runtime.dominionDropsReadAt = -1;
+  if (runtime.viewCache) clearViewCache(runtime.viewCache);
   runtime.distanceMatrix = null;
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;
