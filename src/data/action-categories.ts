@@ -10,9 +10,11 @@
  * castable-but-invisible in the Codex for months (THR-999).
  *
  * Now both readers import this file and keep no prefix arms of their own:
- *   - `ACTION_CATEGORIES` declares every category once — its Codex tab label, its glyph and
- *     its facet name in the designer action catalog. The record is closed over
- *     `ActionCategory`, so a category without a label or glyph is a type error.
+ *   - `ACTION_CATEGORIES` declares every category once — its Codex tab label and its facet
+ *     name in the designer action catalog. The record is closed over `ActionCategory`, so a
+ *     category without a label is a type error. Its glyph lives beside the Codex's other
+ *     glyphs (`ACTION_CATEGORY_GLYPHS` in codexRegistry.ts, also closed over the union) until
+ *     THR-1885 moves every category glyph onto the icon registry.
  *   - `ACTION_CATEGORY_RULES` maps id-prefixes (and a few bare ids) to a category. Rule order
  *     is the Codex's entry order, so keep new rows grouped with their category.
  *   - `uncategorisedActionMessages()` names the prefix and this file for any player-castable
@@ -20,7 +22,7 @@
  *     fail on it, so a new prefix breaks the build instead of shipping invisible.
  *
  * To add a player action under a new prefix: add one row to `ACTION_CATEGORY_RULES` (and,
- * only if it needs a new home, one entry to `ACTION_CATEGORIES`). Recipe:
+ * only if it needs a new home, one entry to `ACTION_CATEGORIES` plus its Codex glyph and mapper). Recipe:
  * `Docs/design-system/extending.md` § New player action.
  */
 
@@ -47,25 +49,22 @@ export type CatalogCategory =
 export interface ActionCategoryDef {
   /** Codex tab label. */
   readonly label: string;
-  /** Codex tab glyph. */
-  readonly glyph: string;
   /** Facet name in the designer action catalog. */
   readonly catalogFacet: CatalogCategory;
 }
 
 /**
  * The categories, in Codex tab order. Closed over `ActionCategory`: adding a member to the
- * union without a row here (or a row without a label / glyph) fails the typecheck.
+ * union without a row here (or a row without a label) fails the typecheck.
  */
 export const ACTION_CATEGORIES = {
-  divine: { label: 'Divine Actions', glyph: '★', catalogFacet: 'divine' },
-  hex: { label: 'Hex Actions', glyph: '⬡', catalogFacet: 'hex' },
-  location: { label: 'Place Actions', glyph: '⌂', catalogFacet: 'location' },
-  artifact: { label: 'Artifact Actions', glyph: '✦', catalogFacet: 'artifact' },
-  // Asterism - three marks travelling together (THR-999).
-  company: { label: 'Company Actions', glyph: '⁂', catalogFacet: 'company' },
-  threads: { label: 'Thread & Insight', glyph: '⁘', catalogFacet: 'threads' },
-  actions: { label: 'Mortal Actions', glyph: '⚔', catalogFacet: 'action' },
+  divine: { label: 'Divine Actions', catalogFacet: 'divine' },
+  hex: { label: 'Hex Actions', catalogFacet: 'hex' },
+  location: { label: 'Place Actions', catalogFacet: 'location' },
+  artifact: { label: 'Artifact Actions', catalogFacet: 'artifact' },
+  company: { label: 'Company Actions', catalogFacet: 'company' },
+  threads: { label: 'Thread & Insight', catalogFacet: 'threads' },
+  actions: { label: 'Mortal Actions', catalogFacet: 'action' },
 } as const satisfies Record<ActionCategory, ActionCategoryDef>;
 
 /** Category ids in Codex tab order. */

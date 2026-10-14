@@ -789,9 +789,20 @@ function mapResourceClass(resourceId: string): CodexEntry {
 }
 
 /**
- * Which mapper renders each action category (THR-1886). Closed over `ActionCategory`, so a
+ * The Codex tab glyph and the mapper for each action category (THR-1886). Closed over `ActionCategory`, so a
  * category added to `action-categories.ts` without a mapper here fails the typecheck.
  */
+const ACTION_CATEGORY_GLYPHS = {
+  divine: '★',
+  hex: '⬡',
+  location: '⌂',
+  artifact: '✦',
+  // Asterism - three marks travelling together (THR-999).
+  company: '⁂',
+  threads: '⁘',
+  actions: '⚔',
+} satisfies Record<ActionCategory, string>;
+
 const ACTION_ENTRY_MAPPERS = {
   divine: mapDivineAction,
   actions: mapMortalAction,
@@ -858,7 +869,7 @@ export function getCodexCategories(): CodexCategory[] {
 
   const catDefs: { id: string; label: string; glyph: string }[] = [
     // The seven action categories, declared once in action-categories.ts (THR-1886).
-    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORIES[id].glyph })),
+    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORY_GLYPHS[id] })),
     // Hammer and pick \u2014 the work mortals do on the world's things (THR-1434).
     { id: 'undertakings', label: 'Undertakings', glyph: '\u2692' },
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
