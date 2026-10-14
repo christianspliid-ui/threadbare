@@ -1,0 +1,119 @@
+THR-1866 goods-flow sketch — seed 42 · medium · 600 ticks (50 days) · in-loop stock mutation once a day
+Staples = grain, fish, water, grazing. "Famine onset" = a staple stock tier crossing into scarce; "glut" = into surplus.
+
+                                           today        shocks        regrow          flow       flowcut        hinter     hintercut
+tier crossings (all goods)                     8            11            40            32            32            31            33
+  of which flicker (back ≤2 days)              2             3             9             0             0             1             3
+famine onsets (staple → scarce)                1             2             0             0             0             0             0
+places that ever starved                       1             2             0             0             0             0             0
+famine spell median / max (days)           21/21         46/46           0/0           0/0           0/0           0/0           0/0
+glut onsets (staple → surplus)                 0             2            17            18            18             9             9
+places that ever glutted                       0             2            13            14            14             8             8
+scarcity arcs opened                           5             4             4             4             4             4             4
+arcs reaching flashpoint                       5             4             4             4             4             4             4
+arcs that ended (recovered)                    2             0             1             1             1             1             1
+famine/glut/scarcity chronicle                 8             7            15             5             5            10            10
+staple tiers day 0 s/a/+                   0/0/0         0/0/0         0/0/0         0/0/0         0/0/0         0/0/0         0/0/0
+staple tiers day 25 s/a/+                 5/47/8        7/44/9       5/40/15       5/40/15       5/40/15       13/48/9       13/48/9
+staple tiers day 50 s/a/+                 5/47/8       8/42/10       5/30/25       5/29/26       5/29/26      11/46/13      11/46/13
+staple qty p10/p50/p90 day 0            25/42/73      25/42/73      25/42/73      25/42/73      25/42/73      25/42/73      25/42/73
+staple qty p10/p50/p90 day 50           25/42/73      20/43/7939.4/67.3/84.539.4/67.3/84.539.4/67.3/84.5   9/51.4/80.6 4.4/53.8/80.6
+prosperity p10/p50/p90 day 0             0/15/55       0/15/55       0/15/55       0/15/55       0/15/55       0/15/55       0/15/55
+prosperity p10/p50/p90 day 50            0/15/52       0/15/53       0/15/53       0/15/52       0/15/52       0/15/52       0/15/52
+goods held by import at day 50                 0             0             0             4             4            10            10
+economic chronicle lines                     414           430           433           412           412           394           394
+
+── flow: lanes ──
+  lanes at end: 4 (threatened 0)
+
+── flowcut: lanes ──
+  lanes at end: 4 (threatened 0)
+
+── hinter: 17 settlements fed from 18 fields; top draws ──
+  Wolfton (hamlet) drew 141.2 staple
+  Downswick (hamlet) drew 123.7 staple
+  West Fieldvale (hamlet) drew 67.1 staple
+  Ironwick (hamlet) drew 64.7 staple
+  Greenvale (hamlet) drew 55.9 staple
+  Solacetown (hamlet) drew 48.7 staple
+  Ardenmor Keep (capital) drew 43.5 staple
+  Wraithwood (capital) drew 37.1 staple
+
+── the siege of the fields: Wolfton loses its 1 fields (Wolf Pastures) on day 20, having drawn 94.4 ──
+  grain  kept fields: 8.9? 31.3S 32.3S 32S 31.6S 31.3S 30.9S 30.2S
+  grain  fields lost: 8.9? 31.3S 31.7S 28.4S 25.1S 21.8S 18.5S 12S
+  water  kept fields: 6.2? 21.9S 23.1S 23.1S 23.1S 23.1S 23.1S 23S
+  water  fields lost: 6.2? 21.9S 22.4S 19.4S 16.4S 13.4S 10.4S 4.4S
+  fish  kept fields: 2.9? 8.1S 6.3S 5.2S 4S 2.9S 1.7S 0.3S
+  fish  fields lost: 2.9? 8.1S 6S 3.3S 0.5S 0S 0S 0S
+  prosperity d1/20/30/40/50   kept 36 46 46 46 45 | lost 36 46 45 45 43
+  unrest d20/30/40/50         kept 0 0 0 0 | lost 0 0 0 0
+  scarcity arc d20..50 kept: - - - - - - -
+  scarcity arc d20..50 lost: - - - - - - -
+  (quantity then tier: S scarce, a adequate, + surplus)
+
+── shocks: 16 landed (8 blights, 8 bounties) — none recover under (a)
+
+── today: economic chronicle (first 6 of 414) ──
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and The Bone Coast did not send another. The route has been abandoned.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and Hawkgate did not send another. The route has been abandoned.
+  t182 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t273 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t304 A Scarcity Bites — Word from Ardenmor Keep: the Fresh Water is scarce. Those who can hoard it do, and the rest make do.
+  t474 A Road Falls Silent — Grass grows through the wheel ruts between Great Silverhold and Horseford. The trade is dead.
+
+── shocks: economic chronicle (first 6 of 430) ──
+  t37 A Scarcity Bites — The Shattered Sanctum counts its Grazing Land now, and finds too little. A hard season is coming.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and The Bone Coast did not send another. The route has been abandoned.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and Hawkgate did not send another. The route has been abandoned.
+  t154 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t234 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t390 Selene masterfully completed The Harvest Bounty —  — Selene masterfully completed The Harvest Bounty — gained reputation, earned Firestarter Kit, eligible for promotion.
+
+── regrow: economic chronicle (first 6 of 433) ──
+  t98 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and The Bone Coast did not send another. The route has been abandoned.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and Hawkgate did not send another. The route has been abandoned.
+  t121 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t137 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+  t174 A Glut Descends — Great Silverhold has more Timber than it can use. The surplus rots in the yards while its worth collapses.
+
+── flow: economic chronicle (first 6 of 412) ──
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and The Bone Coast did not send another. The route has been abandoned.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and Hawkgate did not send another. The route has been abandoned.
+  t397 A Road Falls Silent — The last merchant to travel between Great Silverhold and Shadow-shade did not send another. The route has been abandoned.
+  t491 A Road Falls Silent — No wagons move between Great Silverhold and Shadow-shade any longer. The route has withered from disuse, and the road grows over.
+  t550 A Road Falls Silent — Grass grows through the wheel ruts between Great Silverhold and Shadow-shade. The trade is dead.
+
+── flowcut: economic chronicle (first 6 of 412) ──
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and The Bone Coast did not send another. The route has been abandoned.
+  t101 A Road Falls Silent — The last merchant to travel between The Shattered Sanctum and Hawkgate did not send another. The route has been abandoned.
+  t397 A Road Falls Silent — The last merchant to travel between Great Silverhold and Shadow-shade did not send another. The route has been abandoned.
+  t491 A Road Falls Silent — No wagons move between Great Silverhold and Shadow-shade any longer. The route has withered from disuse, and the road grows over.
+  t550 A Road Falls Silent — Grass grows through the wheel ruts between Great Silverhold and Shadow-shade. The trade is dead.
+
+── hinter: economic chronicle (first 6 of 394) ──
+  t165 A Settlement Rises — Downswick has grown from a hamlet into a town, its prosperity drawing settlers from across the region.
+  t185 A Settlement Rises — Downswick has grown from a town into a city, its prosperity drawing settlers from across the region.
+  t405 A Settlement Rises — Greenvale has grown from a hamlet into a town, its prosperity drawing settlers from across the region.
+  t407 A Road Falls Silent — The road between Great Silverhold and Shadow-shade falls silent. The last caravan passed 36 ticks ago.
+  t425 A Settlement Rises — Greenvale has grown from a town into a city, its prosperity drawing settlers from across the region.
+  t514 A Settlement Rises — Where once stood the hamlet of West Fieldvale, a town now rises — its streets widening, its markets swelling with commerce.
+
+── hintercut: economic chronicle (first 6 of 394) ──
+  t165 A Settlement Rises — Downswick has grown from a hamlet into a town, its prosperity drawing settlers from across the region.
+  t185 A Settlement Rises — Downswick has grown from a town into a city, its prosperity drawing settlers from across the region.
+  t405 A Settlement Rises — Greenvale has grown from a hamlet into a town, its prosperity drawing settlers from across the region.
+  t407 A Road Falls Silent — The road between Great Silverhold and Shadow-shade falls silent. The last caravan passed 36 ticks ago.
+  t425 A Settlement Rises — Greenvale has grown from a town into a city, its prosperity drawing settlers from across the region.
+  t514 A Settlement Rises — Where once stood the hamlet of West Fieldvale, a town now rises — its streets widening, its markets swelling with commerce.
+
+── settlement promotions ("A Settlement Rises" chronicle) in 50 days ──
+  today        0
+  shocks       0
+  regrow       0
+  flow         0
+  hinter       7
+  hintercut    7
+
+── coverage: 38 settlements, 16 hold any staple stock at day 1; scarcity arcs are capped at 3 (SCARCITY_ARC_MAX_ACTIVE) and in today/regrow the same three towns (Meadowcity, West Fieldvale, Downswick) hold all three slots at flashpoint through day 50 ──

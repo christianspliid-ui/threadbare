@@ -1,0 +1,87 @@
+THR-1866 goods-flow sketch — seed 42 · medium · 600 ticks (50 days) · in-loop stock mutation once a day
+Staples = grain, fish, water, grazing. "Famine onset" = a staple stock tier crossing into scarce; "glut" = into surplus.
+
+                                           today        shocks        regrow          flow       flowcut
+tier crossings (all goods)                     8            11            40            41            41
+  of which flicker (back ≤2 days)              2             3             9             4             4
+famine onsets (staple → scarce)                1             2             0             6             6
+places that ever starved                       1             2             0             3             3
+famine spell median / max (days)           21/21         46/46           0/0          4/39          4/39
+glut onsets (staple → surplus)                 0             2            17            17            17
+places that ever glutted                       0             2            13            13            13
+scarcity arcs opened                           5             4             4             6             6
+arcs reaching flashpoint                       5             4             4             6             6
+staple tiers day 0 s/a/+                   0/0/0         0/0/0         0/0/0         0/0/0         0/0/0
+staple tiers day 25 s/a/+                 5/47/8        7/44/9       5/40/15      11/38/15      11/38/15
+staple tiers day 50 s/a/+                 5/47/8       8/42/10       5/30/25      12/27/25      12/27/25
+staple qty p10/p50/p90 day 0            25/42/73      25/42/73      25/42/73      25/42/73      25/42/73
+staple qty p10/p50/p90 day 50           25/42/73      20/43/7939.4/67.3/84.515.7/66.2/83.916.7/66.2/83.9
+prosperity p10/p50/p90 day 0             0/15/55       0/15/55       0/15/55       0/15/55       0/15/55
+prosperity p10/p50/p90 day 50            0/15/52       0/15/53       0/15/53       0/15/51       0/15/51
+goods held by import at day 50                 0             0             0             8             8
+economic chronicle lines                     414           430           433           425           425
+
+── flow: lanes ──
+  West Fieldvale ↔ Great Silverhold: staple moved 33.8
+  The Shattered Sanctum ↔ Hawkgate: staple moved 27.5
+  Shadow-shade ↔ Great Silverhold: staple moved 20.6
+  Horseford ↔ Great Silverhold: staple moved 17.3
+  lanes at end: 7 (threatened 0)
+
+── flowcut: lanes ──
+  West Fieldvale ↔ Great Silverhold: staple moved 33.8
+  Shadow-shade ↔ Great Silverhold: staple moved 20.6
+  The Shattered Sanctum ↔ Hawkgate: staple moved 20
+  Horseford ↔ Great Silverhold: staple moved 17.3
+  lanes at end: 7 (threatened 0)
+
+── the cut: lane The Shattered Sanctum ↔ Hawkgate cut on day 20 (it had carried 20 staple) ──
+  The Shattered Sanctum grazing  flow:    37? 25.6a 17.8S 15.6S 13.3S 11.9S 9.8S 5.4S
+  The Shattered Sanctum grazing  flowcut: 37? 25.6a 18.4S 18.2S 17.9S 17.6S 17.3S 16.7S
+  The Shattered Sanctum prosperity d0/20/30/40/50  flow 65 29 27 26 24 | cut 65 29 28 28 27 · unrest d20/30/40/50 flow 0 0 0 0 | cut 0 0 0 0 · arcs after cut flow [grazing:flashpoint] cut [grazing:flashpoint]
+  Hawkgate grazing  flow:    — 7.5S 9.9S 8.8S 7.7S 5.4S 3.7S 0S
+  Hawkgate grazing  flowcut: — 7.5S 9.2S 6.4S 3.5S 0.7S 0S 0S
+  Hawkgate prosperity d0/20/30/40/50  flow 40 51 51 51 50 | cut 40 51 51 50 50 · unrest d20/30/40/50 flow 0 0 0 0 | cut 0 0 0 0 · arcs after cut flow [grazing:flashpoint] cut [grazing:flashpoint]
+  (quantity then tier: S scarce, a adequate, + surplus)
+
+── shocks: 16 landed (8 blights, 8 bounties) — none recover under (a)
+
+── today: economic chronicle (first 6 of 414) ──
+  t12 A Holding Pays — What Nesrin holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Xen collects from Inn. Holding a thing and being paid by it turn out to be the same act.
+  t12 A Holding Pays — What Aven holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Granary pays its tithe to Kelven. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — The Temple of the Spheres Hall (Sacred Umbral-shade) pays its tithe to Selene. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — What Lirik holds is paying for itself. The Holy Order of the Dawn Hall (Grey Cathedral) sends its due, and the ledger closes even.
+
+── shocks: economic chronicle (first 6 of 430) ──
+  t12 A Holding Pays — What Nesrin holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Xen collects from Inn. Holding a thing and being paid by it turn out to be the same act.
+  t12 A Holding Pays — What Aven holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Granary pays its tithe to Kelven. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — The Temple of the Spheres Hall (Sacred Umbral-shade) pays its tithe to Selene. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — What Lirik holds is paying for itself. The Holy Order of the Dawn Hall (Grey Cathedral) sends its due, and the ledger closes even.
+
+── regrow: economic chronicle (first 6 of 433) ──
+  t12 A Holding Pays — What Nesrin holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Xen collects from Inn. Holding a thing and being paid by it turn out to be the same act.
+  t12 A Holding Pays — What Aven holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Granary pays its tithe to Kelven. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — The Temple of the Spheres Hall (Sacred Umbral-shade) pays its tithe to Selene. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — What Lirik holds is paying for itself. The Holy Order of the Dawn Hall (Grey Cathedral) sends its due, and the ledger closes even.
+
+── flow: economic chronicle (first 6 of 425) ──
+  t12 A Holding Pays — What Nesrin holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Xen collects from Inn. Holding a thing and being paid by it turn out to be the same act.
+  t12 A Holding Pays — What Aven holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Granary pays its tithe to Kelven. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — The Temple of the Spheres Hall (Sacred Umbral-shade) pays its tithe to Selene. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — What Lirik holds is paying for itself. The Holy Order of the Dawn Hall (Grey Cathedral) sends its due, and the ledger closes even.
+
+── flowcut: economic chronicle (first 6 of 425) ──
+  t12 A Holding Pays — What Nesrin holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Xen collects from Inn. Holding a thing and being paid by it turn out to be the same act.
+  t12 A Holding Pays — What Aven holds is paying for itself. Granary sends its due, and the ledger closes even.
+  t12 A Holding Pays — Granary pays its tithe to Kelven. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — The Temple of the Spheres Hall (Sacred Umbral-shade) pays its tithe to Selene. Whatever the town thinks of the arrangement, it pays.
+  t12 A Holding Pays — What Lirik holds is paying for itself. The Holy Order of the Dawn Hall (Grey Cathedral) sends its due, and the ledger closes even.
