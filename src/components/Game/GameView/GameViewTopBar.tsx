@@ -160,6 +160,9 @@ export interface GameViewTopBarProps {
   /** THR-1837 — the "Show every panel" setting. */
   showEveryPanel?: boolean;
   onToggleShowEveryPanel?: () => void;
+  /** THR-1853 — the Rivals and Notables dropdowns report their open state up to GameView. */
+  onRivalsOpenChange?: (open: boolean) => void;
+  onNotablesOpenChange?: (open: boolean) => void;
 }
 
 export function GameViewTopBar({
@@ -213,6 +216,8 @@ export function GameViewTopBar({
   directionLine,
   showEveryPanel,
   onToggleShowEveryPanel,
+  onRivalsOpenChange,
+  onNotablesOpenChange,
 }: GameViewTopBarProps) {
   const shown = (id: OpeningRevealSurfaceId) => opening?.show[id] ?? true;
   /** The gold ring on a panel that just arrived (THR-1837 U4). */
@@ -374,10 +379,11 @@ export function GameViewTopBar({
             <RivalsButton
               definitions={gameState.rivalDefinitions}
               states={gameState.rivalStates}
+              onOpenChange={onRivalsOpenChange}
             />
           )}
           {/* Notables intent panel (THR-630) */}
-          {showNotables && <div {...ring('notables')}><NotablesButton gameState={gameState} /></div>}
+          {showNotables && <div {...ring('notables')}><NotablesButton gameState={gameState} onOpenChange={onNotablesOpenChange} /></div>}
           {/* Read the Threads — divine digest review */}
           {shown('read_threads') && (
           <IconButton

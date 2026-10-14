@@ -9,6 +9,7 @@ import {
   type InterruptSnapshot,
   type InterruptSurface,
 } from '../interruptRegistry';
+import { arrivalHoldingSurfaces, openPlayerSurfaces, resolveGiftDelivery, type PlayerSurfaceFlags } from '../giftDelivery';
 
 const closed: InterruptSnapshot = {
   interruptsSuppressed: false,
@@ -152,5 +153,135 @@ describe('interruptRegistry', () => {
     expect(none.anyOpen).toBe(false);
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
+  });
+});
+
+/**
+ * THR-1853 — arrivals wait their turn. Warm round 2: clicks on Rivals, the Chapter
+ * Ledger and Doom landed on a premonition, a journey moment or a gift that mounted under
+ * the pointer, and a premonition drew on top of a journey moment.
+ */
+describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
+  const NO_FLAGS: PlayerSurfaceFlags = {
+    settingsPanelOpen: false, readThreadsOpen: false, agendaPickerOpen: false,
+    actionDrawerOpen: false, agentProfileOpen: false, stubSheetCategory: null,
+    attachmentSheetOpen: false, ascendantSheetOpen: false, doomDetailOpen: false,
+    mandateDetailOpen: false, harvestOpen: false, codexOpen: false,
+    chapterLedgerOpen: false, scryOpen: false, rivalsOpen: false, notablesOpen: false,
+  };
+  const PLAYER_SURFACES: Array<[string, Partial<PlayerSurfaceFlags>]> = [
+    ['Chapter Ledger', { chapterLedgerOpen: true }],
+    ['Rivals', { rivalsOpen: true }],
+    ['Notables', { notablesOpen: true }],
+    ['Doom', { doomDetailOpen: true }],
+  ];
+  /** The snapshot GameView builds for one set of open player surfaces. */
+  const withSurface = (flags: Partial<PlayerSurfaceFlags>, over: Partial<InterruptSnapshot>): InterruptSnapshot => {
+    const open = openPlayerSurfaces({ ...NO_FLAGS, ...flags });
+    return snap({
+      chapterLedgerOpen: open.includes('ChapterLedger'),
+      playerSurfaceOpen: open.some(id => id !== 'ChapterLedger' && id !== 'ScryOverlay'),
+      ...over,
+    });
+  };
+
+  it.each(PLAYER_SURFACES)('a premonition, a journey moment and a gift pending while %s is open wait until it closes', (_name, flags) => {
+    const pending = { premonitionPending: true, vignettePending: true };
+    const during = resolveInterrupts(withSurface(flags, pending));
+    expect(during.open).not.toContain('PremonitionModal');
+    expect(during.open).not.toContain('JourneyVignetteModal');
+    expect(during.heldArrivals.map(h => h.id)).toEqual(['PremonitionModal', 'JourneyVignetteModal']);
+
+    const surfaces = openPlayerSurfaces({ ...NO_FLAGS, ...flags });
+    const gift = resolveGiftDelivery({
+      pendingBeatId: 'beat.spine.the_seat', isSpine: true, isArrivalBeat: false,
+      suppressed: false, journeyVignettePending: false,
+      otherInterruptsOpen: [], playerSurfacesOpen: surfaces,
+      msSinceLastInput: 60_000, atResumeBoundary: true,
+    });
+    expect(gift.enter).toBe(false);
+    expect(gift.heldBy).toContain('player_surface');
+
+    // The surface closes: one arrival mounts — the first in priority — never both.
+    const after = resolveInterrupts(snap(pending));
+    expect(after.open).toEqual(['PremonitionModal']);
+    expect(after.heldArrivals).toEqual([{ id: 'JourneyVignetteModal', heldBy: ['interrupt'] }]);
+  });
+
+  it('an arrival waits out the quiet window after a click, and holds the clock meanwhile so it cannot expire unseen', () => {
+    const r = resolveInterrupts(snap({ premonitionPending: true, recentInput: true }));
+    expect(r.open).toEqual([]);
+    expect(r.anyOpen).toBe(true);
+    expect(r.heldArrivals).toEqual([{ id: 'PremonitionModal', heldBy: ['recent_input'] }]);
+  });
+
+  it('an arrival already on screen keeps its slot through a click and an opened sheet', () => {
+    const r = resolveInterrupts(snap({
+      premonitionPending: true, recentInput: true, playerSurfaceOpen: true,
+      alreadyShown: ['PremonitionModal'],
+    }));
+    expect(r.open).toEqual(['PremonitionModal']);
+    expect(r.heldArrivals).toEqual([]);
+  });
+
+  it('two blocking interrupts never co-render: a premonition and a journey moment queue', () => {
+    const shownPremonition = resolveInterrupts(snap({
+      premonitionPending: true, vignettePending: true, alreadyShown: ['PremonitionModal'],
+    }));
+    expect(shownPremonition.open).toEqual(['PremonitionModal']);
+    const shownVignette = resolveInterrupts(snap({
+      premonitionPending: true, vignettePending: true, alreadyShown: ['JourneyVignetteModal'],
+    }));
+    expect(shownVignette.open).toEqual(['JourneyVignetteModal']);
+  });
+
+  it('an encounter that opens over a showing journey moment takes the screen alone; the moment returns after', () => {
+    const over = resolveInterrupts(snap({
+      vignettePending: true, encounterOpen: true, alreadyShown: ['JourneyVignetteModal'],
+    }));
+    expect(over.open).toEqual(['EncounterVeil']);
+    expect(over.heldArrivals).toEqual([{ id: 'JourneyVignetteModal', heldBy: ['interrupt'] }]);
+    // The veil closes: the moment comes back once the closing click has gone quiet.
+    const closing = resolveInterrupts(snap({ vignettePending: true, recentInput: true, alreadyShown: ['EncounterVeil'] }));
+    expect(closing.open).toEqual([]);
+    expect(resolveInterrupts(snap({ vignettePending: true })).open).toEqual(['JourneyVignetteModal']);
+  });
+
+  it('an arrival waits behind an encounter, a gift and the moment card on screen', () => {
+    expect(resolveInterrupts(snap({ premonitionPending: true, encounterOpen: true })).open).toEqual(['EncounterVeil']);
+    expect(resolveInterrupts(snap({ vignettePending: true, ascendantBeatEntered: true })).open).toEqual(['AscendantBeatModal']);
+    const card = resolveInterrupts(snap({ storyBeatPending: true, momentPending: true, alreadyShown: ['MomentCard'] }));
+    expect(card.open).toEqual(['MomentCard']);
+    expect(card.heldArrivals).toEqual([{ id: 'StoryBeatModal', heldBy: ['interrupt'] }]);
+  });
+
+  it('the moment card and the popup hold for the quiet window too, unless already showing', () => {
+    const held = resolveInterrupts(snap({ momentPending: true, popupQueued: true, recentInput: true }));
+    expect(held.momentMayRender).toBe(false);
+    expect(held.popupMayRender).toBe(false);
+    expect(held.anyOpen).toBe(true);
+    const showing = resolveInterrupts(snap({ popupQueued: true, playerSurfaceOpen: true, alreadyShown: ['EventPopup'] }));
+    expect(showing.popupMayRender).toBe(true);
+  });
+
+  it("the player's own surfaces are not held: the ledger opens on the first click", () => {
+    const r = resolveInterrupts(snap({ chapterLedgerOpen: true, recentInput: true, premonitionPending: true }));
+    expect(r.open).toEqual(['ChapterLedger']);
+    expect(r.heldArrivals).toEqual([{ id: 'PremonitionModal', heldBy: ['interrupt', 'recent_input'] }]);
+  });
+
+  it('the open card hand never holds an arrival — it stays open through play, and a hold stops the clock', () => {
+    const handOnly = openPlayerSurfaces({ ...NO_FLAGS, actionDrawerOpen: true });
+    expect(handOnly).toEqual(['ActionDrawer']);
+    expect(arrivalHoldingSurfaces(handOnly)).toEqual([]);
+    const r = resolveInterrupts(snap({ premonitionPending: true, playerSurfaceOpen: arrivalHoldingSurfaces(handOnly).length > 0 }));
+    expect(r.open).toEqual(['PremonitionModal']);
+    // Rivals still holds; the ledger holds as an interrupt, not as a surface.
+    expect(arrivalHoldingSurfaces(['ActionDrawer', 'RivalsPanel', 'ChapterLedger'])).toEqual(['RivalsPanel']);
+  });
+
+  it('every arrival is a surface the world pushes, never one the player opens', () => {
+    const arrivals = INTERRUPT_SURFACES.filter(s => s.arrival).map(s => s.id);
+    expect(arrivals).toEqual(['PremonitionModal', 'JourneyVignetteModal', 'StoryBeatModal', 'MomentCard', 'EventPopup']);
   });
 });

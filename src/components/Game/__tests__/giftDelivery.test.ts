@@ -5,6 +5,9 @@
  * surface, within `GIFT_QUIET_AFTER_INPUT_MS` of an input, or over another interrupt;
  * Beat 0 opens at once; pool beats never auto-enter. Plan:
  * Docs/plans/2026-10-10-thr-1805-gift-waits-its-turn.md § Done when.
+ *
+ * THR-1853: a held spine gift opens on its own only at a resume boundary — the moment
+ * the interrupt in front of it closes. Off a boundary it waits for its pill.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -28,6 +31,7 @@ function input(over: Partial<GiftDeliveryInput> = {}): GiftDeliveryInput {
     otherInterruptsOpen: [],
     playerSurfacesOpen: [],
     msSinceLastInput: QUIET,
+    atResumeBoundary: true,
     ...over,
   };
 }
@@ -50,7 +54,7 @@ const NO_SURFACES: PlayerSurfaceFlags = {
 };
 
 describe('resolveGiftDelivery', () => {
-  it('enters when nothing is open and the player has been quiet', () => {
+  it('enters at a resume boundary when nothing is open', () => {
     expect(resolveGiftDelivery(input())).toEqual({ enter: true, heldBy: [], heldBySurfaces: [], recheckInMs: null });
   });
 
@@ -62,18 +66,29 @@ describe('resolveGiftDelivery', () => {
     expect(d.recheckInMs).toBeNull();
   });
 
-  it('holds for the rest of the quiet window after a recent input, and says when to look again', () => {
-    const d = resolveGiftDelivery(input({ msSinceLastInput: 500 }));
-    expect(d).toEqual({ enter: false, heldBy: ['recent_input'], heldBySurfaces: [], recheckInMs: 1500 });
+  it('off a boundary, a quiet screen still waits for the pill (THR-1853)', () => {
+    const d = resolveGiftDelivery(input({ atResumeBoundary: false }));
+    expect(d).toEqual({ enter: false, heldBy: ['awaiting_boundary'], heldBySurfaces: [], recheckInMs: null });
+    // An absent flag is no boundary (fail-soft: the gift keeps its pill).
+    const absent = input();
+    delete absent.atResumeBoundary;
+    expect(resolveGiftDelivery(absent).heldBy).toEqual(['awaiting_boundary']);
   });
 
-  it('enters exactly when the quiet window has passed', () => {
-    expect(resolveGiftDelivery(input({ msSinceLastInput: GIFT_QUIET_AFTER_INPUT_MS })).enter).toBe(true);
+  it('off a boundary, a recent input is reported too, with no recheck timer', () => {
+    const d = resolveGiftDelivery(input({ atResumeBoundary: false, msSinceLastInput: 500 }));
+    expect(d.heldBy).toEqual(['awaiting_boundary', 'recent_input']);
+    expect(d.recheckInMs).toBeNull();
   });
 
-  it('sets no recheck timer while another hold also applies (that hold re-runs it)', () => {
+  it('at a boundary the click that closed the interrupt never holds', () => {
+    expect(resolveGiftDelivery(input({ msSinceLastInput: 0 })).enter).toBe(true);
+    expect(resolveGiftDelivery(input({ msSinceLastInput: GIFT_QUIET_AFTER_INPUT_MS - 1 })).enter).toBe(true);
+  });
+
+  it('a player surface still holds at a boundary', () => {
     const d = resolveGiftDelivery(input({ msSinceLastInput: 500, playerSurfacesOpen: ['Codex'] }));
-    expect(d.heldBy).toEqual(['player_surface', 'recent_input']);
+    expect(d.heldBy).toEqual(['player_surface']);
     expect(d.recheckInMs).toBeNull();
   });
 
@@ -83,6 +98,7 @@ describe('resolveGiftDelivery', () => {
       isArrivalBeat: true,
       playerSurfacesOpen: ['AgentProfileModal'],
       msSinceLastInput: 0,
+      atResumeBoundary: false,
     }));
     expect(d.enter).toBe(true);
   });
@@ -128,6 +144,8 @@ describe('openPlayerSurfaces', () => {
       codexOpen: true,
       chapterLedgerOpen: true,
       scryOpen: true,
+      rivalsOpen: true,
+      notablesOpen: true,
     });
     const sheets = ['location', 'faction', 'army', 'artifact'].map(
       c => openPlayerSurfaces({ ...NO_SURFACES, stubSheetCategory: c })[0],

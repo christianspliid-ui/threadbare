@@ -83,7 +83,24 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
   'Codex',
   'ChapterLedger',
   'ScryOverlay',
+  // THR-1853: the top bar's two dropdowns kept their open state local, so a gift
+  // (and every arrival) mounted over them and took the next click.
+  'RivalsPanel',
+  'NotablesPanel',
 ];
+/**
+ * THR-1853 — player surfaces that do NOT hold a world-pushed interrupt (an arrival).
+ * The card hand stays open through ordinary play, and a held arrival holds the clock,
+ * so counting it would freeze the world with nothing on screen whenever a mortal is
+ * selected. It still holds a waiting gift (`GIFT_HOLD_SURFACES`).
+ */
+export const ARRIVAL_HOLD_EXEMPT_SURFACES: readonly string[] = ['ActionDrawer'];
+/**
+ * THR-1853 — how long after another interrupt closes a held spine gift may still enter
+ * on its own. Wall-clock milliseconds; the effect that enters it runs in the same commit
+ * the interrupt closes in, so this only has to outlast one render.
+ */
+export const GIFT_RESUME_BOUNDARY_WINDOW_MS = 1000;
 /**
  * THR-1809 — gifts that open at once regardless of open surfaces or recent input.
  * Beat 0 ("Reach Down") is the arrival's first beat (THR-1716): nothing is open yet.
