@@ -8,6 +8,9 @@
  */
 
 import { resolveWorldScenario, type WorldScenario } from '../data/world-scenario';
+import { meansWantRuntime, MEANS_BIRTH_DEFAULT_WEALTH } from '../data/means-want-constants';
+import { ROLE_WEALTH } from './npcGraduation';
+import { isAutonomousDecisionActor } from './decisionTier';
 import type { CosmologyProfile, HexTile } from '../types';
 import type { AscendantArchetype } from '../types/influence';
 import type { GameState } from '../types/gameState';
@@ -176,6 +179,17 @@ export function initializeGameState(
     worldGenResult.regionData?.domains,
     worldScenario,
   );
+
+  // THR-1865 PROTO — Means from birth for deciders: a worldgen spotlight mortal with no
+  // wealth gets its role's wealth (else the default). No rng draw.
+  if (meansWantRuntime.enabled) {
+    for (const node of graph.getNodesByType('actor')) {
+      const p = node.properties as Record<string, unknown>;
+      if (!isAutonomousDecisionActor(node) || p.wealth !== undefined) continue;
+      const role = typeof p.npcRole === 'string' ? p.npcRole : '';
+      p.wealth = ROLE_WEALTH[role] ?? MEANS_BIRTH_DEFAULT_WEALTH;
+    }
+  }
 
   // Register action template nodes so createAction can add performing edges
   for (const template of ACTION_TEMPLATES) {

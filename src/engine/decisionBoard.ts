@@ -133,6 +133,19 @@ import { heldTownAffinity, type HoldStanding } from './holdStanding';
 import { computeEngagementFit, type EngagementZone } from './engagementWindow';
 import { CLUE_LEAD_SURVEY_SKIPS_WINDOW } from './ruins/constants';
 import { META_VALUE_PAIR } from '../types/agent';
+import {
+  computeMeansWant,
+  isEarningCell,
+  isEarningEncounterType,
+  isMeansEnabled,
+  isMortal,
+  meansCellCost,
+  meansMultiplier,
+  meansProtoCapture,
+  meansProtoStats,
+  type MeansWantBreakdown,
+} from './meansWant';
+import { readWealth } from './wealth';
 
 // ─── Contract ───────────────────────────────────────────────────
 
@@ -235,9 +248,17 @@ export interface BoardEntry {
    * folded into `score`; absent when no whisper leans toward this encounter.
    */
   readonly whisperPull?: number;
+  /** THR-1865 PROTO — `1 + MEANS_WANT_WEIGHT × want` on earning work, folded into `score`. */
+  readonly meansMultiplier?: number;
+  /** THR-1865 PROTO — is this entry earning work. */
+  readonly meansEarning?: boolean;
 }
 
 export interface BoardResult {
+  /** THR-1865 PROTO — the deciding mortal's Means want (undefined when the rule is off / not a mortal). */
+  readonly meansWant?: MeansWantBreakdown;
+  /** THR-1865 PROTO — costed cells dropped from this board as unaffordable. */
+  readonly meansDropped?: readonly string[];
   /** Every scored entry, descending. */
   readonly entries: readonly BoardEntry[];
   /** The first `BOARD_TRACE_TOP_N` of `entries` — what the trace carries. */
@@ -540,6 +561,47 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   const courageLean = (profile as Partial<Record<ValuePair, number>>)[META_VALUE_PAIR] ?? 0;
   const consecutiveFailures = input.consecutiveFailures ?? 0;
 
+  // ── THR-1865 PROTO: Means as a want and a cost ──
+  // Pre-pass over the undertakings: drop the costed cells the mortal cannot afford,
+  // and note whether the mortal's top-desired cell was one of them.
+  meansProtoCapture.onBoard?.(input);
+  const meansOn = isMeansEnabled() && isMortal(graph, agentId);
+  const droppedIdx = new Set<number>();
+  const meansDropped: string[] = [];
+  let meansWant: MeansWantBreakdown | undefined;
+  if (meansOn) {
+    const wealth = readWealth((graph.getNode(agentId)?.properties ?? {}) as Record<string, unknown>);
+    let topCellDesire = -Infinity;
+    let topCellUnaffordable = false;
+    for (const [index, candidate] of input.strategicCandidates.entries()) {
+      const template = getStrategicTemplate(candidate.templateId);
+      if (!template?.cellVariant) continue;
+      const cost = meansCellCost(template);
+      const unaffordable = cost > 0 && wealth < cost;
+      if (unaffordable) {
+        droppedIdx.add(index);
+        meansDropped.push(candidate.templateId);
+      }
+      const reach = pickPrimaryReach(template);
+      const desire = computeBoardDesireMultiplier(
+        template.motivations ?? [], profile,
+        computeAmbitionCentralityBoost(candidate.ambitionId, reach), template.motivationPoles,
+      );
+      if (desire > topCellDesire) {
+        topCellDesire = desire;
+        topCellUnaffordable = unaffordable;
+      }
+    }
+    meansWant = computeMeansWant(graph, agentId, profile as Partial<Record<string, number>>, topCellUnaffordable);
+    if (meansProtoStats.counting) {
+      const s = meansProtoStats.current;
+      s.dropEvents += meansDropped.length;
+      for (const id of meansDropped) s.droppedPairs.add(`${agentId}|${id}`);
+      if (topCellUnaffordable) s.unaffordedTopDesire++;
+    }
+  }
+  const earningMult = meansWant ? meansMultiplier(meansWant.want) : 1;
+
   // ── Encounters: the baseline family ──
   //
   // `valuePerTick` IS the EVT — `(euRanking + pushBenefit + resistBenefit) /
@@ -567,6 +629,9 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const appointmentDiscount = candidate.appointmentDiscount;
     // THR-1781 — a paid whisper leans the board toward matching encounters.
     const whisperPull = candidate.whisperPull;
+    // THR-1865 PROTO — earning encounter types take the Means multiplier.
+    const encEarning = isEarningEncounterType(candidate.entry.encounterType);
+    const encMeans = encEarning ? earningMult : 1;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
@@ -574,7 +639,9 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
       score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-        * (appointmentDiscount ?? 1) * (whisperPull ?? 1),
+        * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * encMeans,
+      meansEarning: encEarning,
+      ...(meansWant && encEarning ? { meansMultiplier: encMeans } : {}),
       ...(isGoal ? { arrivalCommitment } : {}),
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       ...(whisperPull !== undefined ? { whisperPull } : {}),
@@ -587,6 +654,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
 
   // ── Undertakings ──
   for (const [index, candidate] of input.strategicCandidates.entries()) {
+    // THR-1865 PROTO — an unaffordable costed cell is not on the mortal's list at all.
+    if (droppedIdx.has(index)) continue;
     const template = getStrategicTemplate(candidate.templateId);
     const reach = pickPrimaryReach(template);
 
@@ -640,9 +709,12 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     // and the term discriminates by construction.
     const affinity = heldTownAffinity(input.holdStanding, candidate.targetNodeId);
 
+    // THR-1865 PROTO — the Means multiplier rides the temperament weight, earning cells only.
+    const cellEarning = isEarningCell(template);
+    const cellMeans = cellEarning ? earningMult : 1;
     const temperamentWeight = computeTemperamentWeight(
       template, reach, ambitionPrefersVerb(candidate.ambitionId, template), grievanceHeat, affinity,
-    );
+    ) * cellMeans;
 
     const varietyMultiplier = computeBoardVarietyMultiplier(
       candidate.scoreComponents?.varietyPenalty,
@@ -659,6 +731,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ambitionBoost,
       heldTownAffinity: affinity,
       ...(leadPull !== undefined ? { leadPull } : {}),
+      meansEarning: cellEarning,
+      ...(meansWant && cellEarning ? { meansMultiplier: cellMeans } : {}),
       score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit,
       candidateIndex: index,
       forecast: advanceProbability,
@@ -678,6 +752,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     entries,
     top: entries.slice(0, BOARD_TRACE_TOP_N),
     winner: entries.length > 0 ? entries[0] : null,
+    ...(meansWant ? { meansWant, meansDropped } : {}),
   };
 }
 

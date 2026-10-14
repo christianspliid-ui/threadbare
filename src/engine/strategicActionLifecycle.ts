@@ -130,6 +130,8 @@ import { possessive, generateWorkName, generateFailureScarName } from './naming/
 import { getUndertakingKindForTemplate } from '../data/undertaking-kinds';
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { refreshHoldingFaceNames } from './holdings';
+import { isEarningCell, isMeansEnabled, meansCellCost, meansCellKey, meansProtoStats } from './meansWant';
+import { bankWealth, readWealth } from './wealth';
 
 // ─── Naming (THR-1297 §5) ───────────────────────────────────────────
 
@@ -527,6 +529,32 @@ export function executeStrategicAction(
   const currentState = state.strategicState ?? { projects: [], controls: [], history: [] };
   const graphOps: GraphOpResult[] = [];
   let catalystSeeded = false;
+
+  // ── THR-1865 PROTO: the cost is paid when the work starts, never below 0 ──
+  {
+    const tpl = getStrategicTemplate(candidate.templateId);
+    const actorNode = graph.getNode(candidate.actorId);
+    if (actorNode?.properties.actorType === 'individual') {
+      const cost = meansCellCost(tpl);
+      const s = meansProtoStats.current;
+      if (meansProtoStats.counting) {
+        s.undertakingStarts++;
+        if (tpl?.cellVariant) {
+          s.cellStarts++;
+          const key = meansCellKey(tpl) ?? tpl.id;
+          s.startsByCell.set(key, (s.startsByCell.get(key) ?? 0) + 1);
+        }
+        if (isEarningCell(tpl)) s.earningCellStarts++;
+        if (cost > 0) s.costedCellStarts++;
+      }
+      if (cost > 0 && isMeansEnabled()) {
+        const props = actorNode.properties as Record<string, unknown>;
+        const before = readWealth(props);
+        bankWealth(props, -cost, 'means_cell_cost');
+        if (meansProtoStats.counting) s.wealthCharged += before - readWealth(props);
+      }
+    }
+  }
 
   switch (candidate.executionMode) {
     case 'instant': {

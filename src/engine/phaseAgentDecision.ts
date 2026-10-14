@@ -123,6 +123,7 @@ import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategic
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard, type BoardEntry } from './decisionBoard';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
+import { meansProtoStats } from './meansWant';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
@@ -1405,6 +1406,11 @@ export function phaseAgentDecision(
             ? board.winner
             : null;
           const boardFamily: DecisionFamily = boardWinner?.family ?? 'idle';
+          // THR-1865 PROTO — earning-work share counter (sketch only).
+          if (boardWinner && meansProtoStats.counting && actor.properties.actorType === 'individual') {
+            meansProtoStats.current.decisions++;
+            if (boardWinner.meansEarning) meansProtoStats.current.earningDecisions++;
+          }
 
           // With contest B gone (THR-1349 slice 3), the "legacy" side of the
           // comparison is the encounter scorer's own pick — `'encounter'` with its

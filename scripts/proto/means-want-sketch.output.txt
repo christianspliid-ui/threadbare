@@ -1,0 +1,60 @@
+
+=== THR-1865 means-want sketch — seed 42, medium, tick 300 ===
+
+(a)+(b) Board top 5, poor vs rich
+  Pair sharing settlement loc_0:
+  POOR: The Iron Wolves Commander (agent_mc_cmdr_0) @ loc_0 — wealth forced 5 (actual 20), board captured t299
+    want=1.000 (poverty 0.88, greed 0.28, generosity 0.00, unaffordedTop false) → earning ×1.600
+    dropped for cost: cell.create.location, cell.create.place, cell.create.location, cell.create.place, cell.create.route, cell.create.route
+    candidates: 5 encounter, 12 undertaking; board entries 11
+    1. enc  encounter.local_tales [build]                         score 0.4105
+    2. enc  encounter.steal_secrets [explore]                     score 0.2896
+    3. enc  encounter.faction_unification [assist]                score 0.0190
+    4. enc  gold.famine.merchant_granaries [assist]               score 0.0158
+    5. enc  social.forge_alliance [assist]                        score 0.0082
+  RICH: Kelven (ind_6) @ loc_0 — wealth forced 85 (actual 45), board captured t299
+    want=-0.300 (poverty 0.00, greed 0.00, generosity 0.64, unaffordedTop false) → earning ×0.820
+    dropped for cost: none
+    candidates: 5 encounter, 12 undertaking; board entries 17
+    1. enc  encounter.town.pawnbrokers_strongroom [assist]        score 0.7136
+    2. enc  encounter.guild_aid [assist]                          score 0.2365
+    3. enc  encounter.weave_political_alliance [assist]           score 0.1336
+    4. enc  encounter.political_intrigue [assist]                 score 0.1053
+    5. cell cell.observe.location [observe×location]              score 0.0807
+  Same mortal, both cases (control):
+  RICH: The Iron Wolves Commander (agent_mc_cmdr_0) @ loc_0 — wealth forced 85 (actual 20), board captured t300
+    want=-0.300 (poverty 0.00, greed 0.28, generosity 0.00, unaffordedTop false) → earning ×0.820
+    dropped for cost: none
+    candidates: 5 encounter, 12 undertaking; board entries 17
+    1. enc  encounter.local_tales [build]                         score 0.4105
+    2. enc  encounter.steal_secrets [explore]                     score 0.2896
+    3. enc  encounter.faction_unification [assist]                score 0.0190
+    4. enc  gold.famine.merchant_granaries [assist]               score 0.0158
+    5. enc  social.forge_alliance [assist]                        score 0.0082
+
+(c) Census (prototype ON)
+  Wealth t0   : Destitute 1 | Getting by 19 | Comfortable 0 | Wealthy 0 | Magnate 0 || n 20, median 20, mean 19, unset 1
+  Wealth t300 : Destitute 1 | Getting by 14 | Comfortable 3 | Wealthy 0 | Magnate 1 || n 19, median 20, mean 28.3, unset 1
+  Could afford at t300:
+    create×location      cost  40 : 4/19
+    create×place         cost  25 : 5/19
+    create×route         cost  20 : 18/19
+    change:raise×route   cost  10 : 18/19
+  Undertakings started: 109; cell starts 109 (earning cells 9, costed cells 1); wealth charged 25
+  Dropped for cost: 2351 candidate-drops across decisions, 36 distinct mortal×cell pairs; top-desired cell unaffordable on 58 decisions
+  Cell starts by cell: {"observe×location":26,"control:claim×location":9,"use×power":8,"create×item":6,"observe×faction":5,"destroy×company":5,"observe×monster":5,"destroy×item":4,"control:seize×item":4,"control:claim×place":4,"destroy×army":4,"control:seize×place":3,"use×agreement":3,"use×standing":3,"control:seize×location":3,"destroy×location":3,"observe×area":3,"control:claim×route":2,"create×pilgrim_way":2,"destroy×monster":2,"observe×place":2,"create×network":1,"control:claim×faction":1,"create×place":1}
+  Ticks to reach 40: Destitute@t0 0/1 reached 40, median n/a ticks; Getting-by@t0 4/19 reached 40, median 240 ticks; all 4/20
+
+(d) Enabled vs unmodified (MEANS_WANT_ENABLED=false, child process)
+                                            OFF         ON
+  board decisions (mortal, ≥floor)         1651       1670
+  earning-work decisions                     17          9
+  earning-work share                       1.0%       0.5%
+  undertakings started                      129        109
+  cell starts                               129        109
+  earning cell starts                        17          9
+  costed cell starts                          9          1
+  wealth median t300                          8         20
+  OFF wealth t0   : Destitute 20 | Getting by 0 | Comfortable 0 | Wealthy 0 | Magnate 0 || n 20, median 0, mean 0, unset 20
+  OFF wealth t300 : Destitute 11 | Getting by 5 | Comfortable 2 | Wealthy 0 | Magnate 1 || n 19, median 8, mean 17.7, unset 7
+  OFF cell starts by cell: {"observe×location":28,"observe×monster":12,"control:seize×item":9,"control:claim×location":9,"control:claim×place":7,"create×place":6,"use×power":6,"control:claim×route":5,"create×item":5,"observe×faction":4,"destroy×location":4,"use×standing":3,"control:seize×location":3,"control:seize×place":3,"observe×area":3,"destroy×army":3,"destroy×company":3,"destroy×item":2,"use×agreement":2,"create×network":2,"create×location":2,"use×location":2,"create×pilgrim_way":2,"control:claim×faction":1,"create×route":1,"create×condition":1,"destroy×monster":1}
