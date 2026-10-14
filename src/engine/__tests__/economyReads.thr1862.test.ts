@@ -132,6 +132,18 @@ describe('THR-1862 — the wealth-tier chronicle reads individuals', () => {
     expect(second.chronicleEntries?.length ?? 0).toBeGreaterThan(0);
   });
 
+  it('an individual with no spotlightTier (The First) reads as spotlight and is chronicled', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'first', type: 'actor', name: 'The First',
+      properties: { actorType: 'individual', wealth: WEALTH_TIER_COMFORTABLE },
+    });
+    phaseEconomicChronicle(asState(graph, { tick: 1 }));
+    graph.getNode('first')!.properties.wealth = WEALTH_TIER_WEALTHY;
+    const second = phaseEconomicChronicle(asState(graph, { tick: 2 }));
+    expect(second.chronicleEntries?.length ?? 0).toBeGreaterThan(0);
+  });
+
   it('an ambient stranger crossing a wealth tier is tracked but not chronicled', () => {
     const graph = new WorldGraph();
     graph.addNode({

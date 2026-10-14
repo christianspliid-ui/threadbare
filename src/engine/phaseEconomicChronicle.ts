@@ -122,7 +122,9 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
     // fortune; an ambient stranger's climb is tracked (so a later promotion does not
     // replay it) but not written. Measured on seed 42 medium at t300 before this filter:
     // 143 "Fortune Rises" entries, ~14% of the chronicle, almost all from notable NPCs (THR-1862).
-    if (!WEALTH_TIER_CHRONICLE_SPOTLIGHT_TIERS.has(agent.properties?.spotlightTier as string)) {
+    // A missing tier reads as spotlight, as everywhere else (The First carries none).
+    const spotlightTier = (agent.properties?.spotlightTier as string | undefined) ?? 'spotlight';
+    if (!WEALTH_TIER_CHRONICLE_SPOTLIGHT_TIERS.has(spotlightTier)) {
       agent.properties[WEALTH_TIER_PROPERTY] = currentTier;
       continue;
     }
