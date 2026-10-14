@@ -57,6 +57,14 @@ const noTargets = () => [];
  */
 const CAPPED_BATCH_TIMEOUT_MS = 420_000;
 
+/**
+ * Budget for the tests that build a small world and run a handful of real ticks
+ * (THR-1927). The 10-tick trace test ran on vitest's 5 s default, took ~5.9 s on
+ * the shared heavy CI runner, and held `main`'s heavy workflow red for two days.
+ * Sized for CI, not an idle machine: ~10x the measured CI cost.
+ */
+const SHORT_BATCH_TIMEOUT_MS = 60_000;
+
 describe('runTickBatch', () => {
   beforeEach(() => {
     clearTraces();
@@ -74,7 +82,7 @@ describe('runTickBatch', () => {
     expect(result.stoppedReason).toBe('completed');
     expect(result.capped).toBe(false);
     expect(result.error).toBeUndefined();
-  });
+  }, SHORT_BATCH_TIMEOUT_MS);
 
   // Runs real ticks up to the cap, so it needs headroom over vitest's 5s default.
   // The budget is sized for CI, not for an idle machine — see CAPPED_BATCH_TIMEOUT_MS
@@ -133,7 +141,7 @@ describe('runTickBatch', () => {
       disableTracing();
       clearTraces();
     }
-  });
+  }, SHORT_BATCH_TIMEOUT_MS);
 
   it('runs zero ticks for a non-positive request and still reports cleanly', () => {
     const state = freshState();
@@ -144,7 +152,7 @@ describe('runTickBatch', () => {
     expect(result.ticksRun).toBe(0);
     expect(result.tick).toBe(startTick);
     expect(result.state).toBe(state);
-  });
+  }, SHORT_BATCH_TIMEOUT_MS);
 
   it('stops early when the game leaves the playing phase', () => {
     const state = { ...freshState(), phase: 'harvest' as GameState['phase'] };
@@ -153,7 +161,7 @@ describe('runTickBatch', () => {
 
     expect(result.ticksRun).toBe(0);
     expect(result.stoppedReason).toBe('phase_left_playing');
-  });
+  }, SHORT_BATCH_TIMEOUT_MS);
 
   it('returns partial progress instead of throwing when a tick fails (fail-soft)', () => {
     const state = freshState();
@@ -172,5 +180,5 @@ describe('runTickBatch', () => {
     expect(result.tick).toBe(startTick + 2);
     expect(result.stoppedReason).toBe('error');
     expect(result.error).toContain('boom');
-  });
+  }, SHORT_BATCH_TIMEOUT_MS);
 });

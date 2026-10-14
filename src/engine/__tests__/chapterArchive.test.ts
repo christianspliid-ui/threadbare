@@ -101,6 +101,13 @@ describe('isEncounterAction / getChapterTemplateName', () => {
   });
 });
 
+/**
+ * Budget for the 26-tick archive run (THR-1927). Sized for the shared heavy CI
+ * runner, where a sibling 30-tick test timed out at 15 s; the old 20 s left this
+ * one the same thin margin. ~10x a solo run; a hung loop still fails.
+ */
+const ARCHIVE_TICK_RUN_TIMEOUT_MS = 60_000;
+
 describe('orchestrator archive integration', () => {
   it('archives a resolved encounter and keeps it readable past retention', () => {
     resetDecisionCache();
@@ -161,7 +168,7 @@ describe('orchestrator archive integration', () => {
     expect(state.unifiedActions.some(a => a.actionId === 'chapter-test-action')).toBe(false);
     // …but the chapter stays readable.
     expect((state.chapterArchive ?? []).some(r => r.actionId === 'chapter-test-action')).toBe(true);
-    // Runs 60+ real ticks — the vitest 5s default flakes under full-suite CPU
+    // Runs 26 real ticks — the vitest 5s default flakes under full-suite CPU
     // contention (THR-689 method note: explicit timeout for >50-tick tests).
-  }, 20_000);
+  }, ARCHIVE_TICK_RUN_TIMEOUT_MS);
 });

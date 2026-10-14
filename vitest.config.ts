@@ -23,6 +23,16 @@ const sharedExclude = [
   '**/preview-build/**',
 ];
 
+/**
+ * Default per-test budget for the `heavy` project (THR-1927). Every heavy file
+ * builds a generated world and runs real ticks, and the heavy workflow runs them
+ * on a shared CI runner where imports alone take ~800 s of a ~1 100 s run. On
+ * vitest's 5 s default, a 10-tick test that takes ~5.9 s there turned `main` red
+ * for two days. 60 s is ~10x that worst case; a genuinely hung test still fails.
+ * A test with its own measured budget passes it explicitly and overrides this.
+ */
+const HEAVY_DEFAULT_TEST_TIMEOUT_MS = 60_000;
+
 /** Options every project shares, so the three differ only where they must. */
 const baseTest = {
   globals: true,
@@ -91,6 +101,7 @@ export default defineConfig({
           // docblock overrides it per file, which is why the partition routes
           // the tag ahead of the environment.
           environment: 'node',
+          testTimeout: HEAVY_DEFAULT_TEST_TIMEOUT_MS,
           // Isolated by default: these files run hundreds of ticks against
           // module-scope engine state, and two of them are THR-949 pins.
           include: heavy,
