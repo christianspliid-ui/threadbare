@@ -195,7 +195,7 @@ Today the only tab bar is `Game/tabs/TabBar.tsx`: hard-coded to the agent profil
 There are about twenty chip, pill and badge components (table below), each with its own padding, radius, tint logic and click behaviour. One `Chip` replaces them, with the role deciding what it must carry:
 
 ```tsx
-<Chip role="identity" ref={worldRef} label="Shutash" />                          // image + name + link
+<Chip role="identity" target={worldRef} label="Shutash" />                       // image + name + link (`target`, not `ref` — React reserves `ref`)
 <Chip role="state" label="Dreaming" icon="dream" tint={{ sphere: 'dream' }} magnitude={<DeltaCluster … />} />
 <Chip role="count" count={3} icon="needs-you" label="3 things need you" tint="gold" onOpen={openQueue} />
 <Chip role="keyword" keyword="Boost" icon="card-boost" pressed={on} onToggle={toggle} />
@@ -203,7 +203,7 @@ There are about twenty chip, pill and badge components (table below), each with 
 
 | Role | It answers | Must carry | Click | Tint |
 |---|---|---|---|---|
-| **identity** | "which thing?" | leading `EntityVisual` at `chip` size (Laws 1, 3) where the kind has an entity-visual family — a kind without one (attachments, by the THR-1120 ruling) takes the link tier and no tile, the documented fail-open path; the name; the tooltip from the registry (Law 17); a HoverCard after a dwell | `useRefRouterContext()?.open(ref)` — routes by kind (Law 21). A ref that no longer resolves renders plain text, never a dead link | neutral |
+| **identity** | "which thing?" | leading `EntityVisual` at `chip` size (Laws 1, 3) where the kind has an entity-visual family — a kind without one (attachments, by the THR-1120 ruling) takes the link tier and no tile, the documented fail-open path; the name; the tooltip from the registry (Law 17); a HoverCard after a dwell | `useRefRouterContext()?.open(target)` — routes by kind (Law 21). A target that no longer resolves renders plain text, never a dead link | neutral |
 | **state** | "how is it?" | the **word** always (Laws 13, 31 — polarity never by hue alone), optional icon, optional magnitude slot (`DeltaCluster` / `OddsPips` — Law 15) | optional (`onOpen`) | neutral · positive · negative · sphere (`sphereTint`) |
 | **count** | "how many are waiting?" | whole number (a count of things is not a magnitude; Law 49's "one affordance with a count") and an icon, except where the chip sits on a control that is already the icon (`IconButton`'s badge); in the full form `label` is the spoken sentence and the tooltip, while the badge form (below) leaves both to its control | `onOpen` opens the list and **never clears the count** (Law 40) | neutral · gold (the god's attention only: the needs-you pill) |
 | **keyword** | "what kind?" | the vocabulary word, from a fixed union, always; its icon once the vocabulary has an `IconName` map (Law 9 — one vocabulary per class). A text-only vocabulary (rarity tiers today) carries the word in its accent colour | optional toggle (`pressed`/`onToggle`, `aria-pressed`) for filter rows | the vocabulary's own accent (rarity tiers), else neutral |
