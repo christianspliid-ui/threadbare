@@ -1,71 +1,72 @@
-THR-1923 settlement economy sketch — variant "flat" — seed 42 medium world at tick 0, 38 settlements, 50-day worldgen settling run, then 150 game days
+THR-1923 settlement economy sketch — variant "flat" — seed 42 medium world at tick 0, 38 settlements, 100-day worldgen settling run, then 150 game days
 seats: 23 settlements hold a faction seat; 23 have a holder
 
 day   size CV  IQR  p10/p50/p90   tiers h/t/c/cap   same-tier pairs <50% shared   trait combos  top trait (share)        routes  works/settlement
-  0     0.50    2       2/3/6        26/12/0/0                   79% of 391             27  Breadbasket (74%)            21     5.3
-  1     0.48    2       2/3/6        25/13/0/0                   78% of 378             28  Breadbasket (66%)            21     5.4
- 25     0.56    4      2/7/14        8/16/14/0                   57% of 239             35  Quarry Town (61%)            26     7.0
- 50     0.60    9     2/11/23         7/5/26/0                   45% of 356             34  Quarry Town (66%)            37     7.7
- 75     0.60   11     2/16/28         6/4/28/0                   34% of 399             34  Quarry Town (68%)            48     7.9
-100     0.59   14     2/16/33         5/5/28/0                   33% of 398             34  Quarry Town (68%)            54     7.9
-125     0.59   14     2/16/33         5/5/28/0                   33% of 398             33  Quarry Town (68%)            55     7.8
-150     0.58   14     2/18/33         5/5/28/0                   33% of 398             33  Quarry Town (68%)            57     7.8
-total people day 1 130 → day 150 673
+  0     0.58   14     3/18/33         4/6/28/0                   35% of 399             33  Quarry Town (68%)            57     7.9
+  1     0.58   14     3/18/33         4/6/28/0                   35% of 399             33  Quarry Town (68%)            56     7.9
+ 25     0.57   14     3/18/33         4/6/28/0                   34% of 399             33  Quarry Town (68%)            57     7.9
+ 50     0.57   14     3/18/33         5/5/28/0                   33% of 398             32  Quarry Town (68%)            58     7.8
+ 75     0.57   14     3/18/33         4/6/28/0                   33% of 399             31  Quarry Town (68%)            58     7.8
+100     0.56   13     3/18/33         4/5/29/0                   31% of 422             31  Quarry Town (68%)            57     7.7
+125     0.57   13     3/18/33         4/5/29/0                   31% of 422             31  Quarry Town (68%)            58     7.7
+150     0.56   13     3/18/33         4/4/30/0                   30% of 447             31  Quarry Town (68%)            58     7.7
+day-0 tier within one step of the genome tier: 28 of 38
+total people day 1 658 → day 150 669
 
 Diversity test (THR-1866 measures):
-  1 sizes stay spread:          size CV day 1 0.48 → day 100 0.59  PASS
-  2 building mixes distinct:    33% of same-tier pairs share < half their works  FAIL
-  3 traits many and rare:       33 combos across 38; top trait Quarry Town on 68%  FAIL
-  4 no convergence day 50→150:  CV 0.60→0.58 · distinct 45→33% · combos 34→33  FAIL
+  1 sizes stay spread:          size CV day 1 0.58 → day 100 0.56  PASS
+  2 building mixes distinct:    30% of same-tier pairs share < half their works  FAIL
+  3 traits many and rare:       31 combos across 38; top trait Quarry Town on 68%  FAIL
+  4 no convergence day 50→150:  CV 0.57→0.56 · distinct 33→30% · combos 32→31  PASS
 
 Settlements at day 150 (start tier → pop/tier · seat · works · traits):
-  Meadowcity                 city    → 41 city    seat  granary, fishery, apothecary, housing                                  Herb Town, Breadbasket, Fishing Port, Restless
-  Shadow-shade               town    → 36 city    seat  shrine, market, workshop, stockyard, housing, granary, stoneworks, mill, counting_house, timber_yard, walls Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
-  Horseford                  town    → 34 city    seat  market, workshop, counting_house, housing, stockyard, mill, stoneworks, granary, curio_hall, shrine, walls, timber_yard Curio Collectors, Breadbasket, Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
-  Silverborough              city    → 33 city    seat  shrine, market, workshop, gem_cutter, housing, smithy, granary, stoneworks, counting_house, walls Gem-cutters' Town, Iron Town, Quarry Town, Market Town, Walled, Restless
-  Crystalspire               town    → 33 city    seat  shrine, market, counting_house, workshop, stockyard, housing, granary, curio_hall, stoneworks, walls, timber_yard Curio Collectors, Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
-  Wraithwood                 capital → 30 city    seat  shrine, market, workshop, housing, stoneworks, granary, smithy, curio_hall, counting_house, walls Iron Town, Curio Collectors, Quarry Town, Market Town, Walled, Restless
-  West Fieldvale             hamlet  → 28 city    seat                                                                         Restless
-  Downswick                  hamlet  → 28 city                                                                                 Breadbasket, Restless
-  The Shattered Sanctum      capital → 27 city    seat  shrine, market, workshop, counting_house, granary, stoneworks, housing, gem_cutter, fishery, walls, timber_yard Gem-cutters' Town, Timber Town, Quarry Town, Fishing Port, Market Town, Walled
-  Great Silverhold           capital → 27 city    seat  shrine, counting_house, granary, timber_yard, workshop, market, housing, mill, amber_carvers, walls Amber Market, Breadbasket, Timber Town, Market Town, Walled
-  Thornhaven                 city    → 23 city    seat  shrine, market, housing, seers_hall, timber_yard, stockyard, granary, mill, stoneworks, walls, counting_house, workshop Crystal Seers, Timber Town, Quarry Town, Horse Country, Market Town, Walled
-  Dawn-gleam                 town    → 21 city    seat  market, counting_house, workshop, housing, smithy, granary, stoneworks, walls Iron Town, Quarry Town, Market Town, Walled
-  The Bone Coast             city    → 21 city    seat  shrine, market, workshop, counting_house, curio_hall, granary, housing, stoneworks, walls Curio Collectors, Quarry Town, Walled
-  The Forge of Sorrow        town    → 20 city    seat  shrine, market, workshop, housing, gem_cutter, counting_house, stoneworks, granary, walls, timber_yard Gem-cutters' Town, Timber Town, Quarry Town, Market Town, Walled
-  Hawkgate                   town    → 19 city    seat  shrine, market, counting_house, workshop, housing, smithy, granary, seers_hall, stoneworks, walls Iron Town, Crystal Seers, Quarry Town, Market Town, Walled
+  Meadowcity                 city    → 38 city    seat                                                                         Restless
+  Shadow-shade               town    → 36 city    seat  shrine, market, workshop, housing, stockyard, mill, stoneworks, counting_house, timber_yard, granary, walls Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
+  Horseford                  town    → 34 city    seat  market, workshop, counting_house, curio_hall, housing, granary, shrine, mill, stoneworks, stockyard, walls, timber_yard Curio Collectors, Breadbasket, Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
+  Silverborough              city    → 33 city    seat  shrine, market, workshop, housing, stoneworks, gem_cutter, walls, smithy, granary, counting_house Gem-cutters' Town, Iron Town, Quarry Town, Market Town, Walled, Restless
+  Crystalspire               town    → 33 city    seat  shrine, market, counting_house, workshop, housing, granary, stoneworks, stockyard, timber_yard, curio_hall, walls Curio Collectors, Timber Town, Quarry Town, Horse Country, Market Town, Walled, Restless
+  Wraithwood                 capital → 30 city    seat  shrine, market, workshop, stoneworks, smithy, counting_house, curio_hall, granary, housing, walls Iron Town, Curio Collectors, Quarry Town, Market Town, Walled, Restless
+  The Shattered Sanctum      capital → 27 city    seat  shrine, market, workshop, counting_house, granary, stoneworks, fishery, timber_yard, walls, housing, gem_cutter Gem-cutters' Town, Timber Town, Quarry Town, Fishing Port, Market Town, Walled
+  Great Silverhold           capital → 27 city    seat  shrine, market, workshop, counting_house, timber_yard, housing, granary, amber_carvers, mill, walls Amber Market, Breadbasket, Timber Town, Market Town, Walled
+  West Fieldvale             hamlet  → 25 city    seat                                                                         Restless
+  Downswick                  hamlet  → 25 city                                                                                 Breadbasket, Restless
+  Thornhaven                 city    → 23 city    seat  shrine, market, workshop, stockyard, granary, mill, housing, seers_hall, timber_yard, stoneworks, walls, counting_house Crystal Seers, Timber Town, Quarry Town, Horse Country, Market Town, Walled
+  The Bone Coast             city    → 21 city    seat  shrine, market, workshop, counting_house, stoneworks, granary, housing, walls, curio_hall Curio Collectors, Quarry Town, Walled
+  The Forge of Sorrow        town    → 20 city    seat  shrine, market, workshop, stoneworks, granary, counting_house, gem_cutter, housing, walls, timber_yard Gem-cutters' Town, Timber Town, Quarry Town, Market Town, Walled
+  Hawkgate                   town    → 19 city    seat  shrine, market, counting_house, workshop, granary, housing, smithy, seers_hall, walls, stoneworks Iron Town, Crystal Seers, Quarry Town, Market Town, Walled
+  Dawn-gleam                 town    → 19 city    seat  market, counting_house, workshop, granary, housing, stoneworks, smithy, walls Iron Town, Quarry Town, Market Town, Walled
   Greenvale                  hamlet  → 19 city                                                                                 Restless
-  Ardenmor Keep              capital → 18 city    seat  shrine, market, counting_house, workshop, timber_yard, granary, gem_cutter, apothecary, walls, housing, mill, stoneworks Gem-cutters' Town, Herb Town, Timber Town, Quarry Town, Walled
-  Greycity                   city    → 18 city    seat  shrine, market, counting_house, workshop, stoneworks, housing, granary, walls, timber_yard Timber Town, Quarry Town, Market Town, Walled
-  Wolfton                    hamlet  → 18 city          housing, granary, mill, bathhouse, workshop, shrine, counting_house, timber_yard, market Spa Town, Timber Town
-  Golden Wraith Fields       town    → 18 city    seat  market, counting_house, workshop, housing, smithy, seers_hall, granary, stoneworks, shrine, walls Iron Town, Crystal Seers, Quarry Town, Market Town, Walled
-  Bitterbury                 hamlet  → 17 city    seat  workshop, housing, market, counting_house, stoneworks, granary, walls  Quarry Town, Market Town, Walled
-  Dustham                    hamlet  → 16 city          fishery, stockyard, housing, stoneworks, granary, walls, timber_yard, workshop, counting_house, market Breadbasket, Timber Town, Quarry Town, Fishing Port, Horse Country, Walled
-  Pale Hollow                town    → 16 city    seat  market, counting_house, workshop, housing, granary, timber_yard, walls Timber Town, Market Town, Walled
-  Horsepolis                 city    → 16 city    seat  shrine, market, counting_house, stockyard, fishery, timber_yard, granary, workshop, housing, gem_cutter, stoneworks, walls Gem-cutters' Town, Timber Town, Quarry Town, Fishing Port, Horse Country, Walled
-  Frost Clearing             city    → 14 city    seat  market, counting_house, workshop, housing, mill, granary, timber_yard, walls Timber Town, Market Town, Walled
-  Lower Ravenham             hamlet  → 11 city          bathhouse, fishery, housing, workshop, counting_house, timber_yard, shrine, granary, market Spa Town, Timber Town, Fishing Port
-  Palevale                   hamlet  → 10 city          fishery, housing, granary, workshop, timber_yard, counting_house, market Timber Town, Fishing Port
-  Ironwick                   hamlet  → 10 city          housing, smithy, workshop, counting_house, granary, timber_yard, walls, stoneworks, market Iron Town, Timber Town, Quarry Town, Walled
-  Solacetown                 hamlet  →  9 town          shrine, market, timber_yard, smithy, housing, workshop, seers_hall, apothecary, granary, counting_house, stoneworks, walls Iron Town, Crystal Seers, Herb Town, Timber Town, Quarry Town, Market Town, Walled
-  Wolftown                   town    →  9 town    seat  shrine, market, workshop, housing, smithy, apothecary, counting_house, stoneworks, timber_yard, granary, walls Iron Town, Herb Town, Timber Town, Quarry Town, Market Town, Walled
-  Lower Greybury             hamlet  →  9 town          fishery, housing, granary, workshop, timber_yard, counting_house, stoneworks, walls, market Timber Town, Quarry Town, Fishing Port, Walled
-  Dusk Halt                  hamlet  →  8 town          smithy, housing, stoneworks, granary, walls, workshop, timber_yard, counting_house, market Iron Town, Timber Town, Quarry Town, Walled
-  Little Palewick            hamlet  →  5 town          housing, bathhouse, shrine, granary                                    Spa Town
+  Ardenmor Keep              capital → 18 city    seat  shrine, market, counting_house, workshop, gem_cutter, housing, mill, walls, apothecary, granary, timber_yard, stoneworks Gem-cutters' Town, Herb Town, Timber Town, Quarry Town, Walled
+  Greycity                   city    → 18 city    seat  shrine, market, counting_house, workshop, granary, stoneworks, timber_yard, housing, walls Timber Town, Quarry Town, Market Town, Walled
+  Wolfton                    hamlet  → 18 city          bathhouse, housing, timber_yard, mill, shrine, workshop, granary, counting_house, market Spa Town, Timber Town
+  Bitterbury                 hamlet  → 18 city    seat  workshop, housing, stoneworks, counting_house, market, granary, walls  Quarry Town, Market Town, Walled
+  Golden Wraith Fields       town    → 18 city    seat  market, counting_house, workshop, housing, smithy, granary, stoneworks, seers_hall, shrine, walls Iron Town, Crystal Seers, Quarry Town, Market Town, Walled
+  Dustham                    hamlet  → 16 city          fishery, housing, stockyard, granary, timber_yard, stoneworks, walls, workshop, counting_house, market Breadbasket, Timber Town, Quarry Town, Fishing Port, Horse Country, Walled
+  Pale Hollow                town    → 16 city    seat  market, counting_house, workshop, granary, housing, timber_yard, walls Timber Town, Market Town, Walled
+  Horsepolis                 city    → 16 city    seat  shrine, market, counting_house, workshop, stockyard, fishery, granary, timber_yard, housing, stoneworks, gem_cutter, walls Gem-cutters' Town, Timber Town, Quarry Town, Fishing Port, Horse Country, Walled
+  Frost Clearing             city    → 15 city    seat  market, counting_house, workshop, granary, housing, timber_yard, mill, walls Timber Town, Market Town, Walled
+  Lower Ravenham             hamlet  → 11 city          timber_yard, fishery, housing, bathhouse, granary, shrine, workshop, counting_house, market Spa Town, Timber Town, Fishing Port
+  Solacetown                 hamlet  → 10 city          shrine, market, housing, granary, timber_yard, seers_hall, stoneworks, counting_house, smithy, walls, apothecary, workshop Crystal Seers, Iron Town, Herb Town, Timber Town, Quarry Town, Market Town, Walled
+  Wolftown                   town    → 10 city    seat  shrine, market, timber_yard, housing, apothecary, stoneworks, smithy, counting_house, workshop, granary, walls Herb Town, Iron Town, Timber Town, Quarry Town, Market Town, Walled
+  Palevale                   hamlet  → 10 city          granary, fishery, housing, timber_yard, counting_house, workshop, market Timber Town, Fishing Port
+  Ironwick                   hamlet  → 10 city          workshop, housing, timber_yard, smithy, granary, counting_house, stoneworks, walls, market Iron Town, Timber Town, Quarry Town, Walled
+  Lower Greybury             hamlet  →  9 town          fishery, granary, housing, timber_yard, workshop, stoneworks, counting_house, walls, market Timber Town, Quarry Town, Fishing Port, Walled
+  Dusk Halt                  hamlet  →  8 town          granary, timber_yard, smithy, stoneworks, housing, workshop, counting_house, walls, market Iron Town, Timber Town, Quarry Town, Walled
+  Little Palewick            hamlet  →  6 town          housing, bathhouse, shrine, granary                                    Spa Town
+  Hunter's Dusk-hollow       hamlet  →  5 town          housing, counting_house, granary                                       Breadbasket
   Omen-crest                 hamlet  →  3 hamlet        housing, stoneworks, granary                                           Quarry Town
-  The Sunken Library         city    →  2 hamlet  seat  shrine, market, housing, stoneworks, walls                             Quarry Town, Walled
-  East Wolfwick              hamlet  →  2 hamlet        stoneworks, seers_hall, housing, smithy                                Crystal Seers, Iron Town, Quarry Town
-  Hunter's Dusk-hollow       hamlet  →  2 hamlet        housing                                                                Breadbasket
-  Black Crag-dawn            hamlet  →  2 hamlet        housing, stoneworks                                                    Quarry Town
+  The Sunken Library         city    →  3 hamlet  seat  shrine, market, housing, stoneworks                                    Quarry Town
+  East Wolfwick              hamlet  →  1 hamlet        housing, smithy, stoneworks, seers_hall                                Iron Town, Crystal Seers, Quarry Town
+  Black Crag-dawn            hamlet  →  1 hamlet        stoneworks, housing                                                    Quarry Town
 
-Routes alive at day 150: 57
-  Meadowcity → The Forge of Sorrow (food, born day 64, carried 131955)
-  The Forge of Sorrow → Meadowcity (food, born day 73, carried 128947)
-  Great Silverhold → West Fieldvale (food, born day 57, carried 109445)
-  West Fieldvale → Great Silverhold (food, born day 65, carried 107570)
-  Horseford → Crystalspire (food, born day 68, carried 99653)
-  Crystalspire → Horseford (food, born day 83, carried 98450)
-  Golden Wraith Fields → Silverborough (food, born day 69, carried 47162)
-  Silverborough → Golden Wraith Fields (food, born day 96, carried 45826)
-  Shadow-shade → Wraithwood (food, born day 86, carried 25403)
-  Wraithwood → Shadow-shade (food, born day 104, carried 24618)
+Routes alive at day 150: 58
+  Horseford → Crystalspire (food, born day -24, carried 606541)
+  Crystalspire → Horseford (food, born day -10, carried 605150)
+  Great Silverhold → West Fieldvale (food, born day -58, carried 506292)
+  West Fieldvale → Great Silverhold (food, born day -26, carried 502912)
+  Meadowcity → The Forge of Sorrow (food, born day -24, carried 494899)
+  The Forge of Sorrow → Meadowcity (food, born day -18, carried 491084)
+  Golden Wraith Fields → Silverborough (food, born day -37, carried 465578)
+  Silverborough → Golden Wraith Fields (food, born day -18, carried 463624)
+  Shadow-shade → Wraithwood (food, born day -6, carried 315084)
+  Wraithwood → Shadow-shade (food, born day -20, carried 314244)

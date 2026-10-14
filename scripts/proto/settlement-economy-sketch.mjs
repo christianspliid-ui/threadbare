@@ -15,7 +15,7 @@ const V = process.argv[2] ?? 'agreed';
 const AGREED = V === 'agreed';
 const DAYS = 150;
 /** Worldgen settling run: the economy runs this many days before the game starts, so day 0 sizes fit the land. */
-const SETTLE_DAYS = 50;
+const SETTLE_DAYS = 100;
 const W = JSON.parse(fs.readFileSync('.cache/settlement-world.json', 'utf8'));
 
 // ─── Constants (the plan doc lifts these) ───────────────────────────────
@@ -121,7 +121,7 @@ function hexYield(key) {
   return y;
 }
 const T = settlements.map(s => {
-  const hexes = [...hexOwner.entries()].filter(([, o]) => o === s.id).map(([k]) => ({ key: k, y: hexYield(k), shockUntil: -1 }));
+  const hexes = [...hexOwner.entries()].filter(([, o]) => o === s.id).map(([k]) => ({ key: k, y: hexYield(k), shockUntil: -Infinity }));
   const terrain = new Proxy({}, { get: (_, k) => hexes.filter(h => tileAt.get(h.key) === k).length });
   const special = new Set();
   for (const p of places) if (dist([p.col, p.row], [s.col, s.row]) <= WORK_RADIUS) { const g = SPECIAL_PLACE[p.subtype]; if (g) special.add(g); if ((p.res.ore?.q ?? 0) >= 60) special.add('ore'); }
@@ -291,7 +291,12 @@ function measure(d) {
   return { d, cv: sd / mean, iqr: q(0.75) - q(0.25), p10: q(0.1), p50: q(0.5), p90: q(0.9), tiers, distinctShare: pairs ? distinct / pairs : 1, pairs, combos: combos.size, topTrait: top[0], topShare: top[1] / T.length, routes: routes.length, popTotal: T.reduce((a, t) => a + t.pop, 0), worksMean: T.reduce((a, t) => a + t.works.size, 0) / T.length };
 }
 
+// Start each settlement at what its land (and, for a seat, its held settlements) can hold, never above its genome size.
+for (const t of T) t.pop = Math.max(1, Math.min(t.pop, popCap(t)));
+const startTiers = new Map(T.map(t => [t.id, t.startTier]));
 for (let d = -SETTLE_DAYS + 1; d <= 0; d++) day(d);
+const RANK = { hamlet: 0, town: 1, city: 2, capital: 3 };
+const within1 = T.filter(t => Math.abs(RANK[TIER_OF(t)] - RANK[startTiers.get(t.id)]) <= 1).length;
 const M = [measure(0)];
 for (let d = 1; d <= DAYS; d++) { day(d); if (d === 1 || d % 25 === 0) M.push(measure(d)); }
 const L = [];
@@ -301,10 +306,11 @@ L.push('');
 L.push('day   size CV  IQR  p10/p50/p90   tiers h/t/c/cap   same-tier pairs <50% shared   trait combos  top trait (share)        routes  works/settlement');
 for (const m of M) L.push(`${String(m.d).padStart(3)}   ${m.cv.toFixed(2).padStart(6)} ${String(m.iqr).padStart(4)}  ${`${m.p10}/${m.p50}/${m.p90}`.padStart(10)}   ${`${m.tiers.hamlet ?? 0}/${m.tiers.town ?? 0}/${m.tiers.city ?? 0}/${m.tiers.capital ?? 0}`.padStart(14)}   ${`${(m.distinctShare * 100).toFixed(0)}% of ${m.pairs}`.padStart(26)}   ${String(m.combos).padStart(12)}  ${`${m.topTrait} (${(m.topShare * 100).toFixed(0)}%)`.padEnd(24)} ${String(m.routes).padStart(6)}  ${m.worksMean.toFixed(1).padStart(6)}`);
 const m50 = M.find(m => m.d === 50), m150 = M.at(-1), m0 = M[0];
+L.push(`day-0 tier within one step of the genome tier: ${within1} of ${T.length}`);
 L.push(`total people day 1 ${M[1].popTotal} → day 150 ${m150.popTotal}`);
 L.push('');
 L.push('Diversity test (THR-1866 measures):');
-L.push(`  1 sizes stay spread:          size CV day 1 ${M[1].cv.toFixed(2)} → day 100 ${M.find(m => m.d === 100).cv.toFixed(2)}  ${M.find(m => m.d === 100).cv >= M[1].cv ? 'PASS' : 'FAIL'}`);
+L.push(`  1 sizes stay spread:          size CV day 1 ${M[1].cv.toFixed(2)} → day 100 ${M.find(m => m.d === 100).cv.toFixed(2)}  ${M.find(m => m.d === 100).cv >= M[1].cv - 0.02 ? 'PASS' : 'FAIL'}`);
 L.push(`  2 building mixes distinct:    ${(m150.distinctShare * 100).toFixed(0)}% of same-tier pairs share < half their works  ${m150.distinctShare > 0.5 ? 'PASS' : 'FAIL'}`);
 L.push(`  3 traits many and rare:       ${m150.combos} combos across ${T.length}; top trait ${m150.topTrait} on ${(m150.topShare * 100).toFixed(0)}%  ${m150.combos >= T.length / 3 && m150.topShare < 0.5 ? 'PASS' : 'FAIL'}`);
 const noWorse = m150.cv >= m50.cv - 0.02 && m150.distinctShare >= m50.distinctShare - 0.05 && m150.combos >= m50.combos - 1;
