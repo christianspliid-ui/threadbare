@@ -254,16 +254,26 @@ describe("classifyWorkflowHealth", () => {
     expect(result.summary).toBe("All 2 scheduled background jobs are running normally.");
   });
 
-  it("names both an inactivity disable and an all-red lane, Christian's first", () => {
-    const result = classifyWorkflowHealth([
-      workflow({ runs: allRed(3) }),
-      workflow({ name: "Weekly Drift Scan", file: "drift-scan.yml", state: "disabled_inactivity", runs: [] }),
-    ]);
+  it("keeps CI reds out of the summary when it is Christian's ask", () => {
+    // The brief quotes `summary` verbatim as the ask whenever needsChristian is
+    // set, so a red lane alongside an inactivity disable must not ride along.
+    const result = classifyWorkflowHealth(
+      [
+        workflow({ runs: allRed(3) }),
+        workflow({ name: "Weekly Drift Scan", file: "drift-scan.yml", state: "disabled_inactivity", runs: [] }),
+      ],
+      [{ name: "Heavy simulation tests", file: "heavy-tests.yml", runs: [runRecord("failure", PUSH_LANE_RED_GRACE_HOURS + 2)] }],
+      NOW_MS,
+    );
 
     expect(result.needsChristian).toBe(true);
     expect(result.needsSession).toBe(true);
-    expect(result.summary.indexOf("Weekly Drift Scan")).toBeLessThan(result.summary.indexOf("Stale Claim Sweep"));
-    expect(result.summary).toContain("Stale Claim Sweep");
+    expect(result.summary).toContain("Weekly Drift Scan");
+    expect(result.summary).not.toContain("Stale Claim Sweep");
+    expect(result.summary).not.toContain("Heavy simulation tests");
+    // The reds are still reported, on their own entries.
+    expect(result.workflows.find((w) => w.file === "stale-claim-sweep.yml")?.needsSession).toBe(true);
+    expect(result.postMerge[0].needsSession).toBe(true);
   });
 
   it("degrades to unknown when no scheduled workflows were found at all", () => {

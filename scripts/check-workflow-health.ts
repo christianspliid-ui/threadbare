@@ -262,6 +262,13 @@ const SEVERITY: Record<WorkflowVerdict, number> = {
   healthy: 0,
 };
 
+function worstVerdict(reports: WorkflowReport[]): WorkflowVerdict {
+  return reports.reduce<WorkflowVerdict>(
+    (acc, r) => (SEVERITY[r.verdict] > SEVERITY[acc] ? r.verdict : acc),
+    "healthy",
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Membership predicate — pure, exported, tested
 // ---------------------------------------------------------------------------
@@ -540,39 +547,48 @@ export function classifyWorkflowHealth(
   nowMs: number = Date.now(),
 ): WorkflowHealthResult {
   const postMerge = postMergeLanes.map((lane) => classifyPushLane(lane, nowMs));
+  const reports = workflows.map(classifyOne);
+  const christianItems = [...reports, ...postMerge].filter((r) => r.needsChristian);
+  const needsChristian = christianItems.length > 0;
+  const needsSession = [...reports, ...postMerge].some((r) => r.needsSession);
+
+  // The brief copies `summary` verbatim into Christian's ask list whenever
+  // `needsChristian` is set, so then it carries his items and nothing else; a
+  // session-owed red still reaches the brief through its `workflows` /
+  // `postMerge` entry, which is what step 3b reads to file the ticket.
+  if (needsChristian) {
+    return {
+      verdict: workflows.length === 0 ? "unknown" : worstVerdict(reports),
+      summary: christianItems.map((r) => r.detail).join(" "),
+      needsChristian,
+      needsSession,
+      workflows: reports,
+      postMerge,
+    };
+  }
+
   // A red post-merge lane is not an ask, but it is not silence either: its
   // sentence goes on the § Health line that links the brief's ticket.
-  const postMergeOwed = postMerge.filter((r) => r.needsChristian || r.needsSession);
   const withPostMerge = (summary: string): string =>
-    [summary, ...postMergeOwed.map((r) => r.detail)].join(" ").trim();
+    [summary, ...postMerge.filter((r) => r.needsSession).map((r) => r.detail)].join(" ").trim();
 
   if (workflows.length === 0) {
     return {
       verdict: "unknown",
       summary: withPostMerge("No scheduled workflows were found, so none could be checked."),
-      needsChristian: postMerge.some((r) => r.needsChristian),
-      needsSession: postMerge.some((r) => r.needsSession),
+      needsChristian,
+      needsSession,
       workflows: [],
       postMerge,
     };
   }
 
-  const reports = workflows.map(classifyOne);
-
-  const worst = reports.reduce<WorkflowVerdict>(
-    (acc, r) => (SEVERITY[r.verdict] > SEVERITY[acc] ? r.verdict : acc),
-    "healthy",
-  );
-
-  // Christian's items lead, so an ask that quotes the summary opens on his part.
-  const flagged = [
-    ...reports.filter((r) => r.needsChristian),
-    ...reports.filter((r) => !r.needsChristian && r.needsSession),
-  ];
+  const worst = worstVerdict(reports);
+  const owed = reports.filter((r) => r.needsSession);
 
   let summary: string;
-  if (flagged.length > 0) {
-    summary = flagged.map((r) => r.detail).join(" ");
+  if (owed.length > 0) {
+    summary = owed.map((r) => r.detail).join(" ");
   } else if (worst === "healthy") {
     summary = `All ${reports.length} scheduled background jobs are running normally.`;
   } else {
@@ -585,8 +601,8 @@ export function classifyWorkflowHealth(
   return {
     verdict: worst,
     summary: withPostMerge(summary),
-    needsChristian: reports.some((r) => r.needsChristian) || postMerge.some((r) => r.needsChristian),
-    needsSession: reports.some((r) => r.needsSession) || postMerge.some((r) => r.needsSession),
+    needsChristian,
+    needsSession,
     workflows: reports,
     postMerge,
   };
