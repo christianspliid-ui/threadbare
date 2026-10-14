@@ -930,10 +930,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => threadedNodes.filter(node => node.category === 'agent').map(node => node.id),
     [threadedNodes],
   );
+  // The action lists are replaced out of tick (a witnessed delivery beat) without a
+  // worldVersion bump, so their replacement is part of the activity key.
+  const activityActionsSeq = useRef(0);
+  const activityActionsVersion = useMemo(
+    () => ++activityActionsSeq.current,
+    [gameState.unifiedActions, gameState.encounterProgress],
+  );
   const mapActivityRows = readView(runtime, gameState, mapActivitySelector, {
     hexSize: HEX_CONSTANTS.HEX_SIZE,
     threadedAgentIds: threadedAgentIdsForActivity,
     telemetryVersion: runtime.balanceTelemetryVersion,
+    actionsVersion: activityActionsVersion,
   }, tiles);
   const activityIconData = useMemo<ActivityIconData[]>(
     () => toActivityIconData(mapActivityRows),
@@ -2150,7 +2158,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // which calls `ensureDominionProjection` + `dominionLensVM` unchanged.
   const dominionLensFromSeam = dominionLensOn && dominionProjectionNow
     ? readView(runtime, gameState, lensViewSelector,
-      { lensId: 'dominion', stamp: dominionProjectionStamp(dominionProjectionNow) }, tiles)
+      { lensId: 'dominion', stamp: dominionProjectionStamp(dominionProjectionNow, dominionGodSphere) }, tiles)
     : null;
   const dominionLensBase = useMemo(
     () => dominionLensFromSeam ?? dominionLensVM(dominionProjectionNow, dominionGodSphere, [], dominionLensOn),
@@ -2194,8 +2202,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     hexSize: HEX_CONSTANTS.HEX_SIZE,
     threadedAgentIds: threadedAgentIdsForActivity,
     telemetryVersion: runtime.balanceTelemetryVersion,
+    actionsVersion: activityActionsVersion,
     lensId: 'dominion',
-    stamp: dominionProjectionStamp(dominionProjectionNow),
+    stamp: dominionProjectionStamp(dominionProjectionNow, dominionGodSphere),
   };
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;

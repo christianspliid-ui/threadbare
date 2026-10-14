@@ -16,15 +16,17 @@ export interface LensViewArgs {
   lensId: LensViewId;
   /**
    * The projection's build stamp (`builtAtTick`, `builtAtStructure`, band
-   * fingerprint). A lens-opened refresh can rebuild the projection without a
-   * counter bump, so the stamp is part of the key.
+   * fingerprint) plus the god's sphere. Everything the view model reads changes
+   * the stamp, so the entry is structure-keyed: the lens keeps the same arrays
+   * across ticks until the projection refreshes, and the map's lens layer is not
+   * torn down every tick.
    */
   stamp: string;
 }
 
 export const lensViewSelector: ViewSelector<LensViewArgs, DominionLensVM> = {
   id: 'lens',
-  invalidation: 'world',
+  invalidation: 'structure',
   key: (args) => `${args.lensId}|${args.stamp}`,
   fallback: () => dominionLensVM(null, null, [], false),
   build(ctx) {
@@ -39,8 +41,10 @@ export const lensViewSelector: ViewSelector<LensViewArgs, DominionLensVM> = {
 /** The stamp `lensViewSelector`'s key reads, from a projection (or none). */
 export function dominionProjectionStamp(
   projection: { builtAtTick: number; builtAtStructure: number; placeBandFingerprint: string } | null,
+  godSphere: string | null,
 ): string {
-  return projection
+  const p = projection
     ? `${projection.builtAtTick}:${projection.builtAtStructure}:${projection.placeBandFingerprint}`
     : 'none';
+  return `${p}|${godSphere ?? ''}`;
 }

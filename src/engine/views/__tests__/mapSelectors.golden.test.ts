@@ -127,7 +127,7 @@ describe('THR-1822 map selectors reproduce the GameView memos (generated world)'
 
   it('map.activity + toActivityIconData equals activityIconData', () => {
     const rows = readView(runtime, state, mapActivitySelector, {
-      hexSize, threadedAgentIds: inputs.threadedAgentIds, telemetryVersion: runtime.balanceTelemetryVersion,
+      hexSize, threadedAgentIds: inputs.threadedAgentIds, telemetryVersion: runtime.balanceTelemetryVersion, actionsVersion: 0,
     }, tiles);
     expect(toActivityIconData(rows)).toEqual(legacyActivityIconData(inputs));
   });
@@ -153,6 +153,14 @@ describe('THR-1822 map selectors reproduce the GameView memos (generated world)'
     expect(vm).toEqual(expected);
   });
 
+  it('the lens keeps the same object across a tick while its projection stamp holds (review-gate finding)', () => {
+    const args = { lensId: 'dominion' as const, stamp: 'held-stamp' };
+    const first = readView(runtime, state, lensViewSelector, args, tiles);
+    touchWorld(runtime);
+    expect(readView(runtime, state, lensViewSelector, args, tiles)).toBe(first);
+    expect(readView(runtime, state, lensViewSelector, { ...args, stamp: 'moved' }, tiles)).not.toBe(first);
+  });
+
   it('hexContents people per hex equal buildHexActorIndex on the generated world', () => {
     const index = readView(runtime, state, hexContentsIndexSelector, undefined, tiles);
     const actorIndex = buildHexActorIndex(state.graph);
@@ -172,6 +180,7 @@ describe('THR-1822 map selectors reproduce the GameView memos (generated world)'
       hexSize,
       threadedAgentIds: inputs.threadedAgentIds,
       telemetryVersion: runtime.balanceTelemetryVersion,
+      actionsVersion: 0,
       lensId: 'dominion',
       stamp: 'serialisable',
       hexKey: Object.keys(readView(runtime, state, hexContentsIndexSelector, undefined, tiles))[0] ?? '0,0',

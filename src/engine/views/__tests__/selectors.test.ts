@@ -47,7 +47,7 @@ describe('VIEW_SELECTORS', () => {
   });
 
   it('every fallback is a total constant from bare args and is serialisable', () => {
-    const bare: Record<string, unknown> = { hexKey: '3,4', lensId: 'dominion', stamp: '', avatarNodeId: null, hexSize: 10, threadedAgentIds: [], telemetryVersion: 0 };
+    const bare: Record<string, unknown> = { hexKey: '3,4', lensId: 'dominion', stamp: '', avatarNodeId: null, hexSize: 10, threadedAgentIds: [], telemetryVersion: 0, actionsVersion: 0 };
     for (const sel of VIEW_SELECTORS) {
       for (const reason of ['missing_node', 'kind_mismatch', 'no_hex', 'resolver_threw'] as const) {
         const vm = sel.fallback(bare, reason);

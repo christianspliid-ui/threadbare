@@ -21,6 +21,7 @@ import { mapPlacesSelector } from '../map/places';
 import { mapCompaniesSelector } from '../map/companies';
 import { mapActivitySelector } from '../map/activityIcons';
 import { assertSerialisable } from './viewContract';
+import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
 const ASC = 'asc';
 
@@ -95,7 +96,7 @@ describe('map selectors (fixture)', () => {
       [mapAgentsSelector as ViewSelector<unknown, unknown>, { avatarNodeId: 'bo' }],
       [mapThreadLinesSelector as ViewSelector<unknown, unknown>, { avatarNodeId: 'bo', hexSize: 10 }],
       [mapCompaniesSelector as ViewSelector<unknown, unknown>, { hexSize: 10 }],
-      [mapActivitySelector as ViewSelector<unknown, unknown>, { hexSize: 10, threadedAgentIds: ['ann'], telemetryVersion: 0 }],
+      [mapActivitySelector as ViewSelector<unknown, unknown>, { hexSize: 10, threadedAgentIds: ['ann'], telemetryVersion: 0, actionsVersion: 0 }],
       [mapPlacesSelector as ViewSelector<unknown, unknown>, undefined],
       [mapArmiesAndBattlesSelector as ViewSelector<unknown, unknown>, undefined],
       [hexContentsIndexSelector as ViewSelector<unknown, unknown>, undefined],
@@ -109,6 +110,24 @@ describe('map selectors (fixture)', () => {
     }
     const lines = readView(runtime, state, mapThreadLinesSelector, { avatarNodeId: 'bo', hexSize: 10 });
     expect(lines.map(l => [l.agentId, l.courtPosition])).toEqual([['ann', 'retinue']]);
+  });
+});
+
+describe('map.activity keys on the action lists (review-gate finding, THR-1822)', () => {
+  it('an action added out of tick shows once the host bumps actionsVersion, with no worldVersion bump', () => {
+    const { state } = fixture();
+    const runtime = createSimulationRuntime();
+    const args = { hexSize: 10, threadedAgentIds: [] as string[], telemetryVersion: 0, actionsVersion: 1 };
+    expect(readView(runtime, state, mapActivitySelector, args)).toEqual([]);
+    const template = UNIFIED_ACTION_TEMPLATES[0];
+    const withAction = {
+      ...state,
+      unifiedActions: [{ actionId: 'a1', templateId: template.id, actorId: 'bo', resolved: false }],
+    } as unknown as GameState;
+    const v0 = runtime.worldVersion;
+    const rows = readView(runtime, withAction, mapActivitySelector, { ...args, actionsVersion: 2 });
+    expect(runtime.worldVersion).toBe(v0);
+    expect(rows.map(r => r.agentId)).toEqual(['bo']);
   });
 });
 

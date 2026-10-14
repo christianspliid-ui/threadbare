@@ -44,6 +44,12 @@ export interface MapActivityArgs {
    * it is part of the key.
    */
   telemetryVersion: number;
+  /**
+   * Bumped by the host whenever `unifiedActions` or `encounterProgress` is
+   * replaced. Out-of-tick paths (a witnessed delivery beat) replace those arrays
+   * without a `worldVersion` bump, so they are part of the key too.
+   */
+  actionsVersion: number;
 }
 
 /** Decision-sourced icons lose to a running action or encounter on the same mortal. */
@@ -59,7 +65,7 @@ function tierOpacityOf(tier: string | undefined): number {
 export const mapActivitySelector: ViewSelector<MapActivityArgs, MapActivityVM[]> = {
   id: 'map.activity',
   invalidation: 'world',
-  key: (args) => `${args.hexSize}|${args.telemetryVersion}|${args.threadedAgentIds.join(',')}`,
+  key: (args) => `${args.hexSize}|${args.telemetryVersion}|${args.actionsVersion}|${args.threadedAgentIds.join(',')}`,
   fallback: () => [],
   build(ctx, { hexSize, threadedAgentIds }) {
     const graph = ctx.graph;
