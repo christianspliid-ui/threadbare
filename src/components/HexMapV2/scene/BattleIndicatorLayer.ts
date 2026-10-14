@@ -193,24 +193,39 @@ export function buildBattleIndicatorData(graph: WorldGraph): BattleIndicatorData
     .filter(n => n.properties.battleState != null);
 
   for (const battle of battleNodes) {
-    // Resolve hex position via located_at edge
-    const locEdges = graph.getOutgoingEdges(battle.id, 'located_at');
-    if (locEdges.length === 0) continue;
-
-    const locationNode = graph.getNode(locEdges[0].target);
-    if (!locationNode) continue;
-
-    const hexCol = locationNode.properties.hexCol as number | undefined;
-    const hexRow = locationNode.properties.hexRow as number | undefined;
-    if (hexCol == null || hexRow == null) continue;
-
-    const battleState = battle.properties.battleState as { battleType?: string } | undefined;
-    const isSiege = battleState?.battleType === 'siege';
-
-    result.push({ id: battle.id, hexCol, hexRow, isSiege });
+    const entry = battleIndicatorForNode(graph, battle);
+    if (entry) result.push(entry);
   }
 
   return result;
+}
+
+/**
+ * One battle/siege actor → its indicator entry, or null when the node is not a
+ * battle or its hex cannot be resolved. Battle and siege nodes carry no hexCol of
+ * their own; the engine places them with a `located_at` edge to the hex
+ * (battleResolution.ts, siegeResolution.ts). THR-1846: GameView reads through
+ * this so a siege keeps `isSiege` all the way to the sprite.
+ */
+export function battleIndicatorForNode(
+  graph: WorldGraph,
+  battle: { id: string; properties: Record<string, unknown> },
+): BattleIndicatorData | null {
+  const battleState = battle.properties.battleState as { battleType?: string } | undefined;
+  if (battleState == null) return null;
+
+  // Resolve hex position via located_at edge
+  const locEdges = graph.getOutgoingEdges(battle.id, 'located_at');
+  if (locEdges.length === 0) return null;
+
+  const locationNode = graph.getNode(locEdges[0].target);
+  if (!locationNode) return null;
+
+  const hexCol = locationNode.properties.hexCol as number | undefined;
+  const hexRow = locationNode.properties.hexRow as number | undefined;
+  if (hexCol == null || hexRow == null) return null;
+
+  return { id: battle.id, hexCol, hexRow, isSiege: battleState.battleType === 'siege' };
 }
 
 // ── Scene group ───────────────────────────────────────────────────────────────
@@ -236,6 +251,62 @@ export function createBattleIndicatorLayer(battles: BattleIndicatorData[]): Batt
 
   const materials: THREE.SpriteMaterial[] = [];
 
+  const dispose = () => {
+    for (const mat of materials) {
+      mat.dispose();
+    }
+    materials.length = 0;
+  };
+
+  const layer = { group, materials, dispose };
+  fillBattleIndicatorGroup(layer, battles);
+  return layer;
+}
+
+/**
+ * Replace the layer's sprites with one per entry in `battles`, keeping the same
+ * group (and so its place in the scene and its visibility). THR-1846: battles
+ * and sieges start and end mid-run, and the scene build that creates the layer
+ * does not re-run for them, so HexMapV2 refills the group when its `battles`
+ * prop changes.
+ */
+export function rebuildBattleIndicatorLayer(
+  layer: BattleIndicatorLayerGroup,
+  battles: BattleIndicatorData[],
+): void {
+  layer.dispose();
+  layer.group.clear();
+  fillBattleIndicatorGroup(layer, battles);
+}
+
+/**
+ * Stable key for a battle list — the incremental rebuild skips when the drawn
+ * set has not changed (the list is recomputed every tick).
+ */
+export function battleIndicatorSignature(battles: BattleIndicatorData[]): string {
+  return battles.map(b => `${b.id}@${b.hexCol},${b.hexRow}${b.isSiege ? 's' : 'b'}`).join('|');
+}
+
+/** Counts of the sprites the layer is drawing right now, split by kind. */
+export function countRenderedBattleIndicators(
+  group: THREE.Group | null,
+): { battles: number; sieges: number } {
+  let battles = 0;
+  let sieges = 0;
+  if (!group || !group.visible) return { battles, sieges };
+  for (const child of group.children) {
+    if (!child.visible) continue;
+    if (child.userData.isSiege === true) sieges++;
+    else battles++;
+  }
+  return { battles, sieges };
+}
+
+function fillBattleIndicatorGroup(
+  layer: BattleIndicatorLayerGroup,
+  battles: BattleIndicatorData[],
+): void {
+  const { group, materials } = layer;
   for (const battle of battles) {
     const { x: wx, y: wy } = hexToWorld(
       { col: battle.hexCol, row: battle.hexRow },
@@ -257,17 +328,9 @@ export function createBattleIndicatorLayer(battles: BattleIndicatorData[]): Batt
     sprite.scale.set(spriteSize, spriteSize, 1);
     sprite.position.set(wx, wy, LAYER_Z.BATTLE_INDICATORS);
     sprite.renderOrder = RENDER_ORDER.BATTLE_INDICATORS;
+    sprite.userData = { battleId: battle.id, isSiege: battle.isSiege };
     group.add(sprite);
   }
-
-  const dispose = () => {
-    for (const mat of materials) {
-      mat.dispose();
-    }
-    materials.length = 0;
-  };
-
-  return { group, materials, dispose };
 }
 
 /**

@@ -58,8 +58,8 @@ import { FACTION_HERALDIC_COLORS } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
 import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
 import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
-import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
-import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
+import type { BattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
+import { battleIndicatorForNode } from '../HexMapV2/scene/BattleIndicatorLayer';
 import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
 import type { CompanyRenderData } from '../HexMapV2/scene/CompanyClusterMesh';
 import { getActiveGroups, getGroupPosition, getGroupMembers, isGroupThreaded, isAgentGone } from '../../engine/groups/groupQueries';
@@ -1314,9 +1314,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.tick, runtime.worldVersion],
   );
 
-  // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
-  // Single pass over actors for army + battle + siege data (was 3 separate getNodesByType calls)
-  const { armyRenderData, battleRenderData, siegeRenderDataRaw } = useMemo(() => {
+  // ── Military render data adapters (graph → ArmyRenderData[], BattleIndicatorData[]) ──
+  // Single pass over actors for army + battle/siege data (was 3 separate getNodesByType calls)
+  const { armyRenderData, battleRenderData } = useMemo(() => {
     // Build faction ID → index map once (was inside army loop)
     const factionIdxMap = new Map<string, number>();
     for (let i = 0; i < factionNodes.length; i++) {
@@ -1324,8 +1324,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
 
     const armies: ArmyRenderData[] = [];
-    const battles: BattleRenderData[] = [];
-    const sieges: { node: typeof actors[0]; battleState: BattleState }[] = [];
+    const battles: BattleIndicatorData[] = [];
 
     for (const node of actors) {
       const armyState = node.properties.armyState as ArmyState | undefined;
@@ -1365,50 +1364,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         }
       }
 
-      // Battle data
+      // Battle/siege data. THR-1846: the node sits on its hex via located_at (it has
+      // no hexCol of its own), and isSiege rides along so a siege draws its ring.
       if (battleState != null) {
-        const hexCol = node.properties.hexCol as number | undefined;
-        const hexRow = node.properties.hexRow as number | undefined;
-        if (hexCol != null && hexRow != null) {
-          battles.push({ battleNodeId: node.id, hexCol, hexRow });
-        }
-        // Siege candidates
-        if (battleState.battleType === 'siege' && battleState.settlementId) {
-          sieges.push({ node, battleState });
-        }
+        const entry = battleIndicatorForNode(gameState.graph, node);
+        if (entry) battles.push(entry);
       }
     }
-    return { armyRenderData: armies, battleRenderData: battles, siegeRenderDataRaw: sieges };
+    return { armyRenderData: armies, battleRenderData: battles };
   }, [actors, factionNodes, gameState.graph]);
-
-  const siegeRenderData = useMemo<SiegeRenderData[]>(() => {
-    // Build faction ID → index map once
-    const factionIdxMap = new Map<string, number>();
-    for (let i = 0; i < factionNodes.length; i++) {
-      factionIdxMap.set(factionNodes[i].id, i);
-    }
-    const result: SiegeRenderData[] = [];
-    for (const { node, battleState } of siegeRenderDataRaw) {
-      const settlementNode = gameState.graph.getNode(battleState.settlementId!);
-      const sCol = settlementNode?.properties.hexCol as number | undefined;
-      const sRow = settlementNode?.properties.hexRow as number | undefined;
-      if (sCol == null || sRow == null) continue;
-
-      const attackerNode = gameState.graph.getNode(battleState.attackerArmyId);
-      const memberEdges = attackerNode ? gameState.graph.getOutgoingEdges(attackerNode.id, 'member_of') : [];
-      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-      const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
-      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
-
-      result.push({
-        siegeNodeId: node.id,
-        settlementHexCol: sCol,
-        settlementHexRow: sRow,
-        factionColor,
-      });
-    }
-    return result;
-  }, [siegeRenderDataRaw, factionNodes, gameState.graph]);
 
   // ── Notification preferences hook ──
   const {
@@ -5772,7 +5736,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   tradeRouteLines={tradeRouteLines}
                   routeTooltipsByHex={routeTooltipsByHex}
                   battles={battleRenderData}
-                  sieges={siegeRenderData}
                   threadLines={threadLineData}
                   companies={companyRenderData}
                   activityIcons={activityIconData}
