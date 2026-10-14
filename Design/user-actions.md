@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 03:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 04:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -32,6 +32,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: every town now has a people, so no mortal is left without a culture** ([THR-1793](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is)). Merged via [#2364](https://github.com/christianspliid-ui/threadbare/pull/2364) and live.
+- **2026-10-14: a siege now draws as a siege on the map, not a field battle** ([THR-1846](https://linear.app/threadbare/issue/THR-1846/every-siege-draws-as-a-field-battle-on-the-map-gameview-passes-battle)). Merged via [#2363](https://github.com/christianspliid-ui/threadbare/pull/2363) and live.
 - **2026-10-14: god cards carry their progression as data, and the world offers them** ([THR-1811](https://linear.app/threadbare/issue/THR-1811/god-cards-carry-their-progression-as-data-a-tier-how-a-god-gets-each)). Merged via [#2361](https://github.com/christianspliid-ui/threadbare/pull/2361) and live.
 - **2026-10-13: Dominion shows on the map and on every sheet, so you can see your turf** ([THR-1750](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf)). Merged via [#2359](https://github.com/christianspliid-ui/threadbare/pull/2359); publishing to the live site.
 - **2026-10-13: after the bond, the god's screen fills one gift at a time** ([THR-1837](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the)). Merged via [#2355](https://github.com/christianspliid-ui/threadbare/pull/2355) and live.
@@ -40,8 +42,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-12: pouring a Sphere says what it will change before you commit** ([THR-1815](https://linear.app/threadbare/issue/THR-1815/say-it-before-it-happens-the-sphere-pour-says-what-it-changes-the)). Merged via [#2344](https://github.com/christianspliid-ui/threadbare/pull/2344) and live.
 - **2026-10-12: Doom, Omen, World-Soul and Attention now explain themselves when you hover them** ([THR-1814](https://linear.app/threadbare/issue/THR-1814/the-maps-words-explain-themselves-doom-omen-world-soul-and-attention)). Merged via [#2343](https://github.com/christianspliid-ui/threadbare/pull/2343) and live.
 - **2026-10-12: a chapter choice made while the clock is paused stays on screen** ([THR-1812](https://linear.app/threadbare/issue/THR-1812/a-chapter-step-committed-on-a-paused-clock-stays-on-screen-the-world)). Merged via [#2342](https://github.com/christianspliid-ui/threadbare/pull/2342) and live.
-- **2026-10-11: the map tooltip names land in plain words and hides when you click** ([THR-1818](https://linear.app/threadbare/issue/THR-1818/map-hover-tooltip-shows-raw-terrain-keys-plateau-temperate-forest-and)). Merged via [#2336](https://github.com/christianspliid-ui/threadbare/pull/2336) and live.
-- **2026-10-11: the world map can no longer crash on load** ([THR-1817](https://linear.app/threadbare/issue/THR-1817/the-world-map-can-crash-on-load-hexmapv2-calls-two-usememo-hooks-after)). Merged via [#2334](https://github.com/christianspliid-ui/threadbare/pull/2334) and live.
 
 ---
 
