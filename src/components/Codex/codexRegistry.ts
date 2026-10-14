@@ -103,6 +103,12 @@ export interface CodexEntry {
 // codex-specific art layers in via ITEM_ART_BASE below).
 import { ITEM_ART as ITEM_ART_BASE } from '../../data/item-art-registry';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
+import {
+  ACTION_CATEGORIES,
+  ACTION_CATEGORY_IDS,
+  templatesByRule,
+  type ActionCategory,
+} from '../../data/action-categories';
 const ITEM_ART: Record<string, string> = {
   ...ITEM_ART_BASE,
   ...ACTION_ART,
@@ -782,57 +788,43 @@ function mapResourceClass(resourceId: string): CodexEntry {
   };
 }
 
+/**
+ * The Codex tab glyph and the mapper for each action category (THR-1886). Closed over `ActionCategory`, so a
+ * category added to `action-categories.ts` without a mapper here fails the typecheck.
+ */
+const ACTION_CATEGORY_GLYPHS = {
+  divine: '★',
+  hex: '⬡',
+  location: '⌂',
+  artifact: '✦',
+  // Asterism - three marks travelling together (THR-999).
+  company: '⁂',
+  threads: '⁘',
+  actions: '⚔',
+} satisfies Record<ActionCategory, string>;
+
+const ACTION_ENTRY_MAPPERS = {
+  divine: mapDivineAction,
+  actions: mapMortalAction,
+  hex: t => mapTargetAction(t, 'hex'),
+  location: t => mapTargetAction(t, 'location'),
+  artifact: t => mapTargetAction(t, 'artifact'),
+  company: t => mapTargetAction(t, 'company'),
+  threads: t => mapTargetAction(t, 'threads'),
+} satisfies Record<ActionCategory, (t: typeof UNIFIED_ACTION_TEMPLATES[number]) => CodexEntry>;
+
 export function getAllCodexEntries(): CodexEntry[] {
   if (_cachedEntries) return _cachedEntries;
 
   const entries: CodexEntry[] = [];
 
-  // Divine actions — the generic divine interventions plus the eight reach signatures
-  // (`invest.*`, THR-503). The signatures are the only reach-*locked* ascendant cards, so
-  // cataloguing them here is what makes the "locked this incarnation" state legible in the
-  // Codex (THR-613 Slice 3b-tail) — the live drawer hides them, and without this they were
-  // absent from the catalog entirely.
-  const divineTemplates = UNIFIED_ACTION_TEMPLATES.filter(
-    t => t.id.startsWith('divine.') || t.id.startsWith('invest.'),
-  );
-  for (const t of divineTemplates) entries.push(mapDivineAction(t));
-
-  // Mortal actions
-  const mortalTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('action.'));
-  for (const t of mortalTemplates) entries.push(mapMortalAction(t));
-
-  // Hex actions
-  const hexTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('hex.'));
-  for (const t of hexTemplates) entries.push(mapTargetAction(t, 'hex'));
-
-  // Location actions
-  const locTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('loc.'));
-  for (const t of locTemplates) entries.push(mapTargetAction(t, 'location'));
-
-  // Sublocation actions
-  const subTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('sub.'));
-  for (const t of subTemplates) entries.push(mapTargetAction(t, 'location'));
-
-  // Artifact actions
-  const artifactTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('artifact.'));
-  for (const t of artifactTemplates) entries.push(mapTargetAction(t, 'artifact'));
-
-  // Company actions (THR-999) — the four verbs that act on a company of travelling
-  // mortals rather than on one agent. Their own category because this catalog is
-  // organised by what a verb acts *upon* (hex / place / artifact / thread), and a
-  // company is its own target class; folding them into Divine Actions would blur a
-  // category that otherwise reads as "what you do to a person".
-  const companyTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('company.'));
-  for (const t of companyTemplates) entries.push(mapTargetAction(t, 'company'));
-
-  // Thread & insight actions (thread-binding + agent observation + thread management).
-  // `thread.*` (dormant / reactivate) was uncatalogued alongside `company.*` until
-  // THR-999 — it manages an existing thread's court position, so it belongs with the
-  // binding verbs rather than in a category of its own.
-  const threadTemplates = UNIFIED_ACTION_TEMPLATES.filter(t =>
-    t.id.startsWith('bind_thread_') || t.id.startsWith('thread.') || ['observe_agent', 'scry_agent', 'whisper_insight', 'dream_sending'].includes(t.id)
-  );
-  for (const t of threadTemplates) entries.push(mapTargetAction(t, 'threads'));
+  // Action entries — every player action, filed by the one prefix → category table in
+  // `src/data/action-categories.ts` (THR-1886, UI Law 58). No prefix arms live here: a new
+  // prefix is one row in that table, and an unclaimed one fails codexCatalogCoverage.test.ts
+  // naming the file to edit.
+  for (const { rule, templates } of templatesByRule(UNIFIED_ACTION_TEMPLATES)) {
+    for (const t of templates) entries.push(ACTION_ENTRY_MAPPERS[rule.category](t));
+  }
 
   // Possessions (deduplicate starter + reward)
   const allPossessions = deduplicateNodes([...REWARD_POSSESSIONS, ...STARTER_POSSESSIONS]);
@@ -876,14 +868,8 @@ export function getCodexCategories(): CodexCategory[] {
   const entries = getAllCodexEntries();
 
   const catDefs: { id: string; label: string; glyph: string }[] = [
-    { id: 'divine', label: 'Divine Actions', glyph: '\u2605' },
-    { id: 'hex', label: 'Hex Actions', glyph: '\u2B21' },
-    { id: 'location', label: 'Place Actions', glyph: '\u2302' },
-    { id: 'artifact', label: 'Artifact Actions', glyph: '\u2726' },
-    // Asterism - three marks travelling together (THR-999).
-    { id: 'company', label: 'Company Actions', glyph: '\u2042' },
-    { id: 'threads', label: 'Thread & Insight', glyph: '\u2058' },
-    { id: 'actions', label: 'Mortal Actions', glyph: '\u2694' },
+    // The seven action categories, declared once in action-categories.ts (THR-1886).
+    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORY_GLYPHS[id] })),
     // Hammer and pick \u2014 the work mortals do on the world's things (THR-1434).
     { id: 'undertakings', label: 'Undertakings', glyph: '\u2692' },
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },

@@ -1,0 +1,754 @@
+{
+  "action.anoint": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.anoint-champion": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.bestow": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.consecrate": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.consecrate-relic": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.divine-edict": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.eye.investigate": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.eye.refine-knowledge": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.eye.research": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.eye.suppress-knowledge": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.anoint_successor": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.kindle_a_calling": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.recover_doctrine": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.schism": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.stir_dissent": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.surface_doubter": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.faction.whisper_leader": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.flesh.cultivate": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.flesh.diagnose": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.flesh.heal": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.flesh.plague": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.break-agreement": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.buy-influence": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.commission-assassination": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.disrupt-trade": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.establish-monopoly": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.establish-trade": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.fund-construction": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.hire-mercenaries": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.negotiate-agreement": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.survey-resources": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.tax-trade-route": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.gold.trade": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.heart.assess-loyalty": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.heart.betray": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.heart.forge-alliance": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.heart.inspire": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.imbue": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.iron.assess-threat": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.iron.conquer": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.iron.fortify": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.iron.raise-force": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.mentorship.inspire": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.mentorship.sever": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.secrets.call_in_favor": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.secrets.plant_secret": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.secrets.reveal_secret": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.shadow.establish-network": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.shadow.recruit-agent": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.shadow.spy": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.social.embolden": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.social.tip_scales": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.star.consecrate": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.star.deepen-faith": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.star.desecrate": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.star.divine": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.stone.assess-structure": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.stone.build": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.stone.demolish": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.stone.repair": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.teach_spell": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.undertaking.inspire": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.undertaking.sabotage": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.veil.cast-spell": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.veil.detect-magic": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.veil.dispel": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.veil.modify-enchantment": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "artifact.attune": {
+    "catalog": "artifact",
+    "codex": "artifact"
+  },
+  "artifact.curse": {
+    "catalog": "artifact",
+    "codex": "artifact"
+  },
+  "artifact.empower": {
+    "catalog": "artifact",
+    "codex": "artifact"
+  },
+  "artifact.enchant": {
+    "catalog": "artifact",
+    "codex": "artifact"
+  },
+  "artifact.nullify": {
+    "catalog": "artifact",
+    "codex": "artifact"
+  },
+  "bind_thread_agent": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "bind_thread_agent_strong": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "bind_thread_army": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "bind_thread_artifact": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "bind_thread_faction": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "bind_thread_location": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "company.bless": {
+    "catalog": "company",
+    "codex": "company"
+  },
+  "company.draw_together": {
+    "catalog": "company",
+    "codex": "company"
+  },
+  "company.reunite": {
+    "catalog": "company",
+    "codex": "company"
+  },
+  "company.sunder": {
+    "catalog": "company",
+    "codex": "company"
+  },
+  "divine.afflict_bless": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.coincidence": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.deceive": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.dream": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.inspire": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.intimidate": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.omen": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.perceive.cast_attention": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.perceive.listen_for_a_name": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.perceive.read_the_threads": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.perceive.refine_the_hush": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.perceive.taste_the_wake": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.persuade": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.rekindle_thread": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.relay.compose_a_clue": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.relay.whisper_the_direction": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.self.focus": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.self.recede": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.self.reveal": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "divine.self.stillness": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
+  "dream_sending": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "hex.amplify_flow": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.anchor_sphere": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.attune_leyline": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.attune_thread": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.bestow_vision": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.bind_echoes": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.bless_land": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.bury_past": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.channel_current": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.claim_dominion": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.claim_resource": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.compel_exploration": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.consecrate_past": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.corrupt_land": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.cultivate": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.desecrate": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.dispel_wild": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.dowse_resources": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.forge_instrument": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.forge_seer_token": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.impose_decree": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.incite_exodus": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.install_champion": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.mark_ground": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.plant_dream": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.raise_landmark": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.read_currents": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.read_stones": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.rend_earth": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.restore_fragment": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.rewrite_history": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.scatter": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.scorch_earth": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.seal_tomb": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.seed_life": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.send_herald": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.sever_flow": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.shepherd_flock": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.shift_dominion": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.shift_season": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.smite": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.spark_encounter": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.stir_people": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.strengthen_thread": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.summon_congregation": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.survey": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.tap_source": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.ward_against_deep": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "hex.whisper_intuition": {
+    "catalog": "hex",
+    "codex": "hex"
+  },
+  "invest.eye.deep_eye": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.gold.patronage_network": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.heart.sworn_oath": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.iron.warhost": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.shadow.brokers_web": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.star.beacon_of_fate": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.stone.great_work": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "invest.veil.rend_the_gate": {
+    "catalog": null,
+    "codex": "divine"
+  },
+  "loc.awaken_spirit": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.bless_harvest": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.blight": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.claim_source": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.consecrate_source": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.curse_roads": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.defend_source": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.find_source": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.fortify": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.guide_caravan": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.incite_unrest": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.open_markets": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.place_of_power": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.reveal_vein": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.sanctify_source": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.sanctify_square": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.sicken_wells": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.sour_mine": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.ward": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "observe_agent": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "scry_agent": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "sub.sanctify": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "sub.sanctify_tavern": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "sub.trap": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "sub.vision": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "thread.dormant": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "thread.reactivate": {
+    "catalog": "threads",
+    "codex": "threads"
+  },
+  "whisper_insight": {
+    "catalog": "threads",
+    "codex": "threads"
+  }
+}
