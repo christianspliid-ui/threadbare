@@ -117,11 +117,11 @@ describe('THR-1862 — faction presence counts located members', () => {
 });
 
 describe('THR-1862 — the wealth-tier chronicle reads individuals', () => {
-  it('an individual crossing a wealth tier produces a chronicle entry', () => {
+  it('a followed individual crossing a wealth tier produces a chronicle entry', () => {
     const graph = new WorldGraph();
     graph.addNode({
       id: 'mira', type: 'actor', name: 'Mira',
-      properties: { actorType: 'individual', wealth: WEALTH_TIER_COMFORTABLE },
+      properties: { actorType: 'individual', spotlightTier: 'spotlight', wealth: WEALTH_TIER_COMFORTABLE },
     });
     // First pass records the tier; nothing to chronicle yet.
     const first = phaseEconomicChronicle(asState(graph, { tick: 1 }));
@@ -130,6 +130,19 @@ describe('THR-1862 — the wealth-tier chronicle reads individuals', () => {
     graph.getNode('mira')!.properties.wealth = WEALTH_TIER_WEALTHY;
     const second = phaseEconomicChronicle(asState(graph, { tick: 2 }));
     expect(second.chronicleEntries?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('an ambient stranger crossing a wealth tier is tracked but not chronicled', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'npc_1', type: 'actor', name: 'Stranger',
+      properties: { actorType: 'individual', spotlightTier: 'ambient', wealth: WEALTH_TIER_COMFORTABLE },
+    });
+    phaseEconomicChronicle(asState(graph, { tick: 1 }));
+    graph.getNode('npc_1')!.properties.wealth = WEALTH_TIER_WEALTHY;
+    const second = phaseEconomicChronicle(asState(graph, { tick: 2 }));
+    expect(second.chronicleEntries ?? []).toHaveLength(0);
+    expect(graph.getNode('npc_1')!.properties.previousWealthTier).toBe('Wealthy');
   });
 });
 
