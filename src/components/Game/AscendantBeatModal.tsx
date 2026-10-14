@@ -24,6 +24,8 @@
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { useRefRouterContext } from '../../contexts/RefRouterContext';
+import type { WorldRef } from '../../types/worldRef';
 import { RevealCard } from '../shared/RevealCard';
 import { ActionCard } from './ActionCard';
 import { CARD_WIDTH_PX } from '../shared/CardFace';
@@ -77,6 +79,11 @@ interface AscendantBeatModalProps {
   offering?: readonly OfferedCardView[];
   /** THR-1811: a rung gift is its rung's first given key (isRungOpeningOffer), so it carries the rung's words. */
   rungOpening?: boolean;
+  /**
+   * THR-1851: the people an introduction beat names. When present, "Attend" resolves the
+   * beat and then opens that people's sheet — the popup used to lead nowhere.
+   */
+  subjectRef?: WorldRef;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -429,7 +436,9 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   avatarName,
   offering,
   rungOpening,
+  subjectRef,
 }: AscendantBeatModalProps) {
+  const router = useRefRouterContext();
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
   const isOffering = pending.kind === 'offering';
   // Presentation precedence: authored per-beat copy (spine THR-504 / Deepening / Milestone /
@@ -531,7 +540,11 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
         >
           <button
             type="button"
-            onClick={() => onResolve()}
+            onClick={() => {
+              onResolve();
+              // THR-1851: attending a people means meeting them — open their sheet.
+              if (subjectRef && router) router.open(subjectRef, 'sheet', { via: 'beat' });
+            }}
             style={PRIMARY_BUTTON_STYLE}
             data-testid="beat-resolve-button"
           >

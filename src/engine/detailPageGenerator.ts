@@ -24,6 +24,7 @@ import {
   DETAIL_FAILSOFT_STUB_SPHERE,
 } from '../types/detailPage';
 import type { WorldGraph } from './graph';
+import { fromGraphNode } from '../types/worldRefAdapters';
 import type { SimulationRuntime } from './simulationRuntime';
 import {
   DETAIL_PAGE_REGISTRY,
@@ -159,6 +160,8 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
   const sphere = sphereForNode(node);
   const subtitle = subtitleForNode(node, pageKind);
   const kindLabel = KIND_LABELS[pageKind];
+  // THR-1851 — the CTA carries its own address, and is offered only where one exists.
+  const sheetRef = hasFullSheetFor(pageKind, node, protagonistId) ? fromGraphNode(node) : undefined;
 
   const page: DetailPage = {
     kind: pageKind,
@@ -170,7 +173,8 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     sphere,
     isShowcase,
     sections,
-    hasFullSheet: hasFullSheetFor(pageKind, node, protagonistId),
+    hasFullSheet: sheetRef !== undefined,
+    ...(sheetRef ? { sheetRef } : {}),
   };
 
   if (cache) cache.set(key, page);
@@ -374,15 +378,21 @@ function hasFullSheetFor(
 ): boolean {
   switch (pageKind) {
     case 'actor':
-      // Per plan §4.2: only protagonists/co-protagonists have a "full sheet" CTA.
+      // Per plan §4.2 the protagonists/co-protagonists have a "full sheet" CTA. THR-1851
+      // widened it to every mortal individual — a ruler or notable reached from the
+      // Notables list had a card with no way onward to the profile drawer.
       return Boolean(
-        protagonistId && (node.id === protagonistId || node.properties?.isPortfolioPinned === true),
+        (protagonistId && (node.id === protagonistId || node.properties?.isPortfolioPinned === true)) ||
+          node.properties?.actorType === 'individual',
       );
     case 'item':
     case 'faction':
     case 'place':
-    case 'event':
     case 'group':
       return true;
+    // THR-1851 — no sheet exists for an event card (the router's encounter arm is
+    // unwired), so a CTA there could only re-open the card it sits on.
+    case 'event':
+      return false;
   }
 }

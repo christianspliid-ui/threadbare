@@ -368,6 +368,27 @@ describe('introduction-group binding + template aftermath (THR-522)', () => {
     expect(bindBeatSubject(introBeat, state)).toEqual(['group-1']);
   });
 
+  it('bindBeatSubject skips an elder-age civilisation — a rising people must be living (THR-1851)', () => {
+    const graph = graphWithGroups(2);
+    graph.addNode({
+      id: 'elder-dunes', type: 'actor', name: 'The Shadow-Kept Dunes',
+      properties: { actorType: 'culture', cultureEra: 'historical' },
+    });
+    // Put the elder culture first in iteration order by re-adding the living ones after it.
+    const fresh = new WorldGraph();
+    fresh.addNode(graph.getNode('elder-dunes')!);
+    for (const node of graph.getNodesByType('actor')) if (node.id !== 'elder-dunes') fresh.addNode(node);
+    const state = directorState(30, createInitialAscendantBeatState(), fresh);
+    expect(bindBeatSubject(introBeat, state)).toEqual(['group-0']);
+
+    // And with only the elder culture left, the introduction beat is not eligible at all.
+    const onlyElder = new WorldGraph();
+    onlyElder.addNode(graph.getNode('elder-dunes')!);
+    const elderState = directorState(30, createInitialAscendantBeatState(), onlyElder);
+    expect(isBeatEligible(introBeat, elderState)).toBe(false);
+    expect(bindBeatSubject(introBeat, elderState)).toEqual([]);
+  });
+
   it('a force-offered introduction beat carries the bound subject into PendingBeat.boundNodeIds', () => {
     const state = directorState(30, createInitialAscendantBeatState(), graphWithGroups(2));
     const offered = forceOfferBeatById(createInitialAscendantBeatState(), introBeat.beatId, 30, state);
