@@ -29,7 +29,7 @@
       "empty": ["No long work under way"]
     },
     "ambition": {
-      "reached": ["heading \"Ambitions\"", "Completed Ambitions"],
+      "reached": ["heading \"Intent\"", "Completed Ambitions"],
       "empty": ["know what drives"]
     },
     "threadHistory": {
