@@ -42,13 +42,19 @@
  *
  * ## Verdicts
  *
- * | verdict     | meaning                                                          | needs a human |
- * |-------------|------------------------------------------------------------------|---------------|
- * | `healthy`   | at least one scheduled run in the window concluded green          | no  |
- * | `all-red`   | every conclusive scheduled run in the window failed (≥ `MIN_RUNS_FOR_ALL_RED`) | **yes** |
- * | `never-run` | no conclusive scheduled run in the window — a fresh lane, not a defect | no  |
- * | `disabled`  | GitHub is not running the schedule at all                         | **yes**, when GitHub disabled it for inactivity |
- * | `unknown`   | the probe could not determine state (network, auth, parse)        | no (fail-soft) |
+ * | verdict     | meaning                                                          | who acts |
+ * |-------------|------------------------------------------------------------------|----------|
+ * | `healthy`   | at least one scheduled run in the window concluded green          | nobody |
+ * | `all-red`   | every conclusive scheduled run in the window failed (≥ `MIN_RUNS_FOR_ALL_RED`) | **a session** (`needsSession`) — the hourly brief files a ticket for it |
+ * | `never-run` | no conclusive scheduled run in the window — a fresh lane, not a defect | nobody |
+ * | `disabled`  | GitHub is not running the schedule at all                         | **Christian** (`needsChristian`), when GitHub disabled it for inactivity |
+ * | `unknown`   | the probe could not determine state (network, auth, parse)        | nobody (fail-soft) |
+ *
+ * Post-merge lanes (below) follow the same split: `red` and `red-stale` are a
+ * session's (`needsSession`), never Christian's. CI is agent-owned (Christian,
+ * 2026-10-04: he does not do CI troubleshooting), and the hourly brief turns
+ * every one of them into a Ready-for-Dev ticket (keep-work-flowing-cc step 3b,
+ * 2026-10-14) because a note in the brief reaches no lane that can fix it.
  *
  * The ticket calls out the three-way split explicitly, and it is the whole
  * subtlety of the probe: a workflow with zero runs is **not** a failure, and
@@ -71,7 +77,7 @@
  *
  * Usage:
  *   npm run check:workflows                  # advisory; always exits 0
- *   npm run check:workflows -- --strict      # exits 1 when a human is needed
+ *   npm run check:workflows -- --strict      # exits 1 when anything is owed (needsChristian or needsSession)
  *   npm run check:workflows -- --json        # machine-readable single-line JSON
  *   npm run check:workflows -- --before <ISO> # judge only runs created before <ISO>
  *
@@ -144,12 +150,12 @@ export const DISABLED_STATES: ReadonlySet<string> = new Set([
 export const PUSH_RUN_LOOKBACK = 5;
 
 /**
- * How long a post-merge lane may stay red before it is Christian's problem
- * rather than the next session's. Under this, a red is a line in the briefing's
- * health block and an impediment row — a heavy-only regression on `main` is a
- * follow-up PR, which is the trade THR-1384 made deliberately. Past it, nobody
- * has picked the follow-up up, and that is what the `## Needs Christian`
- * section is for.
+ * How long a post-merge lane may stay red before it is reported as `red-stale`
+ * rather than `red`. Both are a session's to fix, never Christian's: a
+ * heavy-only regression on `main` is a follow-up PR, which is the trade
+ * THR-1384 made deliberately, and the hourly brief files a ticket for it
+ * (keep-work-flowing-cc step 3b). Past this, the verdict says plainly that
+ * nobody has picked the follow-up up.
  */
 export const PUSH_LANE_RED_GRACE_HOURS = 24;
 
@@ -188,6 +194,8 @@ export interface PushLaneReport {
   file: string;
   verdict: PushLaneVerdict;
   needsChristian: boolean;
+  /** A session owes a fix — `red` and `red-stale`. */
+  needsSession: boolean;
   /** Conclusive runs considered, newest first, as raw conclusions. */
   considered: string[];
   /** When the current unbroken red streak began, or `null` when not red. */
@@ -220,6 +228,8 @@ export interface WorkflowReport {
   file: string;
   verdict: WorkflowVerdict;
   needsChristian: boolean;
+  /** A session owes a fix — `all-red`. */
+  needsSession: boolean;
   /** Conclusive runs considered, newest first, as raw conclusions. */
   considered: string[];
   /** One plain-language sentence about this workflow. */
@@ -233,9 +243,9 @@ export interface WorkflowHealthResult {
   /** Whether this belongs in the briefing's `## Needs Christian` section. */
   needsChristian: boolean;
   /**
-   * A post-merge lane is red but still inside its grace period (THR-1384): a
-   * session's job, not Christian's — the hourly lane's uniform rule renders it
-   * as one § Health line, the same treatment `check:armed-prs` gets.
+   * A post-merge lane is red (THR-1384), or a scheduled lane is `all-red`: a
+   * session's job, never Christian's. The hourly brief files a ticket for each
+   * (keep-work-flowing-cc step 3b) and links it on one § Health line.
    */
   needsSession: boolean;
   workflows: WorkflowReport[];
@@ -319,6 +329,7 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
       // A manual disable was somebody's decision; an inactivity disable is a
       // surprise nobody chose and nothing else reports.
       needsChristian: byInactivity,
+      needsSession: false,
       considered: [],
       detail: byInactivity
         ? `"${name}" has been switched off automatically by GitHub after a long quiet period. It will not run again until it is switched back on.`
@@ -332,6 +343,7 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
       file,
       verdict: "unknown",
       needsChristian: false,
+      needsSession: false,
       considered: [],
       detail: `Could not read the run history for "${name}".`,
     };
@@ -350,6 +362,7 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
       file,
       verdict: "never-run",
       needsChristian: false,
+      needsSession: false,
       considered,
       detail: `"${name}" has not completed a scheduled run yet, so there is nothing to judge.`,
     };
@@ -363,7 +376,8 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
       name,
       file,
       verdict: "all-red",
-      needsChristian: true,
+      needsChristian: false,
+      needsSession: true,
       considered,
       detail:
         `"${name}" has failed every one of its last ${considered.length} scheduled runs. ` +
@@ -376,6 +390,7 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
     file,
     verdict: "healthy",
     needsChristian: false,
+    needsSession: false,
     considered,
     detail:
       reds.length > 0
@@ -403,6 +418,7 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
       file,
       verdict: "unknown",
       needsChristian: false,
+      needsSession: false,
       considered: [],
       redSinceMs: null,
       detail: `Could not read the run history for "${name}".`,
@@ -423,6 +439,7 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
       file,
       verdict: "never-run",
       needsChristian: false,
+      needsSession: false,
       considered,
       redSinceMs: null,
       detail: `"${name}" has not completed a run on main yet, so there is nothing to judge.`,
@@ -435,6 +452,7 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
       file,
       verdict: "healthy",
       needsChristian: false,
+      needsSession: false,
       considered,
       redSinceMs: null,
       detail: `"${name}" is green on the latest main.`,
@@ -468,6 +486,7 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
       file,
       verdict: sameCommit ? "flaky" : "healthy",
       needsChristian: false,
+      needsSession: false,
       considered,
       redSinceMs: null,
       detail: sameCommit
@@ -495,22 +514,25 @@ export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneRe
     name,
     file,
     verdict: stale ? "red-stale" : "red",
-    needsChristian: stale,
+    // CI is agent-owned (Christian, 2026-10-04), however long it has been red.
+    needsChristian: false,
+    needsSession: true,
     considered,
     redSinceMs,
     detail: stale
-      ? `"${name}" has been failing on main for ${Math.round(redHours)} hours and nobody has picked it up — the code on main has a problem the merge gate does not check.`
-      : `"${name}" is red on the latest main (${Math.round(redHours)} h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it.`,
+      ? `"${name}" has been failing on main for ${Math.round(redHours)} hours and nobody has picked it up — the code on main has a problem the merge gate does not check; the hourly brief files a ticket for it.`
+      : `"${name}" is red on the latest main (${Math.round(redHours)} h) — a follow-up fix is owed; the hourly brief files a ticket for it.`,
   };
 }
 
 /**
  * Classify scheduled-workflow health. Pure: no IO, no clock, no network.
  *
- * Folds per-workflow verdicts into one by worst-severity. `needsChristian` is the
- * disjunction — one dead lane is worth surfacing even when every other is green.
- * Post-merge lanes (THR-1384) fold into the same `needsChristian` and `summary`,
- * so the hourly lane's uniform probe rule reads them without a second branch.
+ * Folds per-workflow verdicts into one by worst-severity. `needsChristian` and
+ * `needsSession` are each the disjunction — one dead lane is worth surfacing even
+ * when every other is green. Post-merge lanes (THR-1384) fold into the same two
+ * bits and `summary`, so the hourly lane's uniform probe rule reads them without
+ * a second branch.
  */
 export function classifyWorkflowHealth(
   workflows: ScheduledWorkflowInput[],
@@ -518,19 +540,18 @@ export function classifyWorkflowHealth(
   nowMs: number = Date.now(),
 ): WorkflowHealthResult {
   const postMerge = postMergeLanes.map((lane) => classifyPushLane(lane, nowMs));
-  const postMergeFlagged = postMerge.filter((r) => r.needsChristian);
-  const postMergeNoisy = postMerge.filter((r) => !r.needsChristian && r.verdict === "red");
+  // A red post-merge lane is not an ask, but it is not silence either: its
+  // sentence goes on the § Health line that links the brief's ticket.
+  const postMergeOwed = postMerge.filter((r) => r.needsChristian || r.needsSession);
+  const withPostMerge = (summary: string): string =>
+    [summary, ...postMergeOwed.map((r) => r.detail)].join(" ").trim();
 
   if (workflows.length === 0) {
     return {
       verdict: "unknown",
-      summary: [
-        "No scheduled workflows were found, so none could be checked.",
-        ...postMergeFlagged.map((r) => r.detail),
-        ...postMergeNoisy.map((r) => r.detail),
-      ].join(" "),
-      needsChristian: postMergeFlagged.length > 0,
-      needsSession: postMergeNoisy.length > 0,
+      summary: withPostMerge("No scheduled workflows were found, so none could be checked."),
+      needsChristian: postMerge.some((r) => r.needsChristian),
+      needsSession: postMerge.some((r) => r.needsSession),
       workflows: [],
       postMerge,
     };
@@ -543,8 +564,11 @@ export function classifyWorkflowHealth(
     "healthy",
   );
 
-  const needsChristian = reports.some((r) => r.needsChristian) || postMergeFlagged.length > 0;
-  const flagged = [...reports.filter((r) => r.needsChristian), ...postMergeFlagged];
+  // Christian's items lead, so an ask that quotes the summary opens on his part.
+  const flagged = [
+    ...reports.filter((r) => r.needsChristian),
+    ...reports.filter((r) => !r.needsChristian && r.needsSession),
+  ];
 
   let summary: string;
   if (flagged.length > 0) {
@@ -557,17 +581,12 @@ export function classifyWorkflowHealth(
       .map((r) => r.detail)
       .join(" ");
   }
-  // A recent post-merge red is not an ask, but it is not silence either: the
-  // sentence is what the next session logs as the impediment row.
-  if (postMergeNoisy.length > 0) {
-    summary = `${summary} ${postMergeNoisy.map((r) => r.detail).join(" ")}`.trim();
-  }
 
   return {
     verdict: worst,
-    summary,
-    needsChristian,
-    needsSession: postMergeNoisy.length > 0,
+    summary: withPostMerge(summary),
+    needsChristian: reports.some((r) => r.needsChristian) || postMerge.some((r) => r.needsChristian),
+    needsSession: reports.some((r) => r.needsSession) || postMerge.some((r) => r.needsSession),
     workflows: reports,
     postMerge,
   };
@@ -808,6 +827,7 @@ function main(): void {
   } else {
     console.log(
       `[workflow-health] verdict=${result.verdict} needs-christian=${result.needsChristian ? "yes" : "no"}` +
+        ` needs-session=${result.needsSession ? "yes" : "no"}` +
         (cutoffMs !== null ? ` before=${new Date(cutoffMs).toISOString()}` : ""),
     );
     for (const w of result.workflows) {
@@ -822,7 +842,9 @@ function main(): void {
     console.log(`[workflow-health] ${result.summary}`);
   }
 
-  process.exit(strict && result.needsChristian ? 1 : 0);
+  // Since all-red and red-stale moved to needsSession, strict reads both bits so
+  // a red lane still fails it.
+  process.exit(strict && (result.needsChristian || result.needsSession) ? 1 : 0);
 }
 
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {

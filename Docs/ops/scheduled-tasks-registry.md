@@ -89,7 +89,7 @@ The `weekly-retro` task is **registered and live** in the CC lane (created 2026-
 | Slot | Cadence | Task | Cron |
 |------|---------|------|------|
 | **Fri 14:00 UTC** | Weekly | Drift scan — posts `drift-scan` Linear issues to Continuous Improvement | n/a (Actions cron) |
-| **03:17 UTC** | Nightly, plus every code push to `main` and on dispatch | Heavy simulation tests (`heavy-tests.yml`, THR-1384) — the world-simulation vitest project `npm test` no longer runs; non-required, its conclusion is read by `npm run check:workflows` as a `post-merge` row and escalates to `## Needs Christian` only after 24 h red | `17 3 * * *` |
+| **03:17 UTC** | Nightly, plus every code push to `main` and on dispatch | Heavy simulation tests (`heavy-tests.yml`, THR-1384) — the world-simulation vitest project `npm test` no longer runs; non-required, its conclusion is read by `npm run check:workflows` as a `post-merge` row; a red becomes a Ready-for-Dev ticket from the hourly brief (keep-work-flowing-cc step 3b), never a `## Needs Christian` ask | `17 3 * * *` |
 
 ## Weekly continuous-improvement cycle (Fridays)
 

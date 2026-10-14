@@ -116,11 +116,14 @@ describe("findScheduledWorkflowFiles", () => {
 });
 
 describe("classifyWorkflowHealth", () => {
-  it("reports all-red and asks for a human when every scheduled run failed", () => {
+  it("reports all-red as a session's fix, never an ask, when every scheduled run failed", () => {
     const result = classifyWorkflowHealth([workflow({ runs: allRed(5) })]);
 
     expect(result.verdict).toBe("all-red");
-    expect(result.needsChristian).toBe(true);
+    // CI is agent-owned (Christian, 2026-10-04); the hourly brief files a ticket.
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(true);
+    expect(result.workflows[0].needsSession).toBe(true);
     expect(result.workflows[0].considered).toHaveLength(5);
   });
 
@@ -132,7 +135,7 @@ describe("classifyWorkflowHealth", () => {
     ]);
 
     expect(result.verdict).toBe("all-red");
-    expect(result.needsChristian).toBe(true);
+    expect(result.needsSession).toBe(true);
     expect(result.summary).toContain("Stale Claim Sweep");
   });
 
@@ -192,6 +195,7 @@ describe("classifyWorkflowHealth", () => {
 
     expect(result.verdict).toBe("disabled");
     expect(result.needsChristian).toBe(true);
+    expect(result.needsSession).toBe(false);
     expect(result.summary).toMatch(/switched off automatically/);
   });
 
@@ -230,7 +234,8 @@ describe("classifyWorkflowHealth", () => {
     ]);
 
     expect(result.verdict).toBe("all-red");
-    expect(result.needsChristian).toBe(true);
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(true);
     expect(result.workflows).toHaveLength(2);
     expect(result.workflows[0].verdict).toBe("healthy");
     // The summary names only what needs attention, not the healthy lane.
@@ -247,6 +252,18 @@ describe("classifyWorkflowHealth", () => {
     expect(result.verdict).toBe("healthy");
     expect(result.needsChristian).toBe(false);
     expect(result.summary).toBe("All 2 scheduled background jobs are running normally.");
+  });
+
+  it("names both an inactivity disable and an all-red lane, Christian's first", () => {
+    const result = classifyWorkflowHealth([
+      workflow({ runs: allRed(3) }),
+      workflow({ name: "Weekly Drift Scan", file: "drift-scan.yml", state: "disabled_inactivity", runs: [] }),
+    ]);
+
+    expect(result.needsChristian).toBe(true);
+    expect(result.needsSession).toBe(true);
+    expect(result.summary.indexOf("Weekly Drift Scan")).toBeLessThan(result.summary.indexOf("Stale Claim Sweep"));
+    expect(result.summary).toContain("Stale Claim Sweep");
   });
 
   it("degrades to unknown when no scheduled workflows were found at all", () => {
@@ -333,16 +350,21 @@ describe("classifyPushLane", () => {
     const report = classifyPushLane(lane([runRecord("failure", 2)]), NOW_MS);
     expect(report.verdict).toBe("red");
     expect(report.needsChristian).toBe(false);
-    expect(report.detail).toMatch(/impediment row/);
+    expect(report.needsSession).toBe(true);
+    expect(report.detail).toMatch(/the hourly brief files a ticket for it/);
+    expect(report.detail).not.toMatch(/impediment row/);
   });
 
-  it(`escalates a red that has stood for ${PUSH_LANE_RED_GRACE_HOURS} hours`, () => {
+  it(`calls a red that has stood for ${PUSH_LANE_RED_GRACE_HOURS} hours red-stale, still a session's fix`, () => {
     const report = classifyPushLane(
       lane([runRecord("failure", 1), runRecord("failure", PUSH_LANE_RED_GRACE_HOURS + 1)]),
       NOW_MS,
     );
     expect(report.verdict).toBe("red-stale");
-    expect(report.needsChristian).toBe(true);
+    // CI is agent-owned (Christian, 2026-10-04): a stale red is a ticket, not an ask.
+    expect(report.needsChristian).toBe(false);
+    expect(report.needsSession).toBe(true);
+    expect(report.detail).toMatch(/the hourly brief files a ticket for it/);
     expect(report.redSinceMs).toBe(NOW_MS - (PUSH_LANE_RED_GRACE_HOURS + 1) * HOUR);
   });
 
@@ -361,13 +383,14 @@ describe("classifyPushLane", () => {
     expect(classifyPushLane(lane(null), NOW_MS).verdict).toBe("unknown");
   });
 
-  it("folds a stale post-merge red into the probe's one needsChristian bit and summary", () => {
+  it("folds a stale post-merge red into the probe's needsSession bit and summary, not the ask", () => {
     const result = classifyWorkflowHealth(
       [workflow({ runs: [runRecord("success")] })],
       [lane([runRecord("failure", PUSH_LANE_RED_GRACE_HOURS + 2)])],
       NOW_MS,
     );
-    expect(result.needsChristian).toBe(true);
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(true);
     expect(result.summary).toContain("Heavy simulation tests");
     expect(result.postMerge[0].verdict).toBe("red-stale");
   });
