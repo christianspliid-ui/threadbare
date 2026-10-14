@@ -16,7 +16,7 @@ import { getArmyTerrainCost } from './armyMovement';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
 import { deriveSupplyTier, readArmySupply, readArmySupplyMax } from './armySupply';
-import { countFactionHoldings, deriveFactionProsperity } from './factionNetwork';
+import { countFactionSettlementHoldings, deriveFactionProsperity } from './factionNetwork';
 import {
   STRAINED_SUPPLY_ATTRITION_PENALTY,
   STARVING_SUPPLY_ATTRITION_PENALTY,
@@ -215,8 +215,9 @@ export function phaseArmyAttrition(state: GameState): void {
  * Check if a faction is underfunded (can't afford army maintenance): its holdings, summed,
  * are too poor to pay. Faction prosperity is derived on read (THR-711) — nothing writes
  * `prosperity` onto a faction node, so the old `?? 0.5` read never tripped (THR-1862).
- * A faction with no holdings (a monster horde) lives off the land and is never
- * underfunded here; without that early return turning this on would starve every horde.
+ * A faction holding no settlement (a monster horde, whose one holding is its lair) lives
+ * off the land and is never underfunded here; without that early return turning this on
+ * would starve every horde.
  * Exported for focused tests.
  */
 export function checkUnderfunded(
@@ -228,7 +229,7 @@ export function checkUnderfunded(
   const factionNode = state.graph.getNode(factionId);
   if (!factionNode) return true;
 
-  if (countFactionHoldings(state.graph, factionId) === 0) return false;
+  if (countFactionSettlementHoldings(state.graph, factionId) === 0) return false;
   return deriveFactionProsperity(state.graph, factionId) < ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD;
 }
 

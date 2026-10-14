@@ -82,6 +82,14 @@ describe('THR-1862 — army funding reads the derived faction prosperity', () =>
     graph.addNode({ id: 'fac_horde', type: 'actor', name: 'The Horde', properties: { actorType: 'faction' } });
     expect(checkUnderfunded(asState(graph), 'fac_horde', 2)).toBe(false);
   });
+
+  it('a monster faction holding only its lair (the shape monsterFactionSeed writes) is never underfunded', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'fac_horde', type: 'actor', name: 'The Horde', properties: { actorType: 'faction', prosperity: 0.5 } });
+    graph.addNode({ id: 'loc_lair', type: 'location', name: 'Lair', properties: { locationSubtype: 'lair' } });
+    graph.addEdge({ id: 'c_lair', source: 'fac_horde', target: 'loc_lair', type: 'controls', properties: { establishedTick: 0 } });
+    expect(checkUnderfunded(asState(graph), 'fac_horde', 2)).toBe(false);
+  });
 });
 
 describe('THR-1862 — faction presence counts located members', () => {

@@ -1,5 +1,6 @@
 import type { GraphNode } from '../types/graph';
 import { getFactionMembershipEdges } from './graphQueries';
+import { isSettlementNode } from './nearestSettlement';
 import { isAgentGone } from './groups/groupQueries';
 import type { WorldGraph } from './graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -734,11 +735,13 @@ export function refreshFactionDerivedFlags(
  * phases maintain (THR-711). No holdings → 0.
  */
 /**
- * How many Locations a faction holds (`controls` edges) — the set
- * `deriveFactionProsperity` sums over. 0 for a monster horde or a landless band.
+ * How many settlements a faction holds (`controls` edges to settlement-class Locations).
+ * 0 for a landless band, and 0 for a monster horde: its one `controls` edge is to its
+ * lair (`monsterFactionSeed`), which is not a settlement and carries no prosperity.
  */
-export function countFactionHoldings(graph: WorldGraph, factionId: string): number {
-  return collectFactionLocations(graph, factionId, false).length;
+export function countFactionSettlementHoldings(graph: WorldGraph, factionId: string): number {
+  return collectFactionLocations(graph, factionId, false)
+    .filter(loc => isSettlementNode(graph.getNode(loc.id))).length;
 }
 
 export function deriveFactionProsperity(graph: WorldGraph, factionId: string): number {
