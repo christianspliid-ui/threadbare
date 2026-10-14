@@ -47,7 +47,7 @@
 
 ## Subsystems × verbs
 
-> Which of the world's 28 subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **10 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **3 REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **9 READS** (reads what a live cell leaves), **0 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **6 UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads `WORLD_OBJECT_KINDS[].owningSystem`, the op join resolves each live cell's operation to its home module through the registry's own imports and `scripts/subsystems-registry.ts`, and the reader join reads `SUBSYSTEM_READERS`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).
+> Which of the world's 28 subsystems a mortal's own work reaches, and who reads what it leaves. A subsystem is reached in **three ways**, and the status word says the closest one: it owns the kind a live cell acts on, or it is the home of the operation that cell runs, or it reads what someone else's cell left behind. **10 LIVE-TOUCHED** (a live cell rides an op on a kind it owns), **4 REACHED-BY-OP** (owns no kind, but a live cell's operation lives in its modules), **9 READS** (reads what a live cell leaves), **0 OPEN-ONLY** (only decided-but-unbuilt or undecided cells reach it), **5 UNTOUCHED** (nothing reaches it at all — each with its by-design reason below). Every status is derived, never authored: the owned-kind join reads `WORLD_OBJECT_KINDS[].owningSystem`, the op join resolves each live cell's operation to its home module through the registry's own imports and `scripts/subsystems-registry.ts`, and the reader join reads `SUBSYSTEM_READERS`. Counting only the first join is what made five reached subsystems read UNTOUCHED (THR-1431).
 
 | Subsystem | Kinds it owns | Create | Raise | Lower | Use | Claim | Seize | Destroy | Observe | Status | Read by |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -58,7 +58,7 @@
 | **Mandate** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Essence & Divine Economy** | `divine_receipt` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Encounters & Dilemmas** | `action_template`, `encounter_template` | · | · | · | · | · | · | · | · | READS | — |
-| **Culture** | `culture` | · | · | · | · | · | · | · | · | UNTOUCHED | — |
+| **Culture** | `culture` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Mortal Economy & Prosperity** | `route` | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
 | **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
@@ -146,6 +146,8 @@
 
 ### Reached without owning a kind
 
+- **Culture** — REACHED-BY-OP
+  - _the op_ `create_location` (Create × location) — `cultureFringe.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
 - **Personality & Emergent Traits** — REACHED-BY-OP
   - _the op_ `cure_condition` (Destroy × condition) — `traits.ts`
 - **Ambitions & Undertakings** — REACHED-BY-OP
@@ -155,7 +157,7 @@
   - _reads_ **Reputation & Influence** — `grievance/grudgeEdge.ts`, `grievance/covetRivalry.ts`, `undertakingMotive.ts` — the `hostile_to` edge destroy × Standing writes is a motive gate on later cells
 - **Strategic Projects & Control** — REACHED-BY-OP
   - _the op_ `record_intelligence` (Observe × area) — `groupShape.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`
-  - _the op_ `create_location` (Create × location) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
+  - _the op_ `create_location` (Create × location) — `cultureFringe.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
   - _the op_ `modify_location_property (+)` (Raise × location) — `strategicGraphOps.ts`
   - _the op_ `modify_location_property (−)` (Lower × location) — `strategicGraphOps.ts`
   - _the op_ `claim_control (mode)` (Claim × location) — `strategicGraphOps.ts`
@@ -229,7 +231,6 @@ _Why a mortal's own work never moves these. Decided on THR-1401; the generator f
 
 - **Rival Gods & Schemes** — The god's peers, not the world's people. A rival's scheme is run by a rival ascendant against the player and advances on its own phase; a mortal has no verb that reaches it, and giving one would let a farmer's season interrupt a god's plot. Mortals feel a scheme as the encounters and pressures it produces — that is the whole of their contact with it.
 - **Essence & Divine Economy** — Essence is the god's currency and the divine receipt is the god's ledger. Mortals neither earn nor spend it — a mortal who could move the essence economy by working would be a second god, which is the one thing the ascendant fantasy cannot share.
-- **Culture** — Culture is a property of regions and peoples that worldgen seeds and long drift moves, on a timescale no single undertaking reaches. One mortal's work changes what a culture *holds* — its prosperity, its holdings, its factions — never the culture itself. A verb that let one person edit a people would make the slowest layer in the game the most volatile.
 - **Stealth, Detection & Hidden Marks** — These are the god's fingerprints: the layer exists to track how visible the *player's* interventions are, and detection pressure is the cost of a god acting through a mortal. Decided on THR-1397 (and restated by THR-1430): mortal surveillance never feeds it — a spy watching a rival is the Intelligence layer's business, and routing it here would charge the god for work they did not do.
 - **Diagnostics & Incident Capture** — Not part of the world at all — it is the instrument pointed at the world. The health validator, the flight recorder and the incident bundle observe the simulation for whoever is debugging it; nothing they hold is a fact *about* the fiction, so no mortal verb reaches them and none should. A mortal whose work could move this layer would be a mortal editing the log of themselves. Mortals appear in a snapshot as data, the way a thermometer holds a temperature — the reading is not something the room can decide to change.
 - **Ascendant Beats & Progression** — The god's own arc — remembrance, the beats, the journey the player climbs. A mortal's undertaking cannot advance it, because the beats measure what the *player* has done; mortals supply the occasions a beat fires on, never the progression itself.
