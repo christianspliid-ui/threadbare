@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 11:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 12:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -36,6 +36,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: the layout contract now targets 1440p, scaling down to 1080p** ([THR-1819](https://linear.app/threadbare/issue/THR-1819/design-move-the-layout-contract-to-1440p-landscape-scaling-width)). Merged via [#2382](https://github.com/christianspliid-ui/threadbare/pull/2382) and live.
 - **2026-10-14: factions are reachable from a world card again** ([THR-1851](https://linear.app/threadbare/issue/THR-1851/factions-are-still-out-of-reach-the-links-on-a-world-card-render-as)), the top fix from warm round 2.
 - **2026-10-14: the warm brief ticket is closed and warm round 2 ran** ([THR-1785](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). [Round 2 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2.md).
 - **2026-10-14: towns founded during play now belong to a people** ([THR-1839](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick)). Merged via [#2366](https://github.com/christianspliid-ui/threadbare/pull/2366).
@@ -45,7 +46,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: god cards carry their progression as data, and the world offers them** ([THR-1811](https://linear.app/threadbare/issue/THR-1811/god-cards-carry-their-progression-as-data-a-tier-how-a-god-gets-each)). Merged via [#2361](https://github.com/christianspliid-ui/threadbare/pull/2361) and live.
 - **2026-10-13: Dominion shows on the map and on every sheet, so you can see your turf** ([THR-1750](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf)). Merged via [#2359](https://github.com/christianspliid-ui/threadbare/pull/2359) and live.
 - **2026-10-13: after the bond, the god's screen fills one gift at a time** ([THR-1837](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the)). Merged via [#2355](https://github.com/christianspliid-ui/threadbare/pull/2355) and live.
-- **2026-10-12: Dominion core: one graded read of how much a place or thing is yours, used by prices and checks** ([THR-1748](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods)). Merged via [#2351](https://github.com/christianspliid-ui/threadbare/pull/2351) and live.
 
 ---
 
