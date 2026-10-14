@@ -6,7 +6,6 @@ import {
   TOOLTIP_RETRIGGER_GRACE,
   TOOLTIP_TOP_THRESHOLD,
   TOOLTIP_SIDE_THRESHOLD,
-  TOOLTIP_MAX_WIDTH,
   TOOLTIP_OFFSET,
   TOOLTIP_MAX_CHAIN_DEPTH,
   TOOLTIP_LINK_PATTERN,
@@ -24,7 +23,6 @@ describe('tooltip types', () => {
   it('exports positioning constants as positive numbers', () => {
     expect(TOOLTIP_TOP_THRESHOLD).toBeGreaterThan(0);
     expect(TOOLTIP_SIDE_THRESHOLD).toBeGreaterThan(0);
-    expect(TOOLTIP_MAX_WIDTH).toBeGreaterThan(0);
     expect(TOOLTIP_OFFSET).toBeGreaterThan(0);
   });
 

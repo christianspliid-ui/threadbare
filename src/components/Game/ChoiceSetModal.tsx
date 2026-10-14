@@ -78,7 +78,7 @@ export function ChoiceSetModal({ pending, onResolve, onDismiss }: ChoiceSetModal
           backgroundColor: 'var(--bg-raised)',
           borderColor: 'var(--border-medium)',
           width: 'min(32rem, 92vw)',
-          maxHeight: '85vh',
+          maxHeight: 'var(--modal-max-h)',
           display: 'flex',
           flexDirection: 'column',
         }}

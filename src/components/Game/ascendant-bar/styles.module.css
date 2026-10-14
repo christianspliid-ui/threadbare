@@ -4,7 +4,7 @@
  */
 
 .bar {
-  width: 360px;
+  width: var(--rail-left-w); /* THR-1819: 320 at 1080p, 400 at 1440p */
   flex-shrink: 0;
   height: 100%;
   background: var(--bg-deep, #0d0d10);
