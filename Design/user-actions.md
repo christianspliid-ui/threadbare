@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 17:57 local (15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -36,6 +36,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: popups no longer steal the player's clicks** ([THR-1853](https://linear.app/threadbare/issue/THR-1853/recurs-after-fix-popups-steal-the-players-clicks-a-held-gift-enters-2)). Merged via [#2395](https://github.com/christianspliid-ui/threadbare/pull/2395) and live.
+- **2026-10-14: the First's journey choices now land and never repeat** ([THR-1854](https://linear.app/threadbare/issue/THR-1854/the-firsts-journey-choices-change-nothing-and-repeat-applybeatchoice)). Merged via [#2396](https://github.com/christianspliid-ui/threadbare/pull/2396) and live.
 - **2026-10-14: God's Will names the deed, not a raw id** ([THR-1852](https://linear.app/threadbare/issue/THR-1852/recurs-after-fix-gods-will-prints-raw-ids-compelled-toward)). Merged via [#2394](https://github.com/christianspliid-ui/threadbare/pull/2394) and live.
 - **2026-10-14: the component library and the UI-debt ratchet shipped** ([THR-1821](https://linear.app/threadbare/issue/THR-1821/design-finish-the-component-library-tabs-chip-overlay-panel-card)). Merged via [#2393](https://github.com/christianspliid-ui/threadbare/pull/2393) and live.
 - **2026-10-14: fair luck and the Game Design Laws book shipped** ([THR-1889](https://linear.app/threadbare/issue/THR-1889/fair-luck-tier-first-loot-a-hidden-legendary-deadline-and-a-marble-bag), [THR-1891](https://linear.app/threadbare/issue/THR-1891/game-design-laws-collate-the-games-ratified-design-fundamentals-into)). Merged via [#2387](https://github.com/christianspliid-ui/threadbare/pull/2387) and live.
@@ -44,8 +46,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: factions are reachable from a world card again** ([THR-1851](https://linear.app/threadbare/issue/THR-1851/factions-are-still-out-of-reach-the-links-on-a-world-card-render-as)), the top fix from warm round 2.
 - **2026-10-14: the warm brief ticket is closed and warm round 2 ran** ([THR-1785](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). [Round 2 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2.md).
 - **2026-10-14: towns founded during play now belong to a people** ([THR-1839](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick)). Merged via [#2366](https://github.com/christianspliid-ui/threadbare/pull/2366).
-- **2026-10-14: hovering a besieged town or a battle now says what it is in words** ([THR-1847](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering)). Merged via [#2365](https://github.com/christianspliid-ui/threadbare/pull/2365) and live.
-- **2026-10-14: every town now has a people, so no mortal is left without a culture** ([THR-1793](https://linear.app/threadbare/issue/THR-1793/216-of-509-seed-42-mortals-have-no-culture-edge-so-their-sphere-bag-is)). Merged via [#2364](https://github.com/christianspliid-ui/threadbare/pull/2364) and live.
 
 ---
 
