@@ -21,7 +21,7 @@
  * 2. the tag chips, with a `tag.*` tooltip on a seated spelling and none on an unseated one;
  * 3. the codex CTA present when the row *and* the entry allow it, and **absent** when
  *    either does not (Law 25 — the absence is the assertion that matters);
- * 4. the CTA's wording — "open in codex ↗", not "open her sheet ↗" (different rooms);
+ * 4. the CTA's wording — "open in codex ↗", not "open the full sheet ↗" (different rooms);
  * 5. `EntityLink` carrying a `ContentRef` — a live control, and plain text with no router;
  * 6. the sheet arm reaching `openCodexEntry`, and falling back to the card when it cannot;
  * 7. the unwritten stub for an id no catalog holds.
@@ -196,11 +196,11 @@ describe('the codex CTA renders only when it would do something', () => {
     expect(getByTestId('detail-panel-0').textContent).not.toContain('open in codex');
   });
 
-  it('says "open in codex", never "open her sheet" — they are different rooms', () => {
+  it('says "open in codex", never "open the full sheet" — they are different rooms', () => {
     const { ref } = realEntry('action_template');
     const { open, getByTestId } = mount({ codexHasEntry: () => true });
     open(ref);
-    expect(getByTestId('detail-panel-0').textContent).not.toContain('open her sheet');
+    expect(getByTestId('detail-panel-0').textContent).not.toContain('open the full sheet');
   });
 });
 
