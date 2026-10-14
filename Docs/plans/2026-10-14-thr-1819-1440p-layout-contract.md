@@ -221,6 +221,8 @@ The CSS stays hand-authored and authoritative for CSS consumers. The TS table mu
 4. **Budget.** At 1920×1080, 2560×1440 and 3440×1440, `mapShare` with both rails ≥ `FRAME_MAP_SHARE_MIN`, and with rail + strip + docked Inspector ≥ `FRAME_MAP_SHARE_MIN_INSPECTOR`.
 5. **Tier.** `layoutTierFor` returns `base` / `fhd` / `qhd` / `uwqhd` at 1919 / 1920 / 2560 / 3440.
 
+**Feed to THR-1821's `Icon` primitive.** The icon-family decision ([`Docs/audits/2026-10-14-thr-1834-icon-family-decision.md`](../audits/2026-10-14-thr-1834-icon-family-decision.md)) names icon sizes of 14 / 18 / 24 / 34 px at 1080p and says the THR-1819 root step-up scales them. For that to hold, `Icon` declares its named sizes in rem (0.875 / 1.125 / 1.5 / 2.125rem). Where it needs a px number (an SVG attribute), it converts through `remToPx`, never `* 16`. The `SphereIcon` fix in § 9 is the same rule applied to an existing icon.
+
 **Not shipped: a `useLayoutTier()` hook.** Nothing in this ticket needs the tier in React. The first build that does (the Stage camera centring the lit hex in `--stage-window-w`) adds it on the `usePrefersReducedMotion` pattern, reading `LAYOUT_BREAKPOINTS_PX`.
 
 ### 8. Today's fixed widths — every one gets a disposition
