@@ -114,6 +114,15 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.town.ducal_nativity',
   'encounter.town.cathedral_vault',
   'encounter.town.restless_ossuary',
+  // THR-1757 — master batch 2, nudge-native everyday content (not branching-contract templates).
+  'encounter.town.poisoned_feast',
+  'encounter.town.salt_monopoly',
+  'encounter.town.hostage_exchange',
+  'encounter.town.tourney_marshal',
+  'encounter.town.guildhall_spy',
+  'encounter.town.easter_reckoning',
+  'encounter.town.hill_conduit',
+  'encounter.town.witch_trial',
   // THR-1703 — nudge-native, seed-only rival strike.
   'encounter.rival.hired_knives',
 ];

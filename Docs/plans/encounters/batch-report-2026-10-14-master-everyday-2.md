@@ -10,7 +10,7 @@
 
 | Encounter | Gate | Live | Package | Outcome | Systems | Bands | Review |
 |---|---|---|---|---|---|---|---|
-| `encounter.town.poisoned_feast` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, seeds, reputation, content_query | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.poisoned_feast) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.poisoned_feast) |
+| `encounter.town.poisoned_feast` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, seeds, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.poisoned_feast) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.poisoned_feast) |
 | `encounter.town.salt_monopoly` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, seeds, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.salt_monopoly) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.salt_monopoly) |
 | `encounter.town.hostage_exchange` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.hostage_exchange) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.hostage_exchange) |
 | `encounter.town.tourney_marshal` | ✅ green | ✅ proved | 🔗 connected | failure | cast, rewards, conditions, reputation | 5 | [spawn](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.town.tourney_marshal) · [package](https://threadbare.vercel.app/?view=cms#encounter-packages/encounter.town.tourney_marshal) |
@@ -23,9 +23,9 @@
 
 ## Content-query census
 
-**2 of 8** encounter(s) author a content query; **1** resolved one live.
+**1 of 8** encounter(s) author a content query; **0** resolved one live.
 
-Authored by: `encounter.town.poisoned_feast`, `encounter.town.guildhall_spy`.
+Authored by: `encounter.town.guildhall_spy`.
 
 > 1 authored quer(ies) did not resolve on their live run — either the band carrying them was not rolled, or the family they name is empty. The `content_query_resolved` claim rows say which.
 
@@ -70,6 +70,7 @@ Authored by: `encounter.town.easter_reckoning`.
 
 - · `aftermath_variant` — aftermathConfig authors a fallback only
 - · `condition_applied` — template declares no condition effect
+- · `content_query_resolved` — template authors no content query
 - · `appointment_kept` — template plants no appointment
 - · `appointment_missed` — template plants no appointment
 
@@ -853,7 +854,7 @@ At master difficulty the proof ascendant loses most natural runs, so the table a
 
 | Encounter | Success-side run | Result |
 |---|---|---|
-| `encounter.town.poisoned_feast` | seed 99, seed 4 | success_at_cost, proved |
+| `encounter.town.poisoned_feast` | seed 99, seed 4 | success_at_cost, proved (re-proved on seed 99 after its seed moved from the `#rival_strike` query to The Hired Knives by id) |
 | `encounter.town.salt_monopoly` | seed 4 | success_at_cost (`salt.sac.take_the_debt`), proved: reward and seed arrived |
 | `encounter.town.hostage_exchange` | seed 99 | success_at_cost (`hostage.let_the_captain_go_quietly`), proved |
 | `encounter.town.tourney_marshal` | seeds 1–15, 42, 99 | **not exercised**: 17 seeds, all failure or critical_failure. Success-side rows are unproved, not proved |

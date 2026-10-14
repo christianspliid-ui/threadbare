@@ -33,7 +33,7 @@
  *   Consequence hand (binding): secret + story_seed, no swap.
  *                   secret: hidden_mark secret_knowledge on $actor + favor_creation debtor $cast:coroner on
  *                   step 1 success; hidden_mark concealed_action on $cast:poisoner on step 1 failure.
- *                   story_seed: encounter_seed query #rival_strike (The Hired Knives), placeless, delay 30,
+ *                   story_seed: encounter_seed templateId encounter.rival.hired_knives (The Hired Knives; a seed-only sequel, so by id, never by query — THR-1526 foreign-query pin), placeless, delay 30,
  *                   on step 1 success AND step 1 failure - the patron learns the master lived either way.
  *   Standing        reputation_with $here +0.06 / -0.06 on step 1; -0.03 on step 0 failure (backs the
  *                   critical_failure SCAR when a step-0 critical failure ends the action).
@@ -233,10 +233,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           {
             kind: 'encounter_seed',
-            query: {
-              kind: 'encounter_template',
-              tags: ['#rival_strike'],
-            },
+            templateId: 'encounter.rival.hired_knives',
             targetAgentId: '$actor',
             delayTicks: 30,
             priority: 1,
@@ -260,10 +257,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           },
           {
             kind: 'encounter_seed',
-            query: {
-              kind: 'encounter_template',
-              tags: ['#rival_strike'],
-            },
+            templateId: 'encounter.rival.hired_knives',
             targetAgentId: '$actor',
             delayTicks: 30,
             priority: 1,

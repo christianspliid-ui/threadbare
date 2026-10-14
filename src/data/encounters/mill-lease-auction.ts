@@ -40,6 +40,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     lost: 'saw the merchant outbid the fellowship for the mill',
     lostBadly: 'lost the mill on a charge they could not prove',
   },
+  // THR-1526: a seed target (The Salt Monopoly plants it, THR-1757) whose opening stands alone.
+  drawable: true,
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Mill Lease',
