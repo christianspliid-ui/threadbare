@@ -482,6 +482,14 @@ jobs:
       - name: Chip referent ratchet
         run: npm run check:chip-anchors -- --baseline
 
+      # THR-1821: the UI-debt ratchet. Thirteen-plus rows of player-UI debt (raw
+      # <button>, colour literals, glyph icons, hand-built overlays, …) may only
+      # go down against ui-debt-baseline.json. Like the chip ratchet it is not a
+      # generated-freshness artifact: freshness would pin the baseline to the
+      # current count and delete the only thing a ratchet does.
+      - name: UI debt ratchet
+        run: npm run check:ui-debt
+
       # `npx tsc --noEmit` used to live here and was a no-op: root tsconfig.json
       # sets `files: []`, so it exited 0 unconditionally no matter how broken the
       # code was — this required check asserted a type gate in its name while

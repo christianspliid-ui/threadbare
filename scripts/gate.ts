@@ -201,6 +201,8 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
       { name: "encounter", command: "npm run check:encounter -- --all" },
       // THR-1811: every god card carries a valid progression block (~1 s).
       { name: "god-cards", command: "npm run check:god-card-progression" },
+      // THR-1821: the UI-debt ratchet — no vitest, ~1 s, so the stage keeps one vitest.
+      { name: "ui-debt", command: "npm run check:ui-debt" },
     ];
     if (engine) {
       first.push({
