@@ -23,7 +23,7 @@ The 2026-07-04 plan's directive ("the economy is very simple — few resources, 
 | Settlements (hamlet/town/city/capital) | 38 (17/9/8/4) | — | 39 | 42 |
 | Settlement prosperity bands | 20–39: 17 · 40–59: 17 · 60–79: 4 | — | 20–39: 20 · 40–59: 18 · 60–79: 1 | 20–39: 22 · 40–59: 18 · 60–79: 2 |
 | Settlements whose prosperity moved (t0→t300) | — | — | 36 of 37 (22 up, 14 down; 22 by ≥10; range −35…+37) | — |
-| Settlement tier changes | — | — | 0 | 0 |
+| Settlement tier changes (tracked t0 settlements) | — | — | 0 | not measured |
 | Resource stocks (location `resources` bag) | 140 | 140 | 140 | — |
 | Stock quantity quartiles | 20/40/53/69/94 | **identical** | **identical** | — |
 | Stock tiers (scarce/adequate/surplus) | (not yet derived) | 6/87/47 | 6/86/48 | — |
@@ -32,7 +32,7 @@ The 2026-07-04 plan's directive ("the economy is very simple — few resources, 
 | Lanes with `controlledBy` / `threatened` | 0 / 0 | 0 / 0 | 0 / 0 | — |
 | Individuals / with a `wealth` value | 506 / 47 | 656 / 137 | 825 / 159 | — |
 | Individual wealth quartiles | 20/40/40/70/70 | 8/20/30/48/78 | 6/20/25/65/100 | — |
-| Factions / with `wealth` / sum of faction wealth | 52 / 49 / **0** | 66 / 49 / **0** | 84 / 49 / **0** | **0** |
+| Factions / with `wealth` / sum of faction wealth | 52 / 49 / **0** | 66 / 49 / **0** | 84 / 49 / **0** | not measured (no code path credits it) |
 | Unrest quartiles (settlements) | 0 | 0/0/0/1/3 | 0 | — |
 | `controls` / `owns` edges | 47 / 47 | — | 80 / 55 | — |
 | Individuals holding an economic trait | 0 | — | 0 | — |
@@ -52,7 +52,7 @@ All phases are registered and run (some on a 4- or 12-tick cadence). Dead code i
 | 6.628 `holdingIncome.ts` (12 ticks) | individual `wealth`, `lastWealthReason` | Means tooltip (`agentDetail.ts:984`) | **Faction holders skipped** (`:85-88`). Toll = `max(1, round(volume·0.1))` ≡ 1 at volume ≤ 10 (`:113`), so `taxRate` has no effect. |
 | 6.63 `phaseProsperity` | `prosperity`, `populationTrend`, `populationLagTicks`, `populationHealth`, death-site `unrest`, shock seeds (THR-725) | scene scoring (`encounterScoring.ts:1484`), prose (`proseEnrichment.ts:604`), tier promotion, sublocations, unrest, tithe, yield, traits, omens | Target = carrying capacity + trade + faction presence + corruption + divine influence + unrest + upkeep + spheres + stock balance; drift 0.05, ±2/tick. **Faction presence is always 0** (§8.4). `populationTrend`/`populationLagTicks` have no reader. Five shock constants unused (`:168-183`). |
 | 6.632 `phaseEconomicTraits` | `economicPeakWealth`, `previousTickWealth`, `wealthLossCount`, `guildJoinedTick`; 8 trait edges | itself; trade-baron gives +0.15 gold capability | `debt-laden` written, nothing grants or tooltips it. |
-| 6.635 `phaseSettlementPromotion` | `locationSubtype` after 20 ticks ≥70 / ≤20 | encounter cache rebuild | 0 changes in 600 ticks on seed 42. |
+| 6.635 `phaseSettlementPromotion` | `locationSubtype` after 20 ticks ≥70 / ≤20 | encounter cache rebuild | 0 changes among the t0 settlements in 300 ticks on seed 42 (capitals 4 → 3 by t300: one was lost, not demoted; hamlets 17 → 19 from founding). |
 | 6.636 `phaseSettlementReassessment` | `genomeResult`, archetype fields | UI, prose | **`materializeGenome()` runs only at worldgen** (`worldSeed.ts:1451`): a promoted town never gains its new places (`:10`, `:73`). |
 | 6.637 `phaseUnrest` | `unrest` (−1/tick, −0.5 more above prosperity 60; low health raises it) | prosperity target, Lawless trait, omen, survey prose | Header promises defection at 70 and sack at 90 (`:7`); the code only traces dropping *below* them (`:82-87`). Low prosperity does not raise unrest. |
 | 6.65 `phaseSublocations` | 7 Gold-reach place types (market district, mine, harbor, warehouse, counting house, smugglers' den, caravan rest) | — | Warehouse/counting house gate on guild wealth (`sublocation.ts:920-930`), which is always 0. Dead: `MINE_PRODUCTION_PER_TICK`, `SUBLOC_MARKET_TRADE_BONUS`, `SUBLOC_MARKET_VOLUME_BONUS` (`:57-63`). Other 7 reach families empty (`:209-218`). |
