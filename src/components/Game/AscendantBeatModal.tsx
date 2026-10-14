@@ -39,6 +39,14 @@ import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beat
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { actionEffectsProse } from '../../data/actionEffectsProse';
 import { ACTION_SCALE_WORDS } from '../../data/action-card-display';
+import { UI_TOOLTIPS } from '../../data/ui-content';
+import {
+  OFFERING_COPY,
+  OFFERING_TOOLTIP_IDS,
+  RUNG_BEAT_PRESENTATION,
+  RUNG_LATER_KEY_PRESENTATION,
+} from '../../data/god-progression-content';
+import { isRungOpeningGift, parseRungGiftBeatId, type OfferedCardView } from '../../engine/godProgression';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -62,6 +70,13 @@ interface AscendantBeatModalProps {
   proseOverride?: { title: string; prose: string };
   /** The avatar's name, filled into authored spine prose (Beat 0 — THR-1609). */
   avatarName?: string;
+  /**
+   * THR-1811: an offering's cards with what each costs the god now (`describeOffering`).
+   * GameView computes it from live state, so the price words match `getGodProgression()`.
+   */
+  offering?: readonly OfferedCardView[];
+  /** THR-1811: a rung gift is its rung's first given key (isRungOpeningOffer), so it carries the rung's words. */
+  rungOpening?: boolean;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -108,7 +123,30 @@ const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
     prose: 'What you hold in the world has stopped merely belonging to you and started paying you back. A reach you had not thought to use is open to you now.',
     cta: 'Receive',
   },
+  offering: {
+    eyebrow: OFFERING_COPY.modalEyebrow,
+    prose: OFFERING_COPY.prose,
+    cta: OFFERING_COPY.letPass,
+  },
+  rung_gift: {
+    eyebrow: RUNG_LATER_KEY_PRESENTATION.eyebrow,
+    prose: RUNG_LATER_KEY_PRESENTATION.prose,
+    cta: RUNG_LATER_KEY_PRESENTATION.cta,
+  },
 };
+
+/**
+ * THR-1811: a rung-gift beat's words. The rung's opening gift carries that rung's
+ * growth line; a later key says "a further gift" and names the card. Null for any
+ * other beat id.
+ */
+function rungGiftPresentation(beatId: string, cardName: string | undefined, opening?: boolean): SpineBeatPresentation | null {
+  const parsed = parseRungGiftBeatId(beatId);
+  if (!parsed) return null;
+  const words = (opening ?? isRungOpeningGift(beatId)) ? RUNG_BEAT_PRESENTATION[parsed.rung] : undefined;
+  const base = words ?? RUNG_LATER_KEY_PRESENTATION;
+  return { ...base, prose: base.prose.replace('{card}', cardName ?? 'a new work') };
+}
 
 /**
  * Every authored, beat-id-keyed presentation, merged into one lookup (THR-613 §5.C).
@@ -288,6 +326,98 @@ const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   fontWeight: 700,
 };
 
+const SECONDARY_BUTTON_STYLE: React.CSSProperties = {
+  background: 'transparent',
+  color: 'var(--text-secondary)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: '4px',
+  padding: 'var(--space-2) var(--space-6)',
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--text-sm)',
+  letterSpacing: '0.06em',
+  cursor: 'pointer',
+};
+
+const PRICE_TOOLTIP_BY_WORD: Record<OfferedCardView['word'], string> = {
+  paid_from: OFFERING_TOOLTIP_IDS.paidFrom,
+  at_double: OFFERING_TOOLTIP_IDS.atDouble,
+  beyond: OFFERING_TOOLTIP_IDS.beyond,
+};
+
+/**
+ * THR-1811: the offering's cards, each with its price phrase (no number — Law 13) and a
+ * *Take it up* button; a card the god cannot pay for shows the button disabled with its
+ * reason (Law 25). The same `ActionCard` faces as every reveal (Laws 26–27, 30).
+ */
+function OfferingRow({
+  cards,
+  onTakeUp,
+}: {
+  cards: readonly OfferedCardView[];
+  onTakeUp: (actionId: string) => void;
+}) {
+  return (
+    <div
+      data-testid="offering-cards"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: `${UNLOCK_CARD_GAP_PX}px`,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+      }}
+    >
+      {cards.map(card => {
+        const template = getUnifiedTemplateById(card.actionId);
+        const tip = UI_TOOLTIPS[PRICE_TOOLTIP_BY_WORD[card.word]];
+        return (
+          <div
+            key={card.actionId}
+            data-action-id={card.actionId}
+            data-price-word={card.word}
+            style={{ width: CARD_WIDTH_PX, flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}
+          >
+            {template ? (
+              <ActionCard slot={templateToPreviewSlot(template)} interactive={false} onClick={() => undefined} />
+            ) : (
+              <div style={TEXT_FALLBACK_STYLE}>{card.name}</div>
+            )}
+            <Tooltip label={tip?.label ?? card.phrase} desc={tip?.desc ?? ''} focusable={false} fit>
+              <span
+                data-testid="offering-price"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  fontSize: 'var(--text-sm)',
+                  color: card.affordable ? 'var(--text-primary)' : 'var(--text-muted)',
+                  fontStyle: card.affordable ? 'normal' : 'italic',
+                }}
+              >
+                {card.phrase}
+              </span>
+            </Tooltip>
+            <button
+              type="button"
+              disabled={!card.affordable}
+              title={card.affordable ? undefined : tip?.desc}
+              onClick={() => { if (card.affordable) onTakeUp(card.actionId); }}
+              data-testid="offering-take-up"
+              style={{
+                ...PRIMARY_BUTTON_STYLE,
+                padding: 'var(--space-1) var(--space-4)',
+                opacity: card.affordable ? 1 : 0.45,
+                cursor: card.affordable ? 'pointer' : 'not-allowed',
+              }}
+            >
+              {card.affordable ? OFFERING_COPY.takeUp : OFFERING_COPY.notYet}
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Component ──────────────────────────────────────────────────────
 
 export const AscendantBeatModal = memo(function AscendantBeatModal({
@@ -297,18 +427,26 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   onClose,
   proseOverride,
   avatarName,
+  offering,
+  rungOpening,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
-  // Presentation precedence: authored per-beat copy (spine THR-504 / Deepening / Milestone)
-  // → enriched template prose for pool beats (THR-514, supplied by GameView) → kind-derived
-  // placeholder. Eyebrow + CTA always come from the authored/kind table (templates carry
-  // only title + body).
-  const authored = AUTHORED_BEAT_PRESENTATION[pending.beatId];
+  const isOffering = pending.kind === 'offering';
+  // Presentation precedence: authored per-beat copy (spine THR-504 / Deepening / Milestone /
+  // rung gifts THR-1811) → enriched template prose for pool beats (THR-514, supplied by
+  // GameView) → kind-derived placeholder. Eyebrow + CTA always come from the authored/kind
+  // table (templates carry only title + body).
+  const firstGrant = def?.grantsActionIds?.[0];
+  const authored = AUTHORED_BEAT_PRESENTATION[pending.beatId]
+    ?? rungGiftPresentation(pending.beatId, firstGrant ? getUnifiedTemplateById(firstGrant)?.name : undefined, rungOpening)
+    ?? undefined;
   const kindPresentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
   const presentation = authored ?? kindPresentation;
   const grants = def?.grantsActionIds ?? [];
   const isSelection = pending.kind === 'selection';
-  const title = proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);
+  const title = isOffering
+    ? OFFERING_COPY.title
+    : proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);
   const prose = proseOverride?.prose ?? fillSpineAvatarName(presentation.prose, avatarName);
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
@@ -316,7 +454,10 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
 
   // Widen the modal so the focused ActionCard row (up to 3 across) fits without
   // clipping; falls back to the default width when there are no grant cards to show.
-  const maxWidth = grants.length > 0 ? unlockRowMaxWidth(grants.length) : 600;
+  const offered = isOffering ? (offering ?? []) : [];
+  const maxWidth = isOffering
+    ? unlockRowMaxWidth(Math.max(offered.length, 1))
+    : grants.length > 0 ? unlockRowMaxWidth(grants.length) : 600;
 
   return (
     // THR-799: this surface adopts the ceremonial *zone layout* via RevealCard.Frame,
@@ -342,7 +483,9 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
           {/* Narrative before mechanics — the beat's prose leads, the cards follow. */}
           <RevealCard.Quote>{prose}</RevealCard.Quote>
 
-          {isSelection ? (
+          {isOffering ? (
+            <OfferingRow cards={offered} onTakeUp={id => onResolve(id)} />
+          ) : isSelection ? (
             // Selection beat: real focused cards, clickable — choosing a card resolves it.
             <UnlockCardRow actionIds={grants} interactive onPick={onResolve} />
           ) : (
@@ -351,7 +494,32 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
           )}
         </RevealCard.Frame>
       </div>
-      {!isSelection && (
+      {isOffering && (
+        <div
+          style={{
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            padding: 'var(--space-ceremonial)',
+            paddingTop: 0,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => onResolve()}
+            style={SECONDARY_BUTTON_STYLE}
+            data-testid="offering-let-pass"
+          >
+            {OFFERING_COPY.letPass}
+          </button>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }} data-testid="offering-footer">
+            {OFFERING_COPY.footer}
+          </span>
+        </div>
+      )}
+      {!isSelection && !isOffering && (
         <div
           style={{
             flexShrink: 0,
@@ -414,7 +582,18 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
     AUTHORED_BEAT_PRESENTATION[pending.beatId]?.eyebrow ??
     (KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine).eyebrow;
   const giftWaits = isSpineBeatId(pending.beatId);
-  const content = (
+  const isOffering = pending.kind === 'offering';
+  const offeringTip = UI_TOOLTIPS[OFFERING_TOOLTIP_IDS.offering];
+  const content = isOffering ? (
+    // THR-1811: an offering's pill reads only "Three powers stir" — no beat id.
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+      <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
+      <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
+        {OFFERING_COPY.eyebrow}
+      </span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter ▸</span>
+    </span>
+  ) : (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
       <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
       <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
@@ -453,6 +632,10 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
     >
       {giftWaits ? (
         <Tooltip label={GIFT_WAITS_COPY.eyebrow} desc={GIFT_WAITS_COPY.tooltip} focusable={false} fit>
+          {content}
+        </Tooltip>
+      ) : isOffering ? (
+        <Tooltip label={offeringTip?.label ?? OFFERING_COPY.eyebrow} desc={offeringTip?.desc ?? ''} focusable={false} fit>
           {content}
         </Tooltip>
       ) : content}

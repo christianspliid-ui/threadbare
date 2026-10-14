@@ -23,7 +23,9 @@ export type BeatKind =
   | 'selection'        // choose 1-of-N capability/path
   | 'delivery'         // wrap an existing branching encounter (THR-452 content)
   | 'deepening'        // god-side tier-crossing beat — Domain Capability rose in a reach (THR-613)
-  | 'milestone';       // god-side breadth beat — holdings crossed a threshold worth naming (THR-613)
+  | 'milestone'        // god-side breadth beat — holdings crossed a threshold worth naming (THR-613)
+  | 'offering'         // the world offers three cards; take up one for earned essence, or let them pass (THR-1811)
+  | 'rung_gift';       // a rung opened (or a later key of it) gives one key card (THR-1811)
 
 /** Why a beat became eligible. Structured + serializable for traces + prose. */
 export type BeatTriggerKind =
@@ -145,6 +147,25 @@ export interface PendingBeat {
   readonly boundNodeIds: readonly string[];
   /** Why it fired (for traces + prose). */
   readonly trigger: BeatTrigger;
+  /** THR-1811: an `offering`'s cards, in draw order. Absent on every other kind. */
+  readonly offeredActionIds?: readonly string[];
+  /** THR-1811: the turn an unentered `offering` passes (a day boundary). Absent ⇒ never expires. */
+  readonly expiresTurn?: number;
+}
+
+/**
+ * THR-1811 — the god's place on the card ladder. Flat GameState (`godProgression`).
+ * The rung only rises: it is stored, so spending or a dip in marks never closes it.
+ */
+export interface GodProgressionState {
+  /** Highest rung opened (0 before the spine ends). */
+  readonly rung: number;
+  /** Tick each rung opened, keyed by rung number. */
+  readonly rungOpenedTick: Readonly<Record<number, number>>;
+  /** Rung-gift beat ids waiting for an empty slot, head first (`beat.rung.<n>.<cardId>`). */
+  readonly rungGiftQueue: readonly string[];
+  /** Earliest tick the next rung gift may take the slot. */
+  readonly nextRungGiftTick: number;
 }
 
 export interface BeatRecord {

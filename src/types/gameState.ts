@@ -22,7 +22,7 @@ import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
 import type { ControlEffect } from './controlEffect';
 import type { AscendantIdentity } from './remembrance';
-import type { AscendantBeatState } from './ascendantBeat';
+import type { AscendantBeatState, GodProgressionState } from './ascendantBeat';
 import type { HexRevelation } from './unifiedAction';
 import type { SpherePressureEvent } from './sphereAffinity';
 import type { QuintessenceEvent } from './quintessence';
@@ -247,6 +247,17 @@ export interface GameState {
    * `sphere_attunement` unlock kind.
    */
   essenceEarnedBySphere?: EssenceEarnedBySphere;
+  /**
+   * THR-1811: earned essence spent taking up offered cards, per sphere. The
+   * spendable balance is `essenceEarnedBySphere − offeringSpentBySphere`. A separate
+   * ledger so taking up a card never lowers the earned counter (and so never lowers
+   * the god's attunement or its rung). Absent ⇒ nothing spent.
+   */
+  offeringSpentBySphere?: Partial<Record<SphereName, number>>;
+  /** THR-1811: cards taken up from offerings, per tier (drives price escalation). Absent ⇒ none. */
+  offeringBoughtByTier?: Partial<Record<1 | 2 | 3 | 4, number>>;
+  /** THR-1811: the god's rung on the card ladder and its queued key gifts. Absent ⇒ re-detected from the marks. */
+  godProgression?: GodProgressionState;
   /**
    * Foundation spheres (chaos, order, light, darkness) the god has *found* by
    * drawing elder essence out of a ruin or an elder hidden site (THR-1753).

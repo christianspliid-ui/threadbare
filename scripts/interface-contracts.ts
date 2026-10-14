@@ -4376,6 +4376,70 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'offering-take-up-unlocks-card',
+    producerSystem: PROGRESSION,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing.',
+    ulTerms: ['Ascendant Beat', 'Offering'],
+    mechanism: { kind: 'function', symbols: ['unlockedActionIds'], module: 'src/engine/ascendantBeat.ts' },
+    writeSites: ['src/engine/ascendantBeat.ts'],
+    readSites: ['src/engine/actionUnlock.ts', 'src/engine/targetActions.ts', 'src/engine/__tests__/godProgression.test.ts'],
+    verifiedLive: {
+      date: '2026-10-14',
+      evidence:
+        'THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.',
+    },
+  },
+  {
+    id: 'rung-gift-unlocks-key',
+    producerSystem: PROGRESSION,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A rung opening gives its key cards one at a time. `phaseAscendantProgression` queues `rungGiftsFor(n)` when a rung opens and offers the head as a `rung_gift` beat every `RUNG_GIFT_SPACING` ticks; resolving it unlocks the card into `unlockedActionIds` (`action.unlock.granted` via `rung`). Rung 2 leads with the secondary reach signature. A held key is skipped, never offered (THR-647, THR-1811).',
+    ulTerms: ['Ascendant Beat', 'Rung', 'Key card'],
+    mechanism: { kind: 'function', symbols: ['unlockedActionIds'], module: 'src/engine/phaseAscendantProgression.ts' },
+    writeSites: ['src/engine/phaseAscendantProgression.ts', 'src/engine/ascendantBeat.ts'],
+    readSites: ['src/engine/actionUnlock.ts', 'src/engine/__tests__/godProgression.test.ts'],
+    verifiedLive: {
+      date: '2026-10-14',
+      evidence:
+        'THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.',
+    },
+  },
+  {
+    id: 'rung-reads-attunement-marks',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: PROGRESSION,
+    intent:
+      'The god\'s rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811).',
+    ulTerms: ['Rung', 'Attunement'],
+    mechanism: { kind: 'function', symbols: ['getAttunementMarksCrossed'], module: 'src/engine/dominion.ts' },
+    writeSites: ['src/engine/dominion.ts'],
+    readSites: ['src/engine/godProgression.ts'],
+    verifiedLive: {
+      date: '2026-10-14',
+      evidence:
+        'THR-1811 — `godProgression.test.ts` "sums marks over the bought spheres only" (life 60 + spirit 20 → 3; unbought mind 600 → 0); seed 42 headless opened rung 1 at tick 21, the first tick after the spine ended.',
+    },
+  },
+  {
+    id: 'offering-respects-reach-gate',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: PROGRESSION,
+    intent:
+      'The offering never offers a card the drawer would hide. The reach gate is one predicate, `isWithinGodReaches`, called by `getTargetActionSlots` and by `offerableCards` (THR-1811). The drawer\'s sphere gate still counts without hiding, so the offering does not apply it unless `OFFERING_IN_SPHERE_ONLY` is on.',
+    ulTerms: ['Reach', 'Offering'],
+    mechanism: { kind: 'function', symbols: ['isWithinGodReaches'], module: 'src/engine/targetActions.ts' },
+    writeSites: ['src/engine/targetActions.ts'],
+    readSites: ['src/engine/godProgression.ts', 'src/engine/targetActions.ts'],
+    verifiedLive: {
+      date: '2026-10-14',
+      evidence:
+        'THR-1811 — `godProgression.test.ts` "offers only market cards at or below the open rung, not held, inside the god\'s reaches" asserts `isWithinGodReaches` on every offered card; the drawer suites (`targetActions*.test.ts`) pass unchanged on the extracted predicate.',
+    },
+  },
+  {
     id: 'encounter-seed-resolves-by-query',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: 'Encounters & Dilemmas',

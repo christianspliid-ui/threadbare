@@ -110,6 +110,11 @@ export type TraceCategory =
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
   | 'beat.settled_as_played' // THR-1786: Beat 0 settled silently for an already-bonded First
+  | 'progression.rung_opened' // THR-1811: the god's summed attunement marks opened a rung
+  | 'progression.rung_gift_offered' // THR-1811: a rung key gift took the slot, or was skipped as held
+  | 'offering.offered' // THR-1811: the world offered three cards
+  | 'offering.taken' // THR-1811: the god took one up and paid in earned essence
+  | 'offering.passed' // THR-1811: let pass, expired, or a failed choice
   | 'clock.first_run' // THR-1716: the clock ran for the first time this session
   | 'rarity_graduation'
   | 'rarity_importance'
@@ -1022,6 +1027,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'beat.arrival_offer',
   // A bonded First's opening beat settles as already played (THR-1786)
   'beat.settled_as_played',
+  'progression.rung_opened',
+  'progression.rung_gift_offered',
+  'offering.offered',
+  'offering.taken',
+  'offering.passed',
   'clock.first_run',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
@@ -4903,6 +4913,11 @@ export type TraceEntry =
   | SpineDeferredTrace
   | BeatArrivalOfferTrace
   | BeatSettledAsPlayedTrace
+  | ProgressionRungOpenedTrace
+  | ProgressionRungGiftOfferedTrace
+  | OfferingOfferedTrace
+  | OfferingTakenTrace
+  | OfferingPassedTrace
   | ClockFirstRunTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
@@ -5605,7 +5620,60 @@ export interface ActionUnlockGrantedTrace extends TraceBase {
   category: 'action.unlock.granted';
   turn: number;
   actionId: string;
-  via: 'beat' | 'debug';
+  via: 'beat' | 'debug' | 'offering' | 'rung';
+}
+
+/** Trace: the god's summed attunement marks opened a card rung (THR-1811). */
+export interface ProgressionRungOpenedTrace extends TraceBase {
+  category: 'progression.rung_opened';
+  rung: number;
+  rungMarks: number;
+  queuedGiftIds: string[];
+}
+
+/** Trace: a rung key gift took the beat slot, or was skipped because the god holds it (THR-1811). */
+export interface ProgressionRungGiftOfferedTrace extends TraceBase {
+  category: 'progression.rung_gift_offered';
+  rung: number;
+  actionId: string;
+  skipped?: 'held' | 'missing';
+}
+
+/** One offered card as the offering trace records it (THR-1811). */
+export interface OfferingTraceCard {
+  actionId: string;
+  tier: number;
+  weight: number;
+  price: number;
+  paySphere: string | null;
+  word: 'paid_from' | 'at_double' | 'beyond';
+}
+
+/** Trace: the world offered cards in the beat slot (THR-1811). */
+export interface OfferingOfferedTrace extends TraceBase {
+  category: 'offering.offered';
+  rung: number;
+  candidateCount: number;
+  offered: OfferingTraceCard[];
+  expiresTurn: number;
+}
+
+/** Trace: the god took up an offered card and paid in earned essence (THR-1811). */
+export interface OfferingTakenTrace extends TraceBase {
+  category: 'offering.taken';
+  actionId: string;
+  tier: number;
+  price: number;
+  paidFrom: string;
+  offSphere: boolean;
+  spendableAfter: number;
+}
+
+/** Trace: an offering passed — let pass, expired at the day boundary, or a choice that failed its checks (THR-1811). */
+export interface OfferingPassedTrace extends TraceBase {
+  category: 'offering.passed';
+  reason: 'let_pass' | 'expired' | 'not_offered' | 'unaffordable';
+  offeredIds: string[];
 }
 
 /**

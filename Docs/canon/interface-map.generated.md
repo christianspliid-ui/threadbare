@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 166 |
+| 🟢 LIVE | 170 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 72 |
-| **Total** | **246** |
+| **Total** | **250** |
 
 ## Contracts by producing subsystem
 
@@ -81,7 +81,9 @@ remediation ticket or the build fails.
 | `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `offering-take-up-unlocks-card` | The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing. | function: `unlockedActionIds` | Essence & Divine Economy | 🟢 LIVE | — |
 | `player-acts-pace-spine-gifts` | The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted. | state-field: `playerActCount` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
+| `rung-gift-unlocks-key` | A rung opening gives its key cards one at a time. `phaseAscendantProgression` queues `rungGiftsFor(n)` when a rung opens and offers the head as a `rung_gift` beat every `RUNG_GIFT_SPACING` ticks; resolving it unlocks the card into `unlockedActionIds` (`action.unlock.granted` via `rung`). Rung 2 leads with the secondary reach signature. A held key is skipped, never offered (THR-647, THR-1811). | function: `unlockedActionIds` | Essence & Divine Economy | 🟢 LIVE | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
@@ -257,6 +259,7 @@ remediation ticket or the build fails.
 | `essence-earned-attunes-god-spheres` | Drawing essence through a bought sphere grows the god in it (THR-1748, THR-1765). Each `DOMINION_ATTUNEMENT_MARKS` mark crossed by the run-long essence-earned counter pushes progress into the god's own score through the pressure path (source `attunement`), resolved by `phaseSpherePressure`; the god's power on the Dominion read follows, capped at 2.0. THR-1811's rungs read `getAttunementMarksCrossed`. | function: `ATTUNEMENT_SPHERE_PROGRESS`, `dominionPowerRaw` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
 | `gods-will-premonition-steers-next-decision` | What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter. | node-prop: `compulsionTargetTemplateId`, `whisperPull`, `compelledTarget` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `offering-respects-reach-gate` | The offering never offers a card the drawer would hide. The reach gate is one predicate, `isWithinGodReaches`, called by `getTargetActionSlots` and by `offerableCards` (THR-1811). The drawer's sphere gate still counts without hiding, so the offering does not apply it unless `OFFERING_IN_SPHERE_ONLY` is on. | function: `isWithinGodReaches` | Ascendant Beats & Progression | 🟢 LIVE | — |
 | `source-upkeep-debits-primary-pool` | Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar's income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer. | node-prop: `upkeepCurrent`, `SOURCE_CONTROL_SUSTAIN` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
@@ -341,6 +344,7 @@ remediation ticket or the build fails.
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
+| `rung-reads-attunement-marks` | The god's rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811). | function: `getAttunementMarksCrossed` | Ascendant Beats & Progression | 🟢 LIVE | — |
 
 ### Strategic Projects & Control
 
@@ -888,10 +892,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Ambitions & Undertakings
 - **UL terms:** *Domain Capability*, *Prerequisite*
 - **Module:** `src/engine/domainCapability.ts`
-- **Production hits:** 36 total — 2 write, 14 read, 20 unclassified
+- **Production hits:** 37 total — 2 write, 14 read, 21 unclassified
 - **Write sites:** `src/data/reach-share-constants.ts`, `src/engine/domainCapability.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterAwareness.ts`, `src/engine/encounterFilterPipeline.ts` +9 more
-- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/colocation-content.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts` +15 more
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/arcane-circle-definition.ts`, `src/data/colocation-content.ts`, `src/data/holy-order-dawn-definition.ts`, `src/data/temple-of-spheres-definition.ts` +16 more
 - **Verdict:** Verified 2026-09-24: THR-1562. Before, the seven requirement sites read four different numbers: ambition floors, milestones and abandonment compared the raw store (10–40+) against 0–1 thresholds, so every mortal passed every floor, milestones passed on first check and abandonment never fired; spells and `reach_above:` read `properties.domainCapability` (singular), which nothing writes; guild joins compared the dice curve against thresholds authored raw. Now all read `computeReachShare` (effective raw ÷ 40, capped at 1). Asserting tests: `reachShare.test.ts` (the function; each site — floors via the snapshot, a shipped spell and its `reach_drain` check, the shipped `reach_above:star:0.10` trickle, a thieves-guild join, the premonition window; a corpus test that every authored threshold kind is 0 < t ≤ 1; the abandonment idiom) and `graphConditions.test.ts` (a fail with the reader supplied; an un-migrated 0–1 fixture fails closed). Live, `npm run census:reach-gates`, medium, seeds 42 · 99 × 150 ticks, before (main 07d51e3e) → after: milestones completed 270 · 322 → 29 · 36; ambitions completed 33 · 38 → 6 · 5; abandoned 4 · 2 → 12 · 26; reach term of the winning ambition score 100% → 78% · 77%; mortals-with-capabilities holding ≥1 eligible ambition 100% · 100%; protagonist milestones met on first check at tick 0 66% · 64% → 49% · 51%.
 
 ### `cast-influence-shifts-target-values` — 🔵 UNVERIFIED-OK
@@ -1447,10 +1451,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Sphere*, *Essence*
 - **Module:** `src/engine/essenceEarned.ts`
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/essenceEarned.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/nudgeCardRepertoire.ts`
-- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/dominion.ts`, `src/engine/encounters/dealHand.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/ascendantBeat.ts`, `src/engine/dominion.ts`, `src/engine/encounters/dealHand.ts` +2 more
 - **Verdict:** Verified 2026-08-19: Headless CLI, seed 42 medium: with the pool drained to 1/sphere the counter reached chaos 19.250000000000007 by tick 55 and 21.000000000000014 by tick 60 — identical across repeat runs, so same seed ⇒ same unlock tick. src/engine/__tests__/essenceEarned.test.ts drives the reader end-to-end: buildRepertoire with the counter one short of the mark omits every seeded attunement member and with the counter at the mark contains all of them, and the off-sphere arm asserts a god attuned to everything gains no member on a sphere they do not hold. Each arm falsified by breaking its guard (access gate, threshold comparison, monotonicity) and confirming the red.
 
 ### `essence-movement-explains-the-bar` — 🟢 LIVE
@@ -2277,6 +2281,29 @@ exit
 - **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `offering-respects-reach-gate` — 🟢 LIVE
+
+- **Intent:** The offering never offers a card the drawer would hide. The reach gate is one predicate, `isWithinGodReaches`, called by `getTargetActionSlots` and by `offerableCards` (THR-1811). The drawer's sphere gate still counts without hiding, so the offering does not apply it unless `OFFERING_IN_SPHERE_ONLY` is on.
+- **Producer → Consumer:** Essence & Divine Economy → Ascendant Beats & Progression
+- **UL terms:** *Reach*, *Offering*
+- **Module:** `src/engine/targetActions.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/targetActions.ts`
+- **Read sites:** `src/engine/godProgression.ts`
+- **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "offers only market cards at or below the open rung, not held, inside the god's reaches" asserts `isWithinGodReaches` on every offered card; the drawer suites (`targetActions*.test.ts`) pass unchanged on the extracted predicate.
+
+### `offering-take-up-unlocks-card` — 🟢 LIVE
+
+- **Intent:** The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing.
+- **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
+- **UL terms:** *Ascendant Beat*, *Offering*
+- **Module:** `src/engine/ascendantBeat.ts`
+- **Production hits:** 22 total — 1 write, 2 read, 19 unclassified
+- **Write sites:** `src/engine/ascendantBeat.ts`
+- **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +14 more
+- **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
+
 ### `one-namer-shared-primitives` — 🟢 LIVE
 
 - **Intent:** There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own.
@@ -2599,6 +2626,30 @@ exit
 - **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/capabilityGrowth.ts`, `src/engine/conditionDecay.ts`, `src/engine/effectTick.ts`, `src/engine/encounterAwareness.ts` +6 more
 - **Other hits:** `src/engine/effects/index.ts`, `src/engine/fights/fightStepInputs.ts`
 - **Verdict:** Verified 2026-08-26: THR-1241. This is the read half of the contract THR-1240 opened, and the exact deadness class this registry exists to catch: the store kept overrides correctly and eleven of thirteen keys had NO consumer at all, so `getActiveRuleOverride` greps green on both sides while `death_prevented` did nothing. Five keys had shipped content promising a player something that never happened (death_prevented, awareness_range_bonus, healing_multiplier, spawn_rate_multiplier, tier_advancement_cost_multiplier). Each key now has exactly one owning site, listed above; doom_rate_multiplier — the only key that HAD a consumer — was migrated off its hand-rolled inline scan in phaseDoom onto the same reader, because that scan saw only attachment-declared overrides, folded unclamped, and ignored duration/cooldown/suppression. A non-neutral read emits effect.rule_override_consumed carrying its site, so a wired-but-never-triggered key is distinguishable from an unwired one. Unit coverage: src/engine/effects/__tests__/ruleOverrideConsumers.test.ts (19 tests) drives the OWNING SITES, never the reader — asserting readMultiplierOverride returns 0.5 would pass against a build where no site calls it, which is stage 2 wearing the stage 3 name. Each key is asserted in both arms (with override, bare control) against an observable outcome: a traversal cost, a wound countdown, a reputation delta, a tier curve. THR-1571 closed the known partial reach: backlash_severity_multiplier is read at spellActivation.backlash, and activateSpell now has a production caller — resolveCast, reached through use × Power (and the debug lever castSpell) — so the key is live in play wherever a cast resolves; evaluateBacklashForBand carries the same severity shift the legacy evaluateBacklash does. Two derived readings are judgement calls argued at their sites: tier_advancement_cost_multiplier inverts into growth (no priced transaction exists for a tier, so the cost IS the growth owed), and backlash_severity_multiplier shifts an enum one band rather than scaling a number that does not exist.
+
+### `rung-gift-unlocks-key` — 🟢 LIVE
+
+- **Intent:** A rung opening gives its key cards one at a time. `phaseAscendantProgression` queues `rungGiftsFor(n)` when a rung opens and offers the head as a `rung_gift` beat every `RUNG_GIFT_SPACING` ticks; resolving it unlocks the card into `unlockedActionIds` (`action.unlock.granted` via `rung`). Rung 2 leads with the secondary reach signature. A held key is skipped, never offered (THR-647, THR-1811).
+- **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
+- **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
+- **Module:** `src/engine/phaseAscendantProgression.ts`
+- **Production hits:** 22 total — 2 write, 1 read, 19 unclassified
+- **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
+- **Read sites:** `src/engine/actionUnlock.ts`
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +14 more
+- **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
+
+### `rung-reads-attunement-marks` — 🟢 LIVE
+
+- **Intent:** The god's rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811).
+- **Producer → Consumer:** Spheres & Quintessence → Ascendant Beats & Progression
+- **UL terms:** *Rung*, *Attunement*
+- **Module:** `src/engine/dominion.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/dominion.ts`
+- **Read sites:** `src/engine/godProgression.ts`
+- **Other hits:** `src/debug-bridge.ts`
+- **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "sums marks over the bought spheres only" (life 60 + spirit 20 → 3; unbought mind 600 → 0); seed 42 headless opened rung 1 at tick 21, the first tick after the spine ended.
 
 ### `secrets-consequences` — 🟢 LIVE
 

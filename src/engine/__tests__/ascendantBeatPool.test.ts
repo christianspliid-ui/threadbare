@@ -80,9 +80,10 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
     disableTracing();
   });
 
-  it('ships a non-empty starter pool in the ~12–20 range', () => {
-    expect(ASCENDANT_BEAT_POOL.length).toBeGreaterThanOrEqual(12);
-    expect(ASCENDANT_BEAT_POOL.length).toBeLessThanOrEqual(20);
+  it('ships a non-empty pool of introduction beats only (THR-1811 retired the grant-bearing beats)', () => {
+    expect(ASCENDANT_BEAT_POOL.length).toBeGreaterThan(0);
+    expect(ASCENDANT_BEAT_POOL.every(b => b.kind === 'introduction')).toBe(true);
+    expect(ASCENDANT_BEAT_POOL.every(b => (b.grantsActionIds ?? []).length === 0 && !b.grantsReachSignature)).toBe(true);
   });
 
   it('every pool beat is drawable (cadence trigger + a weighted kind) with a unique id', () => {

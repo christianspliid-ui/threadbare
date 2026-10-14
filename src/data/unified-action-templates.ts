@@ -405,6 +405,7 @@ export function migrateActionTemplate(old: ActionTemplateData): UnifiedActionTem
 const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.dream',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: false },
     name: 'Dream',
     spellName: 'Oneiric Sending',
     rarityTier: 1,
@@ -445,6 +446,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.persuade',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: false },
     name: 'Persuade',
     spellName: 'Divine Compulsion',
     rarityTier: 1,
@@ -485,6 +487,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.deceive',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Deceive',
     spellName: 'Veil of Falsehood',
     rarityTier: 1,
@@ -522,6 +525,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.intimidate',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Intimidate',
     spellName: 'Wrath Descending',
     rarityTier: 1,
@@ -559,6 +563,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.inspire',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: false },
     name: 'Inspire',
     spellName: 'Breath of Purpose',
     rarityTier: 1,
@@ -596,6 +601,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.coincidence',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Coincidence',
     spellName: 'Thread of Fate',
     rarityTier: 2,
@@ -633,6 +639,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.omen',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: false },
     name: 'Omen',
     spellName: 'Starfall Omen',
     rarityTier: 2,
@@ -670,6 +677,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.afflict_bless',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Afflict/Bless',
     spellName: 'Aegis of Grace',
     rarityTier: 3,
@@ -718,6 +726,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // routes through the resolution-intercept path (it needs GameState for the
     // mortal's receipt), not the graph executor.
     id: 'divine.rekindle_thread',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Rekindle the Thread',
     spellName: 'The Lent Fire',
     rarityTier: 4,
@@ -756,6 +765,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.social.tip_scales',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Tip the Scales',
     spellName: 'Divine Whisper',
     rarityTier: 2,
@@ -793,6 +803,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.social.embolden',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Embolden',
     spellName: 'Divine Courage',
     rarityTier: 2,
@@ -832,6 +843,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.secrets.reveal_secret',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Reveal Secret',
     spellName: 'Divine Whisper',
     rarityTier: 2,
@@ -868,6 +880,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.secrets.call_in_favor',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Call in Favor',
     spellName: 'Burden of Obligation',
     rarityTier: 2,
@@ -904,6 +917,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.secrets.plant_secret',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Plant Secret',
     spellName: 'Whispered Untruth',
     rarityTier: 3,
@@ -947,6 +961,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.divine-edict',
+    progression: { tier: 4, offer: 'market', generic: false },
     name: 'Divine Edict',
     spellName: 'Word of Dominion',
     rarityTier: 2,
@@ -996,6 +1011,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.stir_dissent',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Stir Dissent',
     spellName: 'Whisper of Old Grievances',
     rarityTier: 2,
@@ -1033,6 +1049,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.whisper_leader',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Whisper to the Leader',
     spellName: 'Voice Beneath the Voice',
     rarityTier: 2,
@@ -1073,6 +1090,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.recover_doctrine',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Recover Doctrine',
     spellName: 'Surfaced Teaching',
     rarityTier: 2,
@@ -1112,6 +1130,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.surface_doubter',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Surface a Doubter',
     spellName: 'Seeing the Silent One',
     rarityTier: 2,
@@ -1163,6 +1182,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.kindle_a_calling',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Kindle a Calling',
     spellName: 'Heat in the Embers',
     rarityTier: 2,
@@ -1214,6 +1234,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.schism',
+    progression: { tier: 4, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Schism',
     spellName: 'Two Truths Stand',
     rarityTier: 3,
@@ -1250,6 +1271,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.anoint-champion',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Anoint Champion',
     spellName: 'Mantle of Purpose',
     rarityTier: 3,
@@ -1309,6 +1331,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.faction.anoint_successor',
+    progression: { tier: 4, offer: 'market', generic: false, flags: ['faction'] },
     name: 'Anoint Successor',
     spellName: 'Thread of Inheritance',
     rarityTier: 3,
@@ -1350,6 +1373,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // ─── Perceive Divine Actions (THR-151) ──────────────────────────────────
   {
     id: 'divine.perceive.cast_attention',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Cast Attention',
     spellName: 'Divine Gaze',
     rarityTier: 1,
@@ -1382,6 +1406,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.perceive.refine_the_hush',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Refine the Hush',
     spellName: 'Deep Listening',
     rarityTier: 1,
@@ -1414,6 +1439,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.perceive.listen_for_a_name',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Listen for a Name',
     spellName: 'Cultural Echo',
     rarityTier: 2,
@@ -1446,6 +1472,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.perceive.read_the_threads',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Read the Threads',
     spellName: 'Thread Sight',
     rarityTier: 2,
@@ -1478,6 +1505,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.perceive.taste_the_wake',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Taste the Wake',
     spellName: 'Divine Mark Sweep',
     rarityTier: 3,
@@ -1512,6 +1540,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // ─── Relay Divine Actions (THR-151) ─────────────────────────────────────
   {
     id: 'divine.relay.compose_a_clue',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Compose a Clue',
     spellName: 'Divine Whisper',
     rarityTier: 2,
@@ -1542,6 +1571,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.relay.whisper_the_direction',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['whispers'] },
     name: 'Whisper the Direction',
     spellName: 'Pathfinder\'s Nudge',
     rarityTier: 1,
@@ -1574,6 +1604,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // ─── Self-Targeting Divine Actions (THR-399) ────────────────────────────
   {
     id: 'divine.self.stillness',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Stillness',
     spellName: 'The Long Stillness',
     rarityTier: 1,
@@ -1605,6 +1636,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.self.recede',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Recede',
     spellName: 'The Tide Pulls Back',
     rarityTier: 1,
@@ -1640,6 +1672,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.self.focus',
+    progression: { tier: 2, offer: 'market', generic: true },
     name: 'Focus',
     spellName: 'The Single Eye',
     rarityTier: 2,
@@ -1675,6 +1708,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'divine.self.reveal',
+    progression: { tier: 4, offer: 'market', generic: true },
     name: 'Reveal',
     spellName: 'The True Face',
     rarityTier: 3,
@@ -1714,6 +1748,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'loc.ward',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Ward',
     spellName: 'Rune of Warding',
     rarityTier: 1,
@@ -1747,6 +1782,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'loc.place_of_power',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Place of Power',
     spellName: 'Leyline Nexus',
     rarityTier: 2,
@@ -1779,6 +1815,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'loc.incite_unrest',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Incite Unrest',
     spellName: 'Seeds of Discord',
     rarityTier: 1,
@@ -1812,6 +1849,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'loc.fortify',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Fortify',
     spellName: 'Iron Bulwark',
     rarityTier: 1,
@@ -1853,6 +1891,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.bless_harvest',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Bless the Harvest',
     spellName: 'Quiet Loam',
     rarityTier: 1,
@@ -1893,6 +1932,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.blight',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Blight the Fields',
     spellName: 'The Slow Rot',
     rarityTier: 1,
@@ -1936,6 +1976,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.reveal_vein',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Reveal the Vein',
     spellName: 'The Buried Gleam',
     rarityTier: 2,
@@ -1970,6 +2011,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.guide_caravan',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Guide the Caravan',
     spellName: 'The Kind Mile',
     rarityTier: 2,
@@ -2004,6 +2046,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.sour_mine',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Sour the Mine',
     spellName: 'The Pinched Seam',
     rarityTier: 2,
@@ -2038,6 +2081,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.open_markets',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Open the Markets',
     spellName: 'Awning Unfurled',
     rarityTier: 1,
@@ -2075,6 +2119,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.sanctify_square',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['consecration'] },
     name: 'Sanctify the Square',
     spellName: 'Stones That Remember',
     rarityTier: 2,
@@ -2122,6 +2167,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.consecrate_source',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Consecrate a Source',
     spellName: 'First Devotion',
     rarityTier: 2,
@@ -2156,6 +2202,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.sanctify_source',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Deepen the Source',
     spellName: 'Tended Ground',
     rarityTier: 1,
@@ -2190,6 +2237,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.defend_source',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Ward the Source',
     spellName: 'Held Against Them',
     rarityTier: 2,
@@ -2232,6 +2280,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.find_source',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Search for Wellsprings',
     spellName: 'The Seeking Sight',
     rarityTier: 1,
@@ -2265,6 +2314,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.claim_source',
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Claim a Wellspring',
     spellName: 'Taken for a God',
     rarityTier: 2,
@@ -2299,6 +2349,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.awaken_spirit',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Awaken the Spirit of the Place',
     spellName: 'The Old Name Spoken',
     rarityTier: 3,
@@ -2335,6 +2386,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.sicken_wells',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Sicken the Wells',
     spellName: 'Hungry Water',
     rarityTier: 2,
@@ -2373,6 +2425,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.curse_roads',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Curse the Roads',
     spellName: 'Line in the Dust',
     rarityTier: 2,
@@ -2434,6 +2487,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // the artifact — so the imbued power genuinely applies, no new consumer.
   {
     id: 'action.imbue',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Imbue',
     spellName: 'Breath of the Sphere',
     rarityTier: 2,
@@ -2480,6 +2534,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // (THR-518), immediately below.
   {
     id: 'action.consecrate',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['consecration'] },
     name: 'Consecrate',
     spellName: 'Hallowing of the Ground',
     rarityTier: 2,
@@ -2536,6 +2591,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // effect (`upkeep_relic_destroyed`) — the rival contestation vector.
   {
     id: 'action.consecrate-relic',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['consecration'] },
     name: 'Enshrine Relic',
     spellName: 'Reliquary of Hallowing',
     rarityTier: 2,
@@ -2596,6 +2652,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // gift genuinely applies, no new consumer subsystem.
   {
     id: 'action.bestow',
+    progression: { tier: 2, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Bestow Power',
     spellName: 'Gift of the Divine',
     rarityTier: 2,
@@ -2643,6 +2700,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // Bestowal: Bestow Power is unchanged (Lane decision 3).
   {
     id: 'action.teach_spell',
+    progression: { tier: 2, offer: 'market', generic: true },
     name: 'Teach a Spell',
     spellName: 'A Working Given',
     rarityTier: 2,
@@ -2688,6 +2746,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // faction genuinely strengthens, no longer dead content.
   {
     id: 'action.anoint',
+    progression: { tier: 3, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Anoint',
     spellName: 'Mark of the Chosen',
     rarityTier: 2,
@@ -2726,6 +2785,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'artifact.enchant',
+    progression: { tier: 1, offer: 'market', generic: false, pricedIn: 'order' },
     name: 'Enchant',
     spellName: 'Rune Inscription',
     rarityTier: 1,
@@ -2774,6 +2834,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // rather than Veil, so a war-god can grow a blade without borrowing rune-craft.
     // Christian's verdict 2026-08-06: "Turn the enchantment system on."
     id: 'artifact.empower',
+    progression: { tier: 1, offer: 'market', generic: false, pricedIn: 'force' },
     name: 'Empower',
     spellName: 'Forge Rite',
     rarityTier: 1,
@@ -2811,6 +2872,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'artifact.attune',
+    progression: { tier: 2, offer: 'market', generic: true },
     name: 'Attune',
     spellName: 'Sphere Resonance',
     rarityTier: 1,
@@ -2846,6 +2908,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'artifact.nullify',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Nullify',
     spellName: 'Void Unraveling',
     rarityTier: 1,
@@ -2882,6 +2945,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'artifact.curse',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Curse',
     spellName: 'Malediction Bound',
     rarityTier: 2,
@@ -2929,6 +2993,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'company.bless',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Bless this Company',
     spellName: 'Blessing of the Bound Road',
     rarityTier: 2,
@@ -2971,6 +3036,7 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // Individual agents are already drawer-selectable today (unlike company nodes), so this
     // verb is castable in-browser now; PR 3 still owns the map/cluster verification.
     id: 'company.draw_together',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Draw Together',
     spellName: 'The Gathering Thread',
     rarityTier: 2,
@@ -3009,6 +3075,7 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // drawer offers it on history surfaces and nowhere else, and Sunder's mirrored
     // gate below means the two are never offered on the same company at the same time.
     id: 'company.reunite',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Reunite',
     spellName: 'The Unfinished Road',
     rarityTier: 2,
@@ -3048,6 +3115,7 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     // be open at once and neither cancels the other (plan: "no Bless/Sunder
     // cancellation logic — the tug-of-war is the story").
     id: 'company.sunder',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: false },
     name: 'Sunder',
     spellName: 'The Widening Silence',
     rarityTier: 2,
@@ -3095,6 +3163,7 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'sub.sanctify',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['consecration'] },
     name: 'Sanctify',
     spellName: 'Sacred Ground',
     rarityTier: 1,
@@ -3138,6 +3207,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'sub.trap',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Trap',
     spellName: 'Hidden Snare',
     rarityTier: 1,
@@ -3171,6 +3241,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'sub.vision',
+    progression: { tier: 1, offer: 'market', generic: false },
     name: 'Vision',
     spellName: 'Place Memory',
     rarityTier: 1,
@@ -3204,6 +3275,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'sub.sanctify_tavern',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['consecration', 'merge'] },
     name: 'Sanctify Tavern',
     spellName: 'Hearthfire Blessing',
     rarityTier: 2,
@@ -3255,6 +3327,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bless_land',
+    progression: { tier: 1, offer: 'market', generic: false, pricedIn: 'life' },
     name: 'Bless the Land',
     spellName: 'Land\'s Blessing',
     rarityTier: 1,
@@ -3286,6 +3359,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.corrupt_land',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Corrupt the Land',
     spellName: 'Taint of Entropy',
     rarityTier: 2,
@@ -3318,6 +3392,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.survey',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Survey Territory',
     spellName: 'Divine Survey',
     rarityTier: 1,
@@ -3349,6 +3424,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.seed_life',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Seed Life',
     spellName: 'Verdant Awakening',
     rarityTier: 2,
@@ -3388,6 +3464,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.raise_landmark',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'matter' },
     name: 'Raise Landmark',
     spellName: 'Stone\'s Rising',
     rarityTier: 3,
@@ -3419,6 +3496,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.dowse_resources',
+    progression: { tier: 1, offer: 'market', generic: false, pricedIn: 'matter' },
     name: 'Dowse for Resources',
     spellName: 'Earthen Dowsing',
     rarityTier: 1,
@@ -3449,6 +3527,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.shift_season',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Shift Season',
     spellName: 'Seasonal Turn',
     rarityTier: 2,
@@ -3480,6 +3559,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.scorch_earth',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Scorch Earth',
     spellName: 'Iron Scorching',
     rarityTier: 2,
@@ -3512,6 +3592,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.rend_earth',
+    progression: { tier: 4, offer: 'market', generic: false },
     name: 'Rend the Earth',
     spellName: 'Earth Sundering',
     rarityTier: 4,
@@ -3547,6 +3628,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.attune_leyline',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'energy', flags: ['flows'] },
     name: 'Attune Leyline',
     spellName: 'Leyline Forging',
     rarityTier: 2,
@@ -3578,6 +3660,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.forge_seer_token',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: "Forge Seer's Token",
     spellName: 'Token of Far-Sight',
     rarityTier: 3,
@@ -3610,6 +3693,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.read_currents',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['flows'] },
     name: 'Read the Currents',
     spellName: 'Sphere Cartography',
     rarityTier: 2,
@@ -3642,6 +3726,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.shift_dominion',
+    progression: { tier: 2, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Shift Dominion',
     spellName: 'Arcane Rebalance',
     rarityTier: 3,
@@ -3675,6 +3760,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.amplify_flow',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'energy', flags: ['flows'] },
     name: 'Amplify the Flow',
     spellName: 'Current Surge',
     rarityTier: 3,
@@ -3705,6 +3791,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.sever_flow',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['flows'] },
     name: 'Sever the Flow',
     spellName: 'Arcane Silencing',
     rarityTier: 3,
@@ -3736,6 +3823,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.dispel_wild',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'order', flags: ['flows'] },
     name: 'Dispel the Wild',
     spellName: 'Wild Purging',
     rarityTier: 2,
@@ -3769,6 +3857,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.send_herald',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Send a Herald',
     spellName: 'Breath of Purpose',
     rarityTier: 3,
@@ -3801,6 +3890,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.forge_instrument',
+    progression: { tier: 4, offer: 'market', generic: false, pricedIn: 'matter' },
     name: 'Forge Divine Instrument',
     spellName: 'Instrument Forging',
     rarityTier: 4,
@@ -3832,6 +3922,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.spark_encounter',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'chaos' },
     name: 'Spark an Encounter',
     spellName: 'Convergence Weaving',
     rarityTier: 2,
@@ -3863,6 +3954,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.stir_people',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'mind' },
     name: 'Stir the People',
     spellName: 'Heart\'s Stirring',
     rarityTier: 2,
@@ -3893,6 +3985,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.summon_congregation',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Summon Congregation',
     spellName: 'Gathering Call',
     rarityTier: 2,
@@ -3924,6 +4017,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.bestow_vision',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['whispers'] },
     name: 'Bestow Vision',
     spellName: 'Prophetic Sending',
     rarityTier: 2,
@@ -3955,6 +4049,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.scatter',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Scatter',
     spellName: 'Iron Dispersal',
     rarityTier: 3,
@@ -3986,6 +4081,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.smite',
+    progression: { tier: 4, offer: 'market', generic: false },
     name: 'Smite',
     spellName: 'Divine Smiting',
     rarityTier: 3,
@@ -4017,6 +4113,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.incite_exodus',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Incite Exodus',
     spellName: 'Umbral Exodus',
     rarityTier: 3,
@@ -4051,6 +4148,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.mark_ground',
+    progression: { tier: 1, offer: 'market', generic: false, pricedIn: 'time', flags: ['ruins'] },
     name: 'Mark the Ground',
     spellName: 'Questing Beacon',
     rarityTier: 1,
@@ -4082,6 +4180,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.plant_dream',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins', 'whispers'] },
     name: 'Plant a Dream of the Past',
     spellName: 'Memory Dream',
     rarityTier: 2,
@@ -4114,6 +4213,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.read_stones',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Read the Stones',
     spellName: 'Stone Memory',
     rarityTier: 1,
@@ -4145,6 +4245,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.whisper_intuition',
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['whispers'] },
     name: 'Whisper of Intuition',
     spellName: 'Ruin Intuition',
     rarityTier: 1,
@@ -4176,6 +4277,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.consecrate_past',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'time', flags: ['ruins'] },
     name: 'Consecrate the Past',
     spellName: 'Past Consecration',
     rarityTier: 3,
@@ -4206,6 +4308,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.restore_fragment',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'matter', flags: ['ruins'] },
     name: 'Restore a Fragment',
     spellName: 'Fragment Restoration',
     rarityTier: 3,
@@ -4236,6 +4339,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.rewrite_history',
+    progression: { tier: 4, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Rewrite History',
     spellName: 'Memory Revision',
     rarityTier: 4,
@@ -4267,6 +4371,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.bury_past',
+    progression: { tier: 3, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Bury the Past',
     spellName: 'Earth Burial',
     rarityTier: 3,
@@ -4298,6 +4403,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.desecrate',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Desecrate',
     spellName: 'Ruin Desecration',
     rarityTier: 2,
@@ -4332,6 +4438,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.claim_dominion',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Claim Dominion',
     spellName: 'Sovereign Claim',
     rarityTier: 3,
@@ -4383,6 +4490,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.cultivate',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Cultivate',
     spellName: 'Sustained Bloom',
     rarityTier: 2,
@@ -4428,6 +4536,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.claim_resource',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Claim Resource',
     spellName: 'Resource Binding',
     rarityTier: 2,
@@ -4477,6 +4586,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.anchor_sphere',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'energy', flags: ['flows', 'merge'] },
     name: 'Anchor the Sphere',
     spellName: 'Sphere Anchoring',
     rarityTier: 3,
@@ -4523,6 +4633,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.tap_source',
+    progression: { tier: 2, offer: 'gift', giftBy: 'milestone', generic: true },
     name: 'Tap the Source',
     spellName: 'Source Tapping',
     rarityTier: 2,
@@ -4569,6 +4680,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.attune_thread',
+    progression: { tier: 2, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Attune Thread',
     spellName: 'Thread Attunement',
     rarityTier: 2,
@@ -4612,6 +4724,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.channel_current',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'energy', flags: ['flows', 'merge'] },
     name: 'Channel the Current',
     spellName: 'Current Channeling',
     rarityTier: 3,
@@ -4661,6 +4774,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.shepherd_flock',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Shepherd the Flock',
     spellName: 'Flock Shepherding',
     rarityTier: 3,
@@ -4707,6 +4821,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.install_champion',
+    progression: { tier: 4, offer: 'market', generic: false, pricedIn: 'order' },
     name: 'Install a Champion',
     spellName: 'Champion Installation',
     rarityTier: 4,
@@ -4752,6 +4867,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.strengthen_thread',
+    progression: { tier: 2, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Strengthen Thread',
     spellName: 'Thread Strengthening',
     rarityTier: 2,
@@ -4795,6 +4911,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.impose_decree',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'order' },
     name: 'Impose Decree',
     spellName: 'Divine Decree',
     rarityTier: 3,
@@ -4843,6 +4960,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'hex.bind_echoes',
+    progression: { tier: 3, offer: 'market', generic: false, pricedIn: 'time', flags: ['ruins'] },
     name: 'Bind the Echoes',
     spellName: 'Echo Binding',
     rarityTier: 3,
@@ -4889,6 +5007,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.compel_exploration',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Compel Exploration',
     spellName: 'Exploration Compulsion',
     rarityTier: 2,
@@ -4933,6 +5052,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.seal_tomb',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'order', flags: ['ruins'] },
     name: 'Seal the Tomb',
     spellName: 'Tomb Sealing',
     rarityTier: 3,
@@ -4976,6 +5096,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'hex.ward_against_deep',
+    progression: { tier: 2, offer: 'market', generic: false, flags: ['ruins'] },
     name: 'Ward Against the Deep',
     spellName: 'Delver\'s Ward',
     rarityTier: 3,
@@ -5023,6 +5144,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.undertaking.inspire',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Inspire Undertaking',
     spellName: 'Divine Inspiration',
     rarityTier: 2,
@@ -5058,6 +5180,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'action.undertaking.sabotage',
+    progression: { tier: 2, offer: 'market', generic: false },
     name: 'Sabotage Undertaking',
     spellName: 'Divine Interference',
     rarityTier: 2,
@@ -5102,6 +5225,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'observe_agent',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Observe',
     spellName: 'Piercing Gaze',
     rarityTier: 1,
@@ -5132,6 +5256,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'scry_agent',
+    progression: { tier: 3, offer: 'market', generic: true },
     name: 'Scry',
     spellName: 'Far Sight',
     rarityTier: 2,
@@ -5162,6 +5287,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'whisper_insight',
+    progression: { tier: 2, offer: 'market', generic: false, pricedIn: 'spirit' },
     name: 'Whisper Insight',
     spellName: 'Illuminating Whisper',
     rarityTier: 2,
@@ -5192,6 +5318,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'dream_sending',
+    progression: { tier: 3, offer: 'market', generic: false },
     name: 'Dream Sending',
     spellName: 'Prophetic Dream',
     rarityTier: 2,
@@ -5238,6 +5365,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_location',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Bind Thread — Location',
     spellName: 'Place Thread',
     rarityTier: 1,
@@ -5285,6 +5413,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_faction',
+    progression: { tier: 3, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Bind Thread — Faction',
     spellName: 'Faction Thread',
     rarityTier: 2,
@@ -5333,6 +5462,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_army',
+    progression: { tier: 3, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Bind Thread — Army',
     spellName: 'Army Thread',
     rarityTier: 2,
@@ -5385,6 +5515,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_artifact',
+    progression: { tier: 4, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Bind Thread — Artifact',
     spellName: 'Artifact Thread',
     rarityTier: 3,
@@ -5432,6 +5563,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_agent',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Bind Thread — Agent',
     spellName: 'Agent Thread',
     rarityTier: 1,
@@ -5483,6 +5615,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'bind_thread_agent_strong',
+    progression: { tier: 4, offer: 'gift', giftBy: 'rung', generic: true },
     name: 'Bind Strong Thread — Agent',
     spellName: 'Strong Agent Thread',
     rarityTier: 2,
@@ -5536,6 +5669,7 @@ export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
 export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'thread.dormant',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Dormant Thread',
     spellName: 'Dormant Thread',
     rarityTier: 1,
@@ -5573,6 +5707,7 @@ export const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[] = [
   },
   {
     id: 'thread.reactivate',
+    progression: { tier: 1, offer: 'gift', giftBy: 'spine', generic: true },
     name: 'Reactivate Thread',
     spellName: 'Reactivate Thread',
     rarityTier: 1,

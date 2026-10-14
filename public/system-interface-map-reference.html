@@ -984,6 +984,23 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The world offers the god its powers
+      <span class="lead">Added 2026-10-14 (THR-1811). The card ladder is data on each card; the offering and the rung gifts write the one list the drawer reads.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Take up an offered card <span class="arrow">&#10230;</span> it is in the hand (<code>offering-take-up-unlocks-card</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1811. <code>resolvePendingBeat</code> adds the chosen card to <code>unlockedActionIds</code>, which <code>isActionRevealed</code> reads, and pays into <code>offeringSpentBySphere</code>. The earned counter is never written, so buying never lowers attunement.</span></li>
+      <li class="live"><span class="flow">A rung opens <span class="arrow">&#10230;</span> its key cards arrive one at a time (<code>rung-gift-unlocks-key</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1811. <code>phaseAscendantProgression</code> queues <code>rungGiftsFor(n)</code> and offers one <code>rung_gift</code> beat per <code>RUNG_GIFT_SPACING</code>; rung 2 leads with the secondary reach signature; a held key is skipped.</span></li>
+      <li class="live"><span class="flow">Attunement marks <span class="arrow">&#10230;</span> the god's rung (<code>rung-reads-attunement-marks</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1811. <code>rungMarks</code> sums <code>getAttunementMarksCrossed</code> over the bought spheres; rungs open at 0 / 3 / 6 / 8.</span></li>
+      <li class="live"><span class="flow">The reach gate <span class="arrow">&#10230;</span> what the world may offer (<code>offering-respects-reach-gate</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1811. One predicate, <code>isWithinGodReaches</code>, read by the drawer and by <code>offerableCards</code>. Retired: the grant-bearing pool beats, which handed every god the same cards on the same schedule.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight &mdash; Trade lanes that carry
       <span class="lead">Added 2026-09-28 (THR-1636). A lane between two standing towns stays alive without anyone walking it; a blockade holds a lane rather than killing it.</span>
     </h2>

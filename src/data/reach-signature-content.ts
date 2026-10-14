@@ -403,6 +403,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // resolves the target settlement's hex; phaseControlEffects pays out income).
   {
     id: 'invest.gold.patronage_network',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, pricedIn: 'order', flags: ['signature'] },
     name: 'Patronage Network',
     spellName: 'The Golden Charter',
     rarityTier: 3,
@@ -457,6 +458,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // effect kinds; the reaction surfaces via `aftermathConfig.fallback`.
   {
     id: 'invest.shadow.brokers_web',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: "Broker's Web",
     spellName: 'The Whispering Ledger',
     rarityTier: 3,
@@ -537,6 +539,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // `encounter_seed` core here (no new engine effect).
   {
     id: 'invest.star.beacon_of_fate',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, pricedIn: 'time', flags: ['signature'] },
     name: 'Beacon of Fate',
     spellName: 'The Far Light',
     rarityTier: 3,
@@ -605,6 +608,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // at the sharpest precision (DEEP_EYE_CLUE_PRECISION). Both shipped effect kinds.
   {
     id: 'invest.eye.deep_eye',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: 'The Deep Eye',
     spellName: 'The Unclouded Sight',
     rarityTier: 3,
@@ -683,6 +687,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // tier-promotion clock, here read as deepening devotion).
   {
     id: 'invest.heart.sworn_oath',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: 'Sworn Oath',
     spellName: 'The Binding Word',
     rarityTier: 3,
@@ -736,6 +741,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // primitive, THR-509/513), so the muster rallies under the ascendant's mark.
   {
     id: 'invest.iron.warhost',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: 'Warhost',
     spellName: 'The Call to Arms',
     rarityTier: 3,
@@ -802,6 +808,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // phaseControlEffects.
   {
     id: 'invest.veil.rend_the_gate',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: 'Rend the Gate',
     spellName: 'The Opened Way',
     rarityTier: 3,
@@ -871,6 +878,7 @@ export const REACH_SIGNATURE_CONTENT_TEMPLATES: UnifiedActionTemplate[] = [
   // type — a `location` flagged unique + a `controls` edge from the ascendant.
   {
     id: 'invest.stone.great_work',
+    progression: { tier: 2, offer: 'gift', giftBy: 'signature', generic: false, flags: ['signature'] },
     name: 'The Great Work',
     spellName: 'The Deep Foundation',
     rarityTier: 3,

@@ -33,6 +33,8 @@ Five verbs: **Create, Find, Change, Destroy, Control**. Control is the god-game 
 
 Every detail view becomes an **action target**. The ActionDrawer fills with templates filtered for that target. Each template can require two orthogonal checks: a **Reach prerequisite** (Domain Capability tier) and a **Sphere prerequisite** (sphere alignment). Both optional per template. Prerequisites also gate visibility.
 
+**Where your powers come from** [IMPL — THR-1811]: the opening gifts and milestones give some; **most you take up from what the world offers** — each day three works stir, drawn to who you are; take up one with essence you have *earned* through its sphere (or from your first sphere at double), or let them pass when the day turns. Spending earned essence never lowers your attunement. As your attunement grows, deeper works are offered and their keys are given; your second reach signature is the first key. Tier and price are data on each card.
+
 ## The Cosmology
 
 **Eight Reaches** (what you do): Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star.

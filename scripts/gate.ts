@@ -199,6 +199,8 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
       // Step 9 of the code track: a required CI step that is not inside `npm test`
       // (2026-10-02 retro, impediment #1094). ~1 s, so every code diff runs it.
       { name: "encounter", command: "npm run check:encounter -- --all" },
+      // THR-1811: every god card carries a valid progression block (~1 s).
+      { name: "god-cards", command: "npm run check:god-card-progression" },
     ];
     if (engine) {
       first.push({

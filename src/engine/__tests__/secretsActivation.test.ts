@@ -20,7 +20,7 @@ import { pickSecretSubject, createSecretEdge } from '../secretGeneration';
 import { applySecretsFavorsFromResolvedAction } from '../secretsFromResolution';
 import { applySecretRevelationConsequences, revealBestSecret } from '../secretsFavorsConsequences';
 import { buildIntelligenceDisplay } from '../intelligence';
-import { collectGrantedActionIds } from '../../data/ascendant-beat-content';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import {
   SECRET_REVELATION_TRUST_PENALTY,
   SECRET_CONFESSION_BETRAYAL_PENALTY,
@@ -284,9 +284,10 @@ describe('buildIntelligenceDisplay — secrets projection', () => {
 // ─── Player verbs are reachable ──────────────────────────────────────────────
 
 describe('secret player verbs', () => {
-  it('are granted by a beat, so they are no longer unreachable by construction', () => {
-    const granted = collectGrantedActionIds();
-    expect(granted).toContain('action.secrets.reveal_secret');
-    expect(granted).toContain('action.secrets.plant_secret');
+  it('are offered by the world, so they are not unreachable by construction (THR-1811)', () => {
+    // The retired the_unveiled_eye pool beat granted them; the offering now carries them.
+    for (const id of ['action.secrets.reveal_secret', 'action.secrets.plant_secret']) {
+      expect(getUnifiedTemplateById(id)?.progression?.offer).toBe('market');
+    }
   });
 });

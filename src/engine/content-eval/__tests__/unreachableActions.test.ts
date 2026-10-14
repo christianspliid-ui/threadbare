@@ -63,18 +63,20 @@ describe('reportUnreachableActions', () => {
     expect(entries.some((e) => e.id === 'company.draw_together')).toBe(false);
   });
 
-  it('includes an ungranted, non-starter player-castable template', () => {
-    // loc.fortify ships with actorAffinities: ['ascendant'], is not a starter, and is
-    // not granted by any beat — the canonical residual orphan (THR-659 problem statement).
+  it('a market card is reachable through the offering, not reported (THR-1811)', () => {
+    // loc.fortify was the canonical residual orphan (THR-659): granted by no beat. THR-1811
+    // made it a market card, so the world's offering reaches it.
     const fortify = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'loc.fortify');
-    expect(fortify).toBeDefined();
+    expect(fortify?.progression?.offer).toBe('market');
     expect(collectGrantedActionIds()).not.toContain('loc.fortify');
-
-    const { entries } = reportUnreachableActions();
-    const match = entries.find((e) => e.id === 'loc.fortify');
-    expect(match).toBeDefined();
-    expect(match?.reason).toBe('not-granted');
-    expect(match?.reach).toBe('iron');
+    const { entries, summary } = reportUnreachableActions();
+    expect(entries.find((e) => e.id === 'loc.fortify')).toBeUndefined();
+    expect(summary.ladder).toBeGreaterThan(0);
+    const byId = new Map(UNIFIED_ACTION_TEMPLATES.map((t) => [t.id, t]));
+    for (const e of entries) {
+      expect(e.reason).toBe('not-granted');
+      expect(byId.get(e.id)?.progression?.offer).not.toBe('market');
+    }
   });
 
   it('entries only contain player-castable (ascendant-affinity) templates', () => {

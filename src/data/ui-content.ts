@@ -997,6 +997,24 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'It will land cleanly. Some divine workings ask nothing of the world — they simply happen.',
   },
 
+  // THR-1811: the world's offering — the pill, and the three price phrases under each card.
+  'ui.offering': {
+    label: 'Three powers stir',
+    desc: 'Each day the world offers you three works. Take one up with essence you have earned, or let them pass. They pass when the day turns.',
+  },
+  'ui.offering.paid_from': {
+    label: 'Paid from your sphere',
+    desc: 'You have earned enough through this sphere to take it up. Earned essence is what flowed into a sphere when you spent; your casting pool is untouched.',
+  },
+  'ui.offering.at_double': {
+    label: 'At double',
+    desc: "You have not earned enough through this card's sphere. You can pay from what you earned through your first sphere, at double the price.",
+  },
+  'ui.offering.beyond': {
+    label: 'Beyond you yet',
+    desc: 'You have not earned enough yet. Spend through your spheres and you will.',
+  },
+
   // The price on a card: the framed row of ✦ in the chip row.
   'ui.card.cost': {
     label: 'Essence cost',
