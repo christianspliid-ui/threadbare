@@ -34,7 +34,7 @@ The ratchet is the most urgent part: THR-1822 (and THR-1819 / THR-1820) cannot r
 | `Docs/audits/2026-10-14-thr-1829-encounter-stage-decision.md` | The Stage is its own container (not a modal tier); it starts below the top bar (Law 52); Escape minimises, never disregards |
 | `Docs/audits/2026-10-14-thr-1830-map-lenses-decision.md` | The lens bar: four buttons, label plus key cap, one at a time, press again to turn off, pressed state an underline, **never gold** |
 | `Docs/audits/2026-10-13-thr-1833-type-system-decision.md` § Feeds | "THR-1821: add a ratchet that lets `uppercase` with tracking, `monospace` on player surfaces, and `Georgia` in components only go down"; 16 px floor; sentence-case labels; tabular figures where numbers line up |
-| `Docs/audits/2026-10-14-thr-1834-icon-family-decision.md` (Christian, chat 2026-10-14, human gate satisfied via chat review; merged in PR #2372) | **One carved family for every player surface:** a curated game-icons.net subset (~200, CC BY 3.0, recoloured) for all content concepts **and** all UI chrome; our own drawings kept for spheres, reaches, heraldry and map places (the place icons also replace the sidebar emoji); **lucide-react retired from player surfaces**; filled silhouettes in `currentColor`; named sizes 14 / 18 / 24 / 34 px; path data, not React components (Unity port) |
+| `Docs/audits/2026-10-14-thr-1834-icon-family-decision.md` (Christian, chat 2026-10-14, human gate satisfied via chat review; merged in PR #2372) | **One carved family for every player surface:** a curated game-icons.net subset (~200, CC BY 3.0, recoloured) for all content concepts **and** all UI chrome; **places are carved too** (amended by Christian in chat the same day — he found the map's place drawings "very alike at a glance and a bit too abstract" — recorded on [THR-1834](https://linear.app/threadbare/issue/THR-1834) 2026-10-14 08:50 UTC and as decision-record call 2b in PR #2379: each of the 11 place types gets one carved shape, on the map and in every panel, and the map's `LOCATION_ICON_REGISTRY` drawings retire for places; the map keeps its size classes and lair tints); our own drawings win only spheres, reaches and heraldry; **lucide-react retired from player surfaces**; filled silhouettes in `currentColor`; named sizes 14 / 18 / 24 / 34 px; path data, not React components (Unity port) |
 | THR-1826 research comment (icon inventory) | ~163 codepoints, 5 classes breaking Law 9, ~12 glyphs breaking Law 10; the `attachmentGlyphs.ts` broken-escape defect is already filed as [THR-1874](https://linear.app/threadbare/issue/THR-1874) |
 | [THR-1879](https://linear.app/threadbare/issue/THR-1879) (Todo, plan doc pending) | Owns the icon registry's **content**: vendored subset, concept → shape table, credits line, legacy sweep order. Builds on this plan's `Icon` primitive and ratchet rows |
 | [THR-1880](https://linear.app/threadbare/issue/THR-1880) (Todo) | Moves Settings, `ChoiceSetModal`, `ScryOverlay` (the Divine Court — a dialog, tier L), the Codex layer (a dialog, tier XL), `HarvestScreen` and `WarmStartOverlay` onto `Modal` tiers or `Overlay` + `dialogSizeStyle(<tier>)`, once each. Blocked by this plan's Overlay slice |
@@ -55,7 +55,8 @@ No engine subsystem is touched, so `Docs/canon/systems-inventory.md` has no row 
 | `shared/Tooltip.tsx`, `shared/Dropdown.tsx` | 🟢 live | **extended** — their own `document` Escape listeners move onto the registry |
 | `shared/EntityVisual.tsx` + `entityVisualResolver.ts` (Law 3) | 🟢 live | **reused** by `Chip role="identity"` for its leading image |
 | `contexts/RefRouterContext.tsx` (`useRefRouterContext`, Law 21) | 🟢 live | **reused** by identity chips for their click |
-| `icons/SphereIcon`, `icons/ReachIcon`, `icons/CoatOfArms`, `HexMapV2/locations/locationIconRegistry.ts` | 🟢 live drawn sets | **kept** as THR-1834's own-drawing families; the place registry becomes the source of the `place-*` icon names |
+| `icons/SphereIcon`, `icons/ReachIcon`, `icons/CoatOfArms` | 🟢 live drawn sets | **kept** — THR-1834's three own-drawing families |
+| `HexMapV2/locations/locationIconRegistry.ts` + `locationIconTextures.ts` | 🟢 live (map place icons) | **retires for places** (THR-1834 as amended): places take carved shapes from the Icon registry. The registry's `paths: { d, opacity? }[]` shape is what `locationIconTextures.ts` already rasterises, so the map's texture builder reads a carved shape as one path at opacity 1. That switch is THR-1879's rollout; this plan only fixes the shape so it fits |
 | `shared/sphereTint.ts` | 🟢 live | **extended** with `glowShadow()` — the one sanctioned tinted glow |
 | `scripts/check-typecheck-ratchet.ts`, `scripts/chip-referent-ratchet.ts` | 🟢 live ratchets | **pattern source** for the new script (blocking verdicts, suspect drop, advisory per-file map) |
 | `scripts/gate.ts` (THR-1717) | 🟢 live | **extended** — one more gate in the code track |
@@ -71,7 +72,7 @@ No prose content and no encounter work. What this plan owns is the **format** of
 
 ### Data tables
 
-- **`src/data/icons/iconRegistry.ts`** (this plan, S3) — the registry object and the `IconName` type derived from its keys. One entry per name: its **meaning** (one idea, Law 10) and its **source** — `{ family: 'game-icons', author, slug, d }` (one SVG path on the set's 512 × 512 grid, vendored; nothing fetched at runtime, no icon font, no npm icon package) or `{ family: 'place', placeKey }` (a key into our location-icon registry, which already stores `{ d, opacity }[]` path data). Names are by idea in kebab-case (`close`, `pause`, `scales`), with our place drawings prefixed `place-` (`place-castle`). S3 seeds it with the `place-*` names and one `fallback` shape we draw ourselves; **it vendors no game-icons path**, so S3 carries no licence obligation.
+- **`src/data/icons/iconRegistry.ts`** (this plan, S3) — the registry object and the `IconName` type derived from its keys. One entry per name: its **meaning** (one idea, Law 10), its **shape** as `{ viewBox, paths: { d, opacity? }[] }`, and its **source** — `{ family: 'game-icons', author, slug }` (one SVG path on the set's 512 × 512 grid, vendored; nothing fetched at runtime, no icon font, no npm icon package) or `{ family: 'own' }` (a shape we draw). Names are by idea in kebab-case (`close`, `pause`, `scales`); place types are prefixed `place-` (`place-castle`), and since THR-1834's amendment they are carved like everything else. S3 seeds the registry with **one entry, `fallback`**, a shape we draw ourselves; **it vendors no game-icons path**, so S3 carries no licence obligation. The registry tests run on fixture entries.
 - **`ICON_CREDITS`** (this plan, S3) — a function of the registry: the distinct `author`s of every `game-icons` entry, sorted. It returns an empty list until THR-1879 vendors the first shape. Generated, never hand-maintained, so the credits cannot drift from the shipped set.
 - **The vendored subset, the concept → shape table and the concept-class maps** (`ICON_FOR_CODEX_KIND`, `ICON_FOR_ATTACHMENT_CATEGORY`, `ICON_FOR_EFFECT_TYPE`, `ICON_FOR_SEASON`, `ICON_FOR_LENS`, …) — **THR-1879**. The format this plan fixes for them: each map is a total `Record` keyed on the live union, so a new member without an icon is a type error (Law 9, the THR-890 build-failure pattern), and each lives beside the data it labels and replaces that table's glyph column. THR-1834's sheet already names the first 44 shapes.
 
@@ -82,7 +83,7 @@ Which family draws which class (THR-1834; THR-1879 fills the table, this plan's 
 | Spheres | `SphereIcon` (ours) — unchanged, Law 9 |
 | Reaches | `ReachIcon` (ours) — unchanged |
 | Faction heraldry | `CoatOfArms` (ours) — unchanged |
-| Places and place types (map, sidebar, Inspector, Find anything) | Location-icon registry (ours) through `place-*` names — the same castle on the map and in the panel |
+| Places and place types (map, sidebar, Inspector, Find anything) | game-icons.net subset through `place-*` names (THR-1834 as amended: capital `tower-flag`, city `medieval-gate`, town `village`, hamlet `wood-cabin`, castle `white-tower`, temple `greek-temple`, shrine `fire-shrine`, ruins `ancient-ruins`, mine `mine-wagon`, camp `camping-tent`, lair `cave-entrance`) — one shape, on the map and in the panel |
 | Every other content concept (codex kinds, undertakings, chartered kinds, attachments and effects, nudge card types, callings, ambitions, seasons, activity, alerts, omens, doom, consequence categories, lens icons, result kinds, faction kind marks) | game-icons.net subset |
 | All UI chrome (close, pause, play, faster, slower, find, settings, needs-you, back, forward, widen, pin, show-on-map eye, disclosure) | game-icons.net subset |
 | Magnitude languages (`OddsPips`, `CostPips`, `DeltaCluster`, `ForecastDie`, `DifficultyScales`) | Unchanged — Law 15's sanctioned glyph languages, not icons |
@@ -204,14 +205,15 @@ There are about twenty chip, pill and badge components (table below), each with 
 |---|---|---|---|---|
 | **identity** | "which thing?" | leading `EntityVisual` at `chip` size (Laws 1, 3) where the kind has an entity-visual family — a kind without one (attachments, by the THR-1120 ruling) takes the link tier and no tile, the documented fail-open path; the name; the tooltip from the registry (Law 17); a HoverCard after a dwell | `useRefRouterContext()?.open(ref)` — routes by kind (Law 21). A ref that no longer resolves renders plain text, never a dead link | neutral |
 | **state** | "how is it?" | the **word** always (Laws 13, 31 — polarity never by hue alone), optional icon, optional magnitude slot (`DeltaCluster` / `OddsPips` — Law 15) | optional (`onOpen`) | neutral · positive · negative · sphere (`sphereTint`) |
-| **count** | "how many are waiting?" | whole number (a count of things is not a magnitude; Law 49's "one affordance with a count") and an icon, except where the chip sits on a control that is already the icon (`IconButton`'s badge); `label` is the spoken sentence and the tooltip | `onOpen` opens the list and **never clears the count** (Law 40) | neutral · gold (the god's attention only: the needs-you pill) |
+| **count** | "how many are waiting?" | whole number (a count of things is not a magnitude; Law 49's "one affordance with a count") and an icon, except where the chip sits on a control that is already the icon (`IconButton`'s badge); in the full form `label` is the spoken sentence and the tooltip, while the badge form (below) leaves both to its control | `onOpen` opens the list and **never clears the count** (Law 40) | neutral · gold (the god's attention only: the needs-you pill) |
 | **keyword** | "what kind?" | the vocabulary word, from a fixed union, always; its icon once the vocabulary has an `IconName` map (Law 9 — one vocabulary per class). A text-only vocabulary (rarity tiers today) carries the word in its accent colour | optional toggle (`pressed`/`onToggle`, `aria-pressed`) for filter rows | the vocabulary's own accent (rarity tiers), else neutral |
 
+- **The badge form of a count** (`<Chip role="count" form="badge" count={n} of="notables" />`): for a count sitting on a control that already carries the name — `IconButton`'s badge today. About `1rem` tall (16 px at 1080p, as today's badge), pinned to the control's corner, not interactive, `aria-hidden`, no tooltip of its own: the control keeps its `aria-label` and tooltip exactly as today (e.g. `NotablesButton`'s "3 notables"). The full chip form is for a count that stands alone (the needs-you pill, the strip, Connections rows).
 - **A count of zero renders nothing** (Laws 25, 53). A count always shows its number, even at 1 — THR-1834's label rule gives every icon in a chip or strip either a word or a count, and a count chip's word lives in its tooltip, as the Ledger strip's does.
 - **Sizes, in rem so they step up with the root** (brief decision 3): `sm` `1.5rem` tall (24 px at 1080p, 27 px at 1440p; inline in rows and prose; still a 24 px hit area, Law 46) and `md` `2rem` (32 / 36 px; standalone). Icon at the `chip` size (`1.125rem`). Label `var(--text-xs)` (16 px at 1080p, 18 px at 1440p), Alegreya Sans, sentence case, no tracking (THR-1833). At 1440p the `sm` chip holds an 18 px label and a 20 px icon inside 27 px. Radius `--radius-chip`, no shadow.
 - **Pressing answers at once** (Law 47, PC-8): a keyword toggle shows its pressed state within `--anim-fast`; an interactive chip has hover, active and `:focus-visible` states (Law 23).
 - Interactive chips render a real button inside the component (Chip is a home of the `raw-button` row).
-- `data-chip-role` on the root, for tests and browser checks.
+- `data-chip-role` on the root, for tests and browser checks; a count chip also carries `data-count` and `data-count-of` (the owner's short key, e.g. `notables`).
 - **Name clash, noted once.** In the ubiquitous language and Law 56, "chip" alone means a **Consequence Chip** (`Docs/ubiquitous-language/Encounters.md` § Consequence Chip, aliases "Chip, aftermath chip"). The `Chip` component is the generic pill; a Consequence Chip is one use of it (`role="state"` with a kind tag). The UL entry needs no change — it governs game terms, and the component name never reaches a player — but `component-selection.md`'s `Chip` row says it in one line so an agent reading "chip" in an encounter ticket knows which is meant.
 
 **Today's chip components onto the roles** (player surfaces only; the UL viewer's and CMS's chips are dev tools and stay):
@@ -231,7 +233,7 @@ There are about twenty chip, pill and badge components (table below), each with 
 | `BondWordChip` (`Game/tabs/BondsTab.tsx`) | state | retired by THR-1827 — not migrated |
 | `EncounterBadge`, `ThreadTugBadge`, `MomentBadge`, `EntityNoticeBadge` (`Game/`) | count (the tug keeps its price in tooltip and label) | THR-1879's sweep — they draw `!` / `✦` glyphs today and need their carved icons first, so they move once |
 | `QueueBadge` (`Game/EventPopup.tsx`) | count | when touched |
-| `IconButton`'s `badge` slot (`shared/IconButton.tsx`) | count, no icon (the button is the icon) | S3 for a numeric `badge`; a string `badge` keeps today's rendering until its caller moves |
+| `IconButton`'s `badge` slot (`shared/IconButton.tsx`) | count, badge form, no icon (the button is the icon and carries the name) | S3 for a numeric `badge`; a string `badge` keeps today's rendering until its caller moves |
 | `CardKeywordChip` (`shared/CardKeywordChip.tsx`) | keyword | THR-1879's sweep — its type glyph becomes an `IconName`; then a thin wrapper, same export |
 | `RarityBadge` (`shared/RarityBadge.tsx`; used by `CardFace`) | keyword (text-only vocabulary, rarity accent) | when touched — today it is coloured text, not a pill, so moving it changes every card face; that belongs to a card-face ticket, not to the primitive's proof |
 | `contentTagChips` descriptors (`Game/contentTagChips.ts`) | keyword | not migrated — its only builders, `ArtifactSheet` and `AttachmentDetailView`, retire with THR-1827 |
@@ -248,7 +250,7 @@ Thin wrappers keep their export names so nothing that imports them changes; the 
 <Icon name="crossed-swords" size="alone" label="Fight" tooltipId="ui.fight" />   // carries meaning alone
 ```
 
-- **Registry name → shape.** `name: IconName` is typed, so an unknown literal is a compile error. One resolver, `src/components/shared/iconShape.ts` (Law 3), returns `{ viewBox, paths: { d, opacity? }[] }` for any name: `game-icons` entries from their own `d` (one path, 512 grid), `place` entries from the location-icon registry (layered paths with opacity — the map's own art). A `place-*` name whose place has no drawing yet resolves to the carved shape its entry names as `until`, or to `fallback` while no carved shape is vendored (THR-1834: "a missing place icon is never an emoji"). The registry stores **path data, never React components**, so a Unity port can turn the same data into a sprite atlas or vector imports.
+- **Registry name → shape.** `name: IconName` is typed, so an unknown literal is a compile error. One resolver, `src/components/shared/iconShape.ts` (Law 3), returns `{ viewBox, paths: { d, opacity? }[] }` for any name, read from the registry entry — one path at opacity 1 for a carved shape, layered paths for a drawing of our own. It is the **only** source of icon shapes, for places as much as for concepts: the map's texture builder (`locationIconTextures.ts`) rasterises the same `{ d, opacity }[]` shape, so when THR-1879 moves places onto carved shapes the map and the panel read one entry (THR-1834: "a castle looks the same on the map and in the panel"). The registry stores **path data, never React components**, so a Unity port can turn the same data into a sprite atlas or vector imports.
 - **Named sizes** (Law 11), as rem so they step up with the root: `floor` 14 px (0.875rem), `chip` 18 px (1.125rem), `list` 24 px (1.5rem), `alone` 34 px (2.125rem) — the last for an icon that carries meaning with no word beside it.
 - **`currentColor` tint.** Every path fills `currentColor`. Sphere colour, gold, polarity reach the icon through the parent's `color` (or `tint`) — never a recolour of the art and never per-path colours.
 - **Meaning-bearing needs words.** The props are a union: `{ decorative: true }` (renders `aria-hidden`) **or** `{ label: string }` (renders `role="img"` + `aria-label`). An icon cannot be meaning-bearing and unlabelled by accident. `tooltipId` wraps it in `Tooltip` — the Law 12 first-contact explanation; legends (the hand's glyph legend pattern) compose `Icon` + words.
@@ -257,8 +259,8 @@ Thin wrappers keep their export names so nothing that imports them changes; the 
 - **Fallback** (Law 4): a name that reaches the component at runtime without an entry (data from content) renders the designed neutral `fallback` shape and warns once — never a blank, never a throw.
 - **Credits** (CC BY 3.0) are THR-1879's: its words, its home (THR-1834 says "the credits screen"), built from `ICON_CREDITS` so every shipped author is named. The one constraint this plan sets: **the credits line ships in the same PR as the first `game-icons` entry**, because the deployed build is public. S3 vendors none, so S3 owes none.
 - **lucide-react leaves player surfaces.** Five player files import it today (`StartPage`, `chronicle/SoulCard`, `Encounter/ProseTtsButton`, `HexChronicle`, `LocationView`); debug, CMS, StyleGuide and lab may keep it. The ratchet row `lucide-import` holds the five; THR-1879's sweep replaces the three on kept surfaces; the other two sit in what the Inspector retires or reshapes (`LocationView`; `HexChronicle` as a view, whose prose the land page keeps — its lucide import goes with whichever ticket rebuilds it).
-- **What S3 seeds:** the `place-*` names for every key in the location-icon registry, and `fallback`. That is enough to prove the primitive end to end (a castle in a panel is the map's castle) without a licence obligation. The vendored subset — THR-1834's 44 sheet picks first, ~200 in all — arrives with THR-1879.
-- **Input for THR-1879's sweep order** (it decides; these are the measured hot spots): glyphs inside `src/components/shared/` first (`Modal.Header`'s `×`, `Card.Header`'s `✕`, `Medallion`'s `✦`, `FlavorQuote`, `Section`, `RivalIcon` — every surface using a primitive benefits), with the other `×` close marks on kept surfaces (`ToastStack`; `SettingsPanel`'s goes with THR-1880); then the four thread-row badges and `CardKeywordChip` onto `Chip` with carved icons; then the Law 9 duplicates on kept surfaces (Unicode sphere symbols in `ArchetypeCard`, `SphereSlider` and the avatar sigil → `SphereIcon`; `REACH_GLYPHS` → `ReachIcon`; place emoji → `place-*`); then the data tables by size (`attachmentGlyphs.ts` 40 after [THR-1874](https://linear.app/threadbare/issue/THR-1874), `codexRegistry.ts` 31, `sublocation-concept-art.ts` 31, `nudge-card-display.ts` 23, `calling-content.ts` 19). Skip what THR-1827 / THR-1828 retire (`HexPoiPanel` alone holds 21 glyphs, World Pulse 6).
+- **What S3 seeds:** `fallback` only, plus test fixtures. That proves the primitive (sizes, tint, labels, fallback, the resolver, the uniqueness tests) without a licence obligation. The vendored subset — THR-1834's sheet picks first, including the eleven place shapes, ~200 in all — arrives with THR-1879 and its credits line.
+- **Input for THR-1879's sweep order** (it decides; these are the measured hot spots): glyphs inside `src/components/shared/` first (`Modal.Header`'s `×`, `Card.Header`'s `✕`, `Medallion`'s `✦`, `FlavorQuote`, `Section`, `RivalIcon` — every surface using a primitive benefits), with the other `×` close marks on kept surfaces (`ToastStack`; `SettingsPanel`'s goes with THR-1880); then the four thread-row badges and `CardKeywordChip` onto `Chip` with carved icons; then the Law 9 duplicates on kept surfaces (Unicode sphere symbols in `ArchetypeCard`, `SphereSlider` and the avatar sigil → `SphereIcon`; `REACH_GLYPHS` → `ReachIcon`; place emoji and the map's place drawings → the carved `place-*` shapes); then the data tables by size (`attachmentGlyphs.ts` 40 after [THR-1874](https://linear.app/threadbare/issue/THR-1874), `codexRegistry.ts` 31, `sublocation-concept-art.ts` 31, `nudge-card-display.ts` 23, `calling-content.ts` 19). Skip what THR-1827 / THR-1828 retire (`HexPoiPanel` alone holds 21 glyphs, World Pulse 6).
 
 ### Styleguide sections (Law 29)
 
@@ -270,7 +272,7 @@ Each primitive lands with its `?view=styleguide` section **and** its `component-
 | **Overlay** | a launcher per backdrop (`dim` / `heavy` / `void` / `none`) and per band; a **stacking demo**: open an Overlay, open a Modal on it, press Escape → only the Modal closes, the readout shows `getEscapeLayers()` before and after (the THR-1816 class, live) |
 | **Panel and Card** | page ⊃ panel ⊃ inset nested once; `floating`; `glass` over a map-coloured ground; a Card with header, count, close and footer |
 | **Tabs** | `kind="tabs"` with *Now · Years · Ledger · 2*; `kind="toggle"` lens bar with key caps and `allowNone`; a keyboard caption |
-| **Chip** | a grid of the four roles × both sizes × tints; identity with a live ref and with a dead ref (plain text); count at 0 (captioned "renders nothing"), at 1 (the number shows) and at 12; keyword pressed/unpressed |
+| **Chip** | a grid of the four roles × both sizes × tints, plus the count's badge form on an `IconButton`; identity with a live ref and with a dead ref (plain text) — the section mounts a `RefRouterProvider` with a stub router that prints the opened ref in a readout, since the styleguide has no router today; count at 0 (captioned "renders nothing"), at 1 (the number shows) and at 12; keyword pressed/unpressed |
 | **Icon** | every `IconName` at all four sizes with its meaning and source (the Law 10 audit sheet; it iterates the registry, so THR-1879's shapes appear without a styleguide edit), tinted by two sphere colours; the fallback; a meaning-bearing icon beside its decorative twin, with the accessible name shown |
 
 ### UI Laws engaged
@@ -286,7 +288,6 @@ The primitives carry their owners' words; **this plan adds no new player-facing 
 | `IconButton` numeric badges (S3 → count): the top bar's Notables and Rivals buttons | Unchanged: the same whole number on the same button (e.g. the number of notables, `NotablesButton`'s `notableCount`); the button's tooltip and `aria-label` as today | PC-5 | One count instead of a stack; at zero the badge is not drawn, as today |
 | Tabs (S3; first used by the Ledger rail, THR-1828) | The owner's labels — THR-1828 fixes "Now", "Years", "Ledger" with its unread count ("Ledger · 2"); the styleguide sample uses those words | PC-8 | Pressing a tab moves the underline at once (Law 47); the panel below changes with it |
 | Keyword toggles and the lens bar (S3 toggle kind; THR-1830's "Dominion", "Threads", "Trouble", "Trade" with key caps "1"–"4") | The owner's words | PC-8 | A pressed toggle shows its pressed state at once; pressing it again turns it off, and the state says so |
-| Place icons in panels (S3 `place-*`) | No words of their own; the owner supplies the label (e.g. "Castle") | PC-6 | A castle in a panel is the map's castle |
 | Any meaning-bearing icon (S3) | The owner's label as `aria-label`, plus a registry tooltip where new (Law 12) | PC-1 | `Icon` will not render a meaning-bearing shape without a label |
 | Any surface over another (S2) | (no words) Escape closes the one on top | PC-8 | The surface they are looking at always answers the key |
 
@@ -302,7 +303,8 @@ N/A — the primitives raise no game events. Count chips render counts their own
 ### Debug inspection (DebugPanel and bridge)
 
 - **`window.__DEBUG.getEscapeLayers(): Promise<{ label: string; band: number }[]>`**, topmost first — the read behind every Escape-order assertion (the Inspector's *armed card → top dialog → full → wide → docked*, the Stage's minimise). Declared in `src/debug-bridge.d.ts`.
-- Root data attributes: `data-overlay-band`, `data-panel-level`, `data-chip-role`, `data-icon` — for Playwright and unit tests.
+- **`window.__DEBUG.getCountChips(): Promise<{ of: string; count: number }[]>`** (S3) — every mounted count chip, read from its `data-count-of` / `data-count` attributes. The read behind "the count did not clear on open" (Law 40) for the top-bar badges now and the needs-you pill and strip later. Declared in `src/debug-bridge.d.ts`.
+- Root data attributes: `data-overlay-band`, `data-panel-level`, `data-chip-role` (+ `data-count`, `data-count-of`), `data-icon` — for Playwright and unit tests.
 - No DebugPanel tab: nothing here has simulation state.
 
 ### Visual presence (HexMapV2)
@@ -362,9 +364,10 @@ Measured on `main` @ `3cf81086` (2026-10-14) with a scratch scan that implements
 
 | Row id | Owner | Reference detector | Reference count |
 |---|---|---|---|
-| `font-size-literal` | THR-1819 | `fontSize:` with a numeric value, `text-[Npx\|rem\|em]`, CSS `font-size: <number>` | 189 / 51 |
+| `literal-font-size` | THR-1819 | its plan doc § 11 (merged): a `fontSize:` value that still holds a bare number or a quoted `px`/`rem`/`pt`/`vw`/`vh` length after removing type-scale `var(--text-*)` references; a CSS `font-size:` with such a length; Tailwind `text-[<n>px\|rem]`; Tailwind sizes above the scale (`text-3xl`…); an undefined size token (`var(--text-2xs…)`). Named constants, `em`/`%`, computed templates and SVG `fontSize=` are not counted | 198 / 55 (THR-1819's count; this scan's narrower regex found 189 / 51) |
 | `modal-maxwidth` | THR-1820 | every `<Modal` or `<RevealCard` opening tag, **across lines**, that carries `maxWidth=`, in `src/components/**/*.tsx` (THR-1820's definition, from its cross-plan comment on THR-1821). A one-line or `[^>]`-bounded regex undercounts: arrow functions inside props contain `>` | 17 (THR-1820's count; this scan's naive regex found 13) |
-| `graph-query` | THR-1822 | `.getNode(`, `.getNodesByType(`, `.getAllNodes(`, `.getEdge(`, `.getOutgoingEdges(`, `.getIncomingEdges(`, `.getAllEdgesForNode(`, `.getEdgesByType(`, `.getAllEdges(`, `.getNeighborIds(`, `.getByTag(` in `src/components` + `src/hooks` | 197 / 42 |
+| `graph-query-in-ui` | THR-1822 | its plan doc § D14: every `WorldGraph` read method (`.getNode(`, `.getNodesByType(`, `.getAllNodes(`, `.getEdge(`, `.getOutgoingEdges(`, `.getIncomingEdges(`, `.getAllEdgesForNode(`, `.getEdgesByType(`, `.getAllEdges(`, `.getNeighborIds(`, `.getByTag(`) in the UI tree, debug tooling excluded (reported beside it, unratcheted) | 197 / 42 (both scans agree) |
+| `graph-write-in-ui` | THR-1822 | its plan doc § D14: every `WorldGraph` write method (`.addNode(`, `.removeNode(`, `.updateNode(`, `.addEdge(`, `.removeEdge(`, `.updateEdge(`, `.applyMutations(`, `.retargetEdgeSource(`) | 3 / 3 |
 
 **Deliberately not a row:** hand-built panel shells (`var(--bg-surface)` with a border and radius). Measured, the detector cannot tell a shell from a row background or a chip ground, so the number would be noise; Panel adoption is tracked through § Migration order and the `radius-literal`/`shadow-literal` rows, which every hand-built shell trips anyway.
 
@@ -428,7 +431,7 @@ Three tickets share this plan doc. The ratchet ships first because THR-1822 (and
 |---|---|---|---|
 | **S1 — ratchet and tokens** | [THR-1821](https://linear.app/threadbare/issue/THR-1821) (this ticket) | `check:ui-debt` with its 13 rows, baseline, tests, gate + CI wiring, docs; radius / shadow / scrim / glass tokens in `@theme static`; `--panel-radius` alias; `glowShadow()`; `tokens.md` | — |
 | **S2 — Overlay and Panel** | filed at handoff | `zBands.ts`, `Overlay`, `Panel`, `Modal` and `Card` re-based, `useEscapeLayer` label + `getEscapeLayers()`, the S2 migrations in § Migration order 3, styleguide sections, catalog rows | S1 |
-| **S3 — Icon, Chip and Tabs** | filed at handoff | `src/data/icons/iconRegistry.ts` (format, `place-*` names, `fallback`, `ICON_CREDITS`), `iconShape.ts`, `Icon`, `Chip`, `Tabs`, the S3 migrations in § Migration order 3, styleguide sections, catalog rows | S1 |
+| **S3 — Icon, Chip and Tabs** | filed at handoff | `src/data/icons/iconRegistry.ts` (format, `fallback`, `ICON_CREDITS`), `iconShape.ts`, `Icon`, `Chip`, `Tabs`, the S3 migrations in § Migration order 3, styleguide sections, catalog rows | S1 |
 
 Downstream, outside this plan: [THR-1880](https://linear.app/threadbare/issue/THR-1880) is blocked by S2 (it needs `Overlay`); [THR-1879](https://linear.app/threadbare/issue/THR-1879)'s execution builds on S3 (it fills the registry the primitive draws from).
 
@@ -444,7 +447,7 @@ Downstream, outside this plan: [THR-1880](https://linear.app/threadbare/issue/TH
 | `shared/useEscapeLayer.ts` (extended) | none | Overlay, Tooltip, Dropdown, the Inspector, move mode | — | — | `__DEBUG.getEscapeLayers()` |
 | `shared/Panel.tsx` | none | Card, Modal, rails, Inspector, legend cards | — | — | `data-panel-level`; dev-only nesting warning |
 | `shared/Tabs.tsx` | none | Ledger rail, lens bar | — | — | ARIA roles |
-| `shared/Chip.tsx` | none | needs-you pill, strip, Connections rows, thread rows, god rail | — | — | `data-chip-role` |
+| `shared/Chip.tsx` | none | `IconButton` badges now; the needs-you pill, strip, Connections rows, thread rows and god rail as they are built or swept | — | — | `data-chip-role`; `__DEBUG.getCountChips()` |
 | `shared/Icon.tsx` + `shared/iconShape.ts` + `src/data/icons/iconRegistry.ts` | none | everything that draws an icon; THR-1879's credits line reads `ICON_CREDITS` | — | — | `data-icon`; the styleguide Icon sheet; one console warning per unknown name |
 
 Player controls: Escape (through the registry), Tab / arrows inside `Tabs`, the owners' hotkeys (lens `1`–`4`). No prose pipeline involvement.
@@ -459,7 +462,7 @@ Player controls: Escape (through the registry), Tab / arrows inside `Tabs`, the 
 | `Card` props and compounds | **preserve** |
 | `IconButton` props (`icon`, `badge`) | **preserve**; `badge` renders through `Chip role="count"` |
 | `CardKeywordChip`, `RarityBadge` exports | **preserve** — each becomes a thin wrapper over `Chip` when it moves (THR-1879's sweep; a card-face ticket) |
-| `window.__DEBUG` (`src/debug-bridge.d.ts`) | **add** `getEscapeLayers()` |
+| `window.__DEBUG` (`src/debug-bridge.d.ts`) | **add** `getEscapeLayers()` (S2) and `getCountChips()` (S3) |
 | `scripts/gate.ts` `planGates` | **extend** — one gate in the code track |
 | CI `Test · Typecheck · Build` | **extend** — one step |
 | Any engine read or write | none (`Docs/canon/interface-map.md` has no UI-library row to change) |
@@ -482,6 +485,7 @@ Player controls: Escape (through the registry), Tab / arrows inside `Tabs`, the 
 | `GAME_ICON_VIEWBOX` | `'0 0 512 512'` | The game-icons grid |
 | `CHIP_HEIGHT_REM` | `sm 1.5 · md 2` | Chip heights = 24 / 32 px at 1080p, 27 / 36 px at 1440p (sm keeps the Law 46 hit area) |
 | `CHIP_PAD_X_REM` | `sm 0.5 · md 0.75` | Chip horizontal padding |
+| `CHIP_BADGE_HEIGHT_REM` | `1` | The count's badge form on a control (16 px at 1080p, today's badge size) |
 | `TAB_UNDERLINE_PX` | `2` | Selected / pressed underline |
 | `TAB_MIN_HEIGHT_REM` | `2.5` | Tab hit area (40 px at 1080p, 45 px at 1440p) |
 | `UI_DEBT_BASELINE_PATH` | `'ui-debt-baseline.json'` | Committed baseline |
@@ -501,7 +505,13 @@ interface EscapeLayerReading {
   label: string;   // the Overlay's label, or the useEscapeLayer caller's label ('unlabelled' if none)
   band: number;    // its Z_BAND value
 }
-getEscapeLayers(): Promise<EscapeLayerReading[]>;  // topmost first
+getEscapeLayers(): Promise<EscapeLayerReading[]>;  // topmost first (S2)
+
+interface CountChipReading {
+  of: string;      // the owner's short key, e.g. 'notables'
+  count: number;   // the number the chip shows
+}
+getCountChips(): Promise<CountChipReading[]>;      // every mounted count chip (S3)
 ```
 
 ## Fail-soft table
@@ -536,7 +546,7 @@ Not required: no file with ≥ 100 importers is edited. The widest are `Tooltip.
 ## Three-pillar check
 
 - [x] Engine pillar present (N/A with rationale: no engine module; the view-model seam is THR-1822)
-- [x] Content pillar present (the icon registry's data format, its `place-*` names, `fallback` and the `ICON_CREDITS` function; the concept-class maps and the credits line are THR-1879's)
+- [x] Content pillar present (the icon registry's data format, its `fallback` entry and the `ICON_CREDITS` function; the carved shapes — places included — the concept-class maps and the credits line are THR-1879's)
 - [x] UI pillar present (six primitives, tokens, styleguide, laws, text, debug reads)
 - [x] Wiring section connects them (module table, interface impact, gate wiring)
 
@@ -589,11 +599,11 @@ Not required: no file with ≥ 100 importers is edited. The widest are `Tooltip.
 
 **S3 — Icon, Chip and Tabs:**
 
-- [ ] `Icon`, `iconShape.ts`, `src/data/icons/iconRegistry.ts` (format, every `place-*` name, `fallback`, `ICON_CREDITS`) with the § UI pillar API; registry tests: unique shapes, non-empty meanings, every `d` parses, every `place-*` key exists in the location registry, `ICON_CREDITS` lists exactly the distinct `game-icons` authors (empty today); **no `game-icons` entry is vendored** (THR-1879 does that with its credits line)
+- [ ] `Icon`, `iconShape.ts`, `src/data/icons/iconRegistry.ts` (format, `fallback`, `ICON_CREDITS`) with the § UI pillar API; registry tests (run on fixture entries as well as the real registry): unique shapes, non-empty meanings, every `d` parses, a carved entry is one path, `ICON_CREDITS` lists exactly the distinct `game-icons` authors (empty today); **no `game-icons` entry is vendored** (THR-1879 does that with its credits line)
 - [ ] `Chip` and `Tabs` with the § UI pillar APIs; the S3 rows of the chip mapping table migrated; thin wrappers keep their exports
 - [ ] Tests: identity chip routes through the router and falls back to text on a dead ref; count chip renders nothing at 0, shows its number at 1 and does not clear on open; tabs keyboard (arrows, Home/End), `allowNone` toggle, unknown value falls back to the first tab; a meaning-bearing `Icon` without `label` does not type-check (a `@ts-expect-error` fixture)
 - [ ] Styleguide *Icon*, *Chip* and *Tabs* sections; `component-selection.md` rows (the `Chip` row carries the Consequence Chip note); `primitives.md` specs; `Chip.tsx` and `Tabs.tsx` added to the `raw-button` homes; any row that fell is re-baselined
-- [ ] Browser evidence at 1920×1080 (Playwright): `?view=game&seeded&size=medium` — the top bar's Notables and Rivals buttons with their count badges after migration (same number, same tooltip; opening Notables leaves its count unchanged, Law 40), plus the three styleguide sections, including an identity chip opening a live ref from the styleguide; a `window.__DEBUG.*` read of the number the Notables badge counts, matched against the rendered chip (add a small `getTopBarBadges()` reader to the bridge if no accessor exposes it); console clean; UI-Laws line for 1, 9, 10, 11, 12, 13, 21, 25, 31, 40, 46
+- [ ] Browser evidence at 1920×1080 (Playwright): `?view=game&seeded&size=medium` — the top bar's Notables and Rivals buttons with their count badges after migration (same number, same tooltip; opening Notables leaves its count unchanged, Law 40), plus the three styleguide sections, including an identity chip opening a live ref from the styleguide; `await window.__DEBUG.getCountChips()` before and after opening the Notables list, showing the same `{ of: 'notables', count }`; console clean; UI-Laws line for 1, 9, 10, 11, 12, 13, 21, 25, 31, 40, 46
 
 ## Coordination block
 
@@ -601,11 +611,11 @@ Not required: no file with ≥ 100 importers is edited. The widest are `Tooltip.
 
 **Suggested model:** sonnet — two ratchets in the repo give the exact shape (verdicts, baseline I/O, entry guard); the detectors are specified here with fixtures. Advisory only.
 
-**Blocks:** [THR-1820](https://linear.app/threadbare/issue/THR-1820) — it registers its `modal-maxwidth` row after S1 lands, and records itself as blocked by THR-1821 for that reason (its cross-plan comment, 2026-10-14). [THR-1822](https://linear.app/threadbare/issue/THR-1822) likewise adds `graph-query` after S1 (see Mutex).
+**Blocks:** [THR-1820](https://linear.app/threadbare/issue/THR-1820) — it registers its `modal-maxwidth` row after S1 lands, and records itself as blocked by THR-1821 for that reason (its cross-plan comment, 2026-10-14). [THR-1822](https://linear.app/threadbare/issue/THR-1822) likewise adds `graph-query-in-ui` and `graph-write-in-ui` after S1 (see Mutex).
 
 **Parallel-safe with:** [THR-1819](https://linear.app/threadbare/issue/THR-1819) — it adds its `font-size-literal` row only after S1 lands (brief). It and THR-1820 also edit `src/index.css`; S1 adds one new `@theme` block after the Tailwind import and one alias line, a region neither of them changes, so a merge is mechanical. Parallel-safe with [THR-1881](https://linear.app/threadbare/issue/THR-1881) (GameView split — S1 touches no component). (The S2 and S3 slice tickets are blocked by S1, so they never run beside it.)
 
-**Mutex with:** [THR-1822](https://linear.app/threadbare/issue/THR-1822) — both edit the ratchet script and the `npm run gate` wiring (brief); S1 lands the script first, then THR-1822 adds its `graph-query` row. Also any ticket editing `scripts/gate.ts` or the CI `Test · Typecheck · Build` job.
+**Mutex with:** [THR-1822](https://linear.app/threadbare/issue/THR-1822) — both edit the ratchet script and the `npm run gate` wiring (brief); S1 lands the script first, then THR-1822 adds its two rows. Also any ticket editing `scripts/gate.ts` or the CI `Test · Typecheck · Build` job.
 
 **Files to touch:** (S1)
 - Create: `scripts/check-ui-debt.ts`, `scripts/ui-debt-rows.ts`, `scripts/__tests__/check-ui-debt.test.ts`, `ui-debt-baseline.json`
@@ -621,7 +631,7 @@ The S2 and S3 coordination blocks are on their own tickets (filed at handoff, ea
 - **The ratchet is a floor, not a cleanup.** S1 changes no surface to lower a number. Lowering counts is the slices' and the touching tickets' work.
 - **Re-measure before committing the baseline**, and compare with § rows. A big difference means a detector differs from the spec; fix the detector (with a fixture) rather than accepting the number.
 - **Keep the row list as data** in `ui-debt-rows.ts`, importable without side effects. The entry guard idiom (`import.meta.url === argv[1]`) works here because the script is not esbuild-bundled; if it ever is bundled, move the pure half out first (the chip ratchet's lesson).
-- **Do not add the sister rows.** `font-size-literal`, `modal-maxwidth` and `graph-query` are registered by THR-1819, THR-1820 and THR-1822 with their own plan docs' definitions; the reference counts here are for cross-checking only.
+- **Do not add the sister rows on your own initiative.** `literal-font-size`, `modal-maxwidth`, `graph-query-in-ui` and `graph-write-in-ui` are registered by THR-1819, THR-1820 and THR-1822 with their own plan docs' definitions; the reference counts here are for cross-checking only. **One exception:** THR-1819's plan (§ 11) says that if it executes before S1 lands it posts its row's spec as a comment on THR-1821 for S1's executor to register. Read THR-1821's comments at claim; register any sister row posted there, with a re-measured baseline, and say so in the PR.
 - **`HexMapV2/**/*.ts` is excluded from the colour rows only** — its `.tsx` HTML overlays still count, and it is in scope for every other row.
 - **Tailwind v4 `@theme static`:** check the built CSS for the variables. Do not fire the kill criterion because `rounded-panel` has no rule while nothing uses it — Tailwind only generates used utilities.
 - **Do not touch `.claude/skills/`** for the gate list; `npm run gate` picks the gate up from `scripts/gate.ts`, and the canon doc is the place that names it.
@@ -637,14 +647,16 @@ Technical *how* of an agreed outcome (process.md rule 4), each open to Christian
 4. **`Card` stays, as the titled `Panel`;** a bounded surface is a Panel, a playing card is `CardFace`.
 5. **Tabs are never gold** — the lens ruling, applied to every tab row.
 6. **Chip is one component whose role decides what it must carry;** zero counts render nothing; opening a count never clears it.
-7. **Icon is registry data plus one resolver;** a meaning-bearing icon cannot be unlabelled; the credit list is generated from the vendored set. **Split with THR-1879:** this plan ships the primitive, the registry format, `place-*` names, `fallback` and `ICON_CREDITS`; THR-1879 vendors the carved shapes, writes the credits line (in the same PR as the first shape), fills the concept → shape table and sets the legacy sweep order.
+7. **Icon is registry data plus one resolver;** a meaning-bearing icon cannot be unlabelled; the credit list is generated from the vendored set. **Split with THR-1879:** this plan ships the primitive, the registry format, `fallback` and `ICON_CREDITS`; THR-1879 vendors the carved shapes (places included, per THR-1834's amendment) and moves the map's place textures onto them, writes the credits line (in the same PR as the first shape), fills the concept → shape table and sets the legacy sweep order.
 8. **Each surface moves once (with THR-1880):** S2 leaves the six dialogs THR-1880 owns alone and only swaps the Escape listeners it must; the Divine Court and the Codex are dialogs, not ceremonies.
 9. **Count chips always show their number,** even at 1 — THR-1834's rule that an icon in a chip carries a word or a count.
 10. **Three tickets:** S1 is this ticket; S2 Overlay + Panel and S3 Icon + Chip + Tabs follow, all on this plan doc.
 
 ## Forked-audit verdicts
 
-*Generated by design-audit-pipeline — 2026-10-14. The auditors read revision 2; the two notes they raised (glass blur budget, Vision citations) are answered in the NFP table row 7 and § Vision audit.*
+*Generated by design-audit-pipeline — 2026-10-14. The auditors read revision 2; the two notes they raised (glass blur budget, Vision citations) are answered in the NFP table row 7 and § Vision audit. Revisions 3–5 narrowed S3's live migrations, added the count chip's badge form and a debug reader, and folded in THR-1834's amendment (places carved); none adds an engine pillar, a tunable without a constant, or a player-facing premise, so the verdicts below were not re-run.*
+
+*Intent-judge: Revise (rev 1, 2, 3) → Allow (rev 4); rev 5 confirmation below the audits.*
 
 ### NFP audit
 
