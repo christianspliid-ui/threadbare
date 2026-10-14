@@ -56,8 +56,8 @@ describe('THR-999 — every player-castable template reaches the Codex', () => {
     expect(
       missing.map(t => t.id),
       missing.length
-        ? `Player-castable templates absent from the Codex. Add a bucketing arm in ` +
-          `getAllCodexEntries() (and a CodexCategory if it needs a new home):\n${diagnostic}`
+        ? `Player-castable templates absent from the Codex. Add the prefix to ` +
+          `ACTION_CATEGORY_RULES in src/data/action-categories.ts (THR-1886):\n${diagnostic}`
         : '',
     ).toEqual([]);
   });

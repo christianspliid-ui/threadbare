@@ -14,23 +14,20 @@
 | A map lens | One `MapLensDef` in `MAP_LENSES` (`src/data/map-lenses.ts`) plus its layer | `MapLensId` is a closed union | The lens bar on the map | One place; THR-1878 grows it to four lenses |
 | A shared UI part (a primitive or a variant) | `src/components/shared/`, with a style guide section and a `component-selection.md` row in the same PR (Law 29) | `styleguideSync.test.ts` | `?view=styleguide` | One place |
 | A moment: a surface that stops the world or comes forward on its own (an encounter, a story beat, a gift, a rite, the end of a cycle…), and which home it plays in (the Stage, a dialog or a full-screen ceremony) | One entry in `HOMED_SURFACES` (`src/data/homed-surfaces.ts`): kind, surface, home, stops time, waits its turn, palette, clock-holder words, held line. Then its open predicate in `HOMED_SURFACE_OPEN_WHEN` and its case in its home's host (`StageHost`, `DialogHost` or `CeremonyHost`). The interrupt registry, the clock-holder names, the dialogue palettes and the ceremony list are derived from it | `homedSurfaces.test.ts` names the list; a missing predicate or host case is a type error; an unknown kind renders `HomedSurfaceFallback` | `__DEBUG.getInterruptState().homedSurfaces` (the list as data); `__DEBUG.openHomedSurface(kind)` on `?view=game&seeded&size=medium` once THR-1892 lands | **Designed** (plan `Docs/plans/2026-10-14-thr-1877-encounter-stage.md` § D1); THR-1877's build makes it one place |
-| A player action | `src/data/unified-action-templates.ts` | Partly guarded (see below) | The hand, the action catalog, the Codex | **Several places**: THR-1886 makes it one |
+| A player action | `src/data/unified-action-templates.ts`; a **new id-prefix** also takes one row in `ACTION_CATEGORY_RULES` (`src/data/action-categories.ts`) | `action-categories.test.ts` and the catalog generator fail on an unclaimed prefix and name the file; `codexCatalogCoverage.test.ts` | The hand, the action catalog, the Codex | One place (THR-1886) |
 | An icon for a concept | Today scattered glyph tables. Do not add a new emoji or symbol glyph: the UI-debt ratchet (THR-1821) only lets that count go down | The ratchet | `?view=styleguide` | **Several places**: THR-1885 builds the `Icon` primitive; THR-1904 fills the one concept → shape table and makes this one place (design: `Docs/plans/2026-10-14-thr-1879-type-and-icons-rollout.md` § 11, which holds the replacement row) |
-| A Codex category | `catDefs` in `getCodexCategories()` (`src/components/Codex/codexRegistry.ts`) and the entries that use it | `codexCatalogCoverage.test.ts` | `?view=codex` | **Several places**: THR-1886 derives `catDefs` from one category list |
+| A Codex category | Action categories: one entry in `ACTION_CATEGORIES` (`src/data/action-categories.ts`); the Codex tabs derive from it. Other categories: `catDefs` in `getCodexCategories()` (`src/components/Codex/codexRegistry.ts`) | `ActionCategory` is a closed union (a missing label, glyph or Codex mapper is a type error); `codexCatalogCoverage.test.ts` | `?view=codex` | One place for action categories (THR-1886) |
 | A Needs-you ask | Not built yet: the queue's source is a view model (THR-1822) shown by the frame (THR-1875) | — | The top bar's Needs you | Designed as one registry of producers |
 
-## A new player action, today (until THR-1886 lands)
+## A new player action
 
-A template edit alone is not enough when the action uses a **new id-prefix** (for example `company.bless`). Do all six, or the action disappears from some surface without any failure:
+Add the template to `src/data/unified-action-templates.ts`. If its id uses a prefix that is already filed (`divine.`, `hex.`, `loc.`, `company.`, …), that is the whole edit. If the prefix is **new** (for example `company.bless` before `company.` existed):
 
-1. **Action catalog:** add the prefix to `categoryFor(id)` in `scripts/generate-action-catalog.ts` and a member to its `CatalogCategory` union. An unknown prefix returns `null` and the action is left out.
-2. **Regenerate the catalog:** `public/action-catalog.generated.json` must change in the same PR (the wiki-freshness gate).
-3. **Beat grant:** if a beat grants the action, add its id to `ASCENDANT_ACTION_BUCKETS` (`src/data/ascendant-beat-content.ts`). Tests fail and name the id if you forget.
-4. **Commit generated artifacts** before running `npm run check:generated-freshness`, which compares against HEAD.
-5. **Codex entries:** add an arm for the prefix in `getAllCodexEntries()` (`src/components/Codex/codexRegistry.ts`). A missing arm hides the action from the Codex silently.
-6. **Codex category:** make sure the entry's category has a `catDefs` row in `getCodexCategories()`. A missing row makes the whole category unreachable.
+1. **One row:** add the prefix to `ACTION_CATEGORY_RULES` in `src/data/action-categories.ts`, naming its category. Only if the action needs a new home, add one entry to `ACTION_CATEGORIES` (Codex tab label, glyph, catalog facet) and one mapper to `ACTION_ENTRY_MAPPERS` in `codexRegistry.ts`; the typecheck names both. If you forget the row, `action-categories.test.ts` and `npm run generate-action-catalog` fail with *add `<prefix>` to src/data/action-categories.ts*.
+2. **Beat grant:** if a beat grants the action, add its id to `ASCENDANT_ACTION_BUCKETS` (`src/data/ascendant-beat-content.ts`). Tests fail and name the id if you forget.
+3. **Generated artifacts:** regenerate `public/action-catalog.generated.json` and commit it before running `npm run check:generated-freshness`, which compares against HEAD.
 
-`codexCatalogCoverage.test.ts` now catches 5 and 6 after the fact, grouped by prefix. THR-1886 replaces 1, 5 and 6 with one prefix → category table that both the catalog script and the Codex read.
+The action catalog and the Codex both read the one table; neither keeps prefix arms of its own (THR-1886). `invest.*` is filed in the Codex but kept out of the designer catalog by `DESIGNER_CATALOG_EXCLUDED_PREFIXES`, as before.
 
 ## When there is no row for what you are adding
 

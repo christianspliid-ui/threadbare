@@ -35,6 +35,12 @@ import { effectSourceFor, type EffectSource } from '../src/data/actionEffectSour
 import { RARITY_TIER_NAMES, type RarityTier } from '../src/types/rarity';
 import { REACH_DOMAINS, type ReachDomain } from '../src/types/traits';
 import { type UnifiedActionTemplate } from '../src/types/unifiedAction';
+import {
+  catalogCategoryFor,
+  uncategorisedActionMessages,
+  type CatalogCategory,
+} from '../src/data/action-categories';
+import { isPlayerReachableTemplate } from '../src/engine/content-eval/unreachableActions';
 
 export const SCHEMA_VERSION = 3;
 
@@ -48,23 +54,12 @@ const OUTPUT_FILE = 'public/action-catalog.generated.json';
  */
 export { effectSourceFor, type EffectSource };
 
-/** Top-level catalog facet, mirroring the in-game Codex grouping (codexRegistry.ts). */
-export type CatalogCategory =
-  | 'divine'
-  | 'action'
-  | 'hex'
-  | 'location'
-  | 'artifact'
-  | 'company'
-  | 'threads';
-
-/** Thread/insight verbs the Codex groups under "Thread & Insight". */
-const THREAD_INSIGHT_IDS: ReadonlySet<string> = new Set([
-  'observe_agent',
-  'scry_agent',
-  'whisper_insight',
-  'dream_sending',
-]);
+/**
+ * Top-level catalog facet. Declared, with the prefix → facet table, in
+ * `src/data/action-categories.ts` (THR-1886) — the same table the in-game Codex reads.
+ * Re-exported to preserve the generator's public surface.
+ */
+export type { CatalogCategory };
 
 export interface ActionCatalogEntry {
   readonly id: string;
@@ -118,25 +113,6 @@ export interface ActionCatalogData {
     readonly unauthoredEffects: number;
   };
   readonly entries: readonly ActionCatalogEntry[];
-}
-
-/**
- * Classify a template id into a catalog facet, or null if it is not an
- * ascendant-facing action (encounter / faction / army / monster templates are
- * agent-driven, not player-fired, so they are excluded). Mirrors the Codex's
- * id-prefix grouping in codexRegistry.ts.
- */
-function categoryFor(id: string): CatalogCategory | null {
-  if (id.startsWith('divine.')) return 'divine';
-  if (id.startsWith('hex.')) return 'hex';
-  if (id.startsWith('loc.') || id.startsWith('sub.')) return 'location';
-  if (id.startsWith('artifact.')) return 'artifact';
-  if (id.startsWith('company.')) return 'company';
-  if (id.startsWith('bind_thread_') || id.startsWith('thread.') || THREAD_INSIGHT_IDS.has(id)) {
-    return 'threads';
-  }
-  if (id.startsWith('action.')) return 'action';
-  return null;
 }
 
 /**
@@ -209,11 +185,19 @@ function tally(entries: readonly ActionCatalogEntry[], pick: (e: ActionCatalogEn
 }
 
 export function buildCatalogData(): ActionCatalogData {
+  // A player-castable template whose prefix no rule claims fails the build here, naming the
+  // prefix and the file to edit — never a silent `null` that drops it from the catalog
+  // (THR-1886, UI Law 58).
+  const uncategorised = uncategorisedActionMessages(UNIFIED_ACTION_TEMPLATES.filter(isPlayerReachableTemplate));
+  if (uncategorised.length > 0) {
+    throw new Error(`generate-action-catalog: ${uncategorised.join('\n')}`);
+  }
+
   const reachOrder = new Map<string, number>(REACH_DOMAINS.map((r, i) => [r, i]));
 
   const entries = UNIFIED_ACTION_TEMPLATES
     .map((template) => {
-      const category = categoryFor(template.id);
+      const category = catalogCategoryFor(template.id);
       return category ? toEntry(template, category) : null;
     })
     .filter((e): e is ActionCatalogEntry => e !== null)
