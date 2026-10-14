@@ -30,7 +30,7 @@ Most of the issue's evidence surfaces are retired by the Inspector (THR-1827) or
 | `Docs/audits/2026-10-13-thr-1833-type-system-decision.md` | 16 px floor; prose one size step above UI text ("THR-1819 sets it") |
 | UI Laws 26, 29, 33, 34, 35, 36, 49, 50 | Surface chosen by what the player must do; a primitive lands with its styleguide entry and selection row; one viewport; safe centering; z-bands from the table; progressive lists; coalesced counts; focus follows the surface |
 
-**What this plan takes from THR-1819.** THR-1819's plan was written in parallel; the numbers below are the brief's, and the names are those of THR-1819's draft (`2026-10-14-thr-1819-1440p-layout-contract.md`, unmerged when this was written). If its merged plan renames one, the executor uses the merged name; no value here changes.
+**What this plan takes from THR-1819.** THR-1819's plan was written in parallel and merged while this one was in review (`Docs/plans/2026-10-14-thr-1819-1440p-layout-contract.md`); the numbers below are the brief's and the names are that plan's, checked against its merged text.
 
 - **The tiers and their blocks.** `base` (< 1920), `fhd` (≥ 1920), `qhd` (≥ 2560), `uwqhd` (≥ 3440): `:root` plus three `@media (min-width: …)` blocks in `src/index.css`. The size tokens below are declarations added to those blocks; this plan adds no `@media` rule of its own.
 - **Two token families.** Frame geometry is px, restated in every tier block; text containers are rem, declared once, so they step with the root. This plan follows the same split: S and M are text containers (rem), L and XL are frame-scale (px per tier).
@@ -38,8 +38,8 @@ Most of the issue's evidence surfaces are retired by the Inspector (THR-1827) or
 - **`--modal-max-h: 85vh`**, the one modal height rule, which THR-1819 applies to `Modal.tsx:70` (75vh today). Every tier reads it; this plan adds no second 85vh value.
 - **`--panel-padding`** stays 1.25rem from 1920 up (20 px, then 22.5 px after the root step); `Modal.Header` / `Modal.Body` already read it.
 - **Type.** `--text-base` (story prose) becomes 20 px at 1080p and `--measure-prose` is 34em; used below only to check the S width.
-- **The layout-contract module and its parity test** (`layoutContract.ts` in the draft). The size tokens join its tables so one test pins CSS and TS together.
-- **Not consumed:** the frame tokens (`--rail-left-w`, `--rail-right-w`, `--inspector-w`, `--inspector-wide-w`, the Stage tokens). They are cited only to check that L sits beside the Stage panel (derived 1272 / 1592 / 1592 in the draft) and the Inspector at a sensible scale.
+- **The layout-contract module and its parity test** (`src/components/shared/layoutContract.ts`: `FRAME_TOKENS_PX` per tier, `TEXT_TOKENS_REM` once). The size tokens join those tables so one test pins CSS and TS together.
+- **Not consumed:** the frame tokens (`--rail-left-w`, `--rail-right-w`, `--inspector-w`, `--inspector-wide-w`, the Stage tokens). They are cited only to check that L sits beside the Stage panel (derived 1272 / 1592 / 1592 in THR-1819's plan) and the Inspector at a sensible scale.
 
 ## Substrate inventory
 
@@ -100,7 +100,7 @@ Width per tier at each screen; every tier caps its height at **85vh** (918 px at
 |---|---|---|---|---|---|
 | **S** | 600 (37.5rem) | 675 | 675 | auto, ≤ 85vh | One column of prose. Rem, declared once, so it steps with the type. 600 is today's `Modal` default, so every default caller is unchanged at 1080p. 600 − 2 × 20 padding = 560 px of text, about 60 characters of 20 px Alegreya (`--text-base` after THR-1819); at 2560 the same 60 characters, because width and type both step ×1.125. Shorter than `--measure-prose` (680 px) on purpose: S holds notices, not long reading |
 | **M** | 960 (60rem) | 1080 | 1080 | auto, ≤ 85vh | One column of structured content. Rem, declared once. 960 holds one row of four hand cards (`CARD_WIDTH_PX` 210 × 4 + 3 × 12 px gap = 876 px, the Stage's row of `CARDS_PER_ROW` 4) inside 2 × 20 px of padding; at 2560 the row has 1035 px |
-| **L** | 1280 | 1600 | 1600 | auto, ≤ 85vh | A subject and its record side by side (§ 4). Px per tier, like the frame. Matches the Stage panel (1272 / 1592 / 1592 in THR-1819's draft), so a moment and a dialog read at the same scale; 1600 leaves 480 px of screen visible on each side at 2560 |
+| **L** | 1280 | 1600 | 1600 | auto, ≤ 85vh | A subject and its record side by side (§ 4). Px per tier, like the frame. Matches the Stage panel (1272 / 1592 / 1592 in THR-1819's plan), so a moment and a dialog read at the same scale; 1600 leaves 480 px of screen visible on each side at 2560 |
 | **XL** | 1760 | 2240 | 2880 | **fixed 85vh** | A work surface that brings its own panes (the Codex). Px per tier. Fixed height so its panes have a height to fill and do not jump as a filter changes. The only tier that takes 3440's extra width |
 
 **Why S, M and L stop growing at 3440.** The 3440 screen gets extra width, not a type step (brief rule 1). A prose dialog wider than its text is harder to read, and a row of four cards does not become five. The extra width goes to XL and to the map behind every dialog; this matches the Stage panel, which also holds its 2560 size at 3440.
@@ -481,7 +481,7 @@ interface DialogSizeReport {
 
 - **Do not touch** tables B and C surfaces beyond the `JourneyVignetteModal` one-word fix: they are deleted by THR-1827 / THR-1829 builds (brief rule 10).
 - **Do not touch** the slice-2 hand-built dialogs (`SettingsPanel`, `ChoiceSetModal`, `ScryOverlay`, the Codex overlay, `HarvestScreen`, `WarmStartOverlay`); they belong to THR-1821's Overlay slice and then THR-1880. The court and the Codex are **dialogs** (THR-1829's three homes, brief rule 7), whatever THR-1821's draft calls them; that conflict is on record on THR-1821 and THR-1880, and THR-1880 settles it with THR-1821's executor.
-- **Names from sibling drafts.** `--modal-max-h`, the tier names, the layout-contract module, `scripts/ui-debt-rows.ts` and `ui-debt-baseline.json` come from THR-1819's and THR-1821's drafts. If their merged plans renamed any, use the merged name; the values and definitions here do not change.
+- **Names from sibling plans.** `--modal-max-h`, the tier names and `layoutContract.ts` come from THR-1819's merged plan. `scripts/ui-debt-rows.ts`, `ui-debt-baseline.json` and the row name `modal-maxwidth` come from THR-1821's draft. If THR-1821's merged plan renamed any of them, use the merged name; the values and definitions here do not change.
 - **The gift row:** the four-card M fit relies on the hand's card gap (`NudgePhaseShell`'s row of four, 876 px). If `RevealCard.Frame`'s side chrome leaves less than 876 px inside 960, narrow the gap, do not widen M.
 - **The Chapter Ledger reader** keeps `ChapterView` as it is (the right column); the "Back" button is hidden in the two-column layout (the index is already visible) and kept in the one-column `embedded` mode. Store the selection as the row key and derive the record from the current rows (memoised on the rows), not as a `ChapterRecord` snapshot. A jsdom test covers: newest row selected on open; a click on a row whose record is null shows "This chapter has no record to show yet."; a live row's step label and its chapter agree after the rows recompute.
 - **`.claude/skills/frontend-ui/SKILL.md`** still says "Max-height 75vh, default max-width 600px". THR-1819 fixes the height; this plan owns the width line. If the skill edit is refused in your session, file a small follow-up issue and say so in the closeout.
