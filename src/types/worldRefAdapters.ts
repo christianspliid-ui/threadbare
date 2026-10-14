@@ -293,12 +293,14 @@ export function fromGraphNode(node: GraphNodeLike | null | undefined): WorldRef 
   if (!node) return undefined;
   const name = node.name;
   switch (node.type) {
-    // A culture is a collective that opens the faction sheet, as its tile already does
-    // (`entityVisualResolver` draws a culture with the faction visual). An army is an
-    // actor told apart by `actorType: 'group'`.
+    // An army is an actor told apart by `actorType: 'group'`. A culture has no sheet of
+    // its own — `FactionSheet` reads a faction definition a culture does not carry — so it
+    // names nothing here; a caller holding the graph resolves it to its Realm first
+    // (`resolveCultureRealm`).
     case 'actor': {
       const actorType = node.properties?.actorType;
-      if (actorType === 'faction' || actorType === 'culture') return { kind: 'faction', id: node.id, name };
+      if (actorType === 'culture') return undefined;
+      if (actorType === 'faction') return { kind: 'faction', id: node.id, name };
       if (actorType === 'group') return { kind: 'army', id: node.id, name };
       return { kind: 'agent', id: node.id, name };
     }

@@ -151,8 +151,7 @@ import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificat
 import { useRefRouter } from '../../hooks/useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
-import { fromGraphNode } from '../../types/worldRefAdapters';
-import { useDetailNodeRefOpener } from '../../hooks/useDetailNodeRefOpener';
+import { useDetailNodeRefOpener, worldRefForNodeId } from '../../hooks/useDetailNodeRefOpener';
 import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
 import { DetailModal } from '../shared/DetailModal';
 import { HoverCard } from '../shared/HoverCard';
@@ -3360,7 +3359,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const beatSubjectId = pendingBeat?.kind === 'introduction' ? pendingBeat.boundNodeIds?.[0] : undefined;
   const beatSubjectRef = useMemo(() => {
     if (!beatSubjectId) return undefined;
-    const ref = fromGraphNode(gameState.graph.getNode(beatSubjectId));
+    // A bound culture resolves to the Realm over it — a culture has no sheet of its own.
+    const ref = worldRefForNodeId(gameState.graph, beatSubjectId);
     return ref?.kind === 'faction' ? ref : undefined;
   }, [beatSubjectId, gameState.graph]);
 

@@ -443,11 +443,6 @@ exports[`DetailPage — event > snapshot: event 1`] = `
       >
         ESC closes · ← steps back · the encounter remains paused
       </span>
-      <button
-        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
-      >
-        open her sheet ↗
-      </button>
     </div>
   </div>
 </div>
@@ -625,11 +620,6 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
       >
         ESC closes · ← steps back · the encounter remains paused
       </span>
-      <button
-        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
-      >
-        open her sheet ↗
-      </button>
     </div>
   </div>
 </div>
@@ -807,11 +797,6 @@ exports[`DetailPage — item > snapshot: item 1`] = `
       >
         ESC closes · ← steps back · the encounter remains paused
       </span>
-      <button
-        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
-      >
-        open her sheet ↗
-      </button>
     </div>
   </div>
 </div>
@@ -998,11 +983,6 @@ exports[`DetailPage — place > snapshot: place 1`] = `
       >
         ESC closes · ← steps back · the encounter remains paused
       </span>
-      <button
-        style="background: none; border: 1px solid var(--border-gold); border-radius: 4px; color: var(--accent-gold); cursor: pointer; font-size: 0.72rem; font-family: var(--font-display); letter-spacing: 0.06em; padding: 4px 10px;"
-      >
-        open her sheet ↗
-      </button>
     </div>
   </div>
 </div>

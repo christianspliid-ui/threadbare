@@ -18,7 +18,7 @@ import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { NavigationTarget } from '../../types/notification';
 import type { WorldRef } from '../../types/worldRef';
 import { useRefRouter, type RefRouter } from '../useRefRouter';
-import { useDetailNodeRefOpener } from '../useDetailNodeRefOpener';
+import { useDetailNodeRefOpener, worldRefForNodeId } from '../useDetailNodeRefOpener';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
 import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
@@ -130,7 +130,6 @@ describe('fromGraphNode names a node the way the router speaks (THR-1851)', () =
   it.each([
     ['aethel', 'agent'],
     ['skyfield', 'faction'],
-    ['dunes', 'faction'],
     ['host', 'army'],
     ['market', 'location'],
     ['stall', 'sublocation'],
@@ -140,6 +139,24 @@ describe('fromGraphNode names a node the way the router speaks (THR-1851)', () =
 
   it('a node with no world-ref kind names nothing, so no door is drawn to it', () => {
     expect(fromGraphNode(g.getNode('evt'))).toBeUndefined();
+    // A culture has no sheet of its own (FactionSheet would say "Faction data unavailable").
+    expect(fromGraphNode(g.getNode('dunes'))).toBeUndefined();
     expect(fromGraphNode(undefined)).toBeUndefined();
+  });
+});
+
+describe('a culture opens the Realm over it (THR-1851)', () => {
+  it('worldRefForNodeId resolves a culture to the faction minted as realm.<cultureId>', () => {
+    const g = worldGraph();
+    g.addNode(n({ id: 'culture_0', type: 'actor', name: 'The Witness Skyfield', properties: { actorType: 'culture' } }));
+    g.addNode(n({ id: 'faction_0', type: 'actor', name: 'the hold of Witness Skyfield', properties: { actorType: 'faction', factionDefId: 'realm.culture_0' } }));
+    expect(worldRefForNodeId(g, 'culture_0')).toEqual({ kind: 'faction', id: 'faction_0', name: 'the hold of Witness Skyfield' });
+  });
+
+  it('a culture with no Realm over it names nothing, and a missing id names nothing', () => {
+    const g = worldGraph();
+    g.addNode(n({ id: 'culture_9', type: 'actor', name: 'The Lonely', properties: { actorType: 'culture' } }));
+    expect(worldRefForNodeId(g, 'culture_9')).toBeUndefined();
+    expect(worldRefForNodeId(g, 'nobody')).toBeUndefined();
   });
 });
