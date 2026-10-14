@@ -24,7 +24,11 @@ import type { GameState } from '../../types/gameState';
 
 const SEED = 42;
 const TICKS = 30;
-const MILESTONE_SMOKE_TIMEOUT_MS = 15_000;
+// Sized for the shared heavy CI runner, not an idle machine (THR-1927): the file
+// took 77 s for 8 tests on CI run 38592965062, and the 40-tick persistence test
+// timed out at the old 15 s (also under `npm run gate`'s parallel load, impediment
+// #1167). Supersedes PR #2367's 45 s. A genuinely hung run still fails.
+const MILESTONE_SMOKE_TIMEOUT_MS = 60_000;
 const { cols, rows } = MAP_SIZE_PRESETS['small'];
 
 const ascendantArchetype = generateArchetypes(4, SEED)[0];
