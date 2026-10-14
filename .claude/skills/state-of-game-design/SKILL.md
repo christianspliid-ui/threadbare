@@ -6,7 +6,7 @@ description: >
   task actually needs. Replaces the monolithic SKILL.md with a thin router +
   on-demand shards pattern (THR-377).
 validated_doctrine: rules-of-play@1
-last_validated_against: 2026-08-28
+last_validated_against: 2026-10-14
 ---
 
 # State of the Game Design — Router
@@ -61,6 +61,7 @@ Canon pages are the per-domain entrypoints — they list current spec pointers a
 
 | Domain | Skill | When |
 |--------|-------|------|
+| Game design laws | `game-design-laws` | Any design or implementation pass that changes a mechanic — odds, rewards, progression, failure, the god's powers, economies, clocks |
 | Engine code | `engine-architecture` | Tick loop, tracing, resolution, PRNG, graph ops |
 | Frontend & UI | `frontend-ui` | Components, styling, layout, design system tokens |
 | Content & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers |

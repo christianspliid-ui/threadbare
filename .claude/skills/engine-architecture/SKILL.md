@@ -5,7 +5,7 @@ description: >
   tracing, PRNG usage, or any code that lives in src/engine/. Triggers on "engine",
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-14
 validated_doctrine: architecture@1
 ---
 
@@ -177,6 +177,8 @@ Content-facing capabilities include: new effect types in `effects.ts`, new graph
 ## Design Assessment for Engine Work
 
 Before implementing any new engine system or significant engine change, verify the design document includes an NFP audit. If no audit exists, write one before coding.
+
+A change to a mechanic the player feels (odds, rewards, progression, failure costs, prices, clocks) also loads `game-design-laws` and runs its law check against the diff.
 
 ### Engine-specific NFP checklist
 

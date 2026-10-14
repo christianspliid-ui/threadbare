@@ -38,6 +38,7 @@
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
 - **Visual style** → `STYLE.md` (art direction) + `Docs/design-system/` (UI) + `?view=styleguide` (living component reference). Hex asset registry: `src/data/hex-tile-assets.ts`.
 - **Canonical terminology** → `Docs/ubiquitous-language/` (UL wins on disagreements).
+- **Game design laws** (the fundamentals every mechanic keeps) → `Docs/game-design/laws.md` only, loaded by the `game-design-laws` skill. Plans and the rulebook cite a law by number rather than restating it.
 
 ---
 

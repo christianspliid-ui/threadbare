@@ -38,6 +38,10 @@ A finding needs **all three**: a `file:line` in the diff, the check it breaks, a
 18. **Close keyword misuse** — `Fixes/Closes/Resolves THR-XX` not alone on its own line, or naming an issue the diff does not close. Authority: Docs/canon/definition-of-done.md (relocated from CLAUDE.md § Definition of Done, THR-1718) (THR-738).
 19. **Orphan deferral** — a new `// TODO` / `// DEFERRED` without `(THR-XX)`. Authority: Docs/canon/definition-of-done.md (relocated from CLAUDE.md § Definition of Done, THR-1718) → Log deferrals.
 
+## F. How the game behaves
+
+20. **A Game Design Law broken** — the diff breaks an [E] law in `Docs/game-design/laws.md`: a forecast that is not the roll (Law 18), a failure that lowers Reach (Law 24), an authored rate players do not get (Law 1). Authority: that book; precedents: THR-1575 (planner forecast ≠ roll), THR-1889 (Legendary set at 5%, paid 2.6%).
+
 ## Severity
 
 - **high** — wrong game state, data loss, a crash, or a silent no-op of the feature the PR claims to ship.

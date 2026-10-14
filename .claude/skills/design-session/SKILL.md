@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-10-05
+last_validated_against: 2026-10-14
 ---
 
 # design-session
@@ -138,7 +138,8 @@ Promotion is not a file move. The vault draft is the **source**; the committed p
 3. **Load always-on context:** `Docs/ubiquitous-language/README.md`, `Docs/canon/rulebook-quick-reference.md`.
 4. **Canon Step 0 (authoring/content tasks):** load `Docs/canon/<domain>.md` **before any other reference
    material** — `encounters.md`, `cosmology.md`, `prose.md`, `hex-map.md`, `rulebook.md` as the task dictates.
-   For design work, also load the `state-of-game-design` router and `game-design-direction` (player-facing).
+   For design work, also load the `state-of-game-design` router and `game-design-direction` (player-facing),
+   and `game-design-laws` when the design changes a mechanic (odds, rewards, progression, failure, the god's powers, economies).
 5. **Pick the lifecycle stage** (see § Two lifecycle stages). Genuinely open work starts **exploratory** in the
    vault — skip Steps 1–4 entirely until it promotes, and put a `**Draft:** \`Brainstorms/….md\`` line on the
    issue. Work that will hand off this session starts **committed** and runs the full flow below.
@@ -160,6 +161,7 @@ the spine:
   cross-system write must name its production read site or cite a `Deferral` issue. `lint:plan-doc` nags.
 - **Draft** the plan doc — all three pillars — plus its **Brainstorm companion** in the same pass.
 - **Audit** against the 7 NFPs, load-bearing decisions, and rejected approaches; **Revise** inline.
+- **Game Design Laws** — run the `game-design-laws` law check; a design that would break an [E] law goes to Christian as a plain-language yes/no, never silently.
 - **Summarize** with an NFP-compliance table; **three-pillar check** (Engine / Content / UI / Wiring).
 - **Vision audit** and **Rulebook impact** — if the plan changes a Vision premise or a rule of play, the edit
   is part of *this* ticket's scope, not a follow-up.
