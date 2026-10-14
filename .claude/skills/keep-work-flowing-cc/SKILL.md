@@ -69,7 +69,7 @@ npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/o
 | verdict `held` | **Omit.** A decision already taken is not an open question (THR-985) |
 | healthy verdicts (`deployed`, `healthy`, `ok`, `active`, `waiting`) | Silence |
 | `unknown`, or a probe that failed to run | One § Health line; **never read `unknown` as healthy** |
-| `check:workflows`: a `postMerge` entry `red`/`red-stale`, or a scheduled entry `all-red` | **Step 3b (a) — a ticket, not a note.** One § Health line that links the ticket. Never an ask, whatever its `needsChristian` says: CI is agent-owned (Christian, 2026-10-04). The probe's "log it as an impediment row" wording predates step 3b and is superseded by it |
+| `check:workflows`: a `postMerge` entry `red`/`red-stale`, or a scheduled entry `all-red` | **Step 3b (a) — a ticket, not a note.** One § Health line that links the ticket. Never an ask: CI is agent-owned (Christian, 2026-10-04), so the probe reports these as `needsSession`, never `needsChristian` |
 
 Standing declines: nightly-shaped **and weekend-shaped** `recovered` gaps in lane-silence are declined per Christian's 2026-08-08 ruling ("overnight quiet is normal") and its 2026-09-11 extension to weekends (`Docs/canon/process.md` § User review interface, rule 4) with one visibility line — a `recovered` verdict is an ask only on a weekday gap with no pause marker. Do not carry a `UL-proposal`, an image-credit spend inside a ticket's stated batch, or a `wayfinder:*` decision ticket as a standing ask — all three are delegated by the same rule. Freshness special cases: never report a behind-count off a detached HEAD; detached-with-unique-commits → surface the SHAs, offer no repair command.
 

@@ -17,9 +17,9 @@ name: Heavy simulation tests
 # it is detected. The window is bounded — the next push to `main` or the
 # nightly run — and the conclusion is READ (the THR-834 lesson) by
 # `scripts/check-workflow-health.ts`, which the hourly briefing lane runs: a
-# red here reaches `## Needs Christian` only once it has stayed red for
-# `PUSH_LANE_RED_GRACE_HOURS`; before that it is a line in the health block and
-# an impediment row for the next session.
+# red here becomes a Ready-for-Dev ticket for the builder (keep-work-flowing-cc
+# step 3b) and a health line that links it. It is never a `## Needs Christian`
+# ask: CI is agent-owned.
 #
 # This workflow is deliberately NOT a required status check and must not
 # become one — that would put the 25-minute gate back.
