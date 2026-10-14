@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-14 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-14 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,6 +9,10 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 It happened again on the night of 12 to 13 Oct: no lane ran from 03:57 until 13:57 on Tuesday 13 Oct.
+
+### The mortal economy map: are any of its ten questions yours alone?
+
+[The map](https://linear.app/threadbare/issue/THR-1863/wayfinder-map-mortal-economy-making-wealth-and-want-drive-what-agents) was charted this morning from [the economy audit](https://claude.ai/artifact/8VYSa156r31iTpSty2Cm1v). The audit found that money drives towns and armies, but no mortal or faction decision looks at wealth. The map has ten questions, for example what money means to a mortal, what a faction does with its purse, and what you as a god get from all this. **Are any of these yours alone to answer? And does the destination wording fit?** Until you say, the design lane may decide the rest for you, with a veto each time. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-14e.md)*
 
 ### Set the TypeSafe key, when convenient
 
@@ -32,6 +36,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-14: factions are reachable from a world card again** ([THR-1851](https://linear.app/threadbare/issue/THR-1851/factions-are-still-out-of-reach-the-links-on-a-world-card-render-as)), the top fix from warm round 2.
 - **2026-10-14: the warm brief ticket is closed and warm round 2 ran** ([THR-1785](https://linear.app/threadbare/issue/THR-1785/warm-brief-v1-tripped-its-kill-criterion-2-of-3-testers-were-coverage)). [Round 2 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/warm-playtest-round-2.md).
 - **2026-10-14: towns founded during play now belong to a people** ([THR-1839](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick)). Merged via [#2366](https://github.com/christianspliid-ui/threadbare/pull/2366).
 - **2026-10-14: hovering a besieged town or a battle now says what it is in words** ([THR-1847](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering)). Merged via [#2365](https://github.com/christianspliid-ui/threadbare/pull/2365) and live.
@@ -41,7 +46,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-13: Dominion shows on the map and on every sheet, so you can see your turf** ([THR-1750](https://linear.app/threadbare/issue/THR-1750/dominion-on-the-map-and-on-every-sheet-the-player-can-see-their-turf)). Merged via [#2359](https://github.com/christianspliid-ui/threadbare/pull/2359) and live.
 - **2026-10-13: after the bond, the god's screen fills one gift at a time** ([THR-1837](https://linear.app/threadbare/issue/THR-1837/the-gods-screen-fills-one-gift-at-a-time-after-the-bond-only-the)). Merged via [#2355](https://github.com/christianspliid-ui/threadbare/pull/2355) and live.
 - **2026-10-12: Dominion core: one graded read of how much a place or thing is yours, used by prices and checks** ([THR-1748](https://linear.app/threadbare/issue/THR-1748/dominion-core-one-graded-read-of-how-much-a-world-object-is-the-gods)). Merged via [#2351](https://github.com/christianspliid-ui/threadbare/pull/2351) and live.
-- **2026-10-12: a long vignette on the Meet-The-First picker no longer runs off the bottom of the screen** ([THR-1836](https://linear.app/threadbare/issue/THR-1836/meet-the-first-picker-a-long-vignette-runs-past-the-bottom-of-the)). Merged via [#2345](https://github.com/christianspliid-ui/threadbare/pull/2345) and live.
 
 ---
 
