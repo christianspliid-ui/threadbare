@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-10-06
+last_validated_against: 2026-10-14
 ---
 
 # Keep Work Flowing (CC)
@@ -10,8 +10,8 @@ Hourly PM run. Output: two files on the `ops` branch — `Design/briefing.md` (t
 
 ## Non-negotiables
 
-- **PM, not executor.** Never claim or implement issues, never `save_issue(state:...)`, never touch `src/`. The only repo files this lane writes are the two Design files, published via `ops-publish.sh`.
-- **Do not file tickets.** Findings about the delivery machinery go to the impediment log or this run's output; the weekly retro is the promotion point (CLAUDE.md § Process-work throttle). Exception: a loss actively corrupting work right now.
+- **PM, not executor.** Never claim or implement issues, never move an existing issue's state, never touch `src/`. The only repo files this lane writes are the two Design files, published via `ops-publish.sh`. The one Linear write it makes is creating step 3b's incident tickets.
+- **Do not file tickets, except step 3b's two incident tickets.** Other findings about the delivery machinery go to the impediment log or this run's output; the weekly retro is the promotion point (CLAUDE.md § Process-work throttle). A red main and a stalled builder are not improvement ideas: they stop delivery, and only a ticket reaches the lane that can fix them (step 3b).
 - **Plain language for Christian (THR-608), links always (Rule Zero).** Only creative/design decisions and switches only he can flip go to him. Technical verdicts — CI state, merge mechanics, not-a-defect calls — are the agent's; routing them to him is mislabelling. **So are gate/test calibration and the *how* of an agreed design** (canon `process.md` § User review interface, rule 4 — Christian, 2026-08-12): a ticket that self-labels "needs a decision" becomes an ask only when it is a genuine creative fork — a fork in what the game should *mean*, with no agreed outcome to test against. Otherwise the brief notes the decision an agent should make (or has made, with a veto window), and never queues it on him. The THR-1092/THR-998 pair is the calibration example: both were briefed as his calls; his ruling was that neither should have been.
 - **Never fabricate asks.** "Nothing needs you right now" is a correct brief.
 - **A gameplay-review ask waits for a level system (canon `process.md` § User review interface, rule 5 — Christian, 2026-08-13).** Before briefing "X is ready for your eyes," verify every element of X — data, logic, content, UI — has shipped to the surface he will open (engine merged, content authored against the new shape, UI rendering it). A system whose elements are at different levels gets a *status line with the missing pieces named and linked*, never a review invitation; the review ask fires once, when the last element lands.
@@ -69,12 +69,50 @@ npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/o
 | verdict `held` | **Omit.** A decision already taken is not an open question (THR-985) |
 | healthy verdicts (`deployed`, `healthy`, `ok`, `active`, `waiting`) | Silence |
 | `unknown`, or a probe that failed to run | One § Health line; **never read `unknown` as healthy** |
+| `check:workflows`: a `postMerge` entry `red`/`red-stale`, or a scheduled entry `all-red` | **Step 3b (a) — a ticket, not a note.** One § Health line that links the ticket. Never an ask, whatever its `needsChristian` says: CI is agent-owned (Christian, 2026-10-04). The probe's "log it as an impediment row" wording predates step 3b and is superseded by it |
 
 Standing declines: nightly-shaped **and weekend-shaped** `recovered` gaps in lane-silence are declined per Christian's 2026-08-08 ruling ("overnight quiet is normal") and its 2026-09-11 extension to weekends (`Docs/canon/process.md` § User review interface, rule 4) with one visibility line — a `recovered` verdict is an ask only on a weekday gap with no pause marker. Do not carry a `UL-proposal`, an image-credit spend inside a ticket's stated batch, or a `wayfinder:*` decision ticket as a standing ask — all three are delegated by the same rule. Freshness special cases: never report a behind-count off a detached HEAD; detached-with-unique-commits → surface the SHAs, offer no repair command.
 
 **Sibling fold:** newest `orchestrator-*` / `backlog-grooming-*` / `weekly-hygiene-*` / `design-lane-*` / `cold-playtest-round-*` / `warm-playtest-round-*` report **per producing task** from `origin/ops` (`git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working-tree copies are a frozen pre-cutover archive), ≤36 h old. Fold each `## Needs Christian` section in **verbatim with attribution** (`— from daily-backlog-grooming`), dedupe against your own items, skip empty states. A gap in a sibling's reports is not a fault — no-op runs write no file.
 
 **Veto fold (THR-1611).** `design-lane-*` reports also carry `## Decided for you` — decisions the unattended design lane made under process.md rule 4. Collect those lines from **every** design-lane report ≤ `DESIGN_LANE_VETO_WINDOW_HOURS` (24 h) old (not only the newest) into the briefing's `## Decided for you` section, verbatim with their links. **They are not asks:** they never enter the lead, never count in *Also waiting*, never get an ask key, and never ring the Discord doorbell (step 7). They exist so a veto is one chat message away — a decision older than the window has had its day and drops off.
+
+### 3b. Incident tickets: a red main or a stalled builder (Christian, 2026-10-14)
+
+A Health line reaches nobody who can act on it. The builder (`tb-opus-pickup`) takes only Ready-for-Dev tickets, and Christian does not fix CI. On 2026-10-14 two problems sat in the brief as notes. `heavy-tests.yml` was red on main for two days, reported every hour as "the builder owes a fix" with no ticket (filed by hand as THR-1927). The builder stood down for three hours with 24 tickets ready, and the brief called the lane "on time". So these two findings become tickets. Each check is idempotent: the same incident never gets a second ticket.
+
+**(a) Red main.** Trigger: step 3's `check:workflows` has a `postMerge` entry with verdict `red` or `red-stale` whose `redSinceMs` is at least `RED_MAIN_TICKET_MIN_MINUTES` old, or a scheduled `workflows` entry with verdict `all-red`. The wait gives the session that merged the change one brief cycle to fix its own follow-up.
+
+1. **Dedupe.** `list_issues(team:"Threadbare", query:"<workflow file, e.g. heavy-tests.yml>")`. Keep issues not in Done, Canceled or Duplicate. If one exists, link it on the Health line and stop here.
+2. **Read the failure.** `gh run list --repo christianspliid-ui/threadbare --workflow <file> --branch main --limit 20 --json databaseId,createdAt,conclusion` gives the newest red run, the first red after the last green, and the red count. `gh run view <newest red id> --log-failed` gives the `Failed Tests` block. For each failing test, take its file:line, its name and the first error line. Note whether it is an assertion or a timeout.
+3. **File.**
+   - `title`: `<workflow name> red on main — <the cause in a few words> (<file>)`. The file name in the title is what step 1 finds next hour.
+   - Fields: `project:"Continuous Improvement"`, `labels:["Infrastructure","Bug"]`, `priority:2`, `state:"Ready for Dev"`, `assignee:null`.
+   - `description`: *Context* (red since, red count, run ids, each failing test with file:line and error), *What to do* (fix the cause; a timeout gets a named, CI-sized budget with a one-line reason, never a bare literal), and *Done when* (the workflow passes on the merge commit of the fix).
+   - Then post the coordination block as the first comment (`Suggested model`, `Parallel-safe with`, `Mutex with`, `Blocked by`, each with its reason; pillars Engine / Content N/A / UI N/A).
+4. **Verify after the write.** Run `get_issue`. A create can default the assignee to "me", so re-assert `assignee:null` if it did. The state must read Ready for Dev.
+
+**(b) Stalled builder.** Trigger, all three must hold, from `list_task_runs(taskId:"tb-opus-pickup", limit:10)`:
+- No row is `running`. A run that is building has not stalled.
+- The newest `STALL_RUNS` rows each lasted (`last_activity_at` − `started_at`) under `STALL_RUN_MAX_MINUTES`. A run that claims, unsticks or ships takes far longer. One that stands down ends in about a minute: the three on 2026-10-14 took 1–2 min each.
+- Step 2 found at least one unassigned Ready-for-Dev ticket. With an empty queue, short runs are correct.
+
+Three runs is about an hour, longer than any armed PR should wait on CI. So a PR waiting on CI that long counts as a stall too.
+
+**Short runs are not always a stall: read the reasons before filing (step 2 below).** If every one of the runs says that nothing in Ready for Dev was claimable, the lane is idle by design and nothing is filed. Claimable means each ready ticket is still inside its veto window, labelled `Parked`, blocked by an open ticket, or mutexed with live work. On 2026-10-13, five short runs from 21:11Z to 22:31Z each reported their three ready tickets inside veto windows. Any other reason is a stall: a stuck or waiting PR, a WIP-hook refusal, a predecessor stand-down, an error, or no reason at all.
+
+1. **Dedupe.** `list_issues(team:"Threadbare", query:"Builder stalled")`. Keep issues not in Done, Canceled or Duplicate. If one exists, link it on the Health line and stop here.
+2. **Read why the runs stood down.** For each of the stalled runs, `mcp__ccd_session_mgmt__list_events(session_id, limit:4)` gives its closing message, which names the stand-down reason. Quote one line each. If that call fails, use each row's `summary` from `list_task_runs`. If every reason is "nothing claimable" (see above), stop: no ticket and no Health line. Otherwise add the open PRs: `gh pr list --repo christianspliid-ui/threadbare --state open --json number,title,isDraft,autoMergeRequest,mergeStateStatus,updatedAt`.
+3. **File.**
+   - `title`: `Builder stalled: <N> pickup runs in a row stood down — <reason in a few words>`.
+   - Fields: `project:"Continuous Improvement"`, `labels:["Infrastructure","Bug"]`, `priority:1` (Urgent, so the next run able to claim takes it before anything else), `state:"Ready for Dev"`, `assignee:null`.
+   - `description`: *Context* (each run's start time, length and quoted reason; the open PRs; the Ready-for-Dev count), *What to do* (find why runs stand down and remove the cause. A stuck PR belongs to pull-work Step 0.8's unstick duty. A rule that stands runs down wrongly gets fixed as a harness change, shipped directly. If the WIP hook refuses this claim, the PR it names is the stall: unstick that PR first, per the hook's own refusal text), and *Done when* (a pickup run claims or ships a ticket, read from `list_task_runs`).
+   - Coordination block as in (a).
+4. **Verify after the write**, as in (a).
+
+**Fail-soft.** If a read or a write fails, put one Health line naming the incident and the failure, then continue the brief. Never retry in a loop. Next hour's run tries again, and step 1's dedupe makes that safe.
+
+**In the brief,** each incident is one § Health line with the ticket link: *"Heavy tests red on main since <time>; ticket [THR-X](url) filed for the builder."* or *"The builder stood down <N> runs in a row since <time> with <K> tickets ready; ticket [THR-X](url) filed."* Neither is ever an ask.
 
 ### 4. Compose `Design/briefing.md` (overwrite whole)
 
@@ -152,3 +190,5 @@ Linear unreachable → brief carries a loud stale-queue banner, rest of the run 
 | Sibling report max age | 36 h |
 | Tick-cost drift line | steady ms/tick > 25% above the 7-day median (`TICK_COST_DRIFT_FRACTION`, `scripts/check-tick-cost.ts`); trend at `origin/ops:Docs/ops/tick-cost-trend.tsv` |
 | `user-actions.md` cap | ~150 lines |
+| `RED_MAIN_TICKET_MIN_MINUTES` | 60 (red on main this long before step 3b (a) files; one brief cycle for the merging session) |
+| `STALL_RUNS` / `STALL_RUN_MAX_MINUTES` | 3 / 3 (this many newest pickup runs, each shorter than this, with tickets ready = a stalled builder, step 3b (b)) |
