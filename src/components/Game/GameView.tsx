@@ -6165,7 +6165,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               data-testid="right-sidebar"
               className="flex-shrink-0 overflow-y-auto"
               style={{
-                width: 'var(--sidebar-width)',
+                width: 'var(--rail-right-w)', // THR-1819 Ledger rail: 340 at 1080p, 420 at 1440p
                 background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
                 borderLeft: '1px solid var(--border-subtle)',
               }}

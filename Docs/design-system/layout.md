@@ -1,65 +1,52 @@
 # Layout System
 
-**Read this when:** positioning panels, sizing sidebars, building the top bar, handling breakpoints, or deciding where a new UI zone lives.
+**Read this when:** positioning panels, sizing rails, building the top bar, handling breakpoints, or deciding where a new UI zone lives.
+
+**The 1440p layout contract (THR-1819).** 2560×1440 is the primary screen, 1920×1080 the supported floor. Every width, padding and type step below is a token in `src/index.css`; JS reads the same numbers from `src/components/shared/layoutContract.ts`, and `layoutContract.test.ts` fails the build if the two disagree. Plan: `Docs/plans/2026-10-14-thr-1819-1440p-layout-contract.md`.
 
 ---
 
 ## Breakpoints
 
-| Name | Width | Height | Notes |
-|------|-------|--------|-------|
-| `hd` | 1280px | 720px | Minimum supported. Graceful degradation only. |
-| `fhd` | 1920px | 1080px | **Primary target. All QA done here.** |
-| `qhd` | 2560px | 1440px | Intermediate wide. Panels expand. |
-| `uwqhd` | 3440px | 1440px | Ultrawide. Two-panel layout unlocks. |
+| Tier (`LayoutTier`) | Applies at | Designed? | Notes |
+|------|-------|-------|-------|
+| `base` | width < 1920 | No | Earlier behaviour; the 1280×720 minimum must not break. Pre-existing tokens keep their old defaults, new ones take their 1920 value |
+| `fhd` | width ≥ 1920 | **Yes — the supported floor (1920×1080)** | Frame widths at their 1080p values; root 16px |
+| `qhd` | width ≥ 2560 | **Yes — the primary screen (2560×1440)** | Frame widths at their 1440p values; root 18px |
+| `uwqhd` | width ≥ 3440 | Width only | Same type and panels as `qhd`; the extra width goes to the map and the Stage window |
 
-CSS breakpoint variables (add to `:root` when needed):
-```css
-/* Use as: @media (min-width: 1920px) { } */
---bp-hd:    1280px;
---bp-fhd:   1920px;
---bp-qhd:   2560px;
---bp-uwqhd: 3440px;
-```
+**Breakpoints live in TS, not in CSS variables.** CSS custom properties cannot drive media queries, so there are no `--bp-*` tokens. The edges are `LAYOUT_BREAKPOINTS_PX` in `layoutContract.ts` (`{ fhd: 1920, qhd: 2560, uwqhd: 3440 }`), and `index.css` restates every frame token in one `@media (min-width: …)` block per tier.
+
+**The root step-up.** `@media (min-width: 2560px) and (min-height: 1200px) { html { font-size: 112.5% } }` — everything in rem scales ×1.125 at 1440p. The height guard keeps a 2560×1080 ultrawide at 1080p type. Tiers read CSS pixels, so OS scaling and browser zoom move a player between tiers; that is their own enlargement and the game honours it.
 
 ---
 
 ## Layout Zones
 
-The game screen is divided into three horizontal zones, stacked vertically:
-
-```
-┌─────────────────────────────────────────────────────┐
-│  TOP BAR  (full width, fixed height)                │  Zone A
-├──────────────────────────────┬──────────────────────┤
-│                              │                      │
-│   MAP AREA  (fluid center)   │  RIGHT PANEL (fixed) │  Zone B
-│                              │                      │
-└──────────────────────────────┴──────────────────────┘
-```
-
-At ultrawide (3440px+), a **left panel** unlocks:
+The game screen is the top bar over three columns: the god rail, the map, and the Ledger rail.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  TOP BAR  (full width, fixed height)                        │
+│  TOP BAR  (full width, --topbar-height)                     │  Zone A
 ├───────────────┬──────────────────────────┬──────────────────┤
 │               │                          │                  │
-│  LEFT PANEL   │   MAP AREA  (fluid)      │  RIGHT PANEL     │
-│  (context)    │                          │  (retinue/info)  │
+│  GOD RAIL     │   MAP AREA  (fluid)      │  LEDGER RAIL     │  Zone B
+│ --rail-left-w │                          │ --rail-right-w   │
 │               │                          │                  │
 └───────────────┴──────────────────────────┴──────────────────┘
 ```
+
+The god rail is always on the left (THR-1828); there is no ultrawide-only left panel any more. The Ledger rail folds to a `--rail-strip-w` strip, and the Inspector docks beside the god rail at `--inspector-w` (THR-1827).
 
 ---
 
 ## Zone A — Top Bar
 
-| Property | 1280px (hd) | 1920px (fhd) | 2560px+ (qhd+) |
+| Property | base (<1920) | fhd (1920) | qhd / uwqhd (2560+) |
 |----------|------------|--------------|----------------|
-| Height | 44px | 48px | 52px |
-| Padding (x) | 12px | 16px | 20px |
-| Gap between groups | 12px | 16px | 20px |
+| Height (`--topbar-height`) | 44px | 48px | 56px |
+| Padding x (`--topbar-padding-x`) | 12px | 16px | 20px |
+| Gap between groups (`--topbar-gap`) | 12px | 16px | 20px |
 
 ### Top Bar Sections (left → right)
 
@@ -77,20 +64,19 @@ At ultrawide (3440px+), a **left panel** unlocks:
 - Right group: threats, alerts, system — things that demand attention
 - Gold divider (`ml-auto`) separates signal from status
 - All buttons minimum 32×32px tap target
-- Text in top bar uses `--text-sm` (17px) — never smaller
+- Text in top bar uses `--text-sm` (18px at 1080p) — never smaller
 
 ---
 
 ## Zone B — Map Area
 
-The map area is `flex-1` and fills all remaining width after panels.
+The map area is `flex-1` and fills all remaining width after the rails. Its share of the screen is a tested budget (THR-1828): **≥ 0.60** with both rails open (`FRAME_MAP_SHARE_MIN`) and **≥ 0.45** with the Inspector docked (`FRAME_MAP_SHARE_MIN_INSPECTOR`), checked by `layoutContract.test.ts` at 1920×1080, 2560×1440 and 3440×1440.
 
-| Viewport | Right panel | Left panel | Map width |
-|---------|-------------|-----------|-----------|
-| 1280px | 280px | — | ~1000px |
-| 1920px | 360px | — | ~1560px |
-| 2560px | 400px | — | ~2160px |
-| 3440px | 420px | 380px | ~2640px |
+| Screen | God rail | Ledger rail | Map rect | Share |
+|---------|-------------|-----------|-----------|-----------|
+| 1920×1080 | 320px | 340px | 1260 × 1032 | 0.627 |
+| 2560×1440 | 400px | 420px | 1740 × 1384 | 0.653 |
+| 3440×1440 | 400px | 420px | 2620 × 1384 | 0.732 |
 
 ### Map initial zoom
 - At 1920px: `initialScale: 2.5` — shows the full world with context
@@ -99,37 +85,24 @@ The map area is `flex-1` and fills all remaining width after panels.
 
 ---
 
-## Zone B — Right Panel
+## Zone B — The rails, the Inspector and the Stage (frame tokens)
 
-Fixed width. Contains: RetinuePanel, WorldPulse, AgentInfoCard (rotating based on state).
+Frame geometry is px and restated in every tier block of `src/index.css`. Components always read the token (`width: var(--rail-right-w)`), never a literal.
 
-| Viewport | Width | Token |
-|---------|-------|-------|
-| 1280px | 280px | `--sidebar-width` |
-| 1920px | 360px | `--sidebar-width` |
-| 2560px | 400px | `--sidebar-width` |
-| 3440px | 420px | `--sidebar-width` |
+| Token | base | fhd ≥1920 | qhd ≥2560 | uwqhd ≥3440 | Source |
+|---|---|---|---|---|---|
+| `--rail-left-w` (god rail) | 320 | 320 | 400 | 400 | THR-1828 |
+| `--rail-right-w` (Ledger rail) | 280 | 340 | 420 | 420 | THR-1828 |
+| `--rail-strip-w` (folded rail) | 56 | 56 | 56 | 56 | THR-1828 |
+| `--inspector-w` (docked) | 560 | 560 | 717 | 717 | THR-1827 |
+| `--inspector-wide-w` | 960 | 960 | 1280 | 1280 | THR-1827 |
+| `--inspector-full-trail-w` | 240 | 240 | 300 | 300 | THR-1827 |
+| `--inspector-full-aside-w` | 360 | 360 | 440 | 440 | THR-1827 |
+| `--stage-gutter` | 24 | 24 | 24 | 24 | THR-1829 |
+| `--stage-window-w` | 280 | 280 | 520 | 1400 | THR-1829 |
+| `--stage-left-col-w` | 340 | 340 | 560 | 560 | THR-1829 |
 
-**Implementation:** `--sidebar-width` should be set via a `@media` block in `src/index.css`, not hardcoded in components. Components always use `width: var(--sidebar-width)`.
-
-```css
-:root { --sidebar-width: 280px; }
-@media (min-width: 1920px) { :root { --sidebar-width: 360px; } }
-@media (min-width: 2560px) { :root { --sidebar-width: 400px; } }
-@media (min-width: 3440px) { :root { --sidebar-width: 420px; } }
-```
-
----
-
-## Zone B — Left Panel (Ultrawide Only)
-
-Unlocks at 3440px+. Used for HexChronicle / contextual narrative when in hex-zoom view. Collapsed (0px) at narrower widths — **do not add a collapsed state to the left panel at 1920px**, that complexity is not needed.
-
-| Property | Value |
-|----------|-------|
-| Width at 3440px | 380px |
-| Content | HexChronicle narrative, region context |
-| Trigger | `@media (min-width: 3440px)` |
+The Stage panel width is derived, not a token: `calc(100vw - var(--rail-left-w) - var(--stage-window-w) - 2 * var(--stage-gutter))` — 1272px at 1920, 1592px at 2560 and at 3440, where the window takes the extra width.
 
 ---
 
@@ -157,18 +130,24 @@ From lowest to highest:
 
 ---
 
-## Panel Padding & Radius
+## Panel Padding, Radius and Text Containers
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `--panel-padding` | 1rem (16px) | Inner padding for all panels |
-| `--panel-radius` | 0.5rem (8px) | Border radius for panels and cards |
-| `--space-1..8` | 4–32px | Spacing grid (4px base) |
+Text containers are rem and declared once, so they follow the root step-up: their 1080p width is today's pixel width, and at 1440p they grow ×1.125.
 
-At 1920px+ increase `--panel-padding` to `1.25rem` via media query.
+| Token | Value | 1080p | 1440p | Use |
+|-------|-------|-------|-------|-----|
+| `--panel-padding` | 1rem; 1.25rem at ≥1920 | 20px | 22.5px | Inner padding for all panels |
+| `--panel-radius` | 0.5rem | 8px | 9px | Border radius for panels and cards |
+| `--tooltip-max-w` | 17.5rem | 280px | 315px | `Tooltip` |
+| `--hovercard-w` | 26.25rem | 420px | 472.5px | `HoverCard` |
+| `--toast-w` | 20rem | 320px | 360px | `ToastStack` |
+| `--stage-compact-w` | 53.75rem | 860px | 967.5px | The Stage's compact tier (THR-1829) |
+| `--measure-prose` | 34em | 680px | 765px | Story-column reading measure |
+| `--modal-max-h` | 85vh | 918px | 1224px | Every dialog's height cap (Law 33) |
+| `--space-1..8` | 4–32px | | | Spacing grid (4px base) |
 
 ---
 
 ## HexChronicle Prose Width
 
-At 1920px the chronicle fills ~1560px. Long text lines become unreadable beyond ~800px. Apply `max-width: 860px` to the prose content container (not the outer wrapper) so the column stays readable while the background fills the full width.
+Long text lines become unreadable beyond ~800px. Cap the prose content container (not the outer wrapper) at `--measure-prose` so the column stays readable while the background fills the full width.
