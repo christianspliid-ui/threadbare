@@ -198,7 +198,6 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
 
         {/* Setup prose — the scene takes focus on open, not the first choice (THR-1854) */}
         <div tabIndex={0} aria-label="The scene" style={{
-          outline: 'none',
           color: 'var(--text-secondary)',
           fontSize: 'var(--text-xs)',
           lineHeight: 1.7,
