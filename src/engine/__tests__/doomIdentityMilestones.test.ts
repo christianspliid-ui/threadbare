@@ -24,7 +24,10 @@ import type { GameState } from '../../types/gameState';
 
 const SEED = 42;
 const TICKS = 30;
-const MILESTONE_SMOKE_TIMEOUT_MS = 15_000;
+// Sized for the gate's parallel lane, not an idle machine: ~10 s solo, and 15 s timed
+// out under `npm run gate`'s test ∥ typecheck ∥ build load (impediment #1167, recurring
+// on THR-1839). A genuinely hung run still fails.
+const MILESTONE_SMOKE_TIMEOUT_MS = 45_000;
 const { cols, rows } = MAP_SIZE_PRESETS['small'];
 
 const ascendantArchetype = generateArchetypes(4, SEED)[0];

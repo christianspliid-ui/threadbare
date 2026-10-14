@@ -329,7 +329,9 @@ pilgrimage there. `culture-custom-reaches-encounter-opening` is **extended**: it
 includes fringe links (a settlement outside every heartland taking the nearest culture, current
 layer, half strength), which are never Realm ground. Since THR-1793 (2026-10-14) the default
 fringe reach is the setting's 24-hex ceiling (`CULTURE_FRINGE_MAX_HEXES_MAX`, was 4), so the producer
-covers every settlement within it — same edge shape, more towns. `authored-faction-ids-resolve-to-seeded-faction-nodes`
+covers every settlement within it — same edge shape, more towns. Since THR-1839 (2026-10-14) a
+settlement founded during play takes its fringe by the same rule (`cultureFringe.ts`, called by both
+founding paths), and a worked mine (`mining`) is a fringe subtype. `authored-faction-ids-resolve-to-seeded-faction-nodes`
 is **preserved** — a Temple reputation effect lands on the actor's own congregation, asserted on a
 generated world. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
 
