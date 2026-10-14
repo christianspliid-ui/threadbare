@@ -261,6 +261,7 @@ import { BOUNDARY_SURVEY_SEQUELS } from './encounters/boundary-survey-sequels';
 import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
 import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
 import { CHARTER_INQUEST_SEQUELS } from './encounters/charter-inquest-sequels';
+import { EASTER_RECKONING_SEQUELS } from './encounters/easter-reckoning-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
@@ -6013,6 +6014,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...MILL_LEASE_SEQUELS,
   // THR-1688 — the forged charter appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
   ...CHARTER_INQUEST_SEQUELS,
+  // THR-1757 — the Easter reckoning appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...EASTER_RECKONING_SEQUELS,
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
