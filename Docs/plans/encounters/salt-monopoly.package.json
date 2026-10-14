@@ -69,6 +69,11 @@
     " 12 Opening per class? urban, the only class, written.",
     "",
     "─── Known caveats ───────────────────────────────────────────────────",
+    "  Critic pass (cold, 2026-10-14): the seal case is now handed over in step 1's success-side",
+    "  afterimages (cs / s / sac / near-miss), so the BOON chip names an object the prose gave the",
+    "  mortal: the town holds the licence, {actor} holds its gate seal case. The rival factor's",
+    "  spawnName is male-coded (Edric Varne) because the seed target's prose writes he/his for its",
+    "  {cast:merchant}; the inherited binding seats this factor in that slot.",
     "  A step-0 critical_failure ends the action, so that route carries only step 0's write",
     "  (town -0.05), which backs its one chip. successMetadata fires on near_miss too, so a",
     "  near-miss close still seals the licence. Live proof needs pinned bands at master difficulty."
@@ -114,9 +119,10 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "continue_weakened",
-        "narrativeTemplate": "The duke is selling the salt licence for ten years, and his chancery takes bids today. A rival town's salt house has sent {cast:merchant}, its factor, with a heavy purse.\n\nThe council's backers will pledge only what they think can win. {actor} has to read the room and build a purse big enough before the bids are called.",
+        "narrativeTemplate": "The duke is selling the salt licence for ten years, and bids are taken today. A rival town's salt house has sent {cast:merchant}, its factor, with a heavy purse.\n\nThe council's backers will pledge only what they think can win. {actor} has to read the room and build a purse big enough before the bids are called.",
         "criticalSuccessAfterimage": "The backers saw the room clearly, and pledged more than the council had asked.",
         "successAfterimage": "The backers pledged enough to bid against the rival house.",
+        "nearMissAfterimage": "The backers pledged less than the council had asked, but enough to bid.",
         "successAtCostAfterimage": "The backers pledged enough, but the rival factor saw exactly how much.",
         "failureAfterimage": "The backers held back, and the town's purse came up thin.",
         "criticalFailureAfterimage": "The backers walked out, and the rival factor heard how little the town had.",
@@ -146,10 +152,10 @@
             "imageTag": "generic.crowd",
             "effectLine": "Fill the council's moneyed men with civic pride. They pledge more of their own silver to the purse.",
             "bandProse": {
-              "critical_success": "The backers pledged their silver loudly, each trying to give more than the last.",
-              "success": "The backers pledged more than they had meant to, for the town's name.",
-              "near_miss": "The backers grew proud of the town, but pledged little more than before.",
-              "failure": "The backers talked proudly of the town, and kept their silver in their purses."
+              "critical_success": "Each of them tried to give more than the last, for the town's name.",
+              "success": "Some gave more than they had meant to, for the town's name.",
+              "near_miss": "They grew proud of the town, but gave little more than before.",
+              "failure": "They talked proudly of the town, and kept their silver in their purses."
             }
           },
           {
@@ -160,12 +166,12 @@
             "forecastDelta": 0.08,
             "opposes": "merchant",
             "imageTag": "generic.luck",
-            "effectLine": "Tangle the rival factor's reckoning of their own coin. They bid as though their chest held less than it does.",
+            "effectLine": "Tangle the rival factor's reckoning of their own coin. They show the room a smaller purse than the one they hold.",
             "bandProse": {
-              "success": "{cast:merchant} counted the rival purse twice, and held back a bid that would have won the room.",
+              "success": "{cast:merchant} counted the rival purse twice, and named a sum short of what it held.",
               "success_at_cost": "{cast:merchant} lost the count for a while, and found it again before the bids were called.",
-              "failure": "{cast:merchant} lost the count once, found the error, and bid the full purse anyway.",
-              "critical_failure": "{cast:merchant} found the error aloud, and the backers saw how rich the rival house was."
+              "failure": "{cast:merchant} lost the count once, found the error, and named the full purse anyway.",
+              "critical_failure": "{cast:merchant} found the error aloud, and the room learned how rich the rival house was."
             }
           }
         ]
@@ -181,10 +187,11 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "fail_action",
-        "narrativeTemplate": "{cast:clerk}, the chancery clerk, holds the duke's sealed reserve, the lowest price the duke will take. The clerk will seal the licence to the best bid at or above it, and to nobody else.\n\n{actor} has to close at the clerk's table above both the reserve and the rival's bid. If the salt goes to the rival town, the council will blame the one it sent.",
-        "criticalSuccessAfterimage": "The town's bid cleared the reserve and the rival's by a wide margin, and the clerk sealed the licence at once.",
-        "successAfterimage": "The town's bid cleared the reserve and beat the rival's, and the clerk sealed the licence to the town.",
-        "successAtCostAfterimage": "The town's bid cleared the reserve only with part of the price left owing to the chancery.",
+        "narrativeTemplate": "{cast:clerk}, the chancery clerk, holds the duke's sealed reserve, the lowest price the duke will take. The clerk will seal the licence to the best bid at or above it, and to nobody else.\n\n{actor} has to close above both the reserve and the rival's bid. If the salt goes to the rival town, the council will blame the one it sent.",
+        "criticalSuccessAfterimage": "The town's bid cleared the reserve and the rival's by a wide margin. The clerk sealed the licence at once, and gave {actor} the seal case that stamps the town's salt at the gates.",
+        "successAfterimage": "The town's bid beat the rival's, and the clerk sealed the licence to the town. {actor} took the seal case that stamps the town's salt at the gates.",
+        "nearMissAfterimage": "The town's bid cleared the reserve by a few coins. The clerk sealed the licence to the town, and gave {actor} its seal case.",
+        "successAtCostAfterimage": "The town's bid cleared the reserve only with part of the price left owing to the chancery. The clerk sealed the licence and handed {actor} its seal case.",
         "failureAfterimage": "The rival's bid stood highest, and the clerk sealed the licence to the rival town.",
         "criticalFailureAfterimage": "The town's bid fell under the duke's reserve, and the clerk sealed the licence to the rival at once.",
         "carryoverFactorLines": {
@@ -266,7 +273,7 @@
               "success": "None of the town's silver was set aside, and the purse counted whole.",
               "near_miss": "The silver rang full, but the clerk still set a few worn pieces aside.",
               "failure": "The town's silver counted whole, and the rival's purse still counted more.",
-              "critical_failure": "The silver counted whole, and the whole of it still fell under the duke's reserve."
+              "critical_failure": "The silver counted whole, and was still not enough."
             }
           },
           {
@@ -306,7 +313,7 @@
         ],
         "supportRole": "rival salt house factor",
         "spawnNpcRole": "merchant",
-        "spawnName": "Isolde Varne"
+        "spawnName": "Edric Varne"
       },
       {
         "kind": "actor",
@@ -336,7 +343,7 @@
         "changes": [],
         "byOutcome": {
           "critical_success": {
-            "overview": "The salt of the whole region is the town's for ten years. The council read the duke's seal aloud in the square, with {actor}'s name beside it.",
+            "overview": "The salt of the whole region is the town's for ten years. The council read the duke's licence aloud in the square, with {actor}'s name beside the town's.",
             "changes": [
               {
                 "id": "salt.cs.seal_case",
@@ -345,8 +352,8 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Gate Seal Case",
-                "causeClause": "The licence-holder's stamp",
-                "detail": "{actor} carries the stamp that marks lawful salt.",
+                "causeClause": "Handed over with the licence",
+                "detail": "{actor} holds the stamp for the town's licensed salt.",
                 "stateNoun": {
                   "text": "Gate Seal Case",
                   "entityId": "reward_tools_instruments_gate_seal_case",
@@ -399,6 +406,11 @@
                     "text": "{actor}",
                     "entityId": "$actor",
                     "visualKind": "agent"
+                  },
+                  {
+                    "text": "{cast:merchant}",
+                    "entityId": "$cast:merchant",
+                    "visualKind": "agent"
                   }
                 ]
               }
@@ -446,8 +458,8 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Gate Seal Case",
-                "causeClause": "The licence-holder's stamp",
-                "detail": "{actor} carries the stamp that marks lawful salt.",
+                "causeClause": "Handed over with the licence",
+                "detail": "{actor} holds the stamp for the town's licensed salt.",
                 "stateNoun": {
                   "text": "Gate Seal Case",
                   "entityId": "reward_tools_instruments_gate_seal_case",
@@ -500,6 +512,11 @@
                     "text": "{actor}",
                     "entityId": "$actor",
                     "visualKind": "agent"
+                  },
+                  {
+                    "text": "{cast:merchant}",
+                    "entityId": "$cast:merchant",
+                    "visualKind": "agent"
                   }
                 ]
               }
@@ -538,7 +555,7 @@
             ]
           },
           "success_at_cost": {
-            "overview": "The licence is the town's, but part of the price is still owed to the chancery, and the backers want their silver back.",
+            "overview": "The licence is the town's, but part of the price is still owed to the chancery, and someone must stand for it.",
             "changes": [
               {
                 "id": "salt.sac.seal_case",
@@ -547,8 +564,8 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Gate Seal Case",
-                "causeClause": "The licence-holder's stamp",
-                "detail": "{actor} carries the stamp that marks lawful salt.",
+                "causeClause": "Handed over with the licence",
+                "detail": "{actor} holds the stamp for the town's licensed salt.",
                 "stateNoun": {
                   "text": "Gate Seal Case",
                   "entityId": "reward_tools_instruments_gate_seal_case",
@@ -601,6 +618,11 @@
                     "text": "{actor}",
                     "entityId": "$actor",
                     "visualKind": "agent"
+                  },
+                  {
+                    "text": "{cast:merchant}",
+                    "entityId": "$cast:merchant",
+                    "visualKind": "agent"
                   }
                 ]
               }
@@ -608,7 +630,7 @@
             "reactions": [
               {
                 "id": "salt.sac.take_the_debt",
-                "label": "Take the debt on yourself",
+                "label": "Carry the town's debt",
                 "intent": "The mortal owes the chancery what the town could not pay. The town's regard rises for it.",
                 "effects": [
                   {

@@ -1,8 +1,8 @@
 {
   "slug": "easter-reckoning",
   "doc": [
-    "The Easter Reckoning — slot 6 of master-everyday-2 (THR-1757), the batch's appointment slot.",
-    "Two-step master Star job: reckon the true day of the Easter feast from the full moon and the",
+    "The Wrong Feast Day (id stays encounter.town.easter_reckoning) — slot 6 of master-everyday-2 (THR-1757), the batch's appointment slot.",
+    "Two-step master Star job: reckon the true day of the spring feast from the full moon and the",
     "equinox, then prove it before the canons in the chapter house, with the dean answering for the",
     "cathedral's tables. On a proved reckoning it is read before the whole synod in the chapter house",
     "on synod day, in three days, with the dean there to answer it — an `encounter_seed` carrying an",
@@ -24,7 +24,7 @@
     "chapter house, inside the town (brief override).",
     "",
     "─── Mechanical design block (designed before the prose) ─────────────",
-    "  Crux            The cathedral's tables put this year's Easter feast a week late, and the bishop",
+    "  Crux            The cathedral's tables put this year's spring feast a week late, and the bishop",
     "                  has sent for {actor} to reckon the true day and prove it before the canons.",
     "  Whose problem?  The agent's: their reckoning, their proof, their name as the master the bishop",
     "                  sent for. Scene-local; no prior tie to the cathedral asserted (rule 7).",
@@ -39,7 +39,7 @@
     "    drive         assign_ambition ambition_spread_faith on $actor, step 1 success. PATH chip.",
     "    omen          emit_omen cultural/global on step 1 success (time) and step 1 failure (entropy).",
     "                  Unchipped: an omen is dressing and has no anchor kind (the restless-ossuary",
-    "                  precedent). Told in step 1's afterimages and the failure overview.",
+    "                  precedent). Told as a good or bad sign in every step-1 afterimage and in the failure overview.",
     "  Appointment     step 1 success: encounter_seed templateId town.easter_reckoning_heard,",
     "                  delayTicks 36, inheritContext, appointment { locationId $here, counterpartyId",
     "                  $cast:dean, missed { templateId town.easter_reckoning_defaulted } }. PATH chip.",
@@ -79,15 +79,15 @@
   "template": {
     "id": "encounter.town.easter_reckoning",
     "stakes": {
-      "goal": "reckon the true day of the Easter feast and prove it",
+      "goal": "reckon the true day of the spring feast and prove it",
       "risk": "have the dean find an error in the reckoning",
-      "won": "reckoned the true day of the Easter feast and proved it",
+      "won": "reckoned the true day of the spring feast and proved it",
       "lost": "could not prove the cathedral's tables wrong",
       "lostBadly": "had the dean find an error in the reckoning"
     },
     "rarityTier": 2,
     "intrinsicTier": "shaping",
-    "name": "The Easter Reckoning",
+    "name": "The Wrong Feast Day",
     "reach": "star",
     "crudType": "update",
     "scale": "local",
@@ -120,7 +120,7 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "continue_weakened",
-        "narrativeTemplate": "The cathedral's tables set the day of the Easter feast for the whole diocese. This year, old priests say the tables put it a week late. The dean, {cast:dean}, keeps the tables, and the canons will hear no word against them.\n\nThe bishop asks {actor} to reckon the true day from the moon and the equinox. Nobody in {location} can say whether the tables or the priests are right.",
+        "narrativeTemplate": "The cathedral's tables set the day of the spring feast for the whole diocese. This year, old priests say the tables put it a week late. The dean, {cast:dean}, keeps the tables, and the canons will hear no word against them.\n\nThe bishop asks {actor} to reckon the true day from the moon and the equinox. Nobody in {location} can say whether the tables or the priests are right.",
         "criticalSuccessAfterimage": "They fixed the equinox to the morning and the full moon to the hour, and the true feast falls a week before the tables' day.",
         "successAfterimage": "They fixed the equinox and the full moon after it, and the true feast falls a week before the tables' day.",
         "successAtCostAfterimage": "They fixed the true day, a week before the tables' day, but the dean's clerks saw them on the cathedral tower at night.",
@@ -186,11 +186,11 @@
         "onFailure": [],
         "failBehavior": "fail_action",
         "narrativeTemplate": "The canons meet in the chapter house to hear the reckoning. {cast:dean} answers for the cathedral's tables, which have been copied from book to book for two hundred years, and says a copy that old cannot be wrong. If {actor} proves the reckoning, it is read before the whole synod in the chapter house on synod day, in three days, with the dean there to answer it. If not, {location} will think less of {actor}.",
-        "criticalSuccessAfterimage": "The canons checked every row of the tables against the reckoning, and asked {actor} to stand beside them at the synod.",
-        "successAfterimage": "The canons checked the reckoning against the tables row by row, and agreed the synod must hear it.",
-        "successAtCostAfterimage": "The canons agreed the synod must hear it, but {cast:dean} told the bishop that {actor} had shamed the chapter.",
+        "criticalSuccessAfterimage": "The canons checked every row of the tables against the reckoning and asked {actor} to stand beside them at the synod. The town takes it for a good sign for the year.",
+        "successAfterimage": "The canons checked the reckoning against the tables row by row and agreed the synod must hear it. The town takes it for a good sign for the year.",
+        "successAtCostAfterimage": "The canons agreed the synod must hear it, but {cast:dean} told the bishop that {actor} had shamed the chapter. The town still takes it for a good sign for the year.",
         "failureAfterimage": "The canons would not see the fault, and {cast:dean} had the tables read out as they stand.",
-        "criticalFailureAfterimage": "{cast:dean} found an error in {actor}'s own sums and read it out to the canons.",
+        "criticalFailureAfterimage": "{cast:dean} found an error in {actor}'s own sums and read it out to the canons. The town takes it for a bad sign for the year.",
         "carryoverFactorLines": {
           "critical_success": {
             "text": "They can name the hour of the full moon.",
@@ -270,7 +270,7 @@
               "kind": "emit_omen",
               "category": "cultural",
               "intensity": 0.3,
-              "narrativeHook": "A cathedral will keep the Easter feast a week late, the old priests say a year begun on a false feast goes badly, and the town argues whether the bad year has begun.",
+              "narrativeHook": "A cathedral will keep the spring feast a week late, the old priests say a year begun on a false feast goes badly, and the town argues whether the bad year has begun.",
               "scope": {
                 "kind": "global"
               },
@@ -334,7 +334,7 @@
       }
     ],
     "narrativeTemplates": {
-      "initiation": "The cathedral in {location} has the Easter feast a week wrong, and the bishop has sent for a master to reckon it.",
+      "initiation": "The cathedral in {location} has the spring feast a week wrong, and the bishop has sent for a master to reckon it.",
       "success": "The reckoning was proved before the canons, and the synod hears it on synod day.",
       "failure": "The reckoning was not proved."
     },
@@ -347,7 +347,7 @@
         "reactions": [],
         "byOutcome": {
           "critical_success": {
-            "overview": "The bishop has told every parish to wait for the synod before proclaiming the feast.",
+            "overview": "The bishop has told the diocese to wait for the synod before proclaiming the feast.",
             "changes": [
               {
                 "id": "reckoning.crit.the_towns_regard",
@@ -481,7 +481,7 @@
             ]
           },
           "success_at_cost": {
-            "overview": "The synod will hear the reckoning, but half the chapter now sides with the dean against {actor}.",
+            "overview": "Half the chapter now sides with {cast:dean} against {actor}.",
             "changes": [
               {
                 "id": "reckoning.cost.the_towns_regard",
@@ -548,7 +548,7 @@
             ]
           },
           "failure": {
-            "overview": "The cathedral will proclaim the feast a week late, and that is what the bishop sent for a master to stop.",
+            "overview": "The cathedral will proclaim the feast a week late, which the bishop sent a master to stop, and the old priests say a year begun on a false feast goes badly.",
             "changes": [
               {
                 "id": "reckoning.lost.the_towns_regard",
@@ -604,6 +604,6 @@
         }
       }
     },
-    "description": "The cathedral's tables put this year's Easter feast a week late, and the canons will hear no word against them. Someone has to reckon the true day from the moon and the equinox, and prove it before the canons and their dean."
+    "description": "The cathedral's tables put this year's spring feast a week late, and the canons will hear no word against them. Someone has to reckon the true day from the moon and the equinox, and prove it before the canons and their dean."
   }
 }

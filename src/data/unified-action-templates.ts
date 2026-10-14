@@ -274,6 +274,14 @@ import { COINERS_MINT_TEMPLATE } from './encounters/coiners-mint';
 import { CATHEDRAL_VAULT_TEMPLATE } from './encounters/cathedral-vault';
 import { GRANARY_RIOT_TEMPLATE } from './encounters/granary-riot';
 import { CATHEDRAL_LOAN_TEMPLATE } from './encounters/cathedral-loan';
+import { HOSTAGE_EXCHANGE_TEMPLATE } from './encounters/hostage-exchange';
+import { GUILDHALL_SPY_TEMPLATE } from './encounters/guildhall-spy';
+import { SALT_MONOPOLY_TEMPLATE } from './encounters/salt-monopoly';
+import { WITCH_TRIAL_TEMPLATE } from './encounters/witch-trial';
+import { TOURNEY_MARSHAL_TEMPLATE } from './encounters/tourney-marshal';
+import { HILL_CONDUIT_TEMPLATE } from './encounters/hill-conduit';
+import { EASTER_RECKONING_TEMPLATE } from './encounters/easter-reckoning';
+import { POISONED_FEAST_TEMPLATE } from './encounters/poisoned-feast';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -6028,6 +6036,14 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   CATHEDRAL_VAULT_TEMPLATE,
   GRANARY_RIOT_TEMPLATE,
   CATHEDRAL_LOAN_TEMPLATE,
+  HOSTAGE_EXCHANGE_TEMPLATE,
+  GUILDHALL_SPY_TEMPLATE,
+  SALT_MONOPOLY_TEMPLATE,
+  WITCH_TRIAL_TEMPLATE,
+  TOURNEY_MARSHAL_TEMPLATE,
+  HILL_CONDUIT_TEMPLATE,
+  EASTER_RECKONING_TEMPLATE,
+  POISONED_FEAST_TEMPLATE,
 ];
 
 /**
@@ -6194,6 +6210,14 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   CATHEDRAL_VAULT_TEMPLATE,
   GRANARY_RIOT_TEMPLATE,
   CATHEDRAL_LOAN_TEMPLATE,
+  HOSTAGE_EXCHANGE_TEMPLATE,
+  GUILDHALL_SPY_TEMPLATE,
+  SALT_MONOPOLY_TEMPLATE,
+  WITCH_TRIAL_TEMPLATE,
+  TOURNEY_MARSHAL_TEMPLATE,
+  HILL_CONDUIT_TEMPLATE,
+  EASTER_RECKONING_TEMPLATE,
+  POISONED_FEAST_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

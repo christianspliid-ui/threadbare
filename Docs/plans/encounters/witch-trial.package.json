@@ -41,14 +41,14 @@
     "                  (hidden_mark secret_knowledge on $actor, step 2 success: the miller knew the rye was spoiled;",
     "                  favor_creation, debtor $cast:magistrate, on the 'leave the miller to the magistrate'",
     "                  reaction). No swap.",
-    "  Query prize     Step 2 rewardPool { possession: 1 } tagFilters [#healing]: a remedy from the healer's",
+    "  Query prize     Step 2 rewardPool { possession: 1 } tagFilters [#healing, #provision]: a remedy (poultice, incense, cup) from the healer's",
     "                  house, given in thanks.",
     "  Standing        reputation_with $here +0.05 / -0.06 on step 2; -0.02 on step 0 and step 1 failure (backs",
     "                  the critical_failure chips on every route: a critical failure at any step ends the action).",
     "  Cost channels   All specials essence-priced. No Heavy Hand, no rider, no Undertow.",
-    "  Cool failure    The mortal is not killed, jailed or branded. Failure: the healer goes to the assize in",
-    "                  chains and the town blames the master for staying the pyre. Critical failure: the crowd",
-    "                  burns the healer's house and every remedy in it. Stated plainly in the overviews.",
+    "  Cool failure    The mortal is not killed, jailed or branded. Failure: the healer is held in chains and",
+    "                  the magistrate is left unsettled. Critical failure: the crowd burns the house; chains. No assize",
+    "                  or later trial is promised (rule 34): the engine performs none. Stated plainly in the overviews.",
     "  Gender          The accused and the magistrate are bound cast (reuse-first), so prose never genders",
     "                  either: 'the healer', 'the magistrate', or the token.",
     "  Accepted limit  No band-keyed step write: critical_success and success_at_cost differ from success by",
@@ -98,7 +98,7 @@
         "onFailure": [],
         "failBehavior": "continue_weakened",
         "narrativeTemplate": "A healer is in the stocks for witchcraft, and a pyre stands built in the square. At harvest the miller's boy was laid out for dead and woke under the healer's hands. He has had fits since, and his hands burn. The lane says what woke is not the boy.\n\nThe magistrate asks {actor} to say whether {cast:accused} is touched, before the town lights the pyre.",
-        "criticalSuccessAfterimage": "By noon they were sure. No mark of the unseen was on {cast:accused}, and the healer named the day the boy first ate the new bread.",
+        "criticalSuccessAfterimage": "By noon {actor} was sure. No mark of the unseen was on {cast:accused}, and the healer named the day the boy first ate the new bread.",
         "successAfterimage": "No mark of the unseen was on {cast:accused}. The healer was frightened and tired, and told the same account of the boy's waking each time.",
         "successAtCostAfterimage": "No mark of the unseen was on {cast:accused}, but the crowd watched {actor} sit at the stocks all morning and began to say the master was bewitched too.",
         "failureAfterimage": "They could not tell. {cast:accused} was too frightened to answer plainly, and {actor} left the stocks without a reading.",
@@ -268,7 +268,7 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "fail_action",
-        "narrativeTemplate": "{cast:magistrate} hears the ruling in the square at noon, with the crowd around the pyre. {actor} must say whether the healer is touched, and what made the boy sick. The sickness cares nothing for whom the town blames. If the ruling names the wrong cause, the boy will still have fits, and the town will still want a witch.",
+        "narrativeTemplate": "{cast:magistrate} hears the ruling in the square at noon, with the crowd around the pyre. {actor} must say whether the healer is touched, and what made the boy sick. If the ruling names the wrong cause, the boy will still have fits, and the town will still want a witch.",
         "criticalSuccessAfterimage": "{cast:magistrate} tasted the black rye in front of the square and spat it out. The crowd let the healer out of the stocks and pulled down the pyre. A mill hand told {actor} the miller had known the rye was bad.",
         "successAfterimage": "{cast:magistrate} ruled that the healer was not touched and that the rye made the boy sick. Afterwards a mill hand told {actor} the miller knew the rye was bad and ground it anyway.",
         "successAtCostAfterimage": "{cast:magistrate} freed the healer on the ruling, but the miller swore before the whole square that {actor} had lied to save a witch. A mill hand told {actor} the miller had known the rye was bad.",
@@ -307,7 +307,8 @@
               "possession": 1
             },
             "tagFilters": [
-              "#healing"
+              "#healing",
+              "#provision"
             ]
           },
           "effects": [
@@ -426,7 +427,7 @@
           "noble"
         ],
         "supportRole": "witch_trial_magistrate",
-        "spawnNpcRole": "official",
+        "spawnNpcRole": "noble",
         "spawnName": "Aldous Renn"
       }
     ],
@@ -445,7 +446,7 @@
           {
             "id": "witch.name_the_miller",
             "label": "Name the miller in the square",
-            "intent": "The mortal tells the whole square the miller knew the rye was spoiled and ground it anyway. The town is grateful; the magistrate wanted it kept quiet.",
+            "intent": "The mortal tells the whole square what the miller did. The town is grateful; the magistrate wanted it kept quiet.",
             "effects": [
               {
                 "kind": "reputation_with",
@@ -462,7 +463,7 @@
           {
             "id": "witch.leave_the_miller_to_the_court",
             "label": "Leave the miller to the magistrate",
-            "intent": "The mortal tells only the magistrate what the miller knew, and lets the court deal with it quietly. The magistrate owes them for the quiet.",
+            "intent": "The mortal tells only the magistrate, and keeps the miller's part out of the square. The magistrate owes them for the quiet.",
             "effects": [
               {
                 "kind": "favor_creation",
@@ -478,7 +479,7 @@
         ],
         "byOutcome": {
           "critical_success": {
-            "overview": "{cast:accused} walks out of the stocks cleared, and the pyre is gone from the square by evening. The healer presses a remedy from the house into {actor}'s hands, in front of the whole lane.",
+            "overview": "{cast:accused} is cleared, and the whole lane saw it done. The healer presses a remedy from the house into {actor}'s hands in thanks.",
             "changes": [
               {
                 "id": "witch.crit.healer_trust",
@@ -616,7 +617,7 @@
             ]
           },
           "success_at_cost": {
-            "overview": "{cast:accused} is out of the stocks and gives {actor} a remedy from the house in thanks. The miller tells the whole lane that {actor} lied to save a witch.",
+            "overview": "{cast:accused} is out of the stocks and gives {actor} a remedy from the house in thanks. The miller is still calling {actor} a liar to anyone who will listen.",
             "changes": [
               {
                 "id": "witch.cost.healer_trust",
@@ -685,7 +686,7 @@
             ]
           },
           "failure": {
-            "overview": "The healer is alive and in chains, waiting for the assize, and the pyre still stands in the square. {location} says {actor} stayed the burning on a doubt, and the town wanted a master's certainty.",
+            "overview": "The healer is alive and held in chains, and the pyre still stands in the square. The magistrate sent for a master to settle this, and it is not settled.",
             "changes": [
               {
                 "id": "witch.fail.magistrate_trust",
@@ -737,7 +738,7 @@
               {
                 "id": "witch.fail.sit_with_the_healer",
                 "label": "Sit with the healer in chains",
-                "intent": "The mortal sits with the healer through the first night in chains, where the town can see. The healer will remember it, and the town will too.",
+                "intent": "The mortal sits by the healer through the night, where the town can see. The healer will remember it, and the town will too.",
                 "effects": [
                   {
                     "kind": "bond_change",
@@ -752,9 +753,9 @@
                 ]
               },
               {
-                "id": "witch.fail.leave_before_the_crowd_turns",
-                "label": "Leave before the crowd turns",
-                "intent": "The mortal leaves the town that evening, before the crowd turns on them too. The healer watches them go.",
+                "id": "witch.fail.stay_clear_of_the_healer",
+                "label": "Stay clear of the healer",
+                "intent": "The mortal keeps away from the healer that night, so the crowd has no reason to turn on them too. The healer sees who did not come.",
                 "effects": [
                   {
                     "kind": "bond_change",
@@ -766,7 +767,7 @@
             ]
           },
           "critical_failure": {
-            "overview": "{actor} gave the magistrate no ruling that held. The crowd burned the healer's house and every remedy in it, and the healer goes to the assize in chains. A master was sent for to stop this, and it happened anyway.",
+            "overview": "The crowd burned the healer's house and every remedy in it, and the healer is held in chains. A master was sent for to stop this, and it happened anyway.",
             "changes": [
               {
                 "id": "witch.critfail.magistrate_trust",
@@ -818,7 +819,7 @@
               {
                 "id": "witch.critfail.sit_with_the_healer",
                 "label": "Sit with the healer in chains",
-                "intent": "The mortal sits with the healer through the first night in chains, where the town can see. The healer will remember it, and the town will too.",
+                "intent": "The mortal sits by the healer through the night, where the town can see. The healer will remember it, and the town will too.",
                 "effects": [
                   {
                     "kind": "bond_change",
@@ -833,9 +834,9 @@
                 ]
               },
               {
-                "id": "witch.critfail.leave_before_the_crowd_turns",
-                "label": "Leave before the crowd turns",
-                "intent": "The mortal leaves the town that evening, before the crowd turns on them too. The healer watches them go.",
+                "id": "witch.critfail.stay_clear_of_the_healer",
+                "label": "Stay clear of the healer",
+                "intent": "The mortal keeps away from the healer that night, so the crowd has no reason to turn on them too. The healer sees who did not come.",
                 "effects": [
                   {
                     "kind": "bond_change",

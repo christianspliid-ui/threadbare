@@ -13,9 +13,9 @@
     "",
     "--- The narrator's 12 questions, answered ---",
     "  1 P1 arrival?      {actor} is a guest at the high table of the guild feast in {location}.",
-    "  2 P2 events?       The guild-master drank from the cup poured for {actor}, fell, has not woken; doors barred.",
+    "  2 P2 events?       At the toast the guild-master drank from {actor}'s cup, fell, has not woken; doors barred.",
     "  3 P3 one stake?    Choice (rolled): naming a guest shames the guild; naming no one leaves {actor} suspected.",
-    "  4 <=80 words?      79 / 80 by the gate (opening + step-0 spine).",
+    "  4 <=80 words?      Under 80 by the gate (opening + step-0 spine; critic pass kept the count).",
     "  5 Read aloud?      Report throughout; no interior sensation.",
     "  6 Stated?          'The poison was meant for {actor}, and {actor} is also the likeliest suspect.'",
     "  7 Every sentence works? Challenge, test or outcome.",
@@ -48,9 +48,16 @@
     "                  believes the master poured the cup, and on the worst ending the coroner's record names",
     "                  them - the name before the purse.",
     "  Accepted limit  The #rival_strike family has one member, The Hired Knives, whose spine gives its own",
-    "                  reason for the strangers (a god's help seen around the mortal). It does not contradict",
-    "                  this seed's label; the patron is the rival who sent them. The query keeps the family's",
-    "                  eligibility filter (rural / urban / wayside), so it withers only off the settled map."
+    "                  reason for the strangers (a god's help seen around the mortal). Critic pass (2026-10-14):",
+    "                  the PATH chip, both seedLabels and the step-1 spine now promise only what the family",
+    "                  delivers - whoever paid sends their people after {actor} - and no longer promise that",
+    "                  the payer is named or that the sequel will speak of the feast. The sequel's own reason is",
+    "                  additive, not contradictory (the intended victim walked away). No better-fitting family or",
+    "                  seed-only template exists in the corpus. The query keeps the family's eligibility filter",
+    "                  (rural / urban / wayside), so it withers only off the settled map.",
+    "  Known gap       A step-1 critical_failure plants the seed, but the critical_failure band is also reached",
+    "                  by a step-0 critical failure that plants nothing, so that band carries no PATH chip (an",
+    "                  omission, never a false chip; no band-scoped effect predicate exists to close it)."
   ],
   "template": {
     "id": "encounter.town.poisoned_feast",
@@ -93,7 +100,7 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "continue_weakened",
-        "narrativeTemplate": "The guild-master drank from the cup poured for {actor}, fell, and has not woken. {cast:coroner}, the town coroner, has barred the refectory doors.\n\nThe poison was meant for {actor}, and {actor} is also the likeliest suspect. {cast:coroner} asks {actor} to read the table before ruling. Naming a guest will shame the guild. Naming no one leaves {actor} under suspicion.",
+        "narrativeTemplate": "At the toast the guild-master drank from {actor}'s cup, fell, and has not woken. {cast:coroner}, the town coroner, has barred the doors.\n\nThe poison was meant for {actor}, and {actor} is also the likeliest suspect. {cast:coroner} asks {actor} to read the table before ruling. Naming a guest will shame the guild. Naming no one leaves {actor} under suspicion.",
         "criticalSuccessAfterimage": "Within the hour they showed {cast:coroner} the wolfsbane rubbed inside {actor}'s cup, and a smear of it on one guest's sleeve.",
         "successAfterimage": "The poison was wolfsbane, rubbed inside {actor}'s cup before the wine was poured.",
         "successAtCostAfterimage": "They found the wolfsbane in {actor}'s cup, but {cast:coroner} had sent the guests home for the night first.",
@@ -158,8 +165,8 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "fail_action",
-        "narrativeTemplate": "Six guildsmen sat close enough to reach {actor}'s cup, and one of them poisoned it. {cast:coroner} gives the verdict at dawn.\n\nIf {actor} names the one who did it, whoever paid for the poison will hear that {actor} lived and knows. If no hand is named by dawn, {location} will go on thinking {actor} poured it.",
-        "criticalSuccessAfterimage": "{cast:poisoner} broke down before the whole hall and gave the name of the one who paid for the wolfsbane.",
+        "narrativeTemplate": "Six guildsmen sat within reach of that cup, and one of them poisoned it. Whoever paid that guildsman will soon hear that {actor} is still alive.\n\n{cast:coroner} gives the verdict at dawn. If no hand is named by then, {location} will take {actor} for the poisoner.",
+        "criticalSuccessAfterimage": "{cast:poisoner} broke down before the whole hall and confessed to being paid, but was too afraid to say by whom.",
         "successAfterimage": "The cup-bearer had seen {cast:poisoner} at {actor}'s chair with a hand over the cup.",
         "successAtCostAfterimage": "{actor} named {cast:poisoner}, but the guild closed ranks and swore {cast:poisoner} never left the bench.",
         "failureAfterimage": "The guests' accounts of who sat where did not agree, and {actor} could not say whose hand poisoned the cup.",
@@ -181,7 +188,7 @@
             "forecastDelta": -0.02
           },
           "near_miss": {
-            "text": "They know the poison, but not when it went in.",
+            "text": "They know the poison, but cannot yet prove it.",
             "polarity": "against",
             "forecastDelta": -0.02
           },
@@ -202,7 +209,7 @@
               "kind": "hidden_mark",
               "category": "secret_knowledge",
               "severity": 0.5,
-              "label": "Knows who paid for the poison at the guild feast",
+              "label": "Knows who poisoned the cup at the guild feast",
               "targetAgentId": "$actor"
             },
             {
@@ -225,7 +232,7 @@
               "targetAgentId": "$actor",
               "delayTicks": 30,
               "priority": 1,
-              "seedLabel": "Whoever paid for the poison at the guild feast has heard that {actor} lived, and knows."
+              "seedLabel": "Whoever paid for the poison at the guild feast knows {actor} lived, and sends their people."
             }
           ]
         },
@@ -254,7 +261,7 @@
               "targetAgentId": "$actor",
               "delayTicks": 30,
               "priority": 1,
-              "seedLabel": "Whoever paid for the poison at the guild feast has heard that {actor} lived."
+              "seedLabel": "Whoever paid for the poison at the guild feast knows {actor} lived, and sends their people."
             }
           ]
         },
@@ -366,7 +373,6 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Read true",
-                "causeClause": "Named the right hand",
                 "detail": "{location} thinks well of {actor}.",
                 "stateNoun": {
                   "text": "reputation with {location}",
@@ -409,7 +415,7 @@
                 "direction": "opens",
                 "polarity": "info",
                 "title": "The one who paid",
-                "detail": "Whoever paid for the poison has heard that {actor} lived.",
+                "detail": "Whoever paid for the poison is sending their people after {actor}.",
                 "stateNoun": {
                   "text": "seed",
                   "tooltipId": "ui.aftermath_seed"
@@ -434,7 +440,6 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Read true",
-                "causeClause": "Named the right hand",
                 "detail": "{location} thinks well of {actor}.",
                 "stateNoun": {
                   "text": "reputation with {location}",
@@ -477,7 +482,7 @@
                 "direction": "opens",
                 "polarity": "info",
                 "title": "The one who paid",
-                "detail": "Whoever paid for the poison has heard that {actor} lived.",
+                "detail": "Whoever paid for the poison is sending their people after {actor}.",
                 "stateNoun": {
                   "text": "seed",
                   "tooltipId": "ui.aftermath_seed"
@@ -502,7 +507,6 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "Read true",
-                "causeClause": "Named the right hand",
                 "detail": "{location} thinks well of {actor}.",
                 "stateNoun": {
                   "text": "reputation with {location}",
@@ -545,7 +549,7 @@
                 "direction": "opens",
                 "polarity": "info",
                 "title": "The one who paid",
-                "detail": "Whoever paid for the poison has heard that {actor} lived.",
+                "detail": "Whoever paid for the poison is sending their people after {actor}.",
                 "stateNoun": {
                   "text": "seed",
                   "tooltipId": "ui.aftermath_seed"
@@ -561,7 +565,7 @@
             ]
           },
           "failure": {
-            "overview": "{cast:coroner} closed the inquest with no hand named. The guild had a master at its table, and half the guild believes that master poured the cup.",
+            "overview": "{cast:coroner} closed the inquest with no hand named, and half the guild believes {actor} poured the cup.",
             "changes": [
               {
                 "id": "feast.lost.regard",
@@ -570,7 +574,6 @@
                 "direction": "loss",
                 "polarity": "loss",
                 "title": "Under suspicion",
-                "causeClause": "No hand named",
                 "detail": "{location} thinks less of {actor}.",
                 "stateNoun": {
                   "text": "reputation with {location}",
@@ -592,7 +595,7 @@
                 "direction": "opens",
                 "polarity": "info",
                 "title": "The one who paid",
-                "detail": "Whoever paid for the poison has heard that {actor} lived.",
+                "detail": "Whoever paid for the poison is sending their people after {actor}.",
                 "stateNoun": {
                   "text": "seed",
                   "tooltipId": "ui.aftermath_seed"

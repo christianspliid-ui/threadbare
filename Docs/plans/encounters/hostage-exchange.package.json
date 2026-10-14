@@ -44,7 +44,12 @@
     "                  relationship - bond_change with $cast:heir on both sides of step 1, and on step 0 failure",
     "                  (the questions reached the captain and the held heir stopped trusting the go-between).",
     "                  companion - grant_companion companion.sellsword-band to $actor on step 1 success: the",
-    "                  captain's sergeant and the men who would not back the ransom take service with {actor}.",
+    "                  captain's sergeant and the men who would not back the ransom hire on with {actor}.",
+    "                  The band is a CONTRACT (durationTicks 10, MERCENARY_COMPANION_DURATION_TICKS): the",
+    "                  chip says \"a short contract\", never \"travels with {actor} now\" (critic 2026-10-14).",
+    "  Captain grudge  bond_change $cast:captain -0.08 / -0.06 on step 1 success: every success band costs the",
+    "                  captain his ransom and his men, so the master carries an enemy (brief s@c row). Chipped on",
+    "                  all three success bands; the +0.04 'let the captain go quietly' reaction leaves it true.",
     "                  There is no $companion sentinel (#1115); the chip anchors on the plain `companion` noun",
     "                  (the feud-mediation shape).",
     "  Standing        reputation_with $here +0.06 on step 1 success, -0.06 on step 1 failure, -0.02 on step 0",
@@ -52,8 +57,8 @@
     "  Chips (THR-1685) Person bond chips use the plain noun `reputation` with the cast member as a concept",
     "                  anchor, no {target}. The only `reputation with {location}` chips are anchored on $here.",
     "  Reactions       Success side on fallback (discretion vs open truth); failure side on both failure bands",
-    "                  (comfort the heir vs accuse the captain). Heir deltas held at +0.04; the captain carries",
-    "                  no chip, so no band chip is false after either pick.",
+    "                  (comfort the heir vs accuse the captain). Heir deltas held at +0.04; the captain's",
+    "                  success-side grudge (-0.08) survives the +0.04 reaction, so no band chip is false after either pick.",
     "  Tone            Ends warm on the success side: both heirs cross, the peace holds, and the honest men",
     "                  walk away from the greedy one.",
     "  Cool failure    Nobody dies, is jailed or branded. Failure is the master's name: both houses sent for a",
@@ -76,7 +81,9 @@
     "--- Pass record (2026-10-14) ---",
     "  Draft -> self-edit against the 35 editorial REVISE triggers (seam echoes on step 0 afterimages and the",
     "  step-1 carryover, an afterimage/overview contradiction over whose heirs went home, a crit overview echo)",
-    "  -> revised. Gated with check:encounter --package."
+    "  -> revised. Gated with check:encounter --package.",
+    "  Cold critic (editorial + systems + package) -> PASS WITH REVISIONS / READY / connected; fixes in",
+    "  hostage-exchange-editorial.md, applied here; final packet hostage-exchange-final.md."
   ],
   "template": {
     "id": "encounter.town.hostage_exchange",
@@ -374,7 +381,7 @@
           {
             "id": "hostage.tell_the_town",
             "label": "Tell the town what the captain asked",
-            "intent": "The mortal tells the town what the captain demanded on the bridge, and the town hears who refused to pay it.",
+            "intent": "The mortal tells the town what the captain demanded on the bridge. The town will think better of the mortal for refusing it.",
             "effects": [
               {
                 "kind": "reputation_with",
@@ -386,7 +393,7 @@
         ],
         "byOutcome": {
           "critical_success": {
-            "overview": "The two houses renewed their peace in front of the town that evening. The captain left {location} alone the next morning.",
+            "overview": "The two houses renewed their peace in front of the town that evening, with {actor} standing between them.",
             "changes": [
               {
                 "id": "hostage.crit.town_thanks",
@@ -451,6 +458,30 @@
                 ],
                 "title": "The Sergeant's Band",
                 "detail": "The sergeant's men quit the captain for a short contract with {actor}."
+              },
+              {
+                "id": "hostage.crit.captain_grudge",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:captain}",
+                    "entityId": "$cast:captain",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "blames",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Captain's Grudge",
+                "detail": "{cast:captain} blames {actor} for the lost ransom."
               }
             ]
           },
@@ -520,11 +551,35 @@
                 ],
                 "title": "The Sergeant's Band",
                 "detail": "The sergeant's men quit the captain for a short contract with {actor}."
+              },
+              {
+                "id": "hostage.win.captain_grudge",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:captain}",
+                    "entityId": "$cast:captain",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "blames",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Captain's Grudge",
+                "detail": "{cast:captain} blames {actor} for the lost ransom."
               }
             ]
           },
           "success_at_cost": {
-            "overview": "Both heirs are home, but men from both houses were hurt in the scuffle at the far end.",
+            "overview": "Both heirs are home, but the exchange came close to blows before it was done.",
             "changes": [
               {
                 "id": "hostage.cost.town_thanks",
@@ -589,11 +644,35 @@
                 ],
                 "title": "The Sergeant's Band",
                 "detail": "The sergeant's men quit the captain for a short contract with {actor}."
+              },
+              {
+                "id": "hostage.cost.captain_grudge",
+                "kind": "reputation",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "stateNoun": {
+                  "text": "reputation",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{cast:captain}",
+                    "entityId": "$cast:captain",
+                    "visualKind": "agent"
+                  },
+                  {
+                    "text": "blames",
+                    "tooltipId": "ui.standing"
+                  }
+                ],
+                "title": "The Captain's Grudge",
+                "detail": "{cast:captain} blames {actor} for the lost ransom."
               }
             ]
           },
           "failure": {
-            "overview": "Both heirs are still hostages, and the two houses are counting the days again. They sent for a master because a master's terms should end the haggling. The captain's greed outweighed them.",
+            "overview": "Both heirs are still hostages, and the two houses are counting the days again. They sent for a master so the haggling would end, and the captain outlasted {actor}.",
             "changes": [
               {
                 "id": "hostage.fail.town_regard",
@@ -669,7 +748,7 @@
             ]
           },
           "critical_failure": {
-            "overview": "The peace between the two houses is broken, and both heirs are still hostages. Both houses sent for {actor}, and both now say {actor} lost them the peace.",
+            "overview": "The peace between the two houses is broken, and both heirs are still hostages. Both houses sent for {actor}, and both now blame {actor} for it.",
             "changes": [
               {
                 "id": "hostage.critfail.town_regard",
@@ -689,7 +768,7 @@
                     "tooltipId": "ui.standing"
                   }
                 ],
-                "title": "Blamed for the Bridge",
+                "title": "Blamed for the Peace",
                 "detail": "{location} thinks less of {actor} now."
               },
               {

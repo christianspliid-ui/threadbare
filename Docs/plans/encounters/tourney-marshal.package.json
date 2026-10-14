@@ -104,8 +104,9 @@
         "narrativeTemplate": "A knightly order has called a grudge bout against {cast:heir}, a young noble who insulted it. The order's doctrine says the bout ends only when one fighter yields. {cast:heir} will not yield.\n\nOn the third pass {cast:heir} is knocked down. The order's champion raises a sword over the young noble, and both sides' men climb the barrier. {actor} has to hold the lists before the bout becomes a killing.",
         "criticalSuccessAfterimage": "They got between the fighters before the sword fell, and both sides' men stepped back off the barrier.",
         "successAfterimage": "They got between the fighters and turned both sides' men back from the barrier.",
+        "nearMissAfterimage": "They got between the fighters, but not before a few of the house's men were over the barrier.",
         "successAtCostAfterimage": "They turned the men back from the barrier, but the sword came down on {cast:heir}'s shield arm first.",
-        "failureAfterimage": "The house's men got over the barrier, and {actor} had to drive them out before reaching the fighters.",
+        "failureAfterimage": "The house's men got into the lists, and {actor} had to drive them out before reaching the fighters.",
         "criticalFailureAfterimage": "Both sides' men broke into the lists, and {cast:heir} was trampled in the brawl before {actor} could get there.",
         "failureMetadata": {
           "effects": [
@@ -156,7 +157,7 @@
             "effectLine": "Hold a raised weapon a breath longer at the top of its swing, so there is time to get under it.",
             "bandProse": {
               "success": "The champion's sword hung at the top of its swing, and {actor} got under it.",
-              "success_at_cost": "The sword hung for a breath, then came down hard on the guard {actor} raised against it.",
+              "success_at_cost": "The sword hung for a breath, then came down before {actor} could get fully under it.",
               "failure": "The sword hung for a breath, and {actor} was still too far away to use it.",
               "critical_failure": "The sword hung for a breath, and in that breath the house's men reached the champion first."
             }
@@ -174,12 +175,12 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "fail_action",
-        "narrativeTemplate": "{cast:champion}, the order's champion, faces {actor} across the barrier. The champion will not leave the lists without a yield, and the young noble will still not give one. The champion says no marshal's word can end a grudge bout. If {actor} cannot make the champion lower the sword, the young noble will be maimed in front of the whole town, and the town will blame its marshal.",
+        "narrativeTemplate": "{cast:champion}, the order's champion, faces {actor} in the middle of the lists. The champion will not leave the lists without a yield, and the young noble will still not give one. The champion says no marshal's word can end a grudge bout. If {actor} cannot make the champion lower the sword, the young noble will be maimed in front of the whole town, and the town will blame its marshal.",
         "criticalSuccessAfterimage": "{cast:champion} lowered the sword, and the order agreed before the whole field to call the bout ended.",
         "successAfterimage": "{cast:champion} lowered the sword, and the heralds called the bout ended.",
         "successAtCostAfterimage": "{cast:champion} lowered the sword, but {actor} took a cut across the hand catching the last stroke.",
         "failureAfterimage": "{cast:champion} pushed past {actor} and beat the young noble down, and the house's men carried the noble off with a broken leg.",
-        "criticalFailureAfterimage": "{cast:champion} pushed {actor} aside, and the young noble was carried off the field more dead than alive.",
+        "criticalFailureAfterimage": "{cast:champion} pushed {actor} aside and struck {cast:heir} down again before the heralds reached the fighters.",
         "carryoverFactorLines": {
           "critical_success": {
             "text": "The marshal has already stopped the champion's sword once.",
@@ -344,7 +345,7 @@
         "changes": [],
         "byOutcome": {
           "critical_success": {
-            "overview": "The order and {cast:heir}'s house both accepted the marshal's ruling before the whole field, and both fighters walked out of the lists.",
+            "overview": "The order and {cast:heir}'s house both agreed before the whole field that the bout was ended, and both fighters walked out of the lists.",
             "changes": [
               {
                 "id": "tourney.cs.favour",
@@ -550,7 +551,7 @@
             ]
           },
           "success_at_cost": {
-            "overview": "The bout is ended and the young noble is alive. {actor} walked out of the lists with a cut hand, while the order's knights told the crowd the marshal had broken their doctrine.",
+            "overview": "The bout is ended and {cast:heir} is alive, but it came closer to a killing than a marshal should allow. The order's knights left the field that evening without a word to {actor}.",
             "changes": [
               {
                 "id": "tourney.sac.favour",
@@ -653,7 +654,7 @@
             ]
           },
           "failure": {
-            "overview": "The young noble lives, but will not walk without a stick again. The town made {actor} marshal to stop exactly this.",
+            "overview": "The heralds closed the lists, and the order rode out of {location} calling the bout won. The town made {actor} marshal to stop exactly this.",
             "changes": [
               {
                 "id": "tourney.f.wounded",

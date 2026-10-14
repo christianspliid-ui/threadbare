@@ -1,5 +1,5 @@
 /**
- * The Easter Reckoning's two appointment sequels (THR-1757, batch brief
+ * The Wrong Feast Day's (`encounter.town.easter_reckoning`) two appointment sequels (THR-1757, batch brief
  * `Docs/plans/encounters/master-everyday-2-brief.md` § slot 6).
  *
  * `encounter.town.easter_reckoning` plants an appointment when the master proves the
@@ -23,7 +23,7 @@
  * prefix is claimed in `content-objects.ts`), the way `charter-inquest-sequels.ts` does. Both
  * inherit the parent's cast (`inheritContext`), so `{cast:dean}` binds.
  *
- * Prose: `Docs/plans/encounters/easter-reckoning-revised.md` § 20, verbatim.
+ * Prose: `Docs/plans/encounters/easter-reckoning-final.md` § Sequels (critic pass: the real-world feast name removed).
  */
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -44,10 +44,10 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
     won: 'held the reckoning, and the synod moved the feast',
     lost: 'saw the synod put off its ruling on the feast',
   },
-  // Seed-only: the Easter reckoning's appointment (kept branch) is its only planter (THR-1526).
+  // Seed-only: the feast reckoning's appointment (kept branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Reckoning Heard',
-  description: '{name} is in the chapter house on synod day, where the synod hears the reckoning of the Easter feast.',
+  description: '{name} is in the chapter house on synod day, where the synod hears the reckoning of the spring feast.',
   rarityTier: 2,
   intrinsicTier: 'background',
   reach: 'star',
@@ -68,9 +68,9 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
       narrativeTemplate:
         '{name} is in the chapter house in {location} on synod day. ' +
         "The synod sits to hear the reckoning, and {cast:dean} answers for the cathedral's tables. " +
-        'If the reckoning holds against the dean, the synod moves the Easter feast to its true day.',
+        'If the reckoning holds against the dean, the synod moves the spring feast to its true day.',
       successAfterimage:
-        'The dean could not fault the reckoning. The synod moved the Easter feast to its true day, and every parish in the diocese will keep it there.',
+        'The dean could not fault the reckoning. The synod moved the spring feast to its true day, and every parish in the diocese will keep it there.',
       failureAfterimage: 'The dean questioned the reckoning line by line until the synod put off its ruling, and the feast stays where the tables put it.',
       successMetadata: {
         // `$here` is lawful here: the kept branch fires only with the mortal standing in the town.
@@ -87,7 +87,7 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: '{name} is in the chapter house on synod day, where the synod hears the reckoning.',
-    success: 'The synod moved the Easter feast to its true day.',
+    success: 'The synod moved the spring feast to its true day.',
     failure: 'The synod put off its ruling.',
   },
   aftermathConfig: {
@@ -108,7 +108,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
     won: 'refused to sign the reckoning away as a mistake',
     lost: "was shamed at the bishop's table for staying away",
   },
-  // Seed-only: the Easter reckoning's appointment (missed branch) is its only planter (THR-1526).
+  // Seed-only: the feast reckoning's appointment (missed branch) is its only planter (THR-1526).
   drawable: false,
   name: 'The Reckoning Defaulted',
   description: 'The reckoning was not read on synod day, and the dean has come looking for the master who made it.',
@@ -132,7 +132,7 @@ export const EASTER_RECKONING_DEFAULTED: UnifiedActionTemplate = {
       // Names no place: the missed branch fires wherever the mortal stands.
       narrativeTemplate:
         '{name} was not in the chapter house on synod day, and the reckoning was never read. ' +
-        "The synod kept the cathedral's tables, and the Easter feast will be kept a week late. " +
+        "The synod kept the cathedral's tables, and the spring feast will be kept a week late. " +
         '{cast:dean} has come looking for {name} with a paper, to have the reckoning signed away as a mistake.',
       successAfterimage: '{name} would not sign, and {cast:dean} left with the paper still blank.',
       failureAfterimage: "{cast:dean} thinks less of the master who stayed away, and says so at the bishop's table.",

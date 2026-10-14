@@ -99,10 +99,14 @@
     "12. Opening per class — rural, urban.",
     "",
     "─── Known caveats ─────────────────────────────────────────────────────",
-    "  A step-0 critical_failure ends the action after the fork pole is recorded, so the",
-    "  chosen arm's critical_failure page renders chips whose writes never fired. Corpus-",
-    "  wide engine gap (debt-arbitration-systems.md § 9), inherited from the model package.",
-    "  Rare at 0.76 for a master.",
+    "  Pre-fork critical failure (critic fix, Law 56): a step-0 critical_failure ends the",
+    "  action after the fork pole is recorded, so the chosen arm's critical_failure page is",
+    "  read on two routes — step 0 (route A) and the arm (route J). Step 0 now writes",
+    "  reputation_with $here −0.03 on failure, and every critical_failure page carries only",
+    "  the Lost Trust chip, which both routes back. Plague Scare and the compulsion still",
+    "  fire on route J, unchipped there (the sibling pattern). Overviews and reactions on",
+    "  those pages are true on both routes. Engine BACKLOG (debt-arbitration-systems § 9)",
+    "  unchanged; the fallback critical_failure band is ready for it.",
     "  Measurement: the fork carries no top-level difficulty, so measure:roll-spread reads",
     "  step 0 only (stone 0.76, window fit 0.90, inside the master band)."
   ],
@@ -155,7 +159,7 @@
         "onSuccess": [],
         "onFailure": [],
         "failBehavior": "continue_weakened",
-        "narrativeTemplate": "The wells of {location} have gone foul, and two children are sick from the water. Clean springs rise on the hill above. Between the springs and the wells lies the lord's high pasture, guarded by his herdsmen and a bull.\n\nReeve {cast:reeve} wants the water brought down in a buried conduit. First {actor} must survey the hill for a line that falls all the way.",
+        "narrativeTemplate": "The wells have gone foul, and two children are sick from the water. Clean springs rise on the hill above. Between the springs and the wells lies the lord's high pasture, guarded by his herdsmen and a bull.\n\nReeve {cast:reeve} wants the water brought down in a buried conduit. First {actor} must survey the hill for a line that falls all the way.",
         "criticalSuccessAfterimage": "They found a clean fall from the springs, both across the pasture and round it.",
         "successAfterimage": "They found a fall that will carry the water down.",
         "successAtCostAfterimage": "They found a fall, but the survey took most of the week.",
@@ -207,7 +211,16 @@
               "critical_failure": "They followed the marker stones down, and marked a line that climbs."
             }
           }
-        ]
+        ],
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "reputation_with",
+              "targetLocationId": "$here",
+              "delta": -0.03
+            }
+          ]
+        }
       },
       {
         "branchOnStep": 0,
@@ -226,7 +239,7 @@
             "onSuccess": [],
             "onFailure": [],
             "failBehavior": "fail_action",
-            "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. On the long line the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
+            "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. There the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
             "criticalSuccessAfterimage": "The long conduit fell evenly all the way, and the water ran clear.",
             "successAfterimage": "The long conduit was laid, and the water came down clean.",
             "successAtCostAfterimage": "The water came down, but one flat stretch had to be dug up and laid again.",
@@ -477,7 +490,7 @@
           "onSuccess": [],
           "onFailure": [],
           "failBehavior": "fail_action",
-          "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. On the long line the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
+          "narrativeTemplate": "{actor} leaves the lord's pasture whole and takes the long line round its edge. There the hill falls only a little. Every stretch must drop, or the water will stand in the conduit and go foul like the wells. Reeve {cast:reeve} sends carts of stone for a month of work.",
           "criticalSuccessAfterimage": "The long conduit fell evenly all the way, and the water ran clear.",
           "successAfterimage": "The long conduit was laid, and the water came down clean.",
           "successAtCostAfterimage": "The water came down, but one flat stretch had to be dug up and laid again.",
@@ -646,7 +659,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -718,7 +731,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -790,7 +803,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -923,7 +936,7 @@
                 {
                   "id": "conduit.pos.fail.cart_water",
                   "label": "Cart The Water",
-                  "intent": "The mortal stays to cart spring water down until the sickness passes. {cast:reeve} thinks better of them.",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
                   "effects": [
                     {
                       "kind": "bond_change",
@@ -953,7 +966,7 @@
               ]
             },
             "critical_failure": {
-              "overview": "{cast:reeve} has sent for another builder to dig the long conduit out.",
+              "overview": "No clean water came down to {location}, and {cast:reeve} has sent for another builder in {actor}'s place.",
               "changes": [
                 {
                   "id": "conduit.pos.critfail.doubt",
@@ -976,54 +989,13 @@
                       "visualKind": "location"
                     }
                   ]
-                },
-                {
-                  "id": "conduit.pos.critfail.plague",
-                  "kind": "trait",
-                  "category": "scar",
-                  "direction": "loss",
-                  "polarity": "loss",
-                  "title": "Word Of Sickness",
-                  "detail": "Travellers now steer clear of {location} for fear of sickness.",
-                  "stateNoun": {
-                    "text": "Plague Scare",
-                    "entityId": "trait.condition.location.plague_scare",
-                    "visualKind": "attachment"
-                  },
-                  "concepts": [
-                    {
-                      "text": "{location}",
-                      "entityId": "$here",
-                      "visualKind": "location"
-                    }
-                  ]
-                },
-                {
-                  "id": "conduit.pos.critfail.compulsion",
-                  "kind": "shell_state",
-                  "category": "scar",
-                  "direction": "loss",
-                  "polarity": "loss",
-                  "title": "Unfinished Work",
-                  "detail": "For a while {actor} is drawn to building work over all else.",
-                  "stateNoun": {
-                    "text": "compulsion",
-                    "tooltipId": "ui.compulsion"
-                  },
-                  "concepts": [
-                    {
-                      "text": "building work",
-                      "entityId": "$actor",
-                      "visualKind": "agent"
-                    }
-                  ]
                 }
               ],
               "reactions": [
                 {
                   "id": "conduit.pos.critfail.cart_water",
                   "label": "Cart The Water",
-                  "intent": "The mortal stays to cart spring water down until the sickness passes. {cast:reeve} thinks better of them.",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
                   "effects": [
                     {
                       "kind": "bond_change",
@@ -1068,7 +1040,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -1140,7 +1112,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -1212,7 +1184,7 @@
                   "direction": "gain",
                   "polarity": "gain",
                   "title": "High Spirits",
-                  "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                  "detail": "Bringing the water down has left {actor} Inspired.",
                   "stateNoun": {
                     "text": "Inspired",
                     "entityId": "trait.condition.inspired",
@@ -1345,7 +1317,7 @@
                 {
                   "id": "conduit.neg.fail.cart_water",
                   "label": "Cart The Water",
-                  "intent": "The mortal stays to cart spring water down until the sickness passes. {cast:reeve} thinks better of them.",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
                   "effects": [
                     {
                       "kind": "bond_change",
@@ -1375,7 +1347,7 @@
               ]
             },
             "critical_failure": {
-              "overview": "No one was hurt. {location} has no water now but its old wells, and the springs are out of reach.",
+              "overview": "{location} still has only its foul wells, and {cast:reeve} has sent for another builder in {actor}'s place.",
               "changes": [
                 {
                   "id": "conduit.neg.critfail.doubt",
@@ -1398,54 +1370,13 @@
                       "visualKind": "location"
                     }
                   ]
-                },
-                {
-                  "id": "conduit.neg.critfail.plague",
-                  "kind": "trait",
-                  "category": "scar",
-                  "direction": "loss",
-                  "polarity": "loss",
-                  "title": "Word Of Sickness",
-                  "detail": "Travellers now steer clear of {location} for fear of sickness.",
-                  "stateNoun": {
-                    "text": "Plague Scare",
-                    "entityId": "trait.condition.location.plague_scare",
-                    "visualKind": "attachment"
-                  },
-                  "concepts": [
-                    {
-                      "text": "{location}",
-                      "entityId": "$here",
-                      "visualKind": "location"
-                    }
-                  ]
-                },
-                {
-                  "id": "conduit.neg.critfail.compulsion",
-                  "kind": "shell_state",
-                  "category": "scar",
-                  "direction": "loss",
-                  "polarity": "loss",
-                  "title": "Unfinished Work",
-                  "detail": "For a while {actor} is drawn to building work over all else.",
-                  "stateNoun": {
-                    "text": "compulsion",
-                    "tooltipId": "ui.compulsion"
-                  },
-                  "concepts": [
-                    {
-                      "text": "building work",
-                      "entityId": "$actor",
-                      "visualKind": "agent"
-                    }
-                  ]
                 }
               ],
               "reactions": [
                 {
                   "id": "conduit.neg.critfail.cart_water",
                   "label": "Cart The Water",
-                  "intent": "The mortal stays to cart spring water down until the sickness passes. {cast:reeve} thinks better of them.",
+                  "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
                   "effects": [
                     {
                       "kind": "bond_change",
@@ -1456,9 +1387,9 @@
                   ]
                 },
                 {
-                  "id": "conduit.neg.critfail.blame_herd",
-                  "label": "Blame The Herdsmen",
-                  "intent": "The mortal tells {location} the herdsmen broke the work. Its people hear them out; {cast:herdsman} does not forgive it.",
+                  "id": "conduit.neg.critfail.blame_pasture",
+                  "label": "Blame The Pasture",
+                  "intent": "The mortal tells {location} the lord's guarded pasture stood in the way. Its people hear them out; {cast:herdsman} does not forgive it.",
                   "effects": [
                     {
                       "kind": "reputation_with",
@@ -1491,7 +1422,7 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "High Spirits",
-                "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                "detail": "Bringing the water down has left {actor} Inspired.",
                 "stateNoun": {
                   "text": "Inspired",
                   "entityId": "trait.condition.inspired",
@@ -1563,7 +1494,7 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "High Spirits",
-                "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                "detail": "Bringing the water down has left {actor} Inspired.",
                 "stateNoun": {
                   "text": "Inspired",
                   "entityId": "trait.condition.inspired",
@@ -1635,7 +1566,7 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "title": "High Spirits",
-                "detail": "Seeing the water run clean has lifted {actor}'s spirits.",
+                "detail": "Bringing the water down has left {actor} Inspired.",
                 "stateNoun": {
                   "text": "Inspired",
                   "entityId": "trait.condition.inspired",
@@ -1768,7 +1699,7 @@
               {
                 "id": "conduit.fb.fail.cart_water",
                 "label": "Cart The Water",
-                "intent": "The mortal stays to cart spring water down until the sickness passes. {cast:reeve} thinks better of them.",
+                "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
                 "effects": [
                   {
                     "kind": "bond_change",
@@ -1799,7 +1730,45 @@
           },
           "critical_failure": {
             "overview": "The survey line rises halfway down, and {location} has stopped all work on the conduit.",
-            "changes": []
+            "changes": [
+              {
+                "id": "conduit.fb.critfail.doubt",
+                "kind": "reputation",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "Lost Trust",
+                "detail": "{location} no longer trusts {actor} with its water.",
+                "stateNoun": {
+                  "text": "reputation with {target}",
+                  "entityId": "$here",
+                  "visualKind": "location",
+                  "tooltipId": "ui.reputation_with"
+                },
+                "concepts": [
+                  {
+                    "text": "{location}",
+                    "entityId": "$here",
+                    "visualKind": "location"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "conduit.fb.critfail.cart_water",
+                "label": "Cart The Water",
+                "intent": "The mortal carts spring water down to {location} for the sick. {cast:reeve} thinks better of them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:reeve",
+                    "sentimentDelta": 0.06,
+                    "trustDelta": 0.04
+                  }
+                ]
+              }
+            ]
           }
         }
       }

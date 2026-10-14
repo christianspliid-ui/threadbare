@@ -46,8 +46,10 @@
     "  Reactions       Success side only: name the spy in open hall (reputation_with $here +0.03, bond_change",
     "                  $cast:warden -0.10) or keep the name inside the council (bond_change $cast:warden +0.10).",
     "  Systems         cast, seeds, factions, reputation = 4.",
-    "  Accepted limits No band-keyed step write: success_at_cost takes the same join + seed as success; its cost",
-    "                  is prose only. A mortal already on the Consortium's rolls gets no new membership",
+    "  Accepted limits No band-keyed step write: success_at_cost (and near_miss, which counts as success and",
+    "                  lands in the success_at_cost aftermath band) takes the same join + seed as success. Its cost",
+    "                  is that the spy escapes: a scene fact about a role noun, claimed by no chip and asserting",
+    "                  no standing on the mortal (cold critic, rules 31/34). A mortal already on the Consortium's rolls gets no new membership",
     "                  (already_member). The #consortium_errand query keeps the family eligibility filter, so the",
     "                  errand withers outside a town, city or capital; the chip claims only that word reaches",
     "                  the Consortium.",
@@ -98,7 +100,8 @@
         "narrativeTemplate": "The council votes at the next bell on closing the gates to a rival city's trade. One of the councillors is that city's spy.\n\n{cast:warden} asks {actor} to name the spy before the bell, and to do it without the council knowing. The Merchant Consortium will take in whoever does it.",
         "criticalSuccessAfterimage": "The spy is the councillor who keeps the minutes. {actor} found the rival city's letters sewn into the minute book's cover and gave them to {cast:warden} before the bell.",
         "successAfterimage": "The spy is the councillor who keeps the minutes. {actor} matched the hand in the minutes to a letter bound for the rival city.",
-        "successAtCostAfterimage": "{actor} named the keeper of the minutes before the bell, but asked too many councillors on the way. The spy heard of it and fled the town.",
+        "nearMissAfterimage": "{actor} named the keeper of the minutes as the bell was ringing. The spy was out of the hall before the watch reached the door.",
+        "successAtCostAfterimage":"{actor} named the keeper of the minutes before the bell, but asked too many councillors on the way. The spy heard of it and fled the town.",
         "failureAfterimage": "{actor} still had no proof when the bell rang. The spy took a seat in the hall and voted.",
         "criticalFailureAfterimage": "{actor} named the wrong councillor before the whole hall. The real spy sat quiet and voted with the rest.",
         "successMetadata": {
@@ -223,7 +226,7 @@
         "changes": [],
         "byOutcome": {
           "critical_success": {
-            "overview": "The council voted to close the gates to the rival city. {cast:warden} told the inner council who found the spy.",
+            "overview": "The council voted to close the gates to the rival city once the letters were read to the inner council.",
             "changes": [
               {
                 "id": "spy.crit.consortium_rolls",
@@ -232,9 +235,10 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "stateNoun": {
-                  "text": "a guild membership",
+                  "text": "a membership",
                   "entityId": "$faction:merchant_consortium",
-                  "visualKind": "faction"
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
                 },
                 "concepts": [
                   {
@@ -261,9 +265,9 @@
                 },
                 "concepts": [
                   {
-                    "text": "{actor}",
-                    "entityId": "$actor",
-                    "visualKind": "agent"
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
                   }
                 ]
               }
@@ -310,9 +314,10 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "stateNoun": {
-                  "text": "a guild membership",
+                  "text": "a membership",
                   "entityId": "$faction:merchant_consortium",
-                  "visualKind": "faction"
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
                 },
                 "concepts": [
                   {
@@ -339,9 +344,9 @@
                 },
                 "concepts": [
                   {
-                    "text": "{actor}",
-                    "entityId": "$actor",
-                    "visualKind": "agent"
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
                   }
                 ]
               }
@@ -379,7 +384,7 @@
             ]
           },
           "success_at_cost": {
-            "overview": "The council voted to close the gates. Every councillor now knows who was asking questions at the inn.",
+            "overview": "The council voted to close the gates to the rival city, with its spy gone and nobody held for it.",
             "changes": [
               {
                 "id": "spy.cost.consortium_rolls",
@@ -388,9 +393,10 @@
                 "direction": "gain",
                 "polarity": "gain",
                 "stateNoun": {
-                  "text": "a guild membership",
+                  "text": "a membership",
                   "entityId": "$faction:merchant_consortium",
-                  "visualKind": "faction"
+                  "visualKind": "faction",
+                  "tooltipId": "ui.faction_member"
                 },
                 "concepts": [
                   {
@@ -417,9 +423,9 @@
                 },
                 "concepts": [
                   {
-                    "text": "{actor}",
-                    "entityId": "$actor",
-                    "visualKind": "agent"
+                    "text": "the Merchant Consortium",
+                    "entityId": "$faction:merchant_consortium",
+                    "visualKind": "faction"
                   }
                 ]
               }
@@ -428,7 +434,7 @@
               {
                 "id": "spy.name_in_hall.cost",
                 "label": "Name the spy in open hall",
-                "intent": "The whole council hears who betrayed it. The warden wanted it kept quiet, and will hold that against the mortal.",
+                "intent": "The whole council hears who fled and why. The warden wanted it kept quiet, and will hold that against {actor}.",
                 "effects": [
                   {
                     "kind": "reputation_with",
@@ -445,7 +451,7 @@
               {
                 "id": "spy.keep_name_quiet.cost",
                 "label": "Keep the name inside the council",
-                "intent": "Only the inner council keeps the name. The warden will remember the discretion.",
+                "intent": "The town hears only that a councillor has left. The warden will remember the discretion.",
                 "effects": [
                   {
                     "kind": "bond_change",
@@ -457,7 +463,7 @@
             ]
           },
           "failure": {
-            "overview": "The vote to close the gates failed, and the spy voted with the winning side. {location} sent for a master and still does not know who the spy is.",
+            "overview": "The vote to close the gates failed by the spy's own vote. {location} asked {actor} for a name and never got one.",
             "changes": [
               {
                 "id": "spy.fail.distrusted",
@@ -483,7 +489,7 @@
             ]
           },
           "critical_failure": {
-            "overview": "The council spent the sitting on the wrong name, and the gates stay open to the rival city. {location} sent for a master, and that master called an honest councillor a traitor.",
+            "overview": "The council spent the sitting on the wrong name, and the gates stay open to the rival city. {location} asked {actor} for the spy and was handed an honest councillor instead.",
             "changes": [
               {
                 "id": "spy.critfail.named_wrongly",
