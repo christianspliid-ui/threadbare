@@ -190,7 +190,7 @@ export interface InterruptResolution {
  * Resolve the registry against one snapshot. Pure; exported for tests.
  *
  * Priority: every surface the player's own act opened renders when its condition
- * holds. An arrival already on screen keeps its slot. The rite renders when no
+ * holds. An arrival already on screen keeps its slot unless one of those opened. The rite renders when no
  * other blocking surface is open. A new arrival mounts only when nothing else is on
  * screen, the player has no surface of their own open and the last input is quiet
  * (THR-1853) — and only one per pass, in priority order, so two never co-render.
@@ -218,8 +218,12 @@ export function resolveInterrupts(
     else open.push(surface.id);
   }
 
-  // An arrival already on screen keeps its slot: a click inside it never makes it vanish.
-  for (const id of arrivalWishes) if (shown.has(id)) open.push(id);
+  // An arrival already on screen keeps its slot: a click inside it, or the quiet holds,
+  // never make it vanish. It yields only to a blocking surface that opened since (an
+  // encounter, the meeting, a gift), the way the moment card does: it steps back under
+  // the held list and returns once that surface closes, so the two never co-render.
+  const blockingBeforeArrivals = open.length > 0;
+  for (const id of arrivalWishes) if (shown.has(id) && !blockingBeforeArrivals) open.push(id);
 
   const riteMayRender = riteWish && open.length === 0;
   if (riteMayRender) open.push(THREADING_RITE_ID);
@@ -234,7 +238,7 @@ export function resolveInterrupts(
 
   const heldArrivals: HeldArrival[] = [];
   for (const id of arrivalWishes) {
-    if (shown.has(id)) continue;
+    if (open.includes(id)) continue;
     const heldBy: ArrivalHoldReason[] = [];
     if (open.length > 0 || yieldingShown) heldBy.push('interrupt');
     heldBy.push(...quietHolds);

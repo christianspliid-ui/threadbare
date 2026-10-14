@@ -235,6 +235,18 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
     expect(shownVignette.open).toEqual(['JourneyVignetteModal']);
   });
 
+  it('an encounter that opens over a showing journey moment takes the screen alone; the moment returns after', () => {
+    const over = resolveInterrupts(snap({
+      vignettePending: true, encounterOpen: true, alreadyShown: ['JourneyVignetteModal'],
+    }));
+    expect(over.open).toEqual(['EncounterVeil']);
+    expect(over.heldArrivals).toEqual([{ id: 'JourneyVignetteModal', heldBy: ['interrupt'] }]);
+    // The veil closes: the moment comes back once the closing click has gone quiet.
+    const closing = resolveInterrupts(snap({ vignettePending: true, recentInput: true, alreadyShown: ['EncounterVeil'] }));
+    expect(closing.open).toEqual([]);
+    expect(resolveInterrupts(snap({ vignettePending: true })).open).toEqual(['JourneyVignetteModal']);
+  });
+
   it('an arrival waits behind an encounter, a gift and the moment card on screen', () => {
     expect(resolveInterrupts(snap({ premonitionPending: true, encounterOpen: true })).open).toEqual(['EncounterVeil']);
     expect(resolveInterrupts(snap({ vignettePending: true, ascendantBeatEntered: true })).open).toEqual(['AscendantBeatModal']);

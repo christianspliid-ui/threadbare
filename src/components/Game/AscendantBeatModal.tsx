@@ -578,8 +578,13 @@ interface AscendantBeatOfferBannerProps {
 export const GIFT_PILL_Z = 62;
 /** The pool-beat pill's band — the ActionDrawer card tray's (40). */
 const OFFER_PILL_Z = 40;
-/** THR-1853 — the pill's top edge: one spacing step under the top bar, out of its hit area. */
-export const PILL_TOP = 'calc(var(--topbar-height) + var(--space-2))';
+/**
+ * THR-1853 — the pill's top edge: one spacing step under the top bar's *rendered*
+ * height (`--topbar-live-height`, published by GameViewTopBar, THR-1724), out of its hit
+ * area. The bar wraps to two tiers (97px at 1920×1080), so its token height is not enough.
+ * Fail-soft: unset, the variable falls back to the token height.
+ */
+export const PILL_TOP = 'calc(var(--topbar-live-height, var(--topbar-height)) + var(--space-2))';
 
 /**
  * The "thread-tug" the player chooses to enter — a quiet top-center pill in the world

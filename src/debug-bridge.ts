@@ -12,7 +12,7 @@ if (import.meta.env.DEV) {
     wasRunningBeforeInterrupt: boolean | null;
     queuedPopups: number;
     running: boolean;
-    heldArrivals: Array<{ id: string; heldBy: string[] }>;
+    heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
   }
   /** `getClockHold()` shape (THR-1814) — mirrors `DebugClockHold` in debug-bridge.d.ts. */
   interface DebugClockHold {
