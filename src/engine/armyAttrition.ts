@@ -217,7 +217,8 @@ export function phaseArmyAttrition(state: GameState): void {
  * `prosperity` onto a faction node, so the old `?? 0.5` read never tripped (THR-1862).
  * A faction holding no settlement (a monster horde, whose one holding is its lair) lives
  * off the land and is never underfunded here; without that early return turning this on
- * would starve every horde.
+ * would starve every horde. A realm that has lost every settlement is the exception: it is
+ * underfunded, so losing its land costs its army.
  * Exported for focused tests.
  */
 export function checkUnderfunded(
@@ -229,7 +230,11 @@ export function checkUnderfunded(
   const factionNode = state.graph.getNode(factionId);
   if (!factionNode) return true;
 
-  if (countFactionSettlementHoldings(state.graph, factionId) === 0) return false;
+  // A landless realm has lost the land that paid for its army; any other landless faction
+  // (a horde, a guild or temple paid from elsewhere) is not starved by this check.
+  if (countFactionSettlementHoldings(state.graph, factionId) === 0) {
+    return factionNode.properties.factionClass === 'realm';
+  }
   return deriveFactionProsperity(state.graph, factionId) < ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD;
 }
 

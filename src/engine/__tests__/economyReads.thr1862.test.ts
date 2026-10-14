@@ -90,6 +90,12 @@ describe('THR-1862 — army funding reads the derived faction prosperity', () =>
     graph.addEdge({ id: 'c_lair', source: 'fac_horde', target: 'loc_lair', type: 'controls', properties: { establishedTick: 0 } });
     expect(checkUnderfunded(asState(graph), 'fac_horde', 2)).toBe(false);
   });
+
+  it('a realm that has lost every settlement is underfunded', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'fac_exile', type: 'actor', name: 'Exiled Crown', properties: { actorType: 'faction', factionClass: 'realm' } });
+    expect(checkUnderfunded(asState(graph), 'fac_exile', 2)).toBe(true);
+  });
 });
 
 describe('THR-1862 — faction presence counts located members', () => {
