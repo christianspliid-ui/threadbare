@@ -257,12 +257,20 @@ function hasUnacquiredReachSignature(state: GameState): boolean {
   return false;
 }
 
-/** Count culture/faction actor nodes the god has not yet been introduced to (THR-516). */
+/**
+ * A culture or faction that exists now. An elder-age civilisation (`cultureEra:
+ * 'historical'`) is excluded: it is history the player reads under "Before you woke",
+ * not a group an introduction beat can present as rising (THR-1851).
+ */
+function isLivingGroup(n: { properties: Record<string, unknown> }): boolean {
+  const props = n.properties as { actorType?: string; cultureEra?: string };
+  if (props.cultureEra === 'historical') return false;
+  return props.actorType === 'culture' || props.actorType === 'faction';
+}
+
+/** Count living culture/faction actor nodes the god has not yet been introduced to (THR-516). */
 function countUnintroducedGroups(state: GameState): number {
-  const groups = state.graph.getNodesByType('actor').filter(n => {
-    const t = (n.properties as { actorType?: string }).actorType;
-    return t === 'culture' || t === 'faction';
-  }).length;
+  const groups = state.graph.getNodesByType('actor').filter(isLivingGroup).length;
   const introduced = state.ascendantBeats
     ? state.ascendantBeats.history.filter(h => h.kind === 'introduction').length
     : 0;
@@ -299,10 +307,9 @@ export function bindBeatSubject(beat: BeatDefinition, state: GameState): readonl
   if (beat.eligibility?.kind !== 'unintroduced_group') return [];
   try {
     const introduced = getIntroducedGroupIds(state);
-    const group = state.graph.getNodesByType('actor').find(n => {
-      const t = (n.properties as { actorType?: string }).actorType;
-      return (t === 'culture' || t === 'faction') && !introduced.has(n.id);
-    });
+    // THR-1851 — living groups only; an elder-age civilisation bound here was named as
+    // "rising" while the player saw it listed under "Before you woke".
+    const group = state.graph.getNodesByType('actor').find(n => isLivingGroup(n) && !introduced.has(n.id));
     return group ? [group.id] : [];
   } catch {
     return [];

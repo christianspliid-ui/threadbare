@@ -31,7 +31,18 @@ import type { WorldRefKind } from '../worldRef';
 export type TracedRefKind = WorldRefKind | ContentObjectKindId;
 
 /** Which surface asked the router to open something. */
-export type RefOpenAdapter = 'notification' | 'thread' | 'veil' | 'entity-link' | 'hex' | 'debug';
+export type RefOpenAdapter =
+  | 'notification'
+  | 'thread'
+  | 'veil'
+  | 'entity-link'
+  | 'hex'
+  | 'debug'
+  // THR-1851 — a link inside a detail card, and that card's full-sheet button.
+  | 'detail-link'
+  | 'detail-cta'
+  // THR-1851 — an introduction beat's "Attend", which opens the people it names.
+  | 'beat';
 
 /** The three rungs of Law 20's ladder that the router can put on screen. */
 export type RefOpenMode = 'hover' | 'card' | 'sheet';

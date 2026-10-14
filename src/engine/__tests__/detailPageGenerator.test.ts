@@ -170,7 +170,7 @@ describe('generateDetailPage — Actor', () => {
     expect(allegiances?.kind).toBe('chips');
   });
 
-  it('marks page hasFullSheet only when actor is the protagonist or pinned', () => {
+  it('marks page hasFullSheet for the protagonist and for every mortal individual (THR-1851)', () => {
     const graph = fixtureGraph();
     const veirenPage = generateDetailPage({
       nodeId: 'veiren',
@@ -180,7 +180,10 @@ describe('generateDetailPage — Actor', () => {
       seed: 42,
       protagonistId: 'protag',
     });
-    expect(veirenPage.hasFullSheet).toBe(false);
+    // THR-1851 widened this from protagonist/pinned only: a ruler reached from Notables
+    // had a card with no way onward to the profile drawer.
+    expect(veirenPage.hasFullSheet).toBe(true);
+    expect(veirenPage.sheetRef).toEqual({ kind: 'agent', id: 'veiren', name: 'Captain Veiren' });
 
     const protagPage = generateDetailPage({
       nodeId: 'protag',

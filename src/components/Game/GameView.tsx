@@ -150,6 +150,8 @@ import { AlertBar } from './AlertBar';
 import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificationNavigation';
 import { useRefRouter } from '../../hooks/useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
+import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
+import { useDetailNodeRefOpener, worldRefForNodeId } from '../../hooks/useDetailNodeRefOpener';
 import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
 import { DetailModal } from '../shared/DetailModal';
 import { HoverCard } from '../shared/HoverCard';
@@ -3353,6 +3355,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
   }, [pendingBeat, gameState]);
 
+  // THR-1851: the people an introduction beat names, as a ref the modal can open.
+  const beatSubjectId = pendingBeat?.kind === 'introduction' ? pendingBeat.boundNodeIds?.[0] : undefined;
+  const beatSubjectRef = useMemo(() => {
+    if (!beatSubjectId) return undefined;
+    // A bound culture resolves to the Realm over it — a culture has no sheet of its own.
+    const ref = worldRefForNodeId(gameState.graph, beatSubjectId);
+    return ref?.kind === 'faction' ? ref : undefined;
+  }, [beatSubjectId, gameState.graph]);
+
   /**
    * Resolve the pending beat: apply its grants into `unlockedActionIds` and clear
    * `pending` (engine `resolvePendingBeat`). For selection beats `chosenActionId`
@@ -4635,6 +4646,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return () => window.__DEBUG?._registerRefRouterOpen?.(null);
   }, [refRouter]);
 
+  // THR-1851 — the links inside a detail card (faction allegiances, threads, prose
+  // terms). Until this was mounted every one of them rendered as plain text in the game.
+  const getLiveGraph = useCallback(() => _gameStateRef.current.graph, []);
+  const openDetailNodeRef = useDetailNodeRefOpener(refRouter, getLiveGraph);
+
   // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
   useDebugOpenModal(_gameStateRef, {
     openAgentProfileForId,
@@ -5608,6 +5624,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     <GameErrorBoundary>
       <DetailModalStackValueProvider value={refRouter.stack}>
       <RefRouterProvider router={refRouter}>
+      <DetailPageOpenerProvider value={openDetailNodeRef}>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
       {/* ═══ Top bar — extracted to GameViewTopBar (THR-579) ═══ */}
       <GameViewTopBar
@@ -6733,6 +6750,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
             : undefined}
           rungOpening={pendingBeat.kind === 'rung_gift' ? isRungOpeningOffer(gameState, pendingBeat.beatId) : undefined}
+          // THR-1851: an introduction beat's bound people, so "Attend" can open them.
+          subjectRef={beatSubjectRef}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />
@@ -6855,6 +6874,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} />
       )}
     </div>
+      </DetailPageOpenerProvider>
       </RefRouterProvider>
       </DetailModalStackValueProvider>
     </GameErrorBoundary>
