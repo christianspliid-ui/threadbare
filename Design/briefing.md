@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-14 08:50 local (06:50 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-14 09:05 local (07:05 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,10 +28,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 ready, none being built this minute.** Since the last brief, [hovering a besieged town now says "under siege" in words](https://linear.app/threadbare/issue/THR-1847/a-siege-ring-and-a-battle-sprite-on-the-map-carry-no-words-hovering) merged and is live. Two small fixes can be picked up now: [towns founded during play belong to a people](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick) and [long place names stay inside the map's hover box](https://linear.app/threadbare/issue/THR-1848/the-hex-tooltips-place-name-spills-past-its-box-on-long-names-the). Then [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
+**Healthy: 3 ready, 1 being built.** The builder is working on [towns founded during play belong to a people](https://linear.app/threadbare/issue/THR-1839/places-founded-during-play-take-no-culture-a-hamlet-founded-at-tick). Next small fix: [long place names stay inside the map's hover box](https://linear.app/threadbare/issue/THR-1848/the-hex-tooltips-place-name-spills-past-its-box-on-long-names-the). Then [Master work reaches masters' boards](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times) at 21:30 Wednesday and [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) just after midnight into Thursday. Nothing is blocked, parked or stale.
 
 ## Health
 
 - **The heavy simulation tests look fixed.** The run on the latest main passed ([workflow runs](https://github.com/christianspliid-ui/threadbare/actions/workflows/heavy-tests.yml)). The daily scheduled run is still red from before the fix, so the check still reports it; the next scheduled run (about 12:30 local) should clear it. This is the builder's. Nothing for you.
-- The repo cleaner last ran at 04:40 local, four hours ago, because the computer was idle overnight. It should resume on its own. 5 old worktrees still wait for a keep-or-delete decision, housekeeping for the agents.
-- Everything else is green: the live site is current, automated checks are normal, no pull request is waiting, all scheduled lanes are on time, and the game runs at 127 ms a tick (+8% on the weekly median, within range). The silence check's worst gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, so it is not an ask. No new messages from you on Discord.
+- The repo cleaner is running again (last activity 08:55 local). 5 old worktrees still wait for a keep-or-delete decision, housekeeping for the agents.
+- **The game ran slower in this hour's speed check:** tick cost 174 ms/tick steady, 48% above the 7-day median (117, 119 rows since a43dc356); top phase agent_decision, 592 agents. Name the merges between a43dc356 and 667869d2: `git log --oneline --merges a43dc356..667869d2`. Last hour measured 127 ms on the same commit, so this may be the machine being busy rather than the code; the next hourly row will tell. This is the builder's. Nothing for you.
+- Everything else is green: the live site is current, automated checks are normal, no pull request is waiting, and all scheduled lanes are on time. The silence check's worst gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, so it is not an ask. No new messages from you on Discord.
