@@ -16,6 +16,7 @@ import { isPlaceNode } from './sublocationShape';
 import { resolveAttentionMode } from './attentionCadence';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
+import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 
 /**
  * A single agent in the ascendant's retinue, with extracted data ready for UI rendering.
@@ -999,4 +1000,27 @@ function resolveHexDisplayName(graph: WorldGraph, col: number, row: number): str
   });
 
   return candidates[0].name || `Hex (${col}, ${row})`;
+}
+
+/**
+ * The player read a threaded mortal's sheet: the thread edge records the backstory
+ * tier they have now seen, so the sheet's "New" marks clear (THR-1822 § D15 — an
+ * out-of-tick write goes through an engine function that bumps `worldVersion`).
+ * Returns true when something changed.
+ */
+export function markBackstoryRead(
+  graph: WorldGraph,
+  runtime: SimulationRuntime | null,
+  ascendantId: string,
+  agentId: string,
+): boolean {
+  const threadEdge = graph.getIncomingEdges(agentId, 'thread').find(e => e.source === ascendantId);
+  if (!threadEdge) return false;
+  const props = threadEdge.properties as Record<string, unknown>;
+  const tier = (props.tier as number | undefined) ?? 0;
+  const currentRead = (props.readBackstoryTier as number | undefined) ?? 0;
+  if (tier <= currentRead) return false;
+  graph.updateEdge(threadEdge.id, { properties: { ...threadEdge.properties, readBackstoryTier: tier } });
+  if (runtime) touchWorld(runtime);
+  return true;
 }

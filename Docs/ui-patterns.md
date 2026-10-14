@@ -264,6 +264,7 @@ GameView delegates all state management to custom hooks. Each hook groups relate
 
 - **Group related state** with section comments (`// Overlay state`, `// Pending action state`)
 - **Mutual exclusion:** create a `closeAll*()` callback that resets all overlay state — called before opening any new overlay
+- **Game meaning comes from the view-model seam (THR-1822):** a value derived from the world graph is a selector in `src/engine/views/`, read with `useView(selector, args)` (or `readView` at GameView's root). Do not add a new `graph.getNode` / `getOutgoingEdges` / `getNodesByType` call to a component or hook — the `graph-query-in-ui` row of the UI-debt ratchet only lets that count go down, and `graph-write-in-ui` is held at 0
 - **Tight memo deps:** derived values (`useMemo`) should depend on specific fields, not whole objects. Avoid `gameState.tick` in deps unless the value truly changes per tick
 - **Return a flat object** — GameView destructures hook results and passes them down as props. No nested objects
 - **Never compute expensive values in render** — always `useMemo` with carefully chosen deps
@@ -421,7 +422,7 @@ Minimum requirements for all interactive elements:
 
 - **React.memo:** wrap any component rendered inside a list or that receives stable-but-referentially-new props (RetinuePanel, RivalPanel, ActionCard, HexZoomView, LocationView, HexBreadcrumb)
 - **useCallback:** all event handlers passed as props — especially in GameView and hooks
-- **useMemo:** derived data computations that depend on gameState — but don't over-include `gameState.tick` in dependency arrays (causes per-tick recomputation of everything)
+- **useMemo:** derived data computations that depend on gameState — but don't over-include `gameState.tick` in dependency arrays (causes per-tick recomputation of everything). Data derived from the world graph belongs in a view-model selector (`src/engine/views/`, read with `useView`), which caches on the runtime's version counters and returns the same object while valid (THR-1822)
 - **Constants:** extract magic numbers and inline style objects to module-level constants — never create object literals inside render
 - **Conditional computation:** expensive derived values (wheel slots, hex zoom data) should guard with an early-out (`if (!selectedAgentId || !drawerOpen) return null`) before computing
 

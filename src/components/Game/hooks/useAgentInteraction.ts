@@ -5,7 +5,7 @@ import type { LocalEncounterMode, InterventionType } from '../../../types/dream'
 import type { AgendaTemplate } from '../../../data/agenda-content';
 import type { PendingChoiceData } from '../../../engine/effectExecutors';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
-import { getRetinueAgents, getThreadedNodes } from '../../../engine/retinue';
+import { getRetinueAgents, getThreadedNodes, markBackstoryRead } from '../../../engine/retinue';
 import { withEssenceSpend } from '../../../engine/essenceMovement';
 import type { ThreadCategory, ThreadedNode } from '../../../engine/retinue';
 import { enrichRetinueWithActivity } from '../../../engine/agentActivity';
@@ -652,21 +652,10 @@ export function useAgentInteraction({
       setDrawerOpen(false);
       setProfileModalAgentId(selectedAgentId);
 
-      // Update readBackstoryTier on the thread edge to clear New badges
-      const threadEdges = gameState.graph.getIncomingEdges(selectedAgentId, 'thread');
-      const threadEdge = threadEdges.find(e => e.source === gameState.ascendantId);
-      if (threadEdge) {
-        const tier = (threadEdge.properties as Record<string, unknown>).tier as number ?? 0;
-        const currentRead = (threadEdge.properties as Record<string, unknown>).readBackstoryTier as number ?? 0;
-        if (tier > currentRead) {
-          gameState.graph.updateEdge(threadEdge.id, {
-            properties: { ...threadEdge.properties, readBackstoryTier: tier },
-          });
-          // TB-086: Non-tick graph mutation — must participate in version system
-          if (runtime) touchWorld(runtime);
-          // Trigger re-render so isNew badges clear on next agentInfoCard recompute
-          setGameState(s => ({ ...s }));
-        }
+      // Record the backstory tier read on the thread edge so New badges clear. The engine
+      // writes and bumps worldVersion (THR-1822 § D15); re-render so the card recomputes.
+      if (markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, selectedAgentId)) {
+        setGameState(s => ({ ...s }));
       }
     }
   }, [selectedAgentId, gameState, setGameState]);

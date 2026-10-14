@@ -462,6 +462,14 @@ export function countLiteralFontSizes(source: CleanSource): number {
 // ── The rows ─────────────────────────────────────────────────────────────
 
 const ALL_UI = UI_TREE_ROOTS;
+
+// ── THR-1822: direct world-graph calls from UI code ─────────────────────
+/** TypeScript only — a stylesheet holds no graph call. */
+const TS_ONLY = /\.tsx?$/;
+/** Every read method of `WorldGraph` (`src/engine/graph.ts`). */
+const GRAPH_READ_CALL = /\.(?:getNode|getNodesByType|getAllNodes|getEdge|getOutgoingEdges|getIncomingEdges|getAllEdgesForNode|getEdgesByType|getAllEdges|getNeighborIds|getByTag)\(/g;
+/** Every write method of `WorldGraph`. */
+const GRAPH_WRITE_CALL = /\.(?:addNode|removeNode|updateNode|addEdge|removeEdge|updateEdge|applyMutations|retargetEdgeSource)\(/g;
 const HOME = (file: string) => new RegExp(`^src/components/shared/${file.replace('.', '\\.')}$`);
 
 /** WebGL colour data: HexMapV2's `.ts` modules (its `.tsx` HTML overlays still count). */
@@ -608,5 +616,25 @@ export const UI_DEBT_ROWS: readonly UiDebtRow[] = [
     extensions: UI_TREE_EXTENSIONS,
     homes: [],
     count: countLiteralFontSizes,
+  },
+  {
+    id: 'graph-query-in-ui',
+    owner: 'THR-1822',
+    law: 'NFP #2 — the view-model seam',
+    sanctioned: 'read a view model through useView (src/engine/views/)',
+    roots: ALL_UI,
+    extensions: TS_ONLY,
+    homes: [],
+    count: (source) => countMatches(source.text, GRAPH_READ_CALL),
+  },
+  {
+    id: 'graph-write-in-ui',
+    owner: 'THR-1822',
+    law: 'NFP #2 — the view-model seam (an out-of-tick write must bump worldVersion)',
+    sanctioned: 'an engine function that writes and ends in touchWorld (e.g. recordJourneyChoice)',
+    roots: ALL_UI,
+    extensions: TS_ONLY,
+    homes: [],
+    count: (source) => countMatches(source.text, GRAPH_WRITE_CALL),
   },
 ];

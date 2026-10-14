@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-10-14
+last_validated_against: 2026-10-15
 validated_doctrine: ui-laws@1
 ---
 
@@ -248,7 +248,7 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 - [ ] **Where in the z-stack?** — Which z-index layer? Does it conflict with existing overlays?
 - [ ] **What triggers visibility?** — Always visible, user-toggled, selection-triggered, or event-triggered?
 - [ ] **How does the player dismiss it?** — Escape key? Backdrop click? Close button? Auto-timeout?
-- [ ] **What data does it display?** — Which GameState fields? Which graph traversals? Which aggregator functions?
+- [ ] **What data does it display?** — Which GameState fields? Which aggregator functions? Graph-derived data comes from a view-model selector in `src/engine/views/` read with `useView` (THR-1822) — never a new graph traversal in the component
 - [ ] **How does it handle missing data?** — Placeholder states, loading indicators, graceful fallbacks (NFP #4).
 - [ ] **What interaction states?** — Rest, hover, active, selected, disabled, focus-visible (see §6).
 - [ ] **Does it emit events?** — Does clicking/interacting dispatch to other systems (map navigation, encounter trigger, action fire)?
