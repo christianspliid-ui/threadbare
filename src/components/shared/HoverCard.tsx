@@ -19,8 +19,9 @@
 import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 import type { DetailPage } from '../../types/detailPage';
-import { HOVER_CARD_MAX_SECTIONS, HOVER_CARD_W } from '../../types/detailPage';
+import { HOVER_CARD_MAX_SECTIONS } from '../../types/detailPage';
 import { Section } from './Section';
+import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
 
 /** Gap between the anchor and the card, px. */
 const HOVER_CARD_GAP_PX = 8;
@@ -47,7 +48,8 @@ export function hoverCardPosition(
       ? anchor.bottom + HOVER_CARD_GAP_PX
       : Math.max(HOVER_CARD_MARGIN_PX, anchor.top - HOVER_CARD_MAX_H_PX - HOVER_CARD_GAP_PX);
 
-  const maxLeft = viewport.width - HOVER_CARD_W - HOVER_CARD_MARGIN_PX;
+  // `--hovercard-w` in px at the live root size (THR-1819).
+  const maxLeft = viewport.width - remToPx(TEXT_TOKENS_REM.hovercardW) - HOVER_CARD_MARGIN_PX;
   const left = Math.max(HOVER_CARD_MARGIN_PX, Math.min(anchor.left, maxLeft));
 
   return { top, left };
@@ -66,7 +68,7 @@ export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTML
     position: 'fixed',
     top,
     left,
-    width: HOVER_CARD_W,
+    width: 'var(--hovercard-w)',
     maxHeight: HOVER_CARD_MAX_H_PX,
     // Above the drawers and panels it floats over, below the modal band — a hover card
     // and a modal are never on screen together, so it needs no room above one.
