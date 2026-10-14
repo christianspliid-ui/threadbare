@@ -63,7 +63,7 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height 75vh (stricter than Law 33's 85vh cap). Escape to close. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
+| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height `var(--modal-max-h)` = 85vh (Law 33). Escape to close. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
 | Encounter dialogue with branching | `MeetingEncounterModal` | Auto-triggered on encounter. Full encounter UI. |
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |
@@ -248,7 +248,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | Hex map canvas | Center | Fills remaining space | `HexMapV2` (Three.js) |
 | Right panel | Right edge | ~380px | `HexDetailView` / `ThreadDetailView` |
 | Bottom drawer | Bottom edge | Full width, slides up | `ActionDrawer` |
-| Modal layer | Centered overlay | max-width varies, max-height ≤85vh (Law 33 cap; the shared `Modal` ships 75vh) | `Modal` and custom modals |
+| Modal layer | Centered overlay | max-width varies, max-height `var(--modal-max-h)` = 85vh (Law 33 — one rule, the shared `Modal` included) | `Modal` and custom modals |
 | Toast/alert layer | Top center | Auto-width | `AlertBar` / `EventPopup` |
 
 See `Docs/design-system/layout-zones.md` for the full zone architecture with z-index stacking and insertion points.

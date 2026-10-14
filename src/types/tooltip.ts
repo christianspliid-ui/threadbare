@@ -35,8 +35,9 @@ export const TOOLTIP_TOP_THRESHOLD = 80;
 /** Shift horizontally if within this many px of left/right viewport edge. */
 export const TOOLTIP_SIDE_THRESHOLD = 100;
 
-/** Maximum tooltip width in px. */
-export const TOOLTIP_MAX_WIDTH = 280;
+/* The tooltip's maximum width is a rem token since THR-1819 — `--tooltip-max-w`
+   (17.5rem: 280px at 1080p, 315px at 1440p). Its one TS copy is
+   `TEXT_TOKENS_REM.tooltipMaxW` in src/components/shared/layoutContract.ts. */
 
 /** Gap between tooltip and trigger element in px. */
 export const TOOLTIP_OFFSET = 8;

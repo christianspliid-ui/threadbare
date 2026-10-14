@@ -10,6 +10,7 @@
 import React from 'react';
 import { SphereIcon as SvgSphereIcon } from '../icons/SphereIcon';
 import { getSphereImagePath } from '../../data/sphereIcons';
+import { remToPx } from './layoutContract';
 import { SPHERE_NAMES } from '../../types/index';
 import type { SphereName } from '../../types/index';
 import { REACH_TO_SPHERE as _REACH_TO_SPHERE, sphereFromReach as _sphereFromReach } from '../icons/constants';
@@ -25,7 +26,7 @@ export interface SphereIconProps {
   sphere?: SphereName | string;
   /** Legacy alias for sphere — accepted for backward compat */
   sphereName?: string;
-  /** CSS font size or pixel number (default: 1rem / 16px) */
+  /** CSS font size or pixel number (default: 1rem — 16px at 1080p, 18px at 1440p) */
   size?: string | number;
   /** Optional CSS class name */
   className?: string;
@@ -43,14 +44,15 @@ export interface SphereIconProps {
 
 /**
  * Convert a size prop to a pixel number.
- * Handles: number → pass through, "24px" → 24, "1.5rem" → 24, bare "24" → 24.
+ * Handles: number → pass through, "24px" → 24, "1.5rem" → 24 at a 16px root, bare "24" → 24.
+ * rem reads the live root size (THR-1819: the root steps to 18px at 1440p), never `* 16`.
  */
 function toPxNumber(size: string | number | undefined): number {
-  if (size === undefined) return 16;
+  if (size === undefined) return remToPx(1);
   if (typeof size === 'number') return size;
   const px = parseFloat(size);
-  if (size.endsWith('rem')) return px * 16;
-  return isNaN(px) ? 16 : px;
+  if (size.endsWith('rem')) return isNaN(px) ? remToPx(1) : remToPx(px);
+  return isNaN(px) ? remToPx(1) : px;
 }
 
 /**

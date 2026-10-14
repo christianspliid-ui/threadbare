@@ -2,22 +2,22 @@
 
 > **Purpose:** Definitive reference for viewport zones, z-index stacking, responsive scaling, and insertion points. Load this when placing new UI elements.
 >
-> **Last updated:** 2026-09-28 (THR-1665: map-overlay sub-bands, tooltip above labels)
+> **Last updated:** 2026-10-14 (THR-1819: the 1440p layout contract — god rail / Ledger rail tokens, 85vh `--modal-max-h`, the tier table)
 
 ---
 
-## Viewport Layout (1920x1080 reference)
+## Viewport Layout (1920×1080, the supported floor; 2560×1440 is the primary screen)
 
 ```
 +------------------------------------------------------------------+
-|                        Top Bar (48px)                        z:30 |
+|                 Top Bar (--topbar-height, 48px)              z:30 |
 +------+-------------------------------------------+---------------+
-| Hex  |                                           |               |
-| Side |                                           |   Right       |
-| bar  |           Hex Map Canvas                  |   Sidebar     |
-| 60-  |           (Three.js / flex-1)             |  (--sidebar-  |
-| 220  |                                           |   width)      |
-| px   |                                           |               |
+| God  |                                           |   Ledger      |
+| rail |                                           |   rail        |
+| (--  |           Hex Map Canvas                  |  (--rail-     |
+| rail-|           (Three.js / flex-1)             |   right-w,    |
+| left-|                                           |   340px)      |
+| w)   |                                           |               |
 |      |      +--HexTooltip (z:15)---+             |               |
 |      |      | hover overlay        |             |               |
 |      |      +----------------------+             |               |
@@ -72,7 +72,7 @@ Overlay layers (centered, above everything):
 
 | Property | Value | Source |
 |----------|-------|--------|
-| Width | `var(--sidebar-width)`: 280px default, 360px at 1920px+, 400px at 2560px+, 420px at 3440px+ | `index.css`, `GameView.tsx:2829` |
+| Width | `var(--rail-right-w)` (the Ledger rail, THR-1828): 280px below 1920, 340px at 1920px+, 420px at 2560px+ and 3440px+ | `index.css`, `GameView.tsx` |
 | Position | Right edge, `flex-shrink-0 overflow-y-auto` | `GameView.tsx:2827` |
 | Border | `1px solid var(--border-gold)` left edge | `GameView.tsx:2831` |
 | Contents | `ThreadsPanel`, `WorldPulse`, `HexDetailView`, `AgentDetailPanel`, entity detail views | `GameView.tsx` |
@@ -97,7 +97,7 @@ Overlay layers (centered, above everything):
 |----------|-------|--------|
 | Z-index | `60` default (`MODAL_Z_DEFAULT`), `65` raised (`MODAL_Z_ABOVE_INTERRUPT`) — via the `zIndex` prop | `Modal.tsx` |
 | Max width | `600px` default (configurable via `maxWidth` prop) | `Modal.tsx:23,80` |
-| Max height | `75vh` | `Modal.tsx:82` |
+| Max height | `var(--modal-max-h)` = 85vh — the one dialog cap (Law 33) | `Modal.tsx`, `index.css` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
 | Behavior | Centered overlay. Escape to close. Backdrop click to close. | |
 
@@ -151,16 +151,26 @@ From bottom to top — every layer that participates in the stacking context:
 
 ## Responsive Scaling
 
-CSS custom properties scale at four breakpoints defined in `index.css`:
+The 1440p layout contract (THR-1819). Frame tokens are px, restated in each `@media (min-width: …)` block of `index.css`; text containers are rem and follow the root step-up (`html { font-size: 112.5% }` at ≥2560 wide and ≥1200 tall). JS reads the same table from `src/components/shared/layoutContract.ts`; `layoutContract.test.ts` locks parity and the map-share budget.
 
-| Property | Default | 1920px+ | 2560px+ | 3440px+ |
+| Token | base (<1920) | 1920px+ | 2560px+ | 3440px+ |
 |----------|---------|---------|---------|---------|
-| `--topbar-height` | 44px | 48px | 52px | 52px |
-| `--sidebar-width` | 280px | 360px | 400px | 420px |
-| `--topbar-padding-x` | 12px | 16px | 20px | 24px |
-| `--topbar-gap` | 12px | 16px | 20px | 24px |
+| `--topbar-height` | 44px | 48px | 56px | 56px |
+| `--topbar-padding-x` | 12px | 16px | 20px | 20px |
+| `--topbar-gap` | 12px | 16px | 20px | 20px |
+| `--rail-left-w` (god rail) | 320px | 320px | 400px | 400px |
+| `--rail-right-w` (Ledger rail) | 280px | 340px | 420px | 420px |
+| `--rail-strip-w` | 56px | 56px | 56px | 56px |
+| `--inspector-w` | 560px | 560px | 717px | 717px |
+| `--inspector-wide-w` | 960px | 960px | 1280px | 1280px |
+| `--inspector-full-trail-w` / `-aside-w` | 240 / 360px | 240 / 360px | 300 / 440px | 300 / 440px |
+| `--stage-gutter` | 24px | 24px | 24px | 24px |
+| `--stage-window-w` | 280px | 280px | 520px | 1400px |
+| `--stage-left-col-w` | 340px | 340px | 560px | 560px |
 | `--panel-radius` | 0.5rem | — | — | — |
-| `--panel-padding` | 1rem | 1.25rem | 1.5rem | 1.75rem |
+| `--panel-padding` | 1rem | 1.25rem | (1.25rem — rem already steps) | — |
+| `--tooltip-max-w` / `--hovercard-w` / `--toast-w` | 17.5 / 26.25 / 20rem | 280 / 420 / 320px | 315 / 472.5 / 360px | same |
+| `--modal-max-h` | 85vh | — | — | — |
 
 Below 1600px: `.topbar-compact-hide` elements are hidden to save horizontal space.
 
@@ -197,7 +207,7 @@ When adding a new UI element, place it in the appropriate zone:
 - Do not render HTML directly inside the Three.js canvas — use the HTML overlay layer above it.
 - Do not create new stacking contexts (`position: relative/absolute` with z-index) inside the right sidebar — it scrolls and z-fighting causes visual bugs.
 - Do not use z-index values above 9999 unless you have a compelling reason and document it here.
-- Do not hardcode pixel widths that duplicate CSS custom properties — use `var(--sidebar-width)` etc.
+- Do not hardcode pixel widths that duplicate CSS custom properties — use `var(--rail-right-w)`, `var(--rail-left-w)` etc.
 
 ---
 
@@ -213,13 +223,13 @@ GameView (h-screen flex flex-col overflow-hidden)
   │     └── AvatarHUD (z:20)
   │
   ├── Main Content (flex flex-1 overflow-hidden)
-  │     ├── HexSidebar (60–220px, left)
+  │     ├── God rail — AscendantBar (var(--rail-left-w), left)
   │     ├── Center Area (flex-1 flex-col relative)
   │     │     ├── HexMapV2 (Three.js canvas, fills space)
   │     │     ├── HexTooltip (absolute, z:10)
   │     │     ├── LocationLabelOverlay (absolute)
   │     │     └── RegionLabels (absolute)
-  │     └── Right Sidebar (var(--sidebar-width), flex-shrink-0)
+  │     └── Ledger rail (var(--rail-right-w), flex-shrink-0)
   │           ├── ThreadsPanel
   │           ├── WorldPulse
   │           └── [Selection-dependent detail views]

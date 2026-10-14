@@ -1347,6 +1347,56 @@ if (import.meta.env.DEV) {
       return { surfaces: DIALOG_CONTEXT_SURFACES, open };
     },
     /**
+     * The 1440p layout contract (THR-1819): the live tier and root size, every layout
+     * and type token as `:root` resolves it, the measured top bar and rails, and the
+     * map share at this viewport from the token table. The state assertion for a
+     * layout browser-verify run; the frame / Inspector / Stage builds reuse it to prove
+     * they consume the tokens. `measured.*` is null for an element not mounted.
+     */
+    getLayoutContract: async () => {
+      const lc = await import('./components/shared/layoutContract');
+      const hasDom = typeof window !== 'undefined' && typeof document !== 'undefined';
+      const width = hasDom ? window.innerWidth : 0;
+      const height = hasDom ? window.innerHeight : 0;
+      const tier = lc.layoutTierFor(width);
+      const names = [
+        ...Object.keys(lc.FRAME_TOKENS_PX.base),
+        '--panel-padding', '--tooltip-max-w', '--hovercard-w', '--toast-w',
+        '--stage-compact-w', '--measure-prose', '--modal-max-h',
+        ...Object.keys(lc.TYPE_SCALE_REM).map((step) => `--text-${step}`),
+      ];
+      const tokens: Record<string, string> = {};
+      const rootStyle = hasDom ? getComputedStyle(document.documentElement) : null;
+      for (const name of names) tokens[name] = rootStyle?.getPropertyValue(name).trim() ?? '';
+      const measure = (selector: string, axis: 'width' | 'height'): number | null => {
+        if (!hasDom) return null;
+        const el = document.querySelector(selector);
+        if (!el) return null;
+        return Math.round(el.getBoundingClientRect()[axis] * 100) / 100;
+      };
+      const t = lc.FRAME_TOKENS_PX[tier];
+      const screen = { w: width, h: height };
+      return {
+        tier,
+        viewport: { width, height },
+        rootFontPx: lc.rootFontPx(),
+        tokens,
+        measured: {
+          topBarPx: measure('[data-testid="game-topbar"]', 'height'),
+          godRailPx: measure('aside[aria-label="Ascendant status"]', 'width'),
+          ledgerRailPx: measure('[data-testid="right-sidebar"]', 'width'),
+        },
+        mapShare: {
+          railsOpen: lc.mapShare(screen, t['--rail-left-w'] + t['--rail-right-w'], t['--topbar-height']),
+          inspectorDocked: lc.mapShare(
+            screen,
+            t['--rail-left-w'] + t['--rail-strip-w'] + t['--inspector-w'],
+            t['--topbar-height'],
+          ),
+        },
+      };
+    },
+    /**
      * Drive the router headlessly. Returns what it resolved, so a verification run can
      * assert the *routing decision* rather than infer it from pixels.
      *

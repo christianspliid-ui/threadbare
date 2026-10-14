@@ -5,13 +5,13 @@ import {
   TOOLTIP_SHOW_DELAY,
   TOOLTIP_FADE_OUT,
   TOOLTIP_SIDE_THRESHOLD,
-  TOOLTIP_MAX_WIDTH,
   TOOLTIP_OFFSET,
   TOOLTIP_MAX_CHAIN_DEPTH,
   TOOLTIP_LINK_PATTERN,
 } from '../../types/tooltip';
 import { resolveTooltip } from '../../engine/tooltipResolver';
 import { FOCUSABLE_SELECTOR } from './focusableSelector';
+import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
 
 interface TooltipProps {
   id?: string;
@@ -245,6 +245,8 @@ export const Tooltip = React.memo(function Tooltip({
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
+    // `--tooltip-max-w` in px at the live root size, read once per pass (THR-1819).
+    const tooltipMaxW = remToPx(TEXT_TOKENS_REM.tooltipMaxW);
 
     if (depth > 0) {
       // ── Chained tooltip: position to the side of the parent tooltip ──
@@ -256,16 +258,16 @@ export const Tooltip = React.memo(function Tooltip({
       const spaceRight = viewportWidth - parentRect.right - TOOLTIP_OFFSET;
       const spaceLeft = parentRect.left - TOOLTIP_OFFSET;
 
-      if (spaceRight >= TOOLTIP_MAX_WIDTH + VIEWPORT_MARGIN) {
+      if (spaceRight >= tooltipMaxW + VIEWPORT_MARGIN) {
         setPosition({
           top: Math.max(VIEWPORT_MARGIN, triggerRect.top - 8),
           left: parentRect.right + TOOLTIP_OFFSET,
           placement: 'right',
         });
-      } else if (spaceLeft >= TOOLTIP_MAX_WIDTH + VIEWPORT_MARGIN) {
+      } else if (spaceLeft >= tooltipMaxW + VIEWPORT_MARGIN) {
         setPosition({
           top: Math.max(VIEWPORT_MARGIN, triggerRect.top - 8),
-          left: parentRect.left - TOOLTIP_MAX_WIDTH - TOOLTIP_OFFSET,
+          left: parentRect.left - tooltipMaxW - TOOLTIP_OFFSET,
           placement: 'left',
         });
       } else {
@@ -276,7 +278,7 @@ export const Tooltip = React.memo(function Tooltip({
             VIEWPORT_MARGIN,
             Math.min(
               triggerRect.left,
-              viewportWidth - TOOLTIP_MAX_WIDTH - VIEWPORT_MARGIN
+              viewportWidth - tooltipMaxW - VIEWPORT_MARGIN
             )
           ),
           placement: 'below',
@@ -286,9 +288,9 @@ export const Tooltip = React.memo(function Tooltip({
       // ── Root tooltip: position above or below the trigger ──
 
       // Horizontal: center on trigger, clamped to viewport
-      let left = triggerRect.left + triggerRect.width / 2 - TOOLTIP_MAX_WIDTH / 2;
-      if (left + TOOLTIP_MAX_WIDTH > viewportWidth - VIEWPORT_MARGIN) {
-        left = viewportWidth - TOOLTIP_MAX_WIDTH - VIEWPORT_MARGIN;
+      let left = triggerRect.left + triggerRect.width / 2 - tooltipMaxW / 2;
+      if (left + tooltipMaxW > viewportWidth - VIEWPORT_MARGIN) {
+        left = viewportWidth - tooltipMaxW - VIEWPORT_MARGIN;
       }
       if (left < VIEWPORT_MARGIN) {
         left = VIEWPORT_MARGIN;
@@ -472,7 +474,7 @@ export const Tooltip = React.memo(function Tooltip({
     const base: React.CSSProperties = {
       position: 'fixed',
       left: position.left,
-      maxWidth: TOOLTIP_MAX_WIDTH,
+      maxWidth: 'var(--tooltip-max-w)',
       zIndex: 70 + depth,
       pointerEvents: isVisible ? 'auto' : 'none',
     };
