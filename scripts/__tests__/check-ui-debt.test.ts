@@ -139,6 +139,7 @@ describe('detectors', () => {
     expect(countRadiusLiterals(tsx(`export const s = { borderRadius: '50%' }; export const t = { borderRadius: 0 };`))).toBe(0);
     expect(countRadiusLiterals(tsx('export const A = () => <div className="rounded-full rounded-none rounded-panel" />;'))).toBe(0);
     expect(countRadiusLiterals(css('.a { border-radius: var(--panel-radius); }'))).toBe(0);
+    expect(countRadiusLiterals(tsx(`export const s = { borderRadius: 'var(--radius-md)' };`))).toBe(1);
   });
 
   it('shadow-literal: counts literal shadows; tokens, none and glowShadow() are legal', () => {
@@ -147,6 +148,11 @@ describe('detectors', () => {
     expect(countShadowLiterals(tsx(`export const s = { boxShadow: 'var(--shadow-panel)' };`))).toBe(0);
     expect(countShadowLiterals(tsx(`export const s = { boxShadow: glowShadow(c, 'soft') };`))).toBe(0);
     expect(countShadowLiterals(tsx('export const A = () => <div className="shadow-black/50 drop-shadow-md" />;'))).toBe(0);
+    // The Shadow Reach's id is not a class; the bare utility in a class list is.
+    expect(countShadowLiterals(tsx(`export const isShadow = (r: string) => r === 'shadow';`))).toBe(0);
+    expect(countShadowLiterals(tsx('export const A = () => <div className="p-2 shadow" />;'))).toBe(1);
+    // Tailwind's default scale through var() is not one of our tokens.
+    expect(countShadowLiterals(tsx(`export const s = { boxShadow: 'var(--shadow-lg)' };`))).toBe(1);
   });
 
   it('uppercase and monospace', () => {

@@ -438,7 +438,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2), repo
     const row = UI_DEBT_ROWS.find((candidate) => candidate.id === r.id);
     if (r.kind === 'increase' && row) {
       console.error('');
-      console.error(`${r.id} rose (${row.law}). Write instead: ${row.sanctioned}.`);
+      console.error(`${r.id} rose (${row.law}). Write instead: ${row.sanctioned.replace(/\.$/, '')}.`);
       for (const line of growthReport(m.perFile[r.id] ?? {}, baseline?.rows[r.id]?.perFile ?? {})) console.error(`  - ${line}`);
     } else if (r.kind === 'suspect-drop') {
       console.error('');

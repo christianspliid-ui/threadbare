@@ -280,8 +280,12 @@ export function countEscapeListeners(source: CleanSource): number {
   return countMatches(source.text, /\b(?:window|document)\.addEventListener\(\s*['"`]keydown['"`]/g);
 }
 
-/** Radius values the token set sanctions, plus the two shapes. */
-const LEGAL_RADIUS = /^(?:var\(--radius-[a-z]+\)|var\(--panel-radius\)|0(?:px)?|50%)$/;
+/**
+ * Radius values the token set sanctions, plus the two shapes. Only the four
+ * hierarchy levels: `var(--radius-md)` is Tailwind's default scale spelled
+ * through var(), not one of our tokens, and counts like `rounded-md`.
+ */
+const LEGAL_RADIUS = /^(?:var\(--radius-(?:page|panel|control|chip)\)|var\(--panel-radius\)|0(?:px)?|50%)$/;
 
 /** Tailwind default-scale radius classes, any side; `rounded-full`/`-none` and tokens stay legal. */
 export const TAILWIND_RADIUS =
@@ -299,14 +303,28 @@ export function countRadiusLiterals(source: CleanSource): number {
 /** Tailwind default-scale shadow classes. `shadow-black/50` (a colour) and `drop-shadow-*` do not count. */
 export const TAILWIND_SHADOW = /(?<![\w-])shadow(?:-(?:2xs|xs|sm|md|lg|xl|2xl|inner|\[[^\]\s]*\]))?(?![\w-])/g;
 
+/**
+ * Shadow classes in one string. A string that is only the bare word `shadow`
+ * is the Shadow Reach's id (`reach === 'shadow'`), not a class list, so it
+ * never counts; the bare utility counts inside a longer class list, and a
+ * suffixed utility (`shadow-lg`) counts anywhere.
+ */
+export function countShadowClasses(s: string): number {
+  if (s.trim() === 'shadow') return 0;
+  return countMatches(s, TAILWIND_SHADOW);
+}
+
+/** Shadow values the token set sanctions: the four levels, `none`, and the glow helper. */
+const LEGAL_SHADOW = /^(?:var\(--shadow-(?:page|panel|control|chip)\)|none\b|glowShadow\()/;
+
 /** `shadow-literal` — a shadow not on the token set. */
 export function countShadowLiterals(source: CleanSource): number {
   let total = 0;
   for (const value of declarationValues(source.text, ['boxShadow', 'box-shadow'])) {
-    const v = unquote(value);
-    if (!/^(?:var\(--shadow-|none\b|glowShadow\()/.test(v)) total += 1;
+    if (!LEGAL_SHADOW.test(unquote(value))) total += 1;
   }
-  return total + countInStrings(source.strings, TAILWIND_SHADOW);
+  for (const s of source.strings) total += countShadowClasses(s);
+  return total;
 }
 
 /** `uppercase` — capitals by transform (class, `textTransform`, CSS). */

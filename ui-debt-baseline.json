@@ -409,14 +409,14 @@
       }
     },
     "radius-literal": {
-      "total": 296,
+      "total": 298,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 1,
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Ascendant/AscendantSelection.tsx": 2,
         "src/components/Codex/Codex.tsx": 3,
-        "src/components/Codex/CodexCard.tsx": 3,
-        "src/components/Codex/CodexDetailPanel.tsx": 2,
+        "src/components/Codex/CodexCard.tsx": 4,
+        "src/components/Codex/CodexDetailPanel.tsx": 3,
         "src/components/Codex/CodexTagFilter.tsx": 1,
         "src/components/Cosmology/CosmologyPanel.tsx": 3,
         "src/components/Cosmology/SphereSlider.tsx": 1,
@@ -612,7 +612,7 @@
       }
     },
     "shadow-literal": {
-      "total": 48,
+      "total": 45,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Ascendant/AscendantSelection.tsx": 1,
@@ -625,7 +625,6 @@
         "src/components/Game/AscendantBeatModal.tsx": 1,
         "src/components/Game/ChoiceSetModal.tsx": 1,
         "src/components/Game/DoomClockDetail.tsx": 1,
-        "src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts": 1,
         "src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx": 1,
         "src/components/Game/EncounterLog.tsx": 1,
         "src/components/Game/EncounterVeil.tsx": 1,
@@ -637,11 +636,9 @@
         "src/components/Game/InterventionConfirm.tsx": 1,
         "src/components/Game/MandateDetail.tsx": 1,
         "src/components/Game/MandateTracker.tsx": 2,
-        "src/components/Game/ReadTheThreadsPanel.tsx": 1,
         "src/components/Game/ScryOverlay.tsx": 3,
         "src/components/Game/SettingsPanel.tsx": 1,
         "src/components/Game/SimulationControls.tsx": 1,
-        "src/components/Game/tabs/ProwessTab.tsx": 1,
         "src/components/Game/ThreadsPanel.tsx": 1,
         "src/components/Game/ToastStack.tsx": 1,
         "src/components/HexMapV2/overlay/AgentPulseOverlay.tsx": 1,
