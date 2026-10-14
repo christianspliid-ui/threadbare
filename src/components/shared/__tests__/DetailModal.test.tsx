@@ -1,10 +1,19 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DetailModal } from '../DetailModal';
 import { FOCUSABLE_SELECTOR } from '../focusableSelector';
 import { DetailModalStackProvider, useDetailStack } from '../../../contexts/DetailModalStackContext';
 import type { DetailPage } from '../../../types/detailPage';
+import { RefRouterProvider } from '../../../contexts/RefRouterContext';
+import type { RefRouter } from '../../../hooks/useRefRouter';
+
+/**
+ * A stand-in router: only the footer CTA reads it (THR-1851), and only `open` is called.
+ * Without a router the CTA does not render — it would be a dead click (Law 25).
+ */
+const stubRouterOpen = vi.fn();
+const stubRouter = { open: stubRouterOpen } as unknown as RefRouter;
 import {
   DETAIL_BREADCRUMB_COLLAPSE_AT,
   DETAIL_EVENT_H,
@@ -34,8 +43,10 @@ function makePage(overrides: Partial<DetailPage> & { displayName: string }): Det
 function Wrapper({ children }: { children?: React.ReactNode }) {
   return (
     <DetailModalStackProvider>
-      <DetailModal />
-      {children}
+      <RefRouterProvider router={stubRouter}>
+        <DetailModal />
+        {children}
+      </RefRouterProvider>
     </DetailModalStackProvider>
   );
 }
@@ -322,7 +333,7 @@ function panelAt(depth: number): HTMLElement {
  *
  * A plain page at depth 0 carries exactly one button (the close button): the back button
  * needs depth > 0, the narration button needs prose, and the footer CTA needs a full sheet.
- * So the wrap is asserted on a full-sheet page — close in the header, "open her sheet" in
+ * So the wrap is asserted on a full-sheet page — close in the header, "open the full sheet" in
  * the footer — which is the ordinary actor card a player opens, not a contrived fixture.
  *
  * Collected through `FOCUSABLE_SELECTOR` rather than `button`, because since THR-1504 the
@@ -330,7 +341,7 @@ function panelAt(depth: number): HTMLElement {
  * order — the trap's "first" is the `ENCOUNTER` crumb, not the close button.
  */
 function renderTwoControlPanel(): HTMLElement[] {
-  const page = makePage({ displayName: 'Captain Veiren', hasFullSheet: true });
+  const page = makePage({ displayName: 'Captain Veiren', hasFullSheet: true, sheetRef: { kind: 'agent', id: 'veiren' } });
 
   function PushPage() {
     const { push } = useDetailStack();
@@ -612,7 +623,28 @@ describe('DetailModal — section rendering', () => {
     expect(screen.getByText('observed')).toBeInTheDocument();
   });
 
-  it('shows "open her sheet ↗" when hasFullSheet is true', () => {
+  it('shows "open the full sheet ↗" when hasFullSheet is true, and it opens the sheet (THR-1851)', () => {
+    const page = makePage({ displayName: 'Someone', hasFullSheet: true, sheetRef: { kind: 'agent', id: 'someone' } });
+
+    function PushPage() {
+      const { push } = useDetailStack();
+      return <button data-testid="push" onClick={() => push(page)}>push</button>;
+    }
+
+    render(
+      <Wrapper>
+        <PushPage />
+      </Wrapper>,
+    );
+    fireEvent.click(screen.getByTestId('push'));
+    stubRouterOpen.mockClear();
+    fireEvent.click(screen.getByText('open the full sheet ↗'));
+    expect(stubRouterOpen).toHaveBeenCalledWith({ kind: 'agent', id: 'someone' }, 'sheet', { via: 'detail-cta' });
+    // The card stack closes so the sheet is not hidden under the card's z-band.
+    expect(panelCount()).toBe(0);
+  });
+
+  it('draws no CTA when the page carries no address for it — never a dead click (THR-1851)', () => {
     const page = makePage({ displayName: 'Someone', hasFullSheet: true });
 
     function PushPage() {
@@ -626,12 +658,12 @@ describe('DetailModal — section rendering', () => {
       </Wrapper>,
     );
     fireEvent.click(screen.getByTestId('push'));
-    expect(screen.getByText('open her sheet ↗')).toBeInTheDocument();
+    expect(screen.queryByTestId('detail-full-sheet-cta')).not.toBeInTheDocument();
   });
 
-  it('does not show "open her sheet ↗" when hasFullSheet is false', () => {
+  it('does not show "open the full sheet ↗" when hasFullSheet is false', () => {
     renderAtDepth(1);
-    expect(screen.queryByText('open her sheet ↗')).not.toBeInTheDocument();
+    expect(screen.queryByText('open the full sheet ↗')).not.toBeInTheDocument();
   });
 
   it('uses place modal size constants for place pages', () => {

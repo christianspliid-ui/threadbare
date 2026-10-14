@@ -269,3 +269,53 @@ export function fromNavigationTarget(target: NavigationTarget): WorldRef {
       return { kind: 'army', id: target.armyId };
   }
 }
+
+/**
+ * The minimum a graph node must carry for {@link fromGraphNode} to name it — declared
+ * structurally so this module stays free of the graph's runtime.
+ */
+export interface GraphNodeLike {
+  readonly id: string;
+  readonly type: string;
+  readonly name?: string;
+  readonly properties?: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * Name a graph node as a `WorldRef` — the address a detail card's own links and its
+ * "full sheet" button open through the router (THR-1851).
+ *
+ * `undefined` for a node no `WorldRefKind` names (an event node, a template node): the
+ * caller keeps its card and offers no door it cannot honour (Law 25). A sublocation is
+ * a `location` node carrying `parentLocationId` (THR-1183); a region node is an Area.
+ */
+export function fromGraphNode(node: GraphNodeLike | null | undefined): WorldRef | undefined {
+  if (!node) return undefined;
+  const name = node.name;
+  switch (node.type) {
+    // An army is an actor told apart by `actorType: 'group'`. A culture has no sheet of
+    // its own — `FactionSheet` reads a faction definition a culture does not carry — so it
+    // names nothing here; a caller holding the graph resolves it to its Realm first
+    // (`resolveCultureRealm`).
+    case 'actor': {
+      const actorType = node.properties?.actorType;
+      if (actorType === 'culture') return undefined;
+      if (actorType === 'faction') return { kind: 'faction', id: node.id, name };
+      if (actorType === 'group') return { kind: 'army', id: node.id, name };
+      return { kind: 'agent', id: node.id, name };
+    }
+    case 'location':
+      return {
+        kind: typeof node.properties?.parentLocationId === 'string' ? 'sublocation' : 'location',
+        id: node.id,
+        name,
+      };
+    case 'region':
+      return { kind: 'area', id: node.id, name };
+    case 'artifact':
+    case 'artifact_legendary':
+      return { kind: 'artifact', id: node.id, name };
+    default:
+      return undefined;
+  }
+}

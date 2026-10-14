@@ -2449,10 +2449,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 390 total — 1 write, 1 read, 388 unclassified
+- **Production hits:** 391 total — 1 write, 1 read, 389 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +383 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +384 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -3235,10 +3235,10 @@ exit
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
 - **UL terms:** *World object*
 - **Module:** `src/data/surface-registry.ts`
-- **Production hits:** 9 total — 2 write, 3 read, 4 unclassified
+- **Production hits:** 10 total — 2 write, 3 read, 5 unclassified
 - **Write sites:** `src/data/surface-registry.ts`, `src/hooks/useRefRouter.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts`, `src/debug-bridge.ts`
-- **Other hits:** `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`, `src/engine/worldPastWords.ts`
+- **Other hits:** `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`, `src/engine/worldPastWords.ts`, `src/hooks/useDetailNodeRefOpener.ts`
 - **Verdict:** Verified 2026-09-12: DetailModal + HoverCard mounted in GameView behind RefRouterProvider; the veil, the thread panel and notification click-through all route through it. surfaceRegistry.test.ts pins totality and reachability; refRouterAdapters.coverage.test.ts pins all three source vocabularies. __DEBUG.getSurfaceRegistry() reads the shipped record.
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE

@@ -180,5 +180,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
     isShowcase: false,
     sections,
     hasFullSheet: row.sheet === 'codex' && codexHasEntry,
+    // THR-1851 — the CTA opens this entry in the codex through the router.
+    ...(row.sheet === 'codex' && codexHasEntry ? { sheetRef: ref } : {}),
   };
 }
