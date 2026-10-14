@@ -251,6 +251,62 @@ export function createBattleIndicatorLayer(battles: BattleIndicatorData[]): Batt
 
   const materials: THREE.SpriteMaterial[] = [];
 
+  const dispose = () => {
+    for (const mat of materials) {
+      mat.dispose();
+    }
+    materials.length = 0;
+  };
+
+  const layer = { group, materials, dispose };
+  fillBattleIndicatorGroup(layer, battles);
+  return layer;
+}
+
+/**
+ * Replace the layer's sprites with one per entry in `battles`, keeping the same
+ * group (and so its place in the scene and its visibility). THR-1846: battles
+ * and sieges start and end mid-run, and the scene build that creates the layer
+ * does not re-run for them, so HexMapV2 refills the group when its `battles`
+ * prop changes.
+ */
+export function rebuildBattleIndicatorLayer(
+  layer: BattleIndicatorLayerGroup,
+  battles: BattleIndicatorData[],
+): void {
+  layer.dispose();
+  layer.group.clear();
+  fillBattleIndicatorGroup(layer, battles);
+}
+
+/**
+ * Stable key for a battle list — the incremental rebuild skips when the drawn
+ * set has not changed (the list is recomputed every tick).
+ */
+export function battleIndicatorSignature(battles: BattleIndicatorData[]): string {
+  return battles.map(b => `${b.id}@${b.hexCol},${b.hexRow}${b.isSiege ? 's' : 'b'}`).join('|');
+}
+
+/** Counts of the sprites the layer is drawing right now, split by kind. */
+export function countRenderedBattleIndicators(
+  group: THREE.Group | null,
+): { battles: number; sieges: number } {
+  let battles = 0;
+  let sieges = 0;
+  if (!group || !group.visible) return { battles, sieges };
+  for (const child of group.children) {
+    if (!child.visible) continue;
+    if (child.userData.isSiege === true) sieges++;
+    else battles++;
+  }
+  return { battles, sieges };
+}
+
+function fillBattleIndicatorGroup(
+  layer: BattleIndicatorLayerGroup,
+  battles: BattleIndicatorData[],
+): void {
+  const { group, materials } = layer;
   for (const battle of battles) {
     const { x: wx, y: wy } = hexToWorld(
       { col: battle.hexCol, row: battle.hexRow },
@@ -272,17 +328,9 @@ export function createBattleIndicatorLayer(battles: BattleIndicatorData[]): Batt
     sprite.scale.set(spriteSize, spriteSize, 1);
     sprite.position.set(wx, wy, LAYER_Z.BATTLE_INDICATORS);
     sprite.renderOrder = RENDER_ORDER.BATTLE_INDICATORS;
+    sprite.userData = { battleId: battle.id, isSiege: battle.isSiege };
     group.add(sprite);
   }
-
-  const dispose = () => {
-    for (const mat of materials) {
-      mat.dispose();
-    }
-    materials.length = 0;
-  };
-
-  return { group, materials, dispose };
 }
 
 /**

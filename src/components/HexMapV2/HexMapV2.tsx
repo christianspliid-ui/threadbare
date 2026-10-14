@@ -35,7 +35,7 @@ import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { createArmyLayer, preloadCoatOfArmsTextures, ARMY_TEXTURE_SIZE } from './scene/ArmyLayer';
 import type { ArmyLayerGroup } from './scene/ArmyLayer';
 import type { ArmyRenderData } from './scene/ArmySpriteMesh';
-import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
+import { createBattleIndicatorLayer, tickBattleIndicators, rebuildBattleIndicatorLayer, battleIndicatorSignature, countRenderedBattleIndicators } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { createThreadLineMesh } from './scene/ThreadLineMesh';
@@ -570,6 +570,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Army and battle layer refs
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
+    const battleIndicatorSignatureRef = useRef<string>('');
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
     const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
     const reachSignatureSignifierLayerRef = useRef<ReachSignatureSignifierLayerGroup | null>(null);
@@ -746,14 +747,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           ? [...agentSpriteGroup.spriteMap.values()].filter(entry => entry.sprite.visible).length
           : 0;
 
-        const battleEntries = battles ?? [];
-        const battleLayerVisibleCount = visibleChildrenCount(battleIndicatorLayerRef.current?.group ?? null);
-        const battleCount = battleEntries.length > 0
-          ? battleEntries.filter(entry => !entry.isSiege).length
-          : battleLayerVisibleCount;
-        const siegeCount = battleEntries.length > 0
-          ? battleEntries.filter(entry => entry.isSiege).length
-          : 0;
+        // THR-1846: count the sprites the layer is drawing, not the prop — a prop
+        // the layer never rebuilt from would otherwise read as visible.
+        const { battles: battleCount, sieges: siegeCount } =
+          countRenderedBattleIndicators(battleIndicatorLayerRef.current?.group ?? null);
 
         const layersActive: string[] = [];
         if (signifierGroupRef.current?.visible) layersActive.push('signifiers');
@@ -1073,9 +1070,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         // Build battle indicator layer — battle/siege overlays at combat hexes (Plan 12-07)
         // Renders at RENDER_ORDER.BATTLE_INDICATORS (10.8), above armies, below events.
+        // Refilled in place by the "Incremental battle indicator rebuild" effect below.
         const battleIndicatorGroup = createBattleIndicatorLayer(battles ?? []);
         scene.add(battleIndicatorGroup.group);
         battleIndicatorLayerRef.current = battleIndicatorGroup;
+        battleIndicatorSignatureRef.current = battleIndicatorSignature(battles ?? []);
 
         // Build thread line layer — avatar-to-agent relationship lines (Attention UI)
         // Renders at RENDER_ORDER.THREADS (9.5), below agent sprites.
@@ -1658,6 +1657,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       if (!pulse) return;
       updateHexPulseMesh(pulse, locationActivityMap, HEX_CONSTANTS.HEX_SIZE);
     }, [locationActivityMap]);
+
+    // ── Incremental battle indicator rebuild (THR-1846) ──
+    // Battles and sieges start and end mid-run without touching any prop the scene
+    // build keys on, so the layer is refilled here. The list is recomputed every
+    // tick; the signature skips the rebuild when the drawn set is unchanged.
+    useEffect(() => {
+      const layer = battleIndicatorLayerRef.current;
+      if (!layer) return;
+      const next = battles ?? [];
+      const signature = battleIndicatorSignature(next);
+      if (signature === battleIndicatorSignatureRef.current) return;
+      rebuildBattleIndicatorLayer(layer, next);
+      battleIndicatorSignatureRef.current = signature;
+    }, [battles]);
 
     // ── Incremental army layer rebuild when armies prop changes ──
     useEffect(() => {
