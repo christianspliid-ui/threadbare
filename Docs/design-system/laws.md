@@ -132,6 +132,15 @@
     - **Not in membership.** The hover tier (tooltips and hover cards are summaries by design and lead deeper, Law 20) and counts that coalesce a queue (Law 49).
     - Ratified by Christian in chat 2026-10-14 (THR-1820). Source: the 2026-10-11 UI review at 2560×1440 — *"ensure we actually use the screen real estate and not end up with under sized dialogues that push us to scroll"*. Tier values: `Docs/plans/2026-10-14-thr-1820-dialog-size-tiers.md` § 2, and `tokens.md` § Dialog sizes once the build lands.
 
+## XVI. One entry per kind — Christian's law, 2026-10-14
+
+58. **[E] The UI grows by adding entries, not by writing screens.** Every surface that shows things of a kind reads one list for that kind: pages and their sections, actions, chips, icons, lenses, Needs-you asks, Codex categories. Adding a new action, field, object kind or icon is one entry in one place, plus its data.
+    - **Missing entries fail the build and say what to add.** A new member of a kind with no entry in a list it must appear in is a build failure whose message names the list and the entry. This generalises Law 9's icon-per-type rule (THR-890) to every kind. A second list that must agree with the first is derived from it, never hand-kept beside it.
+    - **An unknown kind shows a plain fallback, never nothing.** A kind that reaches a surface with no entry yet renders a generic, labelled fallback (the `unknownStub` pattern in `detailPageGenerator.ts`), so it is visible and fixable, never silently missing. This is Fail-soft (NFP 4) on the surface.
+    - **Fields render through a few shapes.** A new field on a page is a section entry whose resolver returns one of the shared section shapes (facts, prose, links, cards), not a new component. A new shape is a new primitive under Law 29.
+    - **Every list documents how to add to it.** Each extension point names its one file, the test that guards it, and where the result can be seen (`?view=styleguide`, the Inspector lab). The guides live in `Docs/design-system/extending.md`.
+    - Ratified by Christian in chat 2026-10-14. Source: *"it is important that the UI is simple and easy for agents to expand and change as we iterate on the game, add new actions, fields, and so on."* Motivating instance: adding a player action under a new id-prefix took six coupled edits across independent lists. Two of them failed silently: `company.*` and `thread.*` actions were castable but missing from the Codex for months, and a whole 18-entry Codex category was unreachable (THR-999).
+
 
 ---
 
