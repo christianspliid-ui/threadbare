@@ -94,7 +94,10 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
   }
 
   // ── 2. Check for wealth tier changes on all agents ────────────────────
-  const agents = graph.getNodesByType('agent');
+  // Individuals are `actor` nodes; there is no `agent` node type (THR-1862 — the old
+  // `getNodesByType('agent')` returned nothing, so this chronicle never fired).
+  const agents = graph.getNodesByType('actor')
+    .filter(n => n.properties?.actorType === 'individual');
   for (const agent of agents) {
     const currentWealth = typeof agent.properties?.wealth === 'number'
       ? agent.properties.wealth : 0;

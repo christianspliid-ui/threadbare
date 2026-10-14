@@ -733,6 +733,14 @@ export function refreshFactionDerivedFlags(
  * stored on the faction node, so it cannot drift from the values the economy
  * phases maintain (THR-711). No holdings → 0.
  */
+/**
+ * How many Locations a faction holds (`controls` edges) — the set
+ * `deriveFactionProsperity` sums over. 0 for a monster horde or a landless band.
+ */
+export function countFactionHoldings(graph: WorldGraph, factionId: string): number {
+  return collectFactionLocations(graph, factionId, false).length;
+}
+
 export function deriveFactionProsperity(graph: WorldGraph, factionId: string): number {
   const locations = collectFactionLocations(graph, factionId, false);
   if (locations.length === 0) return 0;

@@ -129,6 +129,8 @@ import {
   UNDERTAKING_DEFAULT_PLACE_TYPE_ID,
   UNDERTAKING_DEFAULT_LOCATION_SUBTYPE,
   UNDERTAKING_CHANGE_PROSPERITY_DELTA,
+  UNDERTAKING_CHANGE_UNIT_PROPERTY_DELTA,
+  SETTLEMENT_PROSPERITY_MAX,
   RUINED_SETTLEMENT_PROSPERITY_FLOOR,
   UNDERTAKING_ROUTE_TIER_HEX_BANDS,
   UNDERTAKING_COMPANY_TIER_ROSTER_BANDS,
@@ -374,6 +376,17 @@ function edgeOf(graph: WorldGraph, handle: UndertakingObjectHandle): GraphEdge |
 
 function nodeIdOf(handle: UndertakingObjectHandle): string | null {
   return handle.kind === 'node' ? handle.nodeId : null;
+}
+
+/**
+ * The step and bounds a `change × location` applies to the property it names. Settlement
+ * `prosperity` is 0–100; any other property a cell override names is a 0–1 value
+ * (THR-1862 — one 0–1 clamp for both set a town at 48 to 1).
+ */
+export function locationChangeScale(property: string): { delta: number; clamp: [number, number] } {
+  return property === 'prosperity'
+    ? { delta: UNDERTAKING_CHANGE_PROSPERITY_DELTA, clamp: [0, SETTLEMENT_PROSPERITY_MAX] }
+    : { delta: UNDERTAKING_CHANGE_UNIT_PROPERTY_DELTA, clamp: [0, 1] };
 }
 
 function holdingCtx(ctx: ObjectVerbContext) {
@@ -1237,16 +1250,18 @@ const LOCATION: UndertakingObjectType = {
     'change:raise': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
       const property = typeof ctx.params?.property === 'string' ? ctx.params.property : 'prosperity';
+      const { delta, clamp } = locationChangeScale(property);
       return nodeId
-        ? modifyLocationProperty(ctx.graph, nodeId, property, UNDERTAKING_CHANGE_PROSPERITY_DELTA, [0, 1])
+        ? modifyLocationProperty(ctx.graph, nodeId, property, delta, clamp)
         : fail('modify_location_property', 'no_node');
     },
     // Sabotage: the same op, signed the other way, against another's Location.
     'change:lower': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
       const property = typeof ctx.params?.property === 'string' ? ctx.params.property : 'prosperity';
+      const { delta, clamp } = locationChangeScale(property);
       return nodeId
-        ? modifyLocationProperty(ctx.graph, nodeId, property, -UNDERTAKING_CHANGE_PROSPERITY_DELTA, [0, 1])
+        ? modifyLocationProperty(ctx.graph, nodeId, property, -delta, clamp)
         : fail('modify_location_property', 'no_node');
     },
     // Yield is a verb (THR-1439): the active harvest of a held Location — holding

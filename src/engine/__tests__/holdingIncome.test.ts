@@ -32,14 +32,14 @@ function world(): WorldGraph {
   const graph = new WorldGraph();
   graph.addNode({ id: MORTAL, name: 'Sila Vane', type: 'actor', properties: { actorType: 'individual', wealth: 10 } });
   graph.addNode({ id: FACTION, name: 'The Ledger', type: 'actor', properties: { actorType: 'faction', wealth: 10 } });
-  graph.addNode({ id: TOWN, name: 'Wickford', type: 'location', properties: { locationSubtype: 'town', prosperity: 0.6 } });
-  graph.addNode({ id: OTHER_TOWN, name: 'Harrow', type: 'location', properties: { locationSubtype: 'town', prosperity: 0.6 } });
+  graph.addNode({ id: TOWN, name: 'Wickford', type: 'location', properties: { locationSubtype: 'town', prosperity: 60 } });
+  graph.addNode({ id: OTHER_TOWN, name: 'Harrow', type: 'location', properties: { locationSubtype: 'town', prosperity: 60 } });
   graph.addNode({
     id: PLACE, name: 'The Counting House', type: 'location',
     properties: { sublocationTypeId: 'warehouse', parentLocationId: TOWN },
   });
-  graph.addNode({ id: ROUTE_A, name: 'Alder', type: 'location', properties: { locationSubtype: 'town', prosperity: 0.5 } });
-  graph.addNode({ id: ROUTE_B, name: 'Bramm', type: 'location', properties: { locationSubtype: 'town', prosperity: 0.5 } });
+  graph.addNode({ id: ROUTE_A, name: 'Alder', type: 'location', properties: { locationSubtype: 'town', prosperity: 50 } });
+  graph.addNode({ id: ROUTE_B, name: 'Bramm', type: 'location', properties: { locationSubtype: 'town', prosperity: 50 } });
   return graph;
 }
 
@@ -141,7 +141,7 @@ describe('what a mortal holds yields', () => {
 
   it('makes a rich town tithe more than a poor one, at the banded steps', () => {
     const [low, mid, high] = HOLDING_TITHE_PROSPERITY_THRESHOLDS;
-    expect(titheMultiplier(low - 0.01)).toBe(0);
+    expect(titheMultiplier(low - 1)).toBe(0);
     expect(titheMultiplier(low)).toBe(HOLDING_TITHE_PROSPERITY_MULTIPLIER[0]);
     expect(titheMultiplier(mid)).toBe(HOLDING_TITHE_PROSPERITY_MULTIPLIER[1]);
     expect(titheMultiplier(high)).toBe(HOLDING_TITHE_PROSPERITY_MULTIPLIER[2]);
