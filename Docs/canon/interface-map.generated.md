@@ -140,7 +140,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `culture-custom-reaches-encounter-opening` | An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom like one seeded at tick 0. | node-prop: `customVariant`, `stampCultureCustomVariants`, `readCultureCustomVariant`, `resolveOpeningColoration` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Diagnostics & Incident Capture
 
@@ -1132,7 +1132,7 @@ exit
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
 
-- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too.
+- **Intent:** An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom like one seeded at tick 0.
 - **Producer → Consumer:** Culture → Encounters & Dilemmas
 - **UL terms:** *Culture*, *Location*, *Fringe*
 - **Module:** `src/engine/openingColoration.ts`
@@ -2610,10 +2610,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 126 total — 1 write, 1 read, 124 unclassified
+- **Production hits:** 127 total — 1 write, 1 read, 125 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +119 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +120 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2770,10 +2770,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 115 total — 1 write, 1 read, 113 unclassified
+- **Production hits:** 116 total — 1 write, 1 read, 114 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +108 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/FactionSheet.tsx` +109 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
