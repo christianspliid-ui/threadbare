@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Encounter Stage Mock</title>
+<!-- THR-1829 prototype mock (design lane run 2026-10-14d, unattended). Static, never wired. Not product code.
+     One screen per hash: #enc1440 (encounter step, 2560x1440), #enc1080 (same, 1920x1080), #after1080 (aftermath),
+     #prem1080 (premonition on the Stage, one option hovered), #story1080 (compact tier: story beat / journey vignette).
+     Frame sizes are THR-1828's (top bar 48/56, god rail 320/400). Type is THR-1833's (Cinzel names, Alegreya story, Alegreya Sans UI).
+     Palettes are the shipped Law 30 tokens from src/index.css (--veil-*, --premonition-compulsion-*, --dialog-story-*).
+     Map: the lens mock's terrain engine (THR-1830), dimmed to STAGE_MAP_DIM with the scene hex lit. Law 13: words, never numbers. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,500;1,400&family=Alegreya+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-abyss:#0a0a0e;--bg-deep:#111114;--bg-surface:#1a1a1f;--bg-hover:#2a2a32;
+  --text-primary:#e8dcc8;--text-secondary:#c8b89a;--text-tertiary:#a89880;--text-muted:#9a8e7e;
+  --gold:#d4a040;--border:#3a3530;--border-subtle:#2a2520;--danger:#d24b3c;
+  --veil-void:#0a0a0f;--veil-gold-text:rgb(212 160 64 / .75);--veil-text-bright:rgba(212,196,158,.95);--veil-text-warm:rgba(212,196,158,.75);--veil-text-whisper:#918a78;
+  --gain:rgb(134 239 172);--loss:rgb(248 113 113);
+  --f-perilous:rgb(242 140 56);--f-uncertain:rgb(236 208 72);
+  --prem-bg:linear-gradient(180deg,#201518 0%,#302028 100%);--prem-text:rgb(216 192 200);--prem-accent:rgb(200 140 140);
+  --story-bg:linear-gradient(180deg,#1c1613 0%,#2a201a 100%);--story-accent:rgb(222 164 120);--story-text:rgb(236 220 204);
+  --display:'Cinzel',serif;--prose:'Alegreya',Georgia,serif;--ui:'Alegreya Sans','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:var(--text-primary);font-family:var(--ui)}
+.caption{margin:14px auto 6px;color:#888;font:14px system-ui;width:1920px}
+body.one .caption{display:none} body.one{overflow:hidden}
+.screen{position:relative;overflow:hidden;background:var(--bg-abyss);margin:0 auto 40px}
+body.one .screen{display:none;margin:0} body.one .screen.on{display:block}
+.s1080{width:1920px;height:1080px;--tb:48px;--rail:320px;--win:280px;--g:24px;--left:340px;--lbl:16px;--body:18px;--prose-size:20px;--name:30px}
+.s1440{width:2560px;height:1440px;--tb:56px;--rail:400px;--win:520px;--g:24px;--left:560px;--lbl:17px;--body:20px;--prose-size:23px;--name:36px}
+/* top bar (THR-1828): time names the pause (Law 52); right group guarded while the Stage is up (THR-1814) */
+.top{position:absolute;left:0;top:0;right:0;height:var(--tb);background:var(--bg-deep);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:18px;padding:0 16px;z-index:5}
+.top .date{font:700 calc(var(--body) + 1px) var(--display)}
+.top .paused{font-size:var(--lbl);color:var(--text-primary)} .top .paused b{color:var(--gold);font-weight:700}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-surface);color:var(--text-primary);font:500 var(--lbl)/1 var(--ui)}
+.btn.play{width:36px;justify-content:center;border-color:var(--gold);color:var(--gold)}
+.needs{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:16px;background:#d4a04022;border:1px solid var(--gold);color:var(--gold);font:700 var(--lbl)/1 var(--ui)}
+.needs b{background:var(--gold);color:#111;border-radius:9px;padding:2px 7px}
+.find{flex:0 1 380px;margin:0 auto;height:32px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-surface);color:var(--text-muted);font-size:var(--lbl)}
+.guard{opacity:.4;display:flex;gap:10px;align-items:center}
+/* god rail: identity + essence stay readable (Law 47: a spend moves the pool); the hand rests while the Stage holds the play */
+.rail{position:absolute;left:0;top:var(--tb);bottom:0;width:var(--rail);background:var(--bg-deep);border-right:1px solid var(--border);z-index:4}
+.id{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-subtle)}
+.id .pt{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6a5a8a,#241c30);border:2px solid var(--gold);flex:none}
+.id h1{font:700 26px/1.1 var(--display)} .id p{font-size:var(--lbl);color:var(--text-secondary);margin-top:4px}
+.sec{padding:10px 16px;border-bottom:1px solid var(--border-subtle)}
+.sec h2{font:700 var(--lbl) var(--ui);color:var(--text-tertiary);margin-bottom:8px}
+.ess{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:var(--lbl)} .ess div{display:flex;gap:6px;align-items:center} .ess i{width:10px;height:10px;border-radius:50%} .ess span{margin-left:auto;color:var(--text-secondary)}
+.ess .spent span{color:var(--gold)}
+.resting{margin:14px 16px;padding:12px;border:1px dashed var(--border);border-radius:8px;color:var(--text-tertiary);font-size:var(--lbl);line-height:1.4}
+.minicards{opacity:.35;padding:0 16px;display:grid;gap:8px}
+.minicards div{height:46px;border:1px solid var(--border);border-left:4px solid var(--c);border-radius:6px;background:var(--bg-surface)}
+/* the map region and the window */
+svg.map{position:absolute;left:var(--rail);top:var(--tb)}
+.maplabel{font:700 16px var(--ui);fill:#f4ecd8;paint-order:stroke;stroke:#0a0a0e;stroke-width:3px}
+.wintag{position:absolute;z-index:3;right:calc(var(--win)/2);transform:translateX(50%);background:rgba(10,10,14,.9);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:var(--lbl);color:var(--text-secondary);text-align:center;white-space:nowrap}
+.wintag b{color:var(--text-primary)}
+/* the Stage panel */
+.stage{position:absolute;z-index:4;left:calc(var(--rail) + var(--g));top:calc(var(--tb) + var(--g));bottom:var(--g);right:calc(var(--win) + var(--g));
+  display:flex;border:1px solid rgb(212 160 64 / .35);border-radius:10px;overflow:hidden;background:var(--veil-void);box-shadow:0 12px 48px #000c}
+.lcol{width:var(--left);flex:none;border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;background:#0d0d12}
+.art{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;flex:none;position:relative}
+.art::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#0d0d12)}
+.lsec{padding:12px 16px}
+.lsec h3{font:700 var(--lbl) var(--ui);color:var(--veil-text-whisper);margin-bottom:8px}
+.cast{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.cast img{width:54px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.cast b{display:block;font:700 var(--body) var(--ui);color:var(--veil-text-bright);text-decoration:underline dotted rgb(212 196 158 / .4);text-underline-offset:4px}
+.cast span{font-size:var(--lbl);color:var(--veil-text-warm)}
+.stake{font-size:var(--lbl);color:var(--veil-text-warm);line-height:1.45;margin-bottom:6px}
+.stake b{color:var(--veil-text-bright)}
+.rcol{flex:1;min-width:0;display:flex;flex-direction:column}
+.head{padding:16px 22px 10px;border-bottom:1px solid var(--border-subtle)}
+.dots{display:flex;gap:8px;align-items:center;font-size:var(--lbl);color:var(--veil-text-whisper);margin-bottom:6px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--veil-gold-text)} .dots i.done{background:var(--gain);border-color:var(--gain)} .dots i.now{background:var(--gold);border-color:var(--gold)}
+.titlerow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.titlerow h1{font:600 var(--name)/1.1 var(--display);color:var(--veil-text-bright)}
+.reach{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:14px;padding:3px 10px;font-size:var(--lbl);color:var(--veil-text-bright)}
+.reach i{font-style:normal;letter-spacing:2px;color:var(--gold)}
+.pill{border-radius:14px;padding:3px 12px;font:700 var(--lbl) var(--ui);color:#111}
+.ctx{font-size:var(--lbl);color:var(--veil-text-warm);margin-top:6px}
+.ctx a{color:var(--veil-text-bright);text-decoration:underline dotted;text-underline-offset:4px}
+.scroll{flex:1;min-height:0;overflow:hidden;padding:14px 22px}
+.stakes{font-size:var(--body);color:var(--veil-text-bright);margin-bottom:12px}
+.prose{font:400 var(--prose-size)/1.55 var(--prose);color:var(--veil-text-warm);max-width:38em}
+.prose p+p{margin-top:.6em}
+.factor{margin-top:12px;font-size:var(--lbl);color:var(--veil-text-warm)} .factor b{color:var(--gain)} .factor em{font-style:normal;color:var(--loss)}
+.handbar{flex:none;padding:12px 22px 14px;border-top:1px solid var(--border-subtle);background:linear-gradient(180deg,transparent,#0a0a0f 30%)}
+.cards{display:flex;flex-wrap:wrap;gap:12px;max-width:calc(4*210px + 3*12px)}
+.card{width:210px;border:1px solid var(--border);border-radius:8px;background:var(--bg-surface);overflow:hidden;--c:#888}
+.card .band{aspect-ratio:16/9;background-size:cover;background-position:center;border-bottom:3px solid var(--c)}
+.card .nm{padding:6px 9px 2px;font:700 17px var(--display);color:var(--text-primary)}
+.card .rl{padding:0 9px 8px;font-size:15px;color:var(--text-secondary);line-height:1.3}
+.card.staged{outline:2px solid var(--gold)}
+.commit{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.commit .go{background:var(--gold);color:#111;font:700 var(--body) var(--ui);padding:9px 18px;border-radius:6px}
+.commit span{font-size:var(--lbl);color:var(--veil-text-warm)}
+/* aftermath */
+.band-word{font:600 calc(var(--name) - 4px) var(--display);color:var(--gain);margin:4px 0 10px}
+.chips{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.chip{display:flex;gap:10px;align-items:center;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:var(--lbl);color:var(--veil-text-bright);background:#121217}
+.chip .k{font-weight:800;font-size:14px;letter-spacing:.02em;color:var(--veil-text-whisper);width:52px}
+.chip .d{color:var(--gain)} .chip .d.l{color:var(--loss)}
+.after{font:italic 400 var(--prose-size)/1.5 var(--prose);color:var(--veil-text-warm);border-left:2px solid var(--veil-gold-text);padding-left:14px;margin-top:10px}
+/* premonition and story palettes on the Stage */
+.stage.prem{background:var(--prem-bg);border-color:rgb(200 140 140 / .45)}
+.stage.prem .rcol *{--veil-text-bright:var(--prem-text);--veil-text-warm:rgb(216 192 200 / .78);--veil-text-whisper:rgb(200 140 140 / .9)}
+.opt{border:1px solid rgb(200 140 140 / .35);border-radius:8px;padding:10px 14px;margin-top:10px;font-size:var(--body);color:var(--prem-text);background:#00000030}
+.opt span{display:block;font-size:var(--lbl);color:rgb(216 192 200 / .75);margin-top:2px}
+.opt.hover{border-color:var(--prem-accent);background:rgb(200 140 140 / .12)}
+.stage.story{background:var(--story-bg);border-color:rgb(222 164 120 / .45);right:auto;width:860px}
+.stage.story *{--veil-text-bright:var(--story-text);--veil-text-warm:rgb(236 220 204 / .78);--veil-text-whisper:rgb(222 164 120 / .9)}
+.choice{border:1px solid rgb(222 164 120 / .4);border-radius:8px;padding:10px 14px;margin-top:10px;font-size:var(--body);color:var(--story-text)}
+.note{position:absolute;z-index:9;background:#cfa877;color:#0a0a0e;font:700 15px/1.3 var(--ui);padding:5px 9px;border-radius:4px;max-width:300px;box-shadow:0 2px 10px #000a}
+</style>
+</head>
+<body>
+<div class="caption">#enc1440 — an encounter step on the Stage at 2560×1440: art and cast left, the scene and the hand right, the scene's hex lit in the window.</div>
+<section class="screen s1440" id="enc1440" data-kind="enc" data-big="1"></section>
+<div class="caption">#enc1080 — the same step at 1920×1080: the art shrinks to a band over the cast; the hand keeps its rows of four.</div>
+<section class="screen s1080" id="enc1080" data-kind="enc"></section>
+<div class="caption">#after1080 — the aftermath wears the same chrome (Law 37); the lit hex stays.</div>
+<section class="screen s1080" id="after1080" data-kind="after"></section>
+<div class="caption">#prem1080 — a premonition plays on the Stage in its own dream tone; hovering a place lights that place too.</div>
+<section class="screen s1080" id="prem1080" data-kind="prem"></section>
+<div class="caption">#story1080 — compact tier: a story beat or a journey moment has no scene art, so the Stage is one column.</div>
+<section class="screen s1080" id="story1080" data-kind="story" style="--win:700px"></section>
+
+<script>
+// ── map engine (THR-1830 lens mock; same seed, same towns) ──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const P={grassland:'#9CA85C',light_forest:'#849A52',temperate_forest:'#5C783E',swamp:'#748046',hills:'#C0A05A',mountains:'#A47A3C',sand_desert:'#CEAE72',badlands:'#B4764A',shallows:'#6AA2C0',ocean:'#4886B0',steppe:'#BCC272'};
+const STAGE_MAP_DIM=.7; // proposed constant: deeper than a lens's 0.45, because the map is backdrop here, not the subject
+const K=(c,r)=>c+','+r;
+function cube(c,r){const x=c,z=r-(c-(c&1))/2;return[x,-x-z,z];}
+function dist(a,b){const A=cube(...a),B=cube(...b);return Math.max(Math.abs(A[0]-B[0]),Math.abs(A[1]-B[1]),Math.abs(A[2]-B[2]));}
+const rnd=mulberry32(1766);const noise=[];for(let i=0;i<60*40;i++)noise.push(rnd());
+const nz=(c,r)=>{let s=0,n=0;for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const cc=c+dc,rr=r+dr;if(cc>=0&&rr>=0&&cc<60&&rr<40){s+=noise[rr*60+cc];n++;}}return s/n;};
+function terrain(c,r){const n=nz(c,r);
+  if(c<=1||(c===2&&n<.5))return c===0?'ocean':'shallows'; if(dist([c,r],[5,8])<=1)return 'shallows';
+  if(c>=21&&r>=4)return n<.45?'sand_desert':n<.7?'badlands':'steppe'; if(r<=2&&c>=17)return n<.55?'mountains':'hills';
+  if(dist([c,r],[7,9])<=2&&n<.55)return 'swamp'; return n<.38?'grassland':n<.5?'light_forest':n<.6?'temperate_forest':n<.7?'hills':'grassland';}
+function glyph(t,x,y,s){const k='#1a1a1a',q=s/40;
+  if(t.includes('forest'))return `<path transform="translate(${x},${y}) scale(${q})" d="M-12 10 L-4 -10 L4 10Z M2 12 L10 -6 L18 12Z" fill="${k}" opacity=".45"/>`;
+  if(t==='mountains')return `<path transform="translate(${x},${y}) scale(${q})" d="M-18 12 L-4 -14 L4 0 L10 -8 L20 12Z" fill="${k}" opacity=".5"/>`;
+  if(t==='hills')return `<path transform="translate(${x},${y}) scale(${q})" d="M-18 8 Q-8 -8 2 8Z M-2 10 Q8 -4 18 10Z" fill="${k}" opacity=".35"/>`;
+  if(t==='grassland'||t==='steppe')return `<path transform="translate(${x},${y}) scale(${q})" d="M-8 8 l3 -9 M0 8 l1 -11 M8 8 l-2 -9" stroke="${k}" stroke-width="2" opacity=".3"/>`;
+  return '';}
+const TOWNS=[[9,6,'shrine','Hesk Crossing'],[13,9,'town','Millbrook'],[6,10,'hamlet','Ashby'],[16,3,'farmland','Corran Fields'],[20,8,'ruins','The Salt Barrow'],[26,10,'castle','Saltmarch Hold'],[11,2,'hamlet','Ferris'],[4,4,'shrine','Old Stones'],[23,5,'tower','The Salt Spire']];
+const hexPts=(x,y,s)=>Array.from({length:6},(_,i)=>{const a=Math.PI/180*60*i;return(x+s*Math.cos(a)).toFixed(1)+','+(y+s*Math.sin(a)).toFixed(1);}).join(' ');
+
+// scene hex at the centre of the window; lit = the scene hex, plus a hovered place for a premonition
+function mapSVG(scr,scene,extra){
+  const W=scr.offsetWidth-parseInt(getComputedStyle(scr).getPropertyValue('--rail')), H=scr.offsetHeight-parseInt(getComputedStyle(scr).getPropertyValue('--tb'));
+  const win=parseInt(getComputedStyle(scr).getPropertyValue('--win')); const R=scr.dataset.big?50:40;
+  const cx=W-win/2, cy=H*0.5; // window centre in map coords
+  const base=(c,r)=>[c*1.5*R, r*Math.sqrt(3)*R+(c%2?Math.sqrt(3)*R/2:0)];
+  // the camera frames every lit hex in the window (scene + a hovered place)
+  let [sx,sy]=base(...scene); if(extra){const[ex,ey]=base(...extra); sx=(sx+ex)/2; sy=(sy+ey)/2;} const ox=cx-sx, oy=cy-sy;
+  const C=(c,r)=>{const[x,y]=base(c,r);return[x+ox,y+oy];};
+  let s=`<svg class="map" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><filter id="gl${scr.id}"><feGaussianBlur stdDeviation="8"/></filter></defs>`;
+  const lit=new Set([K(...scene)]); if(extra) lit.add(K(...extra));
+  for(let c=-14;c<40;c++)for(let r=-10;r<30;r++){const[x,y]=C(c,r); if(x<-R||y<-R||x>W+R||y>H+R)continue;
+    const t=terrain(Math.max(0,c),Math.max(0,r)); s+=`<polygon points="${hexPts(x,y,R)}" fill="${P[t]}" stroke="#00000022"/>`+glyph(t,x,y,R);}
+  for(const[c,r,k,n] of TOWNS){const[x,y]=C(c,r); s+=`<image href="../../../public/hex-tiles/overlay-${k}.png" x="${x-R*.75}" y="${y-R*.75}" width="${R*1.5}" height="${R*1.5}"/><text class="maplabel" x="${x}" y="${y+R*1.15}" text-anchor="middle">${n}</text>`;}
+  // the dim: one near-black layer over every hex except the lit ones (lens grammar, deeper)
+  for(let c=-14;c<40;c++)for(let r=-10;r<30;r++){const[x,y]=C(c,r); if(x<-R||y<-R||x>W+R||y>H+R)continue; if(lit.has(K(c,r)))continue;
+    s+=`<polygon points="${hexPts(x,y,R+.5)}" fill="#0b0907" opacity="${STAGE_MAP_DIM}"/>`;}
+  // the lit hex: parchment ring with a soft glow (never gold: gold is the Dominion frontier, THR-1831)
+  {const[x,y]=C(...scene); s+=`<polygon points="${hexPts(x,y,R)}" fill="none" stroke="#e8dcc8" stroke-width="10" opacity=".35" filter="url(#gl${scr.id})"/><polygon points="${hexPts(x,y,R-2)}" fill="none" stroke="#e8dcc8" stroke-width="4"/>`;
+   s+=`<circle cx="${x+R*.45}" cy="${y-R*.45}" r="${R*.33}" fill="#1a1a1f" stroke="#d4a040" stroke-width="3"/><text x="${x+R*.45}" y="${y-R*.45+R*.12}" text-anchor="middle" font:700 font-size="${R*.32}" font-weight="700" fill="#e8dcc8" font-family="Alegreya Sans">MA</text>`;}
+  if(extra){const[x,y]=C(...extra); s+=`<polygon points="${hexPts(x,y,R-2)}" fill="none" stroke="rgb(200 140 140)" stroke-width="4" stroke-dasharray="10 7"/>`;}
+  return s+'</svg>';}
+
+const topBar=(pausedFor,needs)=>`<div class="top"><span class="date">Late Spring · Year 2</span><span class="btn play">▶</span><span class="paused">paused · <b>${pausedFor}</b></span>
+  ${needs?`<span class="needs">Needs you <b>${needs}</b></span>`:''}<span class="find">Find a place, a person, a power, a card…</span>
+  <span class="guard"><span class="btn">Doom · Signs</span><span class="btn">Rivals</span><span class="btn">Notables</span><span class="btn">Read the Threads</span><span class="btn">Settings</span></span></div>`;
+const rail=(spent,inPlay)=>`<div class="rail"><div class="id"><div class="pt"></div><div><h1>Vara</h1><p>Rooted · your First is Maren Ashfold</p></div></div>
+  <div class="sec"><h2>Essence · Life</h2><div class="ess"><div class="${spent?'spent':''}"><i style="background:#33ff77"></i>Life<span>${spent?'9 ▼':'12'}</span></div><div><i style="background:#8b9dc3"></i>Mind<span>5</span></div><div><i style="background:#cfa877"></i>Stone<span>7</span></div><div><i style="background:#8fd4c0"></i>Entropy<span>2</span></div></div></div>
+  <div class="resting">${inPlay?"Your hand is in play on the Stage. It returns here when the moment closes.":"Your hand waits while this moment is open."}</div>
+  <div class="minicards"><div style="--c:#33ff77"></div><div style="--c:#cfa877"></div><div style="--c:#8b9dc3"></div></div></div>`;
+const A='../../../public/';
+const lcol=(withArt)=>`<div class="lcol">${withArt?`<div class="art" style="background-image:url(${A}concept-art/encounters/the-unmarked-crossing.png)"></div>`:''}
+  <div class="lsec"><h3>In the scene</h3>
+   <div class="cast"><img src="${A}portraits/folk-hero.png"><div><b>Maren Ashfold</b><span>your First · Skilled in Stone</span></div></div>
+   <div class="cast"><img src="${A}portraits/brooding-warrior.png"><div><b>Hale the Younger</b><span>a ferryman's son · watched</span></div></div></div>
+  <div class="lsec"><h3>At stake</h3>
+   <div class="stake"><b>Maren's footing in Millbrook</b> · the town remembers who crossed first</div>
+   <div class="stake"><b>The rope bridge</b> · it may not hold a second crossing</div></div></div>`;
+const head=(step,dots)=>`<div class="head"><div class="dots">${dots}<span>${step}</span></div>
+  <div class="titlerow"><h1>The Unsafe Bridge</h1><span class="reach">Stone · Skilled <i>●●●○○</i></span><span class="pill" style="background:var(--f-uncertain)">uncertain</span></div>
+  <div class="ctx">Maren Ashfold at <a>the Millbrook ford</a>, <a>Millbrook</a> · Late Spring</div></div>`;
+const card=(nm,rl,img,c,st)=>`<div class="card${st?' staged':''}" style="--c:${c}"><div class="band" style="background-image:url(${A}assets/actions/${img})"></div><div class="nm">${nm}</div><div class="rl">${rl}</div></div>`;
+
+const BUILD={
+ enc:(scr)=>topBar('The Unsafe Bridge')+rail(false,true)+mapSVG(scr,[13,9])+
+  `<div class="stage">${lcol(true)}<div class="rcol">${head('Step 2 of 3 · The Test','<i class="done"></i><i class="now"></i><i></i>')}
+   <div class="scroll"><div class="stakes">If Maren crosses first, Millbrook follows her; if the bridge fails, she is the one who fell.</div>
+   <div class="prose"><p>The rope bridge sags over the ford, slick with the morning's rain. Half of Millbrook waits on the near bank, and nobody wants to be the first to step on it.</p>
+   <p>Hale the Younger says his father built it to hold a cart. He does not say when.</p></div>
+   <div class="factor"><b>▲</b> Maren knows this kind of work · <em>▼</em> the planks are wet</div></div>
+   <div class="handbar"><div class="cards">${card('Steady Hand','Better odds in Stone this step','aegis-of-grace.jpg','#cfa877',1)}${card('Bound Road','The way holds for one crossing','blessing-of-the-bound-road.jpg','#cfa877')}${card('Thread Pull','Draws Hale to her side','agent-thread.jpg','#8b9dc3')}${card('Awning Unfurled','Shelter from the rain','awning-unfurled.jpg','#33ff77')}${card('Arcane Rebalance','Trade a risk for a cost','arcane-rebalance.jpg','#8fd4c0')}</div>
+   <div class="commit"><span>One card staged · costs 3 Life</span><span class="go">Play your hand, let fate answer</span></div></div></div></div>
+   <div class="wintag" style="top:calc(var(--tb) + 30px)"><b>Millbrook</b><br>where it is happening</div>`,
+ after:(scr)=>topBar('The Unsafe Bridge')+rail(true)+mapSVG(scr,[13,9])+
+  `<div class="stage">${lcol(true)}<div class="rcol">${head('Aftermath','<i class="done"></i><i class="done"></i><i class="done"></i>')}
+   <div class="scroll"><div class="band-word">Triumph</div>
+   <div class="prose"><p>Maren crossed, and then Hale, and then the town. The bridge groaned and held.</p></div>
+   <div class="chips"><div class="chip"><span class="k">BOND</span>Hale the Younger now trusts Maren <span class="d">▲</span></div>
+   <div class="chip"><span class="k">BOON</span>Maren's standing in Millbrook <span class="d">▲▲</span></div>
+   <div class="chip"><span class="k">PATH</span>Hale will ask her to mend the bridge <span class="d">◆</span></div></div>
+   <div class="after">The ferryman's son keeps glancing at her, as if checking she is real.</div></div>
+   <div class="handbar"><div class="commit"><span>The world resumes when you continue.</span><span class="go">Continue</span></div></div></div></div>
+   <div class="wintag" style="top:calc(var(--tb) + 30px)"><b>Millbrook</b><br>where it happened</div>`,
+ prem:(scr)=>topBar('A premonition','')+rail(false)+mapSVG(scr,[13,9],[16,3])+
+  `<div class="stage prem"><div class="lcol" style="background:transparent"><div class="lsec" style="padding-top:22px"><h3>Who you saw</h3><div class="cast"><img src="${A}portraits/folk-hero.png"><div><b>Maren Ashfold</b><span>your First · at Millbrook</span></div></div></div>
+   <div class="lsec"><h3>A compulsion</h3><div class="stake">Choose where her feet will carry her. She will not know why.</div></div></div>
+   <div class="rcol"><div class="head"><div class="titlerow"><h1>A Pull Toward the Fields</h1></div><div class="ctx">A premonition · time holds while you choose</div></div>
+   <div class="scroll"><div class="prose"><p>In the dream Maren walks a road she has never taken. Something waits at the end of it, patient as a seed.</p></div>
+   <div class="opt hover">Corran Fields<span>Farmland, a short walk north. The harvest is late there.</span></div>
+   <div class="opt">The Salt Barrow<span>Ruins to the east, three days off. Something stirs under them.</span></div>
+   <div class="opt">Stay in Millbrook<span>Let the dream pass.</span></div></div></div></div>
+   <div class="wintag" style="top:calc(var(--tb) + 30px)"><b>Millbrook</b> · dashed: <b>Corran Fields</b></div>`,
+ story:(scr)=>topBar('The Road of Trials')+rail(false)+mapSVG(scr,[13,9])+
+  `<div class="stage story"><div class="rcol"><div class="head"><div class="dots"><span>Maren's journey · The Road of Trials</span></div><div class="titlerow"><h1>The Ferryman's Debt</h1></div><div class="ctx">Maren Ashfold at <a>Millbrook</a></div></div>
+   <div class="scroll"><div class="prose"><p>Old Brannagh stops Maren at the well. Her husband carried half the valley across the ford for thirty years and was paid in thanks. She wants to know whether Maren means to do the same.</p></div>
+   <div class="choice">Promise to pay what the town owes</div><div class="choice">Tell her the bridge is the debt paid</div><div class="choice">Say nothing, and help her with the bucket</div></div></div></div>
+   <div class="note" style="left:1210px;top:300px">Compact tier: no scene art, one column; the window widens</div>`,
+};
+document.querySelectorAll('.screen').forEach(scr=>{scr.innerHTML=BUILD[scr.dataset.kind](scr);});
+const h=location.hash.slice(1); if(h){document.body.classList.add('one'); const el=document.getElementById(h); if(el) el.classList.add('on');}
+</script>
+</body>
+</html>
