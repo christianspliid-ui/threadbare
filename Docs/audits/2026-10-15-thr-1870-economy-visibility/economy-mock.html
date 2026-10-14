@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>Economy Visibility Mock</title>
+<!-- THR-1870 prototype mock (design lane run 2026-10-15a, unattended). Static, never wired. Five 1920×1080 screens on the
+     same map as the THR-1830 lens mock (same god, towns and bands):
+     #place (the Inspector's place page with the new Fortunes line), #trouble (lens 3 with Hunger and the On-the-edge word),
+     #trade (lens 4 hover with toll, embargo and monopoly), #faction (the faction sheet's Purse panel), #receipt (economic
+     lines in the cast receipt). Words come from the decision record; marked rows are new, grey rows are already planned.
+     Law 13: words, never numbers. -->
+<style>
+  @font-face { font-family:'Cinzel'; src:url('../../../public/fonts/cinzel-variable.woff2') format('woff2'); font-weight:400 900; }
+  @font-face { font-family:'Alegreya Sans'; src:url('../../../public/fonts/alegreya-sans-400-regular.woff2') format('woff2'); font-weight:400; }
+  @font-face { font-family:'Alegreya Sans'; src:url('../../../public/fonts/alegreya-sans-700-regular.woff2') format('woff2'); font-weight:700; }
+  @font-face { font-family:'Alegreya Sans'; font-style:italic; src:url('../../../public/fonts/alegreya-sans-400-italic.woff2') format('woff2'); font-weight:400; }
+  :root { --font-display:'Cinzel', serif; --font-body:'Alegreya Sans','Segoe UI',system-ui,sans-serif;
+    --bg-abyss:#0a0a0e; --bg-deep:#111114; --bg-surface:#1a1a1f; --bg-raised:#222228;
+    --text-primary:#e8dcc8; --text-secondary:#c8b89a; --text-tertiary:#a89880; --text-muted:#9a8e7e;
+    --accent-gold:#d4a040; --border-subtle:#2a2520; --border-gold:#c89b3c55; --negative:#f87171; --positive:#7fd38a; --life:#33ff77; --entropy:#8fd4c0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#000; color:var(--text-primary); font:400 17px/1.4 var(--font-body); }
+  .screen { width:1920px; height:1080px; position:relative; overflow:hidden; background:var(--bg-abyss); margin:0 auto 40px; }
+  body.one { overflow:hidden; } body.one .screen { display:none; margin:0; } body.one .screen.on { display:block; }
+  .caption { width:1920px; margin:0 auto 6px; color:#888; font:14px system-ui; } body.one .caption { display:none; }
+  .topbar { position:absolute; inset:0 0 auto 0; height:44px; background:var(--bg-deep); border-bottom:1px solid var(--border-gold); display:flex; align-items:center; gap:24px; padding:0 18px; z-index:5; }
+  .topbar .god { font:600 22px var(--font-display); }
+  .topbar .muted { color:var(--text-tertiary); font-size:16px; }
+  svg.map { position:absolute; left:0; top:44px; }
+  .maplabel { font:700 16px var(--font-body); fill:#f4ecd8; paint-order:stroke; stroke:#0a0a0e; stroke-width:3px; }
+  .lensbar { position:absolute; top:60px; left:16px; z-index:6; display:flex; gap:2px; background:rgba(0,0,0,.6); border:1px solid rgba(160,152,128,.2); border-radius:8px; padding:4px; }
+  .lensbar span { padding:5px 12px; border-radius:6px; font:700 16px var(--font-body); color:var(--text-tertiary); display:flex; gap:8px; align-items:baseline; }
+  .lensbar span.on { color:var(--text-primary); text-decoration:underline; text-underline-offset:5px; background:rgba(255,255,255,.06); }
+  .lensbar kbd { font:400 13px var(--font-body); color:var(--text-muted); border:1px solid var(--border-subtle); border-radius:3px; padding:0 4px; }
+  .legend { position:absolute; top:112px; left:16px; z-index:6; width:330px; max-height:180px; overflow:hidden; background:rgba(10,10,14,.86); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 14px; font-size:16px; color:var(--text-secondary); line-height:1.4; }
+  .legend .head { font:700 16px var(--font-body); color:var(--text-primary); margin-bottom:4px; }
+  .legend .keys { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; }
+  .legend .keys b { font-weight:700; }
+  .tip { position:absolute; z-index:7; background:rgba(10,10,14,.95); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 12px; font-size:16px; color:var(--text-secondary); width:360px; line-height:1.35; }
+  .tip .t { font-weight:700; color:var(--text-primary); }
+  .tip p { margin:3px 0; }
+  u { color:var(--text-primary); text-decoration-color:var(--text-muted); text-underline-offset:3px; }
+  .new { outline:2px dashed #d4a04099; outline-offset:3px; border-radius:4px; }
+  .controls { position:absolute; right:16px; bottom:16px; z-index:6; display:flex; flex-direction:column; gap:4px; }
+  .controls span { width:40px; height:40px; border-radius:8px; background:rgba(0,0,0,.6); border:1px solid rgba(160,152,128,.2); display:grid; place-items:center; color:var(--text-secondary); font:700 18px var(--font-body); }
+  .callout { position:absolute; background:rgba(212,160,64,.10); border:1px dashed #a89880; border-radius:6px; padding:8px 12px; font:14px/1.35 system-ui; color:#f0e4c8; width:380px; z-index:8; }
+  /* the Inspector, docked right (THR-1876) */
+  .inspector { position:absolute; top:44px; right:0; bottom:0; width:560px; background:var(--bg-deep); border-left:1px solid var(--border-gold); z-index:6; padding:18px 22px; overflow:hidden; }
+  .inspector.wide { width:900px; }
+  .hero { display:flex; gap:16px; align-items:center; }
+  .hero img { width:84px; height:84px; border-radius:8px; background:var(--bg-surface); border:1px solid var(--border-subtle); }
+  .hero .kind { color:var(--text-tertiary); font-size:16px; }
+  .hero h2 { margin:0; font:600 30px var(--font-display); }
+  .hero .where { color:var(--text-muted); font-size:16px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px; }
+  .chip { font:700 15px var(--font-body); padding:2px 10px; border-radius:12px; border:1px solid var(--border-subtle); background:var(--bg-surface); color:var(--text-secondary); }
+  .chip.warn { color:#f0b070; border-color:#f0b07066; }
+  .chip.bad { color:var(--negative); border-color:#f8717166; }
+  .chip.gold { color:var(--accent-gold); border-color:#d4a04066; }
+  .doing { font-style:italic; color:var(--text-tertiary); margin:4px 0 10px; }
+  .tabs { display:flex; gap:20px; border-bottom:1px solid var(--border-subtle); margin-bottom:12px; }
+  .tabs span { padding:6px 0; color:var(--text-tertiary); font-weight:700; }
+  .tabs span.on { color:var(--text-primary); border-bottom:2px solid var(--text-secondary); }
+  .row { margin:0 0 12px; color:var(--text-secondary); }
+  .row h4 { margin:0 0 3px; font:700 13px var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); }
+  .row.planned { opacity:.62; }
+  .row .src { font:12px system-ui; color:#7a7064; margin-left:6px; text-transform:none; letter-spacing:0; }
+  .panel { background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 14px; }
+  /* receipt toast */
+  .receipt { position:absolute; z-index:9; width:520px; background:rgba(17,17,20,.97); border:1px solid var(--border-gold); border-radius:10px; padding:14px 18px; box-shadow:0 8px 30px #000a; }
+  .receipt .card { font:600 20px var(--font-display); color:var(--accent-gold); }
+  .receipt .lead { margin:4px 0 10px; color:var(--text-secondary); }
+  .receipt ul { margin:0; padding:0; list-style:none; }
+  .receipt li { padding:4px 0 4px 26px; position:relative; color:var(--text-primary); }
+  .receipt li::before { content:attr(data-g); position:absolute; left:2px; top:3px; font-weight:700; }
+  .receipt li.up::before { color:var(--positive); } .receipt li.down::before { color:var(--negative); } .receipt li.old { color:var(--text-tertiary); }
+  .receipt .fade { font-style:italic; color:var(--text-tertiary); font-size:15px; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="caption">#place — the place page in the Inspector. New: the Fortunes line (one sentence: how well the place lives, and its trouble with the cause). Grey rows are already planned (THR-1923 size and livelihood lines, the Restless chip).</div>
+<section class="screen" data-screen="place" id="place"></section>
+<div class="caption">#trouble — lens 3 with a new Hunger mark and the On-the-edge word. No famine tint on the plain map.</div>
+<section class="screen" data-screen="trouble" id="trouble"></section>
+<div class="caption">#trade — lens 4 hover gains who tolls the road, an embargo, and who holds a regional monopoly.</div>
+<section class="screen" data-screen="trade" id="trade"></section>
+<div class="caption">#faction — the faction sheet's Purse panel: the Means word made true, where the coin comes from, what it pays for, monopolies.</div>
+<section class="screen" data-screen="faction" id="faction"></section>
+<div class="caption">#receipt — economic lines in the cast receipt: a band word when a band is crossed, a direction word when not, a fade clause when it wears off.</div>
+<section class="screen" data-screen="receipt" id="receipt"></section>
+
+<script>
+// ── map engine copied from the THR-1830 lens mock (same seed, same god, same towns) ──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const R=40, W=1920, H=1036, COLS=Math.ceil(W/(1.5*R))+1, ROWS=Math.ceil(H/(Math.sqrt(3)*R))+1;
+const P={grassland:'#9CA85C',light_forest:'#849A52',temperate_forest:'#5C783E',swamp:'#748046',hills:'#C0A05A',mountains:'#A47A3C',sand_desert:'#CEAE72',badlands:'#B4764A',shallows:'#6AA2C0',ocean:'#4886B0',steppe:'#BCC272'};
+const rnd=mulberry32(1766); const noise=[]; for(let i=0;i<COLS*ROWS;i++) noise.push(rnd());
+const nz=(c,r)=>{let s=0,n=0;for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const cc=c+dc,rr=r+dr;if(cc>=0&&rr>=0&&cc<COLS&&rr<ROWS){s+=noise[rr*COLS+cc];n++;}}return s/n;};
+function center(c,r){return[c*1.5*R+R*0.6, r*Math.sqrt(3)*R+(c%2?Math.sqrt(3)*R/2:0)+R*0.4];}
+function cube(c,r){const x=c,z=r-(c-(c&1))/2;return[x,-x-z,z];}
+function dist(a,b){const A=cube(...a),B=cube(...b);return Math.max(Math.abs(A[0]-B[0]),Math.abs(A[1]-B[1]),Math.abs(A[2]-B[2]));}
+const SEAT=[9,6], RIVAL=[23,5], TOWNS=[[13,9,'town','Millbrook'],[6,10,'hamlet','Ashby'],[16,3,'farmland','Corran Fields'],[20,8,'ruins','The Salt Barrow'],[26,10,'castle','Saltmarch Hold'],[11,2,'hamlet','Ferris'],[4,4,'shrine','Old Stones']];
+const terr={},band={};
+for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
+  const n=nz(c,r); let t;
+  if(c<=1||(c===2&&n<.5)) t=c===0?'ocean':'shallows';
+  else if(dist([c,r],[5,8])<=1) t='shallows';
+  else if(c>=21&&r>=4) t=n<.45?'sand_desert':n<.7?'badlands':'steppe';
+  else if(r<=2&&c>=17) t=n<.55?'mountains':'hills';
+  else if(dist([c,r],[7,9])<=2&&n<.55) t='swamp';
+  else t=n<.38?'grassland':n<.5?'light_forest':n<.6?'temperate_forest':n<.7?'hills':'grassland';
+  terr[c+','+r]=t;
+  const kin={grassland:.7,light_forest:.6,temperate_forest:.5,swamp:.2,steppe:0,hills:0,mountains:-.3,sand_desert:-1.2,badlands:-1.4,shallows:0,ocean:0}[t];
+  let m=Math.max(-0.4, 3.4-0.6*dist([c,r],SEAT))+kin*0.5+(n-.5)*1.2;
+  const dr=dist([c,r],RIVAL); if(dr<5) m-=Math.max(0,4.2-0.9*dr);
+  band[c+','+r]= (t==='ocean'||t==='shallows') ? null : m<-1.5?'hostile':m<0.5?'foreign':m<1.5?'touched':m<3?'held':'sovereign';
+}
+const GOLD='#d4a040', RED='#f87171', ROUTE='#c9a227', THREAT='#dc2626';
+const THREAD={the_first:'#d4a040',retinue:'#8b9dc3',watched:'#5a6a7a'};
+const hexPts=(x,y,s=R)=>Array.from({length:6},(_,i)=>{const a=Math.PI/180*60*i;return(x+s*Math.cos(a)).toFixed(1)+','+(y+s*Math.sin(a)).toFixed(1);}).join(' ');
+function glyph(t,x,y){const k='#1a1a1a';
+  if(t.includes('forest')) return `<path d="M${x-12} ${y+10} L${x-4} ${y-10} L${x+4} ${y+10}Z M${x+2} ${y+12} L${x+10} ${y-6} L${x+18} ${y+12}Z" fill="${k}" opacity=".45"/>`;
+  if(t==='mountains') return `<path d="M${x-18} ${y+12} L${x-4} ${y-14} L${x+4} ${y} L${x+10} ${y-8} L${x+20} ${y+12}Z" fill="${k}" opacity=".5"/>`;
+  if(t==='hills') return `<path d="M${x-18} ${y+8} Q${x-8} ${y-8} ${x+2} ${y+8}Z M${x-2} ${y+10} Q${x+8} ${y-4} ${x+18} ${y+10}Z" fill="${k}" opacity=".35"/>`;
+  if(t==='swamp') return `<path d="M${x-14} ${y+6} h10 M${x+2} ${y+2} h12 M${x-6} ${y+12} h14" stroke="${k}" stroke-width="2.5" opacity=".4"/>`;
+  if(t==='sand_desert'||t==='badlands') return `<path d="M${x-16} ${y+6} Q${x-6} ${y-2} ${x+4} ${y+6} T${x+20} ${y+6}" stroke="${k}" stroke-width="2.5" fill="none" opacity=".3"/>`;
+  if(t==='grassland'||t==='steppe') return `<path d="M${x-8} ${y+8} l3 -9 M${x} ${y+8} l1 -11 M${x+8} ${y+8} l-2 -9" stroke="${k}" stroke-width="2" opacity=".3"/>`;
+  return '';}
+const K=(c,r)=>c+','+r;
+function line(a,b){const out=[];const N=dist(a,b);const A=cube(...a),B=cube(...b);
+  for(let i=0;i<=N;i++){const t=N?i/N:0;let x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t,z=A[2]+(B[2]-A[2])*t;let rx=Math.round(x),ry=Math.round(y),rz=Math.round(z);
+    const dx=Math.abs(rx-x),dy=Math.abs(ry-y),dz=Math.abs(rz-z); if(dx>dy&&dx>dz) rx=-ry-rz; else if(dy>dz) ry=-rx-rz; else rz=-rx-ry;
+    out.push(K(rx, rz+(rx-(rx&1))/2));} return out;}
+
+// ── the world this mock reads (stand-ins for the economy view models) ──
+const THREADS=[{at:[9,6],name:'Maren Ashfold',court:'the_first'},{at:[11,3],name:'Teodric',court:'retinue'},{at:[6,9],name:'Old Brannagh',court:'retinue'},{at:[17,7],name:'Hale the Younger',court:'watched'}];
+const AVATAR=[9,6], BATTLE=[19,6], SIEGE=[26,10];
+const PULSE=[[20,8,'volatile']];
+const UNREST=[[11,2,'edge']];          // Ferris: On the edge
+const HUNGER=[[13,9]];                 // Millbrook: its fields cannot feed it
+const SCHEMES=[[16,3,'drain']];
+const LAIR=[22,2];
+const ROUTES=[[[9,6],[13,9],'open'],[[13,9],[26,10],'threat'],[[9,6],[11,2],'embargo']];
+function trouble(){const s=new Set([K(...BATTLE),K(...SIEGE),K(...LAIR)]); [...PULSE,...UNREST,...HUNGER,...SCHEMES].forEach(p=>s.add(K(p[0],p[1]))); return s;}
+function focusSet(lens){
+  if(lens==='trouble') return trouble();
+  if(lens==='trade'){const s=new Set();ROUTES.forEach(([a,b])=>line(a,b).forEach(k=>s.add(k)));return s;}
+  return null;}
+const DIM=.45;
+function badge(c,r,sym,dx=22,dy=18){const[x,y]=center(c,r);return `<g transform="translate(${x+dx},${y+dy})"><circle r="11" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><text y="5" text-anchor="middle" font-size="14" fill="${RED}">${sym}</text></g>`;}
+function mapSVG(lens,dimAll){
+  let s=`<svg class="map" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  const focus=focusSet(lens);
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){const[x,y]=center(c,r),t=terr[K(c,r)];
+    s+=`<polygon points="${hexPts(x,y)}" fill="${P[t]}" stroke="#00000022" stroke-width="1"/>`+glyph(t,x,y);
+    if(focus&&!focus.has(K(c,r))) s+=`<polygon points="${hexPts(x,y)}" fill="#0a0a0e" opacity="${DIM}"/>`;}
+  const place=(c,r,kind,name)=>{const[x,y]=center(c,r);return `<image href="../../../public/hex-tiles/overlay-${kind}.png" x="${x-30}" y="${y-30}" width="60" height="60"/><text class="maplabel" x="${x}" y="${y+46}" text-anchor="middle">${name}</text>`;};
+  s+=place(...SEAT,'shrine','Hesk Crossing'); for(const t of TOWNS) s+=place(...t);
+  const[rx,ry]=center(...RIVAL); s+=`<image href="../../../public/hex-tiles/overlay-tower.png" x="${rx-30}" y="${ry-30}" width="60" height="60"/><text class="maplabel" x="${rx}" y="${ry+46}" text-anchor="middle">The Salt Spire</text>`;
+  if(lens==='trade') ROUTES.forEach(([a,b,st])=>{const[x1,y1]=center(...a),[x2,y2]=center(...b);const col=st==='open'?ROUTE:THREAT;
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="5" stroke-linecap="round" ${st==='embargo'?'stroke-dasharray="10 9"':''} opacity=".95"/>`;
+    const mx=(x1+x2)/2,my=(y1+y2)/2; s+=`<circle cx="${mx}" cy="${my}" r="9" fill="#1a1a1f" stroke="${col}" stroke-width="2"/><text x="${mx}" y="${my+5}" text-anchor="middle" font-size="13" fill="${col}">${st==='open'?'◆':st==='threat'?'!':'⊘'}</text>`;});
+  const[ax,ay]=center(...AVATAR);
+  THREADS.forEach(t=>{if(t.at[0]===AVATAR[0]&&t.at[1]===AVATAR[1])return;const[x,y]=center(...t.at);
+    s+=`<line x1="${ax}" y1="${ay}" x2="${x}" y2="${y}" stroke="${THREAD[t.court]}" stroke-width="2" opacity=".7"/>`;});
+  THREADS.forEach(t=>{const[x,y]=center(...t.at);
+    s+=`<circle cx="${x+18}" cy="${y-18}" r="13" fill="#1a1a1f" stroke="${THREAD[t.court]}" stroke-width="2"/><text x="${x+18}" y="${y-13}" text-anchor="middle" font-weight="700" font-size="11" fill="#e8dcc8" font-family="Alegreya Sans">${t.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</text>`;});
+  {const[x,y]=center(...BATTLE); s+=`<g transform="translate(${x-20},${y-34})"><circle r="12" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="${RED}" stroke-width="2.5"/></g>`;}
+  {const[x,y]=center(...SIEGE); s+=`<circle cx="${x}" cy="${y}" r="${R*.82}" fill="none" stroke="${RED}" stroke-width="3" stroke-dasharray="4 5"/>`;}
+  if(lens==='trouble'){
+    PULSE.forEach(([c,r])=>s+=badge(c,r,'⚔'));
+    UNREST.forEach(([c,r])=>s+=badge(c,r,'✊'));
+    HUNGER.forEach(([c,r])=>s+=badge(c,r,'◒',-24,18));
+    SCHEMES.forEach(([c,r])=>s+=badge(c,r,'▼'));
+    {const[x,y]=center(...LAIR); s+=`<image href="../../../public/hex-tiles/overlay-camp.png" x="${x-26}" y="${y-26}" width="52" height="52"/><text class="maplabel" x="${x}" y="${y+46}" text-anchor="middle">Wolf Hollow</text>`+badge(...LAIR,'☗');}
+  }
+  if(dimAll) s+=`<rect width="${W}" height="${H}" fill="#0a0a0e" opacity=".35"/>`;
+  return s+'</svg>';}
+
+const LENSES=[['dominion','Dominion','1'],['threads','Threads','2'],['trouble','Trouble','3'],['trade','Trade','4']];
+const TOPBAR=`<div class="topbar"><span class="god">The Shepherd</span><span class="muted">Day 41 · Summer</span></div>`;
+const bar=L=>`<div class="lensbar">${LENSES.map(([id,lab,k])=>`<span class="${id===L?'on':''}">${lab}<kbd>${k}</kbd></span>`).join('')}</div>`;
+const ctl=`<div class="controls"><span>+</span><span>−</span><span>◎</span><span>▣</span></div>`;
+const tipAt=(c,r,dx,dy,html)=>{const[x,y]=center(c,r);return `<div class="tip" style="left:${x+dx}px; top:${y+44+dy}px">${html}</div>`;};
+const call=(x,y,txt)=>`<div class="callout" style="left:${x}px; top:${y}px">${txt}</div>`;
+
+const SCREENS={
+place:()=>TOPBAR+mapSVG(null,true)+bar(null)+ctl.replace('class="controls"','class="controls" style="right:580px"')+
+`<aside class="inspector">
+  <div class="hero"><img src="../../../public/hex-tiles/overlay-town.png" alt="">
+    <div><div class="kind">Town</div><h2>Millbrook</h2><div class="where">in the Vale of Hesk</div></div></div>
+  <div class="chips"><span class="chip">Held by <u>House Ashfold</u></span><span class="chip gold">Touched ground</span></div>
+  <div class="doing">Carts stand empty at the market; the queue at the bakehouse is long.</div>
+  <div class="tabs"><span class="on">Overview</span><span>Here now</span><span>Story</span></div>
+  <div class="row planned"><h4>The place <span class="src">existing place prose</span></h4>A mill town on the slow river, its granary roofed in green slate, its square ringed by the stalls of grain-factors.</div>
+  <div class="row new"><h4>Fortunes <span class="src">NEW — one sentence</span></h4>Millbrook is <u>struggling</u>, and its people are <u>restless</u> with hunger.</div>
+  <div class="row planned"><h4>Size <span class="src">planned — THR-1923</span></h4>A town, going hungry.</div>
+  <div class="row planned"><h4>Livelihood <span class="src">planned — THR-1923</span></h4>Millbrook's fields cannot feed its people. Its stores are running out.</div>
+  <div class="row"><h4>Conditions <span class="src">Restless planned — THR-1923</span></h4><div class="chips"><span class="chip warn">Restless</span></div></div>
+  <div class="row planned"><h4>Dominion</h4><div class="panel">Touched ground. Your Life is felt here, faintly. Tend it at the shrine of Hesk Crossing.</div></div>
+</aside>`+
+`<div class="tip" style="left:990px; top:330px"><p class="t">Struggling</p><p>How well a place lives, from destitute through struggling, modest and prosperous to flourishing. Trade, good harvests and a god's favour lift it; war, hunger and blight drag it down.</p></div>`+
+call(40,820,'The Fortunes line is the one new row: the prosperity word (the same five words the Trade lens hover already uses) and, only when a band is crossed, the unrest band with its biggest cause. A calm, modest town says "Millbrook is modest and quiet." and nothing more. The size, livelihood and Restless chip are THR-1923\'s; this line never repeats them.'),
+
+trouble:()=>TOPBAR+mapSVG('trouble')+bar('trouble')+
+`<div class="legend"><div class="head">Trouble · Doom: <span style="color:${RED}">Signs</span></div>Lit ground is where something is going wrong.<div class="keys"><b style="color:${RED}">✕ Battle</b><b style="color:${RED}">◌ Siege</b><b style="color:${RED}" class="new">◒ Hunger</b><b style="color:${RED}">✊ Unrest</b><b style="color:${RED}">⚔ Strife</b><b style="color:${RED}">▼ Drain</b><b style="color:${RED}">☗ Lair</b></div></div>`+
+tipAt(11,2,40,10,`<div class="t">Ferris · Hamlet</div><p class="new">Unrest: Ferris is <u>on the edge</u>. It may turn from <u>House Ashfold</u> to a lord who can feed it.</p>`)+
+tipAt(13,9,40,10,`<div class="t">Millbrook · Town</div><p class="new">Hunger: Millbrook's fields cannot feed its people.</p><p>Unrest: Millbrook is <u>restless</u>.</p>`)+ctl+
+call(1440,860,'Hunger is a Trouble mark, not a tint: the plain map stays the table (THR-1830), so a famine is something you ask the map about. A town lights for Hunger while its food runs short (THR-1923), and for Unrest at Lawless or worse. Its hover names the band in the place page\'s own word, and On the edge says who might lose the town.'),
+
+trade:()=>TOPBAR+mapSVG('trade')+bar('trade')+
+`<div class="legend"><div class="head">Trade</div>Lit ground lies on a trade road you know of.<br>Hover a road for what it carries.<div class="keys"><b style="color:${ROUTE}">◆ Carrying</b><b style="color:${THREAT}">! Threatened</b><b style="color:${THREAT}" class="new">⊘ Embargoed</b></div></div>`+
+tipAt(19.5,10.5,40,20,`<div class="t">Millbrook ↔ Saltmarch Hold</div><p>A road to Saltmarch Hold, carrying grain and salt. Threatened.</p><p class="new">Tolled by <u>the Saltmarch Guild</u>.</p><p>Millbrook is struggling and short of grain; Saltmarch Hold is modest.</p><p class="new"><u>The Saltmarch Guild</u> holds the salt of this region.</p>`)+
+tipAt(10,4,40,0,`<div class="t">Hesk Crossing ↔ Ferris</div><p>A road to Ferris, carrying timber.</p><p class="new">Embargoed by <u>House Varr</u>: nothing moves on it.</p>`)+ctl+
+call(1440,120,'Three new hover lines, each read from state that the economy decisions write: the toll holder (the lane\'s controlling faction), an embargo (THR-1868\'s embargo action), and a regional monopoly on a road\'s goods (THR-1868, 60% of the region\'s bearing places). Roads stay gold, red when threatened; an embargoed road is red and dashed.'),
+
+faction:()=>TOPBAR+mapSVG(null,true)+bar(null)+
+`<aside class="inspector wide">
+  <div class="hero"><img src="../../../public/hex-tiles/overlay-castle.png" alt="">
+    <div><div class="kind">Guild</div><h2>The Saltmarch Guild</h2><div class="where">seated at Saltmarch Hold</div></div></div>
+  <div class="chips"><span class="chip">Sworn to <u>House Ashfold</u></span><span class="chip gold new">Holds the region's salt</span></div>
+  <div class="tabs"><span class="on">Overview</span><span>Members</span><span>Story</span></div>
+  <div class="row new"><h4>Purse <span class="src">NEW panel</span></h4><div class="panel">
+    <div class="chips" style="margin-top:0"><span class="chip">Means: <u>Comfortable</u></span></div>
+    <p style="margin:6px 0">Most of its coin comes from the salt pans of <u>Saltmarch Hold</u> and the toll on <u>the Millbrook road</u>. A share goes to <u>House Ashfold</u>.</p>
+    <p style="margin:6px 0">It pays for one warband, and has coin to spare for a month of it.</p>
+    <p style="margin:6px 0">It holds the salt of this region, and sells it dear.</p></div></div>
+  <div class="row"><h4>For comparison — a broke faction</h4><div class="panel">
+    <div class="chips" style="margin-top:0"><span class="chip bad">Means: <u>Destitute</u></span></div>
+    <p style="margin:6px 0"><u>House Varr</u> earns little: its towns are hungry and pay almost nothing.</p>
+    <p style="margin:6px 0">Its purse is empty. Its soldiers go unpaid and begin to slip away.</p></div></div>
+</aside>`+
+`<div class="tip" style="left:630px; top:250px"><p class="t">Means</p><p>How long a faction could pay its soldiers from what it holds now: destitute, getting by, comfortable, wealthy, magnate. A faction with no means cannot raise an army, and unpaid soldiers desert.</p></div>`+
+call(40,820,'The faction Means word reads THR-1867\'s purse (days of upkeep in hand), so it stops saying Destitute for everyone. The income sentence names the two biggest sources by name, never an amount; the spending line names what it pays for and how long it can; a broke faction says what that costs it. The monopoly chip is state-backed (Law 56): it clears the day the share drops.'),
+
+receipt:()=>TOPBAR+mapSVG(null)+bar(null)+ctl+
+`<div class="receipt" style="left:640px; top:120px">
+  <div class="card">Bless the Harvest <span style="font:400 14px var(--font-body);color:#a89880">· the receipt dialog</span></div>
+  <div class="lead">You set it upon <u>Millbrook</u>: the fields around it swell with grain.</div>
+  <ul>
+    <li class="up old" data-g="▲">The fields around Millbrook swell with grain. <span style="font-size:13px;color:#7a7064">(THR-1923's land line)</span></li>
+    <li class="up new" data-g="▲">Millbrook is no longer short of grain.</li>
+    <li class="up new" data-g="▲">Millbrook is no longer struggling: it is modest again.</li>
+    <li class="up new" data-g="▲">Its people's anger cools.</li>
+  </ul>
+  <div class="fade new">The plenty will ease over the coming season.</div>
+</div>
+<div class="receipt" style="left:640px; top:470px">
+  <div class="card">Guide the Caravan <span style="font:400 14px var(--font-body);color:#a89880">· the toast (no band crossed)</span></div>
+  <div class="lead">You set it upon <u>Millbrook</u>: its roads open to the carts.</div>
+  <ul>
+    <li class="up new" data-g="▲">Trade on the roads from Millbrook picks up.</li>
+  </ul>
+</div>
+<div class="receipt" style="left:640px; top:740px">
+  <div class="card">Incite Unrest</div>
+  <div class="lead">You set it upon <u>Ferris</u>: whispers of grievance spread.</div>
+  <ul>
+    <li class="down new" data-g="▼">Ferris has gone lawless.</li>
+  </ul>
+  <div class="fade new">Left alone, its anger will cool.</div>
+</div>`+
+call(1240,140,'Receipts read one before/after diff of the target\'s economy (prosperity word, unrest band, scarce and plentiful goods, its roads, a mortal\'s Means). A crossed band says the new word ("is modest again", "has gone lawless"); a change inside a band says only the direction ("anger cools", "trade picks up"). Nothing unchanged is listed, no number is shown, and a lasting-but-fading effect ends with its fade clause. A crossed band (or a road freed of threat) opens the receipt dialog; a change inside a band rides the toast. The land line is THR-1923\'s; these lines sit under it in the same receipt.')
+};
+for(const sec of document.querySelectorAll('section[data-screen]')) sec.innerHTML=SCREENS[sec.dataset.screen]();
+const hh=location.hash.slice(1); if(hh){document.body.classList.add('one');const el=document.getElementById(hh); if(el) el.classList.add('on');}
+</script>
+</body>
+</html>
