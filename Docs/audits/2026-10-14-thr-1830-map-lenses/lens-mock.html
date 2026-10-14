@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>Map Lenses Mock</title>
+<!-- THR-1830 prototype mock (design lane run 2026-10-14b, unattended). Static, never wired. Five 1920×1080 screens on one map:
+     #base (no lens), #dominion (lens 1, as built by THR-1750), #threads (2), #trouble (3), #trade (4).
+     The map engine is copied from the THR-1766 Dominion mock so the god, towns and bands are the same ones Christian has seen.
+     Terrain fills are TERRAIN_PALETTE; place art is public/hex-tiles; tokens from src/index.css; type per THR-1833.
+     Law 13: words and glyphs, never numbers. -->
+<style>
+  @font-face { font-family:'Cinzel'; src:url('../../../public/fonts/cinzel-variable.woff2') format('woff2'); font-weight:400 900; }
+  @font-face { font-family:'Alegreya Sans'; src:url('../../../public/fonts/alegreya-sans-400-regular.woff2') format('woff2'); font-weight:400; }
+  @font-face { font-family:'Alegreya Sans'; src:url('../../../public/fonts/alegreya-sans-700-regular.woff2') format('woff2'); font-weight:700; }
+  :root { --font-display:'Cinzel', serif; --font-body:'Alegreya Sans','Segoe UI',system-ui,sans-serif;
+    --bg-abyss:#0a0a0e; --bg-deep:#111114; --bg-surface:#1a1a1f;
+    --text-primary:#e8dcc8; --text-secondary:#c8b89a; --text-tertiary:#a89880; --text-muted:#9a8e7e;
+    --accent-gold:#d4a040; --border-subtle:#2a2520; --border-gold:#c89b3c55; --negative:#f87171; --life:#33ff77; --entropy:#8fd4c0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#000; color:var(--text-primary); font:400 17px/1.4 var(--font-body); }
+  .screen { width:1920px; height:1080px; position:relative; overflow:hidden; background:var(--bg-abyss); margin:0 auto 40px; }
+  body.one { overflow:hidden; } body.one .screen { display:none; margin:0; } body.one .screen.on { display:block; }
+  .caption { width:1920px; margin:0 auto 6px; color:#888; font:14px system-ui; } body.one .caption { display:none; }
+  .topbar { position:absolute; inset:0 0 auto 0; height:44px; background:var(--bg-deep); border-bottom:1px solid var(--border-gold); display:flex; align-items:center; gap:24px; padding:0 18px; z-index:5; }
+  .topbar .god { font:600 22px var(--font-display); }
+  .topbar .muted { color:var(--text-tertiary); font-size:16px; }
+  svg.map { position:absolute; left:0; top:44px; }
+  .maplabel { font:700 16px var(--font-body); fill:#f4ecd8; paint-order:stroke; stroke:#0a0a0e; stroke-width:3px; }
+  /* the lens bar: one segmented control, top-left of the map canvas (where THR-1750's switch already sits) */
+  .lensbar { position:absolute; top:60px; left:16px; z-index:6; display:flex; gap:2px; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); border:1px solid rgba(160,152,128,.2); border-radius:8px; padding:4px; }
+  .lensbar span { padding:5px 12px; border-radius:6px; font:700 16px var(--font-body); color:var(--text-tertiary); display:flex; gap:8px; align-items:baseline; }
+  .lensbar span.on { color:var(--text-primary); text-decoration:underline; text-underline-offset:5px; background:rgba(255,255,255,.06); }
+  .lensbar kbd { font:400 13px var(--font-body); color:var(--text-muted); border:1px solid var(--border-subtle); border-radius:3px; padding:0 4px; }
+  .legend { position:absolute; top:112px; left:16px; z-index:6; width:330px; max-height:180px; overflow:hidden; background:rgba(10,10,14,.86); backdrop-filter:blur(8px); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 14px; font-size:16px; color:var(--text-secondary); line-height:1.4; }
+  .legend .head { font:700 16px var(--font-body); color:var(--text-primary); margin-bottom:4px; }
+  .legend .keys { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; }
+  .legend .keys b { font-weight:700; }
+  .tip { position:absolute; z-index:7; background:rgba(10,10,14,.94); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 12px; font-size:16px; color:var(--text-secondary); width:310px; line-height:1.35; }
+  .tip .t { font-weight:700; color:var(--text-primary); }
+  .tip u { color:var(--text-primary); text-decoration-color:var(--text-muted); }
+  .controls { position:absolute; right:16px; bottom:16px; z-index:6; display:flex; flex-direction:column; gap:4px; }
+  .controls span { width:40px; height:40px; border-radius:8px; background:rgba(0,0,0,.6); border:1px solid rgba(160,152,128,.2); display:grid; place-items:center; color:var(--text-secondary); font:700 18px var(--font-body); }
+  .callout { position:absolute; background:rgba(212,160,64,.10); border:1px dashed #a89880; border-radius:6px; padding:8px 12px; font:14px/1.35 system-ui; color:#f0e4c8; width:360px; z-index:7; }
+</style>
+</head>
+<body>
+<div class="caption">#base — no lens: the plain table. Your people's threads, battles and the band-drop badge stay; trade routes, unrest pulses and rival marks wait in their lenses.</div>
+<section class="screen" data-lens="base" id="base"></section>
+<div class="caption">#dominion — lens 1, exactly as THR-1750 built it: dim what is not yours, gold frontier, Sovereign glow. Spheres folds in as the hover line.</div>
+<section class="screen" data-lens="dominion" id="dominion"></section>
+<div class="caption">#threads — lens 2: where your threaded mortals are and where each is heading.</div>
+<section class="screen" data-lens="threads" id="threads"></section>
+<div class="caption">#trouble — lens 3: unrest, battles and sieges, rival schemes, local omens, lairs; the doom stage in the legend.</div>
+<section class="screen" data-lens="trouble" id="trouble"></section>
+<div class="caption">#trade — lens 4: routes and what they carry; a threatened route turns red.</div>
+<section class="screen" data-lens="trade" id="trade"></section>
+
+<script>
+// ── map engine copied from the THR-1766 mock (same seed, same god, same towns) ──
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const R=40, W=1920, H=1036, COLS=Math.ceil(W/(1.5*R))+1, ROWS=Math.ceil(H/(Math.sqrt(3)*R))+1;
+const P={grassland:'#9CA85C',light_forest:'#849A52',temperate_forest:'#5C783E',swamp:'#748046',hills:'#C0A05A',mountains:'#A47A3C',sand_desert:'#CEAE72',badlands:'#B4764A',shallows:'#6AA2C0',ocean:'#4886B0',steppe:'#BCC272'};
+const rnd=mulberry32(1766); const noise=[]; for(let i=0;i<COLS*ROWS;i++) noise.push(rnd());
+const nz=(c,r)=>{let s=0,n=0;for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const cc=c+dc,rr=r+dr;if(cc>=0&&rr>=0&&cc<COLS&&rr<ROWS){s+=noise[rr*COLS+cc];n++;}}return s/n;};
+function center(c,r){return[c*1.5*R+R*0.6, r*Math.sqrt(3)*R+(c%2?Math.sqrt(3)*R/2:0)+R*0.4];}
+function cube(c,r){const x=c,z=r-(c-(c&1))/2;return[x,-x-z,z];}
+function dist(a,b){const A=cube(...a),B=cube(...b);return Math.max(Math.abs(A[0]-B[0]),Math.abs(A[1]-B[1]),Math.abs(A[2]-B[2]));}
+const SEAT=[9,6], RIVAL=[23,5], TOWNS=[[13,9,'town','Millbrook'],[6,10,'hamlet','Ashby'],[16,3,'farmland','Corran Fields'],[20,8,'ruins','The Salt Barrow'],[26,10,'castle','Saltmarch Hold'],[11,2,'hamlet','Ferris'],[4,4,'shrine','Old Stones']];
+const terr={},band={};
+for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
+  const n=nz(c,r); let t;
+  if(c<=1||(c===2&&n<.5)) t=c===0?'ocean':'shallows';
+  else if(dist([c,r],[5,8])<=1) t='shallows';
+  else if(c>=21&&r>=4) t=n<.45?'sand_desert':n<.7?'badlands':'steppe';
+  else if(r<=2&&c>=17) t=n<.55?'mountains':'hills';
+  else if(dist([c,r],[7,9])<=2&&n<.55) t='swamp';
+  else t=n<.38?'grassland':n<.5?'light_forest':n<.6?'temperate_forest':n<.7?'hills':'grassland';
+  terr[c+','+r]=t;
+  const kin={grassland:.7,light_forest:.6,temperate_forest:.5,swamp:.2,steppe:0,hills:0,mountains:-.3,sand_desert:-1.2,badlands:-1.4,shallows:0,ocean:0}[t];
+  let m=Math.max(-0.4, 3.4-0.6*dist([c,r],SEAT))+kin*0.5+(n-.5)*1.2;
+  const dr=dist([c,r],RIVAL); if(dr<5) m-=Math.max(0,4.2-0.9*dr);
+  band[c+','+r]= (t==='ocean'||t==='shallows') ? null : m<-1.5?'hostile':m<0.5?'foreign':m<1.5?'touched':m<3?'held':'sovereign';
+}
+const HOME='#33ff77', GOLD='#d4a040', RED='#f87171', ROUTE='#c9a227', THREAT='#dc2626';
+const THREAD={the_first:'#d4a040',retinue:'#8b9dc3',watched:'#5a6a7a'};
+const hexPts=(x,y,s=R)=>Array.from({length:6},(_,i)=>{const a=Math.PI/180*60*i;return(x+s*Math.cos(a)).toFixed(1)+','+(y+s*Math.sin(a)).toFixed(1);}).join(' ');
+function glyph(t,x,y){const k='#1a1a1a';
+  if(t.includes('forest')) return `<path d="M${x-12} ${y+10} L${x-4} ${y-10} L${x+4} ${y+10}Z M${x+2} ${y+12} L${x+10} ${y-6} L${x+18} ${y+12}Z" fill="${k}" opacity=".45"/>`;
+  if(t==='mountains') return `<path d="M${x-18} ${y+12} L${x-4} ${y-14} L${x+4} ${y} L${x+10} ${y-8} L${x+20} ${y+12}Z" fill="${k}" opacity=".5"/>`;
+  if(t==='hills') return `<path d="M${x-18} ${y+8} Q${x-8} ${y-8} ${x+2} ${y+8}Z M${x-2} ${y+10} Q${x+8} ${y-4} ${x+18} ${y+10}Z" fill="${k}" opacity=".35"/>`;
+  if(t==='swamp') return `<path d="M${x-14} ${y+6} h10 M${x+2} ${y+2} h12 M${x-6} ${y+12} h14" stroke="${k}" stroke-width="2.5" opacity=".4"/>`;
+  if(t==='sand_desert'||t==='badlands') return `<path d="M${x-16} ${y+6} Q${x-6} ${y-2} ${x+4} ${y+6} T${x+20} ${y+6}" stroke="${k}" stroke-width="2.5" fill="none" opacity=".3"/>`;
+  if(t==='grassland'||t==='steppe') return `<path d="M${x-8} ${y+8} l3 -9 M${x} ${y+8} l1 -11 M${x+8} ${y+8} l-2 -9" stroke="${k}" stroke-width="2" opacity=".3"/>`;
+  return '';}
+function neighbours(c,r){const even=c%2===0;const d=even?[[1,-1],[1,0],[0,1],[-1,0],[-1,-1],[0,-1]]:[[1,0],[1,1],[0,1],[-1,1],[-1,0],[0,-1]];return d.map(([dc,dr])=>[c+dc,r+dr]);}
+const RANK={hostile:0,foreign:1,touched:2,held:3,sovereign:4};
+function edge(x,y,i){const a1=Math.PI/180*60*i,a2=Math.PI/180*60*(i+1);return[x+R*Math.cos(a1),y+R*Math.sin(a1),x+R*Math.cos(a2),y+R*Math.sin(a2)];}
+const NB_EDGE_EVEN=[5,0,1,2,3,4], NB_EDGE_ODD=[0,1,2,3,4,5];
+const K=(c,r)=>c+','+r;
+
+// ── the world the lenses read (stand-ins for the THR-1824 view models) ──
+const FIRST={at:[9,6],name:'Maren Ashfold',court:'the_first',to:[13,9],toName:'Millbrook'};
+const THREADS=[FIRST,
+  {at:[11,3],name:'Teodric',court:'retinue',to:[16,3],toName:'Corran Fields'},
+  {at:[6,9],name:'Old Brannagh',court:'retinue',to:null},
+  {at:[17,7],name:'Hale the Younger',court:'watched',to:[20,8],toName:'The Salt Barrow'}];
+const AVATAR=[9,6];
+const BATTLE=[19,6], SIEGE=[26,10];
+const PULSE=[[13,9,'tense'],[20,8,'volatile']];
+const SCHEMES=[[16,3,'drain'],[11,2,'scheme']];
+const OMEN={at:[14,6],radius:2};
+const LAIR=[22,2];
+const ROUTES=[[[9,6],[13,9],false],[[13,9],[26,10],true],[[9,6],[11,2],false]];
+
+function trouble(){const s=new Set([K(...BATTLE),K(...SIEGE),K(...LAIR)]); PULSE.forEach(p=>s.add(K(p[0],p[1]))); SCHEMES.forEach(p=>s.add(K(p[0],p[1])));
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(dist([c,r],OMEN.at)<=OMEN.radius&&band[K(c,r)]) s.add(K(c,r)); return s;}
+function line(a,b){const out=[];const N=dist(a,b);const A=cube(...a),B=cube(...b);
+  for(let i=0;i<=N;i++){const t=N?i/N:0;let x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t,z=A[2]+(B[2]-A[2])*t;let rx=Math.round(x),ry=Math.round(y),rz=Math.round(z);
+    const dx=Math.abs(rx-x),dy=Math.abs(ry-y),dz=Math.abs(rz-z); if(dx>dy&&dx>dz) rx=-ry-rz; else if(dy>dz) ry=-rx-rz; else rz=-rx-ry;
+    out.push(K(rx, rz+(rx-(rx&1))/2));} return out;}
+function focusSet(lens){
+  if(lens==='threads'){const s=new Set();THREADS.forEach(t=>{s.add(K(...t.at)); if(t.to) s.add(K(...t.to));});return s;}
+  if(lens==='trouble') return trouble();
+  if(lens==='trade'){const s=new Set();ROUTES.forEach(([a,b])=>line(a,b).forEach(k=>s.add(k)));return s;}
+  return null;}
+const DIM=.45;
+
+function mapSVG(lens){
+  let s=`<svg class="map" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>
+    <pattern id="hatchdark" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="#8fd4c0" stroke-width="2" opacity=".45"/></pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="6"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#e8dcc8"/></marker></defs>`;
+  const focus=focusSet(lens), fr=[];
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){const[x,y]=center(c,r),t=terr[K(c,r)],b=band[K(c,r)];
+    s+=`<polygon points="${hexPts(x,y)}" fill="${P[t]}" stroke="#00000022" stroke-width="1"/>`+glyph(t,x,y);
+    if(lens==='dominion'){ if(b==='foreign') s+=`<polygon points="${hexPts(x,y)}" fill="#0a0a0e" opacity=".45"/>`; if(b==='hostile') s+=`<polygon points="${hexPts(x,y)}" fill="#0a0a0e" opacity=".6"/><polygon points="${hexPts(x,y)}" fill="url(#hatchdark)"/>`;
+      if(b==='sovereign') s+=`<polygon points="${hexPts(x,y,R*.55)}" fill="${HOME}" opacity=".28" filter="url(#glow)"/>`; if(b==='touched') s+=`<polygon points="${hexPts(x,y)}" fill="#0a0a0e" opacity=".15"/>`;
+      if(b){neighbours(c,r).forEach(([nc,nr],i)=>{const nb2=band[K(nc,nr)]; if(!nb2)return; const e=(c%2===0?NB_EDGE_EVEN:NB_EDGE_ODD)[i];
+        if(RANK[b]>=2&&RANK[nb2]<2) fr.push([edge(x,y,e),nb2==='hostile'?5:3]);});}}
+    if(focus&&!focus.has(K(c,r))) s+=`<polygon points="${hexPts(x,y)}" fill="#0a0a0e" opacity="${DIM}"/>`;
+  }
+  for(const[[x1,y1,x2,y2],w] of fr) s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${GOLD}" stroke-width="${w}" stroke-linecap="round"/>`;
+  // realm border (always on): the rival's ground, in holder ink
+  // places
+  const place=(c,r,kind,name)=>{const[x,y]=center(c,r);return `<image href="../../../public/hex-tiles/overlay-${kind}.png" x="${x-30}" y="${y-30}" width="60" height="60"/><text class="maplabel" x="${x}" y="${y+46}" text-anchor="middle">${name}</text>`;};
+  s+=place(...SEAT,'shrine','Hesk Crossing'); for(const t of TOWNS) s+=place(...t);
+  const[rx,ry]=center(...RIVAL); s+=`<image href="../../../public/hex-tiles/overlay-tower.png" x="${rx-30}" y="${ry-30}" width="60" height="60"/><text class="maplabel" x="${rx}" y="${ry+46}" text-anchor="middle">The Salt Spire</text>`;
+  // trade routes: in the Trade lens only
+  if(lens==='trade') ROUTES.forEach(([a,b,th])=>{const[x1,y1]=center(...a),[x2,y2]=center(...b);
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${th?THREAT:ROUTE}" stroke-width="5" stroke-linecap="round" opacity=".95"/>`;
+    const mx=(x1+x2)/2,my=(y1+y2)/2; s+=`<circle cx="${mx}" cy="${my}" r="9" fill="#1a1a1f" stroke="${th?THREAT:ROUTE}" stroke-width="2"/><text x="${mx}" y="${my+5}" text-anchor="middle" font-size="13" fill="${th?THREAT:ROUTE}">${th?'!':'◆'}</text>`;});
+  // thread lines from the avatar: always on (your people are the table)
+  const[ax,ay]=center(...AVATAR);
+  THREADS.forEach(t=>{if(t.at[0]===AVATAR[0]&&t.at[1]===AVATAR[1])return;const[x,y]=center(...t.at);
+    s+=`<line x1="${ax}" y1="${ay}" x2="${x}" y2="${y}" stroke="${THREAD[t.court]}" stroke-width="${lens==='threads'?3:2}" opacity="${lens==='threads'?.95:.7}"/>`;});
+  // where each is heading: Threads lens only (destinationId, dormant today)
+  if(lens==='threads') THREADS.forEach(t=>{if(!t.to)return;const[x1,y1]=center(...t.at),[x2,y2]=center(...t.to);
+    const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+    s+=`<line x1="${x1+ux*22}" y1="${y1+uy*22}" x2="${x2-ux*30}" y2="${y2-uy*30}" stroke="#e8dcc8" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#arrow)"/>`;});
+  // agent medallions (threaded agents are always a medallion, THR-1831)
+  THREADS.forEach(t=>{const[x,y]=center(...t.at);const big=lens==='threads';const rr=big?17:13;
+    s+=`<circle cx="${x+18}" cy="${y-18}" r="${rr}" fill="#1a1a1f" stroke="${THREAD[t.court]}" stroke-width="${big?3:2}"/><text x="${x+18}" y="${y-13}" text-anchor="middle" font-weight="700" font-size="${big?14:11}" fill="#e8dcc8" font-family="Alegreya Sans">${t.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</text>`;
+    if(big) s+=`<text class="maplabel" x="${x+18}" y="${y-40}" text-anchor="middle" style="font-size:14px">${t.name}</text>`;});
+  // battles: always on (news). Sieges draw as sieges (fixes the THR-1824 defect)
+  const sword=(c,r)=>{const[x,y]=center(...[c,r]);return `<g transform="translate(${x-20},${y-34})"><circle cx="0" cy="0" r="12" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="${RED}" stroke-width="2.5"/></g>`;};
+  s+=sword(...BATTLE);
+  {const[x,y]=center(...SIEGE); s+=`<circle cx="${x}" cy="${y}" r="${R*.82}" fill="none" stroke="${RED}" stroke-width="3" stroke-dasharray="4 5"/>`;}
+  // the band-drop badge: always on (THR-1750)
+  {const[x,y]=center(16,3); s+=`<circle cx="${x-22}" cy="${y-24}" r="9" fill="none" stroke="${GOLD}" stroke-width="3" stroke-dasharray="40 8"/>`;}
+  // Trouble lens marks
+  if(lens==='trouble'){
+    PULSE.forEach(([c,r,p])=>{const[x,y]=center(c,r); s+=`<polygon points="${hexPts(x,y,R-3)}" fill="none" stroke="${RED}" stroke-width="${p==='volatile'?4:2.5}" opacity=".9"/>`;});
+    SCHEMES.forEach(([c,r,k])=>{const[x,y]=center(c,r); s+=`<g transform="translate(${x+22},${y+18})"><circle r="11" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><text y="5" text-anchor="middle" font-size="14" fill="${RED}">${k==='drain'?'▼':'◉'}</text></g>`;});
+    {const[x,y]=center(...OMEN.at); s+=`<circle cx="${x}" cy="${y}" r="${R*OMEN.radius*1.6}" fill="none" stroke="${RED}" stroke-width="2" stroke-dasharray="2 7" opacity=".85"/><g transform="translate(${x},${y})"><circle r="12" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><text y="5" text-anchor="middle" font-size="15" fill="${RED}">✶</text></g>`;}
+    {const[x,y]=center(...LAIR); s+=`<image href="../../../public/hex-tiles/overlay-camp.png" x="${x-26}" y="${y-26}" width="52" height="52"/><g transform="translate(${x+22},${y+18})"><circle r="11" fill="#1a1a1f" stroke="${RED}" stroke-width="2"/><text y="5" text-anchor="middle" font-size="13" fill="${RED}">☗</text></g><text class="maplabel" x="${x}" y="${y+46}" text-anchor="middle">Wolf Hollow</text>`;}
+  }
+  return s+'</svg>';}
+
+const LENSES=[['dominion','Dominion','1'],['threads','Threads','2'],['trouble','Trouble','3'],['trade','Trade','4']];
+const LEGEND={
+  dominion:`<div class="head">Dominion</div>Your ground keeps its colour.<br>Dimmed ground is not yours; darker is turned against you.<br>The gold line is your frontier.<div class="keys"><b style="color:${HOME}">Sovereign</b><b style="color:${HOME}">Held</b><b style="color:${HOME}">Touched</b><b>Foreign</b><b style="color:#8fd4c0">Hostile</b></div>`,
+  threads:`<div class="head">Threads</div>Your people keep their light; the rest is dimmed.<br>A dashed arrow shows where each is going.<div class="keys"><b style="color:${THREAD.the_first}">The First</b><b style="color:${THREAD.retinue}">Retinue</b><b style="color:${THREAD.watched}">Watched</b></div>`,
+  trouble:`<div class="head">Trouble · Doom: <span style="color:${RED}">Signs</span></div>Lit ground is where something is going wrong.<div class="keys"><b style="color:${RED}">⬡ Unrest</b><b style="color:${RED}">✕ Battle</b><b style="color:${RED}">◌ Siege</b><b style="color:${RED}">◉ Scheme</b><b style="color:${RED}">▼ Drain</b><b style="color:${RED}">✶ Omen</b><b style="color:${RED}">☗ Lair</b></div>`,
+  trade:`<div class="head">Trade</div>Lit ground lies on a trade road you know of.<br>Hover a road for what it carries.<div class="keys"><b style="color:${ROUTE}">◆ Carrying</b><b style="color:${THREAT}">! Threatened</b></div>`};
+const TIP={
+  base:null,
+  dominion:[16,3,`<div class="t">Corran Fields · Farmland</div>Touched ground, by <u>Corran Fields</u>.<br>Pressed by a power of <span style="color:#8fd4c0">Entropy</span>; your <span style="color:${HOME}">Life</span> holds here.`],
+  threads:[13,9,`<div class="t">Millbrook · Town</div><u>Maren Ashfold</u>, your First, is on her way here from <u>Hesk Crossing</u>.`],
+  trouble:[11,2.6,`<div class="t">Ferris · Hamlet</div>A scheme of <u>The Salt Spire</u>: it is turning the hamlet's shrine away from you.`],
+  trade:[19.5,10.5,`<div class="t">Millbrook ↔ Saltmarch Hold</div>Carries grain and salt. <span style="color:${THREAT}">Threatened</span>: raiders on the road.<br>Millbrook is <b>thriving</b>; Saltmarch is short of grain.`]};
+const NOTE={
+  base:'No lens is the default and the start of every run. The base map keeps what is about your people right now: thread lines, battles and sieges, the broken gold ring of a lost band. Routes, unrest and rival marks move into their lenses, so the plain map stops shouting all at once (THR-1808).',
+  dominion:'Lens 1 is the overlay THR-1750 built — not re-designed here. Spheres is not a lens: the land has no sphere data of its own that moves (THR-1824). Its honest part — what presses a place — rides on this lens\'s hover line.',
+  threads:'Same grammar: dim what is not in focus. Focus = where each threaded mortal stands and the place they are heading. The heading arrow reads movementState.destinationId, written today but drawn only for the avatar.',
+  trouble:'One ink: red, the doom ink (THR-1831). Each kind gets a mark, never a number. Local omens (written today, never shown) draw their reach as a dotted ring. Doom has no place on the map, so its stage sits in the legend head.',
+  trade:'Trade roads live only here, so their caravan gold never sits beside Dominion\'s frontier gold. Early in a run there may be one road or none; the legend then says "No trade road you know of yet."'};
+const CALL={base:[1440,880],dominion:[1440,880],threads:[1440,880],trouble:[1440,880],trade:[1440,120]};
+for(const sec of document.querySelectorAll('section[data-lens]')){const L=sec.dataset.lens;
+  let h=`<div class="topbar"><span class="god">The Shepherd</span><span class="muted">Day 23 · Spring</span></div>`+mapSVG(L)+
+    `<div class="lensbar">${LENSES.map(([id,lab,k])=>`<span class="${id===L?'on':''}">${lab}<kbd>${k}</kbd></span>`).join('')}</div>`;
+  if(LEGEND[L]) h+=`<div class="legend">${LEGEND[L]}</div>`;
+  if(TIP[L]){const[c,r,html]=TIP[L];const[x,y]=center(c,r);const dx=L==="trouble"?-380:40;h+=`<div class="tip" style="left:${x+dx}px; top:${y+44+20}px">${html}</div>`;}
+  h+=`<div class="controls"><span>+</span><span>−</span><span>◎</span><span>▣</span></div>`;
+  const[cx,cy]=CALL[L]; h+=`<div class="callout" style="left:${cx}px; top:${cy}px">${NOTE[L]}</div>`;
+  sec.innerHTML=h;}
+const hh=location.hash.slice(1); if(hh){document.body.classList.add('one');const el=document.getElementById(hh); if(el) el.classList.add('on');}
+</script>
+</body>
+</html>
