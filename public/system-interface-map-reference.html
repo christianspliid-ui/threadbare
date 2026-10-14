@@ -1187,6 +1187,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; Fair luck for the player&rsquo;s own mortals
+      <span class="lead">Added 2026-10-14 (THR-1889, Game Design Laws &sect; I). A thread from the player&rsquo;s god now changes how that mortal&rsquo;s dice and rewards behave.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">A thread from the player&rsquo;s god <span class="arrow">&#10230;</span> The mortal&rsquo;s d100 and its Legendary drought (<code>thread-luck-protection</code>)</span><span class="chip live">LIVE</span>
+        <span class="note"><code>luck.ts</code> reads the <code>thread</code> edge and protects the mortal only when the edge&rsquo;s source is <code>state.ascendantId</code>, so a rival god&rsquo;s mortals keep plain dice. The three places a mortal rolls (encounter steps, a threaded fight opponent, undertaking checkpoints) deal the d100 from a marble bag right before <code>resolveStepCore</code>, and the core still spends and discards its own first draw, so the shared stream is unchanged for everyone. <code>drawSeededReward</code> reads and advances a hidden Legendary deadline for its three callers. Its memory is three counts on the mortal (<code>properties.luck</code>), and each roll and each Legendary cycle is traced (<code>luck.bag_roll</code>, <code>luck.legendary_cycle</code>). The same change made the reward draw roll the tier before the item (<code>drawTierFirst</code>), so the outcome&rsquo;s tier curve is the rate players get.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

@@ -614,6 +614,8 @@ function drawTrophy(
     templateId: action.templateId,
     overrideCtx: ctx.overrideCtx,
     site: 'fight_trophy',
+    // The hidden Legendary deadline protects the player's own mortals (luck.ts).
+    playerAscendantId: state.ascendantId,
   });
   if (!draw.instantiation || !draw.drawnTemplateId) {
     return { skipped: 'empty_pool', ...(draw.isBadOutcome ? { badOutcome: true } : {}) };

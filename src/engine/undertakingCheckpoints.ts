@@ -59,6 +59,7 @@ import { REACH_DOMAINS } from '../types/traits';
 import { signedToCanonical01 } from '../types/axisRegistry';
 import { computeCapability } from './domainCapability';
 import { resolveStepCore } from './stepResolutionCore';
+import { drawLuckRoll } from './luck';
 import { mulberry32, hashString } from './factionAmbitions';
 import { getAgentLocation } from './graphQueries';
 import { resolveToParentLocation } from './sublocationShape';
@@ -547,6 +548,8 @@ export function resolveUndertakingCheckpoint(
       testShapers: undefined,
       variancePolicy: 'agent',
       quintessencePolicy: 'none',
+      // The player's own mortals roll from their luck bag (Game Design Law 4).
+      luckRoll: drawLuckRoll(graph, state.seed, state.ascendantId, project.actorId, tick),
       tick,
       sourceLabel: 'undertaking',
       bandOverride: bandPinned,

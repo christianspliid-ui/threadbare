@@ -173,6 +173,7 @@ import {
   reliabilityDescriptor,
 } from './intelligence';
 import { drawSeededReward } from './rewardPool';
+import { drawLuckRoll } from './luck';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
 import { mintCompanion } from './companions';
@@ -832,7 +833,10 @@ export function resolveUncontestedStep(
   // function to queue, and telemetry comes back as `tracePayload` for this
   // function to emit. Push stays caller-side because it is pre-roll and draws no
   // rng — see the asymmetry note in `stepResolutionCore.ts`'s header.
-  const core = resolveStepCore(buildStepCoreInput(action, step, state, rollInputs, pinnedBand), rng);
+  // The player's own mortals roll from their luck bag (Game Design Law 4). Dealt
+  // here, at the live roll only — the forecast probes above never advance the bag.
+  const luckRoll = drawLuckRoll(state.graph, state.seed, state.ascendantId, action.actorId, state.tick);
+  const core = resolveStepCore({ ...buildStepCoreInput(action, step, state, rollInputs, pinnedBand), luckRoll }, rng);
 
   const trace = core.tracePayload;
 
@@ -1611,6 +1615,8 @@ function resolveUnifiedReward(
     site: 'step_reward_pool',
     // THR-1241: the recipient's `reward_tier_bonus` reads here.
     overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
+    // The hidden Legendary deadline protects the player's own mortals (luck.ts).
+    playerAscendantId: state.ascendantId,
   });
   const { isBadOutcome } = draw;
   const actorName = state.graph.getNode(action.actorId)?.name ?? '?';

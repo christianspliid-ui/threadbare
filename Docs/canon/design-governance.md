@@ -27,6 +27,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
 - [ ] **Draft the Brainstorm companion** alongside the plan — same pass, not retrofit. Capture considered alternatives, tensions surfaced, Vision premises invoked.
 - [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
+- [ ] **Game Design Laws** — check the design against [`Docs/game-design/laws.md`](../game-design/laws.md), the sibling of the UI Laws for how the game *behaves*. For anything that rolls, draws or picks at random (§ I Randomness and luck), the plan names which Law 5 tool it uses, or plain dice with the reason, and how Law 1 is measured (the rate players get, not only the authored weight).
 - [ ] **Revise** — integrate remediations inline (not in a separate appendix)
 - [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
 - [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?

@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
 import { recordUnifiedActionNudgeMemory } from '../encounterChoiceMemory';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
+import { clearOutcomePin, setOutcomePin } from '../debugOutcomePin';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
@@ -185,6 +186,12 @@ function commitFirstNudge(state: GameState, nudgeId: string): GameState {
 }
 
 describe('Gate Duty direct debug spawn progression', () => {
+  // The hero is threaded to the player's god, so its d100 comes from its luck bag
+  // (Game Design Law 4) and the seed's incidental roll no longer decides the path.
+  // This test is about progression, not luck: pin every step to a success.
+  beforeEach(() => { setOutcomePin('cg.quest.gate_duty', 'success'); });
+  afterEach(() => { clearOutcomePin(); });
+
   it('registers Gate Duty in the canonical unified template registry', () => {
     expect(UNIFIED_ACTION_TEMPLATES.some(template => template.id === 'cg.quest.gate_duty')).toBe(true);
   });

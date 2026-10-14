@@ -42,26 +42,38 @@ export function getRarityTier(node: GraphNode): RarityTier {
  *
  * Uses weighted selection: iterate tiers 1..4, accumulate weights,
  * return the first tier whose cumulative weight exceeds prngValue.
+ *
+ * The roll is scaled by the distribution's own total, so each tier's chance is its
+ * share of the distribution. A distribution that does not sum to 1 therefore keeps
+ * its proportions — it never hands its missing weight to Legendary, which is what
+ * the old "exceeded the sum → tier 4" fallback did (Game Design Law 3: the rarest
+ * tier is never fed by leftover weight). `rarity-constants.ts` still warns at load
+ * when a distribution's sum drifts from 1.
  */
 export function seedRarityTier(
   distribution: Record<RarityTier, number>,
   prngValue: number,
 ): RarityTier {
+  let total = 0;
+  let lastPositive: RarityTier = 1;
+  for (let tier = 1; tier <= 4; tier++) {
+    const w = Math.max(0, distribution[tier as RarityTier] ?? 0);
+    total += w;
+    if (w > 0) lastPositive = tier as RarityTier;
+  }
+  // Fail-soft (NFP #4): an all-zero distribution seeds the common tier.
+  if (total <= 0) return 1;
+
+  const target = prngValue * total;
   let cumulative = 0;
   for (let tier = 1; tier <= 4; tier++) {
-    cumulative += distribution[tier as RarityTier];
-    if (prngValue < cumulative) {
+    cumulative += Math.max(0, distribution[tier as RarityTier] ?? 0);
+    if (target < cumulative) {
       return tier as RarityTier;
     }
   }
-  // Fallback — prngValue exceeded the cumulative weight sum. This is expected for
-  // floating point edge cases (prngValue very close to 1.0) but may also indicate
-  // a misconfigured distribution whose weights sum to less than 1.0.
-  console.warn(
-    `[rarity] seedRarityTier: prngValue ${prngValue} exceeded cumulative weight — ` +
-    `distribution may be misconfigured (sum < 1.0). Defaulting to tier 4.`
-  );
-  return 4;
+  // Float edge: prngValue at the very top of [0, 1) lands in the last tier with weight.
+  return lastPositive;
 }
 
 // ─── Graduation ─────────────────────────────────────────────────
