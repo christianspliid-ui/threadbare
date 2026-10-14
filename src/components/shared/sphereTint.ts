@@ -38,3 +38,31 @@ export function sphereTint(color: string, part: SphereTintPart): string {
 export function sphereBrightToken(sphere: SphereName): string {
   return `var(--sphere-${sphere}-bright)`;
 }
+
+/* ── Tinted glows (THR-1821) ──────────────────────────────────────────────
+ * Sphere and gold halos were nine hand-written `0 0 Npx …` template literals.
+ * They go through one helper so a glow is a strength, not a number, and so the
+ * UI-debt ratchet's `shadow-literal` row can tell a sanctioned glow from a
+ * literal (a `boxShadow:` whose value starts with `glowShadow(` is legal). */
+
+/** Blur radius of a soft glow, px. */
+export const GLOW_SOFT_BLUR_PX = 8;
+/** Colour share of a soft glow. */
+export const GLOW_SOFT_PCT = 38;
+/** Blur radius of a strong glow, px. */
+export const GLOW_STRONG_BLUR_PX = 20;
+/** Colour share of a strong glow. */
+export const GLOW_STRONG_PCT = 60;
+
+export type GlowStrength = 'soft' | 'strong';
+
+const GLOW: Record<GlowStrength, { blur: number; pct: number }> = {
+  soft: { blur: GLOW_SOFT_BLUR_PX, pct: GLOW_SOFT_PCT },
+  strong: { blur: GLOW_STRONG_BLUR_PX, pct: GLOW_STRONG_PCT },
+};
+
+/** `0 0 <blur>px color-mix(in srgb, <color> <pct>%, transparent)` — a tinted halo. */
+export function glowShadow(color: string, strength: GlowStrength): string {
+  const { blur, pct } = GLOW[strength];
+  return `0 0 ${blur}px color-mix(in srgb, ${color} ${pct}%, transparent)`;
+}

@@ -203,14 +203,48 @@ tinted. Tinted cards carry `data-sphere-tint`.
 
 ---
 
+## Radius by hierarchy (THR-1821)
+
+Four levels, named for what the thing **is** in the hierarchy, not for its size. Declared in a Tailwind v4 `@theme static` block right after `@import "tailwindcss"` in `src/index.css`, so both `var(--radius-panel)` and the utility `rounded-panel` are sanctioned forms. `static` emits every variable whether or not a utility uses it (most primitives read the tokens through inline `var()` styles); Tailwind still generates a utility only when a class uses it.
+
+| Level | What it is | Token | Value (1080p) |
+|---|---|---|---|
+| page | a dialog panel, the Stage panel, the Inspector in Full | `--radius-page` | `0.75rem` (12 px) |
+| panel | rails, the Inspector docked/wide, cards, popovers, the lens legend | `--radius-panel` | `0.5rem` (8 px) |
+| control | buttons, tabs, rows, inputs, insets inside a panel | `--radius-control` | `0.25rem` (4 px) |
+| chip | chips and pills | `--radius-chip` | `999px` |
+
+- **rem, not px,** for the three radii, so they step up with the root at ≥ 2560 like everything else.
+- **Circles and squares are shapes, not radii:** `50%` and `0` (and `rounded-full` / `rounded-none`) stay free.
+- `--panel-radius` stays as an alias of `--radius-panel`, so existing readers keep working.
+- The `radius-literal` row of `npm run check:ui-debt` counts every other radius; it may only go down.
+
+---
+
 ## Shadows & Glows
+
+Shadows follow the same four levels (THR-1821), in the same `@theme static` block — `var(--shadow-panel)` or `shadow-panel`:
+
+| Level | Token | Value |
+|---|---|---|
+| page | `--shadow-page` | `0 8px 32px rgb(0 0 0 / 0.6)` |
+| panel | `--shadow-panel` | `0 4px 16px rgb(0 0 0 / 0.4)` |
+| control | `--shadow-control` | `0 2px 8px rgb(0 0 0 / 0.5)` — only for controls floating on the map canvas |
+| chip | `--shadow-chip` | `none` — chips are flat |
+
+**Tinted glows** (sphere and gold halos) go through one helper, `glowShadow(color, strength)` in `src/components/shared/sphereTint.ts`: `0 0 <blur>px color-mix(in srgb, <color> <pct>%, transparent)`. Strengths are named constants: `soft` = `GLOW_SOFT_BLUR_PX` 8 / `GLOW_SOFT_PCT` 38, `strong` = `GLOW_STRONG_BLUR_PX` 20 / `GLOW_STRONG_PCT` 60. The `shadow-literal` row of `npm run check:ui-debt` counts every shadow that is not a token, `none` or a `glowShadow()` call.
 
 | Use case | Value |
 |----------|-------|
-| Floating panel (e.g. portal dropdown) | `box-shadow: 0 8px 32px rgba(0,0,0,0.6)` |
-| Elevated card | `box-shadow: 0 4px 16px rgba(0,0,0,0.4)` |
-| Sphere pulse glow | `box-shadow: 0 0 12px 4px var(--sphere-color)` |
 | Gold focus ring | `outline: 2px solid var(--accent-gold-dim); outline-offset: -2px` |
+
+## Scrims and glass (THR-1821)
+
+| Token | Value | Use |
+|---|---|---|
+| `--scrim-dim` | `rgb(0 0 0 / 0.6)` | the backdrop behind a dialog (Modal's) |
+| `--scrim-heavy` | `rgb(0 0 0 / 0.8)` | the backdrop behind a full-screen ceremony (HarvestScreen, WarmStart) |
+| `--bg-glass` | `rgb(17 17 20 / 0.72)` | a glass panel over the map (Card's glass material), with a 10 px backdrop blur |
 
 ---
 

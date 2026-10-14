@@ -29,17 +29,17 @@ const names = (plan: ReturnType<typeof planGates>) => ({
 });
 
 describe('planGates', () => {
-  it('runs test, typecheck, build, the encounter gate and the god-card gate concurrently for a code diff, with no final phase', () => {
+  it('runs test, typecheck, build, the encounter, god-card and UI-debt gates concurrently for a code diff, with no final phase', () => {
     const plan = planGates(['src/components/Foo.tsx', 'Docs/changelog.md'], TRACK);
     expect(plan.track).toBe('code');
     expect(plan.engine).toBe(false);
-    expect(names(plan)).toEqual({ stages: [['test', 'typecheck', 'build', 'encounter', 'god-cards']], final: [] });
+    expect(names(plan)).toEqual({ stages: [['test', 'typecheck', 'build', 'encounter', 'god-cards', 'ui-debt']], final: [] });
   });
 
   it('adds the CLI smoke, then test:heavy in a stage of its own, when an engine path is touched', () => {
     const plan = planGates(['src/engine/orchestrator.ts'], TRACK);
     expect(plan.engine).toBe(true);
-    expect(names(plan).stages).toEqual([['test', 'typecheck', 'build', 'encounter', 'god-cards', 'cli-smoke'], ['test-heavy']]);
+    expect(names(plan).stages).toEqual([['test', 'typecheck', 'build', 'encounter', 'god-cards', 'ui-debt', 'cli-smoke'], ['test-heavy']]);
     const smoke = plan.stages[0].find((gate) => gate.name === 'cli-smoke');
     expect(smoke?.stdin).toBe(CLI_SMOKE_INPUT);
   });

@@ -29,6 +29,27 @@
 }
 @import "tailwindcss";
 
+/* Radius and shadow by hierarchy level (THR-1821). Four levels named for what
+   the thing IS — page (a dialog, the Stage panel, the Inspector in Full), panel
+   (rails, the docked Inspector, cards, popovers), control (buttons, tabs, rows,
+   inputs) and chip (chips and pills). Tailwind v4 turns these namespaces into
+   utilities (`rounded-panel`, `shadow-panel`), and `var(--radius-panel)` is
+   the inline form. `static` emits every variable whether or not a utility is
+   used, because most primitives read them through inline `var()` styles.
+   Radii are rem so they step up with the root at >= 2560. Circles (`50%`) and
+   square corners (`0`) are shapes, not radii, and stay free. Tinted glows go
+   through `glowShadow()` in shared/sphereTint.ts. Docs/design-system/tokens.md. */
+@theme static {
+  --radius-page: 0.75rem;
+  --radius-panel: 0.5rem;
+  --radius-control: 0.25rem;
+  --radius-chip: 999px;
+  --shadow-page: 0 8px 32px rgb(0 0 0 / 0.6);
+  --shadow-panel: 0 4px 16px rgb(0 0 0 / 0.4);
+  --shadow-control: 0 2px 8px rgb(0 0 0 / 0.5); /* only for controls floating on the map */
+  --shadow-chip: none;                          /* chips are flat */
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    DARK TAPESTRY — Design System for Threadbearer
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -331,7 +352,11 @@
     --stage-gutter: 24px;            /* THR-1829 */
     --stage-window-w: 280px;         /* THR-1829 STAGE_WINDOW_PX */
     --stage-left-col-w: 340px;       /* THR-1829 STAGE_LEFT_COL_PX */
-    --panel-radius: 0.5rem;
+    --panel-radius: var(--radius-panel); /* alias kept for existing readers (THR-1821) */
+    /* Overlay backdrops and the glass panel over the map (THR-1821). */
+    --scrim-dim: rgb(0 0 0 / 0.6);     /* Modal's backdrop */
+    --scrim-heavy: rgb(0 0 0 / 0.8);   /* HarvestScreen, WarmStart */
+    --bg-glass: rgb(17 17 20 / 0.72);  /* Card's glass material */
     --panel-padding: 1rem;
     --tooltip-max-w: 17.5rem;        /* 280px at 1080p */
     --hovercard-w: 26.25rem;         /* 420px at 1080p */
