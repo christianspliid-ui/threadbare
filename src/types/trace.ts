@@ -88,6 +88,7 @@ export type TraceCategory =
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   | 'settlement_tier_change' | 'target_action_filter'
+  | 'founded_place_culture' // THR-1839
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
@@ -663,6 +664,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'settlement_tier_change', 'target_action_filter',
+  'founded_place_culture',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
@@ -1813,6 +1815,17 @@ export interface TradeRouteUpkeepTrace extends TraceBase {
   /** Lanes whose volume stepped this settle tick, by direction. */
   steppedUp: number;
   steppedDown: number;
+}
+
+/**
+ * Trace: places founded during play took their people (THR-1839) — one aggregate per tick
+ * on which any did, never on a quiet tick. Each link names the culture and the hex distance
+ * to the nearest heartland, the same draw-free fringe rule worldgen applies.
+ */
+export interface FoundedPlaceCultureTrace extends TraceBase {
+  category: 'founded_place_culture';
+  maxHexes: number;
+  linked: Array<{ locationId: string; cultureId: string; dist: number }>;
 }
 
 /** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
@@ -4556,6 +4569,7 @@ export type TraceEntry =
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace
   | SettlementTierChangeTrace
+  | FoundedPlaceCultureTrace
   | LocationTraitTrace
   | BattleRecordedTrace
   | FightRecordedTrace

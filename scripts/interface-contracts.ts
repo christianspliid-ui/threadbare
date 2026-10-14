@@ -5778,14 +5778,14 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: CULTURE,
     consumerSystem: ENCOUNTERS,
     intent:
-      "An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too.",
+      "An encounter opening in a town states one custom of the people who hold it — keyed by their culture's foundation and the encounter's reach — and two same-foundation cultures in one world read different customs. Since THR-1632 the producer includes fringe links: a settlement outside every heartland that takes the nearest culture (current layer, half strength) reads that culture's custom too. Since THR-1839 a settlement founded during play takes its fringe the same way, in the tick (`assignFringeCultureToFoundedPlaces`), so a hamlet founded at tick 200 reads its people's custom too (as a fringe, even inside a province).",
     ulTerms: ['Culture', 'Location', 'Fringe'],
     mechanism: {
       kind: 'node-prop',
       symbols: ['customVariant', 'stampCultureCustomVariants', 'readCultureCustomVariant', 'resolveOpeningColoration'],
       module: 'src/engine/openingColoration.ts',
     },
-    writeSites: ['src/engine/cultureGenerator.ts', 'src/engine/worldSeed.ts'],
+    writeSites: ['src/engine/cultureGenerator.ts', 'src/engine/worldSeed.ts', 'src/engine/orchestrator.ts'],
     readSites: [
       'src/engine/openingColoration.ts',
       'src/engine/fragmentResolution.ts',

@@ -93,9 +93,13 @@ export const CORNER_WILDERNESS_COUNT_MAX = 4;
 
 // ─── Constants the scenario's passes read (NFP #1) ─────────────────────────────
 
-/** Which Location subtypes can take a culture as their fringe. Ruins, lairs, wonders and anomalies stay cultureless. */
+/**
+ * Which Location subtypes can take a culture as their fringe. Ruins, lairs, wonders and anomalies stay cultureless.
+ * THR-1839: a worked mine (`mining`) takes one too — people live and labour there, and the people
+ * standing at one belonged to no people. Unworked deposits (gem deposits, seeps, shoals) stay out.
+ */
 export const CULTURE_FRINGE_SUBTYPES: ReadonlySet<string> = new Set([
-  'capital', 'city', 'town', 'hamlet', 'camp', 'farmland', 'fort', 'shrine', 'temple',
+  'capital', 'city', 'town', 'hamlet', 'camp', 'farmland', 'fort', 'shrine', 'temple', 'mining',
 ]);
 /** `culturalStrength` of a fringe link — half a heartland's (read by the genome and the hex culture panel). */
 export const CULTURE_FRINGE_STRENGTH = 0.5;
