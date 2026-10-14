@@ -89,6 +89,13 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
   'NotablesPanel',
 ];
 /**
+ * THR-1853 — player surfaces that do NOT hold a world-pushed interrupt (an arrival).
+ * The card hand stays open through ordinary play, and a held arrival holds the clock,
+ * so counting it would freeze the world with nothing on screen whenever a mortal is
+ * selected. It still holds a waiting gift (`GIFT_HOLD_SURFACES`).
+ */
+export const ARRIVAL_HOLD_EXEMPT_SURFACES: readonly string[] = ['ActionDrawer'];
+/**
  * THR-1853 — how long after another interrupt closes a held spine gift may still enter
  * on its own. Wall-clock milliseconds; the effect that enters it runs in the same commit
  * the interrupt closes in, so this only has to outlast one render.

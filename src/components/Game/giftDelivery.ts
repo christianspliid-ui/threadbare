@@ -21,6 +21,7 @@
  * Plan: Docs/plans/2026-10-10-thr-1805-gift-waits-its-turn.md
  */
 import {
+  ARRIVAL_HOLD_EXEMPT_SURFACES,
   GIFT_HOLD_EXEMPT_BEAT_IDS,
   GIFT_HOLD_SURFACES,
   GIFT_QUIET_AFTER_INPUT_MS,
@@ -166,3 +167,12 @@ export function openPlayerSurfaces(f: PlayerSurfaceFlags): string[] {
 
 /** Player surfaces that are also registry interrupts — reported once, as surfaces. */
 export const PLAYER_SURFACE_INTERRUPT_IDS: readonly string[] = ['ChapterLedger', 'ScryOverlay'];
+
+/**
+ * THR-1853 — the open player surfaces that hold a world-pushed interrupt (an arrival).
+ * The ledger and the court hold arrivals as registry interrupts already, and the card
+ * hand is exempt (`ARRIVAL_HOLD_EXEMPT_SURFACES`): it stays open through play.
+ */
+export function arrivalHoldingSurfaces(open: readonly string[]): string[] {
+  return open.filter(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id) && !ARRIVAL_HOLD_EXEMPT_SURFACES.includes(id));
+}

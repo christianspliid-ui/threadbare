@@ -9,7 +9,7 @@ import {
   type InterruptSnapshot,
   type InterruptSurface,
 } from '../interruptRegistry';
-import { openPlayerSurfaces, resolveGiftDelivery, type PlayerSurfaceFlags } from '../giftDelivery';
+import { arrivalHoldingSurfaces, openPlayerSurfaces, resolveGiftDelivery, type PlayerSurfaceFlags } from '../giftDelivery';
 
 const closed: InterruptSnapshot = {
   interruptsSuppressed: false,
@@ -268,6 +268,16 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
     const r = resolveInterrupts(snap({ chapterLedgerOpen: true, recentInput: true, premonitionPending: true }));
     expect(r.open).toEqual(['ChapterLedger']);
     expect(r.heldArrivals).toEqual([{ id: 'PremonitionModal', heldBy: ['interrupt', 'recent_input'] }]);
+  });
+
+  it('the open card hand never holds an arrival — it stays open through play, and a hold stops the clock', () => {
+    const handOnly = openPlayerSurfaces({ ...NO_FLAGS, actionDrawerOpen: true });
+    expect(handOnly).toEqual(['ActionDrawer']);
+    expect(arrivalHoldingSurfaces(handOnly)).toEqual([]);
+    const r = resolveInterrupts(snap({ premonitionPending: true, playerSurfaceOpen: arrivalHoldingSurfaces(handOnly).length > 0 }));
+    expect(r.open).toEqual(['PremonitionModal']);
+    // Rivals still holds; the ledger holds as an interrupt, not as a surface.
+    expect(arrivalHoldingSurfaces(['ActionDrawer', 'RivalsPanel', 'ChapterLedger'])).toEqual(['RivalsPanel']);
   });
 
   it('every arrival is a surface the world pushes, never one the player opens', () => {

@@ -258,6 +258,7 @@ import { describeOffering, isRungOpeningOffer } from '../../engine/godProgressio
 import {
   resolveGiftDelivery,
   openPlayerSurfaces,
+  arrivalHoldingSurfaces,
   isGiftHoldExempt,
   PLAYER_SURFACE_INTERRUPT_IDS,
   type GiftDelivery,
@@ -5147,7 +5148,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // A surface the world pushes on screen mounts only when the player is not mid-click
   // and has none of their own surfaces open. The ledger and the court are registry
   // interrupts already, so they hold arrivals as interrupts, not as surfaces.
-  const arrivalSurfaceOpen = playerSurfacesOpen.some(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id));
+  // The card hand is exempt: it stays open through play (`arrivalHoldingSurfaces`).
+  const arrivalSurfaceOpen = arrivalHoldingSurfaces(playerSurfacesOpen).length > 0;
   const msSinceInputNow = Date.now() - lastInputAtRef.current;
   const arrivalRecentInput = lastInputAtRef.current > 0 && msSinceInputNow < INTERRUPT_QUIET_AFTER_INPUT_MS;
   // What the registry rendered last commit: an arrival already on screen keeps its slot.
