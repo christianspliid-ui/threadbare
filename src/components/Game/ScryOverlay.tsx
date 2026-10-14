@@ -524,7 +524,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
 });
 
 /** The court panel's height cap — the Modal primitive's value (Viewport Contract, THR-1709). */
-export const SCRY_PANEL_MAX_HEIGHT = '75vh';
+export const SCRY_PANEL_MAX_HEIGHT = 'var(--modal-max-h)';
 
 export function ScryOverlay() {
   const {
@@ -692,7 +692,7 @@ export function ScryOverlay() {
   // THR-1709: portalled to <body> so no ancestor stacking context (GameView's
   // mount wrappers) can trap the z-50 under the top bar or the Active Locations
   // strip. The outer layer never scrolls; the panel is capped at the Modal
-  // primitive's 75vh and centred with margin:auto, so its header and ✕ always sit
+  // primitive's --modal-max-h (85vh) and centred with margin:auto, so its header and ✕ always sit
   // inside the viewport and only the court body scrolls (Viewport Contract).
   const overlay = (
     <div
