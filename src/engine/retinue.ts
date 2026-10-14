@@ -548,7 +548,7 @@ export function getThreadedNodes(
       // Location
       const hexCol = (nodeProps.hexCol as number) ?? 0;
       const hexRow = (nodeProps.hexRow as number) ?? 0;
-      const prosperityLabel = deriveProsperityLabel(nodeProps.prosperityScore);
+      const prosperityLabel = deriveProsperityLabel(nodeProps.prosperity);
 
       // Find controlling faction via incoming 'controls' edges from faction actors
       let controllingFaction: string | null = null;
@@ -990,8 +990,8 @@ function resolveHexDisplayName(graph: WorldGraph, col: number, row: number): str
   }
 
   candidates.sort((a, b) => {
-    const aP = (a.properties as Record<string, unknown>).prosperityScore;
-    const bP = (b.properties as Record<string, unknown>).prosperityScore;
+    const aP = (a.properties as Record<string, unknown>).prosperity;
+    const bP = (b.properties as Record<string, unknown>).prosperity;
     const aScore = typeof aP === 'number' ? aP : 0;
     const bScore = typeof bP === 'number' ? bP : 0;
     if (aScore !== bScore) return bScore - aScore;

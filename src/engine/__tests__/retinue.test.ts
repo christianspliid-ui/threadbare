@@ -541,7 +541,7 @@ describe('getThreadedNodes', () => {
       id: 'loc.thornwall',
       type: 'location',
       name: 'Thornwall',
-      properties: { hexCol: 5, hexRow: 3, prosperityScore: 60 },
+      properties: { hexCol: 5, hexRow: 3, prosperity: 60 },
     });
     makeThreadEdge('thread.thornwall', 'loc.thornwall', 1);
     const result = getThreadedNodes(graph, ascendantId);
@@ -955,13 +955,13 @@ describe('getSustainedControlNodes', () => {
       id: 'loc.thorpe',
       type: 'location',
       name: 'Lesser Thorpe',
-      properties: { hexCol: 5, hexRow: 3, prosperityScore: 20 },
+      properties: { hexCol: 5, hexRow: 3, prosperity: 20 },
     });
     graph.addNode({
       id: 'loc.city',
       type: 'location',
       name: 'Iron Hold',
-      properties: { hexCol: 5, hexRow: 3, prosperityScore: 80 },
+      properties: { hexCol: 5, hexRow: 3, prosperity: 80 },
     });
     const effects = [makeEffect({ effectId: 'e4', targetHexCol: 5, targetHexRow: 3 })];
     const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 171 |
+| 🟢 LIVE | 172 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 72 |
-| **Total** | **251** |
+| **Total** | **252** |
 
 ## Contracts by producing subsystem
 
@@ -294,6 +294,7 @@ remediation ticket or the build fails.
 | `economy-provisions-armies` | An army eats from the towns its faction holds, along the roads and trade routes that reach them. Sever the line — or let bandits settle on it, or let the far end fall into famine — and the host in the field starves without anyone fighting it. This is what makes cutting a supply route an economic act with a military consequence, and gives a Gold/Shadow god a way into a war that a god of Iron would not think to use. | node-prop: `resourceBalance`, `threatened` | War, Armies & Battles | 🟢 LIVE | — |
 | `economy-sustains-essence-sources` | A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence. | node-prop: `stockTier` | Essence & Divine Economy | 🟢 LIVE | — |
 | `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | node-prop: `prosperity` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
+| `settlement-prosperity-funds-armies` | A faction keeps its armies paid out of the towns it holds. Army attrition asks whether the faction is underfunded by reading its prosperity DERIVED from its held settlements (deriveFactionProsperity — summed settlement prosperity /100) against ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD; a faction holding no settlement (a monster horde, whose one controls edge is to its lair) is never underfunded. Before THR-1862 the reader took a faction-node prosperity field nothing writes, so it read the 0.5 default and no army was ever underfunded — a poor realm lost nothing for it. | function: `deriveFactionProsperity`, `countFactionSettlementHoldings`, `checkUnderfunded`, `ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD` | War, Armies & Battles | 🟢 LIVE | — |
 
 ### Personality & Emergent Traits
 
@@ -996,10 +997,10 @@ exit
 - **Intent:** A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction.
 - **Producer → Consumer:** Companies & Group Travel → Factions & Succession
 - **UL terms:** *Company*, *Faction*
-- **Production hits:** 55 total — 2 write, 9 read, 44 unclassified
+- **Production hits:** 56 total — 2 write, 9 read, 45 unclassified
 - **Write sites:** `src/engine/graphQueries.ts`, `src/engine/groupShape.ts`
 - **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/factionReputation.ts`, `src/engine/notableAgendas.ts` +4 more
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/engine/agentDetail.ts` +39 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/engine/agentDetail.ts` +40 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 1 completed the sweep THR-74 started: 48 further agent-sourced `member_of` reads that treated any target as "their faction" now route through getFactionMembershipEdges, taking the routed total to 62 of the 69 raw call sites. The 7 that remain raw are deliberate and annotated in place — army-sourced reads (an army really is member_of its faction), the three group-scoped resolvers that exist to find the company, and reputation.ts's target-addressed a→b finder, whose membership leg must keep resolving standing with one's own company. The rule itself moved to engine/groupShape.ts (getGroupKind → groupKind tag first, pre-THR-1297 property-presence as back-compat fallback), retiring the hand-mirrored copy in graphQueries.ts. This is what makes the network kind safe: isFactionMembershipEdge rested on "companies are the only non-faction member_of target", which a network (THR-1288, member_of contact edges) makes false. One live defect fixed in passing — strategicActionCandidates.ts's `faction` target rule returned a company as a faction target. Non-vacuous by src/engine/__tests__/factionMembershipGolden.test.ts (11 tests): a differential over real seeded worlds (42, 99) re-deriving the pre-THR-1297 rule inline and asserting the wrapper agrees agent-by-agent, with a company constructed into each world because a tick-0 world has none — falsified 5-of-11 red with isGroupMembershipTarget stubbed to false (the per-seed differentials stayed green before the constructed company was added, which is the vacuity the pin closes). Full suite 18532 green; 30-tick seed-42 CLI smoke reached tick 30 with 377 agents.
 
 ### `company-position-derives-from-leader` — 🟢 LIVE
@@ -1912,10 +1913,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 68 total — 2 write, 3 read, 63 unclassified
+- **Production hits:** 69 total — 2 write, 3 read, 64 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +58 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx` +59 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -2450,10 +2451,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 391 total — 1 write, 1 read, 389 unclassified
+- **Production hits:** 392 total — 1 write, 1 read, 390 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +384 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +385 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2788,6 +2789,18 @@ exit
 - **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +383 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
+### `settlement-prosperity-funds-armies` — 🟢 LIVE
+
+- **Intent:** A faction keeps its armies paid out of the towns it holds. Army attrition asks whether the faction is underfunded by reading its prosperity DERIVED from its held settlements (deriveFactionProsperity — summed settlement prosperity /100) against ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD; a faction holding no settlement (a monster horde, whose one controls edge is to its lair) is never underfunded. Before THR-1862 the reader took a faction-node prosperity field nothing writes, so it read the 0.5 default and no army was ever underfunded — a poor realm lost nothing for it.
+- **Producer → Consumer:** Mortal Economy & Prosperity → War, Armies & Battles
+- **UL terms:** *Prosperity*
+- **Module:** `src/engine/factionNetwork.ts`
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/factionNetwork.ts`
+- **Read sites:** `src/engine/armyAttrition.ts`
+- **Other hits:** `src/engine/domainCapability.ts`, `src/engine/factionAmbitions.ts`
+- **Verdict:** Verified 2026-10-14: THR-1862. economyReads.thr1862.test.ts drives the real checkUnderfunded against a graph: a landed faction whose two held towns sum to prosperity 15 (derived 0.15) is underfunded, one holding a town at 60 is funded, and neither a holdingless horde nor one holding only its lair (the monsterFactionSeed shape) is underfunded. armyAttrition.test.ts › "adds underfunded penalty when faction prosperity too low" now builds the faction with a controlled holding (derived 0.1) and asserts the UNDERFUNDED_ATTRITION_PENALTY lands in the cohesion loss — the same assertion fails if the reader returns to the faction-node field.
+
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
 
 - **Intent:** One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project.
@@ -2887,10 +2900,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Faction*, *Spotlight tier*
 - **Module:** `src/engine/factionOutcome.ts`
-- **Production hits:** 55 total — 2 write, 2 read, 51 unclassified
+- **Production hits:** 56 total — 2 write, 2 read, 52 unclassified
 - **Write sites:** `src/engine/factionOutcome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/factionQuestGeneration.ts`, `src/engine/guildJoinFunnel.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/engine/agentDetail.ts` +46 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/engine/agentDetail.ts` +47 more
 - **Verdict:** Verified 2026-09-28: THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).
 
 ### `story-breath-anchor-paces-pause-mode-chapters` — 🔵 UNVERIFIED-OK
@@ -2911,10 +2924,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 46 total — 3 write, 4 read, 39 unclassified
+- **Production hits:** 47 total — 3 write, 4 read, 40 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hexMapAgentVisibility.ts`, `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +34 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +35 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE

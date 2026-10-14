@@ -26,6 +26,9 @@ import type { ResourceInstance } from '../types/resource';
 import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { getFactionMembershipEdges } from './graphQueries';
+import { isAgentGone } from './groups/groupQueries';
+import { getPlaceNodes } from './sublocationShape';
 import { mulberry32 } from '../lib/prng';
 import {
   ECON_BOOM_SEED_TEMPLATES,
@@ -96,7 +99,7 @@ export const PROSPERITY_DRIFT_MIN = 0.1;
 /** Prosperity gain per active trades_with edge, scaled by normalised volume */
 export const PROSPERITY_TRADE_BONUS_PER_ROUTE = 8;
 
-/** Bonus to target per faction with located_at edge at this settlement */
+/** Bonus to target per distinct faction with a living member located at this settlement (or a place inside it) */
 export const FACTION_PRESENCE_BONUS = 5;
 
 /** Cap on total faction presence bonus */
@@ -327,16 +330,39 @@ function computeTradeTarget(graph: WorldGraph, locationId: string, currentTick: 
   return { activeRoutes, tradeBonus: totalBonus, cursedRoutesSkipped };
 }
 
+/** Place ids grouped by the Location that contains them (`parentLocationId`). */
+export function groupPlacesByParent(graph: WorldGraph): Map<string, string[]> {
+  const byParent = new Map<string, string[]>();
+  for (const place of getPlaceNodes(graph)) {
+    const parentId = place.properties?.parentLocationId;
+    if (typeof parentId !== 'string') continue;
+    const list = byParent.get(parentId);
+    if (list) list.push(place.id);
+    else byParent.set(parentId, [place.id]);
+  }
+  return byParent;
+}
+
 /**
- * Count distinct factions present at a location (via located_at edges).
+ * Count distinct factions present at a settlement: a faction is present when a living
+ * member of it is located at the settlement or at a place inside it. THR-1862 — the old
+ * read kept `located_at` sources whose `type === 'faction'`, and factions are `actor`
+ * nodes, so the bonus never applied. Exported for focused tests.
  */
-function computeFactionPresence(graph: WorldGraph, locationId: string): number {
-  const incomingEdges = graph.getIncomingEdges(locationId, 'located_at');
+export function computeFactionPresence(
+  graph: WorldGraph,
+  locationId: string,
+  placesByParent: ReadonlyMap<string, readonly string[]> = groupPlacesByParent(graph),
+): number {
   const factionIds = new Set<string>();
-  for (const edge of incomingEdges) {
-    const node = graph.getNode(edge.source);
-    if (node && node.type === 'faction') {
-      factionIds.add(node.id);
+  for (const siteId of [locationId, ...(placesByParent.get(locationId) ?? [])]) {
+    for (const edge of graph.getIncomingEdges(siteId, 'located_at')) {
+      const node = graph.getNode(edge.source);
+      if (!node || node.type !== 'actor' || node.properties?.actorType !== 'individual') continue;
+      if (isAgentGone(node)) continue;
+      for (const membership of getFactionMembershipEdges(graph, node.id)) {
+        factionIds.add(membership.target);
+      }
     }
   }
   return factionIds.size;
@@ -382,6 +408,7 @@ function computeEquilibriumTarget(
   props: Record<string, unknown>,
   subtype: string,
   currentTick: number,
+  placesByParent?: ReadonlyMap<string, readonly string[]>,
 ): { target: number; breakdown: EquilibriumBreakdown } {
   const carryingCapacity = computeCarryingCapacity(props);
 
@@ -393,7 +420,7 @@ function computeEquilibriumTarget(
   target += tradeBonus;
 
   // Faction presence boosts target
-  const factionCount = computeFactionPresence(graph, locationId);
+  const factionCount = computeFactionPresence(graph, locationId, placesByParent);
   const factionBonus = Math.min(factionCount * FACTION_PRESENCE_BONUS, FACTION_PRESENCE_MAX_BONUS);
   target += factionBonus;
 
@@ -680,6 +707,8 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     }
   }
 
+  const placesByParent = groupPlacesByParent(graph);
+
   for (const loc of locations) {
     const subtype = loc.properties?.locationSubtype as string | undefined;
 
@@ -693,7 +722,7 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
 
     // 1. Compute equilibrium target
     const { target, breakdown } = computeEquilibriumTarget(
-      graph, tiles, loc.id, loc.properties as Record<string, unknown>, subtype, tick,
+      graph, tiles, loc.id, loc.properties as Record<string, unknown>, subtype, tick, placesByParent,
     );
 
     // THR-401: natural recovery/decay for populationHealth and divinePresence.

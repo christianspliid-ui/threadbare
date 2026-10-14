@@ -1279,9 +1279,25 @@ export const ITEM_TIER_BY_CLASS: Readonly<Record<string, 1 | 2 | 3>> = {
 export const UNDERTAKING_DEFAULT_PLACE_TYPE_ID = 'sublocation-type.workshop';
 /** `create × location` with no override founds this subtype (settlement class). */
 export const UNDERTAKING_DEFAULT_LOCATION_SUBTYPE = 'hamlet';
-/** `change × location`: prosperity added (raise) or removed (lower) per completion, clamped to [0, 1]. */
-export const UNDERTAKING_CHANGE_PROSPERITY_DELTA = 0.1;
-/** `destroy × location`: prosperity is floored here and the subtype becomes `ruins`. */
+/**
+ * `change × location`: prosperity added (raise) or removed (lower) per completion.
+ * Settlement prosperity is a 0–100 value, so this is points on that scale, clamped to
+ * [0, 100] (THR-1862 — it was 0.1 against a [0, 1] clamp, which set a town at 48 to 1).
+ * For scale: the god's Bless the Harvest is +12, Open the Markets +6.
+ */
+export const UNDERTAKING_CHANGE_PROSPERITY_DELTA = 10;
+/** Upper bound of settlement `prosperity` (the 0–100 scale every economy phase writes). */
+export const SETTLEMENT_PROSPERITY_MAX = 100;
+/**
+ * `change × location` on any other named property (a cell override may name one): those
+ * are 0–1 values, so the delta and clamp stay on the unit scale.
+ */
+export const UNDERTAKING_CHANGE_UNIT_PROPERTY_DELTA = 0.1;
+/**
+ * `destroy × location`: prosperity is floored here and the subtype becomes `ruins`.
+ * On the 0–100 prosperity scale this is effectively zero ("ruined ≈ nothing left"), which is
+ * the intent; the holding tithe reads it the same way (THR-1862).
+ */
 export const RUINED_SETTLEMENT_PROSPERITY_FLOOR = 0.1;
 /** `change × standing`: reputation delta per completion (raise +, lower −). */
 export const UNDERTAKING_STANDING_DELTA = 0.15;
@@ -1470,10 +1486,12 @@ export const HOLDING_INCOME_INTERVAL_TICKS = 12;
 export const WEALTH_CONTROLLED_LOCATION_TITHE = 1;
 
 /**
- * A rich town tithes more. Steps are read against the Location's `prosperity` (0–1):
- * below the first threshold the first multiplier applies, and so on upward.
+ * A rich town tithes more. Steps are read against the Location's `prosperity` (0–100):
+ * at or above the first threshold the first multiplier applies, and so on upward; below
+ * the first, nothing. (THR-1862: these were 0–1 values, so every living town took the
+ * top band.)
  */
-export const HOLDING_TITHE_PROSPERITY_THRESHOLDS: readonly [number, number, number] = [0.25, 0.5, 0.75];
+export const HOLDING_TITHE_PROSPERITY_THRESHOLDS: readonly [number, number, number] = [25, 50, 75];
 export const HOLDING_TITHE_PROSPERITY_MULTIPLIER: readonly [number, number, number] = [0.5, 1, 2];
 
 /** Rate limit on the freehold-income chronicle line per holder (six days). */

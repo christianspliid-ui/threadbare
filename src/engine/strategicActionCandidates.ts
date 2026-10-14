@@ -962,8 +962,9 @@ function computeAmbitionAlignment(
  * Rewards a candidate route between a surplus endpoint and a scarce one — a route
  * that wants to exist — so merchants prefer complementary partners over arbitrary
  * ones. Folded into the target-specific `worldImpact` component (a complementary
- * route reshapes the economy more). Returns 0 for non-route templates
- * (mutationHint ≠ create_trade_route) and when the source node is missing (fail-soft).
+ * route reshapes the economy more). Returns 0 for non-route templates (neither the
+ * legacy `create_trade_route` hint nor a `create × route` cell — `createsRoute`,
+ * THR-1862) and when the source node is missing (fail-soft).
  * Exported for focused scoring tests (NFP #2 inspectability).
  */
 export function computeRouteFormationBias(
@@ -971,7 +972,7 @@ export function computeRouteFormationBias(
   sourceLocation: GraphNode | undefined,
   target: GraphNode,
 ): number {
-  if (template.mutationHint?.type !== 'create_trade_route') return 0;
+  if (!createsRoute(template)) return 0;
   if (!sourceLocation) return 0;
   return ROUTE_FORMATION_BALANCE_BIAS
     * scoreRoutePairBalance(sourceLocation.properties, target.properties);

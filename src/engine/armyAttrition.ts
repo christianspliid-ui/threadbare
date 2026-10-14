@@ -16,12 +16,19 @@ import { getArmyTerrainCost } from './armyMovement';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
 import { deriveSupplyTier, readArmySupply, readArmySupplyMax } from './armySupply';
+import { countFactionSettlementHoldings, deriveFactionProsperity } from './factionNetwork';
 import {
   STRAINED_SUPPLY_ATTRITION_PENALTY,
   STARVING_SUPPLY_ATTRITION_PENALTY,
 } from '../data/army-supply-config';
 
 // ─── Constants ───────────────────────────────────────────────────────────
+
+/**
+ * A landed faction whose derived prosperity (summed over its holdings, /100 —
+ * `deriveFactionProsperity`) falls below this cannot keep its armies funded.
+ */
+export const ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD = 0.2;
 
 /** Baseline Cohesion loss per tick (even at rest) */
 export const ARMY_BASE_ATTRITION = 0.5;
@@ -205,10 +212,16 @@ export function phaseArmyAttrition(state: GameState): void {
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 /**
- * Check if a faction is underfunded (can't afford army maintenance).
- * Simple check: faction Gold capability tier < 2 means underfunded.
+ * Check if a faction is underfunded (can't afford army maintenance): its holdings, summed,
+ * are too poor to pay. Faction prosperity is derived on read (THR-711) — nothing writes
+ * `prosperity` onto a faction node, so the old `?? 0.5` read never tripped (THR-1862).
+ * A faction holding no settlement (a monster horde, whose one holding is its lair) lives
+ * off the land and is never underfunded here; without that early return turning this on
+ * would starve every horde. A realm that has lost every settlement is the exception: it is
+ * underfunded, so losing its land costs its army.
+ * Exported for focused tests.
  */
-function checkUnderfunded(
+export function checkUnderfunded(
   state: GameState,
   factionId: string | undefined,
   _maintenanceCost: number,
@@ -217,9 +230,12 @@ function checkUnderfunded(
   const factionNode = state.graph.getNode(factionId);
   if (!factionNode) return true;
 
-  // Simple heuristic: if faction prosperity is very low, they're underfunded
-  const prosperity = (factionNode.properties.prosperity as number) ?? 0.5;
-  return prosperity < 0.2;
+  // A landless realm has lost the land that paid for its army; any other landless faction
+  // (a horde, a guild or temple paid from elsewhere) is not starved by this check.
+  if (countFactionSettlementHoldings(state.graph, factionId) === 0) {
+    return factionNode.properties.factionClass === 'realm';
+  }
+  return deriveFactionProsperity(state.graph, factionId) < ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD;
 }
 
 /**

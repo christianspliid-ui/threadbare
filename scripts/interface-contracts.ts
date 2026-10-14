@@ -6548,6 +6548,27 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/encounter.ts'],
     readSites: ['src/engine/agentDetail.ts'],
   },
+  // ── THR-1862 — an army is paid from the towns its faction holds ──────────────────
+  {
+    id: 'settlement-prosperity-funds-armies',
+    producerSystem: ECONOMY,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'A faction keeps its armies paid out of the towns it holds. Army attrition asks whether the faction is underfunded by reading its prosperity DERIVED from its held settlements (deriveFactionProsperity — summed settlement prosperity /100) against ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD; a faction holding no settlement (a monster horde, whose one controls edge is to its lair) is never underfunded. Before THR-1862 the reader took a faction-node prosperity field nothing writes, so it read the 0.5 default and no army was ever underfunded — a poor realm lost nothing for it.',
+    ulTerms: ['Prosperity'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['deriveFactionProsperity', 'countFactionSettlementHoldings', 'checkUnderfunded', 'ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD'],
+      module: 'src/engine/factionNetwork.ts',
+    },
+    writeSites: ['src/engine/factionNetwork.ts'],
+    readSites: ['src/engine/armyAttrition.ts'],
+    verifiedLive: {
+      date: '2026-10-14',
+      evidence:
+        'THR-1862. economyReads.thr1862.test.ts drives the real checkUnderfunded against a graph: a landed faction whose two held towns sum to prosperity 15 (derived 0.15) is underfunded, one holding a town at 60 is funded, and neither a holdingless horde nor one holding only its lair (the monsterFactionSeed shape) is underfunded. armyAttrition.test.ts › "adds underfunded penalty when faction prosperity too low" now builds the faction with a controlled holding (derived 0.1) and asserts the UNDERFUNDED_ATTRITION_PENALTY lands in the cohesion loss — the same assertion fails if the reader returns to the faction-node field.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

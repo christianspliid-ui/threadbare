@@ -84,12 +84,30 @@ function addLocation(
   }
 }
 
+/**
+ * `prosperity` is the faction's derived (0–1, summed-holdings/100) prosperity: the
+ * faction gets one controlled holding at `prosperity × 100` (THR-1862 — faction
+ * prosperity is derived on read from holdings, never stored on the faction node).
+ */
 function addFaction(graph: WorldGraph, id: string, armyId: string, prosperity: number = 0.5): void {
   graph.addNode({
     id,
     type: 'actor',
     name: `Faction ${id}`,
-    properties: { actorType: 'faction', prosperity },
+    properties: { actorType: 'faction' },
+  });
+  graph.addNode({
+    id: `holding_${id}`,
+    type: 'location',
+    name: `Holding of ${id}`,
+    properties: { locationSubtype: 'town', prosperity: prosperity * 100 },
+  });
+  graph.addEdge({
+    id: `e_controls_${id}`,
+    source: id,
+    target: `holding_${id}`,
+    type: 'controls',
+    properties: {},
   });
   graph.addEdge({
     id: `e_member_${armyId}_${id}`,

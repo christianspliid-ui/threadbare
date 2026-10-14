@@ -54,6 +54,13 @@ const WEALTH_TIER_PROPERTY = 'previousWealthTier';
  * Scan current tick events for economic triggers and generate chronicle entries.
  * Called once per tick AFTER all action resolution and economic phases.
  */
+/** Spotlight tiers whose wealth-tier changes are written to the chronicle (THR-1862). */
+/**
+ * `spotlight` only: on seed 42 medium at t300 the 146 notables wrote 139 of 143 entries
+ * (most at graduation, when an NPC role sets its wealth), the 18 spotlight mortals 4.
+ */
+export const WEALTH_TIER_CHRONICLE_SPOTLIGHT_TIERS: ReadonlySet<string> = new Set(['spotlight']);
+
 export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
   const { graph, tick, seed } = state;
   const newEvents: TickEvent[] = [];
@@ -94,7 +101,10 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
   }
 
   // ── 2. Check for wealth tier changes on all agents ────────────────────
-  const agents = graph.getNodesByType('agent');
+  // Individuals are `actor` nodes; there is no `agent` node type (THR-1862 — the old
+  // `getNodesByType('agent')` returned nothing, so this chronicle never fired).
+  const agents = graph.getNodesByType('actor')
+    .filter(n => n.properties?.actorType === 'individual');
   for (const agent of agents) {
     const currentWealth = typeof agent.properties?.wealth === 'number'
       ? agent.properties.wealth : 0;
@@ -104,6 +114,17 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
     // Skip if no previous tier recorded (first tick) or no change
     if (!previousTier || previousTier === currentTier) {
       // Record current tier for next tick comparison
+      agent.properties[WEALTH_TIER_PROPERTY] = currentTier;
+      continue;
+    }
+
+    // Only the spotlight mortals the player follows earn a Great Chronicle line for a change of
+    // fortune; an ambient stranger's climb is tracked (so a later promotion does not
+    // replay it) but not written. Measured on seed 42 medium at t300 before this filter:
+    // 143 "Fortune Rises" entries, ~14% of the chronicle, almost all from notable NPCs (THR-1862).
+    // A missing tier reads as spotlight, as everywhere else (The First carries none).
+    const spotlightTier = (agent.properties?.spotlightTier as string | undefined) ?? 'spotlight';
+    if (!WEALTH_TIER_CHRONICLE_SPOTLIGHT_TIERS.has(spotlightTier)) {
       agent.properties[WEALTH_TIER_PROPERTY] = currentTier;
       continue;
     }

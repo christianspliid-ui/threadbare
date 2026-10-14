@@ -339,8 +339,11 @@ describe('phaseProsperity — Equilibrium Model', () => {
 
   it('faction presence boosts equilibrium target', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Garrisoned', properties: { locationSubtype: 'hamlet', prosperity: 30 } });
-    graph.addNode({ id: 'fac.1', type: 'faction', name: 'Iron Covenant', properties: {} });
-    graph.addEdge({ id: 'e1', source: 'fac.1', target: 'loc.1', type: 'located_at', properties: {} });
+    // A faction is present through a located member (THR-1862); factions are actor nodes.
+    graph.addNode({ id: 'fac.1', type: 'actor', name: 'Iron Covenant', properties: { actorType: 'faction' } });
+    graph.addNode({ id: 'agent.1', type: 'actor', name: 'Sentry', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e1', source: 'agent.1', target: 'loc.1', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'e2', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: {} });
 
     phaseProsperity(makeState(graph));
     const newProsperity = graph.getNode('loc.1')!.properties.prosperity as number;

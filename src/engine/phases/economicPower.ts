@@ -197,7 +197,10 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
     faction.properties.monopolies = [...now].sort();
   }
   if (established + broken > 0 && ctx.runtime) {
-    touchWorld(ctx.runtime); // monopoly state feeds encounter-scoring inputs
+    // The faction's `monopolies` list changed. Nothing reads it yet (what a monopoly
+    // should do is open on the economy wayfinder map, THR-1862); bump the version so a
+    // future reader keyed on worldVersion sees the change.
+    touchWorld(ctx.runtime);
   }
 
   // ── 2. Sphere drift from sustained flows ─────────────────────────────────
