@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import { WorldGraph } from '../graph';
@@ -6,6 +6,7 @@ import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
 import { recordUnifiedActionNudgeMemory } from '../encounterChoiceMemory';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
+import { clearOutcomePin, setOutcomePin } from '../debugOutcomePin';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
 import { GATE_DUTY_NUDGE_IDS } from '../../data/civic-guard-encounter-content';
@@ -187,6 +188,12 @@ function getOpenNotification(state: GameState, stepIndex?: number) {
 const MULTI_TICK_TIMEOUT_MS = 30_000;
 
 describe('Gate Duty aftermath progression', () => {
+  // The hero is threaded to the player's god, so its d100 comes from its luck bag
+  // (Game Design Law 4) and the seed's incidental roll no longer decides the path.
+  // This test is about progression, not luck: pin every step to a success.
+  beforeEach(() => { setOutcomePin('cg.quest.gate_duty', 'success'); });
+  afterEach(() => { clearOutcomePin(); });
+
   it('keeps the sim ticking after the encounter resolves and an aftermath reaction is applied', () => {
     resetDecisionCache();
     resetEventCounter();

@@ -113,6 +113,8 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 | [consumption-ledger.generated.md](consumption-ledger.generated.md) | Consumption ledger | generated | — |
 | [setting-coverage.generated.md](setting-coverage.generated.md) | Setting coverage | generated | — |
 
+> **The two law books live outside this directory.** [Game Design Laws](../game-design/laws.md) — how the game *behaves* (odds, failure, the god and the mortal, power, the run), loaded by the `game-design-laws` skill. [UI Laws](../design-system/laws.md) — how the game is *shown*, loaded by `frontend-ui`. The rulebook's rules must keep both.
+
 > **The Rulebook is the synthesis layer.** Per-domain canon pages own current spec (Cosmology owns the eight Reaches, Encounters owns the encounter format, etc.). The Rulebook owns *how the systems combine into a game from the player's seat*. Every rulebook section ends with an authority-boundary footer pointing back at UL (terms), the relevant per-domain canon page (spec), and Vision (why). Each rule carries `[IMPL] / [DESIGN] / [OPEN]` so the gap between implemented and intended is structural, not hidden. Load the **quick-reference** at session start (always-loaded per CLAUDE.md); load the **full rulebook** when work touches rules of play (turn structure, action verb, prerequisite, resource, clock, win/loss).
 
 ## When to update a Canon page

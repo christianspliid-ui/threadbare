@@ -10,7 +10,7 @@ description: >
   for any In Design phase work on player-facing features. Skip for pure-infrastructure
   design passes where Vision premises are not in scope.
 validated_doctrine: rules-of-play@1
-last_validated_against: 2026-08-28
+last_validated_against: 2026-10-14
 ---
 
 # Game Design Direction
@@ -260,5 +260,7 @@ Load order: `state-of-game-design` router first (then its shards), then this ski
 The Vision premises in this skill **do not duplicate** Systems/ content. They narrate the *why* behind decisions that Systems/ records as settled. If a Vision premise and a Systems/ page appear to contradict, the Systems/ page is current spec; the Vision premise may need updating. Flag it in the Vision audit.
 
 **Relationship to `design-council`:** Pre-design debate (this skill) surfaces options during brainstorming. `design-council` runs consent-based deliberation on concrete proposals. A debate may escalate to a council when the user wants agent consent on a written proposal; a council may trigger a debate when a proposal surfaces a direction the current brainstorm did not consider. They are complementary stages, not alternatives.
+
+**Relationship to `game-design-laws`:** this skill checks a design against the Vision; `game-design-laws` checks it against the numbered law book for how the game behaves (`Docs/game-design/laws.md`). A design that changes a mechanic loads both.
 
 **Relationship to the design system (`Docs/design-system/laws.md`, loaded via `frontend-ui`):** The design system is the *render* of the taste profile's strong opinions into CSS tokens, type, and assets. When a taste-profile entry changes, check whether the design system needs an update too. (An earlier revision pointed at a `threadbearer-design` skill that no longer exists.)

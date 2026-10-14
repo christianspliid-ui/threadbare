@@ -152,14 +152,19 @@ describe('seedRarityTier', () => {
     expect(seedRarityTier(uniform, 0.75)).toBe(4);
   });
 
-  it('falls back to tier 4 and warns when distribution sums to less than 1.0', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    // Distribution that only sums to 0.5 — prngValue 0.8 exceeds the sum
+  it('keeps a short distribution\'s proportions — its missing weight never goes to Legendary (Game Design Law 3)', () => {
+    // Sums to 0.5. The old draw handed every roll above 0.5 to tier 4 (55% Legendary);
+    // scaled by its own total, Legendary keeps its 0.05 / 0.5 = 10% share.
     const badDist: Record<RarityTier, number> = { 1: 0.3, 2: 0.1, 3: 0.05, 4: 0.05 };
-    const result = seedRarityTier(badDist, 0.8);
-    expect(result).toBe(4);
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('misconfigured'));
-    warnSpy.mockRestore();
+    expect(seedRarityTier(badDist, 0.8)).toBe(3);
+    const steps = 10_000;
+    let legendary = 0;
+    for (let i = 0; i < steps; i++) if (seedRarityTier(badDist, (i + 0.5) / steps) === 4) legendary++;
+    expect(legendary / steps).toBeCloseTo(0.1, 3);
+  });
+
+  it('seeds the common tier from an all-zero distribution rather than throwing', () => {
+    expect(seedRarityTier({ 1: 0, 2: 0, 3: 0, 4: 0 }, 0.5)).toBe(1);
   });
 });
 

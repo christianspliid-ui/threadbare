@@ -212,7 +212,7 @@ import { phaseNpcGraduation } from './npcGraduation';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
   assembleRewardPool,
-  drawFromPool,
+  drawTierFirst,
   instantiateReward,
   resolveRewardRecipe,
   BAD_OUTCOME_CATEGORY_WEIGHTS,
@@ -754,7 +754,9 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
 
       if (pool.length > 0) {
         const drawRoll = rng();
-        const templateId = drawFromPool(pool, drawRoll);
+        // Tier first, then the item (Game Design Law 2) — the same draw as
+        // `drawSeededReward`, so the curve is the rate on this route too.
+        const templateId = drawTierFirst(pool, effectiveRecipe.tierCurve, drawRoll)?.nodeId ?? null;
 
         if (templateId) {
           const instantiation = instantiateReward(state.graph, templateId, progress.actorId, state.tick);

@@ -26,6 +26,9 @@
  *   1. the d100, inside `resolveAction` — always;
  *   2. the resist check — only when a resist is actually funded and attempted.
  *
+ * A protected mortal's d100 comes from its luck bag (`input.luckRoll`), but draw 1
+ * is still spent and discarded, so the count and order above hold for every roller.
+ *
  * Riders, the floors and the debug band pin draw **zero**. Any change to the draw
  * count is a stream break for every downstream consumer of the same generator, so
  * `stepResolutionGolden.test.ts` pins `roll` and `probability` per row, not merely
@@ -130,6 +133,13 @@ export interface StepCoreInput {
   readonly bandRider?: NudgeRider;
   /** THR-1030 debug pin. Applied last of all; draws zero rng. */
   readonly bandOverride?: StepOutcome;
+  /**
+   * The d100 dealt from the roller's luck bag (`luck.ts`, Game Design Law 4), when
+   * the roller is one of the player's own mortals. The caller deals it — dealing
+   * advances the bag, so it happens only at a live roll, never in a forecast probe.
+   * The core still spends its first `rng` draw so the stream stays aligned.
+   */
+  readonly luckRoll?: number;
   readonly tick: number;
   readonly sourceLabel: ResolutionResult['sourceSystem'];
 }
@@ -237,7 +247,12 @@ export function resolveStepCore(input: StepCoreInput, rng: () => number): StepCo
   };
 
   // ── rng draw 1 of at most 2: the d100 ──
-  const rawResult = resolveActionShared(resolutionInput, rng, undefined, input.sourceLabel);
+  // A protected mortal's d100 comes from its luck bag instead. The stream still
+  // spends this draw, so the resist draw and every later consumer of the same
+  // generator see exactly the values they would have (NFP #3).
+  const luckRoll = input.luckRoll;
+  if (luckRoll !== undefined) rng();
+  const rawResult = resolveActionShared(resolutionInput, rng, luckRoll, input.sourceLabel);
 
   // THR-571: the raw resolver outcome, captured before any floor upgrade.
   const preFloorOutcome = rawResult.outcome;

@@ -9,6 +9,18 @@
  * Companion entries are registry-backed rather than graph nodes (THR-1096).
  * The recipient's `reward_tier_bonus` rule override slides the tier curve here,
  * at the single seeded draw path (THR-1241).
+ *
+ * **Tier first, then the item** (Game Design Laws 1–3, `Docs/game-design/laws.md`).
+ * The draw rolls the rarity tier from the outcome's tier curve, and only then picks
+ * an item inside that tier ({@link drawTierFirst}). The curve is therefore the rate
+ * the player gets: adding, retiring or filtering items never moves it. Before this,
+ * the curve was multiplied into every item's weight, so the tier with the most items
+ * won — a success's Legendary was set at 5% and paid about 1.5% in live play.
+ * A tier with nothing eligible falls one tier down, so the rarest tier's chance is
+ * never inflated by an empty tier below it.
+ *
+ * The player's own mortals also carry a hidden Legendary deadline (`luck.ts`), so a
+ * Legendary cannot stay away forever.
  */
 
 import type { WorldGraph } from './graph';
@@ -42,10 +54,17 @@ import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/
 import { filterCompanionTemplates, getCompanionTemplate } from '../data/companion-templates';
 import { mintCompanion, isAtCompanionCap, isUniqueAlreadyInstanced } from './companions';
 import { tryGeneratedReward } from './itemGenerator/rewardMinting';
+import { isLegendaryDue, isLuckProtected, recordLegendaryWin } from './luck';
 
 export interface PoolEntry {
   nodeId: string;
   weight: number;
+  /**
+   * The entry's rarity tier — what {@link drawTierFirst} groups by. Optional so a
+   * hand-built pool (tests, the flat {@link drawFromPool}) stays valid; a missing
+   * tier reads as 1, exactly as an undeclared tier did before.
+   */
+  tier?: number;
   /** For agreement entries: the agreement template ID (nodeId will be the template ID). */
   isAgreement?: boolean;
   /** For companion entries: the companion template ID (THR-1096; registry-backed, not a graph node). */
@@ -306,7 +325,7 @@ export function assembleRewardPoolDetailed(
         const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
         const weight = categoryWeight * tierWeight;
         if (weight > 0) {
-          pool.push({ nodeId: template.id, weight, isCompanion: true });
+          pool.push({ nodeId: template.id, weight, tier: template.tier, isCompanion: true });
         }
       }
       continue;
@@ -319,7 +338,7 @@ export function assembleRewardPoolDetailed(
         const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
         const weight = categoryWeight * tierWeight;
         if (weight > 0) {
-          pool.push({ nodeId: template.id, weight, isAgreement: true });
+          pool.push({ nodeId: template.id, weight, tier: template.tier, isAgreement: true });
         }
       }
       continue;
@@ -338,7 +357,7 @@ export function assembleRewardPoolDetailed(
       const tierWeight = recipe.tierCurve[candidate.tier as AttachmentTier] ?? 0;
       const weight = categoryWeight * tierWeight;
       if (weight > 0) {
-        pool.push({ nodeId: candidate.id, weight });
+        pool.push({ nodeId: candidate.id, weight, tier: candidate.tier });
       }
     }
   }
@@ -357,6 +376,10 @@ export function assembleRewardPool(
 
 /**
  * Draw from weighted pool using deterministic roll (0.0–1.0).
+ *
+ * A flat draw: every entry competes on its own weight. Right for an untiered
+ * pool; **wrong for a reward pool**, where it lets the tier with the most items
+ * win (Game Design Law 2). Reward draws go through {@link drawTierFirst}.
  */
 export function drawFromPool(
   pool: PoolEntry[],
@@ -380,12 +403,134 @@ export function drawFromPool(
   return pool[pool.length - 1].nodeId;
 }
 
-// ─── Tier Curves by Resolution Outcome ─────────────────────────────────
+const REWARD_TIERS: readonly AttachmentTier[] = [1, 2, 3, 4];
 
-export const TIER_CURVE_CRITICAL_SUCCESS: Record<AttachmentTier, number> = { 1: 0.10, 2: 0.40, 3: 0.40, 4: 0.10 };
-export const TIER_CURVE_SUCCESS: Record<AttachmentTier, number> = { 1: 0.40, 2: 0.40, 3: 0.15, 4: 0.05 };
-export const TIER_CURVE_FAILURE: Record<AttachmentTier, number> = { 1: 0.20, 2: 0.10, 3: 0.05, 4: 0.0 };
-export const TIER_CURVE_CRITICAL_FAILURE: Record<AttachmentTier, number> = { 1: 0.05, 2: 0.05, 3: 0.05, 4: 0.0 };
+/** What {@link drawTierFirst} picked: the entry and the tier it was drawn from. */
+export interface TierFirstPick {
+  readonly nodeId: string;
+  readonly tier: AttachmentTier;
+}
+
+function entryTier(entry: PoolEntry): AttachmentTier {
+  const t = entry.tier;
+  return (typeof t === 'number' && t >= 1 && t <= 4 ? Math.floor(t) : 1) as AttachmentTier;
+}
+
+/**
+ * The tier-first draw (Game Design Laws 1–3). Rolls the rarity tier from the
+ * curve, then picks an entry inside that tier by its weight.
+ *
+ * - **The curve is the rate.** Each tier's chance is its share of the curve's own
+ *   total — never of the pool's — so how many items sit in a tier cannot move it.
+ * - **One roll, no extra draw.** The tier band the roll lands in is re-scaled to
+ *   `[0, 1)` and picks the entry. That position is uniform and independent of the
+ *   tier, so the caller's stream spends exactly the one value it always did.
+ * - **An empty tier falls one tier down**, and climbs only when nothing below it
+ *   is eligible. The rarest tier is never fed by a gap beneath it (Law 3).
+ * - **`forceTier`** (the Legendary deadline) is honoured only when that tier has an
+ *   entry; otherwise the roll decides as usual.
+ *
+ * Within a tier every entry's `weight` is its category weight times the same tier
+ * weight, so the pick inside the tier is proportional to the category weight —
+ * exactly what the flat draw did once the tier was fixed.
+ *
+ * Fail-soft (NFP #4): an empty pool returns null; a curve with no positive weight
+ * falls back to the lowest tier present.
+ */
+export function drawTierFirst(
+  pool: readonly PoolEntry[],
+  tierCurve: Readonly<Record<AttachmentTier, number>>,
+  roll: number,
+  forceTier?: AttachmentTier,
+): TierFirstPick | null {
+  if (pool.length === 0) return null;
+
+  const byTier = new Map<AttachmentTier, PoolEntry[]>();
+  for (const entry of pool) {
+    if (!(entry.weight > 0)) continue;
+    const t = entryTier(entry);
+    const list = byTier.get(t);
+    if (list) list.push(entry); else byTier.set(t, [entry]);
+  }
+  if (byTier.size === 0) return null;
+
+  const r = Math.min(Math.max(roll, 0), 1 - Number.EPSILON);
+  let target: AttachmentTier;
+  let position: number;
+
+  if (forceTier !== undefined && byTier.has(forceTier)) {
+    target = forceTier;
+    position = r;
+  } else {
+    const total = REWARD_TIERS.reduce((sum, t) => sum + Math.max(0, tierCurve[t] ?? 0), 0);
+    if (total <= 0) {
+      target = REWARD_TIERS.find(t => byTier.has(t)) ?? 1;
+      position = r;
+    } else {
+      const scaled = r * total;
+      let lo = 0;
+      target = 1;
+      position = 0;
+      let landed = false;
+      for (const t of REWARD_TIERS) {
+        const w = Math.max(0, tierCurve[t] ?? 0);
+        if (w <= 0) continue;
+        target = t;
+        if (scaled < lo + w) {
+          position = (scaled - lo) / w;
+          landed = true;
+          break;
+        }
+        lo += w;
+      }
+      // Float edge: the roll sat on the curve's very top — the last positive tier.
+      if (!landed) position = 1 - Number.EPSILON;
+    }
+  }
+
+  // Cascade: the rolled tier, then down, then (only if nothing below) up.
+  let tier = target;
+  if (!byTier.has(tier)) {
+    const below = REWARD_TIERS.filter(t => t < target && byTier.has(t)).pop();
+    const above = REWARD_TIERS.find(t => t > target && byTier.has(t));
+    tier = (below ?? above) as AttachmentTier;
+  }
+
+  const entries = byTier.get(tier)!;
+  const tierTotal = entries.reduce((sum, e) => sum + e.weight, 0);
+  const pick = position * tierTotal;
+  let cumulative = 0;
+  for (const entry of entries) {
+    cumulative += entry.weight;
+    if (pick < cumulative) return { nodeId: entry.nodeId, tier };
+  }
+  return { nodeId: entries[entries.length - 1].nodeId, tier };
+}
+
+// ─── Tier Curves by Resolution Outcome ─────────────────────────────────
+//
+// Each curve is the chance of each rarity tier on a prize draw for that outcome,
+// and it sums to 1 (the draw normalises any curve by its own total, so a curve
+// that does not sum to 1 still reads as shares — but an authored curve should
+// say its percentages outright, Law 1).
+//
+// Re-tuned with the tier-first draw (2026-10-14) so live play pays what the old
+// flat draw actually paid. Fitted on 5,356 live draws (seeds 42/99/7, 600 ticks,
+// draw-weighted, cascade included): the new draw reproduces the old per-outcome
+// tier mix within 0.3 points. Christian's call was to keep today's feel and make it
+// stable, not to hand out the old curves' face values: at face value a success's
+// Legendary would have gone from the 1.5% players got to about 3.4%. A curve value
+// sits a little above the rate players see, because a scene with nothing eligible at
+// a tier hands out the tier below (Law 3). Plan § Measurements has the table.
+
+/** @range each 0–1; sums to 1 */
+export const TIER_CURVE_CRITICAL_SUCCESS: Record<AttachmentTier, number> = { 1: 0.225, 2: 0.465, 3: 0.255, 4: 0.055 };
+/** @range each 0–1; sums to 1 */
+export const TIER_CURVE_SUCCESS: Record<AttachmentTier, number> = { 1: 0.55, 2: 0.35, 3: 0.08, 4: 0.02 };
+/** @range each 0–1; sums to 1. No Legendary on a failure. */
+export const TIER_CURVE_FAILURE: Record<AttachmentTier, number> = { 1: 0.77, 2: 0.185, 3: 0.045, 4: 0.0 };
+/** @range each 0–1; sums to 1. No Legendary on a critical failure. */
+export const TIER_CURVE_CRITICAL_FAILURE: Record<AttachmentTier, number> = { 1: 0.62, 2: 0.26, 3: 0.12, 4: 0.0 };
 
 export const BAD_OUTCOME_CHANCE_CRIT_SUCCESS = 0.0;
 export const BAD_OUTCOME_CHANCE_SUCCESS = 0.05;
@@ -543,6 +688,12 @@ export interface SeededRewardDrawParams {
    * does not say is recorded as the older, better-known route rather than as unknown.
    */
   readonly site?: ContentQuerySite;
+  /**
+   * The player's ascendant (`state.ascendantId`). When the recipient is one of its
+   * threaded mortals, the hidden Legendary deadline applies (`luck.ts`). Omitted, no
+   * recipient is protected — the draw is the plain tier-first draw.
+   */
+  readonly playerAscendantId?: string;
 }
 
 export interface SeededRewardDraw {
@@ -680,7 +831,21 @@ export function drawSeededReward(
   }
 
   const drawRoll = rng();
-  const drawnTemplateId = drawFromPool(pool, drawRoll);
+  // The hidden Legendary deadline (predetermination, Game Design Law 5): a prize
+  // draw that can reach Legendary at all is a "win" for a protected recipient, and
+  // the win that reaches its cycle's deadline is a Legendary whenever the pool
+  // holds one. Pure reads here; the count moves after the pick.
+  const countsAsWin = !isBadOutcome
+    && (effectiveRecipe.tierCurve[4] ?? 0) > 0
+    && isLuckProtected(graph, params.playerAscendantId, recipientId);
+  const legendaryForced = countsAsWin
+    && isLegendaryDue(graph, seed, params.playerAscendantId, recipientId)
+    && pool.some(entry => entryTier(entry) === 4);
+  const picked = drawTierFirst(pool, effectiveRecipe.tierCurve, drawRoll, legendaryForced ? 4 : undefined);
+  const drawnTemplateId = picked?.nodeId ?? null;
+  if (countsAsWin) {
+    recordLegendaryWin(graph, seed, params.playerAscendantId, recipientId, picked?.tier ?? null, legendaryForced, tick);
+  }
   traceRewardQuery(params, effectiveRecipe, pool.length, drawnTemplateId ?? undefined, dedup);
   if (!drawnTemplateId) {
     return {

@@ -5146,6 +5146,8 @@ export function applyEncounterAftermathReaction(
           recipientId,
           // THR-1241: the recipient's `reward_tier_bonus` reads here.
           overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
+          // The hidden Legendary deadline protects the player's own mortals (luck.ts).
+          playerAscendantId: state.ascendantId,
         });
 
         // An empty pool is the THR-844 rot class reaching runtime: the fiction

@@ -1261,6 +1261,30 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: { date: '2026-08-14', evidence: `possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). ${AUDIT_EVIDENCE}` },
   },
   {
+    id: 'thread-luck-protection',
+    producerSystem: PROGRESSION,
+    consumerSystem: ENCOUNTERS,
+    intent: 'A thread from the player\'s god marks a mortal as the player\'s own, and the player\'s own mortals get fair luck: their d100 comes from a marble bag and a hidden deadline ends any Legendary drought (Game Design Laws § I).',
+    // THR-1889. `luck.ts` reads the `thread` edge (source must be `state.ascendantId`,
+    // so rivals' mortals stay on plain dice) and keeps its memory as counts on the
+    // mortal (`properties.luck`). Three roll sites deal from the bag right before
+    // `resolveStepCore`; `drawSeededReward` reads and advances the deadline for its
+    // three callers, which pass `playerAscendantId`.
+    mechanism: {
+      kind: 'function',
+      symbols: ['drawLuckRoll', 'isLegendaryDue', 'recordLegendaryWin', 'isLuckProtected'],
+      module: 'src/engine/luck.ts',
+    },
+    writeSites: ['src/engine/luck.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/undertakingCheckpoints.ts',
+      'src/engine/fights/opposedRoll.ts',
+      'src/engine/rewardPool.ts',
+    ],
+    verifiedLive: { date: '2026-10-14', evidence: 'Seeds 42 and 7 (medium, the First bonded by devSeedTheFirst), 300 ticks: the First\'s d100 was dealt from its bag 71 and 113 times (`luck.bag_roll` traces; `properties.luck.bagDraws` agrees), and on seed 7 a Legendary cycle closed naturally after 12 wins against a deadline of 45 (`luck.legendary_cycle`, tick 188). Every traced bag roll belonged to the First, the one threaded mortal.' },
+  },
+  {
     id: 'attachment-worldgen-starters',
     producerSystem: 'Agent Lifecycle',
     consumerSystem: ATTACHMENTS,

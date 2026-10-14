@@ -34,6 +34,7 @@ import { mulberry32 } from '../../lib/prng';
 import { computeCapability } from '../domainCapability';
 import { buildPredicateContext, collectTestShapers } from '../effectResolver';
 import { resolveStepCore, type StepCoreInput } from '../stepResolutionCore';
+import { drawLuckRoll } from '../luck';
 import { fightRoleOf, resolveFightOpponent, resolveFightStepInputs } from './fightStepInputs';
 
 /** Whether this step belongs to an agent-mode (duel) fight block. */
@@ -164,6 +165,8 @@ export function rollOpponentSide(
     sphereFactor: 0,
     variancePolicy: 'agent',
     quintessencePolicy: 'none',
+    // An opponent who is one of the player's own mortals rolls from its luck bag too.
+    luckRoll: drawLuckRoll(graph, state.seed, state.ascendantId, opponentId, state.tick),
     tick: state.tick,
     sourceLabel: 'unified_action',
   }, opponentStream(state, action.actionId, opponentId, action.currentStep));

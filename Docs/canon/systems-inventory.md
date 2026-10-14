@@ -346,6 +346,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
 | `leverage` (1) | `leverageOps.ts` | `THR-1439` |
 | `location` (1) | `locationTraitBonus.ts` | `THR-1481`, `THR-790` |
+| `luck` (1) | `luck.ts` | — |
 | `magic` (1) | `magicPower.ts` | — |
 | `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198`, `THR-1618` |
 | `meeting` (2) | `meetingEncounter.ts`, `meetingFateLine.ts` | `THR-1213`, `THR-1714` |
@@ -450,4 +451,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 108 tick phases · 213 engine domains · 666 modules._
+_Counts: 28 registered subsystems (2 dormant) · 108 tick phases · 214 engine domains · 667 modules._

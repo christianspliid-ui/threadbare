@@ -34,6 +34,7 @@ import type {
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
+import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer, StepOutcome, ActionScale, UnifiedActionOutcome } from './unifiedAction';
@@ -643,7 +644,12 @@ export type TraceCategory =
   | 'item.generated'
   | 'item.generate_fallback'
   // Found things in the reward draw (THR-1626).
-  | 'reward.generated';
+  | 'reward.generated'
+  // Luck protection for the player's own mortals — the marble bag and the
+  // Legendary deadline (Game Design Laws § I). Interfaces in
+  // `src/types/traces/luck-traces.ts`.
+  | 'luck.bag_roll'
+  | 'luck.legendary_cycle';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -964,6 +970,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'item.generate_fallback',
   // Found things in the reward draw (THR-1626)
   'reward.generated',
+  // Luck protection — marble bag rolls and Legendary cycles (Game Design Laws § I)
+  'luck.bag_roll',
+  'luck.legendary_cycle',
   // Doom identity milestone crossing (THR-293)
   'doom_milestone',
   // Outcome band prose selection (THR-460)
@@ -4847,6 +4856,8 @@ export type TraceEntry =
   | ItemGeneratedTrace
   | ItemGenerateFallbackTrace
   | RewardGeneratedTrace
+  | LuckBagRollTrace
+  | LuckLegendaryCycleTrace
   | MonsterHardenedTrace
   | MonsterFelledTrace
   | MonsterDrivenOffTrace
