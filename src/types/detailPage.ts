@@ -3,6 +3,7 @@
  * Design: Docs/plans/2026-05-06-detail-page-data-model.md
  */
 import type { ProseLayer } from './prose';
+import type { AnyRef } from './contentRef';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────────────────
 
@@ -279,6 +280,12 @@ export interface DetailPage {
   isShowcase: boolean;
   /** Ordered section list. */
   sections: Section[];
-  /** Whether the "open her sheet ↗" footer CTA is applicable. */
+  /** Whether the "open the full sheet ↗" footer CTA is applicable. */
   hasFullSheet: boolean;
+  /**
+   * The address the footer CTA opens through the ref router (THR-1851). Set exactly when
+   * `hasFullSheet` is; a page without one draws no button, so the CTA is never a dead
+   * click (Law 25).
+   */
+  sheetRef?: AnyRef;
 }

@@ -15,6 +15,7 @@ import {
   DETAIL_PLACE_W,
 } from '../../types/detailPage';
 import { useDetailStack } from '../../contexts/DetailModalStackContext';
+import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import { DetailBreadcrumb } from './DetailBreadcrumb';
 import { Section } from './Section';
 import { useDialogFocus } from './useDialogFocus';
@@ -163,11 +164,24 @@ function DetailProseNarration({ page }: { page: DetailPage }) {
  * is not there (THR-1491).
  */
 function ctaLabel(kind: DetailPageKind): string {
-  return kind === 'content' ? 'open in codex ↗' : 'open her sheet ↗';
+  return kind === 'content' ? 'open in codex ↗' : 'open the full sheet ↗';
 }
 
 function DetailFooter({ page }: { page: DetailPage }) {
-  const hasFullSheet = page.hasFullSheet;
+  const router = useRefRouterContext();
+  const { popTo } = useDetailStack();
+  // THR-1851 — the CTA had no handler, so every "full sheet" button was a dead click.
+  // It renders only when there is both an address and a router to open it (Law 25); a
+  // read-only preview (styleguide) keeps the card and loses the button.
+  const sheetRef = page.sheetRef;
+  const hasFullSheet = page.hasFullSheet && sheetRef !== undefined && router !== undefined;
+  const openSheet = () => {
+    if (!router || !sheetRef) return;
+    // The sheet replaces the card stack rather than sitting over it: two answers to one
+    // question, and the stack's ESC listener would otherwise eat the sheet's first ESC.
+    popTo(-1);
+    router.open(sheetRef, 'sheet', { via: 'detail-cta' });
+  };
   return (
     <div
       style={{
@@ -191,6 +205,9 @@ function DetailFooter({ page }: { page: DetailPage }) {
       </span>
       {hasFullSheet && (
         <button
+          type="button"
+          data-testid="detail-full-sheet-cta"
+          onClick={openSheet}
           style={{
             background: 'none',
             border: '1px solid var(--border-gold)',
