@@ -12,6 +12,7 @@ if (import.meta.env.DEV) {
     wasRunningBeforeInterrupt: boolean | null;
     queuedPopups: number;
     running: boolean;
+    heldArrivals: Array<{ id: string; heldBy: string[] }>;
   }
   /** `getClockHold()` shape (THR-1814) — mirrors `DebugClockHold` in debug-bridge.d.ts. */
   interface DebugClockHold {
@@ -1293,7 +1294,7 @@ if (import.meta.env.DEV) {
     getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
     getOpenModals: async () => _openModalsProvider?.() ?? [],
     getInterruptState: async () => _interruptStateProvider?.()
-      ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false },
+      ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [] },
     getClockHold: async () => _clockHoldProvider?.()
       ?? { held: false, holder: null, runsOnAfter: null },
     getActiveUIState: async () => {

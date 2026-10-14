@@ -219,7 +219,7 @@ import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
-import { resolveInterrupts } from './interruptRegistry';
+import { resolveInterrupts, INTERRUPT_QUIET_AFTER_INPUT_MS } from './interruptRegistry';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
@@ -251,7 +251,7 @@ import {
 } from '../../engine/deliveryBeatAdapter';
 import { selectDefaultBeatChoice } from './beatDismissal';
 import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal';
-import { ASCENDANT_SPINE, isSpineBeatId } from '../../data/ascendant-beat-content';
+import { ASCENDANT_SPINE, GIFT_RESUME_BOUNDARY_WINDOW_MS, isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
 import { describeOffering, isRungOpeningOffer } from '../../engine/godProgression';
@@ -623,6 +623,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Doom clock and mandate detail modals ──
   const [doomDetailOpen, setDoomDetailOpen] = useState(false);
   const [mandateDetailOpen, setMandateDetailOpen] = useState(false);
+  // THR-1853: the top bar's Rivals and Notables dropdowns, reported up so a queued
+  // arrival or a waiting gift never mounts over them.
+  const [rivalsOpen, setRivalsOpen] = useState(false);
+  const [notablesOpen, setNotablesOpen] = useState(false);
 
   // ── View navigation hook ──
   const {
@@ -5109,6 +5113,47 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [setGameState]);
 
+  // ── Player-opened surfaces (THR-1809) ──
+  // One list for the gift hold, the arrival hold (THR-1853) and the debug open-modals
+  // list, so they cannot drift. Built before the registry, which reads it.
+  const playerSurfacesOpen = openPlayerSurfaces({
+    settingsPanelOpen,
+    readThreadsOpen,
+    agendaPickerOpen: agendaPickerOpen && !!pendingAgendas,
+    // The agent drawer's render guard includes `wheelSlots`: with no slots nothing is on
+    // screen, and a hold on an invisible drawer would keep the gift waiting for nothing.
+    actionDrawerOpen: (!!wheelSlots && drawerOpen && !!selectedAgentId)
+      || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
+    agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
+    // Same guard as the stub sheet's render: a sheet whose node is gone renders nothing.
+    stubSheetCategory: stubModalState
+      && (threadedNodes.some(n => n.id === stubModalState.nodeId) || gameState.graph.getNode(stubModalState.nodeId))
+      ? stubModalState.category
+      : null,
+    attachmentSheetOpen: !!attachmentSheetId,
+    ascendantSheetOpen,
+    doomDetailOpen,
+    mandateDetailOpen: mandateDetailOpen && !!gameState.mandateDefinition && !!gameState.mandateState,
+    harvestOpen: !!harvestResult,
+    codexOpen,
+    chapterLedgerOpen,
+    scryOpen: scryVisible,
+    rivalsOpen,
+    notablesOpen,
+  });
+  const playerSurfacesKey = playerSurfacesOpen.join('|');
+
+  // ── Arrivals wait their turn (THR-1853) ──
+  // A surface the world pushes on screen mounts only when the player is not mid-click
+  // and has none of their own surfaces open. The ledger and the court are registry
+  // interrupts already, so they hold arrivals as interrupts, not as surfaces.
+  const arrivalSurfaceOpen = playerSurfacesOpen.some(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id));
+  const msSinceInputNow = Date.now() - lastInputAtRef.current;
+  const arrivalRecentInput = lastInputAtRef.current > 0 && msSinceInputNow < INTERRUPT_QUIET_AFTER_INPUT_MS;
+  // What the registry rendered last commit: an arrival already on screen keeps its slot.
+  const shownInterruptsRef = useRef<readonly string[]>([]);
+  const [arrivalRecheck, setArrivalRecheck] = useState(0);
+
   // ── The Stellaris clock: interrupt registry + auto-pause (THR-668, THR-1608) ──
   // Every surface that stops the world is an entry in `INTERRUPT_SURFACES`
   // (interruptRegistry.ts); this snapshot is the raw state their render
@@ -5139,8 +5184,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     courtOpen: scryVisible,
     popupQueued: currentPopup !== null,
     warmStartRunning: warmStart.running,
+    playerSurfaceOpen: arrivalSurfaceOpen,
+    recentInput: arrivalRecentInput,
+    alreadyShown: shownInterruptsRef.current,
   });
   warmOpenInterruptsRef.current = interruptResolution.open;
+  const interruptOpenKey = interruptResolution.open.join('|');
+  useEffect(() => {
+    shownInterruptsRef.current = interruptOpenKey ? interruptOpenKey.split('|') : [];
+  }, [interruptOpenKey]);
+  // A held arrival whose only wait is the quiet window looks again when it ends; the
+  // clock's own ticks re-render too, but a paused clock does not.
+  const arrivalWaitsOnInput = interruptResolution.heldArrivals.some(h => h.heldBy.includes('recent_input'));
+  useEffect(() => {
+    if (!arrivalWaitsOnInput) return undefined;
+    const wait = Math.max(0, INTERRUPT_QUIET_AFTER_INPUT_MS - (Date.now() - lastInputAtRef.current)) + 50;
+    const timer = setTimeout(() => setArrivalRecheck(n => n + 1), wait);
+    return () => clearTimeout(timer);
+  }, [arrivalWaitsOnInput, arrivalRecheck]);
   const otherInterruptOpen = interruptResolution.otherThanMomentOpen;
 
   const interruptAutoPause = useInterruptAutoPause({
@@ -5225,38 +5286,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setPendingMoment(next);
   }, [pendingMoment, otherInterruptOpen, gameState.pendingUndertakingMoments, gameState.tick]);
 
-  // ── Player-opened surfaces (THR-1809) ──
-  // One list for the gift hold and the debug open-modals list, so they cannot drift.
-  const playerSurfacesOpen = openPlayerSurfaces({
-    settingsPanelOpen,
-    readThreadsOpen,
-    agendaPickerOpen: agendaPickerOpen && !!pendingAgendas,
-    // The agent drawer's render guard includes `wheelSlots`: with no slots nothing is on
-    // screen, and a hold on an invisible drawer would keep the gift waiting for nothing.
-    actionDrawerOpen: (!!wheelSlots && drawerOpen && !!selectedAgentId)
-      || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
-    agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
-    // Same guard as the stub sheet's render: a sheet whose node is gone renders nothing.
-    stubSheetCategory: stubModalState
-      && (threadedNodes.some(n => n.id === stubModalState.nodeId) || gameState.graph.getNode(stubModalState.nodeId))
-      ? stubModalState.category
-      : null,
-    attachmentSheetOpen: !!attachmentSheetId,
-    ascendantSheetOpen,
-    doomDetailOpen,
-    mandateDetailOpen: mandateDetailOpen && !!gameState.mandateDefinition && !!gameState.mandateState,
-    harvestOpen: !!harvestResult,
-    codexOpen,
-    chapterLedgerOpen,
-    scryOpen: scryVisible,
-  });
-  const playerSurfacesKey = playerSurfacesOpen.join('|');
   // The ledger and the court are registry interrupts *and* player surfaces: report them
   // once, as surfaces. The gift's own modal is not a hold on itself.
   const giftOtherInterrupts = interruptResolution.open.filter(
     id => id !== 'AscendantBeatModal' && !PLAYER_SURFACE_INTERRUPT_IDS.includes(id),
   );
   const giftOtherInterruptsKey = giftOtherInterrupts.join('|');
+  // THR-1853 — a resume boundary: the interrupt in front of a held gift just closed.
+  // Read in render on purpose: the gift effect below runs in the same commit.
+  const prevGiftOtherKeyRef = useRef('');
+  const giftBoundaryAtRef = useRef(0);
+  if (prevGiftOtherKeyRef.current !== giftOtherInterruptsKey) {
+    if (prevGiftOtherKeyRef.current && !giftOtherInterruptsKey) giftBoundaryAtRef.current = Date.now();
+    prevGiftOtherKeyRef.current = giftOtherInterruptsKey;
+  }
 
   // ── A ready opening gift waits for a quiet moment (THR-1809) ──
   // `resolveGiftDelivery` is the one rule; this effect and `__DEBUG.getGiftDelivery()`
@@ -5273,6 +5316,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       otherInterruptsOpen: giftOtherInterruptsKey ? giftOtherInterruptsKey.split('|') : [],
       playerSurfacesOpen: playerSurfacesKey ? playerSurfacesKey.split('|') : [],
       msSinceLastInput,
+      atResumeBoundary: giftBoundaryAtRef.current > 0
+        && Date.now() - giftBoundaryAtRef.current <= GIFT_RESUME_BOUNDARY_WINDOW_MS,
     });
     return { ...delivery, msSinceLastInput };
   }, [pendingBeat, interruptsSuppressed, journeyVignettePending, giftOtherInterruptsKey, playerSurfacesKey]);
@@ -5305,7 +5350,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // an interrupt or a vignette (there it stays under the backdrop and cannot stack the gift).
   const giftPillRaised = !!pendingBeat && !beatEntered && (() => {
     const held = computeGiftDelivery().heldBy;
-    return held.length > 0 && held.every(r => r === 'player_surface' || r === 'recent_input');
+    return held.length > 0
+      && held.every(r => r === 'player_surface' || r === 'recent_input' || r === 'awaiting_boundary');
   })();
 
   const getDebugGiftDelivery = useCallback(() => {
@@ -5352,6 +5398,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // rest behind the head while it shows.
     queuedPopups: Math.max(0, notificationState.popupQueue.length - (interruptResolution.popupMayRender ? 1 : 0)),
     running,
+    // THR-1853: arrivals waiting their turn, and why.
+    heldArrivals: interruptResolution.heldArrivals,
   }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running]);
 
   // ── Who holds the clock (THR-1814) ──
@@ -5684,6 +5732,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         showEveryPanel={openingReveal.showAll}
         onToggleShowEveryPanel={() => openingReveal.setShowAll(!openingReveal.showAll)}
         directionLine={openingDirectionLine}
+        onRivalsOpenChange={setRivalsOpen}
+        onNotablesOpenChange={setNotablesOpen}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -6646,7 +6696,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       {/* Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).
           Render-gated on the other interrupts so it waits behind an encounter rather
           than stacking on it; the slot survives, the card returns when the veil closes. */}
-      {pendingMoment && momentCardModel && !otherInterruptOpen && (
+      {pendingMoment && momentCardModel && interruptResolution.momentMayRender && (
         <MomentCard
           open={true}
           model={momentCardModel}
@@ -6696,7 +6746,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       )}
 
       {/* Journey vignette modal (auto-interrupt for The First) */}
-      {activeVignette && !interruptsSuppressed && (
+      {activeVignette && interruptResolution.open.includes('JourneyVignetteModal') && (
         <JourneyVignetteModal
           open={true}
           onClose={() => {
@@ -6718,7 +6768,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       )}
 
       {/* Story beat modal (pacing governor) */}
-      {activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed && (
+      {activeStoryBeatId && activeStoryBeatTemplate && interruptResolution.open.includes('StoryBeatModal') && (
         <StoryBeatModal
           open={true}
           onDismiss={handleStoryBeatDismiss}
@@ -6731,7 +6781,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       {pendingBeat && !beatEntered && !interruptsSuppressed && (
         <AscendantBeatOfferBanner
           pending={pendingBeat}
-          onEnter={() => setBeatEntered(true)}
+          // THR-1853: never enter a gift beside another blocking interrupt (a chapter
+          // step opening in the same moment). The player's own ledger and court do not block.
+          onEnter={() => {
+            if (giftOtherInterrupts.length > 0) return;
+            setBeatEntered(true);
+          }}
           raised={giftPillRaised}
         />
       )}
@@ -6758,7 +6813,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       )}
 
       {/* Divine Premonition modal (Whisper / Compulsion) */}
-      {activePremonition && !interruptsSuppressed && (
+      {activePremonition && interruptResolution.open.includes('PremonitionModal') && (
         <PremonitionModal
           open={true}
           premonition={activePremonition}

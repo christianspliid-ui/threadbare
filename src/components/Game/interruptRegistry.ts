@@ -18,7 +18,24 @@
  *
  * Adding an interrupt surface: add a field to `InterruptSnapshot`, an entry to
  * `INTERRUPT_SURFACES`, and render the surface only while its entry is open.
+ * Mark it `arrival: true` when the world opens it on its own, not the player's act.
+ *
+ * Arrivals wait their turn (THR-1853). A surface the world pushes onto the screen
+ * never mounts within `INTERRUPT_QUIET_AFTER_INPUT_MS` of a click or key press,
+ * never over a surface the player opened (Rivals, Doom, a sheet...), and never
+ * beside another interrupt. Once it is on screen it keeps its slot, so a click
+ * inside it never makes it vanish. Warm round 2: three of three testers had a
+ * click on Rivals, the Ledger or Doom land on a premonition or journey moment
+ * that mounted under the pointer.
  */
+
+/**
+ * THR-1853 — wall-clock milliseconds after the player's last pointer or key input
+ * before a world-pushed interrupt (an arrival) may mount. Long enough that a modal
+ * never appears under a click already in flight; short enough that a waiting
+ * premonition shows the moment the player pauses.
+ */
+export const INTERRUPT_QUIET_AFTER_INPUT_MS = 2500;
 
 /** The raw UI state the registry's render conditions read. Built once per render in GameView. */
 export interface InterruptSnapshot {
@@ -51,6 +68,20 @@ export interface InterruptSnapshot {
   popupQueued: boolean;
   /** A `?warm=<ticks>` warm-up is advancing the world behind its overlay (THR-1744). Optional: absent = false. */
   warmStartRunning?: boolean;
+  /**
+   * THR-1853 — a surface the player opened is on screen and is not itself in this
+   * registry (Rivals, Notables, Doom, a sheet, the drawer...). Holds arrivals.
+   * Optional: absent = false.
+   */
+  playerSurfaceOpen?: boolean;
+  /** THR-1853 — the last input was under `INTERRUPT_QUIET_AFTER_INPUT_MS` ago. Holds arrivals. Optional. */
+  recentInput?: boolean;
+  /**
+   * THR-1853 — the ids `resolveInterrupts` returned as open on the previous render.
+   * An arrival already on screen keeps its slot whatever the holds say. Optional:
+   * absent = nothing was showing.
+   */
+  alreadyShown?: readonly string[];
 }
 
 export type InterruptTier = 'interrupt';
@@ -60,6 +91,20 @@ export interface InterruptSurface {
   id: string;
   tier: InterruptTier;
   isOpen: (s: InterruptSnapshot) => boolean;
+  /**
+   * THR-1853 — the world opens this surface on its own (a premonition, a journey
+   * moment, a doom popup), not the player's own act. An arrival waits for a quiet
+   * moment, for the player's surfaces to close and for every other interrupt.
+   */
+  arrival?: boolean;
+}
+
+/** Why an arrival is not on screen yet (THR-1853). */
+export type ArrivalHoldReason = 'interrupt' | 'player_surface' | 'recent_input';
+
+export interface HeldArrival {
+  id: string;
+  heldBy: ArrivalHoldReason[];
 }
 
 /**
@@ -90,9 +135,9 @@ export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   // `isOpen` is the wish; `resolveInterrupts` holds it behind every other blocking
   // surface (the meeting, the first and richest rite of all, included).
   { id: THREADING_RITE_ID, tier: 'interrupt', isOpen: s => s.threadingRitePending === true },
-  { id: 'PremonitionModal', tier: 'interrupt', isOpen: s => s.premonitionPending && !s.interruptsSuppressed },
-  { id: 'JourneyVignetteModal', tier: 'interrupt', isOpen: s => s.vignettePending && !s.interruptsSuppressed },
-  { id: 'StoryBeatModal', tier: 'interrupt', isOpen: s => s.storyBeatPending && !s.interruptsSuppressed },
+  { id: 'PremonitionModal', tier: 'interrupt', arrival: true, isOpen: s => s.premonitionPending && !s.interruptsSuppressed },
+  { id: 'JourneyVignetteModal', tier: 'interrupt', arrival: true, isOpen: s => s.vignettePending && !s.interruptsSuppressed },
+  { id: 'StoryBeatModal', tier: 'interrupt', arrival: true, isOpen: s => s.storyBeatPending && !s.interruptsSuppressed },
   { id: 'AscendantBeatModal', tier: 'interrupt', isOpen: s => s.ascendantBeatEntered },
   { id: 'ChoiceSetModal', tier: 'interrupt', isOpen: s => s.choiceSetPending },
   { id: 'EmergenceDilemmaModal', tier: 'interrupt', isOpen: s => s.emergenceDecisionPending },
@@ -104,8 +149,8 @@ export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
   { id: 'ScryOverlay', tier: 'interrupt', isOpen: s => s.courtOpen },
   // The two yielding surfaces are resolved by `resolveInterrupts`, not here —
   // their `isOpen` is the *wish* to open; whether they render depends on the rest.
-  { id: 'MomentCard', tier: 'interrupt', isOpen: s => s.momentPending },
-  { id: 'EventPopup', tier: 'interrupt', isOpen: s => s.popupQueued && !s.interruptsSuppressed },
+  { id: 'MomentCard', tier: 'interrupt', arrival: true, isOpen: s => s.momentPending },
+  { id: 'EventPopup', tier: 'interrupt', arrival: true, isOpen: s => s.popupQueued && !s.interruptsSuppressed },
 ];
 
 /** Fail-soft: a surface whose `isOpen` throws is logged once and treated as closed. */
@@ -134,20 +179,31 @@ export interface InterruptResolution {
   popupMayRender: boolean;
   /** Anything stops the world. */
   anyOpen: boolean;
+  /**
+   * THR-1853 — arrivals the world wants on screen that wait their turn, and why.
+   * A held arrival does not stop the world: the clock runs on until it mounts.
+   */
+  heldArrivals: HeldArrival[];
 }
 
 /**
  * Resolve the registry against one snapshot. Pure; exported for tests.
  *
- * Priority: every non-yielding surface renders when its condition holds. The
- * moment card renders only when no non-yielding surface is open. The popup
- * renders only when neither a non-yielding surface nor the moment card is open.
+ * Priority: every surface the player's own act opened renders when its condition
+ * holds. An arrival already on screen keeps its slot. The rite renders when no
+ * other blocking surface is open. A new arrival mounts only when nothing else is on
+ * screen, the player has no surface of their own open and the last input is quiet
+ * (THR-1853) — and only one per pass, in priority order, so two never co-render.
+ * The moment card renders only when no non-yielding surface is open; the popup
+ * only when neither a non-yielding surface nor the moment card is.
  */
 export function resolveInterrupts(
   snapshot: InterruptSnapshot,
   surfaces: readonly InterruptSurface[] = INTERRUPT_SURFACES,
 ): InterruptResolution {
   const open: string[] = [];
+  const shown = new Set(snapshot.alreadyShown ?? []);
+  const arrivalWishes: string[] = [];
   let momentWish = false;
   let popupWish = false;
   let riteWish = false;
@@ -157,13 +213,45 @@ export function resolveInterrupts(
     if (surface.id === 'MomentCard') momentWish = true;
     else if (surface.id === 'EventPopup') popupWish = true;
     else if (surface.id === THREADING_RITE_ID) riteWish = true;
-    else if (!YIELDING_SURFACE_IDS.has(surface.id)) open.push(surface.id);
+    else if (YIELDING_SURFACE_IDS.has(surface.id)) continue;
+    else if (surface.arrival) arrivalWishes.push(surface.id);
+    else open.push(surface.id);
   }
+
+  // An arrival already on screen keeps its slot: a click inside it never makes it vanish.
+  for (const id of arrivalWishes) if (shown.has(id)) open.push(id);
+
   const riteMayRender = riteWish && open.length === 0;
   if (riteMayRender) open.push(THREADING_RITE_ID);
+
+  const quietHolds: ArrivalHoldReason[] = [];
+  if (snapshot.playerSurfaceOpen === true) quietHolds.push('player_surface');
+  if (snapshot.recentInput === true) quietHolds.push('recent_input');
+
+  // The yielding pair, once on screen, keeps its slot against a new arrival.
+  const yieldingShown = (momentWish && shown.has('MomentCard'))
+    || (popupWish && !momentWish && shown.has('EventPopup'));
+
+  const heldArrivals: HeldArrival[] = [];
+  for (const id of arrivalWishes) {
+    if (shown.has(id)) continue;
+    const heldBy: ArrivalHoldReason[] = [];
+    if (open.length > 0 || yieldingShown) heldBy.push('interrupt');
+    heldBy.push(...quietHolds);
+    if (heldBy.length === 0) open.push(id);
+    else heldArrivals.push({ id, heldBy });
+  }
+
   const blockingOpen = open.length > 0;
-  const momentMayRender = momentWish && !blockingOpen;
-  const popupMayRender = popupWish && !blockingOpen && !momentWish;
+  const quiet = quietHolds.length === 0;
+  const momentMayRender = momentWish && !blockingOpen && (shown.has('MomentCard') || quiet);
+  const popupMayRender = popupWish && !blockingOpen && !momentWish && (shown.has('EventPopup') || quiet);
+  if (momentWish && !momentMayRender) {
+    heldArrivals.push({ id: 'MomentCard', heldBy: blockingOpen ? ['interrupt', ...quietHolds] : quietHolds });
+  }
+  if (popupWish && !popupMayRender) {
+    heldArrivals.push({ id: 'EventPopup', heldBy: blockingOpen || momentWish ? ['interrupt', ...quietHolds] : quietHolds });
+  }
   if (momentMayRender) open.push('MomentCard');
   if (popupMayRender) open.push('EventPopup');
   return {
@@ -174,5 +262,6 @@ export function resolveInterrupts(
     momentMayRender,
     popupMayRender,
     anyOpen: open.length > 0,
+    heldArrivals,
   };
 }

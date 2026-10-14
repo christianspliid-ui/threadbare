@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalPanel } from './RivalPanel';
 import { IconButton } from '../shared/IconButton';
@@ -8,10 +8,19 @@ import { hostilityLabel } from '../../data/uiColorPalette';
 interface RivalsButtonProps {
   definitions: RivalDefinition[];
   states: RivalState[];
+  /**
+   * THR-1853 — report the panel's open state, so GameView holds arrivals and a waiting
+   * gift while the player reads it. Unmounting reports closed.
+   */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function RivalsButton({ definitions, states }: RivalsButtonProps) {
+export function RivalsButton({ definitions, states, onOpenChange }: RivalsButtonProps) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
+  useEffect(() => () => onOpenChange?.(false), [onOpenChange]);
 
   const maxHostility = states.reduce((max, s) => Math.max(max, s.hostilityToPlayer ?? 0), 0);
 

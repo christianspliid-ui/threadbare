@@ -246,6 +246,12 @@ export interface DebugInterruptState {
   queuedPopups: number;
   /** The clock right now. */
   running: boolean;
+  /**
+   * THR-1853 — world-pushed interrupts (premonition, journey moment, story beat, moment
+   * card, popup) that want the screen but wait: behind another interrupt, a surface the
+   * player opened, or the `INTERRUPT_QUIET_AFTER_INPUT_MS` window after a click.
+   */
+  heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
 }
 
 /** `getClockHold()` (THR-1814) — who holds the clock, as the TIME readout names it. */
@@ -265,7 +271,7 @@ export interface DebugGiftDelivery {
   /** Its modal is on screen. */
   entered: boolean;
   /** Why it waits (`giftDelivery.ts` `GiftHoldReason`); empty when entered or nothing is due. */
-  heldBy: Array<'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed'>;
+  heldBy: Array<'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed' | 'awaiting_boundary'>;
   /** The player-opened surfaces holding it. */
   heldBySurfaces: string[];
   /** Wall-clock ms since the last pointer or key input (large when none yet). */

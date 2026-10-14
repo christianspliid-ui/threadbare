@@ -12,6 +12,12 @@
  * another interrupt. While held, the offer pill shows "A gift waits" and opens it on a
  * click. Pure; GameView supplies the inputs.
  *
+ * THR-1853 — a quiet moment was not enough. Warm round-2 testers click every 7–10 s,
+ * so a gift that entered 2 s after the last click took the next one. A held spine gift
+ * now opens only on a pill click or at a resume boundary: the instant the interrupt in
+ * front of it closes, when the player's attention is already on a modal and the click
+ * that closed it is spent. Between boundaries it waits behind the pill.
+ *
  * Plan: Docs/plans/2026-10-10-thr-1805-gift-waits-its-turn.md
  */
 import {
@@ -35,9 +41,21 @@ export interface GiftDeliveryInput {
   /** From {@link openPlayerSurfaces}. */
   playerSurfacesOpen: readonly string[];
   msSinceLastInput: number;
+  /**
+   * THR-1853 — another interrupt closed under `GIFT_RESUME_BOUNDARY_WINDOW_MS` ago, so
+   * the clock would resume now. Optional: absent = false (the gift waits for its pill).
+   */
+  atResumeBoundary?: boolean;
 }
 
-export type GiftHoldReason = 'player_surface' | 'recent_input' | 'interrupt' | 'vignette' | 'suppressed';
+export type GiftHoldReason =
+  | 'player_surface'
+  | 'recent_input'
+  | 'interrupt'
+  | 'vignette'
+  | 'suppressed'
+  /** THR-1853 — no interrupt has just closed; the gift waits for its pill or the next boundary. */
+  | 'awaiting_boundary';
 
 export interface GiftDelivery {
   /** The modal may enter now. */
@@ -67,8 +85,11 @@ export function resolveGiftDelivery(input: GiftDeliveryInput): GiftDelivery {
     : input.playerSurfacesOpen.filter(id => GIFT_HOLD_SURFACES.includes(id));
   if (heldBySurfaces.length > 0) heldBy.push('player_surface');
 
+  // At a resume boundary the click that closed the interrupt is spent: it never holds.
+  const atBoundary = input.atResumeBoundary === true;
+  if (!input.isArrivalBeat && !atBoundary) heldBy.push('awaiting_boundary');
   const quietLeft = GIFT_QUIET_AFTER_INPUT_MS - Math.max(0, input.msSinceLastInput);
-  const recentInput = !input.isArrivalBeat && quietLeft > 0;
+  const recentInput = !input.isArrivalBeat && !atBoundary && quietLeft > 0;
   if (recentInput) heldBy.push('recent_input');
 
   return {
@@ -104,6 +125,10 @@ export interface PlayerSurfaceFlags {
   codexOpen: boolean;
   chapterLedgerOpen: boolean;
   scryOpen: boolean;
+  /** THR-1853 — the top bar's Rivals dropdown. Optional: absent = closed. */
+  rivalsOpen?: boolean;
+  /** THR-1853 — the top bar's Notables dropdown. Optional: absent = closed. */
+  notablesOpen?: boolean;
 }
 
 const STUB_SHEET_IDS: Readonly<Record<string, string>> = {
@@ -134,6 +159,8 @@ export function openPlayerSurfaces(f: PlayerSurfaceFlags): string[] {
   if (f.codexOpen) open.push('Codex');
   if (f.chapterLedgerOpen) open.push('ChapterLedger');
   if (f.scryOpen) open.push('ScryOverlay');
+  if (f.rivalsOpen) open.push('RivalsPanel');
+  if (f.notablesOpen) open.push('NotablesPanel');
   return open;
 }
 

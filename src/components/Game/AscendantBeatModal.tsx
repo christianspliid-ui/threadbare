@@ -578,6 +578,8 @@ interface AscendantBeatOfferBannerProps {
 export const GIFT_PILL_Z = 62;
 /** The pool-beat pill's band — the ActionDrawer card tray's (40). */
 const OFFER_PILL_Z = 40;
+/** THR-1853 — the pill's top edge: one spacing step under the top bar, out of its hit area. */
+export const PILL_TOP = 'calc(var(--topbar-height) + var(--space-2))';
 
 /**
  * The "thread-tug" the player chooses to enter — a quiet top-center pill in the world
@@ -624,7 +626,9 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
       data-gift-waits={giftWaits ? 'true' : undefined}
       style={{
         position: 'fixed',
-        top: 'var(--space-4)',
+        // THR-1853: below the top bar, never over it. At `var(--space-4)` the pill sat on
+        // the DOOM control, so a click on Doom entered the gift instead (warm round 2).
+        top: PILL_TOP,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: giftWaits && raised ? GIFT_PILL_Z : OFFER_PILL_Z,

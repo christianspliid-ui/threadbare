@@ -2,7 +2,7 @@
  * Notables top-bar button (THR-630) — opens the Notables intent panel.
  * Mirrors RivalsButton (icon + count badge + Dropdown).
  */
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { GameState } from '../../types/gameState';
 import { NotablesPanel, countShownNotables } from './NotablesPanel';
 import { IconButton } from '../shared/IconButton';
@@ -10,10 +10,16 @@ import { Dropdown } from '../shared/Dropdown';
 
 interface NotablesButtonProps {
   gameState: GameState;
+  /** THR-1853 — report the panel's open state (see `RivalsButton`). Unmounting reports closed. */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function NotablesButton({ gameState }: NotablesButtonProps) {
+export function NotablesButton({ gameState, onOpenChange }: NotablesButtonProps) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
+  useEffect(() => () => onOpenChange?.(false), [onOpenChange]);
 
   // THR-1780: the badge counts the notables the panel lists — it used to count active
   // agendas only, so it read 2 over a list of 19. Keyed on `tick` because the graph and
