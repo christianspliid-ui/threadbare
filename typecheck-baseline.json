@@ -1,5 +1,5 @@
 {
-  "total": 2788,
+  "total": 2784,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "src/__tests__/debug-bridge.test.ts": 3,
@@ -71,12 +71,12 @@
     "src/components/Game/encounterHandoff.ts": 1,
     "src/components/Game/encounterNotificationRuntime.ts": 3,
     "src/components/Game/FactionSheet.tsx": 1,
-    "src/components/Game/GameView.tsx": 61,
+    "src/components/Game/GameView.tsx": 60,
     "src/components/Game/HexChronicle.tsx": 3,
     "src/components/Game/HexPoiPanel.tsx": 1,
     "src/components/Game/HexSidebar.tsx": 1,
     "src/components/Game/HexZoomView.tsx": 3,
-    "src/components/Game/hooks/useAgentInteraction.ts": 2,
+    "src/components/Game/hooks/useAgentInteraction.ts": 3,
     "src/components/Game/hooks/useAvatarData.ts": 2,
     "src/components/Game/hooks/useHexZoomData.ts": 2,
     "src/components/Game/hooks/useViewNavigation.ts": 1,
@@ -387,7 +387,7 @@
     "src/engine/__tests__/phaseInteractionDepth.test.ts": 1,
     "src/engine/__tests__/phaseMovement.test.ts": 7,
     "src/engine/__tests__/phaseOmenAgenda.test.ts": 2,
-    "src/engine/__tests__/phaseProsperity.test.ts": 14,
+    "src/engine/__tests__/phaseProsperity.test.ts": 13,
     "src/engine/__tests__/phaseRegistry.equivalence.test.ts": 2,
     "src/engine/__tests__/phaseReputationTraits.test.ts": 1,
     "src/engine/__tests__/phaseSettlementPromotion.test.ts": 4,
@@ -564,7 +564,7 @@
     "src/engine/phaseComposition.ts": 2,
     "src/engine/phaseControlEffects.ts": 1,
     "src/engine/phaseDivinePremonition.ts": 3,
-    "src/engine/phaseEconomicChronicle.ts": 3,
+    "src/engine/phaseEconomicChronicle.ts": 2,
     "src/engine/phaseEconomicTraits.ts": 2,
     "src/engine/phaseEffectShells.ts": 4,
     "src/engine/phaseFactionActions.ts": 4,
@@ -573,7 +573,7 @@
     "src/engine/phaseMandate.ts": 2,
     "src/engine/phaseMovement.ts": 3,
     "src/engine/phaseOmenAgenda.ts": 4,
-    "src/engine/phaseProsperity.ts": 3,
+    "src/engine/phaseProsperity.ts": 2,
     "src/engine/phaseQuintessence.ts": 1,
     "src/engine/phaseReputationDecay.ts": 1,
     "src/engine/phases/armySupply.ts": 1,
@@ -665,7 +665,7 @@
     "src/types/hexVignette.ts": 1,
     "src/types/returnEngine.ts": 2,
     "src/types/temporal.ts": 1,
-    "src/types/trace.ts": 4,
+    "src/types/trace.ts": 3,
     "src/types/worldModel.ts": 2
   }
 }

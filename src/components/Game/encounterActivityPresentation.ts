@@ -16,13 +16,8 @@ function candidateDestination(candidate: BalanceEncounterPoolCandidate): string 
   return candidate.sublocationName ?? candidate.locationName ?? null;
 }
 
-export function getSelectedEncounterPoolCandidate(
-  decision?: Pick<BalanceEvent, 'rankedEncounterPool'> | null,
-): BalanceEncounterPoolCandidate | null {
-  const candidates = decision?.rankedEncounterPool ?? [];
-  if (candidates.length === 0) return null;
-  return candidates.find(candidate => candidate.selected) ?? candidates[0] ?? null;
-}
+// Moved to the view-model seam (THR-1822); re-exported for existing importers.
+export { getSelectedEncounterPoolCandidate } from '../../engine/views/map/activityIcons';
 
 export function getEncounterActivityIconKey(
   encounterType?: string,

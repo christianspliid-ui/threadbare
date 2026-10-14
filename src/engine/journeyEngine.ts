@@ -44,6 +44,7 @@ import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
 import { executeReturn } from './returnEngine';
+import { touchWorld, type SimulationRuntime } from './simulationRuntime';
 import type { ReturnResolutionResult } from '../types/returnEngine';
 
 // ─── Phase Boundary Logic ──────────────────────────────────────────
@@ -476,6 +477,32 @@ export function applyBeatChoiceEffects(
     reaches,
     consequenceProse: choice.effects.consequenceProse ?? null,
   };
+}
+
+/**
+ * The player's journey choice, written to the world (THR-1822 § D15): the thread
+ * edge records the beat (`applyBeatChoice`), the choice's effects land on the
+ * First (`applyBeatChoiceEffects`), and `worldVersion` bumps so every cached view
+ * model re-reads — while paused, the moment the player acts. Returns false, writing
+ * nothing, when the god holds no thread to the vignette's mortal.
+ *
+ * The essence price is the caller's: it is charged against GameState, not the graph.
+ */
+export function recordJourneyChoice(
+  graph: WorldGraph,
+  runtime: SimulationRuntime | null,
+  ascendantId: string,
+  vignetteData: JourneyVignetteData,
+  choiceId: string,
+  tick: number,
+): boolean {
+  const threadEdge = getThreadsFrom(graph, ascendantId).find(e => e.target === vignetteData.agentId);
+  if (!threadEdge) return false;
+  const { updatedProps } = applyBeatChoice(threadEdge.properties as unknown as ThreadEdgeProperties, vignetteData, choiceId);
+  graph.updateEdge(threadEdge.id, { properties: updatedProps });
+  applyBeatChoiceEffects(graph, vignetteData, choiceId, tick);
+  if (runtime) touchWorld(runtime);
+  return true;
 }
 
 // ─── Orchestrator Phase ─────────────────────────────────────────────

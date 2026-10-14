@@ -18,7 +18,9 @@
 
 import * as THREE from 'three';
 import type { WorldGraph } from '../../../engine/graph';
-import { getFactionMembershipEdges } from '../../../engine/graphQueries';
+// THR-1822: the battle row is built on the view-model seam; re-exported for existing importers.
+import { battleIndicatorForNode } from '../../../engine/views/map/armiesAndBattles';
+export { battleIndicatorForNode };
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -203,51 +205,6 @@ export function buildBattleIndicatorData(graph: WorldGraph): BattleIndicatorData
   }
 
   return result;
-}
-
-/**
- * One battle/siege actor → its indicator entry, or null when the node is not a
- * battle or its hex cannot be resolved. Battle and siege nodes carry no hexCol of
- * their own; the engine places them with a `located_at` edge to the hex
- * (battleResolution.ts, siegeResolution.ts). THR-1846: GameView reads through
- * this so a siege keeps `isSiege` all the way to the sprite.
- */
-export function battleIndicatorForNode(
-  graph: WorldGraph,
-  battle: { id: string; properties: Record<string, unknown> },
-): BattleIndicatorData | null {
-  const battleState = battle.properties.battleState as
-    | { battleType?: string; attackerArmyId?: string; defenderArmyId?: string }
-    | undefined;
-  if (battleState == null) return null;
-
-  // Resolve hex position via located_at edge
-  const locEdges = graph.getOutgoingEdges(battle.id, 'located_at');
-  if (locEdges.length === 0) return null;
-
-  const locationNode = graph.getNode(locEdges[0].target);
-  if (!locationNode) return null;
-
-  const hexCol = locationNode.properties.hexCol as number | undefined;
-  const hexRow = locationNode.properties.hexRow as number | undefined;
-  if (hexCol == null || hexRow == null) return null;
-
-  const isSiege = battleState.battleType === 'siege';
-  const attackerName = armyFactionName(graph, battleState.attackerArmyId);
-  const defenderName = isSiege ? undefined : armyFactionName(graph, battleState.defenderArmyId);
-  return {
-    id: battle.id, hexCol, hexRow, isSiege,
-    ...(attackerName ? { attackerName } : {}),
-    ...(defenderName ? { defenderName } : {}),
-  };
-}
-
-/** An army's faction name (faction targets only, as the army sprite reads it); undefined when it has none (fail-soft). */
-function armyFactionName(graph: WorldGraph, armyId: string | undefined): string | undefined {
-  if (!armyId) return undefined;
-  const factionId = getFactionMembershipEdges(graph, armyId)[0]?.target;
-  const name = factionId ? graph.getNode(factionId)?.name : undefined;
-  return typeof name === 'string' && name.length > 0 ? name : undefined;
 }
 
 // ── Scene group ───────────────────────────────────────────────────────────────

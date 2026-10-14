@@ -1,0 +1,98 @@
+/**
+ * The map's always-on view models (THR-1822 slice 1, plan § D2 / § D16 step 1).
+ *
+ * Each row is plain and serialisable (plan § D1). Where a HexMapV2 scene's
+ * render-data interface has the same shape, the map host passes the row through;
+ * where the scene needs a render constant the engine does not own (the heraldic
+ * palette, an army's default size, the activity icon registry, the avatar's
+ * colour), the row carries a semantic key and the host applies the constant
+ * after the read — `src/components/Game/map/mapViewAdapters.ts`.
+ */
+
+/** A person drawn on the map (the avatar or a threaded mortal) — `AgentRenderData` minus the avatar's paint. */
+export interface MapAgentVM {
+  id: string;
+  hexCol: number;
+  hexRow: number;
+  /** Undefined for the avatar: the host paints the avatar's own portrait. */
+  portraitUrl?: string;
+  /** Index into the scene's heraldic palette (0–5). */
+  factionIndex: number;
+  isRetinue: boolean;
+  isAvatar: boolean;
+  name: string;
+  currentRoadType?: 'major' | 'trail';
+  roadHexQueueLength?: number;
+}
+
+/** A thread line from the avatar to a threaded mortal — `ThreadLineData`'s shape. */
+export interface MapThreadLineVM {
+  agentId: string;
+  courtPosition: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
+
+/** A company's ring — `CompanyRenderData`'s shape. */
+export interface MapCompanyVM {
+  id: string;
+  worldX: number;
+  worldY: number;
+  threaded: boolean;
+  memberCount: number;
+}
+
+/** What a mortal is doing, at their position; the host turns it into an icon key. */
+export interface MapActivityVM {
+  agentId: string;
+  worldX: number;
+  worldY: number;
+  /** The encounter type the icon is read from. */
+  encounterType?: string;
+  /** The telemetry decision type (`queue_movement`, …), or `start_local` for a running action. */
+  decisionType?: string;
+  tierOpacity: number;
+}
+
+/** A Location's map icon — `LocationNode`'s shape. */
+export interface MapPlaceVM {
+  locationType: string;
+  hexCol: number;
+  hexRow: number;
+  name: string;
+  rarityTier?: number;
+  isCapital: boolean;
+  isAnomalyLocation: boolean;
+  discoveredByExploration: boolean;
+  isHomeSeat: boolean;
+}
+
+/** An army on campaign; the host paints its faction colour and default size. */
+export interface MapArmyVM {
+  armyId: string;
+  hexCol: number;
+  hexRow: number;
+  /** Index into the scene's heraldic palette (the faction's order among factions). */
+  factionIndex: number;
+  factionDefId: string | null;
+  /** Null when the army carries no headcount; the host applies the scene's default. */
+  headcount: number | null;
+  isInBattle: boolean;
+}
+
+/** A battle or siege on its hex — `BattleIndicatorData`'s shape. */
+export interface MapBattleVM {
+  id: string;
+  hexCol: number;
+  hexRow: number;
+  isSiege: boolean;
+  attackerName?: string;
+  defenderName?: string;
+}
+
+export interface MapArmiesAndBattlesVM {
+  armies: MapArmyVM[];
+  battles: MapBattleVM[];
+}

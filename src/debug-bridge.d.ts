@@ -418,6 +418,21 @@ export interface DebugAscendantSpheresResult {
   source: 'bought' | 'fallback';
 }
 
+/** One entry of `listViews()`. THR-1822 */
+export interface DebugViewListing {
+  /** The selector's registry id (`map.agents`, `hexContents`, `lens`, …). */
+  id: string;
+  /** Which runtime counter keys its cache entries. */
+  invalidation: 'world' | 'structure';
+}
+
+/** Result of `getViewCacheStats()`. THR-1822 */
+export interface DebugViewCacheStats {
+  entries: number;
+  maxEntries: number;
+  bySelector: Record<string, { hits: number; misses: number; rebuilds: number; fallbacks: number }>;
+}
+
 /** Result of `getDominionLens()`. THR-1750 */
 export interface DebugDominionLensResult {
   on: boolean;
@@ -2287,6 +2302,24 @@ export interface DebugBridge {
     set: (on: boolean) => boolean;
     get: () => DebugDominionLensResult;
     hex: (col: number, row: number) => DebugDominionHexResult | null;
+  }) => void;
+  /**
+   * THR-1822 — the view model a screen is given, read off the same per-session cache.
+   * `args` default to the screen's own (map and lens selectors), so
+   * `await getView('map.agents')` returns the rows the map drew, and `getView('lens')`
+   * the lens view model the map drew (off or on). `hexContents` takes
+   * `{ hexKey: 'col,row' }`. Null before a game or for an unknown id.
+   */
+  getView: (id: string, args?: unknown) => Promise<unknown>;
+  /** THR-1822 — every registered view-model selector and its invalidation class. Empty before a game. */
+  listViews: () => Promise<DebugViewListing[]>;
+  /** THR-1822 — cache entries and per-selector hits, misses, rebuilds and fallbacks. Null before a game. */
+  getViewCacheStats: () => Promise<DebugViewCacheStats | null>;
+  /** @internal GameView registers the view-model seam here (THR-1822). */
+  _registerViewBridge: (bridge: {
+    get: (id: string, args?: unknown) => unknown;
+    list: () => DebugViewListing[];
+    stats: () => DebugViewCacheStats;
   }) => void;
   /** THR-1748 — how many top-level places stand in each Dominion band. Null before a game is running. */
   getDominionCensus: () => Promise<Record<'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign', number> | null>;

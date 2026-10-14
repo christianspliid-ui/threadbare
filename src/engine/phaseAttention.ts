@@ -42,6 +42,8 @@ import type { TraceEntry } from '../types/trace';
 import { classifyChainStage, getChainProgress } from './encounterChains';
 import { agentPursuesReach } from './encounterScoring';
 import { getFactionMembershipEdges } from './graphQueries';
+import { touchWorld, type SimulationRuntime } from './simulationRuntime';
+import type { WorldGraph } from './graph';
 
 // ─── Threat rating helpers ──────────────────────────────────────────────────
 
@@ -510,4 +512,25 @@ export function phaseAttention(
     storyBeatQueue:   pacingState.queue,
     digestBuffer,
   };
+}
+
+/**
+ * The player dismissed the open story beat (THR-1822 § D15). Clears the pacing
+ * governor's active beat and stamps its completion tick on the ascendant — the two
+ * properties step 8 of this phase reads and writes — then bumps `worldVersion` so
+ * cached view models re-read while paused. Returns false when the ascendant is gone.
+ */
+export function recordStoryBeatDismissed(
+  graph: WorldGraph,
+  runtime: SimulationRuntime | null,
+  ascendantId: string,
+  tick: number,
+): boolean {
+  const ascNode = graph.getNode(ascendantId);
+  if (!ascNode) return false;
+  const props = ascNode.properties as Record<string, unknown>;
+  props.pacingActiveStoryBeat = null;
+  props.pacingLastCompletedTick = tick;
+  if (runtime) touchWorld(runtime);
+  return true;
 }
