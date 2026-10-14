@@ -2,7 +2,7 @@
  * ArmySpriteMesh.ts — Three.js scene module for army shield sprite rendering.
  *
  * Places one THREE.Sprite per army hex using a canvas-drawn heraldic shield icon.
- * Armies in active battles are filtered out (BattleIndicatorMesh shows instead).
+ * Armies in active battles are filtered out (BattleIndicatorLayer shows instead).
  * Icon size scales with army size via three named tiers (small/medium/large).
  * Color is faction-specific via per-faction sprite material.
  *
@@ -64,7 +64,7 @@ export interface ArmyRenderData {
   factionColor: string;
   /** Army size in troops — drives small/medium/large icon scale. */
   armySize: number;
-  /** If true, army is in an active battle — skip rendering (BattleIndicatorMesh shows instead). */
+  /** If true, army is in an active battle — skip rendering (BattleIndicatorLayer shows instead). */
   isInBattle: boolean;
   /** Faction definition ID for coat of arms texture lookup (e.g. 'monster_force', 'mercenary_company'). Null if unknown. */
   factionDefId?: string | null;
@@ -190,7 +190,7 @@ export function getShieldTexture(factionColor: string): THREE.CanvasTexture {
 /**
  * Creates a THREE.Group containing shield sprites for all provided armies.
  *
- * Armies with `isInBattle === true` are filtered out — the BattleIndicatorMesh
+ * Armies with `isInBattle === true` are filtered out — the BattleIndicatorLayer
  * renders crossed-swords for them instead.
  *
  * One Sprite per army. Faction colors are handled by pre-built material per

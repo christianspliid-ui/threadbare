@@ -311,7 +311,7 @@ export function createArmyLayer(armies: SpriteArmyRenderData[]): ArmyLayerGroup 
         ? ARMY_DOT_RADIUS_REGIMENT
         : ARMY_DOT_RADIUS_HOST;
 
-    if (army.isInBattle) continue; // Skip — BattleIndicatorMesh handles these
+    if (army.isInBattle) continue; // Skip — BattleIndicatorLayer handles these
 
     const { x: wx, y: wy } = hexToWorld(
       { col: army.hexCol, row: army.hexRow },

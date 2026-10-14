@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { buildArmyRenderData, factionColorFromId, ARMY_FALLBACK_COLOR } from '../../components/HexMapV2/scene/ArmyLayer';
-import { buildBattleIndicatorData } from '../../components/HexMapV2/scene/BattleIndicatorLayer';
+import { buildBattleIndicatorData, battleIndicatorForNode } from '../../components/HexMapV2/scene/BattleIndicatorLayer';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -255,6 +255,48 @@ describe('buildBattleIndicatorData', () => {
     });
     const data = buildBattleIndicatorData(graph);
     expect(data).toHaveLength(0);
+  });
+});
+
+// THR-1846: GameView builds its battle list per actor through battleIndicatorForNode.
+// Before the fix it read hexCol off the battle node (never set) and dropped isSiege,
+// so a siege drew as a field battle — or not at all.
+describe('battleIndicatorForNode (GameView adapter)', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+  });
+
+  it('keeps isSiege for a siege and places it on its located_at hex', () => {
+    addLocation(graph, 'loc1', 4, 9);
+    addBattle(graph, 'siege1', 'loc1', true);
+    const entry = battleIndicatorForNode(graph, graph.getNode('siege1')!);
+    expect(entry).toEqual({ id: 'siege1', hexCol: 4, hexRow: 9, isSiege: true });
+  });
+
+  it('marks a field battle as not a siege', () => {
+    addLocation(graph, 'loc1', 1, 2);
+    addBattle(graph, 'battle1', 'loc1', false);
+    expect(battleIndicatorForNode(graph, graph.getNode('battle1')!)?.isSiege).toBe(false);
+  });
+
+  it('counts sieges and battles separately across a mixed world', () => {
+    addLocation(graph, 'loc1', 1, 2);
+    addLocation(graph, 'loc2', 3, 4);
+    addLocation(graph, 'loc3', 5, 6);
+    addBattle(graph, 'battle1', 'loc1', false);
+    addBattle(graph, 'siege1', 'loc2', true);
+    addBattle(graph, 'siege2', 'loc3', true);
+    const entries = buildBattleIndicatorData(graph);
+    expect(entries.filter(e => e.isSiege)).toHaveLength(2);
+    expect(entries.filter(e => !e.isSiege)).toHaveLength(1);
+  });
+
+  it('returns null for an actor with no battleState', () => {
+    addLocation(graph, 'loc1', 1, 2);
+    graph.addNode({ id: 'plain', type: 'actor', name: 'Plain', properties: {} });
+    expect(battleIndicatorForNode(graph, graph.getNode('plain')!)).toBeNull();
   });
 });
 

@@ -10,7 +10,7 @@ description: >
   "visual verification", "hex click", "hex hover", "hex tooltip",
   "movement trail", "location icon", "border mesh", "river mesh",
   "road mesh", "label overlay".
-last_validated_against: 2026-08-29
+last_validated_against: 2026-10-14
 ---
 
 # HexMap Layers — Visual Layer Reference

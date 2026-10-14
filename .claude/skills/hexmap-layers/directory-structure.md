@@ -48,7 +48,7 @@ scene/  (40 modules — grouped by concern)
 ├── ThreadLineMesh.ts     # Relationship thread lines
 ├── CompanyClusterMesh.ts # Company ring + bond glyph (THR-74)
 ├── ArmyLayer.ts + ArmySpriteMesh.ts # Army rendering
-├── BattleIndicatorLayer.ts + BattleIndicatorMesh.ts + SiegeIndicatorMesh.ts # Combat indicators
+├── BattleIndicatorLayer.ts               # Combat indicators (field-battle swords + siege ring; THR-1846)
 ├── ActivityIconMesh.ts   # Reach micro-icons on agents
 ├── ParticleBurstMesh.ts  # Sphere-colored particle effects
 ├── StrategicMarkerMesh.ts # Strategic action markers

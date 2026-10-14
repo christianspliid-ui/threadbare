@@ -10,7 +10,7 @@
  *   // In render loop:
  *   activeBursts = tickParticleBursts(scene, activeBursts, performance.now());
  *
- * Follows the BattleIndicatorMesh factory+tick pattern.
+ * Follows the BattleIndicatorLayer factory+tick pattern.
  *
  * NFP #1 (tunability): All constants named — change feel by adjusting PARTICLE_CONSTANTS.
  * NFP #2 (inspectability): Factory returns full ActiveBurst state for diagnostics.
