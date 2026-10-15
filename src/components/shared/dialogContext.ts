@@ -10,6 +10,7 @@
  * Reference surfaces (sheets, popups, settings) stay neutral so colour on a dialog
  * keeps meaning *this is a moment* (Law 30, amended 2026-10-02).
  */
+import { HOMED_SURFACES, type HomedSurfaceEntry, type HomedSurfacePalette } from '../../data/homed-surfaces';
 
 /** The contexts a `Modal` can take. `neutral` is the default and applies no class. */
 export type DialogContext = 'neutral' | 'story' | 'elder' | 'gain';
@@ -17,8 +18,13 @@ export type DialogContext = 'neutral' | 'story' | 'elder' | 'gain';
 /**
  * Every context in the taxonomy, including the two whose surfaces own their
  * palette outside `Modal`'s prop — the Premonition's dream tones and the veil.
+ * The names live on the home list (`HomedSurfacePalette`, THR-1877), so data never
+ * imports a component.
  */
-export type DialogContextName = DialogContext | 'divine' | 'encounter';
+export type DialogContextName = HomedSurfacePalette;
+
+/** The two contexts whose surfaces keep their own sanctioned variant set. */
+const PALETTE_OWNING_CONTEXTS: ReadonlySet<DialogContextName> = new Set(['divine', 'encounter']);
 
 /** Context → the class in `index.css` that sets its `--dlg-*` properties. */
 export const DIALOG_CONTEXT_CLASS: Record<Exclude<DialogContext, 'neutral'>, string> = {
@@ -43,16 +49,11 @@ export interface DialogContextSurface {
 
 /**
  * The surface → context map, as data. Surfaces not listed here are neutral.
- * `MeetingEncounterModal` (unmounted) and `MeetTheFirstFlow` (not a `Modal`) are
- * deliberately absent — out of scope per the plan.
+ * Derived from the home list (`HOMED_SURFACES`, THR-1877): each entry's `palette`.
+ * `MeetingEncounterModal` (unmounted) and `MeetTheFirstFlow` (not a `Modal`) carry no
+ * palette, so they are absent, as before.
  */
-export const DIALOG_CONTEXT_SURFACES: ReadonlyArray<DialogContextSurface> = [
-  { surface: 'PremonitionModal', context: 'divine', ownsPalette: true },
-  { surface: 'EncounterVeil', context: 'encounter', ownsPalette: true },
-  { surface: 'StoryBeatModal', context: 'story', ownsPalette: false },
-  { surface: 'AscendantBeatModal', context: 'story', ownsPalette: false },
-  { surface: 'JourneyVignetteModal', context: 'story', ownsPalette: false },
-  { surface: 'EmergenceDilemmaModal', context: 'elder', ownsPalette: false },
-  { surface: 'DivineReceiptModal', context: 'gain', ownsPalette: false },
-  { surface: 'MomentCard', context: 'gain', ownsPalette: false },
-];
+export const DIALOG_CONTEXT_SURFACES: ReadonlyArray<DialogContextSurface> =
+  (HOMED_SURFACES as readonly HomedSurfaceEntry[]).flatMap(e => (e.palette
+    ? [{ surface: e.surfaceId, context: e.palette, ownsPalette: PALETTE_OWNING_CONTEXTS.has(e.palette) }]
+    : []));

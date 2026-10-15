@@ -93,7 +93,27 @@ export interface ViewFallbackTrace extends TraceBase {
   summary: string;
 }
 
-export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace;
+/**
+ * Emitted when a homed surface takes, leaves or waits for the foreground, or falls back
+ * (THR-1877, `src/data/homed-surfaces.ts`). Only on transitions, never per render.
+ * S1 emits `held` and `fallback`; the Stage build (THR-1892) adds the rest.
+ */
+export interface StageTrace extends TraceBase {
+  category: 'ui_stage';
+  action: 'opened' | 'held' | 'closed' | 'minimised' | 'fallback';
+  /** The homed surface's kind (`HomedSurfaceKind`), never the ascendant `BeatKind`. */
+  kind: string;
+  /** For `held`: the kind it waits behind; null when nothing renders. */
+  behind?: string | null;
+  litSource?: 'beat' | 'agent_location' | 'ruin_location' | null;
+  /** "13,9" */
+  litHex?: string | null;
+  camera?: 'eased' | 'cut' | 'stayed' | 'timed_out';
+  layout?: 'full' | 'compact';
+  summary: string;
+}
+
+export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace;
 
 /** The categories this module registers, for the vocabulary gate. */
-export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback'] as const;
+export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage'] as const;

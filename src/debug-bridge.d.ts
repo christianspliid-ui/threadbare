@@ -252,6 +252,19 @@ export interface DebugInterruptState {
    * player opened, or the `INTERRUPT_QUIET_AFTER_INPUT_MS` window after a click.
    */
   heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
+  /**
+   * THR-1877 — every homed surface rendering now, stopping or not, by kind
+   * (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`). The hosts render exactly these.
+   */
+  rendering: string[];
+  /** THR-1877 — the one ceremony or Stage surface rendering (one foreground); null when none. */
+  foreground: string | null;
+  /** THR-1877 — `foreground` when its home is the Stage. */
+  stage: string | null;
+  /** THR-1877 — surfaces that want the screen and wait, in list order, with what they wait behind. */
+  held: Array<{ kind: string; surfaceId: string; behind: string | null }>;
+  /** THR-1877 — the home list as data: each kind, its surface, its home, whether it stops time. */
+  homedSurfaces: Array<{ kind: string; surfaceId: string; home: 'stage' | 'dialog' | 'ceremony'; stopsTime: boolean }>;
 }
 
 /** `getClockHold()` (THR-1814) — who holds the clock, as the TIME readout names it. */

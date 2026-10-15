@@ -18,6 +18,7 @@ import type { ForecastTier } from '../types/traces/encounter-traces';
 import type { MotiveSource } from '../engine/encounters/motiveClassifier';
 import type { NudgeBlockedCode } from '../engine/encounters/nudges';
 import type { NudgeRider, UnifiedActionOutcome } from '../types/unifiedAction';
+import { HOMED_SURFACES, type HomedSurfaceEntry } from './homed-surfaces';
 
 /**
  * Forecast tier → the single word the player reads. This *is* the probability
@@ -260,24 +261,15 @@ export const CHAPTER_ANSWER_PAUSED_STATUS = 'paused · {chapter} answers when ti
 // ids — the values `resolveInterrupts().open` returns. An encounter veil uses
 // its own header title first; this row is its fallback.
 
-/** Who the TIME readout names for each interrupt surface. */
-export const INTERRUPT_HOLDER_NAMES: Readonly<Record<string, string>> = {
-  WarmStartOverlay: 'the world settling',
-  EncounterVeil: 'an encounter',
-  MeetTheFirstFlow: 'meeting The First',
-  ThreadingRite: 'the threading rite',
-  PremonitionModal: 'a premonition',
-  JourneyVignetteModal: 'a vision',
-  StoryBeatModal: 'a story beat',
-  AscendantBeatModal: 'a beat of your story',
-  ChoiceSetModal: 'a choice',
-  EmergenceDilemmaModal: 'a new power',
-  DivineReceiptModal: 'what your act bought',
-  ChapterLedger: 'the Chapter Ledger',
-  ScryOverlay: 'your court',
-  MomentCard: 'a moment',
-  EventPopup: 'a message',
-};
+/**
+ * Who the TIME readout names for each interrupt surface. Derived from the home list
+ * (`HOMED_SURFACES`, THR-1877): the words live on each entry's `holderName`.
+ */
+export const INTERRUPT_HOLDER_NAMES: Readonly<Record<string, string>> = Object.fromEntries(
+  (HOMED_SURFACES as readonly HomedSurfaceEntry[])
+    .filter(e => e.holderName !== undefined)
+    .map(e => [e.surfaceId, e.holderName as string]),
+);
 /** TIME readout while held, when the clock was running before the hold. */
 export const CLOCK_HELD_RUNS_ON = 'held by {holder} · runs on when it closes';
 /** TIME readout while held, when the clock was already paused. */
