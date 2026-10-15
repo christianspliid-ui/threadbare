@@ -17,6 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { ACTION_EFFECTS_PROSE, actionEffectsProse, EFFECTS_LINE_MAX_CHARS } from '../actionEffectsProse';
 import { collectGrantedActionIds } from '../ascendant-beat-content';
 import { UNIFIED_ACTION_TEMPLATES, AGENT_INTERVENTION_TEMPLATES } from '../unified-action-templates';
+import { godCards } from '../../engine/godProgression';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 /**
@@ -51,6 +52,25 @@ describe('actionEffectsProse — the two decks are fully authored', () => {
     expect(missing).toEqual([]);
   });
 
+  it('gives every card the offering can deal an authored line (THR-1855)', () => {
+    // The market deck is `godCards()` — every ascendant-castable template. Before
+    // THR-1855, 87 of them fell to the composed frame, so an offering could show
+    // Amplify the Flow and Ward Against the Deep with the same sentence.
+    expect(godCards().length).toBeGreaterThan(20);
+    const missing = godCards().filter((t) => !ACTION_EFFECTS_PROSE[t.id]).map((t) => t.id);
+    expect(missing).toEqual([]);
+  });
+
+  it('never prints the same line on two market cards (THR-1855)', () => {
+    const byLine = new Map<string, string[]>();
+    for (const t of godCards()) {
+      const line = actionEffectsProse(t);
+      byLine.set(line, [...(byLine.get(line) ?? []), t.id]);
+    }
+    const shared = [...byLine.values()].filter((ids) => ids.length > 1);
+    expect(shared).toEqual([]);
+  });
+
   it('gives every actor-targeted agent-hand template an authored line', () => {
     const missing = actorTargetedAgentTemplates()
       .filter((t) => !ACTION_EFFECTS_PROSE[t.id])
@@ -63,7 +83,7 @@ describe('actionEffectsProse — the line obeys the card it prints on', () => {
   /** Every authored line, plus the composed line for each deck member. */
   function everyPlayerFacingLine(): { id: string; line: string }[] {
     const lines = Object.entries(ACTION_EFFECTS_PROSE).map(([id, line]) => ({ id, line }));
-    for (const template of [...grantedTemplates(), ...actorTargetedAgentTemplates()]) {
+    for (const template of [...grantedTemplates(), ...actorTargetedAgentTemplates(), ...godCards()]) {
       lines.push({ id: template.id, line: actionEffectsProse(template) });
     }
     return lines;

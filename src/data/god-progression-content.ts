@@ -93,28 +93,32 @@ export const OFFERING_TOOLTIP_IDS = {
 
 /**
  * Rung-opening and later-key beat words. Keyed by rung. Rung 1 opens silently (it has
- * no gift); the first offering is what shows it.
+ * no gift); the first offering is what shows it. `{card}` → the gift's card name
+ * (THR-1855: the opening words used to say "this one" and never name it).
  */
 export const RUNG_BEAT_PRESENTATION: Readonly<Record<number, SpineBeatPresentation>> = {
   2: {
     eyebrow: 'Your Hand Is Felt',
     title: 'Your hand is felt',
-    prose: 'What you have drawn through your spheres has changed you. The world answers a hand now, not a touch: it will offer you deeper works, and it gives you this one freely.',
+    prose: 'What you have drawn through your spheres has changed you. The world answers a hand now, not a touch: it will offer you deeper works, and it gives you one freely: {card}.',
     cta: 'Receive',
   },
   3: {
     eyebrow: 'Your Will Is Known',
     title: 'Your will is known',
-    prose: 'Peoples and banners turn toward you. The world will offer works that move regions and orders, and it gives you this.',
+    prose: 'Peoples and banners turn toward you. The world will offer works that move regions and orders, and it gives you {card}.',
     cta: 'Receive',
   },
   4: {
     eyebrow: 'The World Braces',
     title: 'The world braces',
-    prose: 'You have grown into something the world must reckon with. Its greatest works will be offered to you now, and it gives you this.',
+    prose: 'You have grown into something the world must reckon with. Its greatest works will be offered to you now, and it gives you {card}.',
     cta: 'Receive',
   },
 };
+
+/** What `{card}` reads when a rung gift's card cannot be named (fail-soft). */
+export const RUNG_GIFT_UNNAMED_CARD = 'a new work';
 
 /** A later key of an already-open rung. `{card}` → the card's name. */
 export const RUNG_LATER_KEY_PRESENTATION: SpineBeatPresentation = {

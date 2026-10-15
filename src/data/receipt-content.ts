@@ -269,3 +269,20 @@ export const GIFT_PLACEMENT_SIGNIFICANCE = 0.85;
 export const GIFT_SEAT_PLACED_LINE = 'A seat is raised for you in {place}.';
 /** "Leave Your Mark" — `{bearer}` carries `{artifact}`. */
 export const GIFT_ARTIFACT_PLACED_LINE = '{bearer} now carries {artifact}.';
+
+// ─── Gift card lines (THR-1855) ────────────────────────────────────────────────
+
+/**
+ * The toast and chronicle line a received gift raises, naming each card it put in
+ * the god's hand. `{cards}` is the card names joined by {@link joinCardNames}.
+ * Before THR-1855, Receive closed the gift silently and the player had to guess.
+ */
+export const GIFT_CARDS_RECEIVED_LINE = 'A new card is yours: {cards}.';
+/** The same line when the gift gives more than one card. */
+export const GIFT_CARDS_RECEIVED_LINE_MANY = 'New cards are yours: {cards}.';
+
+/** "A", "A and B", "A, B and C". */
+export function joinCardNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}

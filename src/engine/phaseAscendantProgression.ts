@@ -38,7 +38,8 @@ import {
 } from './godProgression';
 import { resolveReachSignatureGrant } from './ascendantBeat';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
-import { RUNG_GIFT_SPACING, RUNG_BEAT_PRESENTATION } from '../data/god-progression-content';
+import { playerFacingTemplateName } from './unifiedActionResolution';
+import { RUNG_GIFT_SPACING, RUNG_BEAT_PRESENTATION, RUNG_GIFT_UNNAMED_CARD } from '../data/god-progression-content';
 import type { ChronicleEntry } from '../types/narrative';
 import type { SphereName } from '../types/index';
 import { computeReachShare, computeTier } from './domainCapability';
@@ -607,7 +608,10 @@ function stepGodProgression(
         if (isRungOpeningOffer(state, beatId)) {
           const words = RUNG_BEAT_PRESENTATION[parsed!.rung];
           if (words) {
-            chronicle = { id: `rung-${parsed!.rung}-${turn}`, tier: 'chronicle', title: words.title, prose: words.prose, tick: turn };
+            // THR-1855: the opening words name the gift's card.
+            const cardTemplate = cardId ? getUnifiedTemplateById(cardId) : undefined;
+            const cardName = cardTemplate ? playerFacingTemplateName(cardTemplate) : RUNG_GIFT_UNNAMED_CARD;
+            chronicle = { id: `rung-${parsed!.rung}-${turn}`, tier: 'chronicle', title: words.title, prose: words.prose.replace('{card}', cardName), tick: turn };
           }
         }
       }
