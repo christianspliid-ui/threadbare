@@ -16,10 +16,12 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const GAME_VIEW = readFileSync(resolve(__dirname, '../GameView.tsx'), 'utf8');
+// THR-1881 split step (c): the veil mount lives in StageHost, fed by GameView.
+const STAGE_HOST = readFileSync(resolve(__dirname, '../hosts/StageHost.tsx'), 'utf8');
 const SUMMED = /SPHERE_NAMES\.reduce\(\s*\(sum,\s*s\)\s*=>\s*sum\s*\+\s*gameState\.essencePool\[s\]/;
 
-function veilMount(source: string): string {
-  const start = source.indexOf('<EncounterVeil');
+function mountOf(source: string, tag: string): string {
+  const start = source.indexOf(tag);
   expect(start).toBeGreaterThan(-1);
   const end = source.indexOf('/>', start);
   return source.slice(start, end);
@@ -27,10 +29,14 @@ function veilMount(source: string): string {
 
 describe('THR-1803 — encounter surfaces read the paying pool, never the sum', () => {
   it('passes the veil the paying pool and names its sphere', () => {
-    const mount = veilMount(GAME_VIEW);
+    const mount = mountOf(STAGE_HOST, '<EncounterVeil');
     const essenceProp = mount.match(/\n\s*essence=\{([^}]*)\}/);
     expect(essenceProp?.[1]).toBe('encounterPayingEssence');
     expect(mount).toMatch(/\n\s*essenceSphere=\{encounterPayingSphere\}/);
+    // …and GameView hands StageHost the paying pool under the same names.
+    const host = mountOf(GAME_VIEW, '<StageHost');
+    expect(host).toMatch(/\n\s*encounterPayingEssence=\{encounterPayingEssence\}/);
+    expect(host).toMatch(/\n\s*encounterPayingSphere=\{encounterPayingSphere\}/);
   });
 
   it('feeds no encounter adapter the twelve pools summed', () => {
