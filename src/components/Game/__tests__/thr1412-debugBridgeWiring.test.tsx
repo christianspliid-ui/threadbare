@@ -94,8 +94,9 @@ describe('debug action bridge resolves agents by name (THR-1412)', () => {
     // viable (WebGL, hundreds of imports), so the behavioural half is carried by
     // the resolver tests above. What this catches is the actual regression
     // shape — a hand-rolled `properties.name` matcher reappearing in the bridge.
+    // THR-1881: the bridge moved out of GameView into `useGameDebugLevers`.
     const src = readFileSync(
-      resolve(__dirname, '../GameView.tsx'),
+      resolve(__dirname, '../hooks/useGameDebugLevers.ts'),
       'utf8',
     );
 
