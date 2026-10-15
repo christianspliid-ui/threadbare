@@ -53,11 +53,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'continue_weakened',
-      narrativeTemplate: 'A rich wool merchant lies dead in his hall, to be buried at dawn. His eldest, {cast:eldest}, has '
-        + 'paid for a sin-eater, so the merchant goes to the grave clean. Bread and salt lie on his '
-        + 'chest.\n\n'
-        + '{actor} must eat the bread and salt before the household and take every sin whole. A sin-eater '
-        + 'who leaves a sin on the dead is not sent for again.',
+      narrativeTemplate: 'A rich merchant lies dead in his hall, to be buried at dawn. His eldest, {cast:eldest}, has '
+        + 'paid for a sin-eater, so the merchant goes to the grave clean. Bread and salt lie on the dead '
+        + 'man\'s chest.\n\n'
+        + '{actor} must eat it all before the household and take every sin whole. A sin-eater who leaves '
+        + 'a sin on the dead is not sent for again.',
       criticalSuccessAfterimage: '{actor} ate the bread and salt to the last crumb, and the household saw the merchant go clean. '
         + 'Under the bread lay a folded paper in the merchant\'s own hand.',
       successAfterimage: '{actor} ate the bread and salt and took the sins whole. Under the bread lay a folded paper in '
@@ -330,6 +330,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           failureMetadata: {
             effects: [
               {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.haunted',
+                targetLocationId: '$here',
+                intensity: 0.5,
+                durationTicks: 48,
+              },
+              {
                 kind: 'bond_change',
                 withAgentId: '$cast:wronged',
                 sentimentDelta: -0.06,
@@ -456,6 +463,13 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failureMetadata: {
           effects: [
+            {
+              kind: 'apply_condition',
+              conditionTraitId: 'trait.condition.location.haunted',
+              targetLocationId: '$here',
+              intensity: 0.5,
+              durationTicks: 48,
+            },
             {
               kind: 'bond_change',
               withAgentId: '$cast:wronged',
@@ -1047,6 +1061,27 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
             changes: [
               {
+                id: 'sineater.keep.fa.haunt',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The restless dead',
+                detail: 'People in {location} keep to their doors after dark.',
+                stateNoun: {
+                  text: 'Haunted',
+                  entityId: 'trait.condition.location.haunted',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
                 id: 'sineater.keep.fa.bond',
                 kind: 'reputation',
                 category: 'scar',
@@ -1096,6 +1131,27 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           critical_failure: {
             overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
             changes: [
+              {
+                id: 'sineater.keep.cf.haunt',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The restless dead',
+                detail: 'People in {location} keep to their doors after dark.',
+                stateNoun: {
+                  text: 'Haunted',
+                  entityId: 'trait.condition.location.haunted',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
               {
                 id: 'sineater.keep.cf.rep',
                 kind: 'reputation',
@@ -1329,6 +1385,27 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
           changes: [
             {
+              id: 'sineater.fallback.fa.haunt',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The restless dead',
+              detail: 'People in {location} keep to their doors after dark.',
+              stateNoun: {
+                text: 'Haunted',
+                entityId: 'trait.condition.location.haunted',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
               id: 'sineater.fallback.fa.bond',
               kind: 'reputation',
               category: 'scar',
@@ -1378,6 +1455,27 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         critical_failure: {
           overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
           changes: [
+            {
+              id: 'sineater.fallback.cf.haunt',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The restless dead',
+              detail: 'People in {location} keep to their doors after dark.',
+              stateNoun: {
+                text: 'Haunted',
+                entityId: 'trait.condition.location.haunted',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
             {
               id: 'sineater.fallback.cf.rep',
               kind: 'reputation',
