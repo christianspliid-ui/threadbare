@@ -22,8 +22,15 @@ Baseline noise (4 weeks 09-12 → 10-03, before either entry below): merges/day 
   Throughput was shelf-bound: on 10-06, ~40 one-minute runs found only veto-held tickets. The faster cadence let each run branch beside the previous unmerged PR.
 
 ## 2026-10-09 — WIP-until-merged claim gate (hook)
-- Status: open
+- Status: open — **judged 2026-10-15 (week 1 of 2): improved.** Post-gate window 10-10 → 10-15 (43 ticket PRs merged): catch-up 33.3 % → **8.9 %** (target met), slow > 60 min 23.1 % → **11.6 %** (better, target ≤ 8 % not met), peak concurrent 6 → **3** (target ≤ 2 not met), merges/day 8.6 with 24 of 49 lane runs idle (supply- and CI-wait-bound, not gate-starved), fail-soft 0, 1 denial. Of the 5 slow PRs, only #2382 and #2397 were conflict catch-ups; #2410 was a deliberate draft park, #2419 a red CI, #2387 an attended branch. Peak 3 includes drafts and attended PRs, which the gate does not count by design. Keep open one more week to confirm slow %.
 - Change: `scripts/wip-gate.ts`, a PreToolUse hook on `mcp__.*__save_issue`. It refuses a claim (In Dev + assignee) while a non-draft, unheld, < 24 h-idle open PR closes a different ticket. Also the `pull-work` Step 1.5 + drain text and the `tb-opus-pickup` prompt. Cron stays `*/20`.
 - Why: see the entry above. GitHub ignores `merge=union`, so overlapping ticket PRs conflict on the shared ledgers and generated artifacts by construction. On 2026-10-09, five green PRs were DIRTY at once.
 - Hypothesis: `pct_main_catchup` back to ≤ 10 % and `pct_slow_gt60m` ≤ 8 %, with `peak_concurrent_ticket_prs` ≤ 2. `merges_per_day` no lower than the shelf allows: compare against `lane_idle_runs`. If idle runs dominate, supply is the limit, not the gate.
 - Revert if: merges/day falls below 7 for 2 judged weeks **while** idle runs are few (the gate is starving a stocked shelf), or `wip_gate_failsoft` > 0 two weeks running (the gate is silently off; fix it, don't revert).
+
+## 2026-10-15 — sunset the inert `Stop` hook (`session-stop-gate.sh`)
+- Status: open
+- Change: removed the `Stop` registration from `.claude/settings.json`; deleted `.claude/hooks/session-stop-gate.sh`, the never-registered `.claude/hooks/stop-retro.sh`, and `.claude/hooks/lib/json-get.js` (used only by those two). PR https://github.com/christianspliid-ui/threadbare/pull/2426.
+- Why: six-week sunset. Shipped 2026-04-13 (DoD hooks plan); no log, no impediment cites it, and its output `{"hookSpecificOutput":{"continue":true,...}}` is a shape Stop hooks don't read, so it never forced a continuation. THR-1717 already dropped its never-firing pre-commit/pre-push siblings on 2026-10-03; this one was missed. It cost a bash + node spawn at every turn end in every session.
+- Hypothesis: no flow metric moves (it never acted). Expected effect: zero behaviour change, slightly less per-turn overhead.
+- Revert if: an impediment logs lost uncommitted or unpushed work at session end that a *working* stop check would have caught. Even then, revert to a hook with a valid `decision: "block"` contract, not this script.
