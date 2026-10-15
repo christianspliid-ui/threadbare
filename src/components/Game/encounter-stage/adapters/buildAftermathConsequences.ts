@@ -774,6 +774,11 @@ export function buildAftermathConsequences(
     // THR-1685 — `{target}` in the noun reads the chip's own anchor when that
     // anchor is a person other than the scene's target (`nounTextFor`).
     const nounText = nounTextFor(change.stateNoun, stateNoun, enrich, anchorNameFor);
+    // THR-1857 — the icon names itself from the ref's text, so the state noun hands it
+    // the resolved noun: the raw one read "reputation with {target}" to a screen reader.
+    const iconRef = iconConcept && iconConcept === stateNoun && nounText
+      ? { ...iconConcept, text: nounText }
+      : iconConcept;
     chips.push({
       id,
       kind,
@@ -802,7 +807,7 @@ export function buildAftermathConsequences(
       compact: change.storyWeight === 'incidental' && !causeClause,
       delta: deltaClusterFor(change, nounText),
       tone: toneFor(kind, change),
-      icon: iconConcept && resolveIcon ? resolveIcon(iconConcept) : undefined,
+      icon: iconRef && resolveIcon ? resolveIcon(iconRef) : undefined,
     });
   }
 

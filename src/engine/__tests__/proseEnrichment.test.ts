@@ -422,7 +422,15 @@ describe('enrichProse', () => {
     const ctx = createMinimalContext({
       pronouns: { they: 'they', them: 'them', their: 'their', s: '' },
     });
-    expect(enrichProse('{name} walk{s} forward.', ctx)).toBe('Kira walk forward.');
+    expect(enrichProse('{They} walk{s} forward.', ctx)).toBe('They walk forward.');
+  });
+
+  it('THR-1857 — a name subject keeps its s for a they/them bearer', () => {
+    const ctx = createMinimalContext({
+      pronouns: { they: 'they', them: 'them', their: 'their', s: '' },
+    });
+    expect(enrichProse('{name} walk{s} forward; {they} look{s} back.', ctx))
+      .toBe('Kira walks forward; they look back.');
   });
 });
 

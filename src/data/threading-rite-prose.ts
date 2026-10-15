@@ -12,6 +12,7 @@
 
 import type { ReachDomain } from '../types/traits';
 import type { BondReception } from './meeting-nudge-constants';
+import { bindNameSubjectVerbs } from '../engine/subjectVerbAgreement';
 
 // ─── Pronouns ─────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ export function ritePronouns(gender: unknown): RitePronouns {
 }
 
 function fill(text: string, name: string, p: RitePronouns, extra: Record<string, string> = {}): string {
-  return text
+  return bindNameSubjectVerbs(text)
     .replace(/\{name\}/g, name)
     .replace(/\{they\}/g, p.they)
     .replace(/\{They\}/g, p.They)
