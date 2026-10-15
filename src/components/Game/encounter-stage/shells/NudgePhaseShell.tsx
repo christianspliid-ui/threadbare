@@ -525,8 +525,10 @@ export function NudgePhaseShell({
             >
               {/* THR-1858 — every sphere the hand pays from, not the budget
                   sphere alone: a Chaos card's price must land on a number the
-                  player can see. One payer reads exactly as before. */}
-              {hand.payers.length > 1
+                  player can see. One payer reads exactly as before, and with no
+                  budget sphere (no identity) the pooled total stays, since the
+                  sphere-less cards are priced against it. */}
+              {hand.budget && hand.payers.length > 1
                 ? `${hand.payers.map((p) => `${formatEssencePool(p.remaining)} ${sphereWord(p.sphere)}`).join(' · ')} essence left`
                 : hand.budget
                   ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`

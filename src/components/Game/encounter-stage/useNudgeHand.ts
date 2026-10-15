@@ -237,9 +237,18 @@ export function useNudgeHand(
       // pool. Pricing it against the pooled total let the card read "Mind" and
       // then spill onto Force at commit when Mind ran short.
       const billedToBudget = budget !== undefined && card.payingSphere === budget.sphere;
+      // THR-1858 — a gated card of another sphere must fit in *its* pool too,
+      // now that the footer shows that pool: two Chaos cards could overdraw
+      // Chaos while the pooled total still said yes, and the commit refused.
+      const ownPayer = !billedToBudget && card.payingSphere !== undefined
+        && phase?.payingSphereEssence?.[card.payingSphere] !== undefined
+        ? payers.find((p) => p.sphere === card.payingSphere)
+        : undefined;
       const affordable = selected || (billedToBudget
         ? card.essenceCost <= budget.remaining + 1e-9
-        : card.essenceCost <= remainingEssence + 1e-9);
+        : ownPayer
+          ? card.essenceCost <= ownPayer.remaining + 1e-9 && card.essenceCost <= remainingEssence + 1e-9
+          : card.essenceCost <= remainingEssence + 1e-9);
       const blocked = card.state === 'dimmed' || !affordable;
       return {
         ...card,
@@ -251,7 +260,7 @@ export function useNudgeHand(
           ?? (affordable ? undefined : NUDGE_BLOCKED_REASONS.essence_unavailable),
       };
     });
-  }, [phase, selectedIds, remainingEssence, budget]);
+  }, [phase, selectedIds, remainingEssence, budget, payers]);
 
   return {
     cards,

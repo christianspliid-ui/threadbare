@@ -129,4 +129,27 @@ describe('THR-1858 — every paying sphere is on the footer', () => {
     fireEvent.mouseLeave(chaosScope.firstElementChild!);
     expect(getEssencePreviewSphere()).toBeNull();
   });
+
+  // Review gate round 1: a gated card of another sphere is priced against its
+  // own pool, so a second Chaos card dims once Chaos cannot cover it.
+  it('a second Chaos card dims when the Chaos pool cannot cover it', () => {
+    const base = phaseWithChaosCard();
+    const chaos = base.cards[1];
+    const phase: EncounterStageNudgePhaseModel = {
+      ...base,
+      payingSphereEssence: { mind: 51, chaos: 5 },
+      cards: [base.cards[0], chaos, { ...chaos, id: 'chaos_card_2', name: 'Unmake the hinge' }],
+    };
+    render(<NudgePhaseShell phase={phase} onCommit={() => {}} />);
+    expect(screen.getByTestId('nudge-card-chaos_card_2').getAttribute('data-nudge-state')).not.toBe('dimmed');
+    fireEvent.click(screen.getByText('Unmake the lock'));
+    expect(screen.getByTestId('nudge-card-chaos_card_2').getAttribute('data-nudge-state')).toBe('dimmed');
+  });
+
+  it('with no budget sphere the footer keeps the pooled total', () => {
+    const base = phaseWithChaosCard();
+    const { budgetSphere: _b, budgetSphereEssence: _e, ...noBudget } = base;
+    render(<NudgePhaseShell phase={{ ...noBudget, cards: [{ ...base.cards[0], payingSphere: 'mind', sphere: 'mind' }, base.cards[1]] }} onCommit={() => {}} />);
+    expect(screen.getByTestId('nudge-remaining-essence').textContent).toBe('91 essence left');
+  });
 });
