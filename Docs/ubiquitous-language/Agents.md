@@ -920,7 +920,9 @@ The player word for what an actor can afford — the narrative face of the engin
 
 **Always a tier word, never a number (Laws 4 and 13).** The quantity is real in the engine and the player has no instrument that reads it, so every surface says a band. A numeral on screen is the defect, not a precision improvement — the same engine-term/narrative-term split `[[Freehold]]`/`'holding'` and `[[Group]]`/`[[Company]]` already use.
 
-Code anchors: `src/engine/holdingIncome.ts` (`bankWealth`, `payHoldingIncome`).
+**Faction treasuries write through `applyTreasuryDelta`** (0–`FACTION_TREASURY_CAP`), beside the mortal funnel `bankWealth`, so a faction's coin is never clipped to a mortal's 0–100 (THR-1931). **A faction's Means band measures days of upkeep in hand** — or coin alone when it fields no army — on the same five words a mortal's does (Destitute · Getting by · Comfortable · Wealthy · Magnate); only the measure differs.
+
+Code anchors: `src/engine/holdingIncome.ts` (`bankWealth`, `payHoldingIncome`); `src/engine/factionPurse.ts` (`runFactionPurse`, `meansBand` via `factionPurse/means.ts`).
 
 ---
 

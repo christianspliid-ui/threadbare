@@ -89,7 +89,9 @@ export function sourcePhrase(graph: WorldGraph, kind: PurseSourceKind, nodeId: s
 
 /** "Most of its coin comes from X and Y. A share goes to Z." */
 export function incomeSentence(graph: WorldGraph, day: PurseDayWords | null): PursePart[] {
-  if (!day || day.topSources.length === 0) return ['It has no income of its own.'];
+  // No pay day yet (the opening purse only): say nothing rather than claim no income.
+  if (!day) return [];
+  if (day.topSources.length === 0) return ['It has no income of its own.'];
   const [a, b] = day.topSources;
   const parts: PursePart[] = ['Most of its coin comes from ', ...sourcePhrase(graph, a.kind, a.nodeId)];
   if (b) parts.push(' and ', ...sourcePhrase(graph, b.kind, b.nodeId));
@@ -146,4 +148,34 @@ export function holdingClause(graph: WorldGraph, placeId: string, day: PurseDayW
   if (!day.paidBy?.includes(placeId)) return null;
   const good = largestGood(place);
   return good ? `yields ${resourceWord(good)}` : null;
+}
+
+/** Everything the Purse panel renders, read in one engine call (the view-model seam, NFP #2). */
+export interface FactionPurseView {
+  band: string;
+  broke: boolean;
+  income: PursePart[];
+  spending: string;
+}
+
+/**
+ * The Purse panel's view model, or null when the purse has not reached this faction.
+ * Takes the band and day as the phase wrote them (`meansBand`, `purseLastDay`).
+ */
+export function factionPurseView(
+  graph: WorldGraph,
+  factionId: string,
+  read: { band: (n: GraphNode | undefined) => string | null; day: (n: GraphNode | undefined) => PurseDayWords | null },
+): FactionPurseView | null {
+  const node = graph.getNode(factionId);
+  const band = read.band(node);
+  if (!node || !band) return null;
+  const day = read.day(node);
+  const wealth = typeof node.properties.wealth === 'number' ? node.properties.wealth : 0;
+  return {
+    band,
+    broke: (day?.armiesUnpaid.length ?? 0) > 0,
+    income: incomeSentence(graph, day),
+    spending: spendingSentence(graph, day, wealth),
+  };
 }

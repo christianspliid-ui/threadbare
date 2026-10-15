@@ -98,8 +98,17 @@ describe('isEligibleForArmySpawn', () => {
 
   it('returns true when all conditions are met', () => {
     setupFactionWithMilitaryAmbition(graph);
+    // THR-1931: the purse covers the raise and a first day.
+    graph.getNode('faction1')!.properties.wealth = 100;
     const state = makeState(5, graph);
     expect(isEligibleForArmySpawn(state, 'faction1')).toBe(true);
+  });
+
+  it('returns false when the purse cannot pay the raise (THR-1931)', () => {
+    setupFactionWithMilitaryAmbition(graph);
+    graph.getNode('faction1')!.properties.wealth = 10;
+    const state = makeState(5, graph);
+    expect(isEligibleForArmySpawn(state, 'faction1')).toBe(false);
   });
 
   it('returns false when no military ambition', () => {

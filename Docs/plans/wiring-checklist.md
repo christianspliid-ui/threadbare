@@ -3110,3 +3110,16 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 | pour line, cost note, picker names | none (render) | `SpheresStep`, `PremonitionModal` (`premonitionReachNote`), `SensingBeat` (`candidateLabel`) | none | none | DOM (`sphere-pour-meaning`, `premonition-reach-note`, `sensing-candidate-name-*`) |
 
 **Wired and asserted:** `sayItBeforeItHappensThr1815.test.tsx` (miss line above commit and following the lean, picker names on focus, cost note, pour line) and `agentInfoCardRecentTierCross.test.ts` (inside / outside the window, appended not swapped, both growth roads write the record).
+
+## Faction purse (THR-1931)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/factionPurse.ts` (`runFactionPurse`, `phaseFactionPurse`) | inline `faction_purse` (6.629), right after `holding_income`, daily | `FactionSheet` → `FactionPursePanel` (Purse panel); What They Control clauses | graph: faction `wealth`, `meansBand`, `purseLastDay`; army `armyState.paidThroughTick`; `chronicleEntries` | `economy.purse.day`, `economy.purse.band_change` | Economy tab → Purses; `__DEBUG.getFactionPurse`, `getPurseLedger` |
+| `engine/factionPurse/{income,upkeep,means,purseSentences}.ts` (pure) | — | the panel's sentences | — | — | CLI `eval` |
+| `engine/armySpawning.ts` (`canAffordArmy`, `spawnArmy({charge})`) | `factionAmbitions.maybeSpawnArmy`, `notableAgendas` campaign | — | faction `wealth`, army `paidThroughTick` | `economy.purse.army_raised` | Armies tab "Paid through" |
+| `engine/armyAttrition.ts` (`checkUnderfunded` purse predicate, `recordPurseDesertion`) | `army_attrition` | Great Chronicle (next pay day) | reads `paidThroughTick`; faction `purseDesertions` | existing attrition trace | Armies tab |
+| `engine/factionTopology.ts` (`computePurseStrain`) | schism resolution | — | reads `meansBand`, `purseLastDay.brokeSinceTick` | `schism_resolved.inputs.purseStrain` | trace viewer |
+| `engine/factionPurse.ts` (`seedOpeningPurse`) | worldgen (`gameInit.ts`, after the past pass) | — | faction `wealth`, `meansBand`; army `paidThroughTick: 0` | — | `getFactionPurse` before tick 12 |
+
+**Wired and asserted:** `factionPurse.test.ts` (21 tests) — one tax holder per town (nothing pays twice), the five sources, upkeep in id order with no partial pay or debt, the Means ladder, losing the last town reaches Destitute inside 25 days, a two-town realm keeps a host paid 50 days, the opening purse pays every worldgen army, `canAffordArmy`, the underfunded predicate, the schism strain, chronicle only inside the player's attention, and the panel's words (no numerals).
