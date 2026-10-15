@@ -1,6 +1,6 @@
 import type { WorldGraph } from '../graph';
 import type { GenomeResult } from './types';
-import { mulberry32 } from '../../lib/prng';
+import { hashString, mulberry32 } from '../../lib/prng';
 import { generateTavernName } from '../../data/tavern-names';
 import { SUBTYPE_SUBLOCATION_MAP, TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
 
@@ -13,6 +13,9 @@ const NAMED_HOUSE_TYPE_IDS: ReadonlySet<string> = new Set([
   TAVERN_SUBLOCATION_TYPE_ID,
   'sublocation-type.inn',
 ]);
+
+/** Redraws allowed when a generated house name repeats one already in the settlement. */
+const HOUSE_NAME_RETRIES = 5;
 
 /** Type id → authored label, read from the one sublocation type table. */
 let typeLabels: Map<string, string> | undefined;
@@ -71,7 +74,12 @@ export function materializeGenome(
       .filter(Boolean),
   );
 
-  const rng = mulberry32(seed);
+  // Names already standing in this settlement: worldgen materializes twice with the same
+  // seed (the second pass adds only what the first could not see), so a house named in
+  // pass 2 must not repeat one named in pass 1.
+  const takenNames = new Set(
+    existingContains.map(e => graph.getNode(e.target)?.name).filter((n): n is string => !!n),
+  );
   // A settlement's culture is its current `belongs_to` edge (the writer worldSeed reads);
   // the `culture` property is a legacy shape kept as the fallback.
   const culture = graph.getOutgoingEdges(locationId, 'belongs_to')
@@ -83,7 +91,13 @@ export function materializeGenome(
     if (existingTypeIds.has(sub.id)) continue;
 
     const subId = `${locationId}_sub_${sub.id.replace('sublocation-type.', '')}_${i}`;
-    const subName = genomeSublocationName(sub.id, loc.name, culture, rng);
+    // One stream per type, so the inn and a later tavern draw different words.
+    const rng = mulberry32((seed ^ hashString(sub.id)) >>> 0);
+    let subName = genomeSublocationName(sub.id, loc.name, culture, rng);
+    for (let retry = 0; takenNames.has(subName) && retry < HOUSE_NAME_RETRIES; retry++) {
+      subName = genomeSublocationName(sub.id, loc.name, culture, rng);
+    }
+    takenNames.add(subName);
 
     graph.addNode({
       id: subId,

@@ -138,8 +138,30 @@ describe('genome culture (THR-1857 review)', () => {
     } as never, 7);
     const tavern = graph.getOutgoingEdges('loc_1', 'contains').map(e => graph.getNode(e.target)!)[0];
     // Same seed, same culture id → the same name the generator gives that culture.
-    const { mulberry32 } = await import('../../lib/prng');
-    expect(tavern.name).toBe(tavernNames.generateTavernName(mulberry32(7), 'culture_northern'));
+    const { mulberry32, hashString } = await import('../../lib/prng');
+    const rng = mulberry32((7 ^ hashString('sublocation-type.tavern')) >>> 0);
+    expect(tavern.name).toBe(tavernNames.generateTavernName(rng, 'culture_northern'));
+  });
+
+  it('a tavern added by the second worldgen pass never repeats the inn the first pass named', async () => {
+    const { materializeGenome } = await import('../settlementGenome/materialize');
+    const base = { archetypeId: null, archetypeName: null, archetypeProseFlavor: null, npcs: [] };
+    for (let seed = 0; seed < 50; seed++) {
+      const graph = new WorldGraph();
+      graph.addNode({ id: 'loc_1', type: 'location', name: 'Frostholm', properties: {} });
+      materializeGenome(graph, 'loc_1', {
+        ...base, sublocations: [{ id: 'sublocation-type.inn', sourcePass: 'infrastructure', tags: [] }],
+      } as never, seed);
+      materializeGenome(graph, 'loc_1', {
+        ...base, sublocations: [
+          { id: 'sublocation-type.inn', sourcePass: 'infrastructure', tags: [] },
+          { id: 'sublocation-type.tavern', sourcePass: 'reach', tags: [] },
+        ],
+      } as never, seed);
+      const names = graph.getOutgoingEdges('loc_1', 'contains').map(e => graph.getNode(e.target)!.name);
+      expect(names).toHaveLength(2);
+      expect(new Set(names).size).toBe(2);
+    }
   });
 });
 
