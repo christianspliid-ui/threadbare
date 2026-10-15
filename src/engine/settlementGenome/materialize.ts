@@ -72,7 +72,11 @@ export function materializeGenome(
   );
 
   const rng = mulberry32(seed);
-  const culture = typeof loc.properties.culture === 'string' ? loc.properties.culture : undefined;
+  // A settlement's culture is its current `belongs_to` edge (the writer worldSeed reads);
+  // the `culture` property is a legacy shape kept as the fallback.
+  const culture = graph.getOutgoingEdges(locationId, 'belongs_to')
+    .find(e => e.properties.cultureLayer === 'current')?.target
+    ?? (typeof loc.properties.culture === 'string' ? loc.properties.culture : undefined);
 
   for (let i = 0; i < result.sublocations.length; i++) {
     const sub = result.sublocations[i];

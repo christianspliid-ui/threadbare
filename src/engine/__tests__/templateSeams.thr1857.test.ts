@@ -99,15 +99,17 @@ describe('waypoint names (THR-1857)', () => {
     });
     const id = findOrCreateLocationAtHex(graph, { col: 4, row: 6 }, 'temperate_forest');
     const name = graph.getNode(id)!.name;
-    expect(name).toBe('the forest near Hawkgate');
+    // A proper noun with no article: reads right mid-sentence and at a sentence start.
+    expect(name).toBe('Hawkgate Forest');
     expect(name).not.toMatch(COORDINATE_NAME);
+    expect(name[0]).toBe(name[0].toUpperCase());
   });
 
-  it('falls back to the ground alone when no settlement is in reach', () => {
+  it('reads "Nameless <ground>" when no settlement is in reach', () => {
     const graph = new WorldGraph();
     const id = findOrCreateLocationAtHex(graph, { col: 40, row: 40 });
-    expect(graph.getNode(id)!.name).toBe(WAYPOINT_DEFAULT_GROUND);
-    expect(composeWaypointName('hills', undefined)).toBe('the hills');
+    expect(graph.getNode(id)!.name).toBe(`Nameless ${WAYPOINT_DEFAULT_GROUND}`);
+    expect(composeWaypointName('hills', undefined)).toBe('Nameless Hills');
   });
 
   it('renames a pre-THR-1857 coordinate-named waypoint on reuse', () => {
@@ -117,7 +119,27 @@ describe('waypoint names (THR-1857)', () => {
       properties: { hexCol: 2, hexRow: 3, locationType: 'wilderness', terrain: 'marsh' },
     });
     const id = findOrCreateLocationAtHex(graph, { col: 2, row: 3 });
-    expect(graph.getNode(id)!.name).toBe('the marsh');
+    expect(graph.getNode(id)!.name).toBe('Nameless Marsh');
+  });
+});
+
+describe('genome culture (THR-1857 review)', () => {
+  it('materializeGenome reads the culture from the current belongs_to edge', async () => {
+    const { materializeGenome } = await import('../settlementGenome/materialize');
+    const tavernNames = await import('../../data/tavern-names');
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc_1', type: 'location', name: 'Frostholm', properties: { hexCol: 1, hexRow: 1 } });
+    graph.addNode({ id: 'culture_northern', type: 'actor', name: 'Northern', properties: { actorType: 'culture' } });
+    graph.addEdge({ id: 'e1', type: 'belongs_to', source: 'loc_1', target: 'culture_northern', properties: { cultureLayer: 'current' } });
+    materializeGenome(graph, 'loc_1', {
+      archetypeId: null, archetypeName: null, archetypeProseFlavor: null,
+      sublocations: [{ id: 'sublocation-type.tavern', sourcePass: 'infrastructure', tags: [] }],
+      npcs: [],
+    } as never, 7);
+    const tavern = graph.getOutgoingEdges('loc_1', 'contains').map(e => graph.getNode(e.target)!)[0];
+    // Same seed, same culture id → the same name the generator gives that culture.
+    const { mulberry32 } = await import('../../lib/prng');
+    expect(tavern.name).toBe(tavernNames.generateTavernName(mulberry32(7), 'culture_northern'));
   });
 });
 
