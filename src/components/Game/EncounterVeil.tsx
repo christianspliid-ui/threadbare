@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore, type ReactNode, type WheelEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
@@ -324,6 +324,40 @@ const VEIL_FOOTER_CLEARANCE_PX = 24;
 const VEIL_COLUMN_TOP_INSET = '3vh';
 
 /**
+ * THR-1856 — the aftermath column's top inset. Was `10vh` top and bottom, which
+ * at 1920×1080 spent 216px of chrome and pushed the exit and the reaction
+ * choice below the fold once the consequence legend was open. The bottom inset
+ * is gone: the pinned exit block carries its own padding.
+ */
+const AFTERMATH_COLUMN_TOP_INSET = '4vh';
+
+/**
+ * THR-1856 — the pinned exit block's fade from transparent to the veil void,
+ * also its top padding, so prose scrolling under it reads as continuing.
+ */
+const AFTERMATH_PIN_FADE_PX = 24;
+
+/** THR-1856 — breathing room under "Return to the world" at the column's edge. */
+const AFTERMATH_PIN_PAD_BOTTOM_PX = 24;
+
+/**
+ * THR-1856 — a wheel turned anywhere on the veil scrolls its content column.
+ * The column is 52–65% of the width; a wheel over the art or the void beside it
+ * used to do nothing, so the player could not reach content below the fold
+ * without first finding the column. Pure so it can be tested without layout.
+ */
+export function forwardVeilWheel(
+  column: Pick<HTMLElement, 'scrollTop' | 'contains'> | null,
+  target: EventTarget | null,
+  deltaY: number,
+): boolean {
+  if (!column || deltaY === 0) return false;
+  if (target instanceof Node && column.contains(target)) return false;
+  column.scrollTop += deltaY;
+  return true;
+}
+
+/**
  * THR-1724 — the scene prose's measure on the attended veil. The prose now
  * shares its row with the cast column, so it may use the left column's width
  * rather than the old 540px — fewer, longer lines, which is height the hand
@@ -540,6 +574,13 @@ export function EncounterVeil({
     }
   }, []);
 
+  // THR-1856 — the scrolling content column, so a wheel anywhere on the veil
+  // scrolls it (`forwardVeilWheel`). One ref: only one path renders at a time.
+  const contentColumnRef = useRef<HTMLDivElement>(null);
+  const handleVeilWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    forwardVeilWheel(contentColumnRef.current, event.target, event.deltaY);
+  }, []);
+
   // Trigger entrance animation after mount
   useEffect(() => {
     if (open) {
@@ -561,8 +602,11 @@ export function EncounterVeil({
   // close the old way.
   const isAttendedPending = !model.aftermath && threadTier !== 'watched';
   // THR-1812 — on the answering card, leaving is *Back to the map*.
+  // THR-1856 — on the aftermath, leaving is acknowledging: Escape resolves what
+  // "Return to the world" resolves, or a sibling step reopens the same ending.
   const leaveVeil = answering && onBackToMap
     ? onBackToMap
+    : model.aftermath ? onAcknowledgeAftermath
     : isAttendedPending && onMinimize ? onMinimize : onDisregard;
 
   // THR-1816 — Escape leaves the veil only when it is the topmost surface: a
@@ -722,6 +766,7 @@ export function EncounterVeil({
         role="dialog"
         aria-modal="true"
         aria-label={aftermath.title ?? 'Aftermath'}
+        onWheel={handleVeilWheel}
         style={{
           position: 'fixed',
           ...VEIL_ROOT_INSET,
@@ -777,6 +822,8 @@ export function EncounterVeil({
 
         {/* ── Scrollable content zone ────────────────────── */}
         <div
+          ref={contentColumnRef}
+          data-testid="aftermath-content-column"
           style={{
             position: 'absolute',
             top: 0,
@@ -792,7 +839,7 @@ export function EncounterVeil({
             // unscrollable edge (THR-925). Engines without 'safe' drop the
             // declaration and fall back to flex-start, which scrolls correctly.
             justifyContent: 'safe center',
-            padding: '10vh 5vw 10vh 3vw',
+            padding: `${AFTERMATH_COLUMN_TOP_INSET} 5vw 0 3vw`,
             background: hasArt
               ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
               : 'transparent',
@@ -846,7 +893,7 @@ export function EncounterVeil({
               threadTier={threadTier}
               onSelectAgent={onSelectAgent}
               onShowOnMap={onShowOnMap}
-              onLeave={onDisregard}
+              onLeave={onAcknowledgeAftermath}
               followState={followState}
               onToggleFollow={onToggleFollow}
             />
@@ -1373,6 +1420,22 @@ export function EncounterVeil({
             </div>
           )}
 
+          {/* THR-1856 — the reaction choice and the exit are pinned to the
+              bottom of the scroll column (`position: sticky`), the THR-1732
+              hand-bar pattern. A long ending with the legend open pushed both
+              past y 1080, so a real decision and the only way out sat below the
+              fold. When the ending fits, the block simply sits in flow. */}
+          <div
+            data-testid="aftermath-pinned-exit"
+            style={{
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 2,
+              paddingTop: AFTERMATH_PIN_FADE_PX,
+              paddingBottom: AFTERMATH_PIN_PAD_BOTTOM_PX,
+              background: `linear-gradient(to bottom, transparent 0px, ${VOID} ${AFTERMATH_PIN_FADE_PX}px)`,
+            }}
+          >
           {/* Reactions */}
           {aftermath.reactions && aftermath.reactions.length > 0 && (
             <div
@@ -1596,6 +1659,7 @@ export function EncounterVeil({
             >
               Return to the world
             </button>
+          </div>
           </div>
           </>
           )}
@@ -2072,6 +2136,7 @@ export function EncounterVeil({
       role="dialog"
       aria-modal="true"
       aria-label={model.header.title}
+      onWheel={handleVeilWheel}
       style={{
         position: 'fixed',
         ...VEIL_ROOT_INSET,
@@ -2179,6 +2244,7 @@ export function EncounterVeil({
 
       {/* ── Content zone (reading area) ───────────────────── */}
       <div
+        ref={contentColumnRef}
         data-testid="veil-content-column"
         style={{
           position: 'absolute',

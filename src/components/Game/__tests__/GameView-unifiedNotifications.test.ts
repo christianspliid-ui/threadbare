@@ -4,6 +4,7 @@ import {
   isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
   resolveNotificationsOnAftermathAcknowledge,
+  resolveNotificationsOnVeilLeave,
   runEncounterAutoOpenScan,
   selectEncounterRuntimeForNotification,
   shouldAutoOpenEncounterNotification,
@@ -390,6 +391,22 @@ describe('"Return to the world" resolves the whole chapter, not one record (THR-
     const queue = resolveNotificationsOnAftermathAcknowledge(queueAtResolution(), queueAtResolution()[2]);
     expect(queue.every(n => n.resolved)).toBe(true);
     expect(runEncounterAutoOpenScan(queue, null, openerOver(queue))).toBeNull();
+  });
+
+  // THR-1856 — Escape on the aftermath goes through the veil-leave path. It
+  // must resolve exactly what "Return to the world" resolves, and leave nothing
+  // the auto-open scan can bounce back to.
+  it('leaving an aftermath resolves the same set as acknowledging it', () => {
+    const left = resolveNotificationsOnVeilLeave(queueAtResolution(), queueAtResolution()[2]);
+    const acknowledged = resolveNotificationsOnAftermathAcknowledge(queueAtResolution(), queueAtResolution()[2]);
+    expect(left).toEqual(acknowledged);
+    expect(runEncounterAutoOpenScan(left, null, openerOver(left))).toBeNull();
+  });
+
+  it('leaving a step resolves only the record on screen', () => {
+    const queue = queueAtResolution();
+    const left = resolveNotificationsOnVeilLeave(queue, queue[1]);
+    expect(left.map(n => n.resolved)).toEqual([false, true, false]);
   });
 
   it('leaves another action of the same template pending (THR-1777 rule)', () => {
