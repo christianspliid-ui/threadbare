@@ -189,7 +189,7 @@ interface EssenceBlockProps {
  * sphere at 0, so a charge that drains the pool removes its row (review gate).
  */
 function useElderCharge(elderRows: readonly EssenceRowView[]): boolean {
-  const baseline = useRef<Map<string, number> | null>(null);
+  const baseline = useRef<Map<SphereName, number> | null>(null);
   const [charged, setCharged] = useState(false);
   const levels = elderRows.map((r) => `${r.sphere}:${r.level}`).join('|');
   useEffect(() => {
