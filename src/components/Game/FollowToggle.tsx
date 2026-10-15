@@ -46,12 +46,17 @@ export function describeFollow(
  * mortal never steps back out of the spotlight when unwatched (THR-1523), so
  * Follow is the player's lever for keeping a mortal in view (UI Law 13: no tier
  * name, no number).
+ *
+ * `compactAction` is the button text when the state label is hidden (the
+ * encounter strip). It must say what pressing it does on its own: a bare "Mute"
+ * beside a mortal's name read as a trait, not a toggle (THR-1858, warm round 2).
  */
-export function followToggleCopy(d: FollowDescriptor): { label: string; action: string; tooltip: string } {
+export function followToggleCopy(d: FollowDescriptor): { label: string; action: string; compactAction: string; tooltip: string } {
   if (d.muted) {
     return {
       label: 'Muted',
       action: 'Unmute',
+      compactAction: 'Allow interruptions',
       tooltip: 'Their bond follows them, but you have silenced their moments. Unmute to be interrupted again.',
     };
   }
@@ -59,6 +64,7 @@ export function followToggleCopy(d: FollowDescriptor): { label: string; action: 
     return {
       label: 'Followed by bond',
       action: 'Mute',
+      compactAction: 'Stop interruptions',
       tooltip: 'Your thread to them follows them by itself. Mute to keep the thread and stop the interruptions.',
     };
   }
@@ -66,12 +72,14 @@ export function followToggleCopy(d: FollowDescriptor): { label: string; action: 
     return {
       label: 'Following',
       action: 'Unfollow',
+      compactAction: 'Unfollow',
       tooltip: 'Their moments interrupt you — a costly step, trouble, a finish — and they stay among the mortals the world watches closely. Unfollow and they wait on the thread row.',
     };
   }
   return {
     label: 'Not following',
     action: 'Follow',
+    compactAction: 'Follow',
     tooltip: 'Follow them and their moments interrupt you — a costly step, trouble, a doubling-down, a finish — and they stay among the mortals the world watches closely.',
   };
 }
@@ -82,7 +90,7 @@ export interface FollowToggleProps {
   onToggle: () => void;
   /** Where the toggle sits, for the trace and the test id. */
   surface: 'arc_panel' | 'encounter_ui';
-  /** Compact renders the state as the button label only. */
+  /** Compact hides the state label; the button carries a self-explaining action (`compactAction`). */
   compact?: boolean;
 }
 
@@ -105,9 +113,9 @@ export function FollowToggle({ descriptor, onToggle, surface, compact }: FollowT
           size="sm"
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
           data-testid={`follow-toggle-${surface}-button`}
-          aria-label={`${copy.action} — currently ${copy.label.toLowerCase()}`}
+          aria-label={`${compact ? copy.compactAction : copy.action} — currently ${copy.label.toLowerCase()}`}
         >
-          {copy.action}
+          {compact ? copy.compactAction : copy.action}
         </Button>
       </Tooltip>
     </span>

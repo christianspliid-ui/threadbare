@@ -920,6 +920,12 @@
 .anim-fade-down-exit {
   animation: fadeSlideDownOut var(--anim-normal) ease-in forwards;
 }
+/* THR-1858: an exiting surface is still mounted while it fades; it must not eat clicks. */
+.anim-fade-exit,
+.anim-fade-up-exit,
+.anim-fade-down-exit {
+  pointer-events: none;
+}
 
 /* One-shot highlight pulses */
 .pulse-gold {

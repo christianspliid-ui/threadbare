@@ -177,7 +177,9 @@ describe('THR-1706 (2) — the budget line is the paying sphere, not the grand t
   it('reads the primary pool and names it', () => {
     render(<NudgePhaseShell phase={buildPhase()} onCommit={() => {}} />);
     const line = screen.getByTestId('nudge-remaining-essence');
-    expect(line.textContent).toBe('50 Life essence left');
+    // THR-1858 — the line names every paying sphere, budget sphere first: the
+    // hand's Force card pays from Force, so Force's own pool is on the line too.
+    expect(line.textContent).toBe('50 Life · 50 Force essence left');
     expect(line.getAttribute('data-budget-sphere')).toBe('life');
   });
 
@@ -191,7 +193,7 @@ describe('THR-1706 (2) — the budget line is the paying sphere, not the grand t
   it('moves as a Life-billed card is selected', () => {
     render(<NudgePhaseShell phase={buildPhase()} onCommit={() => {}} />);
     fireEvent.click(screen.getByTestId('nudge-card-count_the_coin'));
-    expect(screen.getByTestId('nudge-remaining-essence').textContent).toBe('48 Life essence left');
+    expect(screen.getByTestId('nudge-remaining-essence').textContent).toBe('48 Life · 50 Force essence left');
   });
 
   it('falls back to the pooled total with no identity', () => {

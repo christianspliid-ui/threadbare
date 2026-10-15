@@ -13,7 +13,7 @@
  * Plan: `Docs/plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md` § WS2
  */
 
-import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { CostPips } from '../../../shared/OddsPips';
@@ -34,6 +34,8 @@ import {
   subscribeNudgeDesignerView,
 } from '../designerView';
 import { useNudgeHand, type NudgeHandCard, type UseNudgeHandResult } from '../useNudgeHand';
+import { getEssencePreviewSphere, setEssencePreviewSphere } from '../../ascendant-bar/essenceDisplay';
+import type { SphereName } from '../../../../types/index';
 import type { EncounterStageNudgePhaseModel } from '../types';
 
 // ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
@@ -280,6 +282,38 @@ export function NudgeCard({
   );
 }
 
+/**
+ * THR-1858 — hovering or focusing a live nudge card lights the essence row it
+ * would draw from, the same Law 47 preview the action card gives (THR-1607). A
+ * card paid from an elder pool opens the Elder powers fold while it is hovered,
+ * so its price lands on a bar the player can see. `display: contents` keeps the
+ * card a direct flex child of the hand row, and keeps the card's own DOM (pinned
+ * by its snapshot) untouched.
+ */
+function NudgeCardEssencePreview({ sphere, children }: { sphere: SphereName | null; children: ReactNode }) {
+  const start = useCallback(() => {
+    if (sphere) setEssencePreviewSphere(sphere);
+  }, [sphere]);
+  const end = useCallback(() => {
+    if (sphere && getEssencePreviewSphere() === sphere) setEssencePreviewSphere(null);
+  }, [sphere]);
+  // A card that unmounts mid-hover (the hand committed) must not leave its row lit.
+  useEffect(() => end, [end]);
+  return (
+    <div
+      style={{ display: 'contents' }}
+      data-testid="nudge-card-essence-preview"
+      data-preview-sphere={sphere ?? undefined}
+      onMouseEnter={start}
+      onMouseLeave={end}
+      onFocus={start}
+      onBlur={end}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ── Shell ──────────────────────────────────────────────────────────
 
 export function NudgePhaseShell({
@@ -403,12 +437,16 @@ export function NudgePhaseShell({
             }}
           >
             {hand.cards.map((card) => (
-              <NudgeCard
+              <NudgeCardEssencePreview
                 key={card.id}
-                card={card}
-                designerView={designerView}
-                onToggle={() => hand.toggle(card.id)}
-              />
+                sphere={card.interactive && card.payingSphere && card.essenceCost > 0 ? card.payingSphere : null}
+              >
+                <NudgeCard
+                  card={card}
+                  designerView={designerView}
+                  onToggle={() => hand.toggle(card.id)}
+                />
+              </NudgeCardEssencePreview>
             ))}
           </div>
         )}
@@ -482,11 +520,19 @@ export function NudgePhaseShell({
             <span
               data-testid="nudge-remaining-essence"
               {...(hand.budget ? { 'data-budget-sphere': hand.budget.sphere } : {})}
+              data-paying-spheres={hand.payers.map((p) => p.sphere).join(',') || undefined}
               style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
             >
-              {hand.budget
-                ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`
-                : `${formatEssencePool(hand.remainingEssence)} essence left`}
+              {/* THR-1858 — every sphere the hand pays from, not the budget
+                  sphere alone: a Chaos card's price must land on a number the
+                  player can see. One payer reads exactly as before, and with no
+                  budget sphere (no identity) the pooled total stays, since the
+                  sphere-less cards are priced against it. */}
+              {hand.budget && hand.payers.length > 1
+                ? `${hand.payers.map((p) => `${formatEssencePool(p.remaining)} ${sphereWord(p.sphere)}`).join(' · ')} essence left`
+                : hand.budget
+                  ? `${formatEssencePool(hand.budget.remaining)} ${sphereWord(hand.budget.sphere)} essence left`
+                  : `${formatEssencePool(hand.remainingEssence)} essence left`}
             </span>
           </Tooltip>
 

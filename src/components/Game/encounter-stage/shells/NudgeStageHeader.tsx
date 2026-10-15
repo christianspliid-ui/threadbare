@@ -194,7 +194,7 @@ export function NudgeReadingMarks({
               whiteSpace: 'nowrap',
             }}
           >
-            {NUDGE_FORECAST_SHIFT_LINES[forecastShiftDirection(baseForecast.tier, forecast.tier)]}
+            {NUDGE_FORECAST_SHIFT_LINES[forecastMoveDirection(baseForecast, forecast)]}
           </span>
         )}
       </span>
@@ -210,7 +210,7 @@ export function NudgeReadingMarks({
 
 /**
  * THR-1791 — which way the hand moved the odds, read on the forecast ladder.
- * Only called when the tier moved; an unknown tier ranks as `uncertain`
+ * Called when the tier moved; an unknown tier ranks as `uncertain`
  * (fail-soft), so a malformed pair reads as a lift rather than throwing.
  */
 export function forecastShiftDirection(fromTier: string, toTier: string): 'up' | 'down' {
@@ -219,6 +219,19 @@ export function forecastShiftDirection(fromTier: string, toTier: string): 'up' |
     return i < 0 ? FORECAST_TIER_LADDER.indexOf('uncertain') : i;
   };
   return rank(toTier) < rank(fromTier) ? 'down' : 'up';
+}
+
+/**
+ * THR-1858 — the direction of a move that may stay inside one tier. A tier
+ * change decides it on the ladder; inside a tier the raw probabilities decide
+ * it. The player still sees one tier word and a direction, never a number.
+ */
+export function forecastMoveDirection(
+  from: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+  to: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+): 'up' | 'down' {
+  if (from.tier !== to.tier) return forecastShiftDirection(from.tier, to.tier);
+  return to.probability < from.probability ? 'down' : 'up';
 }
 
 /**

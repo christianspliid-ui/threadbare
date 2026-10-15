@@ -101,4 +101,31 @@ describe('Dropdown', () => {
     fireEvent.keyDown(screen.getByText('Option'), { key: 'Enter' });
     expect(fn).toHaveBeenCalledOnce();
   });
+
+  // THR-1858 (warm round 2): the panel stays mounted ~200 ms while it fades out.
+  // In that window it must let clicks through to whatever sits beneath it.
+  it('an exiting panel takes no clicks (pointer-events: none)', () => {
+    const { rerender } = render(
+      <Dropdown trigger={<button>Open</button>} open onOpenChange={() => {}}>
+        <div>Menu</div>
+      </Dropdown>,
+    );
+    rerender(
+      <Dropdown trigger={<button>Open</button>} open={false} onOpenChange={() => {}}>
+        <div>Menu</div>
+      </Dropdown>,
+    );
+    const panel = screen.getByTestId('dropdown-panel');
+    const exitWrapper = panel.parentElement as HTMLElement;
+    expect(exitWrapper.className).toContain('anim-fade-down-exit');
+    expect(exitWrapper.style.pointerEvents).toBe('none');
+    // Review gate: the fixed portal wrapper around it has a box over the panel
+    // too, so it must not take the click either. No ancestor up to <body>
+    // may re-enable pointer events.
+    const anchor = screen.getByTestId('dropdown-anchor');
+    expect(anchor.style.pointerEvents).toBe('none');
+    for (let el: HTMLElement | null = panel; el && el !== document.body; el = el.parentElement) {
+      expect(el.style.pointerEvents === 'auto').toBe(false);
+    }
+  });
 });

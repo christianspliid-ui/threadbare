@@ -898,6 +898,12 @@ export interface EncounterStageNudgePhaseModel {
   budgetSphere?: SphereName;
   /** THR-1706 — `budgetSphere`'s own pool right now. Present iff `budgetSphere` is. */
   budgetSphereEssence?: number;
+  /**
+   * THR-1858 — every sphere a card in the hand pays from, with its pool right
+   * now. The footer lists each one, so a Chaos card's price lands on a number
+   * the player can see rather than a pool hidden behind the budget line.
+   */
+  payingSphereEssence?: Partial<Record<SphereName, number>>;
 }
 
 export interface EncounterStageModel {

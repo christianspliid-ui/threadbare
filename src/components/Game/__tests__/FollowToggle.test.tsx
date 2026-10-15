@@ -79,4 +79,32 @@ describe('FollowToggle', () => {
     );
     expect(screen.getByTestId('follow-toggle-encounter_ui').textContent).toBe('Follow');
   });
+
+  // THR-1858 (warm round 2): a bare "Mute" beside the mortal's name read as a
+  // trait. Compact mode must name the gesture, never a bare Mute / Unmute.
+  it('compact never renders a bare Mute or Unmute', () => {
+    const states = [
+      { followed: true, explicit: false, byBond: true, muted: false },
+      { followed: false, explicit: false, byBond: true, muted: true },
+      { followed: true, explicit: true, byBond: false, muted: false },
+      { followed: false, explicit: false, byBond: false, muted: false },
+    ];
+    for (const descriptor of states) {
+      const { unmount } = render(
+        <FollowToggle descriptor={descriptor} onToggle={() => {}} surface="encounter_ui" compact />,
+      );
+      const text = screen.getByTestId('follow-toggle-encounter_ui-button').textContent ?? '';
+      expect(text).not.toMatch(/^(Mute|Unmute)$/);
+      unmount();
+    }
+    render(
+      <FollowToggle
+        descriptor={{ followed: true, explicit: false, byBond: true, muted: false }}
+        onToggle={() => {}}
+        surface="encounter_ui"
+        compact
+      />,
+    );
+    expect(screen.getByTestId('follow-toggle-encounter_ui-button').textContent).toBe('Stop interruptions');
+  });
 });

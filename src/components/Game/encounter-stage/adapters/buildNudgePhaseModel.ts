@@ -888,6 +888,13 @@ export function buildNudgePhaseModel(
     const payingSphere = card.sphere ?? budgetSphere;
     return payingSphere ? { ...card, payingSphere } : card;
   });
+  // THR-1858 — each paying sphere's own pool, for the footer's per-sphere line.
+  const payingSphereEssence: Partial<Record<SphereName, number>> = {};
+  for (const card of pricedCards) {
+    if (card.payingSphere && !(card.payingSphere in payingSphereEssence)) {
+      payingSphereEssence[card.payingSphere] = availableEssenceFor(card.payingSphere);
+    }
+  }
 
   return {
     actionId: activeAction.actionId,
@@ -923,5 +930,6 @@ export function buildNudgePhaseModel(
     ...(budgetSphere
       ? { budgetSphere, budgetSphereEssence: availableEssenceFor(budgetSphere) }
       : {}),
+    ...(Object.keys(payingSphereEssence).length > 0 ? { payingSphereEssence } : {}),
   };
 }

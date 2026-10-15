@@ -84,8 +84,11 @@ function DropdownRoot({ trigger, open, onOpenChange, align = 'right', children }
           block for a fixed descendant — so a fixed panel inside it was placed
           relative to that wrapper at the foot of <body>, one viewport below the
           screen. Every Rivals / Notables panel opened invisibly. */}
+      {/* THR-1858: while the panel fades out this fixed wrapper still has a
+          box over the panel's area, and would take the click meant for the row
+          beneath. Closed, it takes no clicks; the panel inherits that. */}
       {createPortal(
-        <div style={position}>
+        <div style={open ? position : { ...position, pointerEvents: 'none' }} data-testid="dropdown-anchor">
           <AnimateMount show={open} animation="anim-fade-down">
             <div ref={panelRef} style={panelStyle} data-testid="dropdown-panel">
               {children}
