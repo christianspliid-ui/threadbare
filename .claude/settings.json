@@ -72,16 +72,6 @@
           "statusMessage": "WIP gate: checking for unmerged ticket PRs..."
         }]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/session-stop-gate.sh",
-          "timeout": 15,
-          "statusMessage": "Checking for loose ends..."
-        }]
-      }
     ]
   }
 }
