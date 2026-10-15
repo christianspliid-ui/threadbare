@@ -119,5 +119,13 @@ describe('Dropdown', () => {
     const exitWrapper = panel.parentElement as HTMLElement;
     expect(exitWrapper.className).toContain('anim-fade-down-exit');
     expect(exitWrapper.style.pointerEvents).toBe('none');
+    // Review gate: the fixed portal wrapper around it has a box over the panel
+    // too, so it must not take the click either. No ancestor up to <body>
+    // may re-enable pointer events.
+    const anchor = screen.getByTestId('dropdown-anchor');
+    expect(anchor.style.pointerEvents).toBe('none');
+    for (let el: HTMLElement | null = panel; el && el !== document.body; el = el.parentElement) {
+      expect(el.style.pointerEvents === 'auto').toBe(false);
+    }
   });
 });

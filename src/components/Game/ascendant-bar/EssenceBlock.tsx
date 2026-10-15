@@ -185,6 +185,8 @@ interface EssenceBlockProps {
  * THR-1858 — true once any elder pool has dropped by a spend
  * ({@link ESSENCE_SPEND_FLASH_MIN_DROP} or more) since the block mounted. The
  * baseline is the first reading, so a pool that only refills never trips it.
+ * A row that vanishes counts as emptied: `selectEssenceRows` drops an elder
+ * sphere at 0, so a charge that drains the pool removes its row (review gate).
  */
 function useElderCharge(elderRows: readonly EssenceRowView[]): boolean {
   const baseline = useRef<Map<string, number> | null>(null);
@@ -196,16 +198,17 @@ function useElderCharge(elderRows: readonly EssenceRowView[]): boolean {
       baseline.current = new Map(elderRows.map((r) => [r.sphere, r.level]));
       return;
     }
-    for (const r of elderRows) {
-      const before = baseline.current.get(r.sphere);
-      if (before === undefined || r.level > before) {
-        baseline.current.set(r.sphere, r.level);
-        continue;
-      }
-      if (before - r.level >= ESSENCE_SPEND_FLASH_MIN_DROP) {
+    const now = new Map(elderRows.map((r) => [r.sphere, r.level]));
+    for (const [sphere, before] of baseline.current) {
+      const level = now.get(sphere) ?? 0;
+      if (before - level >= ESSENCE_SPEND_FLASH_MIN_DROP) {
         setCharged(true);
         return;
       }
+    }
+    for (const r of elderRows) {
+      const before = baseline.current.get(r.sphere);
+      if (before === undefined || r.level > before) baseline.current.set(r.sphere, r.level);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `levels` is the content key of `elderRows`
   }, [levels, charged]);

@@ -186,6 +186,15 @@ describe('EssenceBlock', () => {
     expect(screen.queryByTestId('essence-row-chaos')).toBeNull();
   });
 
+  it('a charge that empties an elder pool (its row drops out) still opens the fold', () => {
+    const pool = fullPool();
+    pool.chaos = 4;
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('false');
+    rerender(<EssenceBlock rows={rowsFor({ ...pool, chaos: 0 })} />);
+    expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('an elder pool refilling does not open the fold', () => {
     const pool = fullPool();
     pool.chaos -= 10;
